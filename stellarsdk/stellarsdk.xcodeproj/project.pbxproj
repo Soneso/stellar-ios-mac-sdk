@@ -7,12 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		743DF4DC201F0BBD00713DE7 /* StellarSDK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */; };
+		743DF4DF201F12B400713DE7 /* KeyPair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4DE201F12B400713DE7 /* KeyPair.swift */; };
+		743DF4EE201F130200713DE7 /* stellarsdk_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 743DF4E5201F130100713DE7 /* stellarsdk_macOS.framework */; };
+		743DF4F3201F130200713DE7 /* stellarsdk_macOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4F2201F130200713DE7 /* stellarsdk_macOSTests.swift */; };
+		743DF4F5201F130200713DE7 /* stellarsdk_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF4E7201F130100713DE7 /* stellarsdk_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		743DF4FD201F178600713DE7 /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4FC201F178600713DE7 /* Crypto.swift */; };
+		743DF500201F38D900713DE7 /* AccountError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4FF201F38D900713DE7 /* AccountError.swift */; };
+		743DF503201F3B0800713DE7 /* AccountTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF502201F3B0800713DE7 /* AccountTestCase.swift */; };
 		7445EA06201B106500470E0A /* stellarsdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7445E9FC201B106500470E0A /* stellarsdk.framework */; };
 		7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7445EA0A201B106500470E0A /* stellarsdkTests.swift */; };
 		7445EA0D201B106500470E0A /* stellarsdk.h in Headers */ = {isa = PBXBuildFile; fileRef = 7445E9FF201B106500470E0A /* stellarsdk.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		743DF4EF201F130200713DE7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7445E9F3201B106500470E0A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 743DF4E4201F130100713DE7;
+			remoteInfo = "stellarsdk-macOS";
+		};
 		7445EA07201B106500470E0A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 7445E9F3201B106500470E0A /* Project object */;
@@ -23,6 +38,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StellarSDK.swift; sourceTree = "<group>"; };
+		743DF4DE201F12B400713DE7 /* KeyPair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPair.swift; sourceTree = "<group>"; };
+		743DF4E5201F130100713DE7 /* stellarsdk_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = stellarsdk_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		743DF4E7201F130100713DE7 /* stellarsdk_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stellarsdk_macOS.h; sourceTree = "<group>"; };
+		743DF4E8201F130100713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		743DF4ED201F130200713DE7 /* stellarsdk-macOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "stellarsdk-macOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		743DF4F2201F130200713DE7 /* stellarsdk_macOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdk_macOSTests.swift; sourceTree = "<group>"; };
+		743DF4F4201F130200713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		743DF4FC201F178600713DE7 /* Crypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Crypto.swift; sourceTree = "<group>"; };
+		743DF4FF201F38D900713DE7 /* AccountError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountError.swift; sourceTree = "<group>"; };
+		743DF502201F3B0800713DE7 /* AccountTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTestCase.swift; sourceTree = "<group>"; };
 		7445E9FC201B106500470E0A /* stellarsdk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = stellarsdk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7445E9FF201B106500470E0A /* stellarsdk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stellarsdk.h; sourceTree = "<group>"; };
 		7445EA00201B106500470E0A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -32,6 +58,21 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		743DF4E1201F130100713DE7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		743DF4EA201F130200713DE7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				743DF4EE201F130200713DE7 /* stellarsdk_macOS.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7445E9F8201B106500470E0A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -50,11 +91,56 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		743DF4DD201F121B00713DE7 /* account */ = {
+			isa = PBXGroup;
+			children = (
+				743DF4DE201F12B400713DE7 /* KeyPair.swift */,
+				743DF4FC201F178600713DE7 /* Crypto.swift */,
+			);
+			path = account;
+			sourceTree = "<group>";
+		};
+		743DF4E6201F130100713DE7 /* stellarsdk-macOS */ = {
+			isa = PBXGroup;
+			children = (
+				743DF4E7201F130100713DE7 /* stellarsdk_macOS.h */,
+				743DF4E8201F130100713DE7 /* Info.plist */,
+			);
+			path = "stellarsdk-macOS";
+			sourceTree = "<group>";
+		};
+		743DF4F1201F130200713DE7 /* stellarsdk-macOSTests */ = {
+			isa = PBXGroup;
+			children = (
+				743DF4F2201F130200713DE7 /* stellarsdk_macOSTests.swift */,
+				743DF4F4201F130200713DE7 /* Info.plist */,
+			);
+			path = "stellarsdk-macOSTests";
+			sourceTree = "<group>";
+		};
+		743DF4FE201F389500713DE7 /* errors */ = {
+			isa = PBXGroup;
+			children = (
+				743DF4FF201F38D900713DE7 /* AccountError.swift */,
+			);
+			path = errors;
+			sourceTree = "<group>";
+		};
+		743DF501201F3AE100713DE7 /* account */ = {
+			isa = PBXGroup;
+			children = (
+				743DF502201F3B0800713DE7 /* AccountTestCase.swift */,
+			);
+			path = account;
+			sourceTree = "<group>";
+		};
 		7445E9F2201B106500470E0A = {
 			isa = PBXGroup;
 			children = (
 				7445E9FE201B106500470E0A /* stellarsdk */,
 				7445EA09201B106500470E0A /* stellarsdkTests */,
+				743DF4E6201F130100713DE7 /* stellarsdk-macOS */,
+				743DF4F1201F130200713DE7 /* stellarsdk-macOSTests */,
 				7445E9FD201B106500470E0A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -64,6 +150,8 @@
 			children = (
 				7445E9FC201B106500470E0A /* stellarsdk.framework */,
 				7445EA05201B106500470E0A /* stellarsdkTests.xctest */,
+				743DF4E5201F130100713DE7 /* stellarsdk_macOS.framework */,
+				743DF4ED201F130200713DE7 /* stellarsdk-macOSTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -71,8 +159,11 @@
 		7445E9FE201B106500470E0A /* stellarsdk */ = {
 			isa = PBXGroup;
 			children = (
+				743DF4FE201F389500713DE7 /* errors */,
+				743DF4DD201F121B00713DE7 /* account */,
 				7445E9FF201B106500470E0A /* stellarsdk.h */,
 				7445EA00201B106500470E0A /* Info.plist */,
+				743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */,
 			);
 			path = stellarsdk;
 			sourceTree = "<group>";
@@ -80,6 +171,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				743DF501201F3AE100713DE7 /* account */,
 				7445EA0A201B106500470E0A /* stellarsdkTests.swift */,
 				7445EA0C201B106500470E0A /* Info.plist */,
 			);
@@ -89,6 +181,14 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		743DF4E2201F130100713DE7 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				743DF4F5201F130200713DE7 /* stellarsdk_macOS.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7445E9F9201B106500470E0A /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -100,6 +200,42 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		743DF4E4201F130100713DE7 /* stellarsdk-macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 743DF4F6201F130200713DE7 /* Build configuration list for PBXNativeTarget "stellarsdk-macOS" */;
+			buildPhases = (
+				743DF4E0201F130100713DE7 /* Sources */,
+				743DF4E1201F130100713DE7 /* Frameworks */,
+				743DF4E2201F130100713DE7 /* Headers */,
+				743DF4E3201F130100713DE7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "stellarsdk-macOS";
+			productName = "stellarsdk-macOS";
+			productReference = 743DF4E5201F130100713DE7 /* stellarsdk_macOS.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		743DF4EC201F130200713DE7 /* stellarsdk-macOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 743DF4F9201F130200713DE7 /* Build configuration list for PBXNativeTarget "stellarsdk-macOSTests" */;
+			buildPhases = (
+				743DF4E9201F130200713DE7 /* Sources */,
+				743DF4EA201F130200713DE7 /* Frameworks */,
+				743DF4EB201F130200713DE7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				743DF4F0201F130200713DE7 /* PBXTargetDependency */,
+			);
+			name = "stellarsdk-macOSTests";
+			productName = "stellarsdk-macOSTests";
+			productReference = 743DF4ED201F130200713DE7 /* stellarsdk-macOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		7445E9FB201B106500470E0A /* stellarsdk */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7445EA10201B106500470E0A /* Build configuration list for PBXNativeTarget "stellarsdk" */;
@@ -146,8 +282,17 @@
 				LastUpgradeCheck = 0920;
 				ORGANIZATIONNAME = Soneso;
 				TargetAttributes = {
+					743DF4E4201F130100713DE7 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+					743DF4EC201F130200713DE7 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
 					7445E9FB201B106500470E0A = {
 						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 0920;
 						ProvisioningStyle = Automatic;
 					};
 					7445EA04201B106500470E0A = {
@@ -170,11 +315,27 @@
 			targets = (
 				7445E9FB201B106500470E0A /* stellarsdk */,
 				7445EA04201B106500470E0A /* stellarsdkTests */,
+				743DF4E4201F130100713DE7 /* stellarsdk-macOS */,
+				743DF4EC201F130200713DE7 /* stellarsdk-macOSTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		743DF4E3201F130100713DE7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		743DF4EB201F130200713DE7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7445E9FA201B106500470E0A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -192,10 +353,29 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		743DF4E0201F130100713DE7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		743DF4E9201F130200713DE7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				743DF4F3201F130200713DE7 /* stellarsdk_macOSTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7445E9F7201B106500470E0A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				743DF500201F38D900713DE7 /* AccountError.swift in Sources */,
+				743DF4FD201F178600713DE7 /* Crypto.swift in Sources */,
+				743DF4DC201F0BBD00713DE7 /* StellarSDK.swift in Sources */,
+				743DF4DF201F12B400713DE7 /* KeyPair.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -204,12 +384,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */,
+				743DF503201F3B0800713DE7 /* AccountTestCase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		743DF4F0201F130200713DE7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 743DF4E4201F130100713DE7 /* stellarsdk-macOS */;
+			targetProxy = 743DF4EF201F130200713DE7 /* PBXContainerItemProxy */;
+		};
 		7445EA08201B106500470E0A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 7445E9FB201B106500470E0A /* stellarsdk */;
@@ -218,6 +404,88 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		743DF4F7201F130200713DE7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = QN6AY4TH84;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = "stellarsdk-macOS/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 4.0;
+			};
+			name = Debug;
+		};
+		743DF4F8201F130200713DE7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = QN6AY4TH84;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = "stellarsdk-macOS/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 4.0;
+			};
+			name = Release;
+		};
+		743DF4FA201F130200713DE7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = QN6AY4TH84;
+				INFOPLIST_FILE = "stellarsdk-macOSTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 4.0;
+			};
+			name = Debug;
+		};
+		743DF4FB201F130200713DE7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = QN6AY4TH84;
+				INFOPLIST_FILE = "stellarsdk-macOSTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 4.0;
+			};
+			name = Release;
+		};
 		7445EA0E201B106500470E0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -334,6 +602,7 @@
 		7445EA11201B106500470E0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -347,6 +616,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdk;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -355,6 +625,7 @@
 		7445EA12201B106500470E0A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
@@ -376,6 +647,7 @@
 		7445EA14201B106500470E0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = stellarsdkTests/Info.plist;
@@ -390,6 +662,7 @@
 		7445EA15201B106500470E0A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = stellarsdkTests/Info.plist;
@@ -404,6 +677,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		743DF4F6201F130200713DE7 /* Build configuration list for PBXNativeTarget "stellarsdk-macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				743DF4F7201F130200713DE7 /* Debug */,
+				743DF4F8201F130200713DE7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		743DF4F9201F130200713DE7 /* Build configuration list for PBXNativeTarget "stellarsdk-macOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				743DF4FA201F130200713DE7 /* Debug */,
+				743DF4FB201F130200713DE7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		7445E9F6201B106500470E0A /* Build configuration list for PBXProject "stellarsdk" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

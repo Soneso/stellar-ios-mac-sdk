@@ -16,4 +16,7 @@ FOUNDATION_EXPORT const unsigned char stellarsdkVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <stellarsdk/PublicHeader.h>
 
+//#include <rpc/types.h>
+//#include <rpc/xdr.h>
+
 
