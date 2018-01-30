@@ -8,6 +8,8 @@
 
 import Foundation
 
-enum AccountError: Error {
+public enum AccountError: Error {
     case keyGenerationFailed(osStatus: OSStatus)
+    case requestFailed(response: String)
+    case parsingFailed(response: String)
 }

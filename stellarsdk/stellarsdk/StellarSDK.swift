@@ -8,10 +8,19 @@
 
 import UIKit
 
-class StellarSDK: NSObject {
+public class StellarSDK: NSObject {
     
-    func test() {
-        
+    public var configurations: Configs
+    public var accounts: AccountService
+    
+    public override init() {
+        configurations = Configs()
+        accounts = AccountService(baseURL: configurations.horizonURL)
+    }
+    
+    public init(configurations: Configs) {
+        self.configurations = configurations
+        self.accounts = AccountService(baseURL: configurations.horizonURL)
     }
     
 }

@@ -1,0 +1,4 @@
+module ed25519C [system][extern_c] {
+  header "include/ed25519.h"
+  export *
+}

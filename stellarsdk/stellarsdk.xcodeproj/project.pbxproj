@@ -8,13 +8,53 @@
 
 /* Begin PBXBuildFile section */
 		743DF4DC201F0BBD00713DE7 /* StellarSDK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */; };
-		743DF4DF201F12B400713DE7 /* KeyPair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4DE201F12B400713DE7 /* KeyPair.swift */; };
 		743DF4EE201F130200713DE7 /* stellarsdk_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 743DF4E5201F130100713DE7 /* stellarsdk_macOS.framework */; };
 		743DF4F3201F130200713DE7 /* stellarsdk_macOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4F2201F130200713DE7 /* stellarsdk_macOSTests.swift */; };
 		743DF4F5201F130200713DE7 /* stellarsdk_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF4E7201F130100713DE7 /* stellarsdk_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		743DF4FD201F178600713DE7 /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4FC201F178600713DE7 /* Crypto.swift */; };
 		743DF500201F38D900713DE7 /* AccountError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4FF201F38D900713DE7 /* AccountError.swift */; };
 		743DF503201F3B0800713DE7 /* AccountTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF502201F3B0800713DE7 /* AccountTestCase.swift */; };
+		743DF50D201F458400713DE7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF50C201F458400713DE7 /* AppDelegate.swift */; };
+		743DF50F201F458400713DE7 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF50E201F458400713DE7 /* ViewController.swift */; };
+		743DF512201F458400713DE7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 743DF510201F458400713DE7 /* Main.storyboard */; };
+		743DF514201F458400713DE7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 743DF513201F458400713DE7 /* Assets.xcassets */; };
+		743DF517201F458400713DE7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 743DF515201F458400713DE7 /* LaunchScreen.storyboard */; };
+		743DF522201F458400713DE7 /* stellarsdkTests_HostTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF521201F458400713DE7 /* stellarsdkTests_HostTests.swift */; };
+		743DF52D201F458400713DE7 /* stellarsdkTests_HostUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF52C201F458400713DE7 /* stellarsdkTests_HostUITests.swift */; };
+		743DF53E201F49CF00713DE7 /* Configs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF53D201F49CF00713DE7 /* Configs.swift */; };
+		743DF541201F6A9C00713DE7 /* Base32.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF540201F6A9C00713DE7 /* Base32.swift */; };
+		743DF546201F706B00713DE7 /* Data+CRC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF545201F706B00713DE7 /* Data+CRC.swift */; };
+		743DF548201F70A700713DE7 /* Data+Base32.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF547201F70A700713DE7 /* Data+Base32.swift */; };
+		743DF54A201F70CA00713DE7 /* String+Base32.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF549201F70CA00713DE7 /* String+Base32.swift */; };
+		743DF54C201F73FC00713DE7 /* VersionByte.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF54B201F73FC00713DE7 /* VersionByte.swift */; };
+		743DF550201FBD2B00713DE7 /* AccountService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF54F201FBD2B00713DE7 /* AccountService.swift */; };
+		743DF5662020530A00713DE7 /* fe.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF5532020530900713DE7 /* fe.h */; };
+		743DF5672020530A00713DE7 /* add_scalar.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5542020530900713DE7 /* add_scalar.c */; };
+		743DF5682020530A00713DE7 /* seed.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5552020530900713DE7 /* seed.c */; };
+		743DF5692020530A00713DE7 /* sha512.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5562020530900713DE7 /* sha512.c */; };
+		743DF56A2020530A00713DE7 /* verify.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5572020530A00713DE7 /* verify.c */; };
+		743DF56B2020530A00713DE7 /* license.txt in Resources */ = {isa = PBXBuildFile; fileRef = 743DF5582020530A00713DE7 /* license.txt */; };
+		743DF56C2020530A00713DE7 /* fe.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5592020530A00713DE7 /* fe.c */; };
+		743DF56D2020530A00713DE7 /* sc.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF55A2020530A00713DE7 /* sc.c */; };
+		743DF56E2020530A00713DE7 /* sign.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF55B2020530A00713DE7 /* sign.c */; };
+		743DF56F2020530A00713DE7 /* sha512.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF55C2020530A00713DE7 /* sha512.h */; };
+		743DF5702020530A00713DE7 /* sc.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF55D2020530A00713DE7 /* sc.h */; };
+		743DF5712020530A00713DE7 /* ed25519.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF55F2020530A00713DE7 /* ed25519.h */; };
+		743DF5722020530A00713DE7 /* key_exchange.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5602020530A00713DE7 /* key_exchange.c */; };
+		743DF5732020530A00713DE7 /* ge.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5612020530A00713DE7 /* ge.c */; };
+		743DF5742020530A00713DE7 /* ge.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF5622020530A00713DE7 /* ge.h */; };
+		743DF5752020530A00713DE7 /* precomp_data.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF5632020530A00713DE7 /* precomp_data.h */; };
+		743DF5762020530A00713DE7 /* keypair.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5642020530A00713DE7 /* keypair.c */; };
+		743DF5772020530A00713DE7 /* fixedint.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF5652020530A00713DE7 /* fixedint.h */; };
+		743DF57A202053A400713DE7 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF579202053A400713DE7 /* Error.swift */; };
+		743DF57F202053B100713DE7 /* KeyPair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF57B202053B100713DE7 /* KeyPair.swift */; };
+		743DF580202053B100713DE7 /* PublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF57C202053B100713DE7 /* PublicKey.swift */; };
+		743DF581202053B100713DE7 /* PrivateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF57D202053B100713DE7 /* PrivateKey.swift */; };
+		743DF582202053B100713DE7 /* Seed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF57E202053B100713DE7 /* Seed.swift */; };
+		743DF5892020680700713DE7 /* ServiceHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5882020680700713DE7 /* ServiceHelper.swift */; };
+		743DF58F2020BBCF00713DE7 /* AccountDetailsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF58E2020BBCF00713DE7 /* AccountDetailsResponse.swift */; };
+		743DF5912020C2CD00713DE7 /* Thresholds.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5902020C2CD00713DE7 /* Thresholds.swift */; };
+		743DF5932020C58000713DE7 /* Balance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5922020C58000713DE7 /* Balance.swift */; };
+		743DF5952020C7A600713DE7 /* Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5942020C7A600713DE7 /* Signer.swift */; };
 		7445EA06201B106500470E0A /* stellarsdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7445E9FC201B106500470E0A /* stellarsdk.framework */; };
 		7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7445EA0A201B106500470E0A /* stellarsdkTests.swift */; };
 		7445EA0D201B106500470E0A /* stellarsdk.h in Headers */ = {isa = PBXBuildFile; fileRef = 7445E9FF201B106500470E0A /* stellarsdk.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -28,6 +68,27 @@
 			remoteGlobalIDString = 743DF4E4201F130100713DE7;
 			remoteInfo = "stellarsdk-macOS";
 		};
+		743DF51E201F458400713DE7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7445E9F3201B106500470E0A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 743DF509201F458400713DE7;
+			remoteInfo = "stellarsdkTests-Host";
+		};
+		743DF529201F458400713DE7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7445E9F3201B106500470E0A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 743DF509201F458400713DE7;
+			remoteInfo = "stellarsdkTests-Host";
+		};
+		743DF538201F459000713DE7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7445E9F3201B106500470E0A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 743DF509201F458400713DE7;
+			remoteInfo = "stellarsdkTests-Host";
+		};
 		7445EA07201B106500470E0A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 7445E9F3201B106500470E0A /* Project object */;
@@ -39,16 +100,62 @@
 
 /* Begin PBXFileReference section */
 		743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StellarSDK.swift; sourceTree = "<group>"; };
-		743DF4DE201F12B400713DE7 /* KeyPair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyPair.swift; sourceTree = "<group>"; };
 		743DF4E5201F130100713DE7 /* stellarsdk_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = stellarsdk_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		743DF4E7201F130100713DE7 /* stellarsdk_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stellarsdk_macOS.h; sourceTree = "<group>"; };
 		743DF4E8201F130100713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		743DF4ED201F130200713DE7 /* stellarsdk-macOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "stellarsdk-macOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		743DF4F2201F130200713DE7 /* stellarsdk_macOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdk_macOSTests.swift; sourceTree = "<group>"; };
 		743DF4F4201F130200713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		743DF4FC201F178600713DE7 /* Crypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Crypto.swift; sourceTree = "<group>"; };
 		743DF4FF201F38D900713DE7 /* AccountError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountError.swift; sourceTree = "<group>"; };
 		743DF502201F3B0800713DE7 /* AccountTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTestCase.swift; sourceTree = "<group>"; };
+		743DF50A201F458400713DE7 /* stellarsdkTests-Host.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "stellarsdkTests-Host.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		743DF50C201F458400713DE7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		743DF50E201F458400713DE7 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		743DF511201F458400713DE7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		743DF513201F458400713DE7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		743DF516201F458400713DE7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		743DF518201F458400713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		743DF51D201F458400713DE7 /* stellarsdkTests-HostTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "stellarsdkTests-HostTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		743DF521201F458400713DE7 /* stellarsdkTests_HostTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdkTests_HostTests.swift; sourceTree = "<group>"; };
+		743DF523201F458400713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		743DF528201F458400713DE7 /* stellarsdkTests-HostUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "stellarsdkTests-HostUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		743DF52C201F458400713DE7 /* stellarsdkTests_HostUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdkTests_HostUITests.swift; sourceTree = "<group>"; };
+		743DF52E201F458400713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		743DF53D201F49CF00713DE7 /* Configs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configs.swift; sourceTree = "<group>"; };
+		743DF540201F6A9C00713DE7 /* Base32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Base32.swift; sourceTree = "<group>"; };
+		743DF545201F706B00713DE7 /* Data+CRC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+CRC.swift"; sourceTree = "<group>"; };
+		743DF547201F70A700713DE7 /* Data+Base32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Base32.swift"; sourceTree = "<group>"; };
+		743DF549201F70CA00713DE7 /* String+Base32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Base32.swift"; sourceTree = "<group>"; };
+		743DF54B201F73FC00713DE7 /* VersionByte.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionByte.swift; sourceTree = "<group>"; };
+		743DF54F201FBD2B00713DE7 /* AccountService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountService.swift; sourceTree = "<group>"; };
+		743DF5532020530900713DE7 /* fe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fe.h; sourceTree = "<group>"; };
+		743DF5542020530900713DE7 /* add_scalar.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = add_scalar.c; sourceTree = "<group>"; };
+		743DF5552020530900713DE7 /* seed.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = seed.c; sourceTree = "<group>"; };
+		743DF5562020530900713DE7 /* sha512.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sha512.c; sourceTree = "<group>"; };
+		743DF5572020530A00713DE7 /* verify.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = verify.c; sourceTree = "<group>"; };
+		743DF5582020530A00713DE7 /* license.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = license.txt; sourceTree = "<group>"; };
+		743DF5592020530A00713DE7 /* fe.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = fe.c; sourceTree = "<group>"; };
+		743DF55A2020530A00713DE7 /* sc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sc.c; sourceTree = "<group>"; };
+		743DF55B2020530A00713DE7 /* sign.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sign.c; sourceTree = "<group>"; };
+		743DF55C2020530A00713DE7 /* sha512.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sha512.h; sourceTree = "<group>"; };
+		743DF55D2020530A00713DE7 /* sc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sc.h; sourceTree = "<group>"; };
+		743DF55F2020530A00713DE7 /* ed25519.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ed25519.h; sourceTree = "<group>"; };
+		743DF5602020530A00713DE7 /* key_exchange.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = key_exchange.c; sourceTree = "<group>"; };
+		743DF5612020530A00713DE7 /* ge.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ge.c; sourceTree = "<group>"; };
+		743DF5622020530A00713DE7 /* ge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ge.h; sourceTree = "<group>"; };
+		743DF5632020530A00713DE7 /* precomp_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = precomp_data.h; sourceTree = "<group>"; };
+		743DF5642020530A00713DE7 /* keypair.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = keypair.c; sourceTree = "<group>"; };
+		743DF5652020530A00713DE7 /* fixedint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fixedint.h; sourceTree = "<group>"; };
+		743DF579202053A400713DE7 /* Error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
+		743DF57B202053B100713DE7 /* KeyPair.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyPair.swift; sourceTree = "<group>"; };
+		743DF57C202053B100713DE7 /* PublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PublicKey.swift; sourceTree = "<group>"; };
+		743DF57D202053B100713DE7 /* PrivateKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrivateKey.swift; sourceTree = "<group>"; };
+		743DF57E202053B100713DE7 /* Seed.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Seed.swift; sourceTree = "<group>"; };
+		743DF5882020680700713DE7 /* ServiceHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceHelper.swift; sourceTree = "<group>"; };
+		743DF58E2020BBCF00713DE7 /* AccountDetailsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsResponse.swift; sourceTree = "<group>"; };
+		743DF5902020C2CD00713DE7 /* Thresholds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thresholds.swift; sourceTree = "<group>"; };
+		743DF5922020C58000713DE7 /* Balance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Balance.swift; sourceTree = "<group>"; };
+		743DF5942020C7A600713DE7 /* Signer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Signer.swift; sourceTree = "<group>"; };
 		7445E9FC201B106500470E0A /* stellarsdk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = stellarsdk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7445E9FF201B106500470E0A /* stellarsdk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stellarsdk.h; sourceTree = "<group>"; };
 		7445EA00201B106500470E0A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -73,6 +180,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		743DF507201F458400713DE7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		743DF51A201F458400713DE7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		743DF525201F458400713DE7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7445E9F8201B106500470E0A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -94,8 +222,10 @@
 		743DF4DD201F121B00713DE7 /* account */ = {
 			isa = PBXGroup;
 			children = (
-				743DF4DE201F12B400713DE7 /* KeyPair.swift */,
-				743DF4FC201F178600713DE7 /* Crypto.swift */,
+				743DF58E2020BBCF00713DE7 /* AccountDetailsResponse.swift */,
+				743DF5902020C2CD00713DE7 /* Thresholds.swift */,
+				743DF5922020C58000713DE7 /* Balance.swift */,
+				743DF5942020C7A600713DE7 /* Signer.swift */,
 			);
 			path = account;
 			sourceTree = "<group>";
@@ -134,6 +264,126 @@
 			path = account;
 			sourceTree = "<group>";
 		};
+		743DF50B201F458400713DE7 /* stellarsdkTests-Host */ = {
+			isa = PBXGroup;
+			children = (
+				743DF50C201F458400713DE7 /* AppDelegate.swift */,
+				743DF50E201F458400713DE7 /* ViewController.swift */,
+				743DF510201F458400713DE7 /* Main.storyboard */,
+				743DF513201F458400713DE7 /* Assets.xcassets */,
+				743DF515201F458400713DE7 /* LaunchScreen.storyboard */,
+				743DF518201F458400713DE7 /* Info.plist */,
+			);
+			path = "stellarsdkTests-Host";
+			sourceTree = "<group>";
+		};
+		743DF520201F458400713DE7 /* stellarsdkTests-HostTests */ = {
+			isa = PBXGroup;
+			children = (
+				743DF521201F458400713DE7 /* stellarsdkTests_HostTests.swift */,
+				743DF523201F458400713DE7 /* Info.plist */,
+			);
+			path = "stellarsdkTests-HostTests";
+			sourceTree = "<group>";
+		};
+		743DF52B201F458400713DE7 /* stellarsdkTests-HostUITests */ = {
+			isa = PBXGroup;
+			children = (
+				743DF52C201F458400713DE7 /* stellarsdkTests_HostUITests.swift */,
+				743DF52E201F458400713DE7 /* Info.plist */,
+			);
+			path = "stellarsdkTests-HostUITests";
+			sourceTree = "<group>";
+		};
+		743DF53C201F495A00713DE7 /* service */ = {
+			isa = PBXGroup;
+			children = (
+				743DF54F201FBD2B00713DE7 /* AccountService.swift */,
+				743DF5882020680700713DE7 /* ServiceHelper.swift */,
+			);
+			path = service;
+			sourceTree = "<group>";
+		};
+		743DF53F201F6A7A00713DE7 /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				743DF540201F6A9C00713DE7 /* Base32.swift */,
+				743DF54B201F73FC00713DE7 /* VersionByte.swift */,
+			);
+			path = utils;
+			sourceTree = "<group>";
+		};
+		743DF544201F705300713DE7 /* extensions */ = {
+			isa = PBXGroup;
+			children = (
+				743DF545201F706B00713DE7 /* Data+CRC.swift */,
+				743DF547201F70A700713DE7 /* Data+Base32.swift */,
+				743DF549201F70CA00713DE7 /* String+Base32.swift */,
+			);
+			path = extensions;
+			sourceTree = "<group>";
+		};
+		743DF5512020529500713DE7 /* libs */ = {
+			isa = PBXGroup;
+			children = (
+				743DF552202052A700713DE7 /* ed25519-C */,
+			);
+			path = libs;
+			sourceTree = "<group>";
+		};
+		743DF552202052A700713DE7 /* ed25519-C */ = {
+			isa = PBXGroup;
+			children = (
+				743DF5542020530900713DE7 /* add_scalar.c */,
+				743DF5592020530A00713DE7 /* fe.c */,
+				743DF5532020530900713DE7 /* fe.h */,
+				743DF5652020530A00713DE7 /* fixedint.h */,
+				743DF5612020530A00713DE7 /* ge.c */,
+				743DF5622020530A00713DE7 /* ge.h */,
+				743DF55E2020530A00713DE7 /* include */,
+				743DF5602020530A00713DE7 /* key_exchange.c */,
+				743DF5642020530A00713DE7 /* keypair.c */,
+				743DF5582020530A00713DE7 /* license.txt */,
+				743DF5632020530A00713DE7 /* precomp_data.h */,
+				743DF55A2020530A00713DE7 /* sc.c */,
+				743DF55D2020530A00713DE7 /* sc.h */,
+				743DF5552020530900713DE7 /* seed.c */,
+				743DF5562020530900713DE7 /* sha512.c */,
+				743DF55C2020530A00713DE7 /* sha512.h */,
+				743DF55B2020530A00713DE7 /* sign.c */,
+				743DF5572020530A00713DE7 /* verify.c */,
+			);
+			path = "ed25519-C";
+			sourceTree = "<group>";
+		};
+		743DF55E2020530A00713DE7 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				743DF55F2020530A00713DE7 /* ed25519.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		743DF5782020538A00713DE7 /* crypto */ = {
+			isa = PBXGroup;
+			children = (
+				743DF579202053A400713DE7 /* Error.swift */,
+				743DF57B202053B100713DE7 /* KeyPair.swift */,
+				743DF57D202053B100713DE7 /* PrivateKey.swift */,
+				743DF57C202053B100713DE7 /* PublicKey.swift */,
+				743DF57E202053B100713DE7 /* Seed.swift */,
+			);
+			path = crypto;
+			sourceTree = "<group>";
+		};
+		743DF58D2020B68100713DE7 /* options */ = {
+			isa = PBXGroup;
+			children = (
+				743DF53D201F49CF00713DE7 /* Configs.swift */,
+			);
+			path = options;
+			sourceTree = "<group>";
+		};
 		7445E9F2201B106500470E0A = {
 			isa = PBXGroup;
 			children = (
@@ -141,6 +391,9 @@
 				7445EA09201B106500470E0A /* stellarsdkTests */,
 				743DF4E6201F130100713DE7 /* stellarsdk-macOS */,
 				743DF4F1201F130200713DE7 /* stellarsdk-macOSTests */,
+				743DF50B201F458400713DE7 /* stellarsdkTests-Host */,
+				743DF520201F458400713DE7 /* stellarsdkTests-HostTests */,
+				743DF52B201F458400713DE7 /* stellarsdkTests-HostUITests */,
 				7445E9FD201B106500470E0A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -152,6 +405,9 @@
 				7445EA05201B106500470E0A /* stellarsdkTests.xctest */,
 				743DF4E5201F130100713DE7 /* stellarsdk_macOS.framework */,
 				743DF4ED201F130200713DE7 /* stellarsdk-macOSTests.xctest */,
+				743DF50A201F458400713DE7 /* stellarsdkTests-Host.app */,
+				743DF51D201F458400713DE7 /* stellarsdkTests-HostTests.xctest */,
+				743DF528201F458400713DE7 /* stellarsdkTests-HostUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -159,6 +415,12 @@
 		7445E9FE201B106500470E0A /* stellarsdk */ = {
 			isa = PBXGroup;
 			children = (
+				743DF58D2020B68100713DE7 /* options */,
+				743DF5782020538A00713DE7 /* crypto */,
+				743DF5512020529500713DE7 /* libs */,
+				743DF544201F705300713DE7 /* extensions */,
+				743DF53F201F6A7A00713DE7 /* utils */,
+				743DF53C201F495A00713DE7 /* service */,
 				743DF4FE201F389500713DE7 /* errors */,
 				743DF4DD201F121B00713DE7 /* account */,
 				7445E9FF201B106500470E0A /* stellarsdk.h */,
@@ -193,7 +455,14 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				743DF5702020530A00713DE7 /* sc.h in Headers */,
+				743DF5752020530A00713DE7 /* precomp_data.h in Headers */,
 				7445EA0D201B106500470E0A /* stellarsdk.h in Headers */,
+				743DF5772020530A00713DE7 /* fixedint.h in Headers */,
+				743DF5662020530A00713DE7 /* fe.h in Headers */,
+				743DF56F2020530A00713DE7 /* sha512.h in Headers */,
+				743DF5742020530A00713DE7 /* ge.h in Headers */,
+				743DF5712020530A00713DE7 /* ed25519.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,6 +505,59 @@
 			productReference = 743DF4ED201F130200713DE7 /* stellarsdk-macOSTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		743DF509201F458400713DE7 /* stellarsdkTests-Host */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 743DF52F201F458400713DE7 /* Build configuration list for PBXNativeTarget "stellarsdkTests-Host" */;
+			buildPhases = (
+				743DF506201F458400713DE7 /* Sources */,
+				743DF507201F458400713DE7 /* Frameworks */,
+				743DF508201F458400713DE7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "stellarsdkTests-Host";
+			productName = "stellarsdkTests-Host";
+			productReference = 743DF50A201F458400713DE7 /* stellarsdkTests-Host.app */;
+			productType = "com.apple.product-type.application";
+		};
+		743DF51C201F458400713DE7 /* stellarsdkTests-HostTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 743DF532201F458400713DE7 /* Build configuration list for PBXNativeTarget "stellarsdkTests-HostTests" */;
+			buildPhases = (
+				743DF519201F458400713DE7 /* Sources */,
+				743DF51A201F458400713DE7 /* Frameworks */,
+				743DF51B201F458400713DE7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				743DF51F201F458400713DE7 /* PBXTargetDependency */,
+			);
+			name = "stellarsdkTests-HostTests";
+			productName = "stellarsdkTests-HostTests";
+			productReference = 743DF51D201F458400713DE7 /* stellarsdkTests-HostTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		743DF527201F458400713DE7 /* stellarsdkTests-HostUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 743DF535201F458400713DE7 /* Build configuration list for PBXNativeTarget "stellarsdkTests-HostUITests" */;
+			buildPhases = (
+				743DF524201F458400713DE7 /* Sources */,
+				743DF525201F458400713DE7 /* Frameworks */,
+				743DF526201F458400713DE7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				743DF52A201F458400713DE7 /* PBXTargetDependency */,
+			);
+			name = "stellarsdkTests-HostUITests";
+			productName = "stellarsdkTests-HostUITests";
+			productReference = 743DF528201F458400713DE7 /* stellarsdkTests-HostUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		7445E9FB201B106500470E0A /* stellarsdk */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7445EA10201B106500470E0A /* Build configuration list for PBXNativeTarget "stellarsdk" */;
@@ -266,6 +588,7 @@
 			);
 			dependencies = (
 				7445EA08201B106500470E0A /* PBXTargetDependency */,
+				743DF539201F459000713DE7 /* PBXTargetDependency */,
 			);
 			name = stellarsdkTests;
 			productName = stellarsdkTests;
@@ -290,6 +613,20 @@
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
 					};
+					743DF509201F458400713DE7 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+					743DF51C201F458400713DE7 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 743DF509201F458400713DE7;
+					};
+					743DF527201F458400713DE7 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 743DF509201F458400713DE7;
+					};
 					7445E9FB201B106500470E0A = {
 						CreatedOnToolsVersion = 9.2;
 						LastSwiftMigration = 0920;
@@ -298,6 +635,7 @@
 					7445EA04201B106500470E0A = {
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
+						TestTargetID = 743DF509201F458400713DE7;
 					};
 				};
 			};
@@ -307,6 +645,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 7445E9F2201B106500470E0A;
 			productRefGroup = 7445E9FD201B106500470E0A /* Products */;
@@ -317,6 +656,9 @@
 				7445EA04201B106500470E0A /* stellarsdkTests */,
 				743DF4E4201F130100713DE7 /* stellarsdk-macOS */,
 				743DF4EC201F130200713DE7 /* stellarsdk-macOSTests */,
+				743DF509201F458400713DE7 /* stellarsdkTests-Host */,
+				743DF51C201F458400713DE7 /* stellarsdkTests-HostTests */,
+				743DF527201F458400713DE7 /* stellarsdkTests-HostUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -336,10 +678,35 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		743DF508201F458400713DE7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				743DF517201F458400713DE7 /* LaunchScreen.storyboard in Resources */,
+				743DF514201F458400713DE7 /* Assets.xcassets in Resources */,
+				743DF512201F458400713DE7 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		743DF51B201F458400713DE7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		743DF526201F458400713DE7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7445E9FA201B106500470E0A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				743DF56B2020530A00713DE7 /* license.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -368,14 +735,64 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		743DF506201F458400713DE7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				743DF50F201F458400713DE7 /* ViewController.swift in Sources */,
+				743DF50D201F458400713DE7 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		743DF519201F458400713DE7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				743DF522201F458400713DE7 /* stellarsdkTests_HostTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		743DF524201F458400713DE7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				743DF52D201F458400713DE7 /* stellarsdkTests_HostUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7445E9F7201B106500470E0A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				743DF56E2020530A00713DE7 /* sign.c in Sources */,
+				743DF548201F70A700713DE7 /* Data+Base32.swift in Sources */,
+				743DF5732020530A00713DE7 /* ge.c in Sources */,
+				743DF5912020C2CD00713DE7 /* Thresholds.swift in Sources */,
+				743DF56C2020530A00713DE7 /* fe.c in Sources */,
+				743DF5932020C58000713DE7 /* Balance.swift in Sources */,
+				743DF5952020C7A600713DE7 /* Signer.swift in Sources */,
+				743DF5892020680700713DE7 /* ServiceHelper.swift in Sources */,
+				743DF550201FBD2B00713DE7 /* AccountService.swift in Sources */,
+				743DF541201F6A9C00713DE7 /* Base32.swift in Sources */,
+				743DF54A201F70CA00713DE7 /* String+Base32.swift in Sources */,
 				743DF500201F38D900713DE7 /* AccountError.swift in Sources */,
-				743DF4FD201F178600713DE7 /* Crypto.swift in Sources */,
+				743DF546201F706B00713DE7 /* Data+CRC.swift in Sources */,
+				743DF5722020530A00713DE7 /* key_exchange.c in Sources */,
+				743DF56A2020530A00713DE7 /* verify.c in Sources */,
+				743DF5672020530A00713DE7 /* add_scalar.c in Sources */,
+				743DF5682020530A00713DE7 /* seed.c in Sources */,
+				743DF57A202053A400713DE7 /* Error.swift in Sources */,
+				743DF57F202053B100713DE7 /* KeyPair.swift in Sources */,
+				743DF582202053B100713DE7 /* Seed.swift in Sources */,
+				743DF5762020530A00713DE7 /* keypair.c in Sources */,
 				743DF4DC201F0BBD00713DE7 /* StellarSDK.swift in Sources */,
-				743DF4DF201F12B400713DE7 /* KeyPair.swift in Sources */,
+				743DF580202053B100713DE7 /* PublicKey.swift in Sources */,
+				743DF56D2020530A00713DE7 /* sc.c in Sources */,
+				743DF581202053B100713DE7 /* PrivateKey.swift in Sources */,
+				743DF5692020530A00713DE7 /* sha512.c in Sources */,
+				743DF58F2020BBCF00713DE7 /* AccountDetailsResponse.swift in Sources */,
+				743DF54C201F73FC00713DE7 /* VersionByte.swift in Sources */,
+				743DF53E201F49CF00713DE7 /* Configs.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -396,12 +813,46 @@
 			target = 743DF4E4201F130100713DE7 /* stellarsdk-macOS */;
 			targetProxy = 743DF4EF201F130200713DE7 /* PBXContainerItemProxy */;
 		};
+		743DF51F201F458400713DE7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 743DF509201F458400713DE7 /* stellarsdkTests-Host */;
+			targetProxy = 743DF51E201F458400713DE7 /* PBXContainerItemProxy */;
+		};
+		743DF52A201F458400713DE7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 743DF509201F458400713DE7 /* stellarsdkTests-Host */;
+			targetProxy = 743DF529201F458400713DE7 /* PBXContainerItemProxy */;
+		};
+		743DF539201F459000713DE7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 743DF509201F458400713DE7 /* stellarsdkTests-Host */;
+			targetProxy = 743DF538201F459000713DE7 /* PBXContainerItemProxy */;
+		};
 		7445EA08201B106500470E0A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 7445E9FB201B106500470E0A /* stellarsdk */;
 			targetProxy = 7445EA07201B106500470E0A /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		743DF510201F458400713DE7 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				743DF511201F458400713DE7 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		743DF515201F458400713DE7 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				743DF516201F458400713DE7 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		743DF4F7201F130200713DE7 /* Debug */ = {
@@ -483,6 +934,102 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_VERSION = 4.0;
+			};
+			name = Release;
+		};
+		743DF530201F458400713DE7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QN6AY4TH84;
+				INFOPLIST_FILE = "stellarsdkTests-Host/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		743DF531201F458400713DE7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QN6AY4TH84;
+				INFOPLIST_FILE = "stellarsdkTests-Host/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		743DF533201F458400713DE7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QN6AY4TH84;
+				INFOPLIST_FILE = "stellarsdkTests-HostTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
+			};
+			name = Debug;
+		};
+		743DF534201F458400713DE7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QN6AY4TH84;
+				INFOPLIST_FILE = "stellarsdkTests-HostTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
+			};
+			name = Release;
+		};
+		743DF536201F458400713DE7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QN6AY4TH84;
+				INFOPLIST_FILE = "stellarsdkTests-HostUITests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "stellarsdkTests-Host";
+			};
+			name = Debug;
+		};
+		743DF537201F458400713DE7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = QN6AY4TH84;
+				INFOPLIST_FILE = "stellarsdkTests-HostUITests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "stellarsdkTests-Host";
 			};
 			name = Release;
 		};
@@ -612,10 +1159,12 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = stellarsdk/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdk;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/libs/ed25519-C/**";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -635,10 +1184,12 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = stellarsdk/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdk;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/libs/ed25519-C/**";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -648,6 +1199,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = stellarsdkTests/Info.plist;
@@ -656,6 +1208,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
 			};
 			name = Debug;
 		};
@@ -663,6 +1216,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = stellarsdkTests/Info.plist;
@@ -671,6 +1225,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
 			};
 			name = Release;
 		};
@@ -691,6 +1246,33 @@
 			buildConfigurations = (
 				743DF4FA201F130200713DE7 /* Debug */,
 				743DF4FB201F130200713DE7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		743DF52F201F458400713DE7 /* Build configuration list for PBXNativeTarget "stellarsdkTests-Host" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				743DF530201F458400713DE7 /* Debug */,
+				743DF531201F458400713DE7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		743DF532201F458400713DE7 /* Build configuration list for PBXNativeTarget "stellarsdkTests-HostTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				743DF533201F458400713DE7 /* Debug */,
+				743DF534201F458400713DE7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		743DF535201F458400713DE7 /* Build configuration list for PBXNativeTarget "stellarsdkTests-HostUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				743DF536201F458400713DE7 /* Debug */,
+				743DF537201F458400713DE7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
