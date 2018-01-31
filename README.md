@@ -2,6 +2,9 @@
 
 The soneso open source stellar SDK for iOS &amp; Mac provides APIs to build transactions and connect to [Horizon](https://github.com/stellar/horizon).
 
+## Danger zone
+This SDK is work in progress and not finished
+
 ## Installation
 coming soon
 
