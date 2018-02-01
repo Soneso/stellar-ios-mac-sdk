@@ -8,19 +8,24 @@
 
 import UIKit
 
+/// A enum used to diferentiate between successful and failed account details responses
 public enum AccountDetailsResponseEnum {
     case success(details: AccountDetailsResponse)
     case failure(error: AccountError)
 }
 
+/// A enum used to diferentiate between successful and failed create account responses
 public enum CreateAccountResponseEnum {
     case success(details: Any)
     case failure(error: AccountError)
 }
 
+/// A closure to be called with the response from a create account request
 public typealias CreateAccountClosure = (_ response:CreateAccountResponseEnum) -> (Void)
+/// A closure to be called with the response from a account details request
 public typealias AccountDetailsClosure = (_ response:AccountDetailsResponseEnum) -> (Void)
 
+/// Class that handles account related calls
 open class AccountService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
@@ -33,6 +38,10 @@ open class AccountService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
+    /// Create an account on the test network.
+    ///
+    /// - parameter key:        A stellar accountid key. This can be generated using the KeyPair class.
+    /// - parameter response:   The closure to be called upon response.
     open func createTestAccount(key: String, response: @escaping CreateAccountClosure) {
         
         let url = URL(string: "https://horizon-testnet.stellar.org/friendbot")
@@ -56,6 +65,10 @@ open class AccountService: NSObject {
         task.resume()
     }
     
+    /// Get the details for an account.
+    ///
+    /// - parameter accountId:  A stellar accountid for an already created account. An stellar account is created when some assets are sent to a new key.
+    /// - parameter response:   The closure to be called upon response.
     open func getAccountDetails(accountId: String, response: @escaping AccountDetailsClosure) {
         let requestPath = "/accounts/\(accountId)"
         
@@ -70,7 +83,16 @@ open class AccountService: NSObject {
                 }
                 
             case .failure(let error):
-                response(.failure(error: .requestFailed(response: error.localizedDescription)))
+                switch error {
+                case .resourceNotFound(let message):
+                    response(.failure(error: .accountNotFound(response: message)))
+                case .requestFailed(let message):
+                    response(.failure(error: .requestFailed(response: message)))
+                case .internalError(let message):
+                    response(.failure(error: .requestFailed(response: message)))
+                case .emptyResponse:
+                    response(.failure(error: .requestFailed(response: "The response came back empty")))
+                }
             }
         }
     }

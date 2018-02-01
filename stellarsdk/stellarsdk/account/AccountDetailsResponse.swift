@@ -19,6 +19,8 @@ public class AccountDetailsResponse: NSObject, Codable {
     var balances:[Balance]
     var signers:[Signer]
     var data:[String:String]
+    var homeDomain:String?
+    var inflationDestination:String?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -31,6 +33,8 @@ public class AccountDetailsResponse: NSObject, Codable {
         case balances
         case signers
         case data
+        case homeDomain = "home_domain"
+        case inflationDestination = "inflation_destination"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -45,6 +49,8 @@ public class AccountDetailsResponse: NSObject, Codable {
         balances = try values.decode(Array.self, forKey: .balances)
         signers = try values.decode(Array.self, forKey: .signers)
         data = try values.decode([String:String].self, forKey: .data)
+        homeDomain = try values.decodeIfPresent(String.self, forKey: .homeDomain)
+        inflationDestination = try values.decodeIfPresent(String.self, forKey: .inflationDestination)
     }
     
     public func encode(to encoder: Encoder) throws {

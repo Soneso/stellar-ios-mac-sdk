@@ -58,6 +58,7 @@
 		7445EA06201B106500470E0A /* stellarsdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7445E9FC201B106500470E0A /* stellarsdk.framework */; };
 		7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7445EA0A201B106500470E0A /* stellarsdkTests.swift */; };
 		7445EA0D201B106500470E0A /* stellarsdk.h in Headers */ = {isa = PBXBuildFile; fileRef = 7445E9FF201B106500470E0A /* stellarsdk.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7481B53B2023056F000A783E /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53A2023056F000A783E /* NetworkError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -162,6 +163,7 @@
 		7445EA05201B106500470E0A /* stellarsdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = stellarsdkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7445EA0A201B106500470E0A /* stellarsdkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdkTests.swift; sourceTree = "<group>"; };
 		7445EA0C201B106500470E0A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7481B53A2023056F000A783E /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -252,6 +254,7 @@
 			isa = PBXGroup;
 			children = (
 				743DF4FF201F38D900713DE7 /* AccountError.swift */,
+				7481B53A2023056F000A783E /* NetworkError.swift */,
 			);
 			path = errors;
 			sourceTree = "<group>";
@@ -415,6 +418,7 @@
 		7445E9FE201B106500470E0A /* stellarsdk */ = {
 			isa = PBXGroup;
 			children = (
+				7481B53C20234AD6000A783E /* effects */,
 				743DF58D2020B68100713DE7 /* options */,
 				743DF5782020538A00713DE7 /* crypto */,
 				743DF5512020529500713DE7 /* libs */,
@@ -438,6 +442,13 @@
 				7445EA0C201B106500470E0A /* Info.plist */,
 			);
 			path = stellarsdkTests;
+			sourceTree = "<group>";
+		};
+		7481B53C20234AD6000A783E /* effects */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = effects;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -773,6 +784,7 @@
 				743DF5952020C7A600713DE7 /* Signer.swift in Sources */,
 				743DF5892020680700713DE7 /* ServiceHelper.swift in Sources */,
 				743DF550201FBD2B00713DE7 /* AccountService.swift in Sources */,
+				7481B53B2023056F000A783E /* NetworkError.swift in Sources */,
 				743DF541201F6A9C00713DE7 /* Base32.swift in Sources */,
 				743DF54A201F70CA00713DE7 /* String+Base32.swift in Sources */,
 				743DF500201F38D900713DE7 /* AccountError.swift in Sources */,

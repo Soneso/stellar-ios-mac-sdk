@@ -11,5 +11,6 @@ import Foundation
 public enum AccountError: Error {
     case keyGenerationFailed(osStatus: OSStatus)
     case requestFailed(response: String)
+    case accountNotFound(response: String)
     case parsingFailed(response: String)
 }
