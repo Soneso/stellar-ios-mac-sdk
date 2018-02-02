@@ -8,10 +8,10 @@
 
 import UIKit
 
-class Signer: NSObject, Codable {
+public class Signer: NSObject, Codable {
     
-    var publicKey:String
-    var weight:Int
+    public var publicKey:String
+    public var weight:Int
     
     override init() {
         publicKey = ""

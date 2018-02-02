@@ -8,13 +8,13 @@
 
 import UIKit
 
-class Balance: NSObject, Codable {
+public class Balance: NSObject, Codable {
 
-    var balance:Decimal
-    var limit:Decimal?
-    var assetType:String
-    var assetCode:String?
-    var assetIssuer:String?
+    public var balance:Decimal
+    public var limit:Decimal?
+    public var assetType:String
+    public var assetCode:String?
+    public var assetIssuer:String?
     
     enum CodingKeys: String, CodingKey {
         case balance

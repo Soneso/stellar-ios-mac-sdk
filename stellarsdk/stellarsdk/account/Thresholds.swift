@@ -8,21 +8,21 @@
 
 import UIKit
 
-class Thresholds: NSObject, Codable {
-    var low:Int
-    var med:Int
-    var high:Int
+public class Thresholds: NSObject, Codable {
+    public var lowThreshold:Int
+    public var medThreshold:Int
+    public var highThreshold:Int
     
     override init() {
-        low = 0
-        med = 0
-        high = 0
+        lowThreshold = 1
+        medThreshold = 0
+        highThreshold = 0
     }
     
     enum CodingKeys: String, CodingKey {
-        case low = "low_threshold"
-        case med = "med_threshold"
-        case high = "high_threshold"
+        case lowThreshold = "low_threshold"
+        case medThreshold = "med_threshold"
+        case highThreshold = "high_threshold"
     }
     
 }

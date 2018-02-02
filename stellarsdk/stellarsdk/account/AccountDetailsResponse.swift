@@ -9,43 +9,49 @@
 import UIKit
 
 public class AccountDetailsResponse: NSObject, Codable {
-    var id:String
-    var pagingToken:String
-    var accountId:String
-    var sequence:String
-    var subentryCount:UInt
-    var thresholds:Thresholds
-    var flags:[String:Bool]
-    var balances:[Balance]
-    var signers:[Signer]
-    var data:[String:String]
-    var homeDomain:String?
-    var inflationDestination:String?
+
+    public var links:Links
+    public var id:String
+    public var accountId:String
+    public var sequenceNumber:String
+    public var pagingToken:String
+    public var subentryCount:UInt
+    public var inflationDestination:String?
+    public var homeDomain:String?
+    public var thresholds:Thresholds
+    public var flags:Flags
+    public var balances:[Balance]
+    public var signers:[Signer]
+    public var data:[String:String]
+
     
     enum CodingKeys: String, CodingKey {
         case id
-        case pagingToken = "paging_token"
+        case links = "_links"
         case accountId = "account_id"
-        case sequence
+        case sequenceNumber = "sequence"
+        case pagingToken = "paging_token"
         case subentryCount = "subentry_count"
+        case inflationDestination = "inflation_destination"
+        case homeDomain = "home_domain"
         case thresholds
         case flags
         case balances
         case signers
         case data
-        case homeDomain = "home_domain"
-        case inflationDestination = "inflation_destination"
+
     }
     
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decode(String.self, forKey: .id)
-        pagingToken = try values.decode(String.self, forKey: .pagingToken)
+        links = try values.decode(Links.self, forKey: .links)
         accountId = try values.decode(String.self, forKey: .accountId)
-        sequence = try values.decode(String.self, forKey: .sequence)
+        sequenceNumber = try values.decode(String.self, forKey: .sequenceNumber)
+        pagingToken = try values.decode(String.self, forKey: .pagingToken)
         subentryCount = try values.decode(UInt.self, forKey: .subentryCount)
         thresholds = try values.decode(Thresholds.self, forKey: .thresholds)
-        flags = try values.decode([String:Bool].self, forKey: .flags)
+        flags = try values.decode(Flags.self, forKey: .flags)
         balances = try values.decode(Array.self, forKey: .balances)
         signers = try values.decode(Array.self, forKey: .signers)
         data = try values.decode([String:String].self, forKey: .data)
@@ -56,9 +62,10 @@ public class AccountDetailsResponse: NSObject, Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
-        try container.encode(pagingToken, forKey: .pagingToken)
+        try container.encode(links, forKey: .links)
         try container.encode(accountId, forKey: .accountId)
-        try container.encode(sequence, forKey: .sequence)
+        try container.encode(sequenceNumber, forKey: .sequenceNumber)
+        try container.encode(pagingToken, forKey: .pagingToken)
         try container.encode(subentryCount, forKey: .subentryCount)
         try container.encode(thresholds, forKey: .thresholds)
         try container.encode(flags, forKey: .flags)

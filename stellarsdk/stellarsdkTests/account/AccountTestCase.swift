@@ -53,7 +53,18 @@ class AccountTestCase: XCTestCase {
         
         sdk.accounts.getAccountDetails(accountId: "GBZ3VAAP2T2WMKF6226FTC6OSQN6KKGAGPVCCCMDDVLCHYQMXTMNHLB3") { (response) -> (Void) in
             switch response {
-            case .success(_):
+            case .success(let accountDetails):
+                print("ID: \(accountDetails.id)")
+                print("Account ID: \(accountDetails.accountId)")
+                print("Sequence Number: \(accountDetails.sequenceNumber)")
+                print("Subentry count: \(accountDetails.subentryCount)")
+                print("Low Treshold: \(accountDetails.thresholds.lowThreshold)")
+                print("Med Treshold: \(accountDetails.thresholds.medThreshold)")
+                print("High Treshold: \(accountDetails.thresholds.highThreshold)")
+                print("Auth required: \(accountDetails.flags.authRequired)")
+                print("Auth revocable: \(accountDetails.flags.authRevocable)")
+                print("Auth immutable: \(accountDetails.flags.authImmutable)")
+                
                 XCTAssert(true)
             case .failure(_):
                 XCTAssert(false)
