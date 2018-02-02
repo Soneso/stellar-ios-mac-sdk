@@ -69,6 +69,11 @@
 		836971DF2024A71B00398A98 /* Flags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971DE2024A71B00398A98 /* Flags.swift */; };
 		836971E12024A72D00398A98 /* Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E02024A72D00398A98 /* Links.swift */; };
 		836971E42024C47300398A98 /* Link.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E32024C47300398A98 /* Link.swift */; };
+		836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E52024F58E00398A98 /* DataForAccountResponse.swift */; };
+		836971E82025048D00398A98 /* AssetsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E72025048D00398A98 /* AssetsService.swift */; };
+		836971EB2025058600398A98 /* AssetsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971EA2025058600398A98 /* AssetsResponse.swift */; };
+		836971ED202508C900398A98 /* Asset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971EC202508C900398A98 /* Asset.swift */; };
+		836971EF20250D3600398A98 /* AssetsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971EE20250D3600398A98 /* AssetsError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -184,6 +189,11 @@
 		836971DE2024A71B00398A98 /* Flags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flags.swift; sourceTree = "<group>"; };
 		836971E02024A72D00398A98 /* Links.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Links.swift; sourceTree = "<group>"; };
 		836971E32024C47300398A98 /* Link.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Link.swift; sourceTree = "<group>"; };
+		836971E52024F58E00398A98 /* DataForAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountResponse.swift; sourceTree = "<group>"; };
+		836971E72025048D00398A98 /* AssetsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsService.swift; sourceTree = "<group>"; };
+		836971EA2025058600398A98 /* AssetsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsResponse.swift; sourceTree = "<group>"; };
+		836971EC202508C900398A98 /* Asset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Asset.swift; sourceTree = "<group>"; };
+		836971EE20250D3600398A98 /* AssetsError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -245,6 +255,7 @@
 			isa = PBXGroup;
 			children = (
 				743DF58E2020BBCF00713DE7 /* AccountDetailsResponse.swift */,
+				836971E52024F58E00398A98 /* DataForAccountResponse.swift */,
 				743DF5902020C2CD00713DE7 /* Thresholds.swift */,
 				743DF5922020C58000713DE7 /* Balance.swift */,
 				836971DE2024A71B00398A98 /* Flags.swift */,
@@ -279,6 +290,7 @@
 				743DF4FF201F38D900713DE7 /* AccountError.swift */,
 				7481B53A2023056F000A783E /* NetworkError.swift */,
 				7481B5432024BABF000A783E /* EffectsError.swift */,
+				836971EE20250D3600398A98 /* AssetsError.swift */,
 			);
 			path = errors;
 			sourceTree = "<group>";
@@ -328,6 +340,7 @@
 				743DF54F201FBD2B00713DE7 /* AccountService.swift */,
 				743DF5882020680700713DE7 /* ServiceHelper.swift */,
 				7481B53D20248441000A783E /* EffectsService.swift */,
+				836971E72025048D00398A98 /* AssetsService.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -444,6 +457,7 @@
 		7445E9FE201B106500470E0A /* stellarsdk */ = {
 			isa = PBXGroup;
 			children = (
+				836971E92025055200398A98 /* assets */,
 				7481B53C20234AD6000A783E /* effects */,
 				743DF58D2020B68100713DE7 /* options */,
 				743DF5782020538A00713DE7 /* crypto */,
@@ -479,6 +493,15 @@
 				7481B54B2024CF62000A783E /* EffectsResponse.swift */,
 			);
 			path = effects;
+			sourceTree = "<group>";
+		};
+		836971E92025055200398A98 /* assets */ = {
+			isa = PBXGroup;
+			children = (
+				836971EA2025058600398A98 /* AssetsResponse.swift */,
+				836971EC202508C900398A98 /* Asset.swift */,
+			);
+			path = assets;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -806,20 +829,25 @@
 			buildActionMask = 2147483647;
 			files = (
 				743DF56E2020530A00713DE7 /* sign.c in Sources */,
+				836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */,
 				743DF548201F70A700713DE7 /* Data+Base32.swift in Sources */,
 				7481B5402024A419000A783E /* Order.swift in Sources */,
 				7481B5482024CA47000A783E /* EffectsFactory.swift in Sources */,
 				743DF5732020530A00713DE7 /* ge.c in Sources */,
 				7481B5462024C480000A783E /* AccountCreatedEffect.swift in Sources */,
 				743DF5912020C2CD00713DE7 /* Thresholds.swift in Sources */,
+				836971EF20250D3600398A98 /* AssetsError.swift in Sources */,
 				743DF56C2020530A00713DE7 /* fe.c in Sources */,
 				743DF5932020C58000713DE7 /* Balance.swift in Sources */,
 				743DF5952020C7A600713DE7 /* Signer.swift in Sources */,
 				836971E12024A72D00398A98 /* Links.swift in Sources */,
+				836971E82025048D00398A98 /* AssetsService.swift in Sources */,
 				743DF5892020680700713DE7 /* ServiceHelper.swift in Sources */,
+				836971ED202508C900398A98 /* Asset.swift in Sources */,
 				743DF550201FBD2B00713DE7 /* AccountService.swift in Sources */,
 				7481B5422024B037000A783E /* Effect.swift in Sources */,
 				7481B54C2024CF62000A783E /* EffectsResponse.swift in Sources */,
+				836971EB2025058600398A98 /* AssetsResponse.swift in Sources */,
 				7481B53B2023056F000A783E /* NetworkError.swift in Sources */,
 				743DF541201F6A9C00713DE7 /* Base32.swift in Sources */,
 				7481B53E20248441000A783E /* EffectsService.swift in Sources */,

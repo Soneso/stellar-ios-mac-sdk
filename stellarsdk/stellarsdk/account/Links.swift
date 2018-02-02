@@ -10,14 +10,15 @@ import UIKit
 
 public class Links: NSObject, Codable {
     
-    public var selflink:Link
-    public var transactions:Link
-    public var operations:Link
-    public var payments:Link
-    public var effects:Link
-    public var offers:Link
-    public var trades:Link
-    public var data:Link
+    public var selflink:Link!
+    public var transactions:Link!
+    public var operations:Link!
+    public var payments:Link!
+    public var effects:Link!
+    public var offers:Link!
+    public var trades:Link!
+    public var data:Link!
+    public var toml:Link!
     
     enum CodingKeys: String, CodingKey {
         case selflink = "self"
@@ -28,19 +29,21 @@ public class Links: NSObject, Codable {
         case offers
         case trades
         case data
+        case toml
     }
     
     public required init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        selflink = try values.decode(Link.self, forKey: .selflink)
-        transactions = try values.decode(Link.self, forKey: .transactions)
-        operations = try values.decode(Link.self, forKey: .operations)
-        payments = try values.decode(Link.self, forKey: .payments)
-        effects = try values.decode(Link.self, forKey: .effects)
-        offers = try values.decode(Link.self, forKey: .offers)
-        trades = try values.decode(Link.self, forKey: .trades)
-        data = try values.decode(Link.self, forKey: .data)
+        selflink = try values.decodeIfPresent(Link.self, forKey: .selflink)
+        transactions = try values.decodeIfPresent(Link.self, forKey: .transactions)
+        operations = try values.decodeIfPresent(Link.self, forKey: .operations)
+        payments = try values.decodeIfPresent(Link.self, forKey: .payments)
+        effects = try values.decodeIfPresent(Link.self, forKey: .effects)
+        offers = try values.decodeIfPresent(Link.self, forKey: .offers)
+        trades = try values.decodeIfPresent(Link.self, forKey: .trades)
+        data = try values.decodeIfPresent(Link.self, forKey: .data)
+        toml = try values.decodeIfPresent(Link.self, forKey: .toml)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -54,5 +57,6 @@ public class Links: NSObject, Codable {
         try container.encode(offers, forKey: .offers)
         try container.encode(trades, forKey: .trades)
         try container.encode(data, forKey: .data)
+        try container.encode(toml, forKey: .toml)
     }
 }

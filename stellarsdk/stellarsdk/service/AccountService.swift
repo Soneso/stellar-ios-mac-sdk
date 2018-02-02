@@ -8,13 +8,19 @@
 
 import UIKit
 
-/// A enum used to diferentiate between successful and failed account details responses
+/// An enum used to diferentiate between successful and failed account details responses
 public enum AccountDetailsResponseEnum {
     case success(details: AccountDetailsResponse)
     case failure(error: AccountError)
 }
 
-/// A enum used to diferentiate between successful and failed create account responses
+/// An enum used to diferentiate between successful and failed account details responses
+public enum DataForAccountResponseEnum {
+    case success(details: DataForAccountResponse)
+    case failure(error: AccountError)
+}
+
+/// An enum used to diferentiate between successful and failed create account responses
 public enum CreateAccountResponseEnum {
     case success(details: Any)
     case failure(error: AccountError)
@@ -24,6 +30,8 @@ public enum CreateAccountResponseEnum {
 public typealias CreateAccountClosure = (_ response:CreateAccountResponseEnum) -> (Void)
 /// A closure to be called with the response from a account details request
 public typealias AccountDetailsClosure = (_ response:AccountDetailsResponseEnum) -> (Void)
+/// A closure to be called with the response from a data for account requrst
+public typealias DataForAccountClosure = (_ response:DataForAccountResponseEnum) -> (Void)
 
 /// Class that handles account related calls
 open class AccountService: NSObject {
@@ -97,4 +105,37 @@ open class AccountService: NSObject {
         }
     }
     
+    /// Get a single data associated with a given account.
+    /// /accounts/{account}/data/{key}
+    ///
+    /// - parameter accountId:  A stellar accountid
+    /// - parameter key:  key of the data field
+    /// - parameter response:   The closure to be called upon response.
+    open func getDataForAccount(accountId: String, key: String, response: @escaping DataForAccountClosure) {
+        let requestPath = "/accounts/\(accountId)/data/\(key)"
+        
+        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                do {
+                    let responseMessage = try self.jsonDecoder.decode(DataForAccountResponse.self, from: data)
+                    response(.success(details:responseMessage))
+                } catch {
+                    response(.failure(error: .parsingFailed(response: error.localizedDescription)))
+                }
+                
+            case .failure(let error):
+                switch error {
+                case .resourceNotFound(let message):
+                    response(.failure(error: .accountNotFound(response: message)))
+                case .requestFailed(let message):
+                    response(.failure(error: .requestFailed(response: message)))
+                case .internalError(let message):
+                    response(.failure(error: .requestFailed(response: message)))
+                case .emptyResponse:
+                    response(.failure(error: .requestFailed(response: "The response came back empty")))
+                }
+            }
+        }
+    }
 }
