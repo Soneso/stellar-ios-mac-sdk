@@ -59,6 +59,13 @@
 		7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7445EA0A201B106500470E0A /* stellarsdkTests.swift */; };
 		7445EA0D201B106500470E0A /* stellarsdk.h in Headers */ = {isa = PBXBuildFile; fileRef = 7445E9FF201B106500470E0A /* stellarsdk.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7481B53B2023056F000A783E /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53A2023056F000A783E /* NetworkError.swift */; };
+		7481B53E20248441000A783E /* EffectsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53D20248441000A783E /* EffectsService.swift */; };
+		7481B5402024A419000A783E /* Order.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53F2024A419000A783E /* Order.swift */; };
+		7481B5422024B037000A783E /* Effect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B5412024B037000A783E /* Effect.swift */; };
+		7481B5442024BABF000A783E /* EffectsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B5432024BABF000A783E /* EffectsError.swift */; };
+		7481B5462024C480000A783E /* AccountCreatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B5452024C480000A783E /* AccountCreatedEffect.swift */; };
+		7481B5482024CA47000A783E /* EffectsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B5472024CA47000A783E /* EffectsFactory.swift */; };
+		7481B54C2024CF62000A783E /* EffectsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B54B2024CF62000A783E /* EffectsResponse.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -164,6 +171,13 @@
 		7445EA0A201B106500470E0A /* stellarsdkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdkTests.swift; sourceTree = "<group>"; };
 		7445EA0C201B106500470E0A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7481B53A2023056F000A783E /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
+		7481B53D20248441000A783E /* EffectsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsService.swift; sourceTree = "<group>"; };
+		7481B53F2024A419000A783E /* Order.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Order.swift; sourceTree = "<group>"; };
+		7481B5412024B037000A783E /* Effect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Effect.swift; sourceTree = "<group>"; };
+		7481B5432024BABF000A783E /* EffectsError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsError.swift; sourceTree = "<group>"; };
+		7481B5452024C480000A783E /* AccountCreatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreatedEffect.swift; sourceTree = "<group>"; };
+		7481B5472024CA47000A783E /* EffectsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsFactory.swift; sourceTree = "<group>"; };
+		7481B54B2024CF62000A783E /* EffectsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsResponse.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -255,6 +269,7 @@
 			children = (
 				743DF4FF201F38D900713DE7 /* AccountError.swift */,
 				7481B53A2023056F000A783E /* NetworkError.swift */,
+				7481B5432024BABF000A783E /* EffectsError.swift */,
 			);
 			path = errors;
 			sourceTree = "<group>";
@@ -303,6 +318,7 @@
 			children = (
 				743DF54F201FBD2B00713DE7 /* AccountService.swift */,
 				743DF5882020680700713DE7 /* ServiceHelper.swift */,
+				7481B53D20248441000A783E /* EffectsService.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -312,6 +328,7 @@
 			children = (
 				743DF540201F6A9C00713DE7 /* Base32.swift */,
 				743DF54B201F73FC00713DE7 /* VersionByte.swift */,
+				7481B53F2024A419000A783E /* Order.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -447,6 +464,10 @@
 		7481B53C20234AD6000A783E /* effects */ = {
 			isa = PBXGroup;
 			children = (
+				7481B5412024B037000A783E /* Effect.swift */,
+				7481B5452024C480000A783E /* AccountCreatedEffect.swift */,
+				7481B5472024CA47000A783E /* EffectsFactory.swift */,
+				7481B54B2024CF62000A783E /* EffectsResponse.swift */,
 			);
 			path = effects;
 			sourceTree = "<group>";
@@ -777,15 +798,21 @@
 			files = (
 				743DF56E2020530A00713DE7 /* sign.c in Sources */,
 				743DF548201F70A700713DE7 /* Data+Base32.swift in Sources */,
+				7481B5402024A419000A783E /* Order.swift in Sources */,
+				7481B5482024CA47000A783E /* EffectsFactory.swift in Sources */,
 				743DF5732020530A00713DE7 /* ge.c in Sources */,
+				7481B5462024C480000A783E /* AccountCreatedEffect.swift in Sources */,
 				743DF5912020C2CD00713DE7 /* Thresholds.swift in Sources */,
 				743DF56C2020530A00713DE7 /* fe.c in Sources */,
 				743DF5932020C58000713DE7 /* Balance.swift in Sources */,
 				743DF5952020C7A600713DE7 /* Signer.swift in Sources */,
 				743DF5892020680700713DE7 /* ServiceHelper.swift in Sources */,
 				743DF550201FBD2B00713DE7 /* AccountService.swift in Sources */,
+				7481B5422024B037000A783E /* Effect.swift in Sources */,
+				7481B54C2024CF62000A783E /* EffectsResponse.swift in Sources */,
 				7481B53B2023056F000A783E /* NetworkError.swift in Sources */,
 				743DF541201F6A9C00713DE7 /* Base32.swift in Sources */,
+				7481B53E20248441000A783E /* EffectsService.swift in Sources */,
 				743DF54A201F70CA00713DE7 /* String+Base32.swift in Sources */,
 				743DF500201F38D900713DE7 /* AccountError.swift in Sources */,
 				743DF546201F706B00713DE7 /* Data+CRC.swift in Sources */,
@@ -803,6 +830,7 @@
 				743DF581202053B100713DE7 /* PrivateKey.swift in Sources */,
 				743DF5692020530A00713DE7 /* sha512.c in Sources */,
 				743DF58F2020BBCF00713DE7 /* AccountDetailsResponse.swift in Sources */,
+				7481B5442024BABF000A783E /* EffectsError.swift in Sources */,
 				743DF54C201F73FC00713DE7 /* VersionByte.swift in Sources */,
 				743DF53E201F49CF00713DE7 /* Configs.swift in Sources */,
 			);
