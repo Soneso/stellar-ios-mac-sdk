@@ -66,6 +66,9 @@
 		7481B5462024C480000A783E /* AccountCreatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B5452024C480000A783E /* AccountCreatedEffect.swift */; };
 		7481B5482024CA47000A783E /* EffectsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B5472024CA47000A783E /* EffectsFactory.swift */; };
 		7481B54C2024CF62000A783E /* EffectsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B54B2024CF62000A783E /* EffectsResponse.swift */; };
+		836971DF2024A71B00398A98 /* Flags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971DE2024A71B00398A98 /* Flags.swift */; };
+		836971E12024A72D00398A98 /* Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E02024A72D00398A98 /* Links.swift */; };
+		836971E42024C47300398A98 /* Link.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E32024C47300398A98 /* Link.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -178,6 +181,9 @@
 		7481B5452024C480000A783E /* AccountCreatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreatedEffect.swift; sourceTree = "<group>"; };
 		7481B5472024CA47000A783E /* EffectsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsFactory.swift; sourceTree = "<group>"; };
 		7481B54B2024CF62000A783E /* EffectsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsResponse.swift; sourceTree = "<group>"; };
+		836971DE2024A71B00398A98 /* Flags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flags.swift; sourceTree = "<group>"; };
+		836971E02024A72D00398A98 /* Links.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Links.swift; sourceTree = "<group>"; };
+		836971E32024C47300398A98 /* Link.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Link.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -241,7 +247,10 @@
 				743DF58E2020BBCF00713DE7 /* AccountDetailsResponse.swift */,
 				743DF5902020C2CD00713DE7 /* Thresholds.swift */,
 				743DF5922020C58000713DE7 /* Balance.swift */,
+				836971DE2024A71B00398A98 /* Flags.swift */,
 				743DF5942020C7A600713DE7 /* Signer.swift */,
+				836971E02024A72D00398A98 /* Links.swift */,
+				836971E32024C47300398A98 /* Link.swift */,
 			);
 			path = account;
 			sourceTree = "<group>";
@@ -806,6 +815,7 @@
 				743DF56C2020530A00713DE7 /* fe.c in Sources */,
 				743DF5932020C58000713DE7 /* Balance.swift in Sources */,
 				743DF5952020C7A600713DE7 /* Signer.swift in Sources */,
+				836971E12024A72D00398A98 /* Links.swift in Sources */,
 				743DF5892020680700713DE7 /* ServiceHelper.swift in Sources */,
 				743DF550201FBD2B00713DE7 /* AccountService.swift in Sources */,
 				7481B5422024B037000A783E /* Effect.swift in Sources */,
@@ -816,12 +826,14 @@
 				743DF54A201F70CA00713DE7 /* String+Base32.swift in Sources */,
 				743DF500201F38D900713DE7 /* AccountError.swift in Sources */,
 				743DF546201F706B00713DE7 /* Data+CRC.swift in Sources */,
+				836971E42024C47300398A98 /* Link.swift in Sources */,
 				743DF5722020530A00713DE7 /* key_exchange.c in Sources */,
 				743DF56A2020530A00713DE7 /* verify.c in Sources */,
 				743DF5672020530A00713DE7 /* add_scalar.c in Sources */,
 				743DF5682020530A00713DE7 /* seed.c in Sources */,
 				743DF57A202053A400713DE7 /* Error.swift in Sources */,
 				743DF57F202053B100713DE7 /* KeyPair.swift in Sources */,
+				836971DF2024A71B00398A98 /* Flags.swift in Sources */,
 				743DF582202053B100713DE7 /* Seed.swift in Sources */,
 				743DF5762020530A00713DE7 /* keypair.c in Sources */,
 				743DF4DC201F0BBD00713DE7 /* StellarSDK.swift in Sources */,
