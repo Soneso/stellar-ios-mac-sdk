@@ -14,12 +14,14 @@ public class StellarSDK: NSObject {
     public var accounts: AccountService
     public var assets: AssetsService
     public var effects: EffectsService
+    public var ledgers: LedgersService
     
     public override init() {
         configurations = Configs()
         accounts = AccountService(baseURL: configurations.horizonURL)
         assets = AssetsService(baseURL: configurations.horizonURL)
         effects = EffectsService(baseURL: configurations.horizonURL)
+        ledgers = LedgersService(baseURL: configurations.horizonURL)
     }
     
     public init(configurations: Configs) {
@@ -27,6 +29,7 @@ public class StellarSDK: NSObject {
         self.accounts = AccountService(baseURL: configurations.horizonURL)
         self.assets = AssetsService(baseURL: configurations.horizonURL)
         self.effects = EffectsService(baseURL: configurations.horizonURL)
+        self.ledgers = LedgersService(baseURL: configurations.horizonURL)
     }
     
 }
