@@ -74,6 +74,7 @@
 		836971EB2025058600398A98 /* AssetsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971EA2025058600398A98 /* AssetsResponse.swift */; };
 		836971ED202508C900398A98 /* Asset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971EC202508C900398A98 /* Asset.swift */; };
 		836971EF20250D3600398A98 /* AssetsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971EE20250D3600398A98 /* AssetsError.swift */; };
+		836971FA202548E100398A98 /* AssetsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971F9202548E100398A98 /* AssetsTestCase.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -194,6 +195,7 @@
 		836971EA2025058600398A98 /* AssetsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsResponse.swift; sourceTree = "<group>"; };
 		836971EC202508C900398A98 /* Asset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Asset.swift; sourceTree = "<group>"; };
 		836971EE20250D3600398A98 /* AssetsError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsError.swift; sourceTree = "<group>"; };
+		836971F9202548E100398A98 /* AssetsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsTestCase.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -477,6 +479,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				836971F8202548C900398A98 /* assets */,
 				743DF501201F3AE100713DE7 /* account */,
 				7445EA0A201B106500470E0A /* stellarsdkTests.swift */,
 				7445EA0C201B106500470E0A /* Info.plist */,
@@ -500,6 +503,14 @@
 			children = (
 				836971EA2025058600398A98 /* AssetsResponse.swift */,
 				836971EC202508C900398A98 /* Asset.swift */,
+			);
+			path = assets;
+			sourceTree = "<group>";
+		};
+		836971F8202548C900398A98 /* assets */ = {
+			isa = PBXGroup;
+			children = (
+				836971F9202548E100398A98 /* AssetsTestCase.swift */,
 			);
 			path = assets;
 			sourceTree = "<group>";
@@ -880,6 +891,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				836971FA202548E100398A98 /* AssetsTestCase.swift in Sources */,
 				7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */,
 				743DF503201F3B0800713DE7 /* AccountTestCase.swift in Sources */,
 			);

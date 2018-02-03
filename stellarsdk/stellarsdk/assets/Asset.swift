@@ -9,14 +9,15 @@
 import UIKit
 
 public class Asset: NSObject, Codable {
-    var links:Links
-    var assetType:String // The type of this asset: “credit_alphanum4”, or “credit_alphanum12”.
-    var assetCode:String // The code of this asset.
-    var assetIssuer:String // The issuer of this asset.
-    var amount:Decimal // The number of units of credit issued.
-    var numberOfAccounts:Int //The number of accounts that: 1) trust this asset and 2) where if the asset has the auth_required flag then the account is authorized to hold the asset.
-    var flags:Flags // The flags on this asset of types: auth_required and auth_revocable.
-    var pagingToken:String // A paging token suitable for use as the cursor parameter to transaction collection resources.
+    
+    public var links:Links
+    public var assetType:String // The type of this asset: “credit_alphanum4”, or “credit_alphanum12”.
+    public var assetCode:String // The code of this asset.
+    public var assetIssuer:String // The issuer of this asset.
+    public var amount:Decimal // The number of units of credit issued.
+    public var numberOfAccounts:Int //The number of accounts that: 1) trust this asset and 2) where if the asset has the auth_required flag then the account is authorized to hold the asset.
+    public var flags:Flags // The flags on this asset of types: auth_required and auth_revocable.
+    public var pagingToken:String // A paging token suitable for use as the cursor parameter to transaction collection resources.
     
     private enum CodingKeys: String, CodingKey {
         case links = "_links"

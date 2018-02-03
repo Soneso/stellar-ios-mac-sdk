@@ -29,24 +29,43 @@ public class AssetsService: NSObject {
     
     open func getAssets(from assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AssetsResponseClosure) {
         var requestPath = "/assets?"
-        
+        var hasFirstParam = false;
         if let assetCode = assetCode {
             requestPath += "asset_code=" + assetCode
+            hasFirstParam = true;
         }
         
         if let assetIssuer = assetIssuer {
+            if hasFirstParam {
+                requestPath += "&"
+            } else {
+                hasFirstParam = true;
+            }
             requestPath += "asset_issuer=" + assetIssuer
         }
         
         if let cursor = cursor {
+            if hasFirstParam {
+                requestPath += "&"
+            } else {
+                hasFirstParam = true;
+            }
             requestPath += "cursor=" + cursor
         }
         
         if let order = order {
+            if hasFirstParam {
+                requestPath += "&"
+            } else {
+                hasFirstParam = true;
+            }
             requestPath += "order=" + order.rawValue
         }
         
         if let limit = limit {
+            if hasFirstParam {
+                requestPath += "&"
+            }
             requestPath += "limit=" + String(limit)
         }
         

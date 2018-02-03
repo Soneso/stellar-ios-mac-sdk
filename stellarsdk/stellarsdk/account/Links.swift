@@ -19,6 +19,8 @@ public class Links: NSObject, Codable {
     public var trades:Link!
     public var data:Link!
     public var toml:Link!
+    public var next:Link!
+    public var prev:Link!
     
     enum CodingKeys: String, CodingKey {
         case selflink = "self"
@@ -30,6 +32,8 @@ public class Links: NSObject, Codable {
         case trades
         case data
         case toml
+        case next
+        case prev
     }
     
     public required init(from decoder: Decoder) throws {
@@ -44,6 +48,8 @@ public class Links: NSObject, Codable {
         trades = try values.decodeIfPresent(Link.self, forKey: .trades)
         data = try values.decodeIfPresent(Link.self, forKey: .data)
         toml = try values.decodeIfPresent(Link.self, forKey: .toml)
+        next = try values.decodeIfPresent(Link.self, forKey: .next)
+        prev = try values.decodeIfPresent(Link.self, forKey: .prev)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -58,5 +64,7 @@ public class Links: NSObject, Codable {
         try container.encode(trades, forKey: .trades)
         try container.encode(data, forKey: .data)
         try container.encode(toml, forKey: .toml)
+        try container.encode(next, forKey: .next)
+        try container.encode(prev, forKey: .prev)
     }
 }
