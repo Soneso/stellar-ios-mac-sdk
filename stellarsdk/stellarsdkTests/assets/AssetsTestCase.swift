@@ -23,7 +23,7 @@ class AssetsTestCase: XCTestCase {
     }
     
     func testAssetsLoadingSuccessful() {
-        let expectation = XCTestExpectation(description: "Get account details response")
+        let expectation = XCTestExpectation(description: "Get assets response")
         
         sdk.assets.getAssets(order:Order.descending, limit:10) { (response) -> (Void) in
             switch response {

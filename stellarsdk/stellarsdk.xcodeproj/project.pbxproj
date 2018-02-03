@@ -79,6 +79,7 @@
 		836971FF2025532900398A98 /* Ledger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971FE2025532900398A98 /* Ledger.swift */; };
 		8369720120255AB800398A98 /* LedgersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720020255AB800398A98 /* LedgersService.swift */; };
 		8369720320255BA100398A98 /* LedgersError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720220255BA100398A98 /* LedgersError.swift */; };
+		83697206202631D600398A98 /* LedgersTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697205202631D600398A98 /* LedgersTestCase.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -204,6 +205,7 @@
 		836971FE2025532900398A98 /* Ledger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ledger.swift; sourceTree = "<group>"; };
 		8369720020255AB800398A98 /* LedgersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersService.swift; sourceTree = "<group>"; };
 		8369720220255BA100398A98 /* LedgersError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersError.swift; sourceTree = "<group>"; };
+		83697205202631D600398A98 /* LedgersTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersTestCase.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -490,6 +492,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				83697204202631B800398A98 /* ledgers */,
 				836971F8202548C900398A98 /* assets */,
 				743DF501201F3AE100713DE7 /* account */,
 				7445EA0A201B106500470E0A /* stellarsdkTests.swift */,
@@ -531,6 +534,14 @@
 			children = (
 				836971FC2025531C00398A98 /* LedgersResponse.swift */,
 				836971FE2025532900398A98 /* Ledger.swift */,
+			);
+			path = ledgers;
+			sourceTree = "<group>";
+		};
+		83697204202631B800398A98 /* ledgers */ = {
+			isa = PBXGroup;
+			children = (
+				83697205202631D600398A98 /* LedgersTestCase.swift */,
 			);
 			path = ledgers;
 			sourceTree = "<group>";
@@ -917,6 +928,7 @@
 			files = (
 				836971FA202548E100398A98 /* AssetsTestCase.swift in Sources */,
 				7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */,
+				83697206202631D600398A98 /* LedgersTestCase.swift in Sources */,
 				743DF503201F3B0800713DE7 /* AccountTestCase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

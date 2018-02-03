@@ -8,7 +8,7 @@
 
 import UIKit
 
-public class LedgerResponse: NSObject, Codable {
+public class LedgersResponse: NSObject, Codable {
     
     public var ledgers:[Ledger]
     

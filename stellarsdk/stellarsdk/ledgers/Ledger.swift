@@ -15,7 +15,7 @@ public class Ledger: NSObject, Codable {
     public var pagingToken:String // A paging token suitable for use as a cursor parameter.
     public var hashXdr:String // A hex-encoded SHA-256 hash of the ledger’s XDR-encoded form.
     public var previousHashXdr:String // The hash of the ledger that chronologically came before this one.
-    public var sequenceNumber:String // Sequence number of this ledger, suitable for use as the as the :id parameter for url templates that require a ledger number.
+    public var sequenceNumber:Int64 // Sequence number of this ledger, suitable for use as the as the :id parameter for url templates that require a ledger number.
     public var transactionCount:Int // The number of transactions in this ledger.
     public var operationCount:Int // The number of operations in this ledger.
     public var closedAt:String // An ISO 8601 formatted string of when this ledger was closed.
@@ -54,7 +54,7 @@ public class Ledger: NSObject, Codable {
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         hashXdr = try values.decode(String.self, forKey: .hashXdr)
         previousHashXdr = try values.decode(String.self, forKey: .previousHashXdr)
-        sequenceNumber = try values.decode(String.self, forKey: .sequenceNumber)
+        sequenceNumber = try values.decode(Int64.self, forKey: .sequenceNumber)
         transactionCount = try values.decode(Int.self, forKey: .transactionCount)
         operationCount = try values.decode(Int.self, forKey: .operationCount)
         closedAt = try values.decode(String.self, forKey: .closedAt)

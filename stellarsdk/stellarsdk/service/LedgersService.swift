@@ -9,11 +9,17 @@
 import UIKit
 
 public enum LedgersResponseEnum {
-    case success(details: LedgerResponse)
+    case success(details: LedgersResponse)
+    case failure(error: LedgersError)
+}
+
+public enum LedgerDetailsResponseEnum {
+    case success(details: Ledger)
     case failure(error: LedgersError)
 }
 
 public typealias LedgersResponseClosure = (_ response:LedgersResponseEnum) -> (Void)
+public typealias LedgerDetailsResponseClosure = (_ response:LedgerDetailsResponseEnum) -> (Void)
 
 public class LedgersService: NSObject {
     let serviceHelper: ServiceHelper
@@ -27,7 +33,33 @@ public class LedgersService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getledgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping LedgersResponseClosure) {
+    open func getLedger(sequenceNumber:String, response:@escaping LedgerDetailsResponseClosure) {
+        let requestPath = "/ledgers" + sequenceNumber
+        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                do {
+                    let ledger = try self.jsonDecoder.decode(Ledger.self, from: data)
+                    response(.success(details: ledger))
+                } catch {
+                    response(.failure(error: error as! LedgersError))
+                }
+            case .failure(let error):
+                switch error {
+                case .resourceNotFound(let message):
+                    response(.failure(error: .ledgersNotFound(response: message)))
+                case .requestFailed(let message):
+                    response(.failure(error: .requestFailed(response: message)))
+                case .internalError(let message):
+                    response(.failure(error: .requestFailed(response: message)))
+                case .emptyResponse:
+                    response(.failure(error: .requestFailed(response: "The response came back empty")))
+                }
+            }
+        }
+    }
+    
+    open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping LedgersResponseClosure) {
         var requestPath = "/ledgers?"
         var hasFirstParam = false;
         if let cursor = cursor {
@@ -63,7 +95,7 @@ public class LedgersService: NSObject {
             case .failure(let error):
                 switch error {
                 case .resourceNotFound(let message):
-                    response(.failure(error: .assetsNotFound(response: message)))
+                    response(.failure(error: .ledgersNotFound(response: message)))
                 case .requestFailed(let message):
                     response(.failure(error: .requestFailed(response: message)))
                 case .internalError(let message):
