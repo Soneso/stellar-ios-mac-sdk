@@ -41,7 +41,7 @@ Of course, feel free to make your own issues if you think something needs to add
 ## Submitting Changes
 
 * [Sign the Contributor License Agreement](https://goo.gl/forms/hS2KOI8d7WcelI892)
-* All content, comments, and pull requests must follow the [Stellar Community Guidelines](https://www.stellar.org/community-guidelines/).
+* All content, comments, and pull requests must follow our [Contributor Covenant Code of Conduct](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/CODE_OF_CONDUCT.md).
 * Push your changes to a topic branch in your fork of the repository.
 * Submit a pull request
  * Include a descriptive [commit message](https://github.com/erlang/otp/wiki/Writing-good-commit-messages).
