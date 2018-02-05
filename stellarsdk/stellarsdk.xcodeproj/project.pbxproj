@@ -81,6 +81,7 @@
 		8369720120255AB800398A98 /* LedgersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720020255AB800398A98 /* LedgersService.swift */; };
 		8369720320255BA100398A98 /* LedgersError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720220255BA100398A98 /* LedgersError.swift */; };
 		83697206202631D600398A98 /* LedgersTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697205202631D600398A98 /* LedgersTestCase.swift */; };
+		8369720A2028BA3E00398A98 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972092028BA3E00398A98 /* Constants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -208,6 +209,7 @@
 		8369720020255AB800398A98 /* LedgersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersService.swift; sourceTree = "<group>"; };
 		8369720220255BA100398A98 /* LedgersError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersError.swift; sourceTree = "<group>"; };
 		83697205202631D600398A98 /* LedgersTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersTestCase.swift; sourceTree = "<group>"; };
+		836972092028BA3E00398A98 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -367,6 +369,7 @@
 				743DF540201F6A9C00713DE7 /* Base32.swift */,
 				743DF54B201F73FC00713DE7 /* VersionByte.swift */,
 				7481B53F2024A419000A783E /* Order.swift */,
+				836972092028BA3E00398A98 /* Constants.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -916,6 +919,7 @@
 				8369720320255BA100398A98 /* LedgersError.swift in Sources */,
 				743DF5682020530A00713DE7 /* seed.c in Sources */,
 				743DF57A202053A400713DE7 /* Error.swift in Sources */,
+				8369720A2028BA3E00398A98 /* Constants.swift in Sources */,
 				743DF57F202053B100713DE7 /* KeyPair.swift in Sources */,
 				836971DF2024A71B00398A98 /* Flags.swift in Sources */,
 				743DF582202053B100713DE7 /* Seed.swift in Sources */,

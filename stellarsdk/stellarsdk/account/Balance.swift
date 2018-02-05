@@ -25,6 +25,7 @@ public class Balance: NSObject, Codable {
     }
     
     public required init(from decoder: Decoder) throws {
+        
         let values = try decoder.container(keyedBy: CodingKeys.self)
         let balanceString = try values.decode(String.self, forKey: .balance) as String
         balance = Decimal(string: balanceString)!

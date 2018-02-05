@@ -10,8 +10,8 @@ import UIKit
 
 public class Flags: NSObject, Codable {
     
-    public var authRequired:Bool
-    public var authRevocable:Bool
+    public var authRequired:Bool!
+    public var authRevocable:Bool!
     public var authImmutable:Bool!
     
     enum CodingKeys: String, CodingKey {
@@ -23,9 +23,21 @@ public class Flags: NSObject, Codable {
     public required init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        authRequired = try values.decode(Bool.self, forKey: .authRequired)
-        authRevocable = try values.decode(Bool.self, forKey: .authRevocable)
+        
+        authRequired = try values.decodeIfPresent(Bool.self, forKey: .authRequired)
+        if authRequired == nil {
+            authRequired = false
+        }
+        
+        authRevocable = try values.decodeIfPresent(Bool.self, forKey: .authRevocable)
+        if authRevocable == nil {
+            authRevocable = false
+        }
+        
         authImmutable = try values.decodeIfPresent(Bool.self, forKey: .authImmutable)
+        if authImmutable == nil {
+            authImmutable = false
+        }
     }
     
     public func encode(to encoder: Encoder) throws {

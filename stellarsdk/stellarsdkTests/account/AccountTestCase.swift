@@ -28,7 +28,7 @@ class AccountTestCase: XCTestCase {
         XCTAssert(keyPair.privateKey.bytes.count == 64, "Private key length is incorrect")
     }
     
-    func testAccountDetailsInvalid() {
+    func testAccountNotFoundOnHorizon() {
         let expectation = XCTestExpectation(description: "Get account details response")
         
         sdk.accounts.getAccountDetails(accountId: "AAAAA") { (response) -> (Void) in
@@ -48,22 +48,72 @@ class AccountTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testAccountDetailsSuccessful() {
+    func testLoadAccountFromHorizon() {
         let expectation = XCTestExpectation(description: "Get account details response")
         
-        sdk.accounts.getAccountDetails(accountId: "GBZ3VAAP2T2WMKF6226FTC6OSQN6KKGAGPVCCCMDDVLCHYQMXTMNHLB3") { (response) -> (Void) in
+        //TODO: replace this with an account created in this testcase as soon as account creation is available.
+        let testAccountId = "GBZ3VAAP2T2WMKF6226FTC6OSQN6KKGAGPVCCCMDDVLCHYQMXTMNHLB3"
+        
+        sdk.accounts.getAccountDetails(accountId: testAccountId) { (response) -> (Void) in
             switch response {
             case .success(let accountDetails):
-                print("ID: \(accountDetails.id)")
-                print("Account ID: \(accountDetails.accountId)")
-                print("Sequence Number: \(accountDetails.sequenceNumber)")
-                print("Subentry count: \(accountDetails.subentryCount)")
-                print("Low Treshold: \(accountDetails.thresholds.lowThreshold)")
-                print("Med Treshold: \(accountDetails.thresholds.medThreshold)")
-                print("High Treshold: \(accountDetails.thresholds.highThreshold)")
-                print("Auth required: \(accountDetails.flags.authRequired)")
-                print("Auth revocable: \(accountDetails.flags.authRevocable)")
-                print("Auth immutable: \(accountDetails.flags.authImmutable)")
+                XCTAssertEqual(testAccountId, accountDetails.id)
+                XCTAssertNotNil(accountDetails.sequenceNumber)
+                XCTAssertNotNil(accountDetails.links)
+                XCTAssertNotNil(accountDetails.links.selflink)
+                XCTAssertNotNil(accountDetails.links.selflink.href)
+                XCTAssertNil(accountDetails.links.selflink.templated)
+                XCTAssertNotNil(accountDetails.links.transactions)
+                XCTAssertNotNil(accountDetails.links.transactions.href)
+                XCTAssertNotNil(accountDetails.links.transactions.templated)
+                XCTAssertNotNil(accountDetails.links.operations)
+                XCTAssertNotNil(accountDetails.links.operations.href)
+                XCTAssertNotNil(accountDetails.links.operations.templated)
+                XCTAssertNotNil(accountDetails.links.payments)
+                XCTAssertNotNil(accountDetails.links.payments.href)
+                XCTAssertNotNil(accountDetails.links.payments.templated)
+                XCTAssertNotNil(accountDetails.links.effects)
+                XCTAssertNotNil(accountDetails.links.effects.href)
+                XCTAssertNotNil(accountDetails.links.effects.templated)
+                XCTAssertNotNil(accountDetails.links.offers)
+                XCTAssertNotNil(accountDetails.links.offers.href)
+                XCTAssertNotNil(accountDetails.links.offers.templated)
+                XCTAssertNotNil(accountDetails.pagingToken)
+                XCTAssertNotNil(accountDetails.subentryCount)
+                XCTAssertNotNil(accountDetails.thresholds)
+                XCTAssertNotNil(accountDetails.thresholds.highThreshold)
+                XCTAssertNotNil(accountDetails.thresholds.lowThreshold)
+                XCTAssertNotNil(accountDetails.thresholds.medThreshold)
+                XCTAssertNotNil(accountDetails.flags)
+                XCTAssertNotNil(accountDetails.flags.authRequired)
+                XCTAssertNotNil(accountDetails.flags.authRevocable)
+                XCTAssertNotNil(accountDetails.flags.authImmutable)
+                
+                XCTAssertNotNil(accountDetails.balances)
+                XCTAssertTrue(accountDetails.balances.count > 0)
+                for balance in accountDetails.balances {
+                    XCTAssertNotNil(balance)
+                    XCTAssertNotNil(balance.assetType)
+                    XCTAssertNotNil(balance.balance)
+                    
+                    if balance.assetType == AssetType.NATIVE {
+                        XCTAssertNil(balance.assetCode)
+                        XCTAssertNil(balance.assetIssuer)
+                    } else {
+                        XCTAssertNotNil(balance.assetCode)
+                        XCTAssertNotNil(balance.assetIssuer)
+                    }
+                    
+                    // TODO: what about limit? can it be nil for an asset code different than native?
+                }
+                
+                XCTAssertNotNil(accountDetails.signers)
+                XCTAssertTrue(accountDetails.signers.count > 0)
+                for signer in accountDetails.signers {
+                    XCTAssertNotNil(signer)
+                    XCTAssertNotNil(signer.publicKey)
+                    XCTAssertNotNil(signer.weight)
+                }
                 
                 XCTAssert(true)
             case .failure(_):
