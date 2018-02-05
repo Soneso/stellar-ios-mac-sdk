@@ -23,7 +23,7 @@ enum OperationType: Int {
     case manageData = 10
 }
 
-enum EffectType: Int {
+public enum EffectType: Int {
     case accountCreated = 0
     case accountRemoved = 1
     case accountCredited = 2
@@ -46,37 +46,42 @@ enum EffectType: Int {
 }
 
 public class Effect: NSObject, Codable {
-    var id:String
-    var pagingToken:String
-    var account:String
-    var type:String
-    var typeI:EffectType
+    
+    public var links:Links
+    public var id:String
+    public var pagingToken:String
+    public var account:String
+    public var effectTypeString:String
+    public var effectType:EffectType
     
     private enum CodingKeys: String, CodingKey {
+        case links = "_links"
         case id
         case pagingToken = "paging_token"
         case account
-        case type
-        case typeI = "type_i"
+        case effectTypeString = "type"
+        case effectType = "type_i"
     }
 
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
+        links = try values.decode(Links.self, forKey: .links)
         id = try values.decode(String.self, forKey: .id)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         account = try values.decode(String.self, forKey: .account)
-        type = try values.decode(String.self, forKey: .type)
-        let typeIInt = try values.decode(Int.self, forKey: .typeI) as Int
-        typeI = EffectType(rawValue: typeIInt)!
+        effectTypeString = try values.decode(String.self, forKey: .effectTypeString)
+        let typeIInt = try values.decode(Int.self, forKey: .effectType) as Int
+        effectType = EffectType(rawValue: typeIInt)!
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(links, forKey: .links)
         try container.encode(id, forKey: .id)
         try container.encode(pagingToken, forKey: .pagingToken)
         try container.encode(account, forKey: .account)
-        try container.encode(type, forKey: .type)
-        try container.encode(typeI.rawValue, forKey: .typeI)
+        try container.encode(effectTypeString, forKey: .effectTypeString)
+        try container.encode(effectType.rawValue, forKey: .effectType)
     }
     
 }

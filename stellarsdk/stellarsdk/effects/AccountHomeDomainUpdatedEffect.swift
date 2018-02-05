@@ -1,23 +1,21 @@
 //
-//  AccountCreatedEffectResponse.swift
+//  AccountHomeDomainUpdatedEffect.swift
 //  stellarsdk
 //
-//  Created by Razvan Chelemen on 02/02/2018.
+//  Created by Rogobete Christian on 05.02.18.
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
-
-public class AccountCreatedEffect: Effect {
-    public var startingBalance:String
+public class AccountHomeDomainUpdatedEffect: Effect {
+    public var homeDomain:String
     
     private enum CodingKeys: String, CodingKey {
-        case startingBalance = "starting_balance"
+        case homeDomain = "home_domain"
     }
     
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        startingBalance = try values.decode(String.self, forKey: .startingBalance)
+        homeDomain = try values.decode(String.self, forKey: .homeDomain)
         
         try super.init(from: decoder)
     }
@@ -25,6 +23,7 @@ public class AccountCreatedEffect: Effect {
     public override func encode(to encoder: Encoder) throws {
         try super.encode(to: encoder)
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(startingBalance, forKey: .startingBalance)
+        try container.encode(homeDomain, forKey: .homeDomain)
     }
 }
+

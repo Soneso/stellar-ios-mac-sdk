@@ -24,41 +24,59 @@ class EffectsFactory: NSObject {
                         let effect = try jsonDecoder.decode(AccountCreatedEffect.self, from: jsonRecord)
                         effectsList.append(effect)
                     case .accountRemoved:
-                        print("")
+                        let effect = try jsonDecoder.decode(AccountRemovedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .accountCredited:
-                        print("")
+                        let effect = try jsonDecoder.decode(AccountCreditedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .accountDebited:
-                        print("")
+                        let effect = try jsonDecoder.decode(AccountDebitedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .accountThresholdsUpdated:
-                        print("")
+                        let effect = try jsonDecoder.decode(AccountThresholdsUpdatedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .accountHomeDomainUpdated:
-                        print("")
+                        let effect = try jsonDecoder.decode(AccountHomeDomainUpdatedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .accountFlagsUpdated:
-                        print("")
+                        let effect = try jsonDecoder.decode(AccountFlagsUpdatedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .signerCreated:
-                        print("")
+                        let effect = try jsonDecoder.decode(SignerCreatedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .signerRemoved:
-                        print("")
+                        let effect = try jsonDecoder.decode(SignerRemovedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .signerUpdated:
-                        print("")
+                        let effect = try jsonDecoder.decode(SignerUpdatedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .trustlineCreated:
-                        print("")
+                        let effect = try jsonDecoder.decode(TrustlineCreatedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .trustlineRemoved:
-                        print("")
+                        let effect = try jsonDecoder.decode(TrustlineRemovedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .trustlineUpdated:
-                        print("")
+                        let effect = try jsonDecoder.decode(TrustlineUpdatedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .trustlineAuthorized:
-                        print("")
+                        let effect = try jsonDecoder.decode(TrustlineAuthorizedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .trustlineDeauthorized:
-                        print("")
+                        let effect = try jsonDecoder.decode(TrustlineDeauthorizedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .offerCreated:
-                        print("")
+                        let effect = try jsonDecoder.decode(OfferCreatedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .offerRemoved:
-                        print("")
+                        let effect = try jsonDecoder.decode(OfferRemovedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .offerUpdated:
-                        print("")
+                        let effect = try jsonDecoder.decode(OfferUpdatedEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     case .tradeEffect:
-                        print("")
+                        let effect = try jsonDecoder.decode(TradeEffect.self, from: jsonRecord)
+                        effectsList.append(effect)
                     }
                 }
             }

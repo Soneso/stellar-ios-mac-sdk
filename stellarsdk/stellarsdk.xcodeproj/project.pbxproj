@@ -82,6 +82,26 @@
 		8369720320255BA100398A98 /* LedgersError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720220255BA100398A98 /* LedgersError.swift */; };
 		83697206202631D600398A98 /* LedgersTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697205202631D600398A98 /* LedgersTestCase.swift */; };
 		8369720A2028BA3E00398A98 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972092028BA3E00398A98 /* Constants.swift */; };
+		8369720C2028ED6400398A98 /* AccountRemovedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720B2028ED6400398A98 /* AccountRemovedEffect.swift */; };
+		8369720E2028EDB100398A98 /* AccountCreditedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720D2028EDB100398A98 /* AccountCreditedEffect.swift */; };
+		836972102028EF0800398A98 /* AccountDebitedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720F2028EF0800398A98 /* AccountDebitedEffect.swift */; };
+		836972122028EF8A00398A98 /* AccountThresholdsUpdatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972112028EF8A00398A98 /* AccountThresholdsUpdatedEffect.swift */; };
+		836972142028F09E00398A98 /* AccountHomeDomainUpdatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972132028F09E00398A98 /* AccountHomeDomainUpdatedEffect.swift */; };
+		836972162028F19000398A98 /* AccountFlagsUpdatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972152028F19000398A98 /* AccountFlagsUpdatedEffect.swift */; };
+		836972182028F2D100398A98 /* SignerCreatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972172028F2D100398A98 /* SignerCreatedEffect.swift */; };
+		8369721A2028F40E00398A98 /* SignerRemovedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972192028F40E00398A98 /* SignerRemovedEffect.swift */; };
+		8369721C2028F45400398A98 /* SignerUpdatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369721B2028F45400398A98 /* SignerUpdatedEffect.swift */; };
+		8369721E2028F4E400398A98 /* TrustlineCreatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369721D2028F4E400398A98 /* TrustlineCreatedEffect.swift */; };
+		836972202028F59D00398A98 /* SignerEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369721F2028F59D00398A98 /* SignerEffect.swift */; };
+		836972222028F5EA00398A98 /* TrustlineEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972212028F5EA00398A98 /* TrustlineEffect.swift */; };
+		836972242028F62A00398A98 /* TrustlineRemovedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972232028F62A00398A98 /* TrustlineRemovedEffect.swift */; };
+		836972262028F65500398A98 /* TrustlineUpdatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972252028F65500398A98 /* TrustlineUpdatedEffect.swift */; };
+		836972282028F68200398A98 /* TrustlineAuthorizedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972272028F68200398A98 /* TrustlineAuthorizedEffect.swift */; };
+		8369722A2028F6A700398A98 /* TrustlineDeauthorizedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972292028F6A700398A98 /* TrustlineDeauthorizedEffect.swift */; };
+		8369722C2028F79200398A98 /* OfferCreatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369722B2028F79200398A98 /* OfferCreatedEffect.swift */; };
+		8369722E2028F7A000398A98 /* OfferRemovedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369722D2028F7A000398A98 /* OfferRemovedEffect.swift */; };
+		836972302028F7AD00398A98 /* OfferUpdatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369722F2028F7AD00398A98 /* OfferUpdatedEffect.swift */; };
+		836972322028F86500398A98 /* TradeEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972312028F86500398A98 /* TradeEffect.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -210,6 +230,26 @@
 		8369720220255BA100398A98 /* LedgersError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersError.swift; sourceTree = "<group>"; };
 		83697205202631D600398A98 /* LedgersTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersTestCase.swift; sourceTree = "<group>"; };
 		836972092028BA3E00398A98 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		8369720B2028ED6400398A98 /* AccountRemovedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountRemovedEffect.swift; sourceTree = "<group>"; };
+		8369720D2028EDB100398A98 /* AccountCreditedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreditedEffect.swift; sourceTree = "<group>"; };
+		8369720F2028EF0800398A98 /* AccountDebitedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDebitedEffect.swift; sourceTree = "<group>"; };
+		836972112028EF8A00398A98 /* AccountThresholdsUpdatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountThresholdsUpdatedEffect.swift; sourceTree = "<group>"; };
+		836972132028F09E00398A98 /* AccountHomeDomainUpdatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountHomeDomainUpdatedEffect.swift; sourceTree = "<group>"; };
+		836972152028F19000398A98 /* AccountFlagsUpdatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFlagsUpdatedEffect.swift; sourceTree = "<group>"; };
+		836972172028F2D100398A98 /* SignerCreatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerCreatedEffect.swift; sourceTree = "<group>"; };
+		836972192028F40E00398A98 /* SignerRemovedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerRemovedEffect.swift; sourceTree = "<group>"; };
+		8369721B2028F45400398A98 /* SignerUpdatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerUpdatedEffect.swift; sourceTree = "<group>"; };
+		8369721D2028F4E400398A98 /* TrustlineCreatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrustlineCreatedEffect.swift; sourceTree = "<group>"; };
+		8369721F2028F59D00398A98 /* SignerEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerEffect.swift; sourceTree = "<group>"; };
+		836972212028F5EA00398A98 /* TrustlineEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrustlineEffect.swift; sourceTree = "<group>"; };
+		836972232028F62A00398A98 /* TrustlineRemovedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrustlineRemovedEffect.swift; sourceTree = "<group>"; };
+		836972252028F65500398A98 /* TrustlineUpdatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrustlineUpdatedEffect.swift; sourceTree = "<group>"; };
+		836972272028F68200398A98 /* TrustlineAuthorizedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrustlineAuthorizedEffect.swift; sourceTree = "<group>"; };
+		836972292028F6A700398A98 /* TrustlineDeauthorizedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrustlineDeauthorizedEffect.swift; sourceTree = "<group>"; };
+		8369722B2028F79200398A98 /* OfferCreatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferCreatedEffect.swift; sourceTree = "<group>"; };
+		8369722D2028F7A000398A98 /* OfferRemovedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferRemovedEffect.swift; sourceTree = "<group>"; };
+		8369722F2028F7AD00398A98 /* OfferUpdatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferUpdatedEffect.swift; sourceTree = "<group>"; };
+		836972312028F86500398A98 /* TradeEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradeEffect.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -519,9 +559,29 @@
 			isa = PBXGroup;
 			children = (
 				7481B5412024B037000A783E /* Effect.swift */,
-				7481B5452024C480000A783E /* AccountCreatedEffect.swift */,
 				7481B5472024CA47000A783E /* EffectsFactory.swift */,
 				7481B54B2024CF62000A783E /* EffectsResponse.swift */,
+				7481B5452024C480000A783E /* AccountCreatedEffect.swift */,
+				8369720B2028ED6400398A98 /* AccountRemovedEffect.swift */,
+				8369720D2028EDB100398A98 /* AccountCreditedEffect.swift */,
+				8369720F2028EF0800398A98 /* AccountDebitedEffect.swift */,
+				836972112028EF8A00398A98 /* AccountThresholdsUpdatedEffect.swift */,
+				836972132028F09E00398A98 /* AccountHomeDomainUpdatedEffect.swift */,
+				836972152028F19000398A98 /* AccountFlagsUpdatedEffect.swift */,
+				8369721F2028F59D00398A98 /* SignerEffect.swift */,
+				836972172028F2D100398A98 /* SignerCreatedEffect.swift */,
+				836972192028F40E00398A98 /* SignerRemovedEffect.swift */,
+				8369721B2028F45400398A98 /* SignerUpdatedEffect.swift */,
+				836972212028F5EA00398A98 /* TrustlineEffect.swift */,
+				8369721D2028F4E400398A98 /* TrustlineCreatedEffect.swift */,
+				836972232028F62A00398A98 /* TrustlineRemovedEffect.swift */,
+				836972252028F65500398A98 /* TrustlineUpdatedEffect.swift */,
+				836972272028F68200398A98 /* TrustlineAuthorizedEffect.swift */,
+				836972292028F6A700398A98 /* TrustlineDeauthorizedEffect.swift */,
+				8369722B2028F79200398A98 /* OfferCreatedEffect.swift */,
+				8369722D2028F7A000398A98 /* OfferRemovedEffect.swift */,
+				8369722F2028F7AD00398A98 /* OfferUpdatedEffect.swift */,
+				836972312028F86500398A98 /* TradeEffect.swift */,
 			);
 			path = effects;
 			sourceTree = "<group>";
@@ -884,45 +944,60 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8369720E2028EDB100398A98 /* AccountCreditedEffect.swift in Sources */,
 				743DF56E2020530A00713DE7 /* sign.c in Sources */,
+				836972122028EF8A00398A98 /* AccountThresholdsUpdatedEffect.swift in Sources */,
 				836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */,
+				836972102028EF0800398A98 /* AccountDebitedEffect.swift in Sources */,
 				743DF548201F70A700713DE7 /* Data+Base32.swift in Sources */,
 				7481B5402024A419000A783E /* Order.swift in Sources */,
 				7481B5482024CA47000A783E /* EffectsFactory.swift in Sources */,
 				743DF5732020530A00713DE7 /* ge.c in Sources */,
 				7481B5462024C480000A783E /* AccountCreatedEffect.swift in Sources */,
+				8369721E2028F4E400398A98 /* TrustlineCreatedEffect.swift in Sources */,
 				743DF5912020C2CD00713DE7 /* Thresholds.swift in Sources */,
 				836971EF20250D3600398A98 /* AssetsError.swift in Sources */,
 				743DF56C2020530A00713DE7 /* fe.c in Sources */,
 				743DF5932020C58000713DE7 /* Balance.swift in Sources */,
+				8369722C2028F79200398A98 /* OfferCreatedEffect.swift in Sources */,
+				836972202028F59D00398A98 /* SignerEffect.swift in Sources */,
 				743DF5952020C7A600713DE7 /* Signer.swift in Sources */,
 				836971E12024A72D00398A98 /* Links.swift in Sources */,
 				836971E82025048D00398A98 /* AssetsService.swift in Sources */,
 				743DF5892020680700713DE7 /* ServiceHelper.swift in Sources */,
 				836971ED202508C900398A98 /* Asset.swift in Sources */,
+				836972262028F65500398A98 /* TrustlineUpdatedEffect.swift in Sources */,
 				743DF550201FBD2B00713DE7 /* AccountService.swift in Sources */,
 				7481B5422024B037000A783E /* Effect.swift in Sources */,
 				7481B54C2024CF62000A783E /* EffectsResponse.swift in Sources */,
 				836971EB2025058600398A98 /* AssetsResponse.swift in Sources */,
 				7481B53B2023056F000A783E /* NetworkError.swift in Sources */,
 				836971FD2025531C00398A98 /* LedgersResponse.swift in Sources */,
+				836972222028F5EA00398A98 /* TrustlineEffect.swift in Sources */,
 				8369720120255AB800398A98 /* LedgersService.swift in Sources */,
 				743DF541201F6A9C00713DE7 /* Base32.swift in Sources */,
 				7481B53E20248441000A783E /* EffectsService.swift in Sources */,
 				743DF54A201F70CA00713DE7 /* String+Base32.swift in Sources */,
 				743DF500201F38D900713DE7 /* AccountError.swift in Sources */,
 				743DF546201F706B00713DE7 /* Data+CRC.swift in Sources */,
+				836972142028F09E00398A98 /* AccountHomeDomainUpdatedEffect.swift in Sources */,
 				836971E42024C47300398A98 /* Link.swift in Sources */,
+				836972282028F68200398A98 /* TrustlineAuthorizedEffect.swift in Sources */,
 				743DF5722020530A00713DE7 /* key_exchange.c in Sources */,
 				743DF56A2020530A00713DE7 /* verify.c in Sources */,
+				836972182028F2D100398A98 /* SignerCreatedEffect.swift in Sources */,
 				743DF5672020530A00713DE7 /* add_scalar.c in Sources */,
+				836972242028F62A00398A98 /* TrustlineRemovedEffect.swift in Sources */,
 				8369720320255BA100398A98 /* LedgersError.swift in Sources */,
 				743DF5682020530A00713DE7 /* seed.c in Sources */,
+				836972302028F7AD00398A98 /* OfferUpdatedEffect.swift in Sources */,
 				743DF57A202053A400713DE7 /* Error.swift in Sources */,
 				8369720A2028BA3E00398A98 /* Constants.swift in Sources */,
+				836972162028F19000398A98 /* AccountFlagsUpdatedEffect.swift in Sources */,
 				743DF57F202053B100713DE7 /* KeyPair.swift in Sources */,
 				836971DF2024A71B00398A98 /* Flags.swift in Sources */,
 				743DF582202053B100713DE7 /* Seed.swift in Sources */,
+				8369722E2028F7A000398A98 /* OfferRemovedEffect.swift in Sources */,
 				743DF5762020530A00713DE7 /* keypair.c in Sources */,
 				836971FF2025532900398A98 /* Ledger.swift in Sources */,
 				743DF4DC201F0BBD00713DE7 /* StellarSDK.swift in Sources */,
@@ -931,7 +1006,12 @@
 				743DF581202053B100713DE7 /* PrivateKey.swift in Sources */,
 				743DF5692020530A00713DE7 /* sha512.c in Sources */,
 				743DF58F2020BBCF00713DE7 /* AccountDetailsResponse.swift in Sources */,
+				8369721A2028F40E00398A98 /* SignerRemovedEffect.swift in Sources */,
+				8369721C2028F45400398A98 /* SignerUpdatedEffect.swift in Sources */,
 				7481B5442024BABF000A783E /* EffectsError.swift in Sources */,
+				836972322028F86500398A98 /* TradeEffect.swift in Sources */,
+				8369720C2028ED6400398A98 /* AccountRemovedEffect.swift in Sources */,
+				8369722A2028F6A700398A98 /* TrustlineDeauthorizedEffect.swift in Sources */,
 				743DF54C201F73FC00713DE7 /* VersionByte.swift in Sources */,
 				743DF53E201F49CF00713DE7 /* Configs.swift in Sources */,
 			);
