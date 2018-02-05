@@ -28,7 +28,32 @@ public class EffectsService: NSObject {
     }
     
     open func getEffects(from pagingToken:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
-        var requestPath = "/effects?"
+        let path = "/effects?"
+        getEffects(onPath: path, from:pagingToken, order:order, limit:limit, response:response)
+    }
+    
+    open func getEffects(forAccount accountId:String, from pagingToken:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+        let path = "/accounts/" + accountId + "/effects?"
+        getEffects(onPath: path, from:pagingToken, order:order, limit:limit, response:response)
+    }
+    
+    open func getEffects(forLedger ledger:String, from pagingToken:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+        let path = "/ledgers/" + ledger + "/effects?"
+        getEffects(onPath: path, from:pagingToken, order:order, limit:limit, response:response)
+    }
+    
+    open func getEffects(forOperation operation:String, from pagingToken:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+        let path = "/operations/" + operation + "/effects?"
+        getEffects(onPath: path, from:pagingToken, order:order, limit:limit, response:response)
+    }
+    
+    open func getEffects(forTransaction hash:String, from pagingToken:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+        let path = "/transactions/" + hash + "/effects?"
+        getEffects(onPath: path, from:pagingToken, order:order, limit:limit, response:response)
+    }
+    
+    private func getEffects(onPath path:String, from pagingToken:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+        var requestPath = path
         
         if let pagingToken = pagingToken {
             requestPath += "cursor=" + pagingToken
@@ -65,5 +90,6 @@ public class EffectsService: NSObject {
             }
         }
     }
+    
     
 }

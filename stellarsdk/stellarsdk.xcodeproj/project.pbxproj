@@ -58,6 +58,7 @@
 		7445EA06201B106500470E0A /* stellarsdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7445E9FC201B106500470E0A /* stellarsdk.framework */; };
 		7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7445EA0A201B106500470E0A /* stellarsdkTests.swift */; };
 		7445EA0D201B106500470E0A /* stellarsdk.h in Headers */ = {isa = PBXBuildFile; fileRef = 7445E9FF201B106500470E0A /* stellarsdk.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		744E75E42028DBD500170D57 /* EffectsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744E75E32028DBD500170D57 /* EffectsTestCase.swift */; };
 		7481B53B2023056F000A783E /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53A2023056F000A783E /* NetworkError.swift */; };
 		7481B53E20248441000A783E /* EffectsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53D20248441000A783E /* EffectsService.swift */; };
 		7481B5402024A419000A783E /* Order.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53F2024A419000A783E /* Order.swift */; };
@@ -184,6 +185,7 @@
 		7445EA05201B106500470E0A /* stellarsdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = stellarsdkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7445EA0A201B106500470E0A /* stellarsdkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdkTests.swift; sourceTree = "<group>"; };
 		7445EA0C201B106500470E0A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		744E75E32028DBD500170D57 /* EffectsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsTestCase.swift; sourceTree = "<group>"; };
 		7481B53A2023056F000A783E /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
 		7481B53D20248441000A783E /* EffectsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsService.swift; sourceTree = "<group>"; };
 		7481B53F2024A419000A783E /* Order.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Order.swift; sourceTree = "<group>"; };
@@ -492,6 +494,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				744E75E22028DB9800170D57 /* effects */,
 				83697204202631B800398A98 /* ledgers */,
 				836971F8202548C900398A98 /* assets */,
 				743DF501201F3AE100713DE7 /* account */,
@@ -499,6 +502,14 @@
 				7445EA0C201B106500470E0A /* Info.plist */,
 			);
 			path = stellarsdkTests;
+			sourceTree = "<group>";
+		};
+		744E75E22028DB9800170D57 /* effects */ = {
+			isa = PBXGroup;
+			children = (
+				744E75E32028DBD500170D57 /* EffectsTestCase.swift */,
+			);
+			path = effects;
 			sourceTree = "<group>";
 		};
 		7481B53C20234AD6000A783E /* effects */ = {
@@ -927,6 +938,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				836971FA202548E100398A98 /* AssetsTestCase.swift in Sources */,
+				744E75E42028DBD500170D57 /* EffectsTestCase.swift in Sources */,
 				7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */,
 				83697206202631D600398A98 /* LedgersTestCase.swift in Sources */,
 				743DF503201F3B0800713DE7 /* AccountTestCase.swift in Sources */,
