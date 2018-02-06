@@ -102,6 +102,8 @@
 		8369722E2028F7A000398A98 /* OfferRemovedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369722D2028F7A000398A98 /* OfferRemovedEffect.swift */; };
 		836972302028F7AD00398A98 /* OfferUpdatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369722F2028F7AD00398A98 /* OfferUpdatedEffect.swift */; };
 		836972322028F86500398A98 /* TradeEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972312028F86500398A98 /* TradeEffect.swift */; };
+		83697235202A0E9200398A98 /* ServerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697234202A0E9200398A98 /* ServerMock.swift */; };
+		83697237202A119400398A98 /* AccountResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697236202A119400398A98 /* AccountResponsesMock.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -250,6 +252,8 @@
 		8369722D2028F7A000398A98 /* OfferRemovedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferRemovedEffect.swift; sourceTree = "<group>"; };
 		8369722F2028F7AD00398A98 /* OfferUpdatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferUpdatedEffect.swift; sourceTree = "<group>"; };
 		836972312028F86500398A98 /* TradeEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradeEffect.swift; sourceTree = "<group>"; };
+		83697234202A0E9200398A98 /* ServerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerMock.swift; sourceTree = "<group>"; };
+		83697236202A119400398A98 /* AccountResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountResponsesMock.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -356,6 +360,7 @@
 			isa = PBXGroup;
 			children = (
 				743DF502201F3B0800713DE7 /* AccountTestCase.swift */,
+				83697236202A119400398A98 /* AccountResponsesMock.swift */,
 			);
 			path = account;
 			sourceTree = "<group>";
@@ -516,17 +521,17 @@
 		7445E9FE201B106500470E0A /* stellarsdk */ = {
 			isa = PBXGroup;
 			children = (
-				836971FB202552DB00398A98 /* ledgers */,
+				743DF4DD201F121B00713DE7 /* account */,
 				836971E92025055200398A98 /* assets */,
 				7481B53C20234AD6000A783E /* effects */,
+				836971FB202552DB00398A98 /* ledgers */,
+				743DF53C201F495A00713DE7 /* service */,
 				743DF58D2020B68100713DE7 /* options */,
 				743DF5782020538A00713DE7 /* crypto */,
 				743DF5512020529500713DE7 /* libs */,
 				743DF544201F705300713DE7 /* extensions */,
 				743DF53F201F6A7A00713DE7 /* utils */,
-				743DF53C201F495A00713DE7 /* service */,
 				743DF4FE201F389500713DE7 /* errors */,
-				743DF4DD201F121B00713DE7 /* account */,
 				7445E9FF201B106500470E0A /* stellarsdk.h */,
 				7445EA00201B106500470E0A /* Info.plist */,
 				743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */,
@@ -537,6 +542,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				83697233202A0E0700398A98 /* utils */,
 				744E75E22028DB9800170D57 /* effects */,
 				83697204202631B800398A98 /* ledgers */,
 				836971F8202548C900398A98 /* assets */,
@@ -618,6 +624,14 @@
 				83697205202631D600398A98 /* LedgersTestCase.swift */,
 			);
 			path = ledgers;
+			sourceTree = "<group>";
+		};
+		83697233202A0E0700398A98 /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				83697234202A0E9200398A98 /* ServerMock.swift */,
+			);
+			path = utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1022,6 +1036,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				836971FA202548E100398A98 /* AssetsTestCase.swift in Sources */,
+				83697237202A119400398A98 /* AccountResponsesMock.swift in Sources */,
+				83697235202A0E9200398A98 /* ServerMock.swift in Sources */,
 				744E75E42028DBD500170D57 /* EffectsTestCase.swift in Sources */,
 				7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */,
 				83697206202631D600398A98 /* LedgersTestCase.swift in Sources */,

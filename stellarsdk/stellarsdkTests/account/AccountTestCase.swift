@@ -11,12 +11,26 @@ import stellarsdk
 
 class AccountTestCase: XCTestCase {
     let sdk = StellarSDK()
+    var accountResponsesMock: AccountResponsesMock? = nil
+    var mockRegistered = false
+    let testSuccessAccountId = "GBZ3VAAP2T2WMKF6226FTC6OSQN6KKGAGPVCCCMDDVLCHYQMXTMNHLB3"
     
     override func setUp() {
         super.setUp()
+        
+        if !mockRegistered {
+            URLProtocol.registerClass(ServerMock.self)
+            mockRegistered = true
+        }
+        
+        accountResponsesMock = AccountResponsesMock()
+        let accountDetailsResponse = successResponse(accountId: testSuccessAccountId)
+        accountResponsesMock?.addAccount(key:testSuccessAccountId, accountResponse: accountDetailsResponse)
+        
     }
     
     override func tearDown() {
+        accountResponsesMock = nil
         super.tearDown()
     }
     
@@ -49,13 +63,10 @@ class AccountTestCase: XCTestCase {
     func testLoadAccountFromHorizon() {
         let expectation = XCTestExpectation(description: "Get account details response")
         
-        //TODO: replace this with an account created in this testcase as soon as account creation is available.
-        let testAccountId = "GBZ3VAAP2T2WMKF6226FTC6OSQN6KKGAGPVCCCMDDVLCHYQMXTMNHLB3"
-        
-        sdk.accounts.getAccountDetails(accountId: testAccountId) { (response) -> (Void) in
+        sdk.accounts.getAccountDetails(accountId: testSuccessAccountId) { (response) -> (Void) in
             switch response {
             case .success(let accountDetails):
-                XCTAssertEqual(testAccountId, accountDetails.id)
+                XCTAssertEqual(self.testSuccessAccountId, accountDetails.id)
                 XCTAssertNotNil(accountDetails.sequenceNumber)
                 XCTAssertNotNil(accountDetails.links)
                 XCTAssertNotNil(accountDetails.links.selflink)
@@ -120,5 +131,92 @@ class AccountTestCase: XCTestCase {
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 15.0)
+    }
+    
+    public func successResponse(accountId:String) -> String {
+        
+        let accountResponseString = """
+        {
+            "_links": {
+                "self": {
+                    "href": "https://horizon-testnet.stellar.org/accounts/\(accountId)"
+                },
+                "transactions": {
+                    "href": "https://horizon-testnet.stellar.org/accounts/\(accountId)/transactions{?cursor,limit,order}",
+                    "templated": true
+                },
+                "operations": {
+                    "href": "https://horizon-testnet.stellar.org/accounts/\(accountId)/operations{?cursor,limit,order}",
+                    "templated": true
+                },
+                "payments": {
+                    "href": "https://horizon-testnet.stellar.org/accounts/\(accountId)/payments{?cursor,limit,order}",
+                    "templated": true
+                },
+                "effects": {
+                    "href": "https://horizon-testnet.stellar.org/accounts/\(accountId)/effects{?cursor,limit,order}",
+                    "templated": true
+                },
+                "offers": {
+                    "href": "https://horizon-testnet.stellar.org/accounts/\(accountId)/offers{?cursor,limit,order}",
+                    "templated": true
+                },
+                "trades": {
+                    "href": "https://horizon-testnet.stellar.org/accounts/\(accountId)/trades{?cursor,limit,order}",
+                    "templated": true
+                },
+                "data": {
+                    "href": "https://horizon-testnet.stellar.org/accounts/\(accountId)/data/{key}",
+                    "templated": true
+                }
+            },
+            "id": "\(accountId)",
+            "paging_token": "",
+            "account_id": "\(accountId)",
+            "sequence": "30232549674450945",
+            "subentry_count": 0,
+            "inflation_destination": "GDLZ7O5LPSDUOEAD3JBJKCSKCVAMNG7IIRKH57CXQYB46ILW2D74F26M",
+            "home_domain": "soneso.com",
+            "thresholds": {
+                "low_threshold": 0,
+                "med_threshold": 0,
+                "high_threshold": 0
+            },
+            "flags": {
+                "auth_required": false,
+                "auth_revocable": false
+            },
+            "balances": [
+                {
+                    "balance": "126.8107491",
+                    "limit": "5000.0000000",
+                    "asset_type": "credit_alphanum4",
+                    "asset_code": "BAR",
+                    "asset_issuer": "GBAUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG"
+                },
+                {
+                    "balance": "294.0000000",
+                    "limit": "922337203685.4775807",
+                    "asset_type": "credit_alphanum4",
+                    "asset_code": "FOO",
+                    "asset_issuer": "GBAUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG"
+                },
+                {
+                    "balance": "9999.9999900",
+                    "asset_type": "native"
+                }
+            ],
+            "signers": [
+                {
+                    "public_key": "\(accountId)",
+                    "weight": 1,
+                    "key": "GBZ3VAAP2T2WMKF6226FTC6OSQN6KKGAGPVCCCMDDVLCHYQMXTMNHLB3",
+                    "type": "ed25519_public_key"
+                }
+            ],
+            "data": {}
+        }
+        """
+        return accountResponseString
     }
 }
