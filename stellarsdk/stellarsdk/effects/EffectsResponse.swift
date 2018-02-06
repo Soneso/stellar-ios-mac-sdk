@@ -9,7 +9,7 @@
 import UIKit
 
 public class EffectsResponse: NSObject {
-    var effects:[Effect]
+    public var effects:[Effect]
     
     public init(effects: [Effect]) {
         self.effects = effects
