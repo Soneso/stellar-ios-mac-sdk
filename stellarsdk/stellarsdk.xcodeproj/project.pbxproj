@@ -58,6 +58,14 @@
 		7445EA06201B106500470E0A /* stellarsdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7445E9FC201B106500470E0A /* stellarsdk.framework */; };
 		7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7445EA0A201B106500470E0A /* stellarsdkTests.swift */; };
 		7445EA0D201B106500470E0A /* stellarsdk.h in Headers */ = {isa = PBXBuildFile; fileRef = 7445E9FF201B106500470E0A /* stellarsdk.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		744C4DB5202A24F200B46CDE /* OperationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DB4202A24F200B46CDE /* OperationsService.swift */; };
+		744C4DB7202A257400B46CDE /* Operation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DB6202A257400B46CDE /* Operation.swift */; };
+		744C4DB9202A27D000B46CDE /* OperationsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DB8202A27D000B46CDE /* OperationsFactory.swift */; };
+		744C4DBB202A27F600B46CDE /* OperationsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DBA202A27F600B46CDE /* OperationsResponse.swift */; };
+		744C4DBD202A29AC00B46CDE /* OperationsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DBC202A29AC00B46CDE /* OperationsError.swift */; };
+		744C4DBF202A29E400B46CDE /* AccountCreatedOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DBE202A29E400B46CDE /* AccountCreatedOperation.swift */; };
+		744C4DC2202A328100B46CDE /* OperationsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DC1202A328100B46CDE /* OperationsTestCase.swift */; };
+		744C4DC4202A364300B46CDE /* DateFormatter+ISOParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DC3202A364300B46CDE /* DateFormatter+ISOParsing.swift */; };
 		744E75E42028DBD500170D57 /* EffectsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744E75E32028DBD500170D57 /* EffectsTestCase.swift */; };
 		7481B53B2023056F000A783E /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53A2023056F000A783E /* NetworkError.swift */; };
 		7481B53E20248441000A783E /* EffectsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53D20248441000A783E /* EffectsService.swift */; };
@@ -102,8 +110,6 @@
 		8369722E2028F7A000398A98 /* OfferRemovedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369722D2028F7A000398A98 /* OfferRemovedEffect.swift */; };
 		836972302028F7AD00398A98 /* OfferUpdatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369722F2028F7AD00398A98 /* OfferUpdatedEffect.swift */; };
 		836972322028F86500398A98 /* TradeEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972312028F86500398A98 /* TradeEffect.swift */; };
-		83697235202A0E9200398A98 /* ServerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697234202A0E9200398A98 /* ServerMock.swift */; };
-		83697237202A119400398A98 /* AccountResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697236202A119400398A98 /* AccountResponsesMock.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -208,6 +214,14 @@
 		7445EA05201B106500470E0A /* stellarsdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = stellarsdkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7445EA0A201B106500470E0A /* stellarsdkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdkTests.swift; sourceTree = "<group>"; };
 		7445EA0C201B106500470E0A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		744C4DB4202A24F200B46CDE /* OperationsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationsService.swift; sourceTree = "<group>"; };
+		744C4DB6202A257400B46CDE /* Operation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Operation.swift; sourceTree = "<group>"; };
+		744C4DB8202A27D000B46CDE /* OperationsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationsFactory.swift; sourceTree = "<group>"; };
+		744C4DBA202A27F600B46CDE /* OperationsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationsResponse.swift; sourceTree = "<group>"; };
+		744C4DBC202A29AC00B46CDE /* OperationsError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationsError.swift; sourceTree = "<group>"; };
+		744C4DBE202A29E400B46CDE /* AccountCreatedOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreatedOperation.swift; sourceTree = "<group>"; };
+		744C4DC1202A328100B46CDE /* OperationsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationsTestCase.swift; sourceTree = "<group>"; };
+		744C4DC3202A364300B46CDE /* DateFormatter+ISOParsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DateFormatter+ISOParsing.swift"; sourceTree = "<group>"; };
 		744E75E32028DBD500170D57 /* EffectsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsTestCase.swift; sourceTree = "<group>"; };
 		7481B53A2023056F000A783E /* NetworkError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkError.swift; sourceTree = "<group>"; };
 		7481B53D20248441000A783E /* EffectsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsService.swift; sourceTree = "<group>"; };
@@ -252,8 +266,6 @@
 		8369722D2028F7A000398A98 /* OfferRemovedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferRemovedEffect.swift; sourceTree = "<group>"; };
 		8369722F2028F7AD00398A98 /* OfferUpdatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferUpdatedEffect.swift; sourceTree = "<group>"; };
 		836972312028F86500398A98 /* TradeEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradeEffect.swift; sourceTree = "<group>"; };
-		83697234202A0E9200398A98 /* ServerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerMock.swift; sourceTree = "<group>"; };
-		83697236202A119400398A98 /* AccountResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountResponsesMock.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -352,6 +364,7 @@
 				7481B5432024BABF000A783E /* EffectsError.swift */,
 				836971EE20250D3600398A98 /* AssetsError.swift */,
 				8369720220255BA100398A98 /* LedgersError.swift */,
+				744C4DBC202A29AC00B46CDE /* OperationsError.swift */,
 			);
 			path = errors;
 			sourceTree = "<group>";
@@ -360,7 +373,6 @@
 			isa = PBXGroup;
 			children = (
 				743DF502201F3B0800713DE7 /* AccountTestCase.swift */,
-				83697236202A119400398A98 /* AccountResponsesMock.swift */,
 			);
 			path = account;
 			sourceTree = "<group>";
@@ -404,6 +416,7 @@
 				7481B53D20248441000A783E /* EffectsService.swift */,
 				836971E72025048D00398A98 /* AssetsService.swift */,
 				8369720020255AB800398A98 /* LedgersService.swift */,
+				744C4DB4202A24F200B46CDE /* OperationsService.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -425,6 +438,7 @@
 				743DF545201F706B00713DE7 /* Data+CRC.swift */,
 				743DF547201F70A700713DE7 /* Data+Base32.swift */,
 				743DF549201F70CA00713DE7 /* String+Base32.swift */,
+				744C4DC3202A364300B46CDE /* DateFormatter+ISOParsing.swift */,
 			);
 			path = extensions;
 			sourceTree = "<group>";
@@ -521,17 +535,18 @@
 		7445E9FE201B106500470E0A /* stellarsdk */ = {
 			isa = PBXGroup;
 			children = (
-				743DF4DD201F121B00713DE7 /* account */,
+				744C4DB3202A242B00B46CDE /* operations */,
+				836971FB202552DB00398A98 /* ledgers */,
 				836971E92025055200398A98 /* assets */,
 				7481B53C20234AD6000A783E /* effects */,
-				836971FB202552DB00398A98 /* ledgers */,
-				743DF53C201F495A00713DE7 /* service */,
 				743DF58D2020B68100713DE7 /* options */,
 				743DF5782020538A00713DE7 /* crypto */,
 				743DF5512020529500713DE7 /* libs */,
 				743DF544201F705300713DE7 /* extensions */,
 				743DF53F201F6A7A00713DE7 /* utils */,
+				743DF53C201F495A00713DE7 /* service */,
 				743DF4FE201F389500713DE7 /* errors */,
+				743DF4DD201F121B00713DE7 /* account */,
 				7445E9FF201B106500470E0A /* stellarsdk.h */,
 				7445EA00201B106500470E0A /* Info.plist */,
 				743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */,
@@ -542,7 +557,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
-				83697233202A0E0700398A98 /* utils */,
+				744C4DC0202A326600B46CDE /* operations */,
 				744E75E22028DB9800170D57 /* effects */,
 				83697204202631B800398A98 /* ledgers */,
 				836971F8202548C900398A98 /* assets */,
@@ -551,6 +566,25 @@
 				7445EA0C201B106500470E0A /* Info.plist */,
 			);
 			path = stellarsdkTests;
+			sourceTree = "<group>";
+		};
+		744C4DB3202A242B00B46CDE /* operations */ = {
+			isa = PBXGroup;
+			children = (
+				744C4DB6202A257400B46CDE /* Operation.swift */,
+				744C4DB8202A27D000B46CDE /* OperationsFactory.swift */,
+				744C4DBA202A27F600B46CDE /* OperationsResponse.swift */,
+				744C4DBE202A29E400B46CDE /* AccountCreatedOperation.swift */,
+			);
+			path = operations;
+			sourceTree = "<group>";
+		};
+		744C4DC0202A326600B46CDE /* operations */ = {
+			isa = PBXGroup;
+			children = (
+				744C4DC1202A328100B46CDE /* OperationsTestCase.swift */,
+			);
+			path = operations;
 			sourceTree = "<group>";
 		};
 		744E75E22028DB9800170D57 /* effects */ = {
@@ -624,14 +658,6 @@
 				83697205202631D600398A98 /* LedgersTestCase.swift */,
 			);
 			path = ledgers;
-			sourceTree = "<group>";
-		};
-		83697233202A0E0700398A98 /* utils */ = {
-			isa = PBXGroup;
-			children = (
-				83697234202A0E9200398A98 /* ServerMock.swift */,
-			);
-			path = utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -959,6 +985,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8369720E2028EDB100398A98 /* AccountCreditedEffect.swift in Sources */,
+				744C4DBD202A29AC00B46CDE /* OperationsError.swift in Sources */,
 				743DF56E2020530A00713DE7 /* sign.c in Sources */,
 				836972122028EF8A00398A98 /* AccountThresholdsUpdatedEffect.swift in Sources */,
 				836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */,
@@ -972,6 +999,7 @@
 				743DF5912020C2CD00713DE7 /* Thresholds.swift in Sources */,
 				836971EF20250D3600398A98 /* AssetsError.swift in Sources */,
 				743DF56C2020530A00713DE7 /* fe.c in Sources */,
+				744C4DBB202A27F600B46CDE /* OperationsResponse.swift in Sources */,
 				743DF5932020C58000713DE7 /* Balance.swift in Sources */,
 				8369722C2028F79200398A98 /* OfferCreatedEffect.swift in Sources */,
 				836972202028F59D00398A98 /* SignerEffect.swift in Sources */,
@@ -996,9 +1024,11 @@
 				743DF546201F706B00713DE7 /* Data+CRC.swift in Sources */,
 				836972142028F09E00398A98 /* AccountHomeDomainUpdatedEffect.swift in Sources */,
 				836971E42024C47300398A98 /* Link.swift in Sources */,
+				744C4DB9202A27D000B46CDE /* OperationsFactory.swift in Sources */,
 				836972282028F68200398A98 /* TrustlineAuthorizedEffect.swift in Sources */,
 				743DF5722020530A00713DE7 /* key_exchange.c in Sources */,
 				743DF56A2020530A00713DE7 /* verify.c in Sources */,
+				744C4DB5202A24F200B46CDE /* OperationsService.swift in Sources */,
 				836972182028F2D100398A98 /* SignerCreatedEffect.swift in Sources */,
 				743DF5672020530A00713DE7 /* add_scalar.c in Sources */,
 				836972242028F62A00398A98 /* TrustlineRemovedEffect.swift in Sources */,
@@ -1016,10 +1046,13 @@
 				836971FF2025532900398A98 /* Ledger.swift in Sources */,
 				743DF4DC201F0BBD00713DE7 /* StellarSDK.swift in Sources */,
 				743DF580202053B100713DE7 /* PublicKey.swift in Sources */,
+				744C4DBF202A29E400B46CDE /* AccountCreatedOperation.swift in Sources */,
+				744C4DB7202A257400B46CDE /* Operation.swift in Sources */,
 				743DF56D2020530A00713DE7 /* sc.c in Sources */,
 				743DF581202053B100713DE7 /* PrivateKey.swift in Sources */,
 				743DF5692020530A00713DE7 /* sha512.c in Sources */,
 				743DF58F2020BBCF00713DE7 /* AccountDetailsResponse.swift in Sources */,
+				744C4DC4202A364300B46CDE /* DateFormatter+ISOParsing.swift in Sources */,
 				8369721A2028F40E00398A98 /* SignerRemovedEffect.swift in Sources */,
 				8369721C2028F45400398A98 /* SignerUpdatedEffect.swift in Sources */,
 				7481B5442024BABF000A783E /* EffectsError.swift in Sources */,
@@ -1036,8 +1069,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				836971FA202548E100398A98 /* AssetsTestCase.swift in Sources */,
-				83697237202A119400398A98 /* AccountResponsesMock.swift in Sources */,
-				83697235202A0E9200398A98 /* ServerMock.swift in Sources */,
+				744C4DC2202A328100B46CDE /* OperationsTestCase.swift in Sources */,
 				744E75E42028DBD500170D57 /* EffectsTestCase.swift in Sources */,
 				7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */,
 				83697206202631D600398A98 /* LedgersTestCase.swift in Sources */,

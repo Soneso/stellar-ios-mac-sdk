@@ -8,21 +8,6 @@
 
 import UIKit
 
-//TODO: Move this to operations when available
-enum OperationType: Int {
-    case accountCreated = 0
-    case payment = 1
-    case pathPayment = 2
-    case manageOffer = 3
-    case createPassiveOffer = 4
-    case setOptions = 5
-    case changeTrust = 6
-    case allowTrust = 7
-    case accountMerge = 8
-    case inflation = 9
-    case manageData = 10
-}
-
 public enum EffectType: Int {
     case accountCreated = 0
     case accountRemoved = 1
