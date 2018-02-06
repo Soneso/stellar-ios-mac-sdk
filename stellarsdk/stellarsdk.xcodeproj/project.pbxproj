@@ -110,6 +110,8 @@
 		8369722E2028F7A000398A98 /* OfferRemovedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369722D2028F7A000398A98 /* OfferRemovedEffect.swift */; };
 		836972302028F7AD00398A98 /* OfferUpdatedEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369722F2028F7AD00398A98 /* OfferUpdatedEffect.swift */; };
 		836972322028F86500398A98 /* TradeEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972312028F86500398A98 /* TradeEffect.swift */; };
+		8369723C202A707600398A98 /* ServerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369723B202A707600398A98 /* ServerMock.swift */; };
+		8369723E202A708300398A98 /* AccountResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369723D202A708300398A98 /* AccountResponsesMock.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -266,6 +268,8 @@
 		8369722D2028F7A000398A98 /* OfferRemovedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferRemovedEffect.swift; sourceTree = "<group>"; };
 		8369722F2028F7AD00398A98 /* OfferUpdatedEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferUpdatedEffect.swift; sourceTree = "<group>"; };
 		836972312028F86500398A98 /* TradeEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradeEffect.swift; sourceTree = "<group>"; };
+		8369723B202A707600398A98 /* ServerMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ServerMock.swift; path = stellarsdkTests/utils/ServerMock.swift; sourceTree = SOURCE_ROOT; };
+		8369723D202A708300398A98 /* AccountResponsesMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountResponsesMock.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -372,6 +376,7 @@
 		743DF501201F3AE100713DE7 /* account */ = {
 			isa = PBXGroup;
 			children = (
+				8369723D202A708300398A98 /* AccountResponsesMock.swift */,
 				743DF502201F3B0800713DE7 /* AccountTestCase.swift */,
 			);
 			path = account;
@@ -557,6 +562,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				8369723A202A703600398A98 /* utils */,
 				744C4DC0202A326600B46CDE /* operations */,
 				744E75E22028DB9800170D57 /* effects */,
 				83697204202631B800398A98 /* ledgers */,
@@ -658,6 +664,15 @@
 				83697205202631D600398A98 /* LedgersTestCase.swift */,
 			);
 			path = ledgers;
+			sourceTree = "<group>";
+		};
+		8369723A202A703600398A98 /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				8369723B202A707600398A98 /* ServerMock.swift */,
+			);
+			name = utils;
+			path = "New Group";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1069,10 +1084,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				836971FA202548E100398A98 /* AssetsTestCase.swift in Sources */,
+				8369723C202A707600398A98 /* ServerMock.swift in Sources */,
 				744C4DC2202A328100B46CDE /* OperationsTestCase.swift in Sources */,
 				744E75E42028DBD500170D57 /* EffectsTestCase.swift in Sources */,
 				7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */,
 				83697206202631D600398A98 /* LedgersTestCase.swift in Sources */,
+				8369723E202A708300398A98 /* AccountResponsesMock.swift in Sources */,
 				743DF503201F3B0800713DE7 /* AccountTestCase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
