@@ -29,7 +29,7 @@ public class AssetsService: NSObject {
     
     open func getAssets(from assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AssetsResponseClosure) {
         var requestPath = "/assets?"
-        var hasFirstParam = false;
+        var hasFirstParam = false
         if let assetCode = assetCode {
             requestPath += "asset_code=" + assetCode
             hasFirstParam = true;

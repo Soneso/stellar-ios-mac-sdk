@@ -27,43 +27,53 @@ public class EffectsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getEffects(from pagingToken:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+    open func getEffects(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
         let path = "/effects?"
-        getEffects(onPath: path, from:pagingToken, order:order, limit:limit, response:response)
+        getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getEffects(forAccount accountId:String, from pagingToken:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+    open func getEffects(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
         let path = "/accounts/" + accountId + "/effects?"
-        getEffects(onPath: path, from:pagingToken, order:order, limit:limit, response:response)
+        getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getEffects(forLedger ledger:String, from pagingToken:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+    open func getEffects(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
         let path = "/ledgers/" + ledger + "/effects?"
-        getEffects(onPath: path, from:pagingToken, order:order, limit:limit, response:response)
+        getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getEffects(forOperation operation:String, from pagingToken:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+    open func getEffects(forOperation operation:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
         let path = "/operations/" + operation + "/effects?"
-        getEffects(onPath: path, from:pagingToken, order:order, limit:limit, response:response)
+        getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getEffects(forTransaction hash:String, from pagingToken:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+    open func getEffects(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
         let path = "/transactions/" + hash + "/effects?"
-        getEffects(onPath: path, from:pagingToken, order:order, limit:limit, response:response)
+        getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    private func getEffects(onPath path:String, from pagingToken:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+    private func getEffects(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
         var requestPath = path
+        var hasFirstParam = false
         
-        if let pagingToken = pagingToken {
-            requestPath += "cursor=" + pagingToken
+        if let cursor = cursor {
+            requestPath += "cursor=" + cursor
+            hasFirstParam = true;
         }
         
         if let order = order {
+            if hasFirstParam {
+                requestPath += "&"
+            } else {
+                hasFirstParam = true;
+            }
             requestPath += "order=" + order.rawValue
         }
         
         if let limit = limit {
+            if hasFirstParam {
+                requestPath += "&"
+            }
             requestPath += "limit=" + String(limit)
         }
         
@@ -90,6 +100,4 @@ public class EffectsService: NSObject {
             }
         }
     }
-    
-    
 }

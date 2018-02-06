@@ -61,7 +61,7 @@ public class LedgersService: NSObject {
     
     open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping LedgersResponseClosure) {
         var requestPath = "/ledgers?"
-        var hasFirstParam = false;
+        var hasFirstParam = false
         if let cursor = cursor {
             requestPath += "cursor=" + cursor
             hasFirstParam = true;
