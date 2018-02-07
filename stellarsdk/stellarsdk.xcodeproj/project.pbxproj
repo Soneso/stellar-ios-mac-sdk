@@ -701,8 +701,7 @@
 			children = (
 				8369723B202A707600398A98 /* ServerMock.swift */,
 			);
-			name = utils;
-			path = "New Group";
+			path = utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
