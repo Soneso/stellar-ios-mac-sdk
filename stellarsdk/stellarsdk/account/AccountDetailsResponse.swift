@@ -8,25 +8,48 @@
 
 import UIKit
 
+///  Represents an account response, containing information and links relating to a single account.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account Details")
 public class AccountDetailsResponse: NSObject, Codable {
 
+    /// A list of Links related to this account.
     public var links:Links
-    public var id:String
+    
+    /// The account’s id / public key.
     public var accountId:String
+    
+    /// The current sequence number that can be used when submitting a transaction from this account.
     public var sequenceNumber:String
-    public var pagingToken:String
+    
+    /// The number of account subentries.
     public var subentryCount:UInt
+    
+    /// A paging token, specifying where the returnned records start from.
+    public var pagingToken:String
+
+    /// Account designated to receive inflation if any.
     public var inflationDestination:String?
+    
+    /// The home domain added to this account if any.
     public var homeDomain:String?
+    
+    /// An object of account flags.
     public var thresholds:Thresholds
+    
+    /// Flags used by the issuers of assets.
     public var flags:Flags
+    
+    /// An array of the native asset or credits this account holds.
     public var balances:[Balance]
+    
+    /// An array of account signers with their weights.
     public var signers:[Signer]
+    
+    /// An array of account data fields.
     public var data:[String:String]
 
-    
+    // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
-        case id
         case links = "_links"
         case accountId = "account_id"
         case sequenceNumber = "sequence"
@@ -39,12 +62,15 @@ public class AccountDetailsResponse: NSObject, Codable {
         case balances
         case signers
         case data
-
     }
     
+    /**
+        Initializer - creates a new instance by decoding from the given decoder.
+     
+        - Parameter decoder: The decoder containing the data
+    */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        id = try values.decode(String.self, forKey: .id)
         links = try values.decode(Links.self, forKey: .links)
         accountId = try values.decode(String.self, forKey: .accountId)
         sequenceNumber = try values.decode(String.self, forKey: .sequenceNumber)
@@ -59,9 +85,13 @@ public class AccountDetailsResponse: NSObject, Codable {
         inflationDestination = try values.decodeIfPresent(String.self, forKey: .inflationDestination)
     }
     
+    /**
+        Encodes this value into the given encoder.
+     
+        - Parameter encoder: The encoder to receive the data
+    */
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(id, forKey: .id)
         try container.encode(links, forKey: .links)
         try container.encode(accountId, forKey: .accountId)
         try container.encode(sequenceNumber, forKey: .sequenceNumber)
@@ -73,5 +103,4 @@ public class AccountDetailsResponse: NSObject, Codable {
         try container.encode(signers, forKey: .signers)
         try container.encode(data, forKey: .data)
     }
-    
 }
