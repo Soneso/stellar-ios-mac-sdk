@@ -40,25 +40,25 @@ class OperationsFactory: NSObject {
             case .accountCreated:
                 return try jsonDecoder.decode(AccountCreatedOperation.self, from: data)
             case .payment:
-                return try jsonDecoder.decode(Operation.self, from: data)
+                return try jsonDecoder.decode(PaymentOperation.self, from: data)
             case .pathPayment:
-                return try jsonDecoder.decode(Operation.self, from: data)
+                return try jsonDecoder.decode(PathPaymentOperation.self, from: data)
             case .manageOffer:
-                return try jsonDecoder.decode(Operation.self, from: data)
+                return try jsonDecoder.decode(ManageOfferOperation.self, from: data)
             case .createPassiveOffer:
-                return try jsonDecoder.decode(Operation.self, from: data)
+                return try jsonDecoder.decode(CreatePassiveOfferOperation.self, from: data)
             case .setOptions:
-                return try jsonDecoder.decode(Operation.self, from: data)
+                return try jsonDecoder.decode(SetOptionsOperation.self, from: data)
             case .changeTrust:
-                return try jsonDecoder.decode(Operation.self, from: data)
+                return try jsonDecoder.decode(ChangeTrustOperation.self, from: data)
             case .allowTrust:
-                return try jsonDecoder.decode(Operation.self, from: data)
+                return try jsonDecoder.decode(AllowTrustOperation.self, from: data)
             case .accountMerge:
-                return try jsonDecoder.decode(Operation.self, from: data)
+                return try jsonDecoder.decode(AccountMergeOperation.self, from: data)
             case .inflation:
-                return try jsonDecoder.decode(Operation.self, from: data)
+                return try jsonDecoder.decode(InflationOperation.self, from: data)
             case .manageData:
-                return try jsonDecoder.decode(Operation.self, from: data)
+                return try jsonDecoder.decode(ManageDataOperation.self, from: data)
             }
         } else {
             throw OperationsError.parsingFailed(response: "Unknown operation type")
