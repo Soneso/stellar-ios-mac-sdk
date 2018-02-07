@@ -122,6 +122,7 @@
 		8369724E202A803E00398A98 /* AccountMergeOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369724D202A803E00398A98 /* AccountMergeOperation.swift */; };
 		83697250202A809D00398A98 /* InflationOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369724F202A809D00398A98 /* InflationOperation.swift */; };
 		83697252202A80D600398A98 /* ManageDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697251202A80D600398A98 /* ManageDataOperation.swift */; };
+		83697255202BC5B900398A98 /* AccountLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697254202BC5B800398A98 /* AccountLinks.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -290,6 +291,7 @@
 		8369724D202A803E00398A98 /* AccountMergeOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMergeOperation.swift; sourceTree = "<group>"; };
 		8369724F202A809D00398A98 /* InflationOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InflationOperation.swift; sourceTree = "<group>"; };
 		83697251202A80D600398A98 /* ManageDataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageDataOperation.swift; sourceTree = "<group>"; };
+		83697254202BC5B800398A98 /* AccountLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountLinks.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -356,6 +358,7 @@
 				743DF5922020C58000713DE7 /* Balance.swift */,
 				836971DE2024A71B00398A98 /* Flags.swift */,
 				743DF5942020C7A600713DE7 /* Signer.swift */,
+				83697254202BC5B800398A98 /* AccountLinks.swift */,
 				836971E02024A72D00398A98 /* Links.swift */,
 				836971E32024C47300398A98 /* Link.swift */,
 			);
@@ -1031,6 +1034,7 @@
 				8369720E2028EDB100398A98 /* AccountCreditedEffect.swift in Sources */,
 				744C4DBD202A29AC00B46CDE /* OperationsError.swift in Sources */,
 				743DF56E2020530A00713DE7 /* sign.c in Sources */,
+				83697255202BC5B900398A98 /* AccountLinks.swift in Sources */,
 				836972122028EF8A00398A98 /* AccountThresholdsUpdatedEffect.swift in Sources */,
 				836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */,
 				836972102028EF0800398A98 /* AccountDebitedEffect.swift in Sources */,

@@ -13,7 +13,7 @@ import UIKit
 public class AccountDetailsResponse: NSObject, Codable {
 
     /// A list of Links related to this account.
-    public var links:Links
+    public var links:AccountLinks
     
     /// The account’s id / public key.
     public var accountId:String
@@ -71,7 +71,7 @@ public class AccountDetailsResponse: NSObject, Codable {
     */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        links = try values.decode(Links.self, forKey: .links)
+        links = try values.decode(AccountLinks.self, forKey: .links)
         accountId = try values.decode(String.self, forKey: .accountId)
         sequenceNumber = try values.decode(String.self, forKey: .sequenceNumber)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
