@@ -68,42 +68,70 @@ class AccountTestCase: XCTestCase {
             case .success(let accountDetails):
                 XCTAssertEqual(self.testSuccessAccountId, accountDetails.id)
                 XCTAssertNotNil(accountDetails.sequenceNumber)
+                XCTAssertEqual(accountDetails.sequenceNumber, "30232549674450945")
                 XCTAssertNotNil(accountDetails.links)
                 XCTAssertNotNil(accountDetails.links.selflink)
                 XCTAssertNotNil(accountDetails.links.selflink.href)
+                XCTAssertEqual(accountDetails.links.selflink.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.id)")
                 XCTAssertNil(accountDetails.links.selflink.templated)
                 XCTAssertNotNil(accountDetails.links.transactions)
                 XCTAssertNotNil(accountDetails.links.transactions.href)
-                XCTAssertNotNil(accountDetails.links.transactions.templated)
+                XCTAssertEqual(accountDetails.links.transactions.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.id)/transactions{?cursor,limit,order}")
+                XCTAssertTrue(accountDetails.links.transactions.templated ?? false)
                 XCTAssertNotNil(accountDetails.links.operations)
                 XCTAssertNotNil(accountDetails.links.operations.href)
-                XCTAssertNotNil(accountDetails.links.operations.templated)
+                XCTAssertEqual(accountDetails.links.operations.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.id)/operations{?cursor,limit,order}")
+                XCTAssertTrue(accountDetails.links.operations.templated ?? false)
                 XCTAssertNotNil(accountDetails.links.payments)
                 XCTAssertNotNil(accountDetails.links.payments.href)
-                XCTAssertNotNil(accountDetails.links.payments.templated)
+                XCTAssertEqual(accountDetails.links.payments.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.id)/payments{?cursor,limit,order}")
+                XCTAssertTrue(accountDetails.links.payments.templated ?? false)
                 XCTAssertNotNil(accountDetails.links.effects)
                 XCTAssertNotNil(accountDetails.links.effects.href)
-                XCTAssertNotNil(accountDetails.links.effects.templated)
+                XCTAssertEqual(accountDetails.links.effects.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.id)/effects{?cursor,limit,order}")
+                XCTAssertTrue(accountDetails.links.effects.templated ?? false)
                 XCTAssertNotNil(accountDetails.links.offers)
                 XCTAssertNotNil(accountDetails.links.offers.href)
-                XCTAssertNotNil(accountDetails.links.offers.templated)
-                XCTAssertNotNil(accountDetails.pagingToken)
-                XCTAssertNotNil(accountDetails.subentryCount)
+                XCTAssertEqual(accountDetails.links.offers.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.id)/offers{?cursor,limit,order}")
+                XCTAssertTrue(accountDetails.links.offers.templated ?? false)
+                XCTAssertEqual(accountDetails.pagingToken, "999")
+                XCTAssertEqual(accountDetails.subentryCount, 1)
                 XCTAssertNotNil(accountDetails.thresholds)
-                XCTAssertNotNil(accountDetails.thresholds.highThreshold)
-                XCTAssertNotNil(accountDetails.thresholds.lowThreshold)
-                XCTAssertNotNil(accountDetails.thresholds.medThreshold)
+                XCTAssertEqual(accountDetails.thresholds.highThreshold, 3)
+                XCTAssertEqual(accountDetails.thresholds.lowThreshold, 1)
+                XCTAssertEqual(accountDetails.thresholds.medThreshold, 2)
                 XCTAssertNotNil(accountDetails.flags)
                 XCTAssertNotNil(accountDetails.flags.authRequired)
-                XCTAssertNotNil(accountDetails.flags.authRevocable)
-                XCTAssertNotNil(accountDetails.flags.authImmutable)
+                XCTAssertEqual(accountDetails.flags.authRequired, true)
+                XCTAssertEqual(accountDetails.flags.authRevocable, true)
+                XCTAssertEqual(accountDetails.flags.authImmutable, true)
                 
                 XCTAssertNotNil(accountDetails.balances)
-                XCTAssertTrue(accountDetails.balances.count > 0)
+                XCTAssertTrue(accountDetails.balances.count == 3)
+                var count = 0
                 for balance in accountDetails.balances {
                     XCTAssertNotNil(balance)
                     XCTAssertNotNil(balance.assetType)
-                    XCTAssertNotNil(balance.balance)
+                    
+                    switch count {
+                        case 0:
+                            XCTAssertEqual(balance.assetType, AssetType.CREDIT_ALPHANUM4)
+                            XCTAssertEqual(balance.balance, "126.8107491")
+                            XCTAssertEqual(balance.limit, "5000.0000000")
+                            XCTAssertEqual(balance.assetCode, "BAR")
+                            XCTAssertEqual(balance.assetIssuer, "BARUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG")
+                        case 1:
+                            XCTAssertEqual(balance.assetType, AssetType.CREDIT_ALPHANUM12)
+                            XCTAssertEqual(balance.balance, "294.0000000")
+                            XCTAssertEqual(balance.limit, "922337203685.4775807")
+                            XCTAssertEqual(balance.assetCode, "FOXYMOXY")
+                            XCTAssertEqual(balance.assetIssuer, "FOXUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG")
+                        default:
+                            XCTAssertEqual(balance.assetType, AssetType.NATIVE)
+                            XCTAssertEqual(balance.balance, "9999.9999900")
+                            XCTAssertNil(balance.assetCode)
+                            XCTAssertNil(balance.assetIssuer)
+                    }
                     
                     if balance.assetType == AssetType.NATIVE {
                         XCTAssertNil(balance.assetCode)
@@ -112,17 +140,46 @@ class AccountTestCase: XCTestCase {
                         XCTAssertNotNil(balance.assetCode)
                         XCTAssertNotNil(balance.assetIssuer)
                     }
-                    
+                    count += 1
                     // TODO: what about limit? can it be nil for an asset code different than native?
                 }
                 
                 XCTAssertNotNil(accountDetails.signers)
                 XCTAssertTrue(accountDetails.signers.count > 0)
+                count = 0
                 for signer in accountDetails.signers {
-                    XCTAssertNotNil(signer)
-                    XCTAssertNotNil(signer.publicKey)
-                    XCTAssertNotNil(signer.weight)
+                    switch count {
+                        case 0:
+                            XCTAssertEqual(signer.publicKey, accountDetails.id)
+                            XCTAssertEqual(signer.weight, 1)
+                            XCTAssertEqual(signer.key, accountDetails.id)
+                            XCTAssertEqual(signer.type, "ed25519_public_key")
+                        default:
+                            XCTAssertEqual(signer.publicKey, "FOXUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG")
+                            XCTAssertEqual(signer.weight, 2)
+                            XCTAssertEqual(signer.key, "BARUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG")
+                            XCTAssertEqual(signer.type, "test")
+                    }
+                    count += 1
                 }
+                
+                var key1found = false
+                var key2found = false
+                
+                for (key, value) in accountDetails.data {
+                    switch key {
+                        case "club":
+                            XCTAssertEqual(value, "MTAw")
+                            key1found = true
+                        case "run":
+                            XCTAssertEqual(value, "faster")
+                            key2found = true
+                        default:
+                            XCTAssertNotNil(key)
+                    }
+                }
+                XCTAssertTrue(key1found)
+                XCTAssertTrue(key2found)
                 
                 XCTAssert(true)
             case .failure(_):
@@ -171,20 +228,21 @@ class AccountTestCase: XCTestCase {
                 }
             },
             "id": "\(accountId)",
-            "paging_token": "",
+            "paging_token": "999",
             "account_id": "\(accountId)",
             "sequence": "30232549674450945",
-            "subentry_count": 0,
+            "subentry_count": 1,
             "inflation_destination": "GDLZ7O5LPSDUOEAD3JBJKCSKCVAMNG7IIRKH57CXQYB46ILW2D74F26M",
             "home_domain": "soneso.com",
             "thresholds": {
-                "low_threshold": 0,
-                "med_threshold": 0,
-                "high_threshold": 0
+                "low_threshold": 1,
+                "med_threshold": 2,
+                "high_threshold": 3
             },
             "flags": {
-                "auth_required": false,
-                "auth_revocable": false
+                "auth_required": true,
+                "auth_revocable": true,
+                "auth_immutable": true
             },
             "balances": [
                 {
@@ -192,14 +250,14 @@ class AccountTestCase: XCTestCase {
                     "limit": "5000.0000000",
                     "asset_type": "credit_alphanum4",
                     "asset_code": "BAR",
-                    "asset_issuer": "GBAUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG"
+                    "asset_issuer": "BARUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG"
                 },
                 {
                     "balance": "294.0000000",
                     "limit": "922337203685.4775807",
-                    "asset_type": "credit_alphanum4",
-                    "asset_code": "FOO",
-                    "asset_issuer": "GBAUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG"
+                    "asset_type": "credit_alphanum12",
+                    "asset_code": "FOXYMOXY",
+                    "asset_issuer": "FOXUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG"
                 },
                 {
                     "balance": "9999.9999900",
@@ -210,11 +268,20 @@ class AccountTestCase: XCTestCase {
                 {
                     "public_key": "\(accountId)",
                     "weight": 1,
-                    "key": "GBZ3VAAP2T2WMKF6226FTC6OSQN6KKGAGPVCCCMDDVLCHYQMXTMNHLB3",
+                    "key": "\(accountId)",
                     "type": "ed25519_public_key"
+                },
+                {
+                    "public_key": "FOXUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG",
+                    "weight": 2,
+                    "key": "BARUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG",
+                    "type": "test"
                 }
             ],
-            "data": {}
+            "data": {
+                "club": "MTAw",
+                "run": "faster"
+            }
         }
         """
         return accountResponseString

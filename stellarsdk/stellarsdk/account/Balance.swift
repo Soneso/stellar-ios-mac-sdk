@@ -10,8 +10,8 @@ import UIKit
 
 public class Balance: NSObject, Codable {
 
-    public var balance:Decimal
-    public var limit:Decimal?
+    public var balance:String
+    public var limit:String!
     public var assetType:String
     public var assetCode:String?
     public var assetIssuer:String?
@@ -27,13 +27,8 @@ public class Balance: NSObject, Codable {
     public required init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        let balanceString = try values.decode(String.self, forKey: .balance) as String
-        balance = Decimal(string: balanceString)!
-        
-        if let limit = try values.decodeIfPresent(String.self, forKey: .limit) {
-            self.limit = Decimal(string: limit)!
-        }
-    
+        balance = try values.decode(String.self, forKey: .balance) as String
+        limit = try values.decodeIfPresent(String.self, forKey: .limit)
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
@@ -41,8 +36,8 @@ public class Balance: NSObject, Codable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(String(describing:balance), forKey: .balance)
-        try container.encode(String(describing:limit), forKey: .limit)
+        try container.encode(balance, forKey: .balance)
+        try container.encode(limit, forKey: .limit)
         try container.encode(assetType, forKey: .assetType)
         try container.encode(assetCode, forKey: .assetCode)
         try container.encode(assetIssuer, forKey: .assetIssuer)
