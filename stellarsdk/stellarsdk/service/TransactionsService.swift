@@ -8,17 +8,17 @@
 
 import UIKit
 
-public enum TransactionsResponseEnum {
-    case success(details: TransactionsResponse)
+public enum AllTransactionsResponseEnum {
+    case success(details: AllTransactionsResponse)
     case failure(error: TransactionsError)
 }
 
 public enum TransactionDetailsResponseEnum {
-    case success(details: Transaction)
+    case success(details: TransactionResponse)
     case failure(error: TransactionsError)
 }
 
-public typealias TransactionsResponseClosure = (_ response:TransactionsResponseEnum) -> (Void)
+public typealias AllTransactionsResponseClosure = (_ response:AllTransactionsResponseEnum) -> (Void)
 public typealias TransactionDetailsResponseClosure = (_ response:TransactionDetailsResponseEnum) -> (Void)
 
 public class TransactionsService: NSObject {
@@ -33,17 +33,17 @@ public class TransactionsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getTransactions(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping TransactionsResponseClosure) {
+    open func getTransactions(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllTransactionsResponseClosure) {
         let path = "/transactions?"
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getTransactions(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping TransactionsResponseClosure) {
+    open func getTransactions(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllTransactionsResponseClosure) {
         let path = "/accounts/" + accountId + "/transactions?"
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getTransactions(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping TransactionsResponseClosure) {
+    open func getTransactions(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllTransactionsResponseClosure) {
         let path = "/ledgers/" + ledger + "/transactions?"
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
@@ -75,7 +75,7 @@ public class TransactionsService: NSObject {
         }
     }
     
-    private func getTransactions(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping TransactionsResponseClosure) {
+    private func getTransactions(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllTransactionsResponseClosure) {
         var requestPath = path
         var hasFirstParam = false
         

@@ -8,12 +8,12 @@
 
 import UIKit
 
-public enum EffectsResponseEnum {
-    case success(details: EffectsResponse)
+public enum AllEffectsResponseEnum {
+    case success(details: AllEffectsResponse)
     case failure(error: EffectsError)
 }
 
-public typealias EffectsResponseClosure = (_ response:EffectsResponseEnum) -> (Void)
+public typealias AllEffectsResponseClosure = (_ response:AllEffectsResponseEnum) -> (Void)
 
 public class EffectsService: NSObject {
     let serviceHelper: ServiceHelper
@@ -27,32 +27,32 @@ public class EffectsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getEffects(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+    open func getEffects(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
         let path = "/effects?"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getEffects(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+    open func getEffects(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
         let path = "/accounts/" + accountId + "/effects?"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getEffects(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+    open func getEffects(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
         let path = "/ledgers/" + ledger + "/effects?"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getEffects(forOperation operation:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+    open func getEffects(forOperation operation:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
         let path = "/operations/" + operation + "/effects?"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getEffects(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+    open func getEffects(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
         let path = "/transactions/" + hash + "/effects?"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    private func getEffects(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping EffectsResponseClosure) {
+    private func getEffects(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
         var requestPath = path
         var hasFirstParam = false
         

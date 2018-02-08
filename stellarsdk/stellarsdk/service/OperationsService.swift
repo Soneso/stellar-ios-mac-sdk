@@ -8,17 +8,17 @@
 
 import UIKit
 
-public enum OperationsResponseEnum {
-    case success(details: OperationsResponse)
+public enum AllOperationsResponseEnum {
+    case success(details: AllOperationsResponse)
     case failure(error: OperationsError)
 }
 
 public enum OperationDetailsResponseEnum {
-    case success(details: Operation)
+    case success(details: OperationResponse)
     case failure(error: OperationsError)
 }
 
-public typealias OperationsResponseClosure = (_ response:OperationsResponseEnum) -> (Void)
+public typealias AllOperationsResponseClosure = (_ response:AllOperationsResponseEnum) -> (Void)
 public typealias OperationDetailsResponseClosure = (_ response:OperationDetailsResponseEnum) -> (Void)
 
 public class OperationsService: NSObject {
@@ -33,22 +33,22 @@ public class OperationsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping OperationsResponseClosure) {
+    open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllOperationsResponseClosure) {
         let path = "/operations?"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping OperationsResponseClosure) {
+    open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllOperationsResponseClosure) {
         let path = "/accounts/" + accountId + "/operations?"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping OperationsResponseClosure) {
+    open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllOperationsResponseClosure) {
         let path = "/ledgers/" + ledger + "/operations?"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping OperationsResponseClosure) {
+    open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllOperationsResponseClosure) {
         let path = "/transactions/" + hash + "/operations?"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
@@ -80,7 +80,7 @@ public class OperationsService: NSObject {
         }
     }
     
-    private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping OperationsResponseClosure) {
+    private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllOperationsResponseClosure) {
         var requestPath = path
         var hasFirstParam = false
         

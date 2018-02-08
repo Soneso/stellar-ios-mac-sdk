@@ -8,17 +8,17 @@
 
 import UIKit
 
-public enum LedgersResponseEnum {
-    case success(details: LedgersResponse)
+public enum AllLedgersResponseEnum {
+    case success(details: AllLedgersResponse)
     case failure(error: LedgersError)
 }
 
 public enum LedgerDetailsResponseEnum {
-    case success(details: Ledger)
+    case success(details: LedgerResponse)
     case failure(error: LedgersError)
 }
 
-public typealias LedgersResponseClosure = (_ response:LedgersResponseEnum) -> (Void)
+public typealias AllLedgersResponseClosure = (_ response:AllLedgersResponseEnum) -> (Void)
 public typealias LedgerDetailsResponseClosure = (_ response:LedgerDetailsResponseEnum) -> (Void)
 
 public class LedgersService: NSObject {
@@ -39,7 +39,7 @@ public class LedgersService: NSObject {
             switch result {
             case .success(let data):
                 do {
-                    let ledger = try self.jsonDecoder.decode(Ledger.self, from: data)
+                    let ledger = try self.jsonDecoder.decode(LedgerResponse.self, from: data)
                     response(.success(details: ledger))
                 } catch {
                     response(.failure(error: error as! LedgersError))
@@ -59,7 +59,7 @@ public class LedgersService: NSObject {
         }
     }
     
-    open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping LedgersResponseClosure) {
+    open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllLedgersResponseClosure) {
         var requestPath = "/ledgers?"
         var hasFirstParam = false
         if let cursor = cursor {
@@ -87,7 +87,7 @@ public class LedgersService: NSObject {
             switch result {
             case .success(let data):
                 do {
-                    let ledgers = try self.jsonDecoder.decode(LedgersResponse.self, from: data)
+                    let ledgers = try self.jsonDecoder.decode(AllLedgersResponse.self, from: data)
                     response(.success(details: ledgers))
                 } catch {
                     // TODO DecodingError

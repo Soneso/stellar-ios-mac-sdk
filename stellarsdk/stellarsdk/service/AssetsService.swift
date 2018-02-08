@@ -8,12 +8,12 @@
 
 import UIKit
 
-public enum AssetsResponseEnum {
-    case success(details: AssetsResponse)
+public enum AllAssetsResponseEnum {
+    case success(details: AllAssetsResponse)
     case failure(error: AssetsError)
 }
 
-public typealias AssetsResponseClosure = (_ response:AssetsResponseEnum) -> (Void)
+public typealias AllAssetsResponseClosure = (_ response:AllAssetsResponseEnum) -> (Void)
 
 public class AssetsService: NSObject {
     let serviceHelper: ServiceHelper
@@ -27,7 +27,7 @@ public class AssetsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getAssets(from assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AssetsResponseClosure) {
+    open func getAssets(from assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllAssetsResponseClosure) {
         var requestPath = "/assets?"
         var hasFirstParam = false
         if let assetCode = assetCode {
@@ -73,7 +73,7 @@ public class AssetsService: NSObject {
             switch result {
             case .success(let data):
                 do {
-                    let assets = try self.jsonDecoder.decode(AssetsResponse.self, from: data)
+                    let assets = try self.jsonDecoder.decode(AllAssetsResponse.self, from: data)
                     response(.success(details: assets))
                 } catch {
                     response(.failure(error: error as! AssetsError))

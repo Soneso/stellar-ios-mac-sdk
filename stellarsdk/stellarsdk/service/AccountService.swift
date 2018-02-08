@@ -9,8 +9,8 @@
 import UIKit
 
 /// An enum used to diferentiate between successful and failed account details responses
-public enum AccountDetailsResponseEnum {
-    case success(details: AccountDetailsResponse)
+public enum AccountResponseEnum {
+    case success(details: AccountResponse)
     case failure(error: AccountError)
 }
 
@@ -29,9 +29,9 @@ public enum CreateAccountResponseEnum {
 /// A closure to be called with the response from a create account request
 public typealias CreateAccountClosure = (_ response:CreateAccountResponseEnum) -> (Void)
 /// A closure to be called with the response from a account details request
-public typealias AccountDetailsClosure = (_ response:AccountDetailsResponseEnum) -> (Void)
+public typealias AccountResponseClosure = (_ response:AccountResponseEnum) -> (Void)
 /// A closure to be called with the response from a data for account requrst
-public typealias DataForAccountClosure = (_ response:DataForAccountResponseEnum) -> (Void)
+public typealias DataForAccountResponseClosure = (_ response:DataForAccountResponseEnum) -> (Void)
 
 /// Class that handles account related calls
 open class AccountService: NSObject {
@@ -77,14 +77,14 @@ open class AccountService: NSObject {
     ///
     /// - parameter accountId:  A stellar accountid for an already created account. An stellar account is created when some assets are sent to a new key.
     /// - parameter response:   The closure to be called upon response.
-    open func getAccountDetails(accountId: String, response: @escaping AccountDetailsClosure) {
+    open func getAccountDetails(accountId: String, response: @escaping AccountResponseClosure) {
         let requestPath = "/accounts/\(accountId)"
         
         serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
-                    let responseMessage = try self.jsonDecoder.decode(AccountDetailsResponse.self, from: data)
+                    let responseMessage = try self.jsonDecoder.decode(AccountResponse.self, from: data)
                     response(.success(details:responseMessage))
                 } catch {
                     response(.failure(error: .parsingFailed(response: error.localizedDescription)))
@@ -111,7 +111,7 @@ open class AccountService: NSObject {
     /// - parameter accountId:  A stellar accountid
     /// - parameter key:  key of the data field
     /// - parameter response:   The closure to be called upon response.
-    open func getDataForAccount(accountId: String, key: String, response: @escaping DataForAccountClosure) {
+    open func getDataForAccount(accountId: String, key: String, response: @escaping DataForAccountResponseClosure) {
         let requestPath = "/accounts/\(accountId)/data/\(key)"
         
         serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
