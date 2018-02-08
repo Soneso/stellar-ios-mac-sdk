@@ -13,6 +13,8 @@ class EffectsFactory: NSObject {
     
     func effectsFromResponseData(data: Data) throws -> EffectsResponse {
         var effectsList = [Effect]()
+        var links: AllEffectsLinks
+        
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
             
@@ -81,11 +83,14 @@ class EffectsFactory: NSObject {
                 }
             }
             
+            let linksJson = try JSONSerialization.data(withJSONObject: json["_links"]!, options: .prettyPrinted)
+            links = try jsonDecoder.decode(AllEffectsLinks.self, from: linksJson)
+            
         } catch {
             throw EffectsError.parsingFailed(response: error.localizedDescription)
         }
         
-        return EffectsResponse(effects: effectsList)
+        return EffectsResponse(effects: effectsList, links:links)
     }
     
 }

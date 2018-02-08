@@ -10,9 +10,10 @@ import UIKit
 
 public class EffectsResponse: NSObject {
     public var effects:[Effect]
+    public var links: AllEffectsLinks
     
-    public init(effects: [Effect]) {
+    public init(effects: [Effect], links:AllEffectsLinks) {
         self.effects = effects
+        self.links = links
     }
-    
 }

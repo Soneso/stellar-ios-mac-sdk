@@ -123,6 +123,7 @@
 		83697250202A809D00398A98 /* InflationOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369724F202A809D00398A98 /* InflationOperation.swift */; };
 		83697252202A80D600398A98 /* ManageDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697251202A80D600398A98 /* ManageDataOperation.swift */; };
 		83697255202BC5B900398A98 /* AccountLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697254202BC5B800398A98 /* AccountLinks.swift */; };
+		83697257202BCBFF00398A98 /* AllEffectsLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697256202BCBFF00398A98 /* AllEffectsLinks.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -292,6 +293,7 @@
 		8369724F202A809D00398A98 /* InflationOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InflationOperation.swift; sourceTree = "<group>"; };
 		83697251202A80D600398A98 /* ManageDataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageDataOperation.swift; sourceTree = "<group>"; };
 		83697254202BC5B800398A98 /* AccountLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountLinks.swift; sourceTree = "<group>"; };
+		83697256202BCBFF00398A98 /* AllEffectsLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEffectsLinks.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -661,6 +663,7 @@
 				8369722D2028F7A000398A98 /* OfferRemovedEffect.swift */,
 				8369722F2028F7AD00398A98 /* OfferUpdatedEffect.swift */,
 				836972312028F86500398A98 /* TradeEffect.swift */,
+				83697256202BCBFF00398A98 /* AllEffectsLinks.swift */,
 			);
 			path = effects;
 			sourceTree = "<group>";
@@ -1113,6 +1116,7 @@
 				744C4DC4202A364300B46CDE /* DateFormatter+ISOParsing.swift in Sources */,
 				8369721A2028F40E00398A98 /* SignerRemovedEffect.swift in Sources */,
 				8369721C2028F45400398A98 /* SignerUpdatedEffect.swift in Sources */,
+				83697257202BCBFF00398A98 /* AllEffectsLinks.swift in Sources */,
 				7481B5442024BABF000A783E /* EffectsError.swift in Sources */,
 				836972322028F86500398A98 /* TradeEffect.swift in Sources */,
 				8369720C2028ED6400398A98 /* AccountRemovedEffect.swift in Sources */,
