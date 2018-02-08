@@ -8,26 +8,57 @@
 
 import UIKit
 
+///  Represents a ledger response.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/ledger.html "Ledger")
 public class Ledger: NSObject, Codable {
     
-    public var links:Links
-    public var id:String // The id is a unique identifier for this ledger.
-    public var pagingToken:String // A paging token suitable for use as a cursor parameter.
-    public var hashXdr:String // A hex-encoded SHA-256 hash of the ledger’s XDR-encoded form.
-    public var previousHashXdr:String // The hash of the ledger that chronologically came before this one.
-    public var sequenceNumber:Int64 // Sequence number of this ledger, suitable for use as the as the :id parameter for url templates that require a ledger number.
-    public var transactionCount:Int // The number of transactions in this ledger.
-    public var operationCount:Int // The number of operations in this ledger.
-    public var closedAt:String // An ISO 8601 formatted string of when this ledger was closed.
-    public var totalCoins:String // The total number of lumens in circulation.
-    public var feePool:String // The sum of all transaction fees (in lumens) since the last inflation operation. They are redistributed during inflation.
-    public var baseFee:Decimal // The fee the network charges per operation in a transaction.
-    public var baseReserve:String // The reserve the network uses when calculating an account’s minimum balance.
-    public var maxTxSetSize:Int // The maximum number of transactions validators have agreed to process in a given ledger.
-    public var protocolVersion:Decimal // The protocol version that the stellar network was running when this ledger was committed.
+    /// A list of links related to this ledger.
+    public var links:LedgerLinks
     
+    /// Unique identifier for this ledger.
+    public var id:String
+    
+    /// Paging token suitable for use as a cursor parameter.
+    public var pagingToken:String
+    
+    /// Hex-encoded SHA-256 hash of the ledger’s XDR-encoded form.
+    public var hashXdr:String
+    
+    /// The hash of the ledger that chronologically came before this one.
+    public var previousHashXdr:String
+    
+    /// Sequence number of this ledger, suitable for use as the as the :id parameter for url templates that require a ledger number.
+    public var sequenceNumber:Int64
+    
+    /// The number of transactions in this ledger.
+    public var transactionCount:Int
+    
+    /// The number of operations in this ledger.
+    public var operationCount:Int
+    
+    /// An ISO 8601 formatted string of when this ledger was closed.
+    public var closedAt:String
+    
+    /// The total number of lumens in circulation.
+    public var totalCoins:String
+    
+    /// The sum of all transaction fees (in lumens) since the last inflation operation. They are redistributed during inflation.
+    public var feePool:String
+    
+    /// The fee the network charges per operation in a transaction.
+    public var baseFee:Decimal
+    
+    /// The reserve the network uses when calculating an account’s minimum balance.
+    public var baseReserve:String
+    
+    /// The maximum number of transactions validators have agreed to process in a given ledger.
+    public var maxTxSetSize:Int
+    
+    /// The protocol version that the stellar network was running when this ledger was committed.
+    public var protocolVersion:Decimal
+    
+    // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
-        
         case links = "_links"
         case id
         case pagingToken = "paging_token"
@@ -46,10 +77,15 @@ public class Ledger: NSObject, Codable {
         
     }
     
+    /**
+        Initializer - creates a new instance by decoding from the given decoder.
+     
+        - Parameter decoder: The decoder containing the data
+     */
     public required init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        links = try values.decode(Links.self, forKey: .links)
+        links = try values.decode(LedgerLinks.self, forKey: .links)
         id = try values.decode(String.self, forKey: .id)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         hashXdr = try values.decode(String.self, forKey: .hashXdr)
@@ -66,6 +102,11 @@ public class Ledger: NSObject, Codable {
         protocolVersion = try values.decode(Decimal.self, forKey: .protocolVersion)
     }
     
+    /**
+        Encodes this value into the given encoder.
+     
+        - Parameter encoder: The encoder to receive the data
+     */
     public func encode(to encoder: Encoder) throws {
         
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -86,4 +127,3 @@ public class Ledger: NSObject, Codable {
         try container.encode(protocolVersion, forKey: .protocolVersion)
     }
 }
-

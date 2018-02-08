@@ -38,7 +38,7 @@ public class AssetsResponse: NSObject, Codable {
      */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        links = try values.decode(AllAssetsLinks.self, forKey: .links)
+        self.links = try values.decode(AllAssetsLinks.self, forKey: .links)
         self.embeddedRecords = try values.decode(EmbeddedAssetsService.self, forKey: .embeddedRecords)
         self.assets = self.embeddedRecords.records
     }

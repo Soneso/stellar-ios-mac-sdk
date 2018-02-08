@@ -90,6 +90,7 @@ public class LedgersService: NSObject {
                     let ledgers = try self.jsonDecoder.decode(LedgersResponse.self, from: data)
                     response(.success(details: ledgers))
                 } catch {
+                    // TODO DecodingError
                     response(.failure(error: error as! LedgersError))
                 }
             case .failure(let error):

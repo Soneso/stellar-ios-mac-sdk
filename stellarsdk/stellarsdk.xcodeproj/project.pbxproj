@@ -137,6 +137,8 @@
 		83697259202CB88300398A98 /* EffectLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697258202CB88300398A98 /* EffectLinks.swift */; };
 		83DD2C55202CE39C00713FEE /* AssetLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C54202CE39C00713FEE /* AssetLinks.swift */; };
 		83DD2C57202CE5E200713FEE /* AllAssetsLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C56202CE5E200713FEE /* AllAssetsLinks.swift */; };
+		83DD2C59202CE9C600713FEE /* AllLedgersLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C58202CE9C600713FEE /* AllLedgersLinks.swift */; };
+		83DD2C5B202CEB0700713FEE /* LedgerLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C5A202CEB0700713FEE /* LedgerLinks.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -320,6 +322,8 @@
 		83697258202CB88300398A98 /* EffectLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectLinks.swift; sourceTree = "<group>"; };
 		83DD2C54202CE39C00713FEE /* AssetLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLinks.swift; sourceTree = "<group>"; };
 		83DD2C56202CE5E200713FEE /* AllAssetsLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllAssetsLinks.swift; sourceTree = "<group>"; };
+		83DD2C58202CE9C600713FEE /* AllLedgersLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllLedgersLinks.swift; sourceTree = "<group>"; };
+		83DD2C5A202CEB0700713FEE /* LedgerLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerLinks.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -752,7 +756,9 @@
 			isa = PBXGroup;
 			children = (
 				836971FC2025531C00398A98 /* LedgersResponse.swift */,
+				83DD2C58202CE9C600713FEE /* AllLedgersLinks.swift */,
 				836971FE2025532900398A98 /* Ledger.swift */,
+				83DD2C5A202CEB0700713FEE /* LedgerLinks.swift */,
 			);
 			path = ledgers;
 			sourceTree = "<group>";
@@ -1121,6 +1127,7 @@
 				743DF56C2020530A00713DE7 /* fe.c in Sources */,
 				744C4DBB202A27F600B46CDE /* OperationsResponse.swift in Sources */,
 				743DF5932020C58000713DE7 /* Balance.swift in Sources */,
+				83DD2C59202CE9C600713FEE /* AllLedgersLinks.swift in Sources */,
 				745F2BB8202C36AA008763F1 /* TransactionsService.swift in Sources */,
 				8369722C2028F79200398A98 /* OfferCreatedEffect.swift in Sources */,
 				836972202028F59D00398A98 /* SignerEffect.swift in Sources */,
@@ -1195,6 +1202,7 @@
 				7481B5442024BABF000A783E /* EffectsError.swift in Sources */,
 				836972322028F86500398A98 /* TradeEffect.swift in Sources */,
 				8369720C2028ED6400398A98 /* AccountRemovedEffect.swift in Sources */,
+				83DD2C5B202CEB0700713FEE /* LedgerLinks.swift in Sources */,
 				8369722A2028F6A700398A98 /* TrustlineDeauthorizedEffect.swift in Sources */,
 				743DF54C201F73FC00713DE7 /* VersionByte.swift in Sources */,
 				743DF53E201F49CF00713DE7 /* Configs.swift in Sources */,
