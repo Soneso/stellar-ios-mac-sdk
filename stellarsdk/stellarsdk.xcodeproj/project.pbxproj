@@ -135,6 +135,8 @@
 		83697255202BC5B900398A98 /* AccountLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697254202BC5B800398A98 /* AccountLinks.swift */; };
 		83697257202BCBFF00398A98 /* AllEffectsLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697256202BCBFF00398A98 /* AllEffectsLinks.swift */; };
 		83697259202CB88300398A98 /* EffectLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697258202CB88300398A98 /* EffectLinks.swift */; };
+		83DD2C55202CE39C00713FEE /* AssetLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C54202CE39C00713FEE /* AssetLinks.swift */; };
+		83DD2C57202CE5E200713FEE /* AllAssetsLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C56202CE5E200713FEE /* AllAssetsLinks.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -316,6 +318,8 @@
 		83697254202BC5B800398A98 /* AccountLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountLinks.swift; sourceTree = "<group>"; };
 		83697256202BCBFF00398A98 /* AllEffectsLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEffectsLinks.swift; sourceTree = "<group>"; };
 		83697258202CB88300398A98 /* EffectLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectLinks.swift; sourceTree = "<group>"; };
+		83DD2C54202CE39C00713FEE /* AssetLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLinks.swift; sourceTree = "<group>"; };
+		83DD2C56202CE5E200713FEE /* AllAssetsLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllAssetsLinks.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -729,7 +733,9 @@
 			isa = PBXGroup;
 			children = (
 				836971EA2025058600398A98 /* AssetsResponse.swift */,
+				83DD2C56202CE5E200713FEE /* AllAssetsLinks.swift */,
 				836971EC202508C900398A98 /* Asset.swift */,
+				83DD2C54202CE39C00713FEE /* AssetLinks.swift */,
 			);
 			path = assets;
 			sourceTree = "<group>";
@@ -1139,6 +1145,7 @@
 				83697244202A7AF500398A98 /* ManageOfferOperation.swift in Sources */,
 				743DF541201F6A9C00713DE7 /* Base32.swift in Sources */,
 				7481B53E20248441000A783E /* EffectsService.swift in Sources */,
+				83DD2C55202CE39C00713FEE /* AssetLinks.swift in Sources */,
 				743DF54A201F70CA00713DE7 /* String+Base32.swift in Sources */,
 				743DF500201F38D900713DE7 /* AccountError.swift in Sources */,
 				743DF546201F706B00713DE7 /* Data+CRC.swift in Sources */,
@@ -1153,6 +1160,7 @@
 				836972182028F2D100398A98 /* SignerCreatedEffect.swift in Sources */,
 				743DF5672020530A00713DE7 /* add_scalar.c in Sources */,
 				836972242028F62A00398A98 /* TrustlineRemovedEffect.swift in Sources */,
+				83DD2C57202CE5E200713FEE /* AllAssetsLinks.swift in Sources */,
 				8369720320255BA100398A98 /* LedgersError.swift in Sources */,
 				743DF5682020530A00713DE7 /* seed.c in Sources */,
 				745F2BBE202C4743008763F1 /* TransactionsError.swift in Sources */,

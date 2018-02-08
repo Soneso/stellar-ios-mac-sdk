@@ -1,14 +1,14 @@
 //
-//  AllEffectsLinks.swift
+//  AllAssetsLinks.swift
 //  stellarsdk
 //
 //  Created by Rogobete Christian on 08.02.18.
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-/// Represents the links connected to the all effects response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/effects-all.html "All Effects")
-public class AllEffectsLinks: NSObject, Codable {
+/// Represents the links connected to the all assets response.
+/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/assets-all.html "All Assets Request")
+public class AllAssetsLinks: NSObject, Codable {
     
     /// Link to the effects request URL.
     public var selflink:Link
