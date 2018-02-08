@@ -8,9 +8,17 @@
 
 import UIKit
 
+///  This class creates the different types of effect classes depending on the effect type value from the json effect response.
 class EffectsFactory: NSObject {
+    
+    /// The json decoder used to parse the received json response from the Horizon API.
     let jsonDecoder = JSONDecoder()
     
+    /**
+        Returns an EffectResponse object conatining all effects parsed from the json data.
+     
+        - Parameter data: The json data received from the Horizon API. See
+     */
     func effectsFromResponseData(data: Data) throws -> EffectsResponse {
         var effectsList = [Effect]()
         var links: AllEffectsLinks
@@ -20,6 +28,8 @@ class EffectsFactory: NSObject {
             
             for record in json["_embedded"]!["records"] as! [[String:AnyObject]] {
                 let jsonRecord = try JSONSerialization.data(withJSONObject: record, options: .prettyPrinted)
+                
+                // The class to be used depends on the effect type coded in its json reresentation.
                 if let type = EffectType(rawValue: record["type_i"] as! Int) {
                     switch type {
                     case .accountCreated:

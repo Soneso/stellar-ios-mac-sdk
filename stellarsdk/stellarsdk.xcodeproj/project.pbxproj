@@ -134,6 +134,7 @@
 		83697252202A80D600398A98 /* ManageDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697251202A80D600398A98 /* ManageDataOperation.swift */; };
 		83697255202BC5B900398A98 /* AccountLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697254202BC5B800398A98 /* AccountLinks.swift */; };
 		83697257202BCBFF00398A98 /* AllEffectsLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697256202BCBFF00398A98 /* AllEffectsLinks.swift */; };
+		83697259202CB88300398A98 /* EffectLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697258202CB88300398A98 /* EffectLinks.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -314,6 +315,7 @@
 		83697251202A80D600398A98 /* ManageDataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageDataOperation.swift; sourceTree = "<group>"; };
 		83697254202BC5B800398A98 /* AccountLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountLinks.swift; sourceTree = "<group>"; };
 		83697256202BCBFF00398A98 /* AllEffectsLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEffectsLinks.swift; sourceTree = "<group>"; };
+		83697258202CB88300398A98 /* EffectLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectLinks.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -718,6 +720,7 @@
 				8369722F2028F7AD00398A98 /* OfferUpdatedEffect.swift */,
 				836972312028F86500398A98 /* TradeEffect.swift */,
 				83697256202BCBFF00398A98 /* AllEffectsLinks.swift */,
+				83697258202CB88300398A98 /* EffectLinks.swift */,
 			);
 			path = effects;
 			sourceTree = "<group>";
@@ -1125,6 +1128,7 @@
 				7481B5422024B037000A783E /* Effect.swift in Sources */,
 				7481B54C2024CF62000A783E /* EffectsResponse.swift in Sources */,
 				83697250202A809D00398A98 /* InflationOperation.swift in Sources */,
+				83697259202CB88300398A98 /* EffectLinks.swift in Sources */,
 				745F2BB3202C287A008763F1 /* XDREncoder.swift in Sources */,
 				836971EB2025058600398A98 /* AssetsResponse.swift in Sources */,
 				7481B53B2023056F000A783E /* NetworkError.swift in Sources */,

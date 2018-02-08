@@ -8,6 +8,6 @@
 
 import UIKit
 
-///  Represents an account removed effect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Account Removed Effect")
+///  Represents an account removed effect response.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
 public class AccountRemovedEffect: Effect {}

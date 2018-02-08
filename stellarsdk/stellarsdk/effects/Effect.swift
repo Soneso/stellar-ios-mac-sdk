@@ -8,6 +8,7 @@
 
 import UIKit
 
+/// Currently available effect types.
 public enum EffectType: Int {
     case accountCreated = 0
     case accountRemoved = 1
@@ -30,15 +31,29 @@ public enum EffectType: Int {
     case tradeEffect = 33
 }
 
+///  Represents an account effect response. Superclass for all other effect response classes.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
 public class Effect: NSObject, Codable {
     
-    public var links:Links
+    /// A list of links related to this effect.
+    public var links:EffectLinks
+    
+    /// ID of the effect.
     public var id:String
+    
+    /// A paging token, specifying where the returned records start from.
     public var pagingToken:String
+    
+    /// Account ID/Public Key of the account the effect belongs to.
     public var account:String
+    
+    /// Type of the effect as human readable string.
     public var effectTypeString:String
+    
+    /// Type of the effect (int) see enum EffectType.
     public var effectType:EffectType
     
+    // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case links = "_links"
         case id
@@ -47,10 +62,15 @@ public class Effect: NSObject, Codable {
         case effectTypeString = "type"
         case effectType = "type_i"
     }
-
+    
+    /**
+        Initializer - creates a new instance by decoding from the given decoder.
+     
+        - Parameter decoder: The decoder containing the data
+     */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        links = try values.decode(Links.self, forKey: .links)
+        links = try values.decode(EffectLinks.self, forKey: .links)
         id = try values.decode(String.self, forKey: .id)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         account = try values.decode(String.self, forKey: .account)
@@ -59,6 +79,11 @@ public class Effect: NSObject, Codable {
         effectType = EffectType(rawValue: typeIInt)!
     }
     
+    /**
+        Encodes this value into the given encoder.
+     
+        - Parameter encoder: The encoder to receive the data
+     */
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(links, forKey: .links)

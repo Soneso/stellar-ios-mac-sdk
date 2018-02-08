@@ -8,8 +8,8 @@
 
 import UIKit
 
-///  Represents an account credited effect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Account Credited Effect")
+///  Represents an account credited effect response.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
 public class AccountCreditedEffect: Effect {
     
     /// Amount credited to the account.

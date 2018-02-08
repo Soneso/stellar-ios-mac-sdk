@@ -24,7 +24,7 @@ public class AccountDetailsResponse: NSObject, Codable {
     /// The number of account subentries.
     public var subentryCount:UInt
     
-    /// A paging token, specifying where the returnned records start from.
+    /// A paging token, specifying where the returned records start from.
     public var pagingToken:String
 
     /// Account designated to receive inflation if any.

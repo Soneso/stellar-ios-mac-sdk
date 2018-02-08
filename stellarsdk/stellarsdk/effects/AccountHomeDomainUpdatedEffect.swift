@@ -6,8 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-///  Represents an account home domain updated effect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Account Home Domain Updated Effect")
+///  Represents an account home domain updated effect response.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
 ///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/accounts.html#home-domain "Home Domain")
 public class AccountHomeDomainUpdatedEffect: Effect {
     

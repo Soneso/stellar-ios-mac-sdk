@@ -8,8 +8,8 @@
 
 import UIKit
 
-///  Represents an account debited effect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Account Debited Effect")
+///  Represents an account debited effect response.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
 public class AccountDebitedEffect: Effect {
     
     /// The amount debited from this account.

@@ -6,8 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-///  Represents an account flags updated effect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Account Home Domain Updated Effect")
+///  Represents an account flags updated effect response.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
 ///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/accounts.html#flags "Account Flags")
 public class AccountFlagsUpdatedEffect: Effect {
     
@@ -55,9 +55,9 @@ public class AccountFlagsUpdatedEffect: Effect {
     }
     
     /**
-     Encodes this value into the given encoder.
+        Encodes this value into the given encoder.
      
-     - Parameter encoder: The encoder to receive the data
+        - Parameter encoder: The encoder to receive the data
      */
     public override func encode(to encoder: Encoder) throws {
         try super.encode(to: encoder)

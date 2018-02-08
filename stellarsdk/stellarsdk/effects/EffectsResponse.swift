@@ -9,7 +9,7 @@
 import UIKit
 
 ///  Represents an effetcs response, containing effetc response objetcs and links from the effects request
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/effects-all.html "All Effetcs")
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/effects-all.html "All Effects")
 public class EffectsResponse: NSObject {
     
     /// An array of effetc objects received from the respones
