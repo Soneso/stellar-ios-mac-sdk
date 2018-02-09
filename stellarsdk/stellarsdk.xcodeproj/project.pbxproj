@@ -151,6 +151,8 @@
 		83DD2C77202DF39900713FEE /* NotImplementedErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C76202DF39900713FEE /* NotImplementedErrorResponse.swift */; };
 		83DD2C79202DF41F00713FEE /* NotAcceptableErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C78202DF41F00713FEE /* NotAcceptableErrorResponse.swift */; };
 		83DD2C7B202DF4B000713FEE /* StaleHistoryErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C7A202DF4B000713FEE /* StaleHistoryErrorResponse.swift */; };
+		83DD2C7D202E10A700713FEE /* TransactionFailedErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C7C202E10A700713FEE /* TransactionFailedErrorResponse.swift */; };
+		83DD2C81202E192A00713FEE /* TransactionMalformedErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C80202E192A00713FEE /* TransactionMalformedErrorResponse.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -348,6 +350,8 @@
 		83DD2C76202DF39900713FEE /* NotImplementedErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotImplementedErrorResponse.swift; sourceTree = "<group>"; };
 		83DD2C78202DF41F00713FEE /* NotAcceptableErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotAcceptableErrorResponse.swift; sourceTree = "<group>"; };
 		83DD2C7A202DF4B000713FEE /* StaleHistoryErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaleHistoryErrorResponse.swift; sourceTree = "<group>"; };
+		83DD2C7C202E10A700713FEE /* TransactionFailedErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionFailedErrorResponse.swift; sourceTree = "<group>"; };
+		83DD2C80202E192A00713FEE /* TransactionMalformedErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMalformedErrorResponse.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -827,6 +831,8 @@
 				83DD2C6C202DE47300713FEE /* RateLimitExceededErrorResponse.swift */,
 				83DD2C68202DE17000713FEE /* InternalServerErrorResponse.swift */,
 				83DD2C7A202DF4B000713FEE /* StaleHistoryErrorResponse.swift */,
+				83DD2C7C202E10A700713FEE /* TransactionFailedErrorResponse.swift */,
+				83DD2C80202E192A00713FEE /* TransactionMalformedErrorResponse.swift */,
 			);
 			path = error_responses;
 			sourceTree = "<group>";
@@ -1183,6 +1189,7 @@
 				744C4DBB202A27F600B46CDE /* AllOperationsResponse.swift in Sources */,
 				743DF5932020C58000713DE7 /* AccountBalanceResponse.swift in Sources */,
 				83DD2C59202CE9C600713FEE /* AllLedgersLinksResponse.swift in Sources */,
+				83DD2C81202E192A00713FEE /* TransactionMalformedErrorResponse.swift in Sources */,
 				745F2BB8202C36AA008763F1 /* TransactionsService.swift in Sources */,
 				83DD2C79202DF41F00713FEE /* NotAcceptableErrorResponse.swift in Sources */,
 				83DD2C7B202DF4B000713FEE /* StaleHistoryErrorResponse.swift in Sources */,
@@ -1246,6 +1253,7 @@
 				8369722E2028F7A000398A98 /* OfferRemovedEffectResponse.swift in Sources */,
 				83697252202A80D600398A98 /* ManageDataOperationResponse.swift in Sources */,
 				83DD2C5E202D0A7800713FEE /* AllOperationsLinksResponse.swift in Sources */,
+				83DD2C7D202E10A700713FEE /* TransactionFailedErrorResponse.swift in Sources */,
 				743DF5762020530A00713DE7 /* keypair.c in Sources */,
 				83DD2C6F202DE4D900713FEE /* ForbiddenErrorResponse.swift in Sources */,
 				836971FF2025532900398A98 /* LedgerResponse.swift in Sources */,

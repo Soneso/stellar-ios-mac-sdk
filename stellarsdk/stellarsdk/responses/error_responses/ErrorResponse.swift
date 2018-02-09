@@ -28,7 +28,7 @@ public class ErrorResponse: NSObject, Decodable {
     public var instance:String
     
     // Properties to encode and decode
-    enum CodingKeys: String, CodingKey {
+    private enum CodingKeys: String, CodingKey {
         case type
         case title
         case httpStatusCode = "status"
