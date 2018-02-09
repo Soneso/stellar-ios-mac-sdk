@@ -16,20 +16,48 @@ public enum MemoType: Int {
     case `return` = 4
 }
 
+///  Represents a transaction response.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/transaction.html "Transaction")
 public class TransactionResponse: NSObject, Decodable {
+    
+    /// A list of links related to this asset.
+    public var links:TransactionLinksResponse
+    
+    /// The id of this transaction.
     public var id:String
+    
+    /// A paging token suitable for use as the cursor parameter to transaction collection resources.
     public var pagingToken:String
+    
+    /// A hex-encoded SHA-256 hash of the transaction’s XDR-encoded form.
     public var transactionHash:String
+    
+    /// Sequence number of the ledger in which this transaction was applied.
     public var ledger:Int
+    
+    /// Date created.
     public var createdAt:Date
+    
+    /// The account that originates the transaction.
     public var sourceAccount:String
+    
+    /// The current transaction sequence number of the source account.
     public var sourceAccountSequence:String
+    
+    /// The fee paid by the source account of this transaction when the transaction was applied to the ledger.
     public var feePaid:Int
+    
+    /// The number of operations that are contained within this transaction.
     public var operationCount:Int
+    
+    /// The memo type. See enum MemoType. The memo contains optional extra information.
     public var memoType:String
+    
+    
     public var signatures:[String]
     
     private enum CodingKeys: String, CodingKey {
+        case links = "_links"
         case id
         case pagingToken = "paging_token"
         case transactionHash = "hash"
@@ -45,6 +73,7 @@ public class TransactionResponse: NSObject, Decodable {
     
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
+        links = try values.decode(TransactionLinksResponse.self, forKey: .links)
         id = try values.decode(String.self, forKey: .id)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         transactionHash = try values.decode(String.self, forKey: .transactionHash)

@@ -23,8 +23,8 @@ public typealias TransactionDetailsResponseClosure = (_ response:TransactionDeta
 
 public class TransactionsService: NSObject {
     let serviceHelper: ServiceHelper
-    let transactionsFactory = TransactionsFactory()
-    
+    let jsonDecoder = JSONDecoder()
+
     private override init() {
         serviceHelper = ServiceHelper(baseURL: "")
     }
@@ -55,7 +55,8 @@ public class TransactionsService: NSObject {
             switch result {
             case .success(let data):
                 do {
-                    let transaction = try self.transactionsFactory.transactionFromData(data: data)
+                    self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                    let transaction = try self.jsonDecoder.decode(TransactionResponse.self, from: data)
                     response(.success(details: transaction))
                 } catch {
                     response(.failure(error: error as! TransactionsError))
@@ -104,7 +105,8 @@ public class TransactionsService: NSObject {
             switch result {
             case .success(let data):
                 do {
-                    let transactions = try self.transactionsFactory.transactionsFromResponseData(data: data)
+                    self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                    let transactions = try self.jsonDecoder.decode(AllTransactionsResponse.self, from: data)
                     response(.success(details: transactions))
                 } catch {
                     response(.failure(error: error as! TransactionsError))

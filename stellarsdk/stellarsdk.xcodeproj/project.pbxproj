@@ -73,7 +73,6 @@
 		745F2BB3202C287A008763F1 /* XDREncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BB2202C287A008763F1 /* XDREncoder.swift */; };
 		745F2BB6202C2E88008763F1 /* TransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BB5202C2E88008763F1 /* TransactionResponse.swift */; };
 		745F2BB8202C36AA008763F1 /* TransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BB7202C36AA008763F1 /* TransactionsService.swift */; };
-		745F2BBA202C4589008763F1 /* TransactionsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BB9202C4589008763F1 /* TransactionsFactory.swift */; };
 		745F2BBC202C45AD008763F1 /* AllTransactionsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BBB202C45AD008763F1 /* AllTransactionsResponse.swift */; };
 		745F2BBE202C4743008763F1 /* TransactionsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BBD202C4743008763F1 /* TransactionsError.swift */; };
 		745F2BC1202C4D24008763F1 /* TransactionsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BC0202C4D24008763F1 /* TransactionsTestCase.swift */; };
@@ -140,6 +139,8 @@
 		83DD2C5B202CEB0700713FEE /* LedgerLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C5A202CEB0700713FEE /* LedgerLinksResponse.swift */; };
 		83DD2C5E202D0A7800713FEE /* AllOperationsLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C5D202D0A7800713FEE /* AllOperationsLinksResponse.swift */; };
 		83DD2C60202D0CDE00713FEE /* OperationLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C5F202D0CDE00713FEE /* OperationLinksResponse.swift */; };
+		83DD2C62202D211B00713FEE /* AllTransactionsLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C61202D211B00713FEE /* AllTransactionsLinksResponse.swift */; };
+		83DD2C64202D21D700713FEE /* TransactionLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C63202D21D700713FEE /* TransactionLinksResponse.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -259,7 +260,6 @@
 		745F2BB2202C287A008763F1 /* XDREncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XDREncoder.swift; sourceTree = "<group>"; };
 		745F2BB5202C2E88008763F1 /* TransactionResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionResponse.swift; sourceTree = "<group>"; };
 		745F2BB7202C36AA008763F1 /* TransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsService.swift; sourceTree = "<group>"; };
-		745F2BB9202C4589008763F1 /* TransactionsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactory.swift; sourceTree = "<group>"; };
 		745F2BBB202C45AD008763F1 /* AllTransactionsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllTransactionsResponse.swift; sourceTree = "<group>"; };
 		745F2BBD202C4743008763F1 /* TransactionsError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsError.swift; sourceTree = "<group>"; };
 		745F2BC0202C4D24008763F1 /* TransactionsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsTestCase.swift; sourceTree = "<group>"; };
@@ -326,6 +326,8 @@
 		83DD2C5A202CEB0700713FEE /* LedgerLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerLinksResponse.swift; sourceTree = "<group>"; };
 		83DD2C5D202D0A7800713FEE /* AllOperationsLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllOperationsLinksResponse.swift; sourceTree = "<group>"; };
 		83DD2C5F202D0CDE00713FEE /* OperationLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationLinksResponse.swift; sourceTree = "<group>"; };
+		83DD2C61202D211B00713FEE /* AllTransactionsLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllTransactionsLinksResponse.swift; sourceTree = "<group>"; };
+		83DD2C63202D21D700713FEE /* TransactionLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionLinksResponse.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -683,9 +685,10 @@
 		745F2BB4202C2E68008763F1 /* transactions_responses */ = {
 			isa = PBXGroup;
 			children = (
-				745F2BB9202C4589008763F1 /* TransactionsFactory.swift */,
 				745F2BBB202C45AD008763F1 /* AllTransactionsResponse.swift */,
 				745F2BB5202C2E88008763F1 /* TransactionResponse.swift */,
+				83DD2C61202D211B00713FEE /* AllTransactionsLinksResponse.swift */,
+				83DD2C63202D21D700713FEE /* TransactionLinksResponse.swift */,
 			);
 			path = transactions_responses;
 			sourceTree = "<group>";
@@ -1115,6 +1118,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				745F2BB6202C2E88008763F1 /* TransactionResponse.swift in Sources */,
+				83DD2C64202D21D700713FEE /* TransactionLinksResponse.swift in Sources */,
 				8369720E2028EDB100398A98 /* AccountCreditedEffectResponse.swift in Sources */,
 				744C4DBD202A29AC00B46CDE /* OperationsError.swift in Sources */,
 				743DF56E2020530A00713DE7 /* sign.c in Sources */,
@@ -1199,10 +1203,10 @@
 				836971FF2025532900398A98 /* LedgerResponse.swift in Sources */,
 				743DF4DC201F0BBD00713DE7 /* StellarSDK.swift in Sources */,
 				743DF580202053B100713DE7 /* PublicKey.swift in Sources */,
+				83DD2C62202D211B00713FEE /* AllTransactionsLinksResponse.swift in Sources */,
 				744C4DBF202A29E400B46CDE /* AccountCreatedOperationResponse.swift in Sources */,
 				744C4DB7202A257400B46CDE /* OperationResponse.swift in Sources */,
 				743DF56D2020530A00713DE7 /* sc.c in Sources */,
-				745F2BBA202C4589008763F1 /* TransactionsFactory.swift in Sources */,
 				743DF581202053B100713DE7 /* PrivateKey.swift in Sources */,
 				743DF5692020530A00713DE7 /* sha512.c in Sources */,
 				743DF58F2020BBCF00713DE7 /* AccountResponse.swift in Sources */,
