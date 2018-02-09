@@ -8,15 +8,29 @@
 
 import UIKit
 
+///  Represents a payment operation response.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#payment "Payment Operation")
 class PaymentOperationResponse: OperationResponse {
     
+    /// Amount sent.
     public var amount:String
+    
+    /// Asset type (native / alphanum4 / alphanum12)
     public var assetType:String
+    
+    /// Code of the destination asset.
     public var assetCode:String!
+    
+    /// Asset issuer.
     public var assetIssuer:String!
+    
+    /// Sender of a payment.
     public var from:String
+    
+    /// Destination of a payment.
     public var to:String
     
+    // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case amount
         case assetType = "asset_type"
@@ -26,6 +40,11 @@ class PaymentOperationResponse: OperationResponse {
         case to
     }
     
+    /**
+        Initializer - creates a new instance by decoding from the given decoder.
+     
+        - Parameter decoder: The decoder containing the data
+     */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         amount = try values.decode(String.self, forKey: .amount)
@@ -38,6 +57,11 @@ class PaymentOperationResponse: OperationResponse {
         try super.init(from: decoder)
     }
     
+    /**
+        Encodes this value into the given encoder.
+     
+        - Parameter encoder: The encoder to receive the data
+     */
     public override func encode(to encoder: Encoder) throws {
         try super.encode(to: encoder)
         var container = encoder.container(keyedBy: CodingKeys.self)

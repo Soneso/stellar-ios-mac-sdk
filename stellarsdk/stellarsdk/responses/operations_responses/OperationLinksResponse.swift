@@ -1,28 +1,36 @@
 //
-//  EffectLinksResponse.swift
+//  OperationLinksResponse.swift
 //  stellarsdk
 //
 //  Created by Rogobete Christian on 08.02.18.
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-/// Represents the links connected to an effect response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-public class EffectLinksResponse: NSObject, Codable {
+/// Represents the links connected to an operation response.
+/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html "Operation")
+public class OperationLinksResponse: NSObject, Codable {
     
-    /// Link to the operation that created the effect.
-    public var operation:LinkResponse
+    /// Link to the effects of this operation.
+    public var effects:LinkResponse
     
-    /// Link to the next effect.
+    /// Link to the current operation respones.
+    public var selfLink:LinkResponse
+    
+    /// Link to the transaction of this operation.
+    public var transaction:LinkResponse
+    
+    /// Link to the next operation.
     public var precedes:LinkResponse
     
-    /// Link to the previous effect.
+    /// Link to the previous operation.
     public var succeeds:LinkResponse
     
     
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
-        case operation
+        case effects
+        case selfLink = "self"
+        case transaction
         case precedes
         case succeeds
     }
@@ -34,7 +42,9 @@ public class EffectLinksResponse: NSObject, Codable {
      */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        operation = try values.decode(LinkResponse.self, forKey: .operation)
+        effects = try values.decode(LinkResponse.self, forKey: .effects)
+        selfLink = try values.decode(LinkResponse.self, forKey: .selfLink)
+        transaction = try values.decode(LinkResponse.self, forKey: .transaction)
         precedes = try values.decode(LinkResponse.self, forKey: .precedes)
         succeeds = try values.decode(LinkResponse.self, forKey: .succeeds)
     }
@@ -46,7 +56,9 @@ public class EffectLinksResponse: NSObject, Codable {
      */
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(operation, forKey: .operation)
+        try container.encode(effects, forKey: .effects)
+        try container.encode(selfLink, forKey: .selfLink)
+        try container.encode(transaction, forKey: .transaction)
         try container.encode(precedes, forKey: .precedes)
         try container.encode(succeeds, forKey: .succeeds)
     }

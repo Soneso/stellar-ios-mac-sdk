@@ -1,17 +1,17 @@
 //
-//  AllEffectsLinksResponse.swift
+//  AllOperationsLinksResponse.swift
 //  stellarsdk
 //
 //  Created by Rogobete Christian on 08.02.18.
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-/// Represents the links connected to the all effects response.
-/// Horizon API Request GET /effects{?cursor,limit,order}
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/effects-all.html "All Effects")
-public class AllEffectsLinksResponse: NSObject, Codable {
+/// Represents the links connected to the all operations response.
+/// Horizon API Request GET /operations{?cursor,limit,order}
+/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/operations-all.html "All Operations")
+public class AllOperationsLinksResponse: NSObject, Codable {
     
-    /// Link to the current all effects request URL.
+    /// Link to the current all operations request URL.
     public var selflink:LinkResponse
     
     /// Link to the next "page" of the result.

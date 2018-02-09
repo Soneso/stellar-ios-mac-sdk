@@ -8,14 +8,14 @@
 
 import UIKit
 
-///  This class creates the different types of effect classes depending on the effect type value from the json effect response.
+///  This class creates the different types of effect response classes depending on the effect type value from json.
 class EffectsFactory: NSObject {
     
     /// The json decoder used to parse the received json response from the Horizon API.
     let jsonDecoder = JSONDecoder()
     
     /**
-        Returns an EffectResponse object conatining all effects parsed from the json data.
+        Returns an AllEffectResponse object conatining all effect responses parsed from the json data.
      
         - Parameter data: The json data received from the Horizon API. See
      */

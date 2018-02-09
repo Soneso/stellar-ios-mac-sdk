@@ -138,6 +138,8 @@
 		83DD2C57202CE5E200713FEE /* AllAssetsLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C56202CE5E200713FEE /* AllAssetsLinksResponse.swift */; };
 		83DD2C59202CE9C600713FEE /* AllLedgersLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C58202CE9C600713FEE /* AllLedgersLinksResponse.swift */; };
 		83DD2C5B202CEB0700713FEE /* LedgerLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C5A202CEB0700713FEE /* LedgerLinksResponse.swift */; };
+		83DD2C5E202D0A7800713FEE /* AllOperationsLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C5D202D0A7800713FEE /* AllOperationsLinksResponse.swift */; };
+		83DD2C60202D0CDE00713FEE /* OperationLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C5F202D0CDE00713FEE /* OperationLinksResponse.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -322,6 +324,8 @@
 		83DD2C56202CE5E200713FEE /* AllAssetsLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllAssetsLinksResponse.swift; sourceTree = "<group>"; };
 		83DD2C58202CE9C600713FEE /* AllLedgersLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllLedgersLinksResponse.swift; sourceTree = "<group>"; };
 		83DD2C5A202CEB0700713FEE /* LedgerLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerLinksResponse.swift; sourceTree = "<group>"; };
+		83DD2C5D202D0A7800713FEE /* AllOperationsLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllOperationsLinksResponse.swift; sourceTree = "<group>"; };
+		83DD2C5F202D0CDE00713FEE /* OperationLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationLinksResponse.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -631,7 +635,9 @@
 			children = (
 				744C4DB8202A27D000B46CDE /* OperationsFactory.swift */,
 				744C4DBA202A27F600B46CDE /* AllOperationsResponse.swift */,
+				83DD2C5D202D0A7800713FEE /* AllOperationsLinksResponse.swift */,
 				744C4DB6202A257400B46CDE /* OperationResponse.swift */,
+				83DD2C5F202D0CDE00713FEE /* OperationLinksResponse.swift */,
 				744C4DBE202A29E400B46CDE /* AccountCreatedOperationResponse.swift */,
 				8369723F202A784200398A98 /* PaymentOperationResponse.swift */,
 				83697241202A79DC00398A98 /* PathPaymentOperationResponse.swift */,
@@ -775,11 +781,11 @@
 			isa = PBXGroup;
 			children = (
 				743DF4DD201F121B00713DE7 /* account_responses */,
-				745F2BB4202C2E68008763F1 /* transactions_responses */,
-				744C4DB3202A242B00B46CDE /* operations_responses */,
-				836971FB202552DB00398A98 /* ledgers_responses */,
 				836971E92025055200398A98 /* assets_responses */,
 				7481B53C20234AD6000A783E /* effects_responses */,
+				836971FB202552DB00398A98 /* ledgers_responses */,
+				744C4DB3202A242B00B46CDE /* operations_responses */,
+				745F2BB4202C2E68008763F1 /* transactions_responses */,
 			);
 			path = responses;
 			sourceTree = "<group>";
@@ -1152,6 +1158,7 @@
 				836971FD2025531C00398A98 /* AllLedgersResponse.swift in Sources */,
 				836972222028F5EA00398A98 /* TrustlineEffectResponse.swift in Sources */,
 				8369720120255AB800398A98 /* LedgersService.swift in Sources */,
+				83DD2C60202D0CDE00713FEE /* OperationLinksResponse.swift in Sources */,
 				745F2BB1202C2852008763F1 /* XDRDecoder.swift in Sources */,
 				83697244202A7AF500398A98 /* ManageOfferOperationResponse.swift in Sources */,
 				743DF541201F6A9C00713DE7 /* Base32.swift in Sources */,
@@ -1187,6 +1194,7 @@
 				743DF582202053B100713DE7 /* Seed.swift in Sources */,
 				8369722E2028F7A000398A98 /* OfferRemovedEffectResponse.swift in Sources */,
 				83697252202A80D600398A98 /* ManageDataOperationResponse.swift in Sources */,
+				83DD2C5E202D0A7800713FEE /* AllOperationsLinksResponse.swift in Sources */,
 				743DF5762020530A00713DE7 /* keypair.c in Sources */,
 				836971FF2025532900398A98 /* LedgerResponse.swift in Sources */,
 				743DF4DC201F0BBD00713DE7 /* StellarSDK.swift in Sources */,

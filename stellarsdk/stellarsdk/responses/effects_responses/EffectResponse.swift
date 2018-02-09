@@ -31,8 +31,8 @@ public enum EffectType: Int {
     case tradeEffect = 33
 }
 
-///  Represents an account effect response. Superclass for all other effect response classes.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
+/// Represents an account effect response. Superclass for all other effect response classes.
+/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
 public class EffectResponse: NSObject, Codable {
     
     /// A list of links related to this effect.
@@ -47,7 +47,7 @@ public class EffectResponse: NSObject, Codable {
     /// Account ID/Public Key of the account the effect belongs to.
     public var account:String
     
-    /// Type of the effect as human readable string.
+    /// Type of the effect as a human readable string.
     public var effectTypeString:String
     
     /// Type of the effect (int) see enum EffectType.

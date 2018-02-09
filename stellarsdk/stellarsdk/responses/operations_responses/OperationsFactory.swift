@@ -8,15 +8,25 @@
 
 import UIKit
 
+///  This class creates the different types of operation response classes depending on the operation type value from json.
 class OperationsFactory: NSObject {
+    
+    /// The json decoder used to parse the received json response from the Horizon API.
     let jsonDecoder = JSONDecoder()
     
     override init() {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
+    /**
+        Returns an AllOperationsResponse object conatining all operation responses parsed from the json data.
+     
+        - Parameter data: The json data received from the Horizon API. See
+     */
     func operationsFromResponseData(data: Data) throws -> AllOperationsResponse {
         var operationsList = [OperationResponse]()
+        var links: AllOperationsLinksResponse
+        
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
             
@@ -26,14 +36,19 @@ class OperationsFactory: NSObject {
                 operationsList.append(operation)
             }
             
+            let linksJson = try JSONSerialization.data(withJSONObject: json["_links"]!, options: .prettyPrinted)
+            links = try jsonDecoder.decode(AllOperationsLinksResponse.self, from: linksJson)
+            
         } catch {
             throw OperationsError.parsingFailed(response: error.localizedDescription)
         }
         
-        return AllOperationsResponse(operations: operationsList)
+        return AllOperationsResponse(operations: operationsList, links:links)
     }
     
     func operationFromData(data: Data) throws -> OperationResponse {
+        
+        // The class to be used depends on the effect type coded in its json reresentation.
         let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
         if let type = OperationType(rawValue: json["type_i"] as! Int) {
             switch type {

@@ -8,15 +8,29 @@
 
 import UIKit
 
+///  Represents an allow trust operation response.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#allow-trust "Allow Trust Operation")
 class AllowTrustOperationResponse: OperationResponse {
     
+    /// Trustor account.
     public var trustor:String
+    
+    /// Trustee account.
     public var trustee:String
+    
+    /// Asset type (native / alphanum4 / alphanum12)
     public var assetType:String
+    
+    /// Asset code.
     public var assetCode:String!
+    
+    /// Asset issuer.
     public var assetIssuer:String!
+    
+    /// true when allowing trust, false when revoking trust.
     public var authorize:Bool
     
+    /// The limit for the asset.
     private enum CodingKeys: String, CodingKey {
         case trustor
         case trustee
@@ -26,6 +40,11 @@ class AllowTrustOperationResponse: OperationResponse {
         case authorize
     }
     
+    /**
+        Initializer - creates a new instance by decoding from the given decoder.
+     
+        - Parameter decoder: The decoder containing the data
+     */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         trustor = try values.decode(String.self, forKey: .trustor)
@@ -38,6 +57,11 @@ class AllowTrustOperationResponse: OperationResponse {
         try super.init(from: decoder)
     }
     
+    /**
+        Encodes this value into the given encoder.
+     
+        - Parameter encoder: The encoder to receive the data
+     */
     public override func encode(to encoder: Encoder) throws {
         try super.encode(to: encoder)
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -48,6 +72,4 @@ class AllowTrustOperationResponse: OperationResponse {
         try container.encode(assetIssuer, forKey: .assetIssuer)
         try container.encode(authorize, forKey: .authorize)
     }
-    
 }
-

@@ -8,20 +8,41 @@
 
 import UIKit
 
+///  Represents a path payment operation response.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#path-payment "Path Payment Operation")
 class PathPaymentOperationResponse: OperationResponse {
     
+    /// Amount received.
     public var amount:String
+    
+    /// Amount sent.
     public var sourceAmount:String
+    
+    /// Sender of a payment.
     public var from:String
+    
+    /// Destination of a payment.
     public var to:String
+    
+    /// Destination asset type (native / alphanum4 / alphanum12)
     public var assetType:String
+    
+    /// Code of the destination asset.
     public var assetCode:String!
+    
+    /// Destination asset issuer.
     public var assetIssuer:String!
+    
+    /// Source asset type (native / alphanum4 / alphanum12).
     public var sendAssetType:String
+    
+    /// Code of the source asset.
     public var sendAssetCode:String!
+    
+    /// Source asset issuer.
     public var sendAssetIssuer:String!
 
-    
+    // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case amount
         case sourceAmount = "source_amount"
@@ -36,6 +57,11 @@ class PathPaymentOperationResponse: OperationResponse {
 
     }
     
+    /**
+        Initializer - creates a new instance by decoding from the given decoder.
+     
+        - Parameter decoder: The decoder containing the data
+     */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         amount = try values.decode(String.self, forKey: .amount)
@@ -52,6 +78,11 @@ class PathPaymentOperationResponse: OperationResponse {
         try super.init(from: decoder)
     }
     
+    /**
+        Encodes this value into the given encoder.
+     
+        - Parameter encoder: The encoder to receive the data
+     */
     public override func encode(to encoder: Encoder) throws {
         try super.encode(to: encoder)
         var container = encoder.container(keyedBy: CodingKeys.self)

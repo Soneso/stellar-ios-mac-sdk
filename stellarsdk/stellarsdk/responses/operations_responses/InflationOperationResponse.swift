@@ -8,4 +8,6 @@
 
 import UIKit
 
+///  Represents an inflation operation response.
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#inflation "Inflation Operation")
 class InflationOperationResponse: OperationResponse {}
