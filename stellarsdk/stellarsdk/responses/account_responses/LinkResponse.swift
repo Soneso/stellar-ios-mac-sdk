@@ -9,7 +9,7 @@
 import UIKit
 
 /// Represents a link response. Used for different responses such as for an account response or ledger response from the Horizon API.
-public class LinkResponse: NSObject, Codable {
+public class LinkResponse: NSObject, Decodable {
     
     /// Specifies the URL of the page the link goes to.
     public var href:String
@@ -32,16 +32,5 @@ public class LinkResponse: NSObject, Codable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         href = try values.decode(String.self, forKey: .href)
         templated = try values.decodeIfPresent(Bool.self, forKey: .templated)
-    }
-    
-    /**
-        Encodes this value into the given encoder.
-     
-        - Parameter encoder: The encoder to receive the data
-     */
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(href, forKey: .href)
-        try container.encode(templated, forKey: .templated)
     }
 }

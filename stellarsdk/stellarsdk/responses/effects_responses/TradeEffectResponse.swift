@@ -76,24 +76,4 @@ public class TradeEffectResponse: EffectResponse {
         
         try super.init(from: decoder)
     }
-    
-    /**
-        Encodes this value into the given encoder.
-     
-        - Parameter encoder: The encoder to receive the data
-     */
-    public override func encode(to encoder: Encoder) throws {
-        try super.encode(to: encoder)
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(seller, forKey: .seller)
-        try container.encode(offerId, forKey: .offerId)
-        try container.encode(soldAmount, forKey: .soldAmount)
-        try container.encode(soldAssetType, forKey: .soldAssetType)
-        try container.encode(soldAssetCode, forKey: .soldAssetCode)
-        try container.encode(soldAssetIssuer, forKey: .soldAssetIssuer)
-        try container.encode(boughtAmount, forKey: .boughtAmount)
-        try container.encode(boughtAssetType, forKey: .boughtAssetType)
-        try container.encode(boughtAssetCode, forKey: .boughtAssetCode)
-        try container.encode(boughtAssetIssuer, forKey: .boughtAssetIssuer)
-    }
 }

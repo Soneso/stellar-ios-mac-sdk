@@ -72,24 +72,4 @@ class ManageOfferOperationResponse: OperationResponse {
         
         try super.init(from: decoder)
     }
-    
-    /**
-        Encodes this value into the given encoder.
-     
-        - Parameter encoder: The encoder to receive the data
-     */
-    public override func encode(to encoder: Encoder) throws {
-        try super.encode(to: encoder)
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(offerId, forKey: .offerId)
-        try container.encode(amount, forKey: .amount)
-        try container.encode(price, forKey: .price)
-        try container.encode(buyingAssetType, forKey: .buyingAssetType)
-        try container.encode(buyingAssetCode, forKey: .buyingAssetCode)
-        try container.encode(buyingAssetIssuer, forKey: .buyingAssetIssuer)
-        try container.encode(sellingAssetType, forKey: .sellingAssetType)
-        try container.encode(sellingAssetCode, forKey: .sellingAssetCode)
-        try container.encode(sellingAssetIssuer, forKey: .sellingAssetIssuer)
-        
-    }
 }

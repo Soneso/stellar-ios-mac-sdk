@@ -39,18 +39,5 @@ public class AccountThresholdsUpdatedEffectResponse: EffectResponse {
         highThreshold = try values.decode(Int.self, forKey: .highThreshold)
         try super.init(from: decoder)
     }
-    
-    /**
-        Encodes this value into the given encoder.
-     
-        - Parameter encoder: The encoder to receive the data
-     */
-    public override func encode(to encoder: Encoder) throws {
-        try super.encode(to: encoder)
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(lowThreshold, forKey: .lowThreshold)
-        try container.encode(medThreshold, forKey: .medThreshold)
-        try container.encode(highThreshold, forKey: .highThreshold)
-    }
 }
 

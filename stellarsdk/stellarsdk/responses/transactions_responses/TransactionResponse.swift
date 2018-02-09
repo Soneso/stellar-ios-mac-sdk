@@ -16,7 +16,7 @@ public enum MemoType: Int {
     case `return` = 4
 }
 
-public class TransactionResponse: NSObject, Codable {
+public class TransactionResponse: NSObject, Decodable {
     public var id:String
     public var pagingToken:String
     public var transactionHash:String
@@ -57,20 +57,4 @@ public class TransactionResponse: NSObject, Codable {
         memoType = try values.decode(String.self, forKey: .memoType)
         signatures = try values.decode([String].self, forKey: .signatures)
     }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(id, forKey: .id)
-        try container.encode(pagingToken, forKey: .pagingToken)
-        try container.encode(transactionHash, forKey: .transactionHash)
-        try container.encode(ledger, forKey: .ledger)
-        try container.encode(createdAt, forKey: .createdAt)
-        try container.encode(sourceAccount, forKey: .sourceAccount)
-        try container.encode(sourceAccountSequence, forKey: .sourceAccountSequence)
-        try container.encode(feePaid, forKey: .feePaid)
-        try container.encode(operationCount, forKey: .operationCount)
-        try container.encode(memoType, forKey: .memoType)
-        try container.encode(signatures, forKey: .signatures)
-    }
-    
 }

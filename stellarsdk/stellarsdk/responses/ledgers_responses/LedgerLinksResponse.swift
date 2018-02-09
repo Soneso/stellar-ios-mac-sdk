@@ -8,7 +8,7 @@
 
 /// Represents the links connected to a ledger response.
 /// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/ledger.html "Ledger")
-public class LedgerLinksResponse: NSObject, Codable {
+public class LedgerLinksResponse: NSObject, Decodable {
     
     /// Link to the current ledger request URL of this ledger.
     public var selflink:LinkResponse
@@ -41,19 +41,6 @@ public class LedgerLinksResponse: NSObject, Codable {
         effects = try values.decode(LinkResponse.self, forKey: .effects)
         operations = try values.decode(LinkResponse.self, forKey: .operations)
         transactions = try values.decode(LinkResponse.self, forKey: .transactions)
-    }
-    
-    /**
-        Encodes this value into the given encoder.
-     
-        - Parameter encoder: The encoder to receive the data
-     */
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(selflink, forKey: .selflink)
-        try container.encode(effects, forKey: .effects)
-        try container.encode(operations, forKey: .operations)
-        try container.encode(transactions, forKey: .transactions)
     }
 }
 

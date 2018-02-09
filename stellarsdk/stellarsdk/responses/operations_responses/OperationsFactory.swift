@@ -79,5 +79,4 @@ class OperationsFactory: NSObject {
             throw OperationsError.parsingFailed(response: "Unknown operation type")
         }
     }
-    
 }

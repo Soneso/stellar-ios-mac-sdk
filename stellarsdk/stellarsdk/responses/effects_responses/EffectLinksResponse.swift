@@ -8,7 +8,7 @@
 
 /// Represents the links connected to an effect response.
 /// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-public class EffectLinksResponse: NSObject, Codable {
+public class EffectLinksResponse: NSObject, Decodable {
     
     /// Link to the operation that created the effect.
     public var operation:LinkResponse
@@ -37,17 +37,5 @@ public class EffectLinksResponse: NSObject, Codable {
         operation = try values.decode(LinkResponse.self, forKey: .operation)
         precedes = try values.decode(LinkResponse.self, forKey: .precedes)
         succeeds = try values.decode(LinkResponse.self, forKey: .succeeds)
-    }
-    
-    /**
-     Encodes this value into the given encoder.
-     
-     - Parameter encoder: The encoder to receive the data
-     */
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(operation, forKey: .operation)
-        try container.encode(precedes, forKey: .precedes)
-        try container.encode(succeeds, forKey: .succeeds)
     }
 }

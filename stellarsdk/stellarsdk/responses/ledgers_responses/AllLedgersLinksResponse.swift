@@ -8,7 +8,7 @@
 
 /// Represents the links connected to the all assets response.
 /// See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/ledgers-all.html "All Ledgers Request")
-public class AllLedgersLinksResponse: NSObject, Codable {
+public class AllLedgersLinksResponse: NSObject, Decodable {
     
     /// Link to the current request URL.
     public var selflink:LinkResponse
@@ -37,17 +37,5 @@ public class AllLedgersLinksResponse: NSObject, Codable {
         selflink = try values.decode(LinkResponse.self, forKey: .selflink)
         next = try values.decodeIfPresent(LinkResponse.self, forKey: .next)
         prev = try values.decodeIfPresent(LinkResponse.self, forKey: .prev)
-    }
-    
-    /**
-     Encodes this value into the given encoder.
-     
-     - Parameter encoder: The encoder to receive the data
-     */
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(selflink, forKey: .selflink)
-        try container.encode(prev, forKey: .prev)
-        try container.encode(next, forKey: .next)
     }
 }

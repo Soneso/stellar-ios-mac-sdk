@@ -102,5 +102,4 @@ class EffectsFactory: NSObject {
         
         return AllEffectsResponse(effects: effectsList, links:links)
     }
-    
 }

@@ -10,7 +10,7 @@ import UIKit
 
 ///  Represents a ledger response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/ledger.html "Ledger")
-public class LedgerResponse: NSObject, Codable {
+public class LedgerResponse: NSObject, Decodable {
     
     /// A list of links related to this ledger.
     public var links:LedgerLinksResponse
@@ -100,30 +100,5 @@ public class LedgerResponse: NSObject, Codable {
         baseReserve = try values.decode(String.self, forKey: .baseReserve)
         maxTxSetSize = try values.decode(Int.self, forKey: .maxTxSetSize)
         protocolVersion = try values.decode(Decimal.self, forKey: .protocolVersion)
-    }
-    
-    /**
-        Encodes this value into the given encoder.
-     
-        - Parameter encoder: The encoder to receive the data
-     */
-    public func encode(to encoder: Encoder) throws {
-        
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(links, forKey: .links)
-        try container.encode(id, forKey: .id)
-        try container.encode(pagingToken, forKey: .pagingToken)
-        try container.encode(hashXdr, forKey: .hashXdr)
-        try container.encode(previousHashXdr, forKey: .previousHashXdr)
-        try container.encode(sequenceNumber, forKey: .sequenceNumber)
-        try container.encode(transactionCount, forKey: .transactionCount)
-        try container.encode(operationCount, forKey: .operationCount)
-        try container.encode(closedAt, forKey: .closedAt)
-        try container.encode(totalCoins, forKey: .totalCoins)
-        try container.encode(feePool, forKey: .feePool)
-        try container.encode(baseFee, forKey: .baseFee)
-        try container.encode(baseReserve, forKey: .baseReserve)
-        try container.encode(maxTxSetSize, forKey: .maxTxSetSize)
-        try container.encode(protocolVersion, forKey: .protocolVersion)
     }
 }

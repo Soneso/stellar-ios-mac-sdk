@@ -10,7 +10,7 @@ import UIKit
 
 ///  Represents account thresholds.
 ///  See [Stellar documentation](https://www.stellar.org/developers/guides/concepts/multi-sig.html#thresholds "Account Thresholds")
-public class AccountThresholdsResponse: NSObject, Codable {
+public class AccountThresholdsResponse: NSObject, Decodable {
     
     /// The account's threshhold for low security operations.
     public var lowThreshold:Int
@@ -38,17 +38,5 @@ public class AccountThresholdsResponse: NSObject, Codable {
         lowThreshold = try values.decode(Int.self, forKey: .lowThreshold)
         medThreshold = try values.decode(Int.self, forKey: .medThreshold)
         highThreshold = try values.decode(Int.self, forKey: .highThreshold)
-    }
-    
-    /**
-        Encodes this value into the given encoder.
-     
-        - Parameter encoder: The encoder to receive the data
-     */
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(lowThreshold, forKey: .lowThreshold)
-        try container.encode(medThreshold, forKey: .medThreshold)
-        try container.encode(highThreshold, forKey: .highThreshold)
     }
 }

@@ -11,7 +11,7 @@ import UIKit
 ///  Represents an asset response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/assets-all.html "All Assets Request")
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/asset.html "Asset")
-public class AssetResponse: NSObject, Codable {
+public class AssetResponse: NSObject, Decodable {
     
     /// A list of links related to this asset.
     public var links:AssetLinksResponse
@@ -67,22 +67,5 @@ public class AssetResponse: NSObject, Codable {
         flags = try values.decode(AccountFlagsResponse.self, forKey: .flags)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
        
-    }
-    
-    /**
-     Encodes this value into the given encoder.
-     
-     - Parameter encoder: The encoder to receive the data
-     */
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(links, forKey: .links)
-        try container.encode(assetType, forKey: .assetType)
-        try container.encode(assetCode, forKey: .assetCode)
-        try container.encode(assetIssuer, forKey: .assetIssuer)
-        try container.encode(amount, forKey: .amount)
-        try container.encode(numberOfAccounts, forKey: .numberOfAccounts)
-        try container.encode(flags, forKey: .flags)
-        try container.encode(pagingToken, forKey: .pagingToken)
     }
 }

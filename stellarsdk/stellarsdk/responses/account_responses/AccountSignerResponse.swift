@@ -12,7 +12,7 @@ import UIKit
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account")
 ///  See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/accounts.html#signers "Account signers")
 ///  Currently there are three flags, used by issuers of assets: Authorization required, Authorization revocable and Authorization immutable.
-public class AccountSignerResponse: NSObject, Codable {
+public class AccountSignerResponse: NSObject, Decodable {
     
     /// Public key of the signer / account id.
     public var publicKey:String
@@ -47,18 +47,4 @@ public class AccountSignerResponse: NSObject, Codable {
         key = try values.decodeIfPresent(String.self, forKey: .key)
         type = try values.decodeIfPresent(String.self, forKey: .type)
     }
-    
-    /**
-        Encodes this value into the given encoder.
-     
-        - Parameter encoder: The encoder to receive the data
-     */
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(publicKey, forKey: .publicKey)
-        try container.encode(weight, forKey: .weight)
-        try container.encode(key, forKey: .key)
-        try container.encode(type, forKey: .type)
-    }
-    
 }

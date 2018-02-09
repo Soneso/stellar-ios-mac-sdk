@@ -10,7 +10,7 @@ import UIKit
 
 ///  Represents an account response, containing information and links relating to a single account.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account Details")
-public class AccountResponse: NSObject, Codable {
+public class AccountResponse: NSObject, Decodable {
 
     /// A list of Links related to this account.
     public var links:AccountLinksResponse
@@ -83,24 +83,5 @@ public class AccountResponse: NSObject, Codable {
         data = try values.decode([String:String].self, forKey: .data)
         homeDomain = try values.decodeIfPresent(String.self, forKey: .homeDomain)
         inflationDestination = try values.decodeIfPresent(String.self, forKey: .inflationDestination)
-    }
-    
-    /**
-        Encodes this value into the given encoder.
-     
-        - Parameter encoder: The encoder to receive the data
-    */
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(links, forKey: .links)
-        try container.encode(accountId, forKey: .accountId)
-        try container.encode(sequenceNumber, forKey: .sequenceNumber)
-        try container.encode(pagingToken, forKey: .pagingToken)
-        try container.encode(subentryCount, forKey: .subentryCount)
-        try container.encode(thresholds, forKey: .thresholds)
-        try container.encode(flags, forKey: .flags)
-        try container.encode(balances, forKey: .balances)
-        try container.encode(signers, forKey: .signers)
-        try container.encode(data, forKey: .data)
     }
 }

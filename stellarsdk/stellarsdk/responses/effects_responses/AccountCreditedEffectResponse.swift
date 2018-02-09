@@ -46,18 +46,4 @@ public class AccountCreditedEffectResponse: EffectResponse {
         
         try super.init(from: decoder)
     }
-    
-    /**
-        Encodes this value into the given encoder.
-     
-        - Parameter encoder: The encoder to receive the data
-     */
-    public override func encode(to encoder: Encoder) throws {
-        try super.encode(to: encoder)
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(amount, forKey: .amount)
-        try container.encode(assetType, forKey: .assetType)
-        try container.encode(assetCode, forKey: .assetCode)
-        try container.encode(assetIssuer, forKey: .assetIssuer)
-    }
 }

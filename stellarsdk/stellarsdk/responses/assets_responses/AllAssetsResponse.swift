@@ -11,7 +11,7 @@ import UIKit
 ///  Represents an all assets response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/assets-all.html "All Assets Request")
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/asset.html "Asset")
-public class AllAssetsResponse: NSObject, Codable {
+public class AllAssetsResponse: NSObject, Decodable {
     
     /// A list of links related to this response.
     public var links:AllAssetsLinksResponse
@@ -27,7 +27,7 @@ public class AllAssetsResponse: NSObject, Codable {
     
     // The assets are represented by "records" within the _embedded json tag.
     private var embeddedRecords:EmbeddedAssetsResponseService
-    struct EmbeddedAssetsResponseService: Codable {
+    struct EmbeddedAssetsResponseService: Decodable {
         let records: [AssetResponse]
     }
     
@@ -41,16 +41,5 @@ public class AllAssetsResponse: NSObject, Codable {
         self.links = try values.decode(AllAssetsLinksResponse.self, forKey: .links)
         self.embeddedRecords = try values.decode(EmbeddedAssetsResponseService.self, forKey: .embeddedRecords)
         self.assets = self.embeddedRecords.records
-    }
-    
-    /**
-        Encodes this value into the given encoder.
-     
-        - Parameter encoder: The encoder to receive the data
-     */
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(links, forKey: .links)
-        try container.encode(embeddedRecords, forKey: .embeddedRecords)
     }
 }

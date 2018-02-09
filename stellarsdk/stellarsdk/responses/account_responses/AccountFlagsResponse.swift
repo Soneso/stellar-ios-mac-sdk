@@ -12,7 +12,7 @@ import UIKit
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account")
 ///  See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/accounts.html#flags "Account flags")
 ///  Currently there are three flags, used by issuers of assets: Authorization required, Authorization revocable and Authorization immutable.
-public class AccountFlagsResponse: NSObject, Codable {
+public class AccountFlagsResponse: NSObject, Decodable {
     
     /// Requires the issuing account to give other accounts permission before they can hold the issuing account’s credit.
     public var authRequired:Bool!
@@ -53,17 +53,5 @@ public class AccountFlagsResponse: NSObject, Codable {
         if authImmutable == nil {
             authImmutable = false
         }
-    }
-    
-    /**
-        Encodes this value into the given encoder.
-     
-        - Parameter encoder: The encoder to receive the data
-     */
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(authRequired, forKey: .authRequired)
-        try container.encode(authRevocable, forKey: .authRevocable)
-        try container.encode(authImmutable, forKey: .authImmutable)
     }
 }
