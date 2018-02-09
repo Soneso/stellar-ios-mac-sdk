@@ -6,6 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+import UIKit
+
 ///  Represents a bad request error response from the horizon api (code 400), containing information related to the error
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/errors/bad-request.html "Bad request")
 public class BadRequestErrorResponse: ErrorResponse {}

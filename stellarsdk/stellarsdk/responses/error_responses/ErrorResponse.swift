@@ -6,6 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+import UIKit
+
 ///  Represents an error response from the horizon api, containing information related to the error that occured.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/errors.html "Errors")
 public class ErrorResponse: NSObject, Decodable {
