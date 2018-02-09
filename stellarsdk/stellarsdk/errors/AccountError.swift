@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 public enum AccountError: Error {
     case keyGenerationFailed(osStatus: OSStatus)
