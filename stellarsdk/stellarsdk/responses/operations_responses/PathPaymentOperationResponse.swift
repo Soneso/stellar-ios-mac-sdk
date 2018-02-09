@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents a path payment operation response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#path-payment "Path Payment Operation")
@@ -28,19 +28,19 @@ class PathPaymentOperationResponse: OperationResponse {
     public var assetType:String
     
     /// Code of the destination asset.
-    public var assetCode:String!
+    public var assetCode:String?
     
     /// Destination asset issuer.
-    public var assetIssuer:String!
+    public var assetIssuer:String?
     
     /// Source asset type (native / alphanum4 / alphanum12).
     public var sendAssetType:String
     
     /// Code of the source asset.
-    public var sendAssetCode:String!
+    public var sendAssetCode:String?
     
     /// Source asset issuer.
-    public var sendAssetIssuer:String!
+    public var sendAssetIssuer:String?
 
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

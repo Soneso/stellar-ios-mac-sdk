@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents an account signer (create,update,remove) effect response. Superclass for signer created, signer updated and signer removed effetcs.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")

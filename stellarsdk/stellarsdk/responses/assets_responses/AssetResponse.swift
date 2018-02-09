@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents an asset response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/assets-all.html "All Assets Request")
@@ -20,10 +20,10 @@ public class AssetResponse: NSObject, Decodable {
     public var assetType:String
     
     /// The code of this asset. E.g. BTC. Nil if assetType is "native".
-    public var assetCode:String!
+    public var assetCode:String?
     
      /// The issuer of this asset. Nil if assetType is "native"
-    public var assetIssuer:String!
+    public var assetIssuer:String?
     
     /// The number of units of credit issued.
     public var amount:Decimal

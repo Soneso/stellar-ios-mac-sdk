@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents a data for account response from the Horizon API, conating a single data value associated with a given account and requested key.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/data-for-account.html "Data for account")

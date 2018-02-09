@@ -18,10 +18,10 @@ public class TrustlineEffectResponse: EffectResponse {
     public var assetType:String
     
     /// The asset code of the asset refered by the trustline. E.g. BTC, nil if native
-    public var assetCode:String!
+    public var assetCode:String?
     
     /// The issuer of the asset used by the trustline. Nil if asset type is "native"
-    public var assetIssuer:String!
+    public var assetIssuer:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

@@ -6,6 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+import Foundation
+
 /// Represents the links connected to a transaction response.
 /// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/transaction.html "Transaction")
 public class TransactionLinksResponse: NSObject, Decodable {

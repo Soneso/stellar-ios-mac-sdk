@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents account thresholds.
 ///  See [Stellar documentation](https://www.stellar.org/developers/guides/concepts/multi-sig.html#thresholds "Account Thresholds")

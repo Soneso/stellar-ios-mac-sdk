@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 /// An enum used to diferentiate between successful and failed account details responses
 public enum AccountResponseEnum {

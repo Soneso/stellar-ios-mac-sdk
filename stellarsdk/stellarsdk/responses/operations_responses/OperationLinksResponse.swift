@@ -6,6 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+import Foundation
+
 /// Represents the links connected to an operation response.
 /// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html "Operation")
 public class OperationLinksResponse: NSObject, Decodable {

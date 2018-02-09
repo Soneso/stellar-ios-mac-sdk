@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents a change trust operation response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#change-trust "Change Trust Operation")
@@ -22,13 +22,13 @@ class ChangeTrustOperationResponse: OperationResponse {
     public var assetType:String
     
     /// Asset code.
-    public var assetCode:String!
+    public var assetCode:String?
     
     /// Asset issuer.
-    public var assetIssuer:String!
+    public var assetIssuer:String?
     
     /// The limit for the asset.
-    public var limit:String!
+    public var limit:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

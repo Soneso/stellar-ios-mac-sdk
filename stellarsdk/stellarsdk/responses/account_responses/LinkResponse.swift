@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 /// Represents a link response. Used for different responses such as for an account response or ledger response from the Horizon API.
 public class LinkResponse: NSObject, Decodable {

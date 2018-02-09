@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents the account balance.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account Balance")

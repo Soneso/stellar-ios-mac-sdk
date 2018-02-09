@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents an all effetcs response, containing effetcs response objects and links from the all effects request
 ///  Horizon API Request GET /effects{?cursor,limit,order}

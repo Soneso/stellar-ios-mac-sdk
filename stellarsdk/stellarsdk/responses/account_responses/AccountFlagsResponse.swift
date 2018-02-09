@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents the account flags.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account")
@@ -15,13 +15,13 @@ import UIKit
 public class AccountFlagsResponse: NSObject, Decodable {
     
     /// Requires the issuing account to give other accounts permission before they can hold the issuing account’s credit.
-    public var authRequired:Bool!
+    public var authRequired:Bool?
     
     /// Allows the issuing account to revoke its credit held by other accounts.
-    public var authRevocable:Bool!
+    public var authRevocable:Bool?
     
     /// If this is set then none of the authorization flags can be set and the account can never be deleted.
-    public var authImmutable:Bool!
+    public var authImmutable:Bool?
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {

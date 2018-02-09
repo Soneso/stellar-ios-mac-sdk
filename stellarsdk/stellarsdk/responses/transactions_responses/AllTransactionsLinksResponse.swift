@@ -6,6 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+import Foundation
+
 /// Represents the links connected to the all transactions response.
 /// See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/transactions-all.html "All Transactions Request")
 public class AllTransactionsLinksResponse: NSObject, Decodable {
@@ -14,10 +16,10 @@ public class AllTransactionsLinksResponse: NSObject, Decodable {
     public var selflink:LinkResponse
     
     /// Link to the next "page" of the result.
-    public var next:LinkResponse!
+    public var next:LinkResponse?
     
     /// Link to the previous "page" of the result.
-    public var prev:LinkResponse!
+    public var prev:LinkResponse?
     
     
     // Properties to encode and decode.

@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents an account signer creted effect response. See superclass SignerEffect.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")

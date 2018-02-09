@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents a payment operation response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#payment "Payment Operation")
@@ -19,10 +19,10 @@ class PaymentOperationResponse: OperationResponse {
     public var assetType:String
     
     /// Code of the destination asset.
-    public var assetCode:String!
+    public var assetCode:String?
     
     /// Asset issuer.
-    public var assetIssuer:String!
+    public var assetIssuer:String?
     
     /// Sender of a payment.
     public var from:String

@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents a create passive operation response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#create-passive-offer "Create Passive Operation")
@@ -25,19 +25,19 @@ class CreatePassiveOfferOperationResponse: OperationResponse {
     public var buyingAssetType:String
     
     /// The code of asset to buy.
-    public var buyingAssetCode:String!
+    public var buyingAssetCode:String?
     
     /// The issuer of asset to buy.
-    public var buyingAssetIssuer:String!
+    public var buyingAssetIssuer:String?
     
     /// Type of asset to sell (native / alphanum4 / alphanum12)
     public var sellingAssetType:String
     
     /// The code of asset to sell.
-    public var sellingAssetCode:String!
+    public var sellingAssetCode:String?
     
     /// The issuer of asset to sell.
-    public var sellingAssetIssuer:String!
+    public var sellingAssetIssuer:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

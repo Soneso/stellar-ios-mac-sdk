@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents an account credited effect response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
@@ -19,10 +19,10 @@ public class AccountCreditedEffectResponse: EffectResponse {
     public var assetType:String
     
     /// Asset code of the asset credited to the account. E.g. BTC, nil if native
-    public var assetCode:String!
+    public var assetCode:String?
     
     /// The issuer of the asset credited to the account. Nil if asset type is "native"
-    public var assetIssuer:String!
+    public var assetIssuer:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

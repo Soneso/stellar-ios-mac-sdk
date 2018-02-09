@@ -25,10 +25,10 @@ public class TradeEffectResponse: EffectResponse {
     public var soldAssetType:String
     
     /// The code of the sold asset. E.g. BTC. Nil if asset type is native.
-    public var soldAssetCode:String!
+    public var soldAssetCode:String?
     
     /// The asset issuer account id of the sold asset. Nil if asset type is native.
-    public var soldAssetIssuer:String!
+    public var soldAssetIssuer:String?
     
     /// The ammount of the asset sold.
     public var boughtAmount:String
@@ -37,10 +37,10 @@ public class TradeEffectResponse: EffectResponse {
     public var boughtAssetType:String
     
     /// The code of the bought asset. E.g. BTC. Nil if asset type is native.
-    public var boughtAssetCode:String!
+    public var boughtAssetCode:String?
     
     /// The asset issuer account id of the bought asset. Nil if asset type is native.
-    public var boughtAssetIssuer:String!
+    public var boughtAssetIssuer:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

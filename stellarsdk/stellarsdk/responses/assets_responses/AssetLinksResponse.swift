@@ -6,6 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+import Foundation
+
 /// Represents the links connected to an asset response.
 /// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/asset.html "Asset")
 public class AssetLinksResponse: NSObject, Decodable {

@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents the account signer response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account")
@@ -21,10 +21,10 @@ public class AccountSignerResponse: NSObject, Decodable {
     public var weight:Int
     
     /// Not sure about this key.
-    public var key:String!
+    public var key:String?
     
     /// Type of the key e.g. ed25519_public_key
-    public var type:String!
+    public var type:String?
     
      // Properties to encode and decode
     enum CodingKeys: String, CodingKey {

@@ -6,41 +6,41 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents a set options operation response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#set-options "Set Options Operation")
 class SetOptionsOperationResponse: OperationResponse {
     
     /// The sum weight for the low threshold.
-    public var lowThreshold:Int!
+    public var lowThreshold:Int?
     
     /// The sum weight for the medium threshold.
-    public var medThreshold:Int!
+    public var medThreshold:Int?
     
     /// The sum weight for the high threshold.
-    public var highThreshold:Int!
+    public var highThreshold:Int?
     
     /// The inflation destination account.
-    public var inflationDestination:String!
+    public var inflationDestination:String?
     
     /// The home domain used for reverse federation lookup
-    public var homeDomain:String!
+    public var homeDomain:String?
     
     /// The public key of the new signer.
-    public var signerKey:String!
+    public var signerKey:String?
     
     /// The weight of the new signer (1-255).
-    public var signerWeight:Int!
+    public var signerWeight:Int?
     
     /// The weight of the master key (1-255).
-    public var masterKeyWeight:Int!
+    public var masterKeyWeight:Int?
     
     /// The array of numeric values of flags that has been cleared in this operation
-    public var clearFlags:AccountFlagsResponse!
+    public var clearFlags:AccountFlagsResponse?
     
     /// The array of numeric values of flags that has been set in this operation
-    public var setFlags:AccountFlagsResponse!
+    public var setFlags:AccountFlagsResponse?
     
     
     // Properties to encode and decode

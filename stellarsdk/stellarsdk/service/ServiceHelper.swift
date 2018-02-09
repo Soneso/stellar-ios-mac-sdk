@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 /// An enum to diferentiate between succesful and failed responses
 enum Result {

@@ -6,6 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+import Foundation
+
 /// Represents the links contained within an account response.
 /// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html#links "Account Links")
 public class AccountLinksResponse: NSObject, Decodable {

@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  This class creates the different types of operation response classes depending on the operation type value from json.
 class OperationsFactory: NSObject {

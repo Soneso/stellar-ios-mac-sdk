@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 public enum LedgersError: Error {
     case ledgersNotFound(response: String)

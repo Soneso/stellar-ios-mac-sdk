@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 public class Configs: NSObject {
     public var horizonURL = "https://horizon-testnet.stellar.org"

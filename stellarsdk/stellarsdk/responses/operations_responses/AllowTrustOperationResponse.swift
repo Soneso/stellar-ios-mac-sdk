@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 ///  Represents an allow trust operation response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#allow-trust "Allow Trust Operation")
@@ -22,10 +22,10 @@ class AllowTrustOperationResponse: OperationResponse {
     public var assetType:String
     
     /// Asset code.
-    public var assetCode:String!
+    public var assetCode:String?
     
     /// Asset issuer.
-    public var assetIssuer:String!
+    public var assetIssuer:String?
     
     /// true when allowing trust, false when revoking trust.
     public var authorize:Bool

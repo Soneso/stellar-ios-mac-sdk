@@ -6,6 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+import Foundation
+
 /// Represents the links connected to an effect response.
 /// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
 public class EffectLinksResponse: NSObject, Decodable {
