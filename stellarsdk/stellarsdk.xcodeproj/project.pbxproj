@@ -901,8 +901,7 @@
 				83DD2C93202F247E00713FEE /* AllPaymentsLinksResponse.swift */,
 				83DD2C94202F247E00713FEE /* AllPaymentsResponse.swift */,
 			);
-			name = payments_responses;
-			path = "New Group";
+			path = payments_responses;
 			sourceTree = "<group>";
 		};
 		83DD2C9B202F24B900713FEE /* payments */ = {
@@ -910,8 +909,7 @@
 			children = (
 				83DD2C9C202F24CD00713FEE /* PaymentsTestCase.swift */,
 			);
-			name = payments;
-			path = "New Group";
+			path = payments;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
