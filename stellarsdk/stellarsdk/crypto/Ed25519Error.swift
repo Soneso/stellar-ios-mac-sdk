@@ -1,5 +1,5 @@
 //
-//  Data+CRC.swift
+//  Ed25519Error.swift
 //  stellarsdk
 //
 //  Created by Razvan Chelemen on 29/01/2018.

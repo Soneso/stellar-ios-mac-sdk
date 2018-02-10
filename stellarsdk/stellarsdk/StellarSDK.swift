@@ -10,7 +10,7 @@ import Foundation
 
 public class StellarSDK: NSObject {
     
-    public var configurations: Configs
+    public var horizonURL: String
     public var accounts: AccountService
     public var assets: AssetsService
     public var effects: EffectsService
@@ -22,29 +22,30 @@ public class StellarSDK: NSObject {
     public var tradeAggregations: TradeAggregationsService
     
     public override init() {
-        configurations = Configs()
-        accounts = AccountService(baseURL: configurations.horizonURL)
-        assets = AssetsService(baseURL: configurations.horizonURL)
-        effects = EffectsService(baseURL: configurations.horizonURL)
-        ledgers = LedgersService(baseURL: configurations.horizonURL)
-        operations = OperationsService(baseURL: configurations.horizonURL)
-        payments = PaymentsService(baseURL: configurations.horizonURL)
-        transactions = TransactionsService(baseURL: configurations.horizonURL)
-        trades = TradesService(baseURL: configurations.horizonURL)
-        tradeAggregations = TradeAggregationsService(baseURL: configurations.horizonURL)
+        self.horizonURL = "https://horizon-testnet.stellar.org"
+        accounts = AccountService(baseURL: horizonURL)
+        assets = AssetsService(baseURL: horizonURL)
+        effects = EffectsService(baseURL: horizonURL)
+        ledgers = LedgersService(baseURL: horizonURL)
+        operations = OperationsService(baseURL: horizonURL)
+        payments = PaymentsService(baseURL: horizonURL)
+        transactions = TransactionsService(baseURL: horizonURL)
+        trades = TradesService(baseURL: horizonURL)
+        tradeAggregations = TradeAggregationsService(baseURL: horizonURL)
     }
     
-    public init(configurations: Configs) {
-        self.configurations = configurations
-        self.accounts = AccountService(baseURL: configurations.horizonURL)
-        self.assets = AssetsService(baseURL: configurations.horizonURL)
-        self.effects = EffectsService(baseURL: configurations.horizonURL)
-        self.ledgers = LedgersService(baseURL: configurations.horizonURL)
-        self.operations = OperationsService(baseURL: configurations.horizonURL)
-        self.payments = PaymentsService(baseURL: configurations.horizonURL)
-        self.transactions = TransactionsService(baseURL: configurations.horizonURL)
-        self.trades = TradesService(baseURL: configurations.horizonURL)
-        self.tradeAggregations = TradeAggregationsService(baseURL: configurations.horizonURL)
+    public init(withHorizonUrl horizonURL:String) {
+        
+        self.horizonURL = horizonURL
+        self.accounts = AccountService(baseURL: self.horizonURL)
+        self.assets = AssetsService(baseURL: self.horizonURL)
+        self.effects = EffectsService(baseURL: self.horizonURL)
+        self.ledgers = LedgersService(baseURL: self.horizonURL)
+        self.operations = OperationsService(baseURL: self.horizonURL)
+        self.payments = PaymentsService(baseURL: self.horizonURL)
+        self.transactions = TransactionsService(baseURL: self.horizonURL)
+        self.trades = TradesService(baseURL: self.horizonURL)
+        self.tradeAggregations = TradeAggregationsService(baseURL: self.horizonURL)
     }
     
 }

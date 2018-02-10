@@ -27,6 +27,15 @@ public class AssetsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
+    /**
+        This fuction represents all assets. It will give you all the assets in the system along with various statistics about each.
+        See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/assets-all.html "All Assets")
+     
+        This fuction responds with a page of assets. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
+     
+        to be continued
+     
+     */
     open func getAssets(from assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllAssetsResponseClosure) {
         var requestPath = "/assets"
         

@@ -30,7 +30,6 @@
 		743DF517201F458400713DE7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 743DF515201F458400713DE7 /* LaunchScreen.storyboard */; };
 		743DF522201F458400713DE7 /* stellarsdkTests_HostTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF521201F458400713DE7 /* stellarsdkTests_HostTests.swift */; };
 		743DF52D201F458400713DE7 /* stellarsdkTests_HostUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF52C201F458400713DE7 /* stellarsdkTests_HostUITests.swift */; };
-		743DF53E201F49CF00713DE7 /* Configs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF53D201F49CF00713DE7 /* Configs.swift */; };
 		743DF541201F6A9C00713DE7 /* Base32.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF540201F6A9C00713DE7 /* Base32.swift */; };
 		743DF546201F706B00713DE7 /* Data+CRC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF545201F706B00713DE7 /* Data+CRC.swift */; };
 		743DF548201F70A700713DE7 /* Data+Base32.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF547201F70A700713DE7 /* Data+Base32.swift */; };
@@ -55,7 +54,7 @@
 		743DF5752020530A00713DE7 /* precomp_data.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF5632020530A00713DE7 /* precomp_data.h */; };
 		743DF5762020530A00713DE7 /* keypair.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5642020530A00713DE7 /* keypair.c */; };
 		743DF5772020530A00713DE7 /* fixedint.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF5652020530A00713DE7 /* fixedint.h */; };
-		743DF57A202053A400713DE7 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF579202053A400713DE7 /* Error.swift */; };
+		743DF57A202053A400713DE7 /* Ed25519Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF579202053A400713DE7 /* Ed25519Error.swift */; };
 		743DF57F202053B100713DE7 /* KeyPair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF57B202053B100713DE7 /* KeyPair.swift */; };
 		743DF580202053B100713DE7 /* PublicKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF57C202053B100713DE7 /* PublicKey.swift */; };
 		743DF581202053B100713DE7 /* PrivateKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF57D202053B100713DE7 /* PrivateKey.swift */; };
@@ -229,7 +228,6 @@
 		743DF528201F458400713DE7 /* stellarsdkTests-HostUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "stellarsdkTests-HostUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		743DF52C201F458400713DE7 /* stellarsdkTests_HostUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdkTests_HostUITests.swift; sourceTree = "<group>"; };
 		743DF52E201F458400713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		743DF53D201F49CF00713DE7 /* Configs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configs.swift; sourceTree = "<group>"; };
 		743DF540201F6A9C00713DE7 /* Base32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Base32.swift; sourceTree = "<group>"; };
 		743DF545201F706B00713DE7 /* Data+CRC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+CRC.swift"; sourceTree = "<group>"; };
 		743DF547201F70A700713DE7 /* Data+Base32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Base32.swift"; sourceTree = "<group>"; };
@@ -254,7 +252,7 @@
 		743DF5632020530A00713DE7 /* precomp_data.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = precomp_data.h; sourceTree = "<group>"; };
 		743DF5642020530A00713DE7 /* keypair.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = keypair.c; sourceTree = "<group>"; };
 		743DF5652020530A00713DE7 /* fixedint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fixedint.h; sourceTree = "<group>"; };
-		743DF579202053A400713DE7 /* Error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
+		743DF579202053A400713DE7 /* Ed25519Error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ed25519Error.swift; sourceTree = "<group>"; };
 		743DF57B202053B100713DE7 /* KeyPair.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyPair.swift; sourceTree = "<group>"; };
 		743DF57C202053B100713DE7 /* PublicKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PublicKey.swift; sourceTree = "<group>"; };
 		743DF57D202053B100713DE7 /* PrivateKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrivateKey.swift; sourceTree = "<group>"; };
@@ -613,21 +611,13 @@
 		743DF5782020538A00713DE7 /* crypto */ = {
 			isa = PBXGroup;
 			children = (
-				743DF579202053A400713DE7 /* Error.swift */,
+				743DF579202053A400713DE7 /* Ed25519Error.swift */,
 				743DF57B202053B100713DE7 /* KeyPair.swift */,
 				743DF57D202053B100713DE7 /* PrivateKey.swift */,
 				743DF57C202053B100713DE7 /* PublicKey.swift */,
 				743DF57E202053B100713DE7 /* Seed.swift */,
 			);
 			path = crypto;
-			sourceTree = "<group>";
-		};
-		743DF58D2020B68100713DE7 /* options */ = {
-			isa = PBXGroup;
-			children = (
-				743DF53D201F49CF00713DE7 /* Configs.swift */,
-			);
-			path = options;
 			sourceTree = "<group>";
 		};
 		7445E9F2201B106500470E0A = {
@@ -662,7 +652,6 @@
 			isa = PBXGroup;
 			children = (
 				83DD2C5C202D04E100713FEE /* responses */,
-				743DF58D2020B68100713DE7 /* options */,
 				743DF5782020538A00713DE7 /* crypto */,
 				743DF5512020529500713DE7 /* libs */,
 				743DF544201F705300713DE7 /* extensions */,
@@ -1308,7 +1297,7 @@
 				836972302028F7AD00398A98 /* OfferUpdatedEffectResponse.swift in Sources */,
 				437D8A7D202EEDCC0024D031 /* Dictionary+HttpParams.swift in Sources */,
 				437D8A85202EF0770024D031 /* AllTradesResponse.swift in Sources */,
-				743DF57A202053A400713DE7 /* Error.swift in Sources */,
+				743DF57A202053A400713DE7 /* Ed25519Error.swift in Sources */,
 				745F2BAD202C27FF008763F1 /* XDRCodable.swift in Sources */,
 				8369720A2028BA3E00398A98 /* Constants.swift in Sources */,
 				836972162028F19000398A98 /* AccountFlagsUpdatedEffectResponse.swift in Sources */,
@@ -1342,7 +1331,6 @@
 				83DD2C5B202CEB0700713FEE /* LedgerLinksResponse.swift in Sources */,
 				8369722A2028F6A700398A98 /* TrustlineDeauthorizedEffectResponse.swift in Sources */,
 				743DF54C201F73FC00713DE7 /* VersionByte.swift in Sources */,
-				743DF53E201F49CF00713DE7 /* Configs.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,5 +1,5 @@
 //
-//  Data+CRC.swift
+//  KeyPair.swift
 //  stellarsdk
 //
 //  Created by Razvan Chelemen on 29/01/2018.
