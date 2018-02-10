@@ -61,7 +61,7 @@ open class AccountService: NSObject {
     open func getAccountDetails(accountId: String, response: @escaping AccountResponseClosure) {
         let requestPath = "/accounts/\(accountId)"
         
-        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
@@ -93,7 +93,7 @@ open class AccountService: NSObject {
     open func getDataForAccount(accountId: String, key: String, response: @escaping DataForAccountResponseClosure) {
         let requestPath = "/accounts/\(accountId)/data/\(key)"
         
-        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {

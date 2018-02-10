@@ -37,16 +37,39 @@ class LedgersTestCase: XCTestCase {
             switch response {
             case .success(let ledgersResponse):
                 
-                for ledger in ledgersResponse.ledgers {
-                    print("\(ledger.id) is the ledger id")
-                    print("\(ledger.pagingToken) is the paging token")
-                    print("\(ledger.hashXdr) is the ledgers xdr hash")
-                    print("\(ledger.previousHashXdr) is the hash of the prev ledger xdr")
-                    print("\(ledger.sequenceNumber) is the sequence")
-                    print("\(ledger.transactionCount) is the transactions count of the ledger")
+                // load next page
+                ledgersResponse.getNextPage(){ (response) -> (Void) in
+                    switch response {
+                    case .success(let nextLedgersResponse):
+                        // load previous page, should contain the same effects as the first page
+                        nextLedgersResponse.getPreviousPage(){ (response) -> (Void) in
+                            switch response {
+                            case .success(let prevLedgersResponse):
+                                let ledger1 = ledgersResponse.ledgers.first
+                                let ledger2 = prevLedgersResponse.ledgers.last // because ordering is asc now.
+                                XCTAssertTrue(ledger1?.id == ledger2?.id)
+                                XCTAssertTrue(ledger1?.hashXdr == ledger2?.hashXdr)
+                                XCTAssertTrue(ledger1?.previousHashXdr == ledger2?.previousHashXdr)
+                                XCTAssertTrue(ledger1?.sequenceNumber == ledger2?.sequenceNumber)
+                                XCTAssertTrue(ledger1?.transactionCount == ledger2?.transactionCount)
+                                XCTAssertTrue(ledger1?.operationCount == ledger2?.operationCount)
+                                XCTAssertTrue(ledger1?.closedAt == ledger2?.closedAt)
+                                XCTAssertTrue(ledger1?.totalCoins == ledger2?.totalCoins)
+                                XCTAssertTrue(ledger1?.feePool == ledger2?.feePool)
+                                XCTAssertTrue(ledger1?.baseFee == ledger2?.baseFee)
+                                XCTAssertTrue(ledger1?.baseReserve == ledger2?.baseReserve)
+                                XCTAssertTrue(ledger1?.maxTxSetSize == ledger2?.maxTxSetSize)
+                                XCTAssertTrue(ledger1?.protocolVersion == ledger2?.protocolVersion)
+                                XCTAssert(true)
+                                expectation.fulfill()
+                            case .failure(_):
+                                XCTAssert(false)
+                            }
+                        }
+                    case .failure(_):
+                        XCTAssert(false)
+                    }
                 }
-                
-                XCTAssert(true)
             case .failure(_):
                 XCTAssert(false)
             }

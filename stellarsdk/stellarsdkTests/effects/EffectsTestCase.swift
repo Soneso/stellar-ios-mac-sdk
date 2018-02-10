@@ -27,13 +27,35 @@ class EffectsTestCase: XCTestCase {
         
         sdk.effects.getEffects { (response) -> (Void) in
             switch response {
-            case .success(_):
-                XCTAssert(true)
+            case .success(let effectsResponse):
+                // load next page
+                effectsResponse.getNextPage(){ (response) -> (Void) in
+                    switch response {
+                    case .success(let nextEffectsResponse):
+                        // load previous page, should contain the same effects as the first page
+                        nextEffectsResponse.getPreviousPage(){ (response) -> (Void) in
+                            switch response {
+                            case .success(let prevEffectsResponse):
+                                let effect1 = effectsResponse.effects.first
+                                let effect2 = prevEffectsResponse.effects.last // because ordering is asc now.
+                                XCTAssertTrue(effect1?.id == effect2?.id)
+                                XCTAssertTrue(effect1?.account == effect2?.account)
+                                XCTAssertTrue(effect1?.effectType == effect2?.effectType)
+                                XCTAssertTrue(effect1?.effectTypeString == effect2?.effectTypeString)
+                                XCTAssert(true)
+                                expectation.fulfill()
+                            case .failure(_):
+                                XCTAssert(false)
+                            }
+                        }
+                    case .failure(_):
+                        XCTAssert(false)
+                    }
+                }
             case .failure(_):
                 XCTAssert(false)
+                 expectation.fulfill()
             }
-            
-            expectation.fulfill()
         }
         
         wait(for: [expectation], timeout: 15.0)

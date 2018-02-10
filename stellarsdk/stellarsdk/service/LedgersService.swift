@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum AllLedgersResponseEnum {
+public enum PageOfLedgersResponseEnum {
     case success(details: PageOfLedgersResponse)
     case failure(error: HorizonRequestError)
 }
@@ -18,7 +18,7 @@ public enum LedgerDetailsResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
-public typealias AllLedgersResponseClosure = (_ response:AllLedgersResponseEnum) -> (Void)
+public typealias PageOfLedgersResponseClosure = (_ response:PageOfLedgersResponseEnum) -> (Void)
 public typealias LedgerDetailsResponseClosure = (_ response:LedgerDetailsResponseEnum) -> (Void)
 
 public class LedgersService: NSObject {
@@ -34,8 +34,8 @@ public class LedgersService: NSObject {
     }
     
     open func getLedger(sequenceNumber:String, response:@escaping LedgerDetailsResponseClosure) {
-        let requestPath = "/ledgers" + sequenceNumber
-        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+        let requestPath = "/ledgers/" + sequenceNumber
+        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
@@ -50,7 +50,7 @@ public class LedgersService: NSObject {
         }
     }
     
-    open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllLedgersResponseClosure) {
+    open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfLedgersResponseClosure) {
         var requestPath = "/ledgers"
         
         var params = Dictionary<String,String>()
@@ -63,7 +63,11 @@ public class LedgersService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+        getLedgersFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+    }
+    
+    open func getLedgersFromUrl(url:String, response:@escaping PageOfLedgersResponseClosure) {
+        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {

@@ -25,24 +25,39 @@ class AssetsTestCase: XCTestCase {
     func testAssetsLoadingSuccessful() {
         let expectation = XCTestExpectation(description: "Get assets response")
         
-        sdk.assets.getAssets(order:Order.descending, limit:10) { (response) -> (Void) in
+        sdk.assets.getAssets(order:Order.descending, limit:2) { (response) -> (Void) in
             switch response {
             case .success(let assetsResponse):
-                
-                for asset in assetsResponse.assets {
-                    print("\(asset.assetCode) is the asset code")
-                    print("\(asset.assetType) is the asset type")
-                    print("\(asset.assetIssuer) is the asset issuer")
-                    print("\(asset.pagingToken) is the paging token")
-                    print("\(asset.amount) is the amount")
-                    print("\(asset.numberOfAccounts) is the number of accounts")
+                // load next page
+                assetsResponse.getNextPage(){ (response) -> (Void) in
+                    switch response {
+                    case .success(let nextAssetsResponse):
+                        // load previous page, should contain the same assets as the first page
+                        nextAssetsResponse.getPreviousPage(){ (response) -> (Void) in
+                            switch response {
+                            case .success(let prevAssetsResponse):
+                                let asset1 = assetsResponse.assets.first
+                                let asset2 = prevAssetsResponse.assets.last // because ordering is asc now.
+                                XCTAssertTrue(asset1?.amount == asset2?.amount)
+                                XCTAssertTrue(asset1?.assetType == asset2?.assetType)
+                                if (asset1?.assetType != AssetType.NATIVE) {
+                                    XCTAssertTrue(asset1?.assetCode == asset2?.assetCode)
+                                    XCTAssertTrue(asset1?.assetIssuer == asset2?.assetIssuer)
+                                }
+                                XCTAssert(true)
+                                expectation.fulfill()
+                            case .failure(_):
+                                XCTAssert(false)
+                            }
+                        }
+                    case .failure(_):
+                        XCTAssert(false)
+                    }
                 }
-                
-                XCTAssert(true)
             case .failure(_):
                 XCTAssert(false)
+                expectation.fulfill()
             }
-            expectation.fulfill()
         }
         wait(for: [expectation], timeout: 15.0)
     }

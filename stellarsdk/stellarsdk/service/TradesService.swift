@@ -47,7 +47,7 @@ public class TradesService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {

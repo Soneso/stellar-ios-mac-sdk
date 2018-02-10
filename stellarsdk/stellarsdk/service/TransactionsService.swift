@@ -51,7 +51,7 @@ public class TransactionsService: NSObject {
     open func getTransactionDetails(transactionHash:String, response:@escaping TransactionDetailsResponseClosure) {
         let requestPath = "/transactions/" + transactionHash
         
-        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
@@ -80,7 +80,7 @@ public class TransactionsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {

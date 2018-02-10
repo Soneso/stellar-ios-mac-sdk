@@ -20,7 +20,7 @@ typealias ResponseClosure = (_ response:Result) -> (Void)
 /// End class responsible with the HTTP connection to the Horizon server
 class ServiceHelper: NSObject {
     /// The url of the Horizon server to connect to
-    let baseURL: String
+    internal let baseURL: String
     let jsonDecoder = JSONDecoder()
     
     private override init() {
@@ -35,8 +35,12 @@ class ServiceHelper: NSObject {
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter response:   The closure to be called upon response.
-    open func GETRequest(path: String, completion: @escaping ResponseClosure) {
-        let url = URL(string: baseURL + path)!
+    open func GETRequestWithPath(path: String, completion: @escaping ResponseClosure) {
+        GETRequestFromUrl(url: baseURL+path, completion:completion)
+    }
+        
+    open func GETRequestFromUrl(url: String, completion: @escaping ResponseClosure) {
+        let url = URL(string: url)!
         
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {

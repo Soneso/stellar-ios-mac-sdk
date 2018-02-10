@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum AllOperationsResponseEnum {
+public enum PageOfOperationsResponseEnum {
     case success(details: PageOfOperationsResponse)
     case failure(error: HorizonRequestError)
 }
@@ -18,7 +18,7 @@ public enum OperationDetailsResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
-public typealias AllOperationsResponseClosure = (_ response:AllOperationsResponseEnum) -> (Void)
+public typealias PageOfOperationsResponseClosure = (_ response:PageOfOperationsResponseEnum) -> (Void)
 public typealias OperationDetailsResponseClosure = (_ response:OperationDetailsResponseEnum) -> (Void)
 
 public class OperationsService: NSObject {
@@ -33,22 +33,22 @@ public class OperationsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllOperationsResponseClosure) {
+    open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
         let path = "/operations?"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllOperationsResponseClosure) {
+    open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
         let path = "/accounts/" + accountId + "/operations?"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllOperationsResponseClosure) {
+    open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
         let path = "/ledgers/" + ledger + "/operations?"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllOperationsResponseClosure) {
+    open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
         let path = "/transactions/" + hash + "/operations?"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
@@ -56,7 +56,7 @@ public class OperationsService: NSObject {
     open func getOperationDetails(operationId:String, response:@escaping OperationDetailsResponseClosure) {
         let requestPath = "/operations/" + operationId
         
-        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
@@ -71,7 +71,7 @@ public class OperationsService: NSObject {
         }
     }
     
-    private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllOperationsResponseClosure) {
+    private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
         var requestPath = path
         
         var params = Dictionary<String,String>()
@@ -84,7 +84,11 @@ public class OperationsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+        getOperationsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+    }
+    
+    open func getOperationsFromUrl(url:String, response:@escaping PageOfOperationsResponseClosure) {
+        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {

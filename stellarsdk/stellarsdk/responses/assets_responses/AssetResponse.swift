@@ -34,7 +34,7 @@ public class AssetResponse: NSObject, Decodable {
     /// The flags on this asset of types: auth_required, auth_revocable, auth_immutable.
     public var flags:AccountFlagsResponse
     
-    /// A paging token suitable for use as the cursor parameter to transaction collection resources.
+    /// A paging token suitable for use as the cursor parameter to assets collection resources.
     public var pagingToken:String
     
     // Properties to encode and decode

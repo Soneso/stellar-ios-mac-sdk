@@ -8,12 +8,12 @@
 
 import Foundation
 
-public enum AllEffectsResponseEnum {
+public enum PageOfEffectsResponseEnum {
     case success(details: PageOfEffectsResponse)
     case failure(error: HorizonRequestError)
 }
 
-public typealias AllEffectsResponseClosure = (_ response:AllEffectsResponseEnum) -> (Void)
+public typealias PageOfEffectsResponseClosure = (_ response:PageOfEffectsResponseEnum) -> (Void)
 
 public class EffectsService: NSObject {
     let serviceHelper: ServiceHelper
@@ -27,32 +27,32 @@ public class EffectsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getEffects(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
+    open func getEffects(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfEffectsResponseClosure) {
         let path = "/effects"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getEffects(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
+    open func getEffects(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfEffectsResponseClosure) {
         let path = "/accounts/" + accountId + "/effects"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getEffects(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
+    open func getEffects(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfEffectsResponseClosure) {
         let path = "/ledgers/" + ledger + "/effects"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getEffects(forOperation operation:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
+    open func getEffects(forOperation operation:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfEffectsResponseClosure) {
         let path = "/operations/" + operation + "/effects"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getEffects(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
+    open func getEffects(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfEffectsResponseClosure) {
         let path = "/transactions/" + hash + "/effects"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    private func getEffects(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
+    private func getEffects(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfEffectsResponseClosure) {
         var requestPath = path
         
         var params = Dictionary<String,String>()
@@ -65,7 +65,11 @@ public class EffectsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+        getEffetcsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+    }
+    
+    open func getEffetcsFromUrl(url:String, response:@escaping PageOfEffectsResponseClosure) {
+        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {

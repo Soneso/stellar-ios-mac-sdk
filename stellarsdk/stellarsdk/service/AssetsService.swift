@@ -8,12 +8,12 @@
 
 import Foundation
 
-public enum AllAssetsResponseEnum {
+public enum PageOfAssetsResponseEnum {
     case success(details: PageOfAssetsResponse)
     case failure(error: HorizonRequestError)
 }
 
-public typealias AllAssetsResponseClosure = (_ response:AllAssetsResponseEnum) -> (Void)
+public typealias PageOfAssetsResponseClosure = (_ response:PageOfAssetsResponseEnum) -> (Void)
 
 public class AssetsService: NSObject {
     let serviceHelper: ServiceHelper
@@ -36,7 +36,7 @@ public class AssetsService: NSObject {
         to be continued
      
      */
-    open func getAssets(from assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllAssetsResponseClosure) {
+    open func getAssets(for assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfAssetsResponseClosure) {
         var requestPath = "/assets"
         
         var params = Dictionary<String,String>()
@@ -51,7 +51,11 @@ public class AssetsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
+        getAssetsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+    }
+    
+    open func getAssetsFromUrl(url:String, response:@escaping PageOfAssetsResponseClosure) {
+        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
