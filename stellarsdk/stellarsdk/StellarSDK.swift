@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 public class StellarSDK: NSObject {
     
@@ -17,6 +17,8 @@ public class StellarSDK: NSObject {
     public var ledgers: LedgersService
     public var operations: OperationsService
     public var transactions: TransactionsService
+    public var trades: TradesService
+    public var tradeAggregations: TradeAggregationsService
     
     public override init() {
         configurations = Configs()
@@ -26,6 +28,8 @@ public class StellarSDK: NSObject {
         ledgers = LedgersService(baseURL: configurations.horizonURL)
         operations = OperationsService(baseURL: configurations.horizonURL)
         transactions = TransactionsService(baseURL: configurations.horizonURL)
+        trades = TradesService(baseURL: configurations.horizonURL)
+        tradeAggregations = TradeAggregationsService(baseURL: configurations.horizonURL)
     }
     
     public init(configurations: Configs) {
@@ -36,6 +40,8 @@ public class StellarSDK: NSObject {
         self.ledgers = LedgersService(baseURL: configurations.horizonURL)
         self.operations = OperationsService(baseURL: configurations.horizonURL)
         self.transactions = TransactionsService(baseURL: configurations.horizonURL)
+        self.trades = TradesService(baseURL: configurations.horizonURL)
+        self.tradeAggregations = TradeAggregationsService(baseURL: configurations.horizonURL)
     }
     
 }

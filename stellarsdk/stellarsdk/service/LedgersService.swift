@@ -80,7 +80,7 @@ public class LedgersService: NSObject {
                 do {
                     let ledgers = try self.jsonDecoder.decode(AllLedgersResponse.self, from: data)
                     response(.success(details: ledgers))
-                }  catch {
+                } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .failure(let error):
