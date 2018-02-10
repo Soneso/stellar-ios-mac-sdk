@@ -9,7 +9,7 @@
 import Foundation
 
 public enum AllOperationsResponseEnum {
-    case success(details: AllOperationsResponse)
+    case success(details: PageOfOperationsResponse)
     case failure(error: HorizonRequestError)
 }
 

@@ -9,7 +9,7 @@
 import Foundation
 
 public enum AllPaymentsResponseEnum {
-    case success(details: AllPaymentsResponse)
+    case success(details: PageOfPaymentsResponse)
     case failure(error: HorizonRequestError)
 }
 
@@ -104,7 +104,7 @@ public class PaymentsService: NSObject {
             case .success(let data):
                 do {
                     let operations = try self.operationsFactory.operationsFromResponseData(data: data)
-                    let payments = AllPaymentsResponse(payments: operations.operations, links: operations.links)
+                    let payments = PageOfPaymentsResponse(payments: operations.operations, links: operations.links)
                     response(.success(details: payments))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))

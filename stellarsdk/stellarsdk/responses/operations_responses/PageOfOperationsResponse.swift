@@ -1,5 +1,5 @@
 //
-//  OperationResponse.swift
+//  PageOfOperationsResponse.swift
 //  stellarsdk
 //
 //  Created by Razvan Chelemen on 06/02/2018.
@@ -8,10 +8,10 @@
 
 import Foundation
 
-///  Represents an all operations response, containing operation response objects and links from the all operations request
+///  Represents a page of operations response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/operations-all.html "All Operations")
-///  Horizon API Request GET /operations{?cursor,limit,order}
-public class AllOperationsResponse: NSObject {
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/page.html "Page")
+public class PageOfOperationsResponse: NSObject {
     
     /// An array of operation response objects received from the API
     public var operations:[OperationResponse]

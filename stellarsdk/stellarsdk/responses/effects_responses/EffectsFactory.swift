@@ -19,7 +19,7 @@ class EffectsFactory: NSObject {
      
         - Parameter data: The json data received from the Horizon API. See
      */
-    func effectsFromResponseData(data: Data) throws -> AllEffectsResponse {
+    func effectsFromResponseData(data: Data) throws -> PageOfEffectsResponse {
         var effectsList = [EffectResponse]()
         var links: PagingLinksResponse
         
@@ -100,6 +100,6 @@ class EffectsFactory: NSObject {
             throw HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)
         }
         
-        return AllEffectsResponse(effects: effectsList, links:links)
+        return PageOfEffectsResponse(effects: effectsList, links:links)
     }
 }

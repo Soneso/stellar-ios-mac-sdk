@@ -9,7 +9,7 @@
 import Foundation
 
 public enum AllTransactionsResponseEnum {
-    case success(details: AllTransactionsResponse)
+    case success(details: PageOfTransactionsResponse)
     case failure(error: HorizonRequestError)
 }
 
@@ -85,7 +85,7 @@ public class TransactionsService: NSObject {
             case .success(let data):
                 do {
                     self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
-                    let transactions = try self.jsonDecoder.decode(AllTransactionsResponse.self, from: data)
+                    let transactions = try self.jsonDecoder.decode(PageOfTransactionsResponse.self, from: data)
                     response(.success(details: transactions))
                 }  catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))

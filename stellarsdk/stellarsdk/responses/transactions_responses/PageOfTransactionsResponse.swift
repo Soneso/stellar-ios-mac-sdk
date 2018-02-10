@@ -11,7 +11,8 @@ import Foundation
 ///  Represents an all transactions response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/transactions-all.html "All Transactions")
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/transaction.html "Transaction")
-public class AllTransactionsResponse: NSObject, Decodable {
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/page.html "Page")
+public class PageOfTransactionsResponse: NSObject, Decodable {
     
     /// A list of links related to this response.
     public var links:PagingLinksResponse

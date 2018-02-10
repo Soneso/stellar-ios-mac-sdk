@@ -1,5 +1,5 @@
 //
-//  LedgersResponse.swift
+//  PageOfLedgersResponse.swift
 //  stellarsdk
 //
 //  Created by Rogobete Christian on 03.02.18.
@@ -8,10 +8,11 @@
 
 import Foundation
 
-///  Represents an all ledgers response.
+///  Represents a page of ledgers response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/ledgers-all.html "All Ledgers Request")
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/ledger.html "Ledger")
-public class AllLedgersResponse: NSObject, Decodable {
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/page.html "Page")
+public class PageOfLedgersResponse: NSObject, Decodable {
     
     /// A list of links related to this response.
     public var links:PagingLinksResponse

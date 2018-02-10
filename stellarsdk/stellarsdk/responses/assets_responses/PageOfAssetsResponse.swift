@@ -1,5 +1,5 @@
 //
-//  AllAssetsResponse.swift
+//  PageOfAssetsResponse.swift
 //  stellarsdk
 //
 //  Created by Rogobete Christian on 02.02.18.
@@ -8,10 +8,11 @@
 
 import Foundation
 
-///  Represents an all assets response.
+///  Represents a page of assets response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/assets-all.html "All Assets Request")
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/asset.html "Asset")
-public class AllAssetsResponse: NSObject, Decodable {
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/page.html "Page")
+public class PageOfAssetsResponse: NSObject, Decodable {
     
     /// A list of links related to this response.
     public var links:PagingLinksResponse

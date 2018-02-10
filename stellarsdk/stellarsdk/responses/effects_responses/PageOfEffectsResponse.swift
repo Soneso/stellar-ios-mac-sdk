@@ -1,5 +1,5 @@
 //
-//  AllEffectsResponse.swift
+//  PageOfEffectsResponse.swift
 //  stellarsdk
 //
 //  Created by Razvan Chelemen on 02/02/2018.
@@ -8,10 +8,10 @@
 
 import Foundation
 
-///  Represents an all effetcs response, containing effetcs response objects and links from the all effects request
-///  Horizon API Request GET /effects{?cursor,limit,order}
+///  Represents a page of effetcs response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/effects-all.html "All Effects")
-public class AllEffectsResponse: NSObject {
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/page.html "Page")
+public class PageOfEffectsResponse: NSObject {
     
     /// An array of effect response objects received from the API
     public var effects:[EffectResponse]

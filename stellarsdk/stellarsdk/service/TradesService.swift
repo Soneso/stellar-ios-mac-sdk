@@ -9,7 +9,7 @@
 import Foundation
 
 public enum AllTradesResponseEnum {
-    case success(details: AllTradesResponse)
+    case success(details: PageOfTradesResponse)
     case failure(error: HorizonRequestError)
 }
 
@@ -51,7 +51,7 @@ public class TradesService: NSObject {
             switch result {
             case .success(let data):
                 do {
-                    let trades = try self.jsonDecoder.decode(AllTradesResponse.self, from: data)
+                    let trades = try self.jsonDecoder.decode(PageOfTradesResponse.self, from: data)
                     response(.success(details: trades))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))

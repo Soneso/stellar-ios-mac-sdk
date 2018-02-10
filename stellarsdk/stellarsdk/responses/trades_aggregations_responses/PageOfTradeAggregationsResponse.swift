@@ -1,5 +1,5 @@
 //
-//  AllTradeAggregationsResponse.swift
+//  PageOfTradeAggregationsResponse.swift
 //  stellarsdk
 //
 //  Created by Istvan Elekes on 2/9/18.
@@ -8,10 +8,11 @@
 
 import Foundation
 
-///  Represents an all trade aggregations response.
+///  Represents a page of trade aggregations response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/trade_aggregations.html "All Trades Request")
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/trade_aggregation.html "Trade Aggregation")
-public class AllTradeAggregationsResponse: NSObject, Decodable {
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/page.html "Page")
+public class PageOfTradeAggregationsResponse: NSObject, Decodable {
     
     /// A list of links related to this response.
     public var links:PagingLinksResponse

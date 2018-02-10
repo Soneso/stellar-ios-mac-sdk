@@ -9,7 +9,7 @@
 import Foundation
 
 public enum AllLedgersResponseEnum {
-    case success(details: AllLedgersResponse)
+    case success(details: PageOfLedgersResponse)
     case failure(error: HorizonRequestError)
 }
 
@@ -67,7 +67,7 @@ public class LedgersService: NSObject {
             switch result {
             case .success(let data):
                 do {
-                    let ledgers = try self.jsonDecoder.decode(AllLedgersResponse.self, from: data)
+                    let ledgers = try self.jsonDecoder.decode(PageOfLedgersResponse.self, from: data)
                     response(.success(details: ledgers))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))

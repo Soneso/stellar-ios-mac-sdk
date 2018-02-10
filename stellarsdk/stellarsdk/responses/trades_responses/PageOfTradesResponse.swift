@@ -1,5 +1,5 @@
 //
-//  AllTradesResponse.swift
+//  PageOfTradesResponse.swift
 //  stellarsdk
 //
 //  Created by Istvan Elekes on 2/8/18.
@@ -11,7 +11,8 @@ import Foundation
 ///  Represents an all trades response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/trades.html "All Trades Request")
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/trade.html "Trade")
-public class AllTradesResponse: NSObject, Decodable {
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/page.html "Page")
+public class PageOfTradesResponse: NSObject, Decodable {
     
     /// A list of links related to this response.
     public var links:PagingLinksResponse

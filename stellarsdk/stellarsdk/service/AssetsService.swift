@@ -9,7 +9,7 @@
 import Foundation
 
 public enum AllAssetsResponseEnum {
-    case success(details: AllAssetsResponse)
+    case success(details: PageOfAssetsResponse)
     case failure(error: HorizonRequestError)
 }
 
@@ -55,7 +55,7 @@ public class AssetsService: NSObject {
             switch result {
             case .success(let data):
                 do {
-                    let assets = try self.jsonDecoder.decode(AllAssetsResponse.self, from: data)
+                    let assets = try self.jsonDecoder.decode(PageOfAssetsResponse.self, from: data)
                     response(.success(details: assets))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))

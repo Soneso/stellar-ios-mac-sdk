@@ -8,10 +8,11 @@
 
 import Foundation
 
-///  Represents an all payments response.
+///  Represents a page of payments response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/payments-all.html "All Payments Request")
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#payment "Payment Operation")
-public class AllPaymentsResponse: NSObject {
+///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/page.html "Page")
+public class PageOfPaymentsResponse: NSObject {
     
     /// A list of links related to this response.
     public var links:PagingLinksResponse
