@@ -14,7 +14,7 @@ import Foundation
 public class AllAssetsResponse: NSObject, Decodable {
     
     /// A list of links related to this response.
-    public var links:AllAssetsLinksResponse
+    public var links:PagingLinksResponse
     
     /// Assets found in the response.
     public var assets:[AssetResponse]
@@ -38,7 +38,7 @@ public class AllAssetsResponse: NSObject, Decodable {
      */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        self.links = try values.decode(AllAssetsLinksResponse.self, forKey: .links)
+        self.links = try values.decode(PagingLinksResponse.self, forKey: .links)
         self.embeddedRecords = try values.decode(EmbeddedAssetsResponseService.self, forKey: .embeddedRecords)
         self.assets = self.embeddedRecords.records
     }

@@ -21,7 +21,7 @@ class EffectsFactory: NSObject {
      */
     func effectsFromResponseData(data: Data) throws -> AllEffectsResponse {
         var effectsList = [EffectResponse]()
-        var links: AllEffectsLinksResponse
+        var links: PagingLinksResponse
         
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
@@ -94,7 +94,7 @@ class EffectsFactory: NSObject {
             }
             
             let linksJson = try JSONSerialization.data(withJSONObject: json["_links"]!, options: .prettyPrinted)
-            links = try jsonDecoder.decode(AllEffectsLinksResponse.self, from: linksJson)
+            links = try jsonDecoder.decode(PagingLinksResponse.self, from: linksJson)
             
         } catch {
             throw HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)

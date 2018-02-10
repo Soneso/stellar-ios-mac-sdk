@@ -25,7 +25,7 @@ class OperationsFactory: NSObject {
      */
     func operationsFromResponseData(data: Data) throws -> AllOperationsResponse {
         var operationsList = [OperationResponse]()
-        var links: AllOperationsLinksResponse
+        var links: PagingLinksResponse
         
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
@@ -37,7 +37,7 @@ class OperationsFactory: NSObject {
             }
             
             let linksJson = try JSONSerialization.data(withJSONObject: json["_links"]!, options: .prettyPrinted)
-            links = try jsonDecoder.decode(AllOperationsLinksResponse.self, from: linksJson)
+            links = try jsonDecoder.decode(PagingLinksResponse.self, from: linksJson)
             
         } catch {
             throw HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)

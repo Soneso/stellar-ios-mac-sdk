@@ -116,8 +116,7 @@ public class PaymentsService: NSObject {
             case .success(let data):
                 do {
                     let operations = try self.operationsFactory.operationsFromResponseData(data: data)
-                    let paymentsLinks = try AllPaymentsLinksResponse(operationsLinks: operations.links)
-                    let payments = AllPaymentsResponse(payments: operations.operations, links: paymentsLinks)
+                    let payments = AllPaymentsResponse(payments: operations.operations, links: operations.links)
                     response(.success(details: payments))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))

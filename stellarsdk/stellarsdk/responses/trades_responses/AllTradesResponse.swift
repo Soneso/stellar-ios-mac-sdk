@@ -14,7 +14,7 @@ import Foundation
 public class AllTradesResponse: NSObject, Decodable {
     
     /// A list of links related to this response.
-    public var links:LinksResponse
+    public var links:PagingLinksResponse
     
     /// Trades found in the response.
     public var trades:[TradeResponse]
@@ -38,7 +38,7 @@ public class AllTradesResponse: NSObject, Decodable {
      */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        self.links = try values.decode(LinksResponse.self, forKey: .links)
+        self.links = try values.decode(PagingLinksResponse.self, forKey: .links)
         self.embeddedRecords = try values.decode(EmbeddedTradesResponseService.self, forKey: .embeddedRecords)
         self.trades = self.embeddedRecords.records
     }

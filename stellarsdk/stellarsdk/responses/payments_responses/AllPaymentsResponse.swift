@@ -14,7 +14,7 @@ import Foundation
 public class AllPaymentsResponse: NSObject {
     
     /// A list of links related to this response.
-    public var links:AllPaymentsLinksResponse
+    public var links:PagingLinksResponse
     
     /// Assets found in the response.
     public var payments:[OperationResponse]
@@ -31,7 +31,7 @@ public class AllPaymentsResponse: NSObject {
      - Parameter operations: The payment operations received from the Horizon API
      - Parameter links: The links received from the Horizon API
      */
-    public init(payments: [OperationResponse], links:AllPaymentsLinksResponse) {
+    public init(payments: [OperationResponse], links:PagingLinksResponse) {
         self.payments = payments
         self.links = links
     }

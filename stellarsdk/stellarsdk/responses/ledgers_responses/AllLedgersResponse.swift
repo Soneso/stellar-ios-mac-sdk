@@ -14,7 +14,7 @@ import Foundation
 public class AllLedgersResponse: NSObject, Decodable {
     
     /// A list of links related to this response.
-    public var links:AllLedgersLinksResponse
+    public var links:PagingLinksResponse
     
     ///Ledgers found in the response.
     public var ledgers:[LedgerResponse]
@@ -38,7 +38,7 @@ public class AllLedgersResponse: NSObject, Decodable {
     */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        self.links = try values.decode(AllLedgersLinksResponse.self, forKey: .links)
+        self.links = try values.decode(PagingLinksResponse.self, forKey: .links)
         self.embeddedRecords = try values.decode(EmbeddedLedgersResponseService.self, forKey: .embeddedRecords)
         self.ledgers = self.embeddedRecords.records
     }

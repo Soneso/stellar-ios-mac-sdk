@@ -17,7 +17,7 @@ public class AllOperationsResponse: NSObject {
     public var operations:[OperationResponse]
     
     /// A list of links related to this all operations response
-    public var links: AllOperationsLinksResponse
+    public var links: PagingLinksResponse
     
     /**
         Initializer - creates a new instance by decoding from the given decoder.
@@ -25,7 +25,7 @@ public class AllOperationsResponse: NSObject {
         - Parameter operations: The operations received from the Horizon API
         - Parameter links: The links received from the Horizon API
      */
-    public init(operations: [OperationResponse], links:AllOperationsLinksResponse) {
+    public init(operations: [OperationResponse], links:PagingLinksResponse) {
         self.operations = operations
         self.links = links
     }

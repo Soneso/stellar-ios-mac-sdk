@@ -17,7 +17,7 @@ public class AllEffectsResponse: NSObject {
     public var effects:[EffectResponse]
     
     /// A list of links related to this all effects response
-    public var links: AllEffectsLinksResponse
+    public var links: PagingLinksResponse
     
     /**
         Initializer - creates a new instance by decoding from the given decoder.
@@ -25,7 +25,7 @@ public class AllEffectsResponse: NSObject {
         - Parameter effects: The effects received from the Horizon API
         - Parameter links: The links received from the Horizon API
      */
-    public init(effects: [EffectResponse], links:AllEffectsLinksResponse) {
+    public init(effects: [EffectResponse], links:PagingLinksResponse) {
         self.effects = effects
         self.links = links
     }
