@@ -10,7 +10,7 @@ import Foundation
 
 public enum AllEffectsResponseEnum {
     case success(details: AllEffectsResponse)
-    case failure(error: EffectsError)
+    case failure(error: HorizonRequestError)
 }
 
 public typealias AllEffectsResponseClosure = (_ response:AllEffectsResponseEnum) -> (Void)
@@ -84,19 +84,10 @@ public class EffectsService: NSObject {
                     let effects = try self.effectsFactory.effectsFromResponseData(data: data)
                     response(.success(details: effects))
                 } catch {
-                    response(.failure(error: error as! EffectsError))
+                    response(.failure(error: error as! HorizonRequestError))
                 }
             case .failure(let error):
-                switch error {
-                case .resourceNotFound(let message):
-                    response(.failure(error: .effectNotFound(response: message)))
-                case .requestFailed(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .internalError(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .emptyResponse:
-                    response(.failure(error: .requestFailed(response: "The response came back empty")))
-                }
+                response(.failure(error:error))
             }
         }
     }

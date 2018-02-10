@@ -11,19 +11,19 @@ import Foundation
 /// An enum used to diferentiate between successful and failed account details responses
 public enum AccountResponseEnum {
     case success(details: AccountResponse)
-    case failure(error: AccountError)
+    case failure(error: HorizonRequestError)
 }
 
 /// An enum used to diferentiate between successful and failed account details responses
 public enum DataForAccountResponseEnum {
     case success(details: DataForAccountResponse)
-    case failure(error: AccountError)
+    case failure(error: HorizonRequestError)
 }
 
 /// An enum used to diferentiate between successful and failed create account responses
 public enum CreateAccountResponseEnum {
     case success(details: Any)
-    case failure(error: AccountError)
+    case failure(error: Error)
 }
 
 /// A closure to be called with the response from a create account request
@@ -75,7 +75,7 @@ open class AccountService: NSObject {
     
     /// Get the details for an account.
     ///
-    /// - parameter accountId:  A stellar accountid for an already created account. An stellar account is created when some assets are sent to a new key.
+    /// - parameter accountId:  A stellar accountid for an already created account. An stellar account is created when one lumen has been sent to a new key.
     /// - parameter response:   The closure to be called upon response.
     open func getAccountDetails(accountId: String, response: @escaping AccountResponseClosure) {
         let requestPath = "/accounts/\(accountId)"
@@ -87,20 +87,11 @@ open class AccountService: NSObject {
                     let responseMessage = try self.jsonDecoder.decode(AccountResponse.self, from: data)
                     response(.success(details:responseMessage))
                 } catch {
-                    response(.failure(error: .parsingFailed(response: error.localizedDescription)))
+                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }
                 
             case .failure(let error):
-                switch error {
-                case .resourceNotFound(let message):
-                    response(.failure(error: .accountNotFound(response: message)))
-                case .requestFailed(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .internalError(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .emptyResponse:
-                    response(.failure(error: .requestFailed(response: "The response came back empty")))
-                }
+                response(.failure(error:error))
             }
         }
     }
@@ -121,20 +112,11 @@ open class AccountService: NSObject {
                     let responseMessage = try self.jsonDecoder.decode(DataForAccountResponse.self, from: data)
                     response(.success(details:responseMessage))
                 } catch {
-                    response(.failure(error: .parsingFailed(response: error.localizedDescription)))
+                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }
                 
             case .failure(let error):
-                switch error {
-                case .resourceNotFound(let message):
-                    response(.failure(error: .accountNotFound(response: message)))
-                case .requestFailed(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .internalError(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .emptyResponse:
-                    response(.failure(error: .requestFailed(response: "The response came back empty")))
-                }
+                response(.failure(error:error))
             }
         }
     }

@@ -97,7 +97,7 @@ class EffectsFactory: NSObject {
             links = try jsonDecoder.decode(AllEffectsLinksResponse.self, from: linksJson)
             
         } catch {
-            throw EffectsError.parsingFailed(response: error.localizedDescription)
+            throw HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)
         }
         
         return AllEffectsResponse(effects: effectsList, links:links)

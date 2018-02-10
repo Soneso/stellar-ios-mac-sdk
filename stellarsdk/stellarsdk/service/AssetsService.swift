@@ -10,7 +10,7 @@ import Foundation
 
 public enum AllAssetsResponseEnum {
     case success(details: AllAssetsResponse)
-    case failure(error: AssetsError)
+    case failure(error: HorizonRequestError)
 }
 
 public typealias AllAssetsResponseClosure = (_ response:AllAssetsResponseEnum) -> (Void)
@@ -76,21 +76,11 @@ public class AssetsService: NSObject {
                     let assets = try self.jsonDecoder.decode(AllAssetsResponse.self, from: data)
                     response(.success(details: assets))
                 } catch {
-                    response(.failure(error: error as! AssetsError))
+                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .failure(let error):
-                switch error {
-                case .resourceNotFound(let message):
-                    response(.failure(error: .assetsNotFound(response: message)))
-                case .requestFailed(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .internalError(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .emptyResponse:
-                    response(.failure(error: .requestFailed(response: "The response came back empty")))
-                }
+                response(.failure(error:error))
             }
         }
     }
 }
-

@@ -10,12 +10,12 @@ import Foundation
 
 public enum AllLedgersResponseEnum {
     case success(details: AllLedgersResponse)
-    case failure(error: LedgersError)
+    case failure(error: HorizonRequestError)
 }
 
 public enum LedgerDetailsResponseEnum {
     case success(details: LedgerResponse)
-    case failure(error: LedgersError)
+    case failure(error: HorizonRequestError)
 }
 
 public typealias AllLedgersResponseClosure = (_ response:AllLedgersResponseEnum) -> (Void)
@@ -42,19 +42,10 @@ public class LedgersService: NSObject {
                     let ledger = try self.jsonDecoder.decode(LedgerResponse.self, from: data)
                     response(.success(details: ledger))
                 } catch {
-                    response(.failure(error: error as! LedgersError))
+                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .failure(let error):
-                switch error {
-                case .resourceNotFound(let message):
-                    response(.failure(error: .ledgersNotFound(response: message)))
-                case .requestFailed(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .internalError(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .emptyResponse:
-                    response(.failure(error: .requestFailed(response: "The response came back empty")))
-                }
+                response(.failure(error:error))
             }
         }
     }
@@ -89,24 +80,12 @@ public class LedgersService: NSObject {
                 do {
                     let ledgers = try self.jsonDecoder.decode(AllLedgersResponse.self, from: data)
                     response(.success(details: ledgers))
-                } catch {
-                    // TODO DecodingError
-                    response(.failure(error: error as! LedgersError))
+                }  catch {
+                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .failure(let error):
-                switch error {
-                case .resourceNotFound(let message):
-                    response(.failure(error: .ledgersNotFound(response: message)))
-                case .requestFailed(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .internalError(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .emptyResponse:
-                    response(.failure(error: .requestFailed(response: "The response came back empty")))
-                }
+                response(.failure(error:error))
             }
         }
     }
 }
-
-

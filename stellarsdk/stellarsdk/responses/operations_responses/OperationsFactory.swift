@@ -40,7 +40,7 @@ class OperationsFactory: NSObject {
             links = try jsonDecoder.decode(AllOperationsLinksResponse.self, from: linksJson)
             
         } catch {
-            throw OperationsError.parsingFailed(response: error.localizedDescription)
+            throw HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)
         }
         
         return AllOperationsResponse(operations: operationsList, links:links)
@@ -76,7 +76,7 @@ class OperationsFactory: NSObject {
                 return try jsonDecoder.decode(ManageDataOperationResponse.self, from: data)
             }
         } else {
-            throw OperationsError.parsingFailed(response: "Unknown operation type")
+            throw HorizonRequestError.parsingResponseFailed(message: "Unknown operation type")
         }
     }
 }

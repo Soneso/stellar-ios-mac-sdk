@@ -10,12 +10,12 @@ import Foundation
 
 public enum AllOperationsResponseEnum {
     case success(details: AllOperationsResponse)
-    case failure(error: OperationsError)
+    case failure(error: HorizonRequestError)
 }
 
 public enum OperationDetailsResponseEnum {
     case success(details: OperationResponse)
-    case failure(error: OperationsError)
+    case failure(error: HorizonRequestError)
 }
 
 public typealias AllOperationsResponseClosure = (_ response:AllOperationsResponseEnum) -> (Void)
@@ -63,19 +63,10 @@ public class OperationsService: NSObject {
                     let operation = try self.operationsFactory.operationFromData(data: data)
                     response(.success(details: operation))
                 } catch {
-                    response(.failure(error: error as! OperationsError))
+                    response(.failure(error: error as! HorizonRequestError))
                 }
             case .failure(let error):
-                switch error {
-                case .resourceNotFound(let message):
-                    response(.failure(error: .operationNotFound(response: message)))
-                case .requestFailed(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .internalError(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .emptyResponse:
-                    response(.failure(error: .requestFailed(response: "The response came back empty")))
-                }
+                response(.failure(error:error))
             }
         }
     }
@@ -112,21 +103,11 @@ public class OperationsService: NSObject {
                     let operations = try self.operationsFactory.operationsFromResponseData(data: data)
                     response(.success(details: operations))
                 } catch {
-                    response(.failure(error: error as! OperationsError))
+                    response(.failure(error: error as! HorizonRequestError))
                 }
             case .failure(let error):
-                switch error {
-                case .resourceNotFound(let message):
-                    response(.failure(error: .operationNotFound(response: message)))
-                case .requestFailed(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .internalError(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .emptyResponse:
-                    response(.failure(error: .requestFailed(response: "The response came back empty")))
-                }
+                response(.failure(error:error))
             }
         }
     }
-    
 }

@@ -49,7 +49,7 @@ class AccountTestCase: XCTestCase {
                 XCTAssert(false)
             case .failure(let error):
                 switch error {
-                case .accountNotFound(_):
+                case .notFound(let message, let horizonErrorResponse):
                     XCTAssert(true)
                 default:
                     XCTAssert(false)

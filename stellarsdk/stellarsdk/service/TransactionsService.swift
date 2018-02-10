@@ -10,12 +10,12 @@ import Foundation
 
 public enum AllTransactionsResponseEnum {
     case success(details: AllTransactionsResponse)
-    case failure(error: TransactionsError)
+    case failure(error: HorizonRequestError)
 }
 
 public enum TransactionDetailsResponseEnum {
     case success(details: TransactionResponse)
-    case failure(error: TransactionsError)
+    case failure(error: HorizonRequestError)
 }
 
 public typealias AllTransactionsResponseClosure = (_ response:AllTransactionsResponseEnum) -> (Void)
@@ -59,19 +59,10 @@ public class TransactionsService: NSObject {
                     let transaction = try self.jsonDecoder.decode(TransactionResponse.self, from: data)
                     response(.success(details: transaction))
                 } catch {
-                    response(.failure(error: error as! TransactionsError))
+                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .failure(let error):
-                switch error {
-                case .resourceNotFound(let message):
-                    response(.failure(error: .transactionNotFound(response: message)))
-                case .requestFailed(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .internalError(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .emptyResponse:
-                    response(.failure(error: .requestFailed(response: "The response came back empty")))
-                }
+                response(.failure(error:error))
             }
         }
     }
@@ -108,22 +99,12 @@ public class TransactionsService: NSObject {
                     self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
                     let transactions = try self.jsonDecoder.decode(AllTransactionsResponse.self, from: data)
                     response(.success(details: transactions))
-                } catch {
-                    response(.failure(error: error as! TransactionsError))
+                }  catch {
+                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .failure(let error):
-                switch error {
-                case .resourceNotFound(let message):
-                    response(.failure(error: .transactionNotFound(response: message)))
-                case .requestFailed(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .internalError(let message):
-                    response(.failure(error: .requestFailed(response: message)))
-                case .emptyResponse:
-                    response(.failure(error: .requestFailed(response: "The response came back empty")))
-                }
+                response(.failure(error:error))
             }
         }
     }
-    
 }

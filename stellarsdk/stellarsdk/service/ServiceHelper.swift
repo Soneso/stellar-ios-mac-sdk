@@ -11,7 +11,7 @@ import Foundation
 /// An enum to diferentiate between succesful and failed responses
 enum Result {
     case success(data: Data)
-    case failure(error: NetworkError)
+    case failure(error: HorizonRequestError)
 }
 
 /// A closure to be called when a HTTP response is received
@@ -21,6 +21,7 @@ typealias ResponseClosure = (_ response:Result) -> (Void)
 class ServiceHelper: NSObject {
     /// The url of the Horizon server to connect to
     let baseURL: String
+    let jsonDecoder = JSONDecoder()
     
     private override init() {
         baseURL = ""
@@ -57,11 +58,95 @@ class ServiceHelper: NSObject {
                 switch httpResponse.statusCode {
                 case 200:
                     break
-                case 404:
-                    completion(.failure(error:.resourceNotFound(message:message)))
+                case 400: // Bad request
+                    if let data = data {
+                        do {
+                            let badRequestErrorResponse = try self.jsonDecoder.decode(BadRequestErrorResponse.self, from: data)
+                            completion(.failure(error:.badRequest(message:message, horizonErrorResponse:badRequestErrorResponse)))
+                            return
+                        } catch {}
+                    }
+                    completion(.failure(error:.badRequest(message:message, horizonErrorResponse:nil)))
                     return
-                case 500:
-                    completion(.failure(error:.internalError(message:message)))
+                case 403: // Forbidden
+                    if let data = data {
+                        do {
+                            let forbiddenErrorResponse = try self.jsonDecoder.decode(ForbiddenErrorResponse.self, from: data)
+                            completion(.failure(error:.forbidden(message:message, horizonErrorResponse:forbiddenErrorResponse)))
+                            return
+                        } catch {}
+                    }
+                    completion(.failure(error:.forbidden(message:message, horizonErrorResponse:nil)))
+                    return
+                case 404: // Not found
+                    if let data = data {
+                        do {
+                            let notFoundErrorResponse = try self.jsonDecoder.decode(NotFoundErrorResponse.self, from: data)
+                            completion(.failure(error:.notFound(message:message, horizonErrorResponse:notFoundErrorResponse)))
+                            return
+                        } catch {}
+                    }
+                    completion(.failure(error:.notFound(message:message, horizonErrorResponse:nil)))
+                    return
+                case 406: // Not acceptable
+                    if let data = data {
+                        do {
+                            let notAcceptableErrorResponse = try self.jsonDecoder.decode(NotAcceptableErrorResponse.self, from: data)
+                            completion(.failure(error:.notAcceptable(message:message, horizonErrorResponse:notAcceptableErrorResponse)))
+                            return
+                        } catch {}
+                    }
+                    completion(.failure(error:.notAcceptable(message:message, horizonErrorResponse:nil)))
+                    return
+                case 410: // Gone
+                    if let data = data {
+                        do {
+                            let beforeHistoryErrorResponse = try self.jsonDecoder.decode(BeforeHistoryErrorResponse.self, from: data)
+                            completion(.failure(error:.beforeHistory(message:message, horizonErrorResponse:beforeHistoryErrorResponse)))
+                            return
+                        } catch {}
+                    }
+                    completion(.failure(error:.beforeHistory(message:message, horizonErrorResponse:nil)))
+                    return
+                case 429: // Too many requests
+                    if let data = data {
+                        do {
+                            let rateLimitExceededErrorResponse = try self.jsonDecoder.decode(RateLimitExceededErrorResponse.self, from: data)
+                            completion(.failure(error:.rateLimitExceeded(message:message, horizonErrorResponse:rateLimitExceededErrorResponse)))
+                            return
+                        } catch {}
+                    }
+                    completion(.failure(error:.rateLimitExceeded(message:message, horizonErrorResponse:nil)))
+                    return
+                case 500: // Internal server error
+                    if let data = data {
+                        do {
+                            let internalServerErrorResponse = try self.jsonDecoder.decode(InternalServerErrorResponse.self, from: data)
+                            completion(.failure(error:.internalServerError(message:message, horizonErrorResponse:internalServerErrorResponse)))
+                            return
+                        } catch {}
+                    }
+                    completion(.failure(error:.internalServerError(message:message, horizonErrorResponse:nil)))
+                    return
+                case 501: // Not implemented
+                    if let data = data {
+                        do {
+                            let notImplementedErrorResponse = try self.jsonDecoder.decode(NotImplementedErrorResponse.self, from: data)
+                            completion(.failure(error:.notImplemented(message:message, horizonErrorResponse:notImplementedErrorResponse)))
+                            return
+                        } catch {}
+                    }
+                    completion(.failure(error:.notImplemented(message:message, horizonErrorResponse:nil)))
+                    return
+                case 503: // Service unavailable
+                    if let data = data {
+                        do {
+                            let staleHistoryErrorResponse = try self.jsonDecoder.decode(StaleHistoryErrorResponse.self, from: data)
+                            completion(.failure(error:.staleHistory(message:message, horizonErrorResponse:staleHistoryErrorResponse)))
+                            return
+                        } catch {}
+                    }
+                    completion(.failure(error:.staleHistory(message:message, horizonErrorResponse:nil)))
                     return
                 default:
                     completion(.failure(error:.requestFailed(message:message)))
@@ -78,5 +163,4 @@ class ServiceHelper: NSObject {
         
         task.resume()
     }
-    
 }
