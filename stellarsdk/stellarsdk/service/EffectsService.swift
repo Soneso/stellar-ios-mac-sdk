@@ -28,53 +28,41 @@ public class EffectsService: NSObject {
     }
     
     open func getEffects(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
-        let path = "/effects?"
+        let path = "/effects"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
     open func getEffects(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
-        let path = "/accounts/" + accountId + "/effects?"
+        let path = "/accounts/" + accountId + "/effects"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
     open func getEffects(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
-        let path = "/ledgers/" + ledger + "/effects?"
+        let path = "/ledgers/" + ledger + "/effects"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
     open func getEffects(forOperation operation:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
-        let path = "/operations/" + operation + "/effects?"
+        let path = "/operations/" + operation + "/effects"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
     open func getEffects(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
-        let path = "/transactions/" + hash + "/effects?"
+        let path = "/transactions/" + hash + "/effects"
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
     private func getEffects(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllEffectsResponseClosure) {
         var requestPath = path
-        var hasFirstParam = false
         
-        if let cursor = cursor {
-            requestPath += "cursor=" + cursor
-            hasFirstParam = true;
-        }
+        var params = Dictionary<String,String>()
+        params["cursor"] = cursor
+        params["order"] = order?.rawValue
+        if let limit = limit { params["limit"] = String(limit) }
         
-        if let order = order {
-            if hasFirstParam {
-                requestPath += "&"
-            } else {
-                hasFirstParam = true;
-            }
-            requestPath += "order=" + order.rawValue
-        }
-        
-        if let limit = limit {
-            if hasFirstParam {
-                requestPath += "&"
-            }
-            requestPath += "limit=" + String(limit)
+        if let pathParams = params.stringFromHttpParameters(),
+            pathParams.count > 0 {
+            requestPath += "?\(pathParams)"
         }
         
         serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in

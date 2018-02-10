@@ -531,11 +531,11 @@
 		743DF53C201F495A00713DE7 /* service */ = {
 			isa = PBXGroup;
 			children = (
-				83DD2C97202F249800713FEE /* PaymentsService.swift */,
 				743DF54F201FBD2B00713DE7 /* AccountService.swift */,
+				836971E72025048D00398A98 /* AssetsService.swift */,
+				83DD2C97202F249800713FEE /* PaymentsService.swift */,
 				743DF5882020680700713DE7 /* ServiceHelper.swift */,
 				7481B53D20248441000A783E /* EffectsService.swift */,
-				836971E72025048D00398A98 /* AssetsService.swift */,
 				8369720020255AB800398A98 /* LedgersService.swift */,
 				744C4DB4202A24F200B46CDE /* OperationsService.swift */,
 				745F2BB7202C36AA008763F1 /* TransactionsService.swift */,
@@ -836,14 +836,14 @@
 		83DD2C5C202D04E100713FEE /* responses */ = {
 			isa = PBXGroup;
 			children = (
-				437D8A87202EFE880024D031 /* trades_aggregations_responses */,
-				437D8A7E202EEFBD0024D031 /* trades_responses */,
 				743DF4DD201F121B00713DE7 /* account_responses */,
 				836971E92025055200398A98 /* assets_responses */,
 				7481B53C20234AD6000A783E /* effects_responses */,
 				836971FB202552DB00398A98 /* ledgers_responses */,
 				744C4DB3202A242B00B46CDE /* operations_responses */,
 				83DD2C92202F245E00713FEE /* payments_responses */,
+				437D8A87202EFE880024D031 /* trades_aggregations_responses */,
+				437D8A7E202EEFBD0024D031 /* trades_responses */,
 				745F2BB4202C2E68008763F1 /* transactions_responses */,
 				83DD2C67202DE15400713FEE /* error_responses */,
 				83DD2C9E202F27DC00713FEE /* links */,

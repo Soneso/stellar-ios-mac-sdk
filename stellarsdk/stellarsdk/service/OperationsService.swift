@@ -73,27 +73,15 @@ public class OperationsService: NSObject {
     
     private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllOperationsResponseClosure) {
         var requestPath = path
-        var hasFirstParam = false
         
-        if let cursor = cursor {
-            requestPath += "cursor=" + cursor
-            hasFirstParam = true;
-        }
+        var params = Dictionary<String,String>()
+        params["cursor"] = cursor
+        params["order"] = order?.rawValue
+        if let limit = limit { params["limit"] = String(limit) }
         
-        if let order = order {
-            if hasFirstParam {
-                requestPath += "&"
-            } else {
-                hasFirstParam = true;
-            }
-            requestPath += "order=" + order.rawValue
-        }
-        
-        if let limit = limit {
-            if hasFirstParam {
-                requestPath += "&"
-            }
-            requestPath += "limit=" + String(limit)
+        if let pathParams = params.stringFromHttpParameters(),
+            pathParams.count > 0 {
+            requestPath += "?\(pathParams)"
         }
         
         serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in

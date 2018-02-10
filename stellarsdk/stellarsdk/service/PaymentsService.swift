@@ -37,7 +37,7 @@ public class PaymentsService: NSObject {
         See also [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-all.html "All Payments")
      */
     open func getPayments(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllPaymentsResponseClosure) {
-        let path = "/payments?"
+        let path = "/payments"
         getPayments(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
@@ -52,7 +52,7 @@ public class PaymentsService: NSObject {
         See also [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-account.html "Payments for Account")
     */
     open func getPayments(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllPaymentsResponseClosure) {
-        let path = "/accounts/" + accountId + "/payments?"
+        let path = "/accounts/" + accountId + "/payments"
         getPayments(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
@@ -67,7 +67,7 @@ public class PaymentsService: NSObject {
         See also [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-ledger.html "Payments for Ledger")
     */
     open func getPayments(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllPaymentsResponseClosure) {
-        let path = "/ledgers/" + ledger + "/payments?"
+        let path = "/ledgers/" + ledger + "/payments"
         getPayments(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
@@ -82,33 +82,21 @@ public class PaymentsService: NSObject {
         See also [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-transaction.html "Payments for Transaction")
      */
     open func getPayments(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllPaymentsResponseClosure) {
-        let path = "/transactions/" + hash + "/payments?"
+        let path = "/transactions/" + hash + "/payments"
         getPayments(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
     private func getPayments(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllPaymentsResponseClosure) {
         var requestPath = path
-        var hasFirstParam = false
         
-        if let cursor = cursor {
-            requestPath += "cursor=" + cursor
-            hasFirstParam = true;
-        }
+        var params = Dictionary<String,String>()
+        params["cursor"] = cursor
+        params["order"] = order?.rawValue
+        if let limit = limit { params["limit"] = String(limit) }
         
-        if let order = order {
-            if hasFirstParam {
-                requestPath += "&"
-            } else {
-                hasFirstParam = true;
-            }
-            requestPath += "order=" + order.rawValue
-        }
-        
-        if let limit = limit {
-            if hasFirstParam {
-                requestPath += "&"
-            }
-            requestPath += "limit=" + String(limit)
+        if let pathParams = params.stringFromHttpParameters(),
+            pathParams.count > 0 {
+            requestPath += "?\(pathParams)"
         }
         
         serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in

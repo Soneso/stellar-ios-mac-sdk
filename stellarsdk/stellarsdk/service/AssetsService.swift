@@ -28,45 +28,18 @@ public class AssetsService: NSObject {
     }
     
     open func getAssets(from assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllAssetsResponseClosure) {
-        var requestPath = "/assets?"
-        var hasFirstParam = false
-        if let assetCode = assetCode {
-            requestPath += "asset_code=" + assetCode
-            hasFirstParam = true;
-        }
+        var requestPath = "/assets"
         
-        if let assetIssuer = assetIssuer {
-            if hasFirstParam {
-                requestPath += "&"
-            } else {
-                hasFirstParam = true;
-            }
-            requestPath += "asset_issuer=" + assetIssuer
-        }
+        var params = Dictionary<String,String>()
+        params["asset_code"] = assetCode
+        params["asset_issuer"] = assetIssuer
+        params["cursor"] = cursor
+        params["order"] = order?.rawValue
+        if let limit = limit { params["limit"] = String(limit) }
         
-        if let cursor = cursor {
-            if hasFirstParam {
-                requestPath += "&"
-            } else {
-                hasFirstParam = true;
-            }
-            requestPath += "cursor=" + cursor
-        }
-        
-        if let order = order {
-            if hasFirstParam {
-                requestPath += "&"
-            } else {
-                hasFirstParam = true;
-            }
-            requestPath += "order=" + order.rawValue
-        }
-        
-        if let limit = limit {
-            if hasFirstParam {
-                requestPath += "&"
-            }
-            requestPath += "limit=" + String(limit)
+        if let pathParams = params.stringFromHttpParameters(),
+            pathParams.count > 0 {
+            requestPath += "?\(pathParams)"
         }
         
         serviceHelper.GETRequest(path: requestPath) { (result) -> (Void) in
