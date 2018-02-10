@@ -10,7 +10,7 @@ import Foundation
 
 ///  Represents a payment operation response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#payment "Payment Operation")
-class PaymentOperationResponse: OperationResponse {
+public class PaymentOperationResponse: OperationResponse {
     
     /// Amount sent.
     public var amount:String

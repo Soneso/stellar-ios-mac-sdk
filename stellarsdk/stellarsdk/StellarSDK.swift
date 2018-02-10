@@ -16,6 +16,7 @@ public class StellarSDK: NSObject {
     public var effects: EffectsService
     public var ledgers: LedgersService
     public var operations: OperationsService
+    public var payments: PaymentsService
     public var transactions: TransactionsService
     
     public override init() {
@@ -25,6 +26,7 @@ public class StellarSDK: NSObject {
         effects = EffectsService(baseURL: configurations.horizonURL)
         ledgers = LedgersService(baseURL: configurations.horizonURL)
         operations = OperationsService(baseURL: configurations.horizonURL)
+        payments = PaymentsService(baseURL: configurations.horizonURL)
         transactions = TransactionsService(baseURL: configurations.horizonURL)
     }
     
@@ -35,6 +37,7 @@ public class StellarSDK: NSObject {
         self.effects = EffectsService(baseURL: configurations.horizonURL)
         self.ledgers = LedgersService(baseURL: configurations.horizonURL)
         self.operations = OperationsService(baseURL: configurations.horizonURL)
+        self.payments = PaymentsService(baseURL: configurations.horizonURL)
         self.transactions = TransactionsService(baseURL: configurations.horizonURL)
     }
     

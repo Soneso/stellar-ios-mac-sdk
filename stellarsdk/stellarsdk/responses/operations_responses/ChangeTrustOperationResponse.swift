@@ -10,7 +10,7 @@ import Foundation
 
 ///  Represents a change trust operation response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#change-trust "Change Trust Operation")
-class ChangeTrustOperationResponse: OperationResponse {
+public class ChangeTrustOperationResponse: OperationResponse {
     
     /// Trustor account.
     public var trustor:String

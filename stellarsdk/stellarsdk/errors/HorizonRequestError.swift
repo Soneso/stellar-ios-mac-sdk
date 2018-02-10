@@ -1,5 +1,5 @@
 //
-//  NetworkError.swift
+//  HorizonRequestError.swift
 //  stellarsdk
 //
 //  Created by Razvan Chelemen on 01/02/2018.

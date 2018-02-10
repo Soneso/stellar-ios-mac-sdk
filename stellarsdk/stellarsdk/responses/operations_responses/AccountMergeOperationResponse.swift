@@ -10,7 +10,7 @@ import Foundation
 
 ///  Represents an account merge operation response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#account-merge "Account Merge Operation")
-class AccountMergeOperationResponse: OperationResponse {
+public class AccountMergeOperationResponse: OperationResponse {
     
     /// Account ID of the account that has been deleted.
     public var account:String

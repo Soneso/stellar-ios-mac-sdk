@@ -10,7 +10,7 @@ import Foundation
 
 ///  Represents a create passive operation response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#create-passive-offer "Create Passive Operation")
-class CreatePassiveOfferOperationResponse: OperationResponse {
+public class CreatePassiveOfferOperationResponse: OperationResponse {
     
     /// Offer ID.
     public var offerId:String

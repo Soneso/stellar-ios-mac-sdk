@@ -10,7 +10,7 @@ import Foundation
 
 ///  Represents a manage offer operation response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#manage-offer "Manage offer Operation")
-class ManageOfferOperationResponse: OperationResponse {
+public class ManageOfferOperationResponse: OperationResponse {
     
     /// Offer ID.
     public var offerId:String

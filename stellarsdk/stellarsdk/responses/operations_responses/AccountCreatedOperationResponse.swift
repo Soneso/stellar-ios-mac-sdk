@@ -10,7 +10,7 @@ import Foundation
 
 ///  Represents an account created operation response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#create-account "Create Account Operation")
-class AccountCreatedOperationResponse: OperationResponse {
+public class AccountCreatedOperationResponse: OperationResponse {
 
     /// Amount the account was funded.
     public var startingBalance:Decimal
