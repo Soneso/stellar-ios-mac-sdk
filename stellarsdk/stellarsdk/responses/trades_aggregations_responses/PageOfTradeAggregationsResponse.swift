@@ -43,4 +43,50 @@ public class PageOfTradeAggregationsResponse: NSObject, Decodable {
         self.embeddedRecords = try values.decode(EmbeddedTradeAggregationsResponseService.self, forKey: .embeddedRecords)
         self.tradeAggregations = self.embeddedRecords.records
     }
+    
+    /**
+        Checks if there is a previous page available.
+     
+        - Returns: true if a previous page is avialable
+     */
+    open func hasPreviousPage()->Bool {
+        return links.prev != nil
+    }
+    
+    /**
+        Checks if there is a next page available.
+     
+        - Returns: true if a next page is avialable
+     */
+    open func hasNextPage()->Bool {
+        return links.next != nil
+    }
+    
+    /**
+        Provides the next page if available. Before calling this, make sure there is a next page available by calling 'hasNextPage'.  If there is no next page available this fuction will respond with a 'HorizonRequestError.notFound" error.
+     
+        - Parameter response:   The closure to be called upon response.
+     */
+    open func getNextPage(response:@escaping PageOfTradeAggregationsResponseClosure) {
+        let tradesService = TradeAggregationsService(baseURL:"")
+        if let url = links.next?.href {
+            tradesService.getTradeAggregationsFromUrl(url:url, response:response)
+        } else {
+            response(.failure(error: .notFound(message: "next page not found", horizonErrorResponse: nil)))
+        }
+    }
+    
+    /**
+        Provides the previous page if available. Before calling this, make sure there is a prevoius page available by calling 'hasPreviousPage'. If there is no prevoius page available this fuction will respond with a 'HorizonRequestError.notFound" error.
+     
+        - Parameter response:   The closure to be called upon response.
+     */
+    open func getPreviousPage(response:@escaping PageOfTradeAggregationsResponseClosure) {
+        let tradesService = TradeAggregationsService(baseURL:"")
+        if let url = links.prev?.href {
+            tradesService.getTradeAggregationsFromUrl(url:url, response:response)
+        } else {
+            response(.failure(error: .notFound(message: "previous page not found", horizonErrorResponse: nil)))
+        }
+    }
 }

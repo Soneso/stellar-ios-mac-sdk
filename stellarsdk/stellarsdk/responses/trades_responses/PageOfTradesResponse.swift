@@ -33,14 +33,60 @@ public class PageOfTradesResponse: NSObject, Decodable {
     }
     
     /**
-     Initializer - creates a new instance by decoding from the given decoder.
+        Initializer - creates a new instance by decoding from the given decoder.
      
-     - Parameter decoder: The decoder containing the data
+        - Parameter decoder: The decoder containing the data
      */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         self.links = try values.decode(PagingLinksResponse.self, forKey: .links)
         self.embeddedRecords = try values.decode(EmbeddedTradesResponseService.self, forKey: .embeddedRecords)
         self.trades = self.embeddedRecords.records
+    }
+    
+    /**
+        Checks if there is a previous page available.
+     
+        - Returns: true if a previous page is avialable
+     */
+    open func hasPreviousPage()->Bool {
+        return links.prev != nil
+    }
+    
+    /**
+        Checks if there is a next page available.
+     
+        - Returns: true if a next page is avialable
+     */
+    open func hasNextPage()->Bool {
+        return links.next != nil
+    }
+    
+    /**
+        Provides the next page if available. Before calling this, make sure there is a next page available by calling 'hasNextPage'.  If there is no next page available this fuction will respond with a 'HorizonRequestError.notFound" error.
+     
+        - Parameter response:   The closure to be called upon response.
+    */
+    open func getNextPage(response:@escaping PageOfTradesResponseClosure) {
+        let tradesService = TradesService(baseURL:"")
+        if let url = links.next?.href {
+            tradesService.getTradesFromUrl(url:url, response:response)
+        } else {
+            response(.failure(error: .notFound(message: "next page not found", horizonErrorResponse: nil)))
+        }
+    }
+    
+    /**
+        Provides the previous page if available. Before calling this, make sure there is a prevoius page available by calling 'hasPreviousPage'. If there is no prevoius page available this fuction will respond with a 'HorizonRequestError.notFound" error.
+     
+        - Parameter response:   The closure to be called upon response.
+     */
+    open func getPreviousPage(response:@escaping PageOfTradesResponseClosure) {
+        let tradesService = TradesService(baseURL:"")
+        if let url = links.prev?.href {
+            tradesService.getTradesFromUrl(url:url, response:response)
+        } else {
+            response(.failure(error: .notFound(message: "previous page not found", horizonErrorResponse: nil)))
+        }
     }
 }

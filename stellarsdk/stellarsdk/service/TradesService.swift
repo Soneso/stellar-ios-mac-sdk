@@ -8,12 +8,12 @@
 
 import Foundation
 
-public enum AllTradesResponseEnum {
+public enum PageOfTradesResponseEnum {
     case success(details: PageOfTradesResponse)
     case failure(error: HorizonRequestError)
 }
 
-public typealias AllTradesResponseClosure = (_ response:AllTradesResponseEnum) -> (Void)
+public typealias PageOfTradesResponseClosure = (_ response:PageOfTradesResponseEnum) -> (Void)
 
 public class TradesService: NSObject {
     let serviceHelper: ServiceHelper
@@ -27,7 +27,7 @@ public class TradesService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllTradesResponseClosure) {
+    open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfTradesResponseClosure) {
         
         var requestPath = "/trades"
         var params = Dictionary<String,String>()
@@ -47,7 +47,11 @@ public class TradesService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
+        getTradesFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+    }
+    
+    open func getTradesFromUrl(url:String, response:@escaping PageOfTradesResponseClosure) {
+        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {

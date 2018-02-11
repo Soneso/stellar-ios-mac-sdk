@@ -8,12 +8,12 @@
 
 import Foundation
 
-public enum AllTradeAggregationsResponseEnum {
+public enum PageOfTradeAggregationsResponseEnum {
     case success(details: PageOfTradeAggregationsResponse)
     case failure(error: HorizonRequestError)
 }
 
-public typealias AllTradeAggregationsResponseClosure = (_ response:AllTradeAggregationsResponseEnum) -> (Void)
+public typealias PageOfTradeAggregationsResponseClosure = (_ response:PageOfTradeAggregationsResponseEnum) -> (Void)
 
 public class TradeAggregationsService: NSObject {
     let serviceHelper: ServiceHelper
@@ -27,7 +27,7 @@ public class TradeAggregationsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getTradeAggregations(startTime:Int64? = nil, endTime:Int64? = nil, resolution:Int64? = nil, baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllTradeAggregationsResponseClosure) {
+    open func getTradeAggregations(startTime:Int64? = nil, endTime:Int64? = nil, resolution:Int64? = nil, baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfTradeAggregationsResponseClosure) {
         
         var requestPath = "/trade_aggregations"
         var params = Dictionary<String,String>()
@@ -48,7 +48,11 @@ public class TradeAggregationsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
+        getTradeAggregationsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+    }
+    
+    open func getTradeAggregationsFromUrl(url:String, response:@escaping PageOfTradeAggregationsResponseClosure) {
+        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {

@@ -41,7 +41,40 @@ class TradesTestCase: XCTestCase {
                     print("\(trade.ledgerCloseTime) is the ledger close time")
                 }
                 
-                XCTAssert(true)
+                // load next page
+                tradesResponse.getNextPage(){ (response) -> (Void) in
+                    switch response {
+                    case .success(let nextTradesResponse):
+                        // load previous page, should contain the same trades as the first page
+                        nextTradesResponse.getPreviousPage(){ (response) -> (Void) in
+                            switch response {
+                            case .success(let prevTradesResponse):
+                                let trade1 = tradesResponse.trades.first
+                                let trade2 = prevTradesResponse.trades.last // because ordering is asc now.
+                                XCTAssertTrue(trade1?.baseAccount == trade2?.baseAccount)
+                                XCTAssertTrue(trade1?.baseAmount == trade2?.baseAmount)
+                                XCTAssertTrue(trade1?.baseAssetType == trade2?.baseAssetType)
+                                if (trade1?.baseAssetType != AssetType.NATIVE) {
+                                    XCTAssertTrue(trade1?.baseAssetCode == trade2?.baseAssetCode)
+                                    XCTAssertTrue(trade1?.baseAssetIssuer == trade2?.baseAssetIssuer)
+                                }
+                                XCTAssertTrue(trade1?.counterAccount == trade2?.counterAccount)
+                                XCTAssertTrue(trade1?.counterAmount == trade2?.counterAmount)
+                                XCTAssertTrue(trade1?.counterAssetType == trade2?.counterAssetType)
+                                if (trade1?.counterAssetType != AssetType.NATIVE) {
+                                    XCTAssertTrue(trade1?.counterAssetCode == trade2?.counterAssetCode)
+                                    XCTAssertTrue(trade1?.counterAssetIssuer == trade2?.counterAssetIssuer)
+                                }
+                                XCTAssert(true)
+                                expectation.fulfill()
+                            case .failure(_):
+                                XCTAssert(false)
+                            }
+                        }
+                    case .failure(_):
+                        XCTAssert(false)
+                    }
+                }
             case .failure(_):
                 XCTAssert(false)
             }
