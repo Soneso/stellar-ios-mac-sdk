@@ -27,13 +27,39 @@ class TransactionsTestCase: XCTestCase {
         
         sdk.transactions.getTransactions { (response) -> (Void) in
             switch response {
-            case .success(_):
-                XCTAssert(true)
+            case .success(let transactionsResponse):
+                // load next page
+                transactionsResponse.getNextPage(){ (response) -> (Void) in
+                    switch response {
+                    case .success(let nextTransactionsResponse):
+                        // load previous page, should contain the same transactions as the first page
+                        nextTransactionsResponse.getPreviousPage(){ (response) -> (Void) in
+                            switch response {
+                            case .success(let prevTransactionsResponse):
+                                let transaction1 = transactionsResponse.transactions.first
+                                let transaction2 = prevTransactionsResponse.transactions.last // because ordering is asc now.
+                                XCTAssertTrue(transaction1?.id == transaction2?.id)
+                                XCTAssertTrue(transaction1?.transactionHash == transaction2?.transactionHash)
+                                XCTAssertTrue(transaction1?.ledger == transaction2?.ledger)
+                                XCTAssertTrue(transaction1?.createdAt == transaction2?.createdAt)
+                                XCTAssertTrue(transaction1?.sourceAccount == transaction2?.sourceAccount)
+                                XCTAssertTrue(transaction1?.sourceAccountSequence == transaction2?.sourceAccountSequence)
+                                XCTAssertTrue(transaction1?.feePaid == transaction2?.feePaid)
+                                XCTAssertTrue(transaction1?.operationCount == transaction2?.operationCount)
+                                XCTAssertTrue(transaction1?.memoType == transaction2?.memoType)
+                                XCTAssert(true)
+                                expectation.fulfill()
+                            case .failure(_):
+                                XCTAssert(false)
+                            }
+                        }
+                    case .failure(_):
+                        XCTAssert(false)
+                    }
+                }
             case .failure(_):
                 XCTAssert(false)
             }
-            
-            expectation.fulfill()
         }
         
         wait(for: [expectation], timeout: 15.0)

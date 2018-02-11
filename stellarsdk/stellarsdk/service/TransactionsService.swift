@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum AllTransactionsResponseEnum {
+public enum PageOfTransactionsResponseEnum {
     case success(details: PageOfTransactionsResponse)
     case failure(error: HorizonRequestError)
 }
@@ -18,7 +18,7 @@ public enum TransactionDetailsResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
-public typealias AllTransactionsResponseClosure = (_ response:AllTransactionsResponseEnum) -> (Void)
+public typealias PageOfTransactionsResponseClosure = (_ response:PageOfTransactionsResponseEnum) -> (Void)
 public typealias TransactionDetailsResponseClosure = (_ response:TransactionDetailsResponseEnum) -> (Void)
 
 public class TransactionsService: NSObject {
@@ -33,17 +33,17 @@ public class TransactionsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getTransactions(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllTransactionsResponseClosure) {
+    open func getTransactions(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfTransactionsResponseClosure) {
         let path = "/transactions?"
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getTransactions(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllTransactionsResponseClosure) {
+    open func getTransactions(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfTransactionsResponseClosure) {
         let path = "/accounts/" + accountId + "/transactions?"
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getTransactions(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllTransactionsResponseClosure) {
+    open func getTransactions(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfTransactionsResponseClosure) {
         let path = "/ledgers/" + ledger + "/transactions?"
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
@@ -67,7 +67,7 @@ public class TransactionsService: NSObject {
         }
     }
     
-    private func getTransactions(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping AllTransactionsResponseClosure) {
+    private func getTransactions(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfTransactionsResponseClosure) {
         var requestPath = path
         
         var params = Dictionary<String,String>()
@@ -80,14 +80,18 @@ public class TransactionsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
+        getTransactionsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+    }
+    
+    open func getTransactionsFromUrl(url:String, response:@escaping PageOfTransactionsResponseClosure) {
+        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
                     self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
                     let transactions = try self.jsonDecoder.decode(PageOfTransactionsResponse.self, from: data)
                     response(.success(details: transactions))
-                }  catch {
+                } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .failure(let error):
