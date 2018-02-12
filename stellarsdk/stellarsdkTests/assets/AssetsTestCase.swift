@@ -40,7 +40,7 @@ class AssetsTestCase: XCTestCase {
                                 let asset2 = prevAssetsResponse.assets.last // because ordering is asc now.
                                 XCTAssertTrue(asset1?.amount == asset2?.amount)
                                 XCTAssertTrue(asset1?.assetType == asset2?.assetType)
-                                if (asset1?.assetType != AssetType.NATIVE) {
+                                if (asset1?.assetType != AssetConstants.NATIVE) {
                                     XCTAssertTrue(asset1?.assetCode == asset2?.assetCode)
                                     XCTAssertTrue(asset1?.assetIssuer == asset2?.assetIssuer)
                                 }

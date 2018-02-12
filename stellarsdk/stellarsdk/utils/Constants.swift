@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct AssetType
+public struct AssetConstants
 {
     public static let NATIVE = "native"
     public static let CREDIT_ALPHANUM4 = "credit_alphanum4"

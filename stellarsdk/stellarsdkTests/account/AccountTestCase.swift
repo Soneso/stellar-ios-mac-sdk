@@ -115,25 +115,25 @@ class AccountTestCase: XCTestCase {
                     
                     switch count {
                         case 0:
-                            XCTAssertEqual(balance.assetType, AssetType.CREDIT_ALPHANUM4)
+                            XCTAssertEqual(balance.assetType, AssetConstants.CREDIT_ALPHANUM4)
                             XCTAssertEqual(balance.balance, "126.8107491")
                             XCTAssertEqual(balance.limit, "5000.0000000")
                             XCTAssertEqual(balance.assetCode, "BAR")
                             XCTAssertEqual(balance.assetIssuer, "BARUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG")
                         case 1:
-                            XCTAssertEqual(balance.assetType, AssetType.CREDIT_ALPHANUM12)
+                            XCTAssertEqual(balance.assetType, AssetConstants.CREDIT_ALPHANUM12)
                             XCTAssertEqual(balance.balance, "294.0000000")
                             XCTAssertEqual(balance.limit, "922337203685.4775807")
                             XCTAssertEqual(balance.assetCode, "FOXYMOXY")
                             XCTAssertEqual(balance.assetIssuer, "FOXUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG")
                         default:
-                            XCTAssertEqual(balance.assetType, AssetType.NATIVE)
+                            XCTAssertEqual(balance.assetType, AssetConstants.NATIVE)
                             XCTAssertEqual(balance.balance, "9999.9999900")
                             XCTAssertNil(balance.assetCode)
                             XCTAssertNil(balance.assetIssuer)
                     }
                     
-                    if balance.assetType == AssetType.NATIVE {
+                    if balance.assetType == AssetConstants.NATIVE {
                         XCTAssertNil(balance.assetCode)
                         XCTAssertNil(balance.assetIssuer)
                     } else {

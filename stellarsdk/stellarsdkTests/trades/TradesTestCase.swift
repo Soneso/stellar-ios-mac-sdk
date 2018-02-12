@@ -54,14 +54,14 @@ class TradesTestCase: XCTestCase {
                                 XCTAssertTrue(trade1?.baseAccount == trade2?.baseAccount)
                                 XCTAssertTrue(trade1?.baseAmount == trade2?.baseAmount)
                                 XCTAssertTrue(trade1?.baseAssetType == trade2?.baseAssetType)
-                                if (trade1?.baseAssetType != AssetType.NATIVE) {
+                                if (trade1?.baseAssetType != AssetConstants.NATIVE) {
                                     XCTAssertTrue(trade1?.baseAssetCode == trade2?.baseAssetCode)
                                     XCTAssertTrue(trade1?.baseAssetIssuer == trade2?.baseAssetIssuer)
                                 }
                                 XCTAssertTrue(trade1?.counterAccount == trade2?.counterAccount)
                                 XCTAssertTrue(trade1?.counterAmount == trade2?.counterAmount)
                                 XCTAssertTrue(trade1?.counterAssetType == trade2?.counterAssetType)
-                                if (trade1?.counterAssetType != AssetType.NATIVE) {
+                                if (trade1?.counterAssetType != AssetConstants.NATIVE) {
                                     XCTAssertTrue(trade1?.counterAssetCode == trade2?.counterAssetCode)
                                     XCTAssertTrue(trade1?.counterAssetIssuer == trade2?.counterAssetIssuer)
                                 }

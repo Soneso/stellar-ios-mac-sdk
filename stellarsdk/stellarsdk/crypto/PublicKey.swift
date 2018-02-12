@@ -8,7 +8,7 @@
 
 import ed25519C
 
-public final class PublicKey {
+public class PublicKey: XDRCodable {
     private let buffer: [UInt8]
     
     public convenience init(_ bytes: [UInt8]) throws {
@@ -23,8 +23,28 @@ public final class PublicKey {
         self.buffer = buffer
     }
     
+    public required init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        
+        _ = try container.decode(Int32.self)
+        
+        //self.buffer = try container.decode([UInt8].self)
+        let wrappedData = try container.decode(WrappedData32.self)
+        self.buffer = wrappedData.wrapped.withUnsafeBytes {
+            [UInt8](UnsafeBufferPointer(start: $0, count: wrappedData.wrapped.count))
+        }
+        
+    }
+    
     public var bytes: [UInt8] {
         return buffer
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(0)
+        try container.encode(bytes)
     }
 
     public func verify(signature: [UInt8], message: [UInt8]) throws -> Bool {

@@ -8,14 +8,6 @@
 
 import Foundation
 
-public enum MemoType: Int {
-    case none = 0
-    case text = 1
-    case id = 2
-    case hash = 3
-    case `return` = 4
-}
-
 ///  Represents a transaction response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/transaction.html "Transaction")
 public class TransactionResponse: NSObject, Decodable {
@@ -53,8 +45,9 @@ public class TransactionResponse: NSObject, Decodable {
     /// The memo type. See enum MemoType. The memo contains optional extra information.
     public var memoType:String
     
-    
     public var signatures:[String]
+    
+    public var transactionEnvelope: TransactionEnvelope
     
     private enum CodingKeys: String, CodingKey {
         case links = "_links"
@@ -69,6 +62,7 @@ public class TransactionResponse: NSObject, Decodable {
         case operationCount = "operation_count"
         case memoType = "memo_type"
         case signatures
+        case envelopeXDR = "envelope_xdr"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -85,5 +79,9 @@ public class TransactionResponse: NSObject, Decodable {
         operationCount = try values.decode(Int.self, forKey: .operationCount)
         memoType = try values.decode(String.self, forKey: .memoType)
         signatures = try values.decode([String].self, forKey: .signatures)
+        
+        let encodedEnvelope = try values.decode(String.self, forKey: .envelopeXDR)
+        let data = Data(base64Encoded: encodedEnvelope)!
+        transactionEnvelope = try XDRDecoder.decode(TransactionEnvelope.self, data:data)
     }
 }

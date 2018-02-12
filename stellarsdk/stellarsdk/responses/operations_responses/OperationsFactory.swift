@@ -50,7 +50,7 @@ class OperationsFactory: NSObject {
         
         // The class to be used depends on the effect type coded in its json reresentation.
         let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
-        if let type = OperationType(rawValue: json["type_i"] as! Int) {
+        if let type = OperationType(rawValue: Int32(json["type_i"] as! Int)) {
             switch type {
             case .accountCreated:
                 return try jsonDecoder.decode(AccountCreatedOperationResponse.self, from: data)

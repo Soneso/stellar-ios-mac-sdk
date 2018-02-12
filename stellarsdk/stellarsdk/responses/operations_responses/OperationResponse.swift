@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum OperationType: Int {
+public enum OperationType: Int32 {
     case accountCreated = 0
     case payment = 1
     case pathPayment = 2
@@ -75,7 +75,7 @@ public class OperationResponse: NSObject, Decodable {
         sourceAccount = try values.decode(String.self, forKey: .sourceAccount)
         operationTypeString = try values.decode(String.self, forKey: .operationTypeString)
         let typeIInt = try values.decode(Int.self, forKey: .operationType) as Int
-        operationType = OperationType(rawValue: typeIInt)!
+        operationType = OperationType(rawValue: Int32(typeIInt))!
         createdAt = try values.decode(Date.self, forKey: .createdAt)
         transactionHash = try values.decode(String.self, forKey: .transactionHash)
     }
