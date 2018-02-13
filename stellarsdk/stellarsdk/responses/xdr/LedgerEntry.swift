@@ -44,7 +44,7 @@ public struct LedgerEntryChanges: XDRCodable {
 public enum LedgerEntryChange: XDRCodable {
     case created (LedgerEntry)
     case updated (LedgerEntry)
-    case removed (LedgerEntry)
+    case removed (LedgerKey)
     case state (LedgerEntry)
     
     public init(from decoder: Decoder) throws {
@@ -58,7 +58,7 @@ public enum LedgerEntryChange: XDRCodable {
         case LedgerEntryChangeType.ledgerEntryUpdated.rawValue:
             self = .updated(try container.decode(LedgerEntry.self))
         case LedgerEntryChangeType.ledgerEntryUpdated.rawValue:
-            self = .removed(try container.decode(LedgerEntry.self))
+            self = .removed(try container.decode(LedgerKey.self))
         case LedgerEntryChangeType.ledgerEntryState.rawValue:
             self = .state(try container.decode(LedgerEntry.self))
         default:
@@ -173,6 +173,124 @@ public struct LedgerEntry: XDRCodable {
                 case .data (let op):
                     try container.encode(op)
             }
+        }
+    }
+}
+
+public enum LedgerKey: XDRCodable {
+    case account (LedgerKeyAccount)
+    case trustline (LedgerKeyTrustLine)
+    case offer (LedgerKeyOffer)
+    case data (LedgerKeyData)
+    
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        
+        let type = try container.decode(Int32.self)
+        
+        switch type {
+            case LedgerEntryType.account.rawValue:
+                let acc = try container.decode(LedgerKeyAccount.self)
+                self = .account(acc)
+            case LedgerEntryType.trustline.rawValue:
+                let trus = try container.decode(LedgerKeyTrustLine.self)
+                self = .trustline(trus)
+            case LedgerEntryType.offer.rawValue:
+                let offeru = try container.decode(LedgerKeyOffer.self)
+                self = .offer(offeru)
+            case LedgerEntryType.data.rawValue:
+                let datamu = try container.decode(LedgerKeyData.self)
+                self = .data (datamu)
+            default:
+                let acc = try container.decode(LedgerKeyAccount.self)
+                self = .account(acc)
+        }
+    }
+    
+    public struct LedgerKeyAccount: XDRCodable {
+        let accountID: PublicKey
+        
+        init(accountID: PublicKey) {
+            self.accountID = accountID
+        }
+        
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.unkeyedContainer()
+            try container.encode(accountID)
+        }
+    }
+    
+    public struct LedgerKeyTrustLine: XDRCodable {
+        let accountID: PublicKey
+        let asset: Asset
+        
+        init(accountID: PublicKey, asset: Asset) {
+            self.accountID = accountID
+            self.asset = asset
+        }
+        
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.unkeyedContainer()
+            try container.encode(accountID)
+            try container.encode(asset)
+        }
+    }
+    
+    public struct LedgerKeyOffer: XDRCodable {
+        let sellerId: PublicKey
+        let offerId: UInt64
+        
+        init(sellerId: PublicKey, offerId: UInt64) {
+            self.sellerId = sellerId
+            self.offerId = offerId
+        }
+        
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.unkeyedContainer()
+            try container.encode(sellerId)
+            try container.encode(offerId)
+        }
+    }
+    
+    public struct LedgerKeyData: XDRCodable {
+        let accountId: PublicKey
+        let dataName: String
+        
+        init(accountId: PublicKey, dataName: String) {
+            self.accountId = accountId
+            self.dataName = dataName
+        }
+        
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.unkeyedContainer()
+            try container.encode(accountId)
+            try container.encode(dataName)
+        }
+    }
+    
+    public func type() -> Int32 {
+        switch self {
+            case .account: return LedgerEntryType.account.rawValue
+            case .trustline: return LedgerEntryType.trustline.rawValue
+            case .offer: return LedgerEntryType.offer.rawValue
+            case .data: return LedgerEntryType.data.rawValue
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(type())
+        
+        switch self {
+            case .account (let acc):
+                try container.encode(acc)
+            case .trustline (let trust):
+                try container.encode(trust)
+            case .offer (let offeru):
+                try container.encode(offeru)
+            case .data (let datamu):
+                try container.encode(datamu)
         }
     }
 }

@@ -20,7 +20,7 @@ public enum Asset: XDRCodable {
     case alphanum4 (Alpha4)
     case alphanum12 (Alpha12)
     
-    var assetCode: String {
+    public var assetCode: String {
         switch self {
             case .native:
                 return "native"

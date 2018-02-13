@@ -15,7 +15,7 @@ public struct OfferEntry: XDRCodable {
     public let buying:Asset
     public let amount:Int64
     public let price:Price
-    public let flags:UInt32 // TODO
+    public let flags:UInt32 
     public let reserved: Int32 = 0
     
     public init(sellerID: PublicKey, offerID:UInt64, selling:Asset, buying:Asset, amount:Int64, price:Price, flags:UInt32) {

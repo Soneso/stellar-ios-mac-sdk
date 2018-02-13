@@ -13,7 +13,7 @@ public struct TrustlineEntry: XDRCodable {
     public let asset: Asset
     public let balance: Int64
     public let limit: Int64
-    public let flags: UInt32 // TODO
+    public let flags: UInt32
     public let reserved: Int32 = 0
     
     
