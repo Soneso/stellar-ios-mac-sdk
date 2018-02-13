@@ -21,7 +21,7 @@ public struct AccountEntry: XDRCodable {
     public let reserved: Int32 = 0
     
 
-    public init(accountID: PublicKey, balance:Int64, sequenceNumber:UInt64, numSubEntries:UInt32, inflationDest:PublicKey, flags:UInt32, homeDomain:String, thresholds: WrappedData4, signers: [Signer]) {
+    public init(accountID: PublicKey, balance:Int64, sequenceNumber:UInt64, numSubEntries:UInt32, inflationDest:PublicKey?, flags:UInt32, homeDomain:String, thresholds: WrappedData4, signers: [Signer]) {
         self.accountID = accountID
         self.balance = balance
         self.sequenceNumber = sequenceNumber
@@ -39,10 +39,7 @@ public struct AccountEntry: XDRCodable {
         balance = try container.decode(Int64.self)
         sequenceNumber = try container.decode(UInt64.self)
         numSubEntries = try container.decode(UInt32.self)
-        let inflation = try container.decode(Int32.self)
-        if inflation != 0 {
-            inflationDest = try container.decode(PublicKey.self)
-        }
+        inflationDest = try container.decode(Array<PublicKey>.self).first
         flags = try container.decode(UInt32.self)
         homeDomain = try container.decode(String.self)
         thresholds = try container.decode(WrappedData4.self)
