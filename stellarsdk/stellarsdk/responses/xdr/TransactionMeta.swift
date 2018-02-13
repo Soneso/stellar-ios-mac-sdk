@@ -38,21 +38,3 @@ public enum TransactionMeta: XDRCodable {
         }
     }
 }
-
-public struct OperationMeta: XDRCodable {
-    public let changes: LedgerEntryChanges
-    
-    public init(changes: LedgerEntryChanges) {
-        self.changes = changes
-    }
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        changes = try container.decode(LedgerEntryChanges.self)
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        try container.encode(changes)
-    }
-}

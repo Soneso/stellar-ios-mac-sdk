@@ -8,16 +8,6 @@
 
 import UIKit
 
-public struct DecoratedSignature: XDRCodable {
-    public let hint: WrappedData4;
-    public let signature: Data
-    
-    public init(hint: WrappedData4, signature: Data) {
-        self.hint = hint
-        self.signature = signature
-    }
-}
-
 public class TransactionEnvelope: NSObject, XDRCodable {
     public let tx: Transaction
     public let signatures: [DecoratedSignature]
@@ -33,5 +23,4 @@ public class TransactionEnvelope: NSObject, XDRCodable {
         tx = try container.decode(Transaction.self)
         signatures = try container.decode([DecoratedSignature].self)
     }
-    
 }

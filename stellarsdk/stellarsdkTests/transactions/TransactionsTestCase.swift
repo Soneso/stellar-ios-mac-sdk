@@ -25,7 +25,7 @@ class TransactionsTestCase: XCTestCase {
     func testGetAllTransactions() {
         let expectation = XCTestExpectation(description: "Get transactions")
         
-        sdk.transactions.getTransactions { (response) -> (Void) in
+        sdk.transactions.getTransactions(from: nil, order: nil, limit: 15) { (response) -> (Void) in
             switch response {
             case .success(let transactionsResponse):
                 // load next page
