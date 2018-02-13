@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		4300C17F2032F5C500DC5E49 /* OffersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C17E2032F5C500DC5E49 /* OffersService.swift */; };
 		4300C1832032FBE500DC5E49 /* OffersTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C1822032FBE500DC5E49 /* OffersTestCase.swift */; };
-		4300C1852033026D00DC5E49 /* OrderbooksService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C1842033026D00DC5E49 /* OrderbooksService.swift */; };
+		4300C1852033026D00DC5E49 /* OrderbookService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C1842033026D00DC5E49 /* OrderbookService.swift */; };
 		4300C1882033044000DC5E49 /* OrderbooksTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C1872033044000DC5E49 /* OrderbooksTestCase.swift */; };
 		437D8A7D202EEDCC0024D031 /* Dictionary+HttpParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A7C202EEDCC0024D031 /* Dictionary+HttpParams.swift */; };
 		437D8A83202EF0770024D031 /* TradeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A7F202EF0760024D031 /* TradeResponse.swift */; };
@@ -219,7 +219,7 @@
 /* Begin PBXFileReference section */
 		4300C17E2032F5C500DC5E49 /* OffersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersService.swift; sourceTree = "<group>"; };
 		4300C1822032FBE500DC5E49 /* OffersTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersTestCase.swift; sourceTree = "<group>"; };
-		4300C1842033026D00DC5E49 /* OrderbooksService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderbooksService.swift; sourceTree = "<group>"; };
+		4300C1842033026D00DC5E49 /* OrderbookService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderbookService.swift; sourceTree = "<group>"; };
 		4300C1872033044000DC5E49 /* OrderbooksTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderbooksTestCase.swift; sourceTree = "<group>"; };
 		437D8A7C202EEDCC0024D031 /* Dictionary+HttpParams.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Dictionary+HttpParams.swift"; sourceTree = "<group>"; };
 		437D8A7F202EF0760024D031 /* TradeResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradeResponse.swift; sourceTree = "<group>"; };
@@ -624,7 +624,7 @@
 				437D8A8C202F0B980024D031 /* TradesService.swift */,
 				437D8A8E202F14A00024D031 /* TradeAggregationsService.swift */,
 				4300C17E2032F5C500DC5E49 /* OffersService.swift */,
-				4300C1842033026D00DC5E49 /* OrderbooksService.swift */,
+				4300C1842033026D00DC5E49 /* OrderbookService.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -1424,7 +1424,7 @@
 				74824B1F203173F000CD0270 /* Operation.swift in Sources */,
 				743DF57A202053A400713DE7 /* Ed25519Error.swift in Sources */,
 				745F2BAD202C27FF008763F1 /* XDRCodable.swift in Sources */,
-				4300C1852033026D00DC5E49 /* OrderbooksService.swift in Sources */,
+				4300C1852033026D00DC5E49 /* OrderbookService.swift in Sources */,
 				8369720A2028BA3E00398A98 /* Constants.swift in Sources */,
 				836972162028F19000398A98 /* AccountFlagsUpdatedEffectResponse.swift in Sources */,
 				744148F8202E05AD006590BE /* DataTypes.swift in Sources */,

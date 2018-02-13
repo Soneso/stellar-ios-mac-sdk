@@ -21,7 +21,7 @@ public class StellarSDK: NSObject {
     public var trades: TradesService
     public var tradeAggregations: TradeAggregationsService
     public var offers: OffersService
-    public var orderbooks: OrderbooksService
+    public var orderbooks: OrderbookService
     
     public override init() {
         self.horizonURL = "https://horizon-testnet.stellar.org"
@@ -35,7 +35,7 @@ public class StellarSDK: NSObject {
         trades = TradesService(baseURL: horizonURL)
         tradeAggregations = TradeAggregationsService(baseURL: horizonURL)
         offers = OffersService(baseURL: horizonURL)
-        orderbooks = OrderbooksService(baseURL: horizonURL)
+        orderbooks = OrderbookService(baseURL: horizonURL)
     }
     
     public init(withHorizonUrl horizonURL:String) {
@@ -51,7 +51,7 @@ public class StellarSDK: NSObject {
         self.trades = TradesService(baseURL: self.horizonURL)
         self.tradeAggregations = TradeAggregationsService(baseURL: self.horizonURL)
         self.offers = OffersService(baseURL: self.horizonURL)
-        self.orderbooks = OrderbooksService(baseURL: self.horizonURL)
+        self.orderbooks = OrderbookService(baseURL: self.horizonURL)
     }
     
 }

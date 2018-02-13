@@ -22,27 +22,25 @@ class OrderbooksTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testOrderbooksLoadingSuccessful() {
+    func testOrderbookLoadingSuccessful() {
         let expectation = XCTestExpectation(description: "Get orderbooks response")
         
-        sdk.orderbooks.getOrderbooks(sellingAssetType: AssetConstants.NATIVE, buyingAssetType: AssetConstants.CREDIT_ALPHANUM4, buyingAssetCode:"FOO", buyingAssetIssuer:"GBAUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG", limit:10) { (response) -> (Void) in
+        sdk.orderbooks.getOrderbook(sellingAssetType: AssetConstants.NATIVE, buyingAssetType: AssetConstants.CREDIT_ALPHANUM4, buyingAssetCode:"FOO", buyingAssetIssuer:"GBAUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG", limit:10) { (response) -> (Void) in
             switch response {
-            case .success(let orderbooksResponse):
+            case .success(let orderbookResponse):
                 
-                for orderbook in orderbooksResponse.records {
-                    for bid in orderbook.bids {
-                        print("\(bid.amount) is the bid amount")
-                        print("\(bid.price) is the bid price")
-                        print("\(bid.priceR) is the bid priceR")
-                    }
-                    for ask in orderbook.asks {
-                        print("\(ask.amount) is the ask amount")
-                        print("\(ask.price) is the ask price")
-                        print("\(ask.priceR) is the ask priceR")
-                    }
-                    print("\(orderbook.buying) is the asset this offer wants to buy.")
-                    print("\(orderbook.selling) is the asset this offer wants to sell.")
+                for bid in orderbookResponse.bids {
+                    print("\(bid.amount) is the bid amount")
+                    print("\(bid.price) is the bid price")
+                    print("\(bid.priceR) is the bid priceR")
                 }
+                for ask in orderbookResponse.asks {
+                    print("\(ask.amount) is the ask amount")
+                    print("\(ask.price) is the ask price")
+                    print("\(ask.priceR) is the ask priceR")
+                }
+                print("\(orderbookResponse.buying) is the asset this offer wants to buy.")
+                print("\(orderbookResponse.selling) is the asset this offer wants to sell.")
                 
                 XCTAssert(true)
             case .failure(_):

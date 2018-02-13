@@ -1,5 +1,5 @@
 //
-//  OrderbooksService.swift
+//  OrderbookService.swift
 //  stellarsdk
 //
 //  Created by Istvan Elekes on 2/13/18.
@@ -8,7 +8,15 @@
 
 import Foundation
 
-public class OrderbooksService: NSObject {
+public enum OrderbookResponseEnum {
+    case success(details: OrderbookResponse)
+    case failure(error: HorizonRequestError)
+}
+
+/// A closure to be called with the response from an orderbook request
+public typealias OrderbookResponseClosure = (_ response:OrderbookResponseEnum) -> (Void)
+
+public class OrderbookService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
@@ -20,7 +28,7 @@ public class OrderbooksService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getOrderbooks(sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, limit:Int? = nil, response:@escaping PageResponse<OrderbookResponse>.PageResponseClosure) {
+    open func getOrderbook(sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, limit:Int? = nil, response:@escaping OrderbookResponseClosure) {
         
         var requestPath = "/order_book"
         var params = Dictionary<String,String>()
@@ -37,16 +45,16 @@ public class OrderbooksService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getOrderbooksFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getOrderbookFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
     }
     
-    func getOrderbooksFromUrl(url:String, response:@escaping PageResponse<OrderbookResponse>.PageResponseClosure) {
+    func getOrderbookFromUrl(url:String, response:@escaping OrderbookResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
-                    let orderbooks = try self.jsonDecoder.decode(PageResponse<OrderbookResponse>.self, from: data)
-                    response(.success(details: orderbooks))
+                    let orderbook = try self.jsonDecoder.decode(OrderbookResponse.self, from: data)
+                    response(.success(details: orderbook))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }
