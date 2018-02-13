@@ -9,7 +9,7 @@
 import Foundation
 
 
-struct AssetType {
+public struct AssetType {
     static let ASSET_TYPE_NATIVE: Int32 = 0
     static let ASSET_TYPE_CREDIT_ALPHANUM4: Int32 = 1
     static let ASSET_TYPE_CREDIT_ALPHANUM12: Int32 = 2
@@ -22,31 +22,31 @@ public enum Asset: XDRCodable {
     
     var assetCode: String {
         switch self {
-        case .native:
-            return "native"
-        case .alphanum4(let a4):
-            return String(bytes: a4.assetCode.wrapped, encoding: .utf8) ?? ""
-        case .alphanum12(let a12):
-            return String(bytes: a12.assetCode.wrapped, encoding: .utf8) ?? ""
+            case .native:
+                return "native"
+            case .alphanum4(let a4):
+                return String(bytes: a4.assetCode.wrapped, encoding: .utf8) ?? ""
+            case .alphanum12(let a12):
+                return String(bytes: a12.assetCode.wrapped, encoding: .utf8) ?? ""
         }
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         
-        let discriminant = try container.decode(Int32.self)
+        let type = try container.decode(Int32.self)
         
-        switch discriminant {
-        case AssetType.ASSET_TYPE_NATIVE:
-            self = .native
-        case AssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-            let a4 = try container.decode(Alpha4.self)
-            self = .alphanum4(a4)
-        case AssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-            let a12 = try container.decode(Alpha12.self)
-            self = .alphanum12(a12)
-        default:
-            self = .native
+        switch type {
+            case AssetType.ASSET_TYPE_NATIVE:
+                self = .native
+            case AssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+                let a4 = try container.decode(Alpha4.self)
+                self = .alphanum4(a4)
+            case AssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+                let a12 = try container.decode(Alpha12.self)
+                self = .alphanum12(a12)
+            default:
+                self = .native
         }
     }
     
@@ -82,26 +82,26 @@ public enum Asset: XDRCodable {
         }
     }
     
-    private func discriminant() -> Int32 {
+    public func type() -> Int32 {
         switch self {
-        case .native: return AssetType.ASSET_TYPE_NATIVE
-        case .alphanum4: return AssetType.ASSET_TYPE_CREDIT_ALPHANUM4
-        case .alphanum12: return AssetType.ASSET_TYPE_CREDIT_ALPHANUM12
+            case .native: return AssetType.ASSET_TYPE_NATIVE
+            case .alphanum4: return AssetType.ASSET_TYPE_CREDIT_ALPHANUM4
+            case .alphanum12: return AssetType.ASSET_TYPE_CREDIT_ALPHANUM12
         }
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(discriminant())
+        try container.encode(type())
         
         switch self {
-        case .native: break
+            case .native: break
             
-        case .alphanum4 (let alpha4):
-            try container.encode(alpha4)
+            case .alphanum4 (let alpha4):
+                try container.encode(alpha4)
             
-        case .alphanum12 (let alpha12):
-            try container.encode(alpha12)
+            case .alphanum12 (let alpha12):
+                try container.encode(alpha12)
         }
     }
 }

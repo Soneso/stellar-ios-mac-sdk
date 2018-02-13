@@ -9,10 +9,10 @@
 import UIKit
 
 public struct DecoratedSignature: XDRCodable {
-    let hint: WrappedData4;
-    let signature: Data
+    public let hint: WrappedData4;
+    public let signature: Data
     
-    init(hint: WrappedData4, signature: Data) {
+    public init(hint: WrappedData4, signature: Data) {
         self.hint = hint
         self.signature = signature
     }
@@ -22,7 +22,7 @@ public class TransactionEnvelope: NSObject, XDRCodable {
     public let tx: Transaction
     public let signatures: [DecoratedSignature]
     
-    init(tx: Transaction, signatures: [DecoratedSignature]) {
+    public init(tx: Transaction, signatures: [DecoratedSignature]) {
         self.tx = tx
         self.signatures = signatures
     }
