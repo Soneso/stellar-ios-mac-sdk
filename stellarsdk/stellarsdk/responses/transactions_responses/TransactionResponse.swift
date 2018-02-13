@@ -48,6 +48,7 @@ public class TransactionResponse: NSObject, Decodable {
     public var signatures:[String]
     
     public var transactionEnvelope: TransactionEnvelope
+    //public var transactionMeta: TransactionMeta
     
     private enum CodingKeys: String, CodingKey {
         case links = "_links"
@@ -63,6 +64,7 @@ public class TransactionResponse: NSObject, Decodable {
         case memoType = "memo_type"
         case signatures
         case envelopeXDR = "envelope_xdr"
+        //case transactionMeta = "result_meta_xdr"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -83,5 +85,9 @@ public class TransactionResponse: NSObject, Decodable {
         let encodedEnvelope = try values.decode(String.self, forKey: .envelopeXDR)
         let data = Data(base64Encoded: encodedEnvelope)!
         transactionEnvelope = try XDRDecoder.decode(TransactionEnvelope.self, data:data)
+        
+        // let encodedMeta = try values.decode(String.self, forKey: .transactionMeta)
+        // let metaData = Data(base64Encoded: encodedMeta)!
+        // transactionMeta = try XDRDecoder.decode(TransactionMeta.self, data:metaData)
     }
 }
