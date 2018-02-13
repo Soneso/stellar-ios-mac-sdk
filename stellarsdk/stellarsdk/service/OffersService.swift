@@ -1,14 +1,14 @@
 //
-//  TradesService.swift
+//  OffersService.swift
 //  stellarsdk
 //
-//  Created by Istvan Elekes on 2/8/18.
+//  Created by Istvan Elekes on 2/13/18.
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
 import Foundation
 
-public class TradesService: NSObject {
+public class OffersService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
@@ -20,17 +20,10 @@ public class TradesService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.PageResponseClosure) {
+    open func getOffers(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OfferResponse>.PageResponseClosure) {
+        var requestPath = "/accounts/" + accountId + "/offers"
         
-        var requestPath = "/trades"
         var params = Dictionary<String,String>()
-        params["base_asset_type"] = baseAssetType
-        params["base_asset_code"] = baseAssetCode
-        params["base_asset_issuer"] = baseAssetIssuer
-        params["counter_asset_type"] = counterAssetType
-        params["counter_asset_code"] = counterAssetCode
-        params["counter_asset_issuer"] = counterAssetIssuer
-        params["offer_id"] = offerId
         params["cursor"] = cursor
         params["order"] = order?.rawValue
         if let limit = limit { params["limit"] = String(limit) }
@@ -40,15 +33,15 @@ public class TradesService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getTradesFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getOffersFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
     }
     
-    func getTradesFromUrl(url:String, response:@escaping PageResponse<TradeResponse>.PageResponseClosure) {
+    func getOffersFromUrl(url:String, response:@escaping PageResponse<OfferResponse>.PageResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
-                    let trades = try self.jsonDecoder.decode(PageResponse<TradeResponse>.self, from: data)
+                    let trades = try self.jsonDecoder.decode(PageResponse<OfferResponse>.self, from: data)
                     response(.success(details: trades))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))

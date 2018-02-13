@@ -91,13 +91,13 @@ public class TradeResponse: NSObject, Decodable {
         baseAccount = try values.decode(String.self, forKey: .baseAccount)
         baseAmount = try values.decode(String.self, forKey: .baseAmount)
         baseAssetType = try values.decode(String.self, forKey: .baseAssetType)
-        baseAssetCode = try values.decode(String.self, forKey: .baseAssetCode)
-        baseAssetIssuer = try values.decode(String.self, forKey: .baseAssetIssuer)
+        baseAssetCode = try values.decodeIfPresent(String.self, forKey: .baseAssetCode)
+        baseAssetIssuer = try values.decodeIfPresent(String.self, forKey: .baseAssetIssuer)
         counterAccount = try values.decode(String.self, forKey: .counterAccount)
         counterAmount = try values.decode(String.self, forKey: .counterAmount)
         counterAssetType = try values.decode(String.self, forKey: .counterAssetType)
-        counterAssetCode = try values.decode(String.self, forKey: .counterAssetCode)
-        counterAssetIssuer = try values.decode(String.self, forKey: .counterAssetIssuer)
+        counterAssetCode = try values.decodeIfPresent(String.self, forKey: .counterAssetCode)
+        counterAssetIssuer = try values.decodeIfPresent(String.self, forKey: .counterAssetIssuer)
         baseIsSeller = try values.decode(Bool.self, forKey: .baseIsSeller)
     }
 }

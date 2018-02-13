@@ -36,8 +36,8 @@ class AssetsTestCase: XCTestCase {
                         nextAssetsResponse.getPreviousPage(){ (response) -> (Void) in
                             switch response {
                             case .success(let prevAssetsResponse):
-                                let asset1 = assetsResponse.assets.first
-                                let asset2 = prevAssetsResponse.assets.last // because ordering is asc now.
+                                let asset1 = assetsResponse.records.first
+                                let asset2 = prevAssetsResponse.records.last // because ordering is asc now.
                                 XCTAssertTrue(asset1?.amount == asset2?.amount)
                                 XCTAssertTrue(asset1?.assetType == asset2?.assetType)
                                 if (asset1?.assetType != AssetConstants.NATIVE) {

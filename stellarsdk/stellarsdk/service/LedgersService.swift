@@ -8,17 +8,11 @@
 
 import Foundation
 
-public enum PageOfLedgersResponseEnum {
-    case success(details: PageOfLedgersResponse)
-    case failure(error: HorizonRequestError)
-}
-
 public enum LedgerDetailsResponseEnum {
     case success(details: LedgerResponse)
     case failure(error: HorizonRequestError)
 }
 
-public typealias PageOfLedgersResponseClosure = (_ response:PageOfLedgersResponseEnum) -> (Void)
 public typealias LedgerDetailsResponseClosure = (_ response:LedgerDetailsResponseEnum) -> (Void)
 
 public class LedgersService: NSObject {
@@ -50,7 +44,7 @@ public class LedgersService: NSObject {
         }
     }
     
-    open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfLedgersResponseClosure) {
+    open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LedgerResponse>.PageResponseClosure) {
         var requestPath = "/ledgers"
         
         var params = Dictionary<String,String>()
@@ -66,12 +60,12 @@ public class LedgersService: NSObject {
         getLedgersFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
     }
     
-    open func getLedgersFromUrl(url:String, response:@escaping PageOfLedgersResponseClosure) {
+    open func getLedgersFromUrl(url:String, response:@escaping PageResponse<LedgerResponse>.PageResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
-                    let ledgers = try self.jsonDecoder.decode(PageOfLedgersResponse.self, from: data)
+                    let ledgers = try self.jsonDecoder.decode(PageResponse<LedgerResponse>.self, from: data)
                     response(.success(details: ledgers))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))

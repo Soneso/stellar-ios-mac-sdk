@@ -45,8 +45,8 @@ class LedgersTestCase: XCTestCase {
                         nextLedgersResponse.getPreviousPage(){ (response) -> (Void) in
                             switch response {
                             case .success(let prevLedgersResponse):
-                                let ledger1 = ledgersResponse.ledgers.first
-                                let ledger2 = prevLedgersResponse.ledgers.last // because ordering is asc now.
+                                let ledger1 = ledgersResponse.records.first
+                                let ledger2 = prevLedgersResponse.records.last // because ordering is asc now.
                                 XCTAssertTrue(ledger1?.id == ledger2?.id)
                                 XCTAssertTrue(ledger1?.hashXdr == ledger2?.hashXdr)
                                 XCTAssertTrue(ledger1?.previousHashXdr == ledger2?.previousHashXdr)

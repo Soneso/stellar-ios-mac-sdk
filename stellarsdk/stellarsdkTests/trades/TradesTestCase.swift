@@ -29,7 +29,7 @@ class TradesTestCase: XCTestCase {
             switch response {
             case .success(let tradesResponse):
                 
-                for trade in tradesResponse.trades {
+                for trade in tradesResponse.records {
                     print("\(trade.baseAccount) is the base account")
                     print("\(trade.baseAmount) is the base amount code")
                     print("\(trade.baseAssetType) is the base asset type")
@@ -49,8 +49,8 @@ class TradesTestCase: XCTestCase {
                         nextTradesResponse.getPreviousPage(){ (response) -> (Void) in
                             switch response {
                             case .success(let prevTradesResponse):
-                                let trade1 = tradesResponse.trades.first
-                                let trade2 = prevTradesResponse.trades.last // because ordering is asc now.
+                                let trade1 = tradesResponse.records.first
+                                let trade2 = prevTradesResponse.records.last // because ordering is asc now.
                                 XCTAssertTrue(trade1?.baseAccount == trade2?.baseAccount)
                                 XCTAssertTrue(trade1?.baseAmount == trade2?.baseAmount)
                                 XCTAssertTrue(trade1?.baseAssetType == trade2?.baseAssetType)

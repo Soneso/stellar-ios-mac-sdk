@@ -8,13 +8,6 @@
 
 import Foundation
 
-public enum PageOfAssetsResponseEnum {
-    case success(details: PageOfAssetsResponse)
-    case failure(error: HorizonRequestError)
-}
-
-public typealias PageOfAssetsResponseClosure = (_ response:PageOfAssetsResponseEnum) -> (Void)
-
 public class AssetsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
@@ -36,7 +29,7 @@ public class AssetsService: NSObject {
         to be continued
      
      */
-    open func getAssets(for assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfAssetsResponseClosure) {
+    open func getAssets(for assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<AssetResponse>.PageResponseClosure) {
         var requestPath = "/assets"
         
         var params = Dictionary<String,String>()
@@ -54,12 +47,12 @@ public class AssetsService: NSObject {
         getAssetsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
     }
     
-    open func getAssetsFromUrl(url:String, response:@escaping PageOfAssetsResponseClosure) {
+    open func getAssetsFromUrl(url:String, response:@escaping PageResponse<AssetResponse>.PageResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
-                    let assets = try self.jsonDecoder.decode(PageOfAssetsResponse.self, from: data)
+                    let assets = try self.jsonDecoder.decode(PageResponse<AssetResponse>.self, from: data)
                     response(.success(details: assets))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))

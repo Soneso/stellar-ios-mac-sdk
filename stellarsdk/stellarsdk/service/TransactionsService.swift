@@ -34,17 +34,17 @@ public class TransactionsService: NSObject {
     }
     
     open func getTransactions(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfTransactionsResponseClosure) {
-        let path = "/transactions?"
+        let path = "/transactions"
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
     open func getTransactions(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfTransactionsResponseClosure) {
-        let path = "/accounts/" + accountId + "/transactions?"
+        let path = "/accounts/" + accountId + "/transactions"
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
     open func getTransactions(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfTransactionsResponseClosure) {
-        let path = "/ledgers/" + ledger + "/transactions?"
+        let path = "/ledgers/" + ledger + "/transactions"
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     

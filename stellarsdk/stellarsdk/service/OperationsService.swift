@@ -34,22 +34,22 @@ public class OperationsService: NSObject {
     }
     
     open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
-        let path = "/operations?"
+        let path = "/operations"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
     open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
-        let path = "/accounts/" + accountId + "/operations?"
+        let path = "/accounts/" + accountId + "/operations"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
     open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
-        let path = "/ledgers/" + ledger + "/operations?"
+        let path = "/ledgers/" + ledger + "/operations"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
     open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
-        let path = "/transactions/" + hash + "/operations?"
+        let path = "/transactions/" + hash + "/operations"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
