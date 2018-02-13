@@ -13,7 +13,7 @@ public struct AccountEntry: XDRCodable {
     public let balance: Int64
     public let sequenceNumber: UInt64
     public let numSubEntries:UInt32
-    public let inflationDest: PublicKey
+    public var inflationDest: PublicKey?
     public let flags:UInt32
     public let homeDomain:String
     public let thresholds:WrappedData4
@@ -39,7 +39,10 @@ public struct AccountEntry: XDRCodable {
         balance = try container.decode(Int64.self)
         sequenceNumber = try container.decode(UInt64.self)
         numSubEntries = try container.decode(UInt32.self)
-        inflationDest = try container.decode(PublicKey.self)
+        let inflation = try container.decode(Int32.self)
+        if inflation != 0 {
+            inflationDest = try container.decode(PublicKey.self)
+        }
         flags = try container.decode(UInt32.self)
         homeDomain = try container.decode(String.self)
         thresholds = try container.decode(WrappedData4.self)
