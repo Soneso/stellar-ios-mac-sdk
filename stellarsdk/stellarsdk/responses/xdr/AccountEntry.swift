@@ -1,5 +1,5 @@
 //
-//  AccountEntry.swift
+//  AccountEntryXDR.swift
 //  stellarsdk
 //
 //  Created by Rogobete Christian on 12.02.18.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct AccountEntry: XDRCodable {
+public struct AccountEntryXDR: XDRCodable {
     let accountID: PublicKey
     public let balance: Int64
     public let sequenceNumber: UInt64
@@ -17,11 +17,11 @@ public struct AccountEntry: XDRCodable {
     public let flags:UInt32
     public let homeDomain:String
     public let thresholds:WrappedData4
-    public let signers: [Signer]
+    public let signers: [SignerXDR]
     public let reserved: Int32 = 0
     
 
-    public init(accountID: PublicKey, balance:Int64, sequenceNumber:UInt64, numSubEntries:UInt32, inflationDest:PublicKey?, flags:UInt32, homeDomain:String, thresholds: WrappedData4, signers: [Signer]) {
+    public init(accountID: PublicKey, balance:Int64, sequenceNumber:UInt64, numSubEntries:UInt32, inflationDest:PublicKey?, flags:UInt32, homeDomain:String, thresholds: WrappedData4, signers: [SignerXDR]) {
         self.accountID = accountID
         self.balance = balance
         self.sequenceNumber = sequenceNumber
@@ -43,7 +43,7 @@ public struct AccountEntry: XDRCodable {
         flags = try container.decode(UInt32.self)
         homeDomain = try container.decode(String.self)
         thresholds = try container.decode(WrappedData4.self)
-        signers = try container.decode(Array<Signer>.self)
+        signers = try container.decode(Array<SignerXDR>.self)
         _ = try container.decode(Int32.self)
     }
     
