@@ -20,7 +20,7 @@ public class OffersService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getOffers(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OfferResponse>.PageResponseClosure) {
+    open func getOffers(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {
         var requestPath = "/accounts/" + accountId + "/offers"
         
         var params = Dictionary<String,String>()
@@ -36,7 +36,7 @@ public class OffersService: NSObject {
         getOffersFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
     }
     
-    func getOffersFromUrl(url:String, response:@escaping PageResponse<OfferResponse>.PageResponseClosure) {
+    func getOffersFromUrl(url:String, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):

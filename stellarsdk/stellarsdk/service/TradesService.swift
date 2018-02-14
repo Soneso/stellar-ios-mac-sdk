@@ -20,7 +20,7 @@ public class TradesService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.PageResponseClosure) {
+    open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
         
         var requestPath = "/trades"
         var params = Dictionary<String,String>()
@@ -43,7 +43,7 @@ public class TradesService: NSObject {
         getTradesFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
     }
     
-    func getTradesFromUrl(url:String, response:@escaping PageResponse<TradeResponse>.PageResponseClosure) {
+    func getTradesFromUrl(url:String, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):

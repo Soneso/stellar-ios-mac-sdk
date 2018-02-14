@@ -36,8 +36,8 @@ class OperationsTestCase: XCTestCase {
                         nextOperationsResponse.getPreviousPage(){ (response) -> (Void) in
                             switch response {
                             case .success(let prevOperationsResponse):
-                                let operation1 = operationsResponse.operations.first
-                                let operation2 = prevOperationsResponse.operations.last // because ordering is asc now.
+                                let operation1 = operationsResponse.records.first
+                                let operation2 = prevOperationsResponse.records.last // because ordering is asc now.
                                 XCTAssertTrue(operation1?.id == operation2?.id)
                                 XCTAssertTrue(operation1?.sourceAccount == operation2?.sourceAccount)
                                 XCTAssertTrue(operation1?.sourceAccount == operation2?.sourceAccount)

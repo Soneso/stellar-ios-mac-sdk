@@ -36,8 +36,8 @@ class EffectsTestCase: XCTestCase {
                         nextEffectsResponse.getPreviousPage(){ (response) -> (Void) in
                             switch response {
                             case .success(let prevEffectsResponse):
-                                let effect1 = effectsResponse.effects.first
-                                let effect2 = prevEffectsResponse.effects.last // because ordering is asc now.
+                                let effect1 = effectsResponse.records.first
+                                let effect2 = prevEffectsResponse.records.last // because ordering is asc now.
                                 XCTAssertTrue(effect1?.id == effect2?.id)
                                 XCTAssertTrue(effect1?.account == effect2?.account)
                                 XCTAssertTrue(effect1?.effectType == effect2?.effectType)

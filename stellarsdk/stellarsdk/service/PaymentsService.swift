@@ -8,13 +8,6 @@
 
 import Foundation
 
-public enum PageOfPaymentsResponseEnum {
-    case success(details: PageOfPaymentsResponse)
-    case failure(error: HorizonRequestError)
-}
-
-public typealias PageOfPaymentsResponseClosure = (_ response:PageOfPaymentsResponseEnum) -> (Void)
-
 public class PaymentsService: NSObject {
     let serviceHelper: ServiceHelper
     let operationsFactory = OperationsFactory()
@@ -36,7 +29,7 @@ public class PaymentsService: NSObject {
      
         See also [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-all.html "All Payments")
      */
-    open func getPayments(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfPaymentsResponseClosure) {
+    open func getPayments(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/payments"
         getPayments(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
@@ -51,7 +44,7 @@ public class PaymentsService: NSObject {
      
         See also [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-account.html "Payments for Account")
     */
-    open func getPayments(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfPaymentsResponseClosure) {
+    open func getPayments(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/accounts/" + accountId + "/payments"
         getPayments(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
@@ -66,7 +59,7 @@ public class PaymentsService: NSObject {
      
         See also [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-ledger.html "Payments for Ledger")
     */
-    open func getPayments(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfPaymentsResponseClosure) {
+    open func getPayments(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/ledgers/" + ledger + "/payments"
         getPayments(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
@@ -81,12 +74,12 @@ public class PaymentsService: NSObject {
      
         See also [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-transaction.html "Payments for Transaction")
      */
-    open func getPayments(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfPaymentsResponseClosure) {
+    open func getPayments(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/transactions/" + hash + "/payments"
         getPayments(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    private func getPayments(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfPaymentsResponseClosure) {
+    private func getPayments(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         var requestPath = path
         
         var params = Dictionary<String,String>()
@@ -102,14 +95,13 @@ public class PaymentsService: NSObject {
         getPaymentsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
     }
     
-    open func getPaymentsFromUrl(url:String, response:@escaping PageOfPaymentsResponseClosure) {
+    open func getPaymentsFromUrl(url:String, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
                     let operations = try self.operationsFactory.operationsFromResponseData(data: data)
-                    let payments = PageOfPaymentsResponse(payments: operations.operations, links: operations.links)
-                    response(.success(details: payments))
+                    response(.success(details: operations))
                 } catch {
                     response(.failure(error: error as! HorizonRequestError))
                 }

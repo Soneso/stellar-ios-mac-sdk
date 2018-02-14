@@ -54,7 +54,7 @@ public enum AssetXDR: XDRCodable {
         let assetCode: WrappedData4
         let issuer: PublicKey
         
-        init(assetCode: WrappedData4, issuer: PublicKey) {
+        public init(assetCode: WrappedData4, issuer: PublicKey) {
             self.assetCode = assetCode
             self.issuer = issuer
         }
@@ -70,7 +70,7 @@ public enum AssetXDR: XDRCodable {
         let assetCode: WrappedData12
         let issuer: PublicKey
         
-        init(assetCode: WrappedData12, issuer: PublicKey) {
+        public init(assetCode: WrappedData12, issuer: PublicKey) {
             self.assetCode = assetCode
             self.issuer = issuer
         }

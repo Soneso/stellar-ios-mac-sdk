@@ -11,12 +11,12 @@ import Foundation
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/page.html "Page")
 public struct PageResponse<Element:Decodable>: Decodable {
     
-    public enum PageResponseEnum {
+    public enum ResponseEnum {
         case success(details: PageResponse)
         case failure(error: HorizonRequestError)
     }
     
-    public typealias PageResponseClosure = (_ response:PageResponseEnum) -> (Void)
+    public typealias ResponseClosure = (_ response:ResponseEnum) -> (Void)
     
     /// A list of links related to this response.
     public var links:PagingLinksResponse
@@ -34,6 +34,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
     private var embeddedRecords:EmbeddedResponseService
     struct EmbeddedResponseService: Decodable {
         let records: [Element]
+        
+        init(records:[Element]) {
+            self.records = records
+        }
     }
     
     /**
@@ -46,6 +50,18 @@ public struct PageResponse<Element:Decodable>: Decodable {
         self.links = try values.decode(PagingLinksResponse.self, forKey: .links)
         self.embeddedRecords = try values.decode(EmbeddedResponseService.self, forKey: .embeddedRecords)
         self.records = self.embeddedRecords.records
+    }
+    
+    /**
+     Initializer - creates a new instance with parameters
+     
+     - Parameter operations: The payment operations received from the Horizon API
+     - Parameter links: The links received from the Horizon API
+     */
+    public init(records: [Element], links:PagingLinksResponse) {
+        self.records = records
+        self.embeddedRecords = EmbeddedResponseService(records: records)
+        self.links = links
     }
     
     /**
@@ -71,7 +87,7 @@ public struct PageResponse<Element:Decodable>: Decodable {
      
      - Parameter response:   The closure to be called upon response.
      */
-    public func getNextPage(response:@escaping PageResponseClosure) {
+    public func getNextPage(response:@escaping ResponseClosure) {
         if let url = links.next?.href {
             getRecordsFrom(url: url, response: response)
         } else {
@@ -84,7 +100,7 @@ public struct PageResponse<Element:Decodable>: Decodable {
      
      - Parameter response:   The closure to be called upon response.
      */
-    public func getPreviousPage(response:@escaping PageResponseClosure) {
+    public func getPreviousPage(response:@escaping ResponseClosure) {
         if let url = links.prev?.href {
             getRecordsFrom(url: url, response: response)
         } else {
@@ -92,20 +108,29 @@ public struct PageResponse<Element:Decodable>: Decodable {
         }
     }
     
-    private func getRecordsFrom(url:String, response:@escaping PageResponseClosure) {
+    private func getRecordsFrom(url:String, response:@escaping ResponseClosure) {
         switch Element.self {
         case is AssetResponse.Type:
             let service = AssetsService(baseURL:"")
-            service.getAssetsFromUrl(url:url, response:response as! (PageResponse<AssetResponse>.PageResponseEnum) -> (Void))
+            service.getAssetsFromUrl(url:url, response:response as! PageResponse<AssetResponse>.ResponseClosure)
         case is TradeResponse.Type:
             let service = TradesService(baseURL:"")
-            service.getTradesFromUrl(url:url, response:response as! (PageResponse<TradeResponse>.PageResponseEnum) -> (Void))
+            service.getTradesFromUrl(url:url, response:response as! PageResponse<TradeResponse>.ResponseClosure)
         case is OfferResponse.Type:
             let service = OffersService(baseURL:"")
-            service.getOffersFromUrl(url: url, response:response as! (PageResponse<OfferResponse>.PageResponseEnum) -> (Void))
+            service.getOffersFromUrl(url: url, response:response as! PageResponse<OfferResponse>.ResponseClosure)
         case is LedgerResponse.Type:
             let service = LedgersService(baseURL:"")
-            service.getLedgersFromUrl(url: url, response:response as! (PageResponse<LedgerResponse>.PageResponseEnum) -> (Void))
+            service.getLedgersFromUrl(url: url, response:response as! PageResponse<LedgerResponse>.ResponseClosure)
+        case is OperationResponse.Type:
+            let service = PaymentsService(baseURL:"")
+            service.getPaymentsFromUrl(url: url, response:response as! PageResponse<OperationResponse>.ResponseClosure)
+        case is TransactionResponse.Type:
+            let service = TransactionsService(baseURL:"")
+            service.getTransactionsFromUrl(url: url, response:response as! PageResponse<TransactionResponse>.ResponseClosure)
+        case is EffectResponse.Type:
+            let service = EffectsService(baseURL:"")
+            service.getEffectsFromUrl(url: url, response:response as! PageResponse<EffectResponse>.ResponseClosure)
         default:
             assertionFailure("You should implement this case:\(Element.self)")
         }

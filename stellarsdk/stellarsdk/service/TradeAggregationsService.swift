@@ -8,13 +8,6 @@
 
 import Foundation
 
-public enum PageOfTradeAggregationsResponseEnum {
-    case success(details: PageOfTradeAggregationsResponse)
-    case failure(error: HorizonRequestError)
-}
-
-public typealias PageOfTradeAggregationsResponseClosure = (_ response:PageOfTradeAggregationsResponseEnum) -> (Void)
-
 public class TradeAggregationsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
@@ -27,7 +20,7 @@ public class TradeAggregationsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getTradeAggregations(startTime:Int64? = nil, endTime:Int64? = nil, resolution:Int64? = nil, baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfTradeAggregationsResponseClosure) {
+    open func getTradeAggregations(startTime:Int64? = nil, endTime:Int64? = nil, resolution:Int64? = nil, baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeAggregationResponse>.ResponseClosure) {
         
         var requestPath = "/trade_aggregations"
         var params = Dictionary<String,String>()
@@ -51,12 +44,12 @@ public class TradeAggregationsService: NSObject {
         getTradeAggregationsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
     }
     
-    open func getTradeAggregationsFromUrl(url:String, response:@escaping PageOfTradeAggregationsResponseClosure) {
+    open func getTradeAggregationsFromUrl(url:String, response:@escaping PageResponse<TradeAggregationResponse>.ResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
-                    let tradeAggregations = try self.jsonDecoder.decode(PageOfTradeAggregationsResponse.self, from: data)
+                    let tradeAggregations = try self.jsonDecoder.decode(PageResponse<TradeAggregationResponse>.self, from: data)
                     response(.success(details: tradeAggregations))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
