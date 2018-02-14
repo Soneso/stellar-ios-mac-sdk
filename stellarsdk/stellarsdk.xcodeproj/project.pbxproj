@@ -20,6 +20,9 @@
 		437D8A8F202F14A00024D031 /* TradeAggregationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A8E202F14A00024D031 /* TradeAggregationsService.swift */; };
 		437D8A92202F15DC0024D031 /* TradesTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A91202F15DC0024D031 /* TradesTestCase.swift */; };
 		437D8A95202F16EB0024D031 /* TradeAggregationsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A94202F16EB0024D031 /* TradeAggregationsTestCase.swift */; };
+		43D35B0B2034845E00C8BDBC /* PaymentPathResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0A2034845E00C8BDBC /* PaymentPathResponse.swift */; };
+		43D35B0D20348AEA00C8BDBC /* PaymentPathsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0C20348AEA00C8BDBC /* PaymentPathsService.swift */; };
+		43D35B1020348EF800C8BDBC /* PaymentPathsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0F20348EF800C8BDBC /* PaymentPathsTestCase.swift */; };
 		43E34B5E2031BE33003104A9 /* OrderbookResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B5D2031BE33003104A9 /* OrderbookResponse.swift */; };
 		43E34B612031CF09003104A9 /* OfferResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B602031CF09003104A9 /* OfferResponse.swift */; };
 		43E34B632031D7AF003104A9 /* OfferLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B622031D7AF003104A9 /* OfferLinksResponse.swift */; };
@@ -270,6 +273,9 @@
 		437D8A8E202F14A00024D031 /* TradeAggregationsService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradeAggregationsService.swift; sourceTree = "<group>"; };
 		437D8A91202F15DC0024D031 /* TradesTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradesTestCase.swift; sourceTree = "<group>"; };
 		437D8A94202F16EB0024D031 /* TradeAggregationsTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradeAggregationsTestCase.swift; sourceTree = "<group>"; };
+		43D35B0A2034845E00C8BDBC /* PaymentPathResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentPathResponse.swift; sourceTree = "<group>"; };
+		43D35B0C20348AEA00C8BDBC /* PaymentPathsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentPathsService.swift; sourceTree = "<group>"; };
+		43D35B0F20348EF800C8BDBC /* PaymentPathsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentPathsTestCase.swift; sourceTree = "<group>"; };
 		43E34B5D2031BE33003104A9 /* OrderbookResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderbookResponse.swift; sourceTree = "<group>"; };
 		43E34B602031CF09003104A9 /* OfferResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferResponse.swift; sourceTree = "<group>"; };
 		43E34B622031D7AF003104A9 /* OfferLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferLinksResponse.swift; sourceTree = "<group>"; };
@@ -591,6 +597,22 @@
 			path = trade_aggregations;
 			sourceTree = "<group>";
 		};
+		43D35B092034842E00C8BDBC /* payment_path_responses */ = {
+			isa = PBXGroup;
+			children = (
+				43D35B0A2034845E00C8BDBC /* PaymentPathResponse.swift */,
+			);
+			path = payment_path_responses;
+			sourceTree = "<group>";
+		};
+		43D35B0E20348EBF00C8BDBC /* payment_paths */ = {
+			isa = PBXGroup;
+			children = (
+				43D35B0F20348EF800C8BDBC /* PaymentPathsTestCase.swift */,
+			);
+			path = payment_paths;
+			sourceTree = "<group>";
+		};
 		43E34B5C2031BD09003104A9 /* orderbook_responses */ = {
 			isa = PBXGroup;
 			children = (
@@ -705,6 +727,7 @@
 				437D8A8E202F14A00024D031 /* TradeAggregationsService.swift */,
 				4300C17E2032F5C500DC5E49 /* OffersService.swift */,
 				4300C1842033026D00DC5E49 /* OrderbookService.swift */,
+				43D35B0C20348AEA00C8BDBC /* PaymentPathsService.swift */,
 			);
 			path = service;
 			sourceTree = "<group>";
@@ -837,6 +860,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				43D35B0E20348EBF00C8BDBC /* payment_paths */,
 				4300C1862033042900DC5E49 /* orderbooks */,
 				4300C1812032FB7A00DC5E49 /* offers */,
 				8369723A202A703600398A98 /* utils */,
@@ -1060,6 +1084,7 @@
 		83DD2C5C202D04E100713FEE /* responses */ = {
 			isa = PBXGroup;
 			children = (
+				43D35B092034842E00C8BDBC /* payment_path_responses */,
 				4300C1802032F8BD00DC5E49 /* page_responeses */,
 				43E34B5F2031CE9D003104A9 /* offer_responses */,
 				43E34B5C2031BD09003104A9 /* orderbook_responses */,
@@ -1492,6 +1517,7 @@
 				833CBFC320338E0100C23CFE /* SMP.swift in Sources */,
 				743DF5932020C58000713DE7 /* AccountBalanceResponse.swift in Sources */,
 				83DD2C81202E192A00713FEE /* TransactionMalformedErrorResponse.swift in Sources */,
+				43D35B0B2034845E00C8BDBC /* PaymentPathResponse.swift in Sources */,
 				745F2BB8202C36AA008763F1 /* TransactionsService.swift in Sources */,
 				83DD2C79202DF41F00713FEE /* NotAcceptableErrorResponse.swift in Sources */,
 				437D8A86202EF0770024D031 /* TradeAggregationResponse.swift in Sources */,
@@ -1530,6 +1556,7 @@
 				833CBF8E203351B200C23CFE /* TimeBoundsXDR.swift in Sources */,
 				7481B53E20248441000A783E /* EffectsService.swift in Sources */,
 				83DD2C6B202DE3DF00713FEE /* ErrorResponse.swift in Sources */,
+				43D35B0D20348AEA00C8BDBC /* PaymentPathsService.swift in Sources */,
 				83DD2C55202CE39C00713FEE /* AssetLinksResponse.swift in Sources */,
 				833CBFA6203353C900C23CFE /* ChangeTrustOperationXDR.swift in Sources */,
 				43E34B692031E243003104A9 /* OrderbookOfferResponse.swift in Sources */,
@@ -1639,6 +1666,7 @@
 				437D8A95202F16EB0024D031 /* TradeAggregationsTestCase.swift in Sources */,
 				83697206202631D600398A98 /* LedgersTestCase.swift in Sources */,
 				745F2BC1202C4D24008763F1 /* TransactionsTestCase.swift in Sources */,
+				43D35B1020348EF800C8BDBC /* PaymentPathsTestCase.swift in Sources */,
 				8369723E202A708300398A98 /* AccountResponsesMock.swift in Sources */,
 				4300C1832032FBE500DC5E49 /* OffersTestCase.swift in Sources */,
 				743DF503201F3B0800713DE7 /* AccountTestCase.swift in Sources */,
