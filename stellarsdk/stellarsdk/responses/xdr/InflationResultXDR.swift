@@ -6,7 +6,12 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
+
+public enum InflationResultCode: Int {
+    case success = 0
+    case notTime = -1
+}
 
 class InflationResultXDR: XDRCodable {
 

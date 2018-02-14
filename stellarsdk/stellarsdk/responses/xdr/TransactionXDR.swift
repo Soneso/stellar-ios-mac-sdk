@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 public struct TransactionXDR: XDRCodable {
     public let sourceAccount: PublicKey

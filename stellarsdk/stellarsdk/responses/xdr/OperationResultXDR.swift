@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 enum OperationResultCode: Int {
     case inner = 0

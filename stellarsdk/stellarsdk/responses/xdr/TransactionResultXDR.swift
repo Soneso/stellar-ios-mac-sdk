@@ -23,14 +23,14 @@ enum TransactionResultCode: Int {
     case internalError = -11
 }
 
-enum TransactionResultBody {
+enum TransactionResultBodyXDR {
     case success([OperationResultXDR])
     case failed
 }
 
 struct TransactionResultXDR: XDRCodable {
     public var feeCharged:Int64
-    public var resultBody:TransactionResultBody?
+    public var resultBody:TransactionResultBodyXDR?
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()

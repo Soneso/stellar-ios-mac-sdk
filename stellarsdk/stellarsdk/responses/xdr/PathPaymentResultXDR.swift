@@ -6,9 +6,9 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
-public enum PaymentPathResultCode: Int {
+public enum PathPaymentResultCode: Int {
     case success = 0
     case malformed = -1
     case underfounded = -2
@@ -19,6 +19,9 @@ public enum PaymentPathResultCode: Int {
     case notAuthorized = -7
     case lineFull = -8
     case noIssuer = -9
+    case tooFewOffers = -10
+    case offerCrossSelf = -11
+    case overSendMax = -12
 }
 
 enum PathPaymentResultXDR: XDRCodable {
@@ -28,7 +31,7 @@ enum PathPaymentResultXDR: XDRCodable {
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        let code = PaymentPathResultCode(rawValue: try container.decode(Int.self))!
+        let code = PathPaymentResultCode(rawValue: try container.decode(Int.self))!
         
         switch code {
         case .success:
@@ -57,5 +60,4 @@ enum PathPaymentResultXDR: XDRCodable {
         }
         
     }
-    
 }
