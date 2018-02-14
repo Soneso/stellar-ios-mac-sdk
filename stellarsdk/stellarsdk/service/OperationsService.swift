@@ -8,17 +8,11 @@
 
 import Foundation
 
-public enum PageOfOperationsResponseEnum {
-    case success(details: PageOfOperationsResponse)
-    case failure(error: HorizonRequestError)
-}
-
 public enum OperationDetailsResponseEnum {
     case success(details: OperationResponse)
     case failure(error: HorizonRequestError)
 }
 
-public typealias PageOfOperationsResponseClosure = (_ response:PageOfOperationsResponseEnum) -> (Void)
 public typealias OperationDetailsResponseClosure = (_ response:OperationDetailsResponseEnum) -> (Void)
 
 public class OperationsService: NSObject {
@@ -33,22 +27,22 @@ public class OperationsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
+    open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/operations"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
+    open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/accounts/" + accountId + "/operations"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
+    open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/ledgers/" + ledger + "/operations"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
-    open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
+    open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/transactions/" + hash + "/operations"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
@@ -71,7 +65,7 @@ public class OperationsService: NSObject {
         }
     }
     
-    private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageOfOperationsResponseClosure) {
+    private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         var requestPath = path
         
         var params = Dictionary<String,String>()
@@ -87,7 +81,7 @@ public class OperationsService: NSObject {
         getOperationsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
     }
     
-    open func getOperationsFromUrl(url:String, response:@escaping PageOfOperationsResponseClosure) {
+    open func getOperationsFromUrl(url:String, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):

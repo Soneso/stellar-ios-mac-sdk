@@ -29,7 +29,7 @@ public class AssetsService: NSObject {
         to be continued
      
      */
-    open func getAssets(for assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<AssetResponse>.PageResponseClosure) {
+    open func getAssets(for assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<AssetResponse>.ResponseClosure) {
         var requestPath = "/assets"
         
         var params = Dictionary<String,String>()
@@ -47,7 +47,7 @@ public class AssetsService: NSObject {
         getAssetsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
     }
     
-    open func getAssetsFromUrl(url:String, response:@escaping PageResponse<AssetResponse>.PageResponseClosure) {
+    open func getAssetsFromUrl(url:String, response:@escaping PageResponse<AssetResponse>.ResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):

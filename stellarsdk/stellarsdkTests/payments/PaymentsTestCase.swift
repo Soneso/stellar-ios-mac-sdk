@@ -36,8 +36,8 @@ class PaymentsTestCase: XCTestCase {
                         nextPaymentsResponse.getPreviousPage(){ (response) -> (Void) in
                             switch response {
                             case .success(let prevPaymentsResponse):
-                                let payment1 = paymentsResponse.payments.first
-                                let payment2 = prevPaymentsResponse.payments.last // because ordering is asc now.
+                                let payment1 = paymentsResponse.records.first
+                                let payment2 = prevPaymentsResponse.records.last // because ordering is asc now.
                                 XCTAssertTrue(payment1?.id == payment2?.id)
                                 XCTAssertTrue(payment1?.sourceAccount == payment2?.sourceAccount)
                                 XCTAssertTrue(payment1?.sourceAccount == payment2?.sourceAccount)

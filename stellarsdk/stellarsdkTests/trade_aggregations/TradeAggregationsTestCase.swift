@@ -29,7 +29,7 @@ class TradeAggregationsTestCase: XCTestCase {
             switch response {
             case .success(let tradeAggregationsResponse):
                 
-                for tradeAggregation in tradeAggregationsResponse.tradeAggregations {
+                for tradeAggregation in tradeAggregationsResponse.records {
                     print("\(tradeAggregation.timestamp) is the timestamp")
                     print("\(tradeAggregation.tradeCount) is the trade count")
                     print("\(tradeAggregation.baseVolume) is the base volume")

@@ -36,8 +36,8 @@ class TransactionsTestCase: XCTestCase {
                         nextTransactionsResponse.getPreviousPage(){ (response) -> (Void) in
                             switch response {
                             case .success(let prevTransactionsResponse):
-                                let transaction1 = transactionsResponse.transactions.first
-                                let transaction2 = prevTransactionsResponse.transactions.last // because ordering is asc now.
+                                let transaction1 = transactionsResponse.records.first
+                                let transaction2 = prevTransactionsResponse.records.last // because ordering is asc now.
                                 XCTAssertTrue(transaction1?.id == transaction2?.id)
                                 XCTAssertTrue(transaction1?.transactionHash == transaction2?.transactionHash)
                                 XCTAssertTrue(transaction1?.ledger == transaction2?.ledger)

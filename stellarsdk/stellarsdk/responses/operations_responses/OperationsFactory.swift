@@ -23,7 +23,7 @@ class OperationsFactory: NSObject {
      
         - Parameter data: The json data received from the Horizon API. See
      */
-    func operationsFromResponseData(data: Data) throws -> PageOfOperationsResponse {
+    func operationsFromResponseData(data: Data) throws -> PageResponse<OperationResponse> {
         var operationsList = [OperationResponse]()
         var links: PagingLinksResponse
         
@@ -43,7 +43,7 @@ class OperationsFactory: NSObject {
             throw HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)
         }
         
-        return PageOfOperationsResponse(operations: operationsList, links:links)
+        return PageResponse<OperationResponse>(records: operationsList, links: links)
     }
     
     func operationFromData(data: Data) throws -> OperationResponse {

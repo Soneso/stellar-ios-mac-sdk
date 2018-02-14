@@ -44,7 +44,7 @@ public class LedgersService: NSObject {
         }
     }
     
-    open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LedgerResponse>.PageResponseClosure) {
+    open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LedgerResponse>.ResponseClosure) {
         var requestPath = "/ledgers"
         
         var params = Dictionary<String,String>()
@@ -60,7 +60,7 @@ public class LedgersService: NSObject {
         getLedgersFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
     }
     
-    open func getLedgersFromUrl(url:String, response:@escaping PageResponse<LedgerResponse>.PageResponseClosure) {
+    open func getLedgersFromUrl(url:String, response:@escaping PageResponse<LedgerResponse>.ResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
