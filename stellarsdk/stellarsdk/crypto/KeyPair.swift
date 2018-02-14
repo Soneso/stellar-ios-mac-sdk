@@ -10,7 +10,7 @@ import ed25519C
 
 public final class KeyPair {
     public let publicKey: PublicKey
-    public let privateKey: PrivateKey
+    public let privateKey: PrivateKey?
 
     public var accountId: String {
         get {
@@ -32,7 +32,7 @@ public final class KeyPair {
         
     }
     
-    public init(publicKey: PublicKey, privateKey: PrivateKey) {
+    public init(publicKey: PublicKey, privateKey: PrivateKey?) {
         self.publicKey = publicKey
         self.privateKey = privateKey
     }
@@ -55,7 +55,8 @@ public final class KeyPair {
                   privateKey: PrivateKey(unchecked: privBuffer))
     }
 
-    public convenience init(publicKey: [UInt8], privateKey: [UInt8]) throws {
+    /*
+     public convenience init(publicKey: [UInt8], privateKey: [UInt8]) throws {
         let pub = try PublicKey(publicKey)
         let priv = try PrivateKey(privateKey)
         self.init(publicKey: pub, privateKey: priv)
@@ -131,5 +132,5 @@ public final class KeyPair {
         
         return KeyPair(publicKey: PublicKey(unchecked: pub),
                        privateKey: PrivateKey(unchecked: priv))
-    }
+    }*/
 }
