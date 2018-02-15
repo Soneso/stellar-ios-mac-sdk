@@ -31,11 +31,12 @@ enum TransactionResultBodyXDR {
 struct TransactionResultXDR: XDRCodable {
     public var feeCharged:Int64
     public var resultBody:TransactionResultBodyXDR?
+    public var type:TransactionResultCode
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         feeCharged = try container.decode(Int64.self)
-        let type = TransactionResultCode(rawValue: try container.decode(Int.self))!
+        type = TransactionResultCode(rawValue: try container.decode(Int.self))!
         switch type {
         case .success:
             fallthrough
@@ -52,6 +53,7 @@ struct TransactionResultXDR: XDRCodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(feeCharged)
+        try container.encode(type.rawValue)
         try container.encode(resultBody)
     }
     

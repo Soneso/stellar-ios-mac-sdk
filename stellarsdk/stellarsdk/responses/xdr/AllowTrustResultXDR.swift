@@ -18,8 +18,8 @@ public enum AllowTrustResultCode: Int {
 }
 
 enum AllowTrustResultXDR: XDRCodable {
-    case success
-    case empty
+    case success (Int)
+    case empty (Int)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -27,13 +27,20 @@ enum AllowTrustResultXDR: XDRCodable {
         
         switch code {
         case .success:
-            self = .success
+            self = .success(code.rawValue)
         default:
-            self = .empty
+            self = .empty(code.rawValue)
         }
     }
     
     public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        switch self {
+            case .success(let code):
+                try container.encode(code)
+            case .empty (let code):
+                try container.encode(code)
+                break
+        }
     }
 }
-

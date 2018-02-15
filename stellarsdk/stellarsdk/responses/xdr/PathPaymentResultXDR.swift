@@ -25,23 +25,23 @@ public enum PathPaymentResultCode: Int {
 }
 
 enum PathPaymentResultXDR: XDRCodable {
-    case success([ClaimOfferAtomXDR], SimplePaymentResultXDR)
-    case noIssuer(AssetXDR)
-    case empty
+    case success(Int, [ClaimOfferAtomXDR], SimplePaymentResultXDR)
+    case noIssuer(Int, AssetXDR)
+    case empty (Int)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let code = PathPaymentResultCode(rawValue: try container.decode(Int.self))!
         
         switch code {
-        case .success:
-            let offers = try container.decode([ClaimOfferAtomXDR].self)
-            let last = try container.decode(SimplePaymentResultXDR.self)
-            self = .success(offers, last)
-        case .noIssuer:
-            self = .noIssuer(try container.decode(AssetXDR.self))
-        default:
-            self = .empty
+            case .success:
+                let offers = try container.decode([ClaimOfferAtomXDR].self)
+                let last = try container.decode(SimplePaymentResultXDR.self)
+                self = .success(code.rawValue, offers, last)
+            case .noIssuer:
+                self = .noIssuer(code.rawValue, try container.decode(AssetXDR.self))
+            default:
+                self = .empty (code.rawValue)
         }
         
     }
@@ -50,14 +50,15 @@ enum PathPaymentResultXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         
         switch self {
-        case .success(let offers, let last):
-            try container.encode(offers)
-            try container.encode(last)
-        case .noIssuer(let asset):
-            try container.encode(asset)
-        case .empty:
-            break
+            case .success(let code, let offers, let last):
+                try container.encode(code)
+                try container.encode(offers)
+                try container.encode(last)
+            case .noIssuer(let code, let asset):
+                try container.encode(code)
+                try container.encode(asset)
+            case .empty:
+                break
         }
-        
     }
 }

@@ -160,6 +160,7 @@
 		833CBFC320338E0100C23CFE /* SMP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFC220338E0100C23CFE /* SMP.swift */; };
 		833CBFC92034741300C23CFE /* Asset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFC82034741300C23CFE /* Asset.swift */; };
 		833CBFCB2034742300C23CFE /* StellarSDKError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFCA2034742200C23CFE /* StellarSDKError.swift */; };
+		833CBFCF2035CBF500C23CFE /* ManageOfferSuccessResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFCE2035CBF500C23CFE /* ManageOfferSuccessResult.swift */; };
 		836971DF2024A71B00398A98 /* AccountFlagsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */; };
 		836971E42024C47300398A98 /* LinkResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E32024C47300398A98 /* LinkResponse.swift */; };
 		836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E52024F58E00398A98 /* DataForAccountResponse.swift */; };
@@ -428,6 +429,7 @@
 		833CBFC220338E0100C23CFE /* SMP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SMP.swift; sourceTree = "<group>"; };
 		833CBFC82034741300C23CFE /* Asset.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Asset.swift; sourceTree = "<group>"; };
 		833CBFCA2034742200C23CFE /* StellarSDKError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StellarSDKError.swift; sourceTree = "<group>"; };
+		833CBFCE2035CBF500C23CFE /* ManageOfferSuccessResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageOfferSuccessResult.swift; sourceTree = "<group>"; };
 		836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFlagsResponse.swift; sourceTree = "<group>"; };
 		836971E32024C47300398A98 /* LinkResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkResponse.swift; sourceTree = "<group>"; };
 		836971E52024F58E00398A98 /* DataForAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountResponse.swift; sourceTree = "<group>"; };
@@ -1034,6 +1036,7 @@
 				830EFC7A203252B100607C35 /* TrustlineEntryXDR.swift */,
 				746AD2C120342CA700A9CF21 /* PathPaymentResultXDR.swift */,
 				746AD2C320342CBE00A9CF21 /* ManageOfferResultXDR.swift */,
+				833CBFCE2035CBF500C23CFE /* ManageOfferSuccessResult.swift */,
 				746AD2C720342CF600A9CF21 /* SetOptionsResultXDR.swift */,
 				746AD2C920342D0500A9CF21 /* ChangeTrustResultXDR.swift */,
 				746AD2CB20342D1600A9CF21 /* AllowTrustResultXDR.swift */,
@@ -1628,6 +1631,7 @@
 				437D8A89202EFED80024D031 /* TradeLinksResponse.swift in Sources */,
 				746AD2C820342CF600A9CF21 /* SetOptionsResultXDR.swift in Sources */,
 				83DD2C73202DE92A00713FEE /* BadRequestErrorResponse.swift in Sources */,
+				833CBFCF2035CBF500C23CFE /* ManageOfferSuccessResult.swift in Sources */,
 				83DD2C69202DE17000713FEE /* InternalServerErrorResponse.swift in Sources */,
 				833CBF9A2033530F00C23CFE /* PathPaymentOperationXDR.swift in Sources */,
 				746AD2CC20342D1600A9CF21 /* AllowTrustResultXDR.swift in Sources */,
