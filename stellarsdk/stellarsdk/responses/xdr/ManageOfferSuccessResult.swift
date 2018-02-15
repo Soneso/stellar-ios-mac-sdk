@@ -23,6 +23,11 @@ struct ManageOfferSuccessResultXDR: XDRCodable {
     public var offersClaimed:[ClaimOfferAtomXDR]
     public var offer:ManageOfferSuccessResultOfferXDR?
     
+    public init(offersClaimed: [ClaimOfferAtomXDR], offer:ManageOfferSuccessResultOfferXDR?) {
+        self.offersClaimed = offersClaimed
+        self.offer = offer
+    }
+    
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         offersClaimed = try container.decode(Array<ClaimOfferAtomXDR>.self)

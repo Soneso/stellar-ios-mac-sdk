@@ -25,10 +25,10 @@ enum ManageDataResultXDR: XDRCodable {
         let code = ManageDataResultCode(rawValue: try container.decode(Int.self))!
         
         switch code {
-        case .success:
-            self = .success(code.rawValue)
-        default:
-            self = .empty(code.rawValue)
+            case .success:
+                self = .success(code.rawValue)
+            default:
+                self = .empty(code.rawValue)
         }
     }
     
