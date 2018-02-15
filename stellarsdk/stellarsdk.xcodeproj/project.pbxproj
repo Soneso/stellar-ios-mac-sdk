@@ -13,6 +13,7 @@
 		4300C1882033044000DC5E49 /* OrderbooksTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C1872033044000DC5E49 /* OrderbooksTestCase.swift */; };
 		430BE2E6203577F200E6AB97 /* Price.swift in Sources */ = {isa = PBXBuildFile; fileRef = 430BE2E5203577F200E6AB97 /* Price.swift */; };
 		430BE2E92035A33D00E6AB97 /* PriceTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 430BE2E82035A33D00E6AB97 /* PriceTestCase.swift */; };
+		430BE2EB2035B4D400E6AB97 /* TimeBounds.swift in Sources */ = {isa = PBXBuildFile; fileRef = 430BE2EA2035B4D400E6AB97 /* TimeBounds.swift */; };
 		437D8A7D202EEDCC0024D031 /* Dictionary+HttpParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A7C202EEDCC0024D031 /* Dictionary+HttpParams.swift */; };
 		437D8A83202EF0770024D031 /* TradeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A7F202EF0760024D031 /* TradeResponse.swift */; };
 		437D8A86202EF0770024D031 /* TradeAggregationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A82202EF0770024D031 /* TradeAggregationResponse.swift */; };
@@ -268,6 +269,7 @@
 		4300C1872033044000DC5E49 /* OrderbooksTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderbooksTestCase.swift; sourceTree = "<group>"; };
 		430BE2E5203577F200E6AB97 /* Price.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Price.swift; sourceTree = "<group>"; };
 		430BE2E82035A33D00E6AB97 /* PriceTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceTestCase.swift; sourceTree = "<group>"; };
+		430BE2EA2035B4D400E6AB97 /* TimeBounds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeBounds.swift; sourceTree = "<group>"; };
 		437D8A7C202EEDCC0024D031 /* Dictionary+HttpParams.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Dictionary+HttpParams.swift"; sourceTree = "<group>"; };
 		437D8A7F202EF0760024D031 /* TradeResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradeResponse.swift; sourceTree = "<group>"; };
 		437D8A82202EF0770024D031 /* TradeAggregationResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradeAggregationResponse.swift; sourceTree = "<group>"; };
@@ -1051,6 +1053,7 @@
 				833CBFBE20337D3300C23CFE /* Account.swift */,
 				833CBFC02033804B00C23CFE /* TransactionBuilderAccount.swift */,
 				430BE2E5203577F200E6AB97 /* Price.swift */,
+				430BE2EA2035B4D400E6AB97 /* TimeBounds.swift */,
 			);
 			path = sdk;
 			sourceTree = "<group>";
@@ -1558,6 +1561,7 @@
 				833CBFAC2033542D00C23CFE /* LedgerEntryChangesXDR.swift in Sources */,
 				437D8A8F202F14A00024D031 /* TradeAggregationsService.swift in Sources */,
 				833CBFB4203354BE00C23CFE /* LedgerKeyTrustlineXDR.swift in Sources */,
+				430BE2EB2035B4D400E6AB97 /* TimeBounds.swift in Sources */,
 				437D8A83202EF0770024D031 /* TradeResponse.swift in Sources */,
 				830EFC772032511B00607C35 /* OfferEntryXDR.swift in Sources */,
 				83DD2C60202D0CDE00713FEE /* OperationLinksResponse.swift in Sources */,
