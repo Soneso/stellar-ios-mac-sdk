@@ -13,9 +13,9 @@ import Foundation
 ///
 public class Asset
 {
-    public private (set) var type:Int32
-    public private (set) var code:String?
-    public private (set) var issuer:KeyPair?
+    public let type:Int32
+    public private(set) var code:String?
+    public private(set) var issuer:KeyPair?
     
     /* Initializer, creates an Asset object based on the given type, code and issuer. Assets can have the types: native, alphanumeric 4, alphanumeric 12. The asset of type native has no code and no issuer. Assets of type alphanumeric 4, alphanumeric 12 must have a code and an issuer.
  
@@ -25,24 +25,19 @@ public class Asset
 
             - Returns: an Asset object or nil for invalid parameter values.
     */
-    public init?(type:Int32, code:String?, issuer:KeyPair?){
-        
+    public init?(type:Int32, code:String? = nil, issuer:KeyPair? = nil) {
         self.type = type
-        self.code = code
-        self.issuer = issuer
-        
         switch self.type {
             case AssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-                if let code = code, code.count < 1, code.count > 4, issuer == nil {
-                    return nil
-                }
+                guard let code = code, code.count >= 1, code.count <= 4, issuer != nil else { return nil }
+                self.code = code
+                self.issuer = issuer
             case AssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-                if let code = code, code.count < 5, code.count > 12, issuer == nil {
-                    return nil
-                }
+                guard let code = code, code.count >= 5, code.count <= 12, issuer != nil else { return nil }
+                self.code = code
+                self.issuer = issuer
             case AssetType.ASSET_TYPE_NATIVE:
-                self.code = nil
-                self.issuer = nil
+                break
             default:
                 return nil
         }
@@ -81,26 +76,22 @@ public class Asset
     ///
     public static func fromXDR(assetXDR:AssetXDR) throws -> Asset {
         
+        var result: Asset?
         switch assetXDR {
             case .native:
-                let result = Asset(type:AssetType.ASSET_TYPE_NATIVE, code:nil, issuer:nil)!
-                return result
+                result = Asset(type:AssetType.ASSET_TYPE_NATIVE)
             
             case .alphanum4 (let a4):
                 let issuerKeyPair = KeyPair (publicKey: a4.issuer, privateKey: nil)
-                let result = Asset(type:AssetType.ASSET_TYPE_NATIVE, code:assetXDR.assetCode, issuer:issuerKeyPair)
-                if result == nil {
-                    throw StellarSDKError.xdrDecodingError(message: "Error encoding asset: invalid data in xdr")
-                }
-                return result!
+                result = Asset(type:AssetType.ASSET_TYPE_NATIVE, code:assetXDR.assetCode, issuer:issuerKeyPair)
             
             case .alphanum12 (let a12):
                 let issuerKeyPair = KeyPair (publicKey: a12.issuer, privateKey: nil)
-                let result = Asset(type:AssetType.ASSET_TYPE_NATIVE, code:assetXDR.assetCode, issuer:issuerKeyPair)
-                if result == nil {
-                    throw StellarSDKError.xdrDecodingError(message: "Error encoding asset: invalid data in xdr")
-                }
-                return result!
+                result = Asset(type:AssetType.ASSET_TYPE_NATIVE, code:assetXDR.assetCode, issuer:issuerKeyPair)
         }
+        guard let asset = result else {
+            throw StellarSDKError.xdrDecodingError(message: "Error encoding asset: invalid data in xdr")
+        }
+        return asset
     }
 }
