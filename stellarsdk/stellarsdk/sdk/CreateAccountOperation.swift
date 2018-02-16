@@ -18,9 +18,11 @@ public class CreateAccountOperation:Operation {
     public let startBalance:String
     
     /**
-        Initializer
+        Constructor
      
         - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
+        - Parameter destination: Account address that is created and funded.
+        - Parameter startBalance: Amount of XLM to send to the newly created account. This XLM comes from the source account.
      */
     public init(sourceAccount:KeyPair?, destination:KeyPair, startBalance:String) {
         self.destination = destination

@@ -9,7 +9,8 @@
 import Foundation
 
 /**
-    Superclass for operations.
+    Superclass for operations. You should never use this class directly. Please use one of its subclasses.
+    See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/operations.html, "Operations")
     See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html, "List of Operations")
  */
 
