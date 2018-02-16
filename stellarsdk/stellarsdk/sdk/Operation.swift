@@ -9,7 +9,8 @@
 import Foundation
 
 /**
-    Superclass for operations.
+    Superclass for operations. You should never use this class directly. Please use one of its subclasses.
+    See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/operations.html, "Operations")
     See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html, "List of Operations")
  */
 
@@ -23,5 +24,22 @@ public class Operation {
      */
     public init(sourceAccount:KeyPair?) {
         self.sourceAccount = sourceAccount
+    }
+    
+    /// Generates Operation XDR object.
+    public func toXDR() throws -> OperationXDR {
+        return try OperationXDR(sourceAccount: sourceAccount?.publicKey, body: getOperationBodyXDR())
+    }
+    
+    func getOperationBodyXDR() throws -> OperationBodyXDR {
+        return OperationBodyXDR.inflation
+    }
+    
+    func toXDRAmount(amount:Int64) -> Int64 {
+        return amount * 10000000
+    }
+    
+    func fromXDRAmount(xdrAmount:Int64) -> Int64 {
+        return xdrAmount / 10000000
     }
 }

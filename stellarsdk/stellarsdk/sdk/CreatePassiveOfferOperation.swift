@@ -9,21 +9,42 @@
 import Foundation
 
 /**
-    Represents a create passive offer operation.
+    Represents a create passive offer operation. A passive offer is an offer that does not act on and take a reverse offer of equal price. Instead, they only take offers of lesser price. 
     See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html#create-passive-offer, "Create Passive Offer Operations")
  */
 public class CreatePassiveOfferOperation:Operation {
     
     public let selling:Asset
     public let buying:Asset
-    public let amount:String
-    public let price:String
+    public let amount:Int64
+    public let price:Price
     
-    public init(sourceAccount:KeyPair, selling:Asset, buying:Asset, amount:String, price:String) {
+    /**
+        Constructor
+     
+        - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
+        - Parameter selling: The asset you would like to sell.
+        - Parameter buying: The asset you would like to buy.
+        - Parameter amount: Amount of selling being sold..
+        - Parameter price: Price of 1 unit of selling in terms of buying. For example, if you wanted to sell 30 XLM and buy 5 BTC, the price would be {numerator, denominator} = {5,30}.
+     */
+    public init(sourceAccount:KeyPair, selling:Asset, buying:Asset, amount:Int64, price:Price) {
         self.selling = selling
         self.buying = buying
         self.amount = amount
         self.price = price
         super.init(sourceAccount:sourceAccount)
+    }
+    
+    override func getOperationBodyXDR() throws -> OperationBodyXDR {
+        let sellingXDR = try selling.toXDR()
+        let buyingXDR = try buying.toXDR()
+        let amountXDR = toXDRAmount(amount: amount)
+        let priceXDR = price.toXdr()
+        
+        return OperationBodyXDR.createPassiveOffer(CreatePassiveOfferOperationXDR(selling: sellingXDR,
+                                                                                  buying: buyingXDR,
+                                                                                  amount: amountXDR,
+                                                                                  price: priceXDR))
     }
 }

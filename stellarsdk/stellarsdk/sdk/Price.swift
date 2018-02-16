@@ -14,7 +14,7 @@ public class Price {
     public final let d:Int
     
     /**
-        Create a new price. Price in Stellar is represented as a fraction.
+        Create a new price. Price in Stellar is represented as a fraction. E.g. Price of 1 unit of selling in terms of buying. For example, if you wanted to sell 30 XLM and buy 5 BTC, the price would be {numerator, denominator} = {5,30}.
      
         - Parameter numerator: numerator
         - Parameter denominator: denominator

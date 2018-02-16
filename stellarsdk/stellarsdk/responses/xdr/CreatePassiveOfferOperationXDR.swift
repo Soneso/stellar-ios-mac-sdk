@@ -14,7 +14,7 @@ public struct CreatePassiveOfferOperationXDR: XDRCodable {
     public let amount: Int64
     public let price: PriceXDR
     
-    public init(selling: AssetXDR, buying: AssetXDR, amount:Int64, price:PriceXDR, offerID:UInt64) {
+    public init(selling: AssetXDR, buying: AssetXDR, amount:Int64, price:PriceXDR) {
         self.selling = selling
         self.buying = buying
         self.amount = amount
