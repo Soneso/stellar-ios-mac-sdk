@@ -19,17 +19,39 @@ public class AllowTrustOperation:Operation {
     public let authorize:Bool
     
     /**
-        Constructor
+        Constructor.
      
-        - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
         - Parameter trustor: The account of the recipient of the trustline.
-        - Parameter asset: The asset of the trustline the source account is authorizing. For example, if an anchor wants to allow another account to hold its USD credit, the type is USD:anchor.
+        - Parameter assetCode: The asset code of the trustline. E.g. BTC
         - Parameter authorize: Flag indicating whether the trustline is authorized.
+     
+        - Returns the operation if arguments are valid. Returns nil if the arguments are invalid.
      */
-    public init(sourceAccount:KeyPair, trustor:KeyPair, assetCode:String, authorize:Bool) {
+    public init?(trustor:KeyPair, assetCode:String, authorize:Bool) {
+        
+        if (assetCode.count < 1 || assetCode.count > 12) {return nil}
+        
         self.trustor = trustor
         self.assetCode = assetCode
         self.authorize = authorize
-        super.init(sourceAccount:sourceAccount)
+        super.init(sourceAccount:nil)
+    }
+    
+    override func getOperationBodyXDR() throws -> OperationBodyXDR {
+
+        let allowTrustOpAsset: AllowTrustOpAssetXDR
+        if assetCode.count <= 4 {
+            let assetCodeXDR = WrappedData4(self.assetCode.data(using: .utf8)!)
+            let ato4XDR = AllowTrustOpAssetXDR.AlphaATO4XDR(assetCode: assetCodeXDR)
+            allowTrustOpAsset = AllowTrustOpAssetXDR.alphanum4(ato4XDR)
+        } else {
+            let assetCodeXDR = WrappedData12(self.assetCode.data(using: .utf8)!)
+            let ato12XDR = AllowTrustOpAssetXDR.AlphaATO12XDR(assetCode: assetCodeXDR)
+            allowTrustOpAsset = AllowTrustOpAssetXDR.alphanum12(ato12XDR)
+        }
+        
+        return OperationBodyXDR.allowTrust(AllowTrustOperationXDR(trustor: trustor.publicKey,
+                                                                  asset: allowTrustOpAsset,
+                                                                  authorize: authorize))
     }
 }

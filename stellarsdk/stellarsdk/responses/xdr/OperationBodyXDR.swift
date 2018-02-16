@@ -27,44 +27,44 @@ public enum OperationBodyXDR: XDRCodable {
         let type = try container.decode(Int32.self)
         
         switch type {
-        case OperationType.accountCreated.rawValue:
-            self = .createAccount(try container.decode(CreateAccountOperationXDR.self))
-        case OperationType.payment.rawValue:
-            self = .payment(try container.decode(PaymentOperationXDR.self))
-        case OperationType.pathPayment.rawValue:
-            self = .pathPayment(try container.decode(PathPaymentOperationXDR.self))
-        case OperationType.manageOffer.rawValue:
-            self = .manageOffer(try container.decode(ManageOfferOperationXDR.self))
-        case OperationType.createPassiveOffer.rawValue:
-            self = .createPassiveOffer(try container.decode(CreatePassiveOfferOperationXDR.self))
-        case OperationType.setOptions.rawValue:
-            self = .setOptions(try container.decode(SetOptionsOperationXDR.self))
-        case OperationType.allowTrust.rawValue:
-            self = .allowTrust(try container.decode(AllowTrustOperationXDR.self))
-        case OperationType.changeTrust.rawValue:
-            self = .changeTrust(try container.decode(ChangeTrustOperationXDR.self))
-        case OperationType.manageData.rawValue:
-            self = .manageData(try container.decode(ManageDataOperationXDR.self))
-        case OperationType.accountMerge.rawValue:
-            self = .accountMerge(try container.decode(PublicKey.self))
-        default:
-            self = .createAccount(try container.decode(CreateAccountOperationXDR.self))
+            case OperationType.accountCreated.rawValue:
+                self = .createAccount(try container.decode(CreateAccountOperationXDR.self))
+            case OperationType.payment.rawValue:
+                self = .payment(try container.decode(PaymentOperationXDR.self))
+            case OperationType.pathPayment.rawValue:
+                self = .pathPayment(try container.decode(PathPaymentOperationXDR.self))
+            case OperationType.manageOffer.rawValue:
+                self = .manageOffer(try container.decode(ManageOfferOperationXDR.self))
+            case OperationType.createPassiveOffer.rawValue:
+                self = .createPassiveOffer(try container.decode(CreatePassiveOfferOperationXDR.self))
+            case OperationType.setOptions.rawValue:
+                self = .setOptions(try container.decode(SetOptionsOperationXDR.self))
+            case OperationType.allowTrust.rawValue:
+                self = .allowTrust(try container.decode(AllowTrustOperationXDR.self))
+            case OperationType.changeTrust.rawValue:
+                self = .changeTrust(try container.decode(ChangeTrustOperationXDR.self))
+            case OperationType.manageData.rawValue:
+                self = .manageData(try container.decode(ManageDataOperationXDR.self))
+            case OperationType.accountMerge.rawValue:
+                self = .accountMerge(try container.decode(PublicKey.self))
+            default:
+                self = .createAccount(try container.decode(CreateAccountOperationXDR.self))
         }
     }
     
     public func type() -> Int32 {
         switch self {
-        case .createAccount: return OperationType.accountCreated.rawValue
-        case .payment: return OperationType.payment.rawValue
-        case .pathPayment: return OperationType.pathPayment.rawValue
-        case .manageOffer: return OperationType.manageOffer.rawValue
-        case .createPassiveOffer: return OperationType.createPassiveOffer.rawValue
-        case .setOptions: return OperationType.setOptions.rawValue
-        case .allowTrust: return OperationType.allowTrust.rawValue
-        case .changeTrust: return OperationType.changeTrust.rawValue
-        case .inflation: return OperationType.inflation.rawValue
-        case .manageData: return OperationType.manageData.rawValue
-        case .accountMerge: return OperationType.accountMerge.rawValue
+            case .createAccount: return OperationType.accountCreated.rawValue
+            case .payment: return OperationType.payment.rawValue
+            case .pathPayment: return OperationType.pathPayment.rawValue
+            case .manageOffer: return OperationType.manageOffer.rawValue
+            case .createPassiveOffer: return OperationType.createPassiveOffer.rawValue
+            case .setOptions: return OperationType.setOptions.rawValue
+            case .allowTrust: return OperationType.allowTrust.rawValue
+            case .changeTrust: return OperationType.changeTrust.rawValue
+            case .inflation: return OperationType.inflation.rawValue
+            case .manageData: return OperationType.manageData.rawValue
+            case .accountMerge: return OperationType.accountMerge.rawValue
         }
     }
     

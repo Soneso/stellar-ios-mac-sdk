@@ -42,7 +42,7 @@ public enum AllowTrustOpAssetXDR: XDRCodable {
     public struct AlphaATO4XDR: XDRCodable {
         let assetCode: WrappedData4
         
-        init(assetCode: WrappedData4, issuer: PublicKey) {
+        init(assetCode: WrappedData4) {
             self.assetCode = assetCode
         }
         
@@ -55,7 +55,7 @@ public enum AllowTrustOpAssetXDR: XDRCodable {
     public struct AlphaATO12XDR: XDRCodable {
         let assetCode: WrappedData12
         
-        init(assetCode: WrappedData12, issuer: PublicKey) {
+        init(assetCode: WrappedData12) {
             self.assetCode = assetCode
         }
         

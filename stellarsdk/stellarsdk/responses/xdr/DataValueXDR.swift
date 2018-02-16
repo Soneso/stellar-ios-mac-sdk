@@ -10,9 +10,9 @@ import Foundation
 
 public struct DataValueXDR: XDRCodable
 {
-    public let dataValue: Data
+    public let dataValue:Data?
     
-    public init(dataValue: Data) {
+    public init(dataValue: Data?) {
         self.dataValue = dataValue
     }
     

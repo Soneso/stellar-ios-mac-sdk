@@ -26,4 +26,8 @@ public class AccountMergeOperation:Operation {
         self.destination = destination
         super.init(sourceAccount:sourceAccount)
     }
+    
+    override func getOperationBodyXDR() throws -> OperationBodyXDR {
+        return OperationBodyXDR.accountMerge(destination.publicKey)
+    }
 }

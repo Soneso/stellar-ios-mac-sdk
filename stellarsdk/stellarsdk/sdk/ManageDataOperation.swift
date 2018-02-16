@@ -29,4 +29,9 @@ public class ManageDataOperation:Operation {
         self.data = data
         super.init(sourceAccount:sourceAccount)
     }
+    
+    override func getOperationBodyXDR() throws -> OperationBodyXDR {
+        return OperationBodyXDR.manageData(ManageDataOperationXDR(dataName: name,
+                                                                  dataValue: DataValueXDR(dataValue:data)))
+    }
 }
