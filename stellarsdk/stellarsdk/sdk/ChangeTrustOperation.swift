@@ -15,7 +15,7 @@ import Foundation
 public class ChangeTrustOperation:Operation {
     
     public let asset:Asset
-    public let limit:String
+    public let limit:Int64
     
     /**
         Constructor
@@ -24,9 +24,17 @@ public class ChangeTrustOperation:Operation {
         - Parameter asset: The asset of the trustline. For example, if a user extends a trustline of up to 200 USD to an anchor, the line is USD:anchor.
         - Parameter limit: The limit of the trustline. In the previous example, the limit would be 200.
      */
-    public init(sourceAccount:KeyPair, asset:Asset, limit:String) {
+    public init(sourceAccount:KeyPair, asset:Asset, limit:Int64) {
         self.asset = asset
         self.limit = limit
         super.init(sourceAccount:sourceAccount)
+    }
+    
+    override func getOperationBodyXDR() throws -> OperationBodyXDR {
+        let assetXDR = try asset.toXDR()
+        let limitXDR = toXDRAmount(amount: limit)
+        
+        return OperationBodyXDR.changeTrust(ChangeTrustOperationXDR(asset:assetXDR,
+                                                                    limit:limitXDR))
     }
 }

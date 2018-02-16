@@ -16,8 +16,8 @@ public class CreatePassiveOfferOperation:Operation {
     
     public let selling:Asset
     public let buying:Asset
-    public let amount:String
-    public let price:String
+    public let amount:Int64
+    public let price:Price
     
     /**
         Constructor
@@ -26,13 +26,25 @@ public class CreatePassiveOfferOperation:Operation {
         - Parameter selling: The asset you would like to sell.
         - Parameter buying: The asset you would like to buy.
         - Parameter amount: Amount of selling being sold..
-        - Parameter price: Price of 1 unit of selling in terms of buying. For example, if you wanted to sell 30 XLM and buy 5 BTC, the price would be {5,30}.
+        - Parameter price: Price of 1 unit of selling in terms of buying. For example, if you wanted to sell 30 XLM and buy 5 BTC, the price would be {numerator, denominator} = {5,30}.
      */
-    public init(sourceAccount:KeyPair, selling:Asset, buying:Asset, amount:String, price:String) {
+    public init(sourceAccount:KeyPair, selling:Asset, buying:Asset, amount:Int64, price:Price) {
         self.selling = selling
         self.buying = buying
         self.amount = amount
         self.price = price
         super.init(sourceAccount:sourceAccount)
+    }
+    
+    override func getOperationBodyXDR() throws -> OperationBodyXDR {
+        let sellingXDR = try selling.toXDR()
+        let buyingXDR = try buying.toXDR()
+        let amountXDR = toXDRAmount(amount: amount)
+        let priceXDR = price.toXdr()
+        
+        return OperationBodyXDR.createPassiveOffer(CreatePassiveOfferOperationXDR(selling: sellingXDR,
+                                                                                  buying: buyingXDR,
+                                                                                  amount: amountXDR,
+                                                                                  price: priceXDR))
     }
 }

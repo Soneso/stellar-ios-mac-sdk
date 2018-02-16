@@ -14,8 +14,8 @@ import Foundation
  */
 public class CreateAccountOperation:Operation {
     
-    public let destination:KeyPair?
-    public let startBalance:String
+    public let destination:KeyPair
+    public let startBalance:Int64
     
     /**
         Constructor
@@ -24,9 +24,14 @@ public class CreateAccountOperation:Operation {
         - Parameter destination: Account address that is created and funded.
         - Parameter startBalance: Amount of XLM to send to the newly created account. This XLM comes from the source account.
      */
-    public init(sourceAccount:KeyPair?, destination:KeyPair, startBalance:String) {
+    public init(sourceAccount:KeyPair?, destination:KeyPair, startBalance:Int64) {
         self.destination = destination
         self.startBalance = startBalance
         super.init(sourceAccount:sourceAccount)
+    }
+    
+    override func getOperationBodyXDR() throws -> OperationBodyXDR {
+        return OperationBodyXDR.createAccount(CreateAccountOperationXDR(destination: destination.publicKey,
+                                                                        balance: startBalance * 10000000))
     }
 }

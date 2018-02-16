@@ -16,7 +16,7 @@ public class PaymentOperation:Operation {
     
     public let destination:KeyPair
     public let asset:Asset
-    public let amount:String
+    public let amount:Int64
     
     /**
         Constructor
@@ -26,10 +26,18 @@ public class PaymentOperation:Operation {
         - Parameter asset: Asset to send to the destination account.
         - Parameter amount: Amount of the aforementioned asset to send.
      */
-    public init(sourceAccount:KeyPair, destination:KeyPair, asset:Asset, amount:String) {
+    public init(sourceAccount:KeyPair, destination:KeyPair, asset:Asset, amount:Int64) {
         self.destination = destination
         self.asset = asset
         self.amount = amount
         super.init(sourceAccount:sourceAccount)
+    }
+    
+    override func getOperationBodyXDR() throws -> OperationBodyXDR {
+        let assetXDR = try asset.toXDR()
+        let xdrAmount = toXDRAmount(amount: amount)
+        return OperationBodyXDR.payment(PaymentOperationXDR(destination: destination.publicKey,
+                                                            asset:assetXDR,
+                                                            amount: xdrAmount))
     }
 }
