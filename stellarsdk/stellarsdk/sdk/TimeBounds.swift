@@ -9,16 +9,19 @@
 import Foundation
 
 /**
- * <p>TimeBounds represents the time interval that a transaction is valid.</p>
- * @see Transaction
+    TimeBounds represents the time interval that a transaction is valid.
+ 
+    - See Transaction
  */
 final public class TimeBounds {
     final let minTime:UInt64
     final let maxTime:UInt64
     
     /**
-     * @param minTime 64bit Unix timestamp
-     * @param maxTime 64bit Unix timestamp
+        Init
+     
+        - Parameter minTime: 64bit Unix timestamp
+        - Parameter maxTime 64bit Unix timestamp
      */
     public init(minTime:UInt64, maxTime:UInt64) throws {
         if minTime >= maxTime {
@@ -28,6 +31,7 @@ final public class TimeBounds {
         self.maxTime = maxTime
     }
     
+     /// Generates Time Bounds XDR object.
     public func toXdr() -> TimeBoundsXDR {
         return TimeBoundsXDR(minTime: minTime, maxTime: maxTime)
     }

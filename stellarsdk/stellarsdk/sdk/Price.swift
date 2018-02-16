@@ -8,17 +8,16 @@
 
 import Foundation
 
-/**
- * Represents Price. Price in Stellar is represented as a fraction.
- */
+/// Represents Price. Price in Stellar is represented as a fraction.
 public class Price {
     public final let n:Int
     public final let d:Int
     
     /**
-     * Create a new price. Price in Stellar is represented as a fraction.
-     * @param numerator
-     * @param denominator
+        Create a new price. Price in Stellar is represented as a fraction.
+     
+        - Parameter numerator: numerator
+        - Parameter denominator: denominator
      */
     public init(numerator:Int, denominator:Int) {
         self.n = numerator
@@ -26,10 +25,9 @@ public class Price {
     }
     
     /**
-     * Approximates <code>price</code> to a fraction.
-     * Please remember that this function can give unexpected results for values that cannot be represented as a
-     * fraction with 32-bit numerator and denominator. It's safer to create a Price object using the constructor.
-     * @param price Ex. "1.25"
+        Approximates 'price' to a fraction. Please remember that this function can give unexpected results for values that cannot be represented as a fraction with 32-bit numerator and denominator. It's safer to create a Price object using the constructor.
+     
+        - Parameter price: E.g. "1.25"
      */
     public static func fromString(price:String) -> Price {
         
@@ -59,9 +57,8 @@ public class Price {
         return Price(numerator: n.intValue, denominator: d.intValue)
     }
     
-    /**
-     * Generates Price XDR object.
-     */
+    
+    /// Generates Price XDR object.
     public func toXdr() -> PriceXDR {
         return PriceXDR(n: Int32(n), d: Int32(d))
     }
