@@ -114,4 +114,72 @@ class PaymentsTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testPaymentsStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.payments.stream(for: .allPayments(cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testPaymentsForAccountStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.payments.stream(for: .paymentsForAccount(account: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX", cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testPaymentsForLedgerStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.payments.stream(for: .paymentsForLedger(ledger: "2365", cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testPaymentsForTransactionsStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.payments.stream(for: .paymentsForTransaction(transaction: "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a", cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
 }

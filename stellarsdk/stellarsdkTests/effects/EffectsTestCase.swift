@@ -129,4 +129,89 @@ class EffectsTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testEffectsStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+    
+        sdk.effects.stream(for: .allEffects(cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testEffectsForAccountStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.effects.stream(for: .effectsForAccount(account: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX", cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testEffectsForLedgerStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.effects.stream(for: .effectsForLedger(ledger: "2365", cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testEffectsForOperationStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.effects.stream(for: .effectsForOperation(operation: "10157597659137", cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testEffectsForTransactionsStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.effects.stream(for: .effectsForTransaction(transaction: "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a", cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
 }

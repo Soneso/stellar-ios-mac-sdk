@@ -116,4 +116,55 @@ class TransactionsTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testTransactionsStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.transactions.stream(for: .allTransactions(cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testTransactionsForAccountStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.transactions.stream(for: .transactionsForAccount(account: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX", cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testTransactionsForLedgerStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.transactions.stream(for: .transactionsForLedger(ledger: "2365", cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
 }

@@ -8,6 +8,13 @@
 
 import Foundation
 
+public enum PaymentsChange {
+    case allPayments(cursor:String?)
+    case paymentsForAccount(account:String, cursor:String?)
+    case paymentsForLedger(ledger:String, cursor:String?)
+    case paymentsForTransaction(transaction:String, cursor:String?)
+}
+
 public class PaymentsService: NSObject {
     let serviceHelper: ServiceHelper
     let operationsFactory = OperationsFactory()
@@ -110,4 +117,34 @@ public class PaymentsService: NSObject {
             }
         }
     }
+    
+    open func stream(for transactionsType:PaymentsChange) -> StreamItem<OperationResponse> {
+        var subpath:String!
+        switch transactionsType {
+        case .allPayments(let cursor):
+            subpath = "/payments"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        case .paymentsForAccount(let accountId, let cursor):
+            subpath = "/accounts/" + accountId + "/payments"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        case .paymentsForLedger(let ledger, let cursor):
+            subpath = "/ledgers/" + ledger + "/payments"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        case .paymentsForTransaction(let transaction, let cursor):
+            subpath = "/transactions/" + transaction + "/payments"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        }
+    
+        let streamItem = StreamItem<OperationResponse>(baseURL: serviceHelper.baseURL, subpath:subpath)
+        return streamItem
+    }
+    
 }

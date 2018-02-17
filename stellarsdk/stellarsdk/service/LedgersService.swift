@@ -13,6 +13,10 @@ public enum LedgerDetailsResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
+public enum LedgersChange {
+    case allLedgers(cursor:String?)
+}
+
 public typealias LedgerDetailsResponseClosure = (_ response:LedgerDetailsResponseEnum) -> (Void)
 
 public class LedgersService: NSObject {
@@ -75,4 +79,19 @@ public class LedgersService: NSObject {
             }
         }
     }
+    
+    open func stream(for transactionsType:LedgersChange) -> StreamItem<LedgerResponse> {
+        var subpath:String!
+        switch transactionsType {
+        case .allLedgers(let cursor):
+            subpath = "/ledgers"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        }
+        
+        let streamItem = StreamItem<LedgerResponse>(baseURL: serviceHelper.baseURL, subpath:subpath)
+        return streamItem
+    }
+    
 }

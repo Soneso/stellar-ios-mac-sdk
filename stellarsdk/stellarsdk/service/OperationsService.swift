@@ -13,6 +13,13 @@ public enum OperationDetailsResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
+public enum OperationsChange {
+    case allOperations(cursor:String?)
+    case operationsForAccount(account:String, cursor:String?)
+    case operationsForLedger(ledger:String, cursor:String?)
+    case operationsForTransaction(transaction:String, cursor:String?)
+}
+
 public typealias OperationDetailsResponseClosure = (_ response:OperationDetailsResponseEnum) -> (Void)
 
 public class OperationsService: NSObject {
@@ -63,6 +70,35 @@ public class OperationsService: NSObject {
                 response(.failure(error:error))
             }
         }
+    }
+    
+    open func stream(for transactionsType:OperationsChange) -> StreamItem<OperationResponse> {
+        var subpath:String!
+        switch transactionsType {
+        case .allOperations(let cursor):
+            subpath = "/operations"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        case .operationsForAccount(let accountId, let cursor):
+            subpath = "/accounts/" + accountId + "/operations"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        case .operationsForLedger(let ledger, let cursor):
+            subpath = "/ledgers/" + ledger + "/operations"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        case .operationsForTransaction(let transaction, let cursor):
+            subpath = "/transactions/" + transaction + "/operations"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        }
+        
+        let streamItem = StreamItem<OperationResponse>(baseURL: serviceHelper.baseURL, subpath:subpath)
+        return streamItem
     }
     
     private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {

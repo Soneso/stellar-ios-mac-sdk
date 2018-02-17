@@ -93,6 +93,9 @@
 		744C4DBF202A29E400B46CDE /* AccountCreatedOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DBE202A29E400B46CDE /* AccountCreatedOperationResponse.swift */; };
 		744C4DC2202A328100B46CDE /* OperationsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DC1202A328100B46CDE /* OperationsTestCase.swift */; };
 		744C4DC4202A364300B46CDE /* DateFormatter+ISOParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DC3202A364300B46CDE /* DateFormatter+ISOParsing.swift */; };
+		744D458C2038194300178D04 /* EventSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744D458B2038194300178D04 /* EventSource.swift */; };
+		744D458F2038292800178D04 /* StreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744D458E2038292800178D04 /* StreamItem.swift */; };
+		744D459120382EF800178D04 /* StreamingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744D459020382EF800178D04 /* StreamingHelper.swift */; };
 		744E75E42028DBD500170D57 /* EffectsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744E75E32028DBD500170D57 /* EffectsTestCase.swift */; };
 		745F2BAD202C27FF008763F1 /* XDRCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BAC202C27FF008763F1 /* XDRCodable.swift */; };
 		745F2BAF202C281F008763F1 /* XDRCodableExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BAE202C281F008763F1 /* XDRCodableExtensions.swift */; };
@@ -376,6 +379,9 @@
 		744C4DBE202A29E400B46CDE /* AccountCreatedOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreatedOperationResponse.swift; sourceTree = "<group>"; };
 		744C4DC1202A328100B46CDE /* OperationsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationsTestCase.swift; sourceTree = "<group>"; };
 		744C4DC3202A364300B46CDE /* DateFormatter+ISOParsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DateFormatter+ISOParsing.swift"; sourceTree = "<group>"; };
+		744D458B2038194300178D04 /* EventSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventSource.swift; sourceTree = "<group>"; };
+		744D458E2038292800178D04 /* StreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamItem.swift; sourceTree = "<group>"; };
+		744D459020382EF800178D04 /* StreamingHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingHelper.swift; sourceTree = "<group>"; };
 		744E75E32028DBD500170D57 /* EffectsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsTestCase.swift; sourceTree = "<group>"; };
 		745F2BAC202C27FF008763F1 /* XDRCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XDRCodable.swift; sourceTree = "<group>"; };
 		745F2BAE202C281F008763F1 /* XDRCodableExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XDRCodableExtensions.swift; sourceTree = "<group>"; };
@@ -759,6 +765,7 @@
 		743DF53C201F495A00713DE7 /* service */ = {
 			isa = PBXGroup;
 			children = (
+				744D458D2038288700178D04 /* Streaming */,
 				743DF54F201FBD2B00713DE7 /* AccountService.swift */,
 				836971E72025048D00398A98 /* AssetsService.swift */,
 				83DD2C97202F249800713FEE /* PaymentsService.swift */,
@@ -786,6 +793,7 @@
 				836972092028BA3E00398A98 /* Constants.swift */,
 				744148F7202E05AD006590BE /* DataTypes.swift */,
 				833CBFC220338E0100C23CFE /* SMP.swift */,
+				744D458B2038194300178D04 /* EventSource.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -950,6 +958,15 @@
 				744C4DC1202A328100B46CDE /* OperationsTestCase.swift */,
 			);
 			path = operations;
+			sourceTree = "<group>";
+		};
+		744D458D2038288700178D04 /* Streaming */ = {
+			isa = PBXGroup;
+			children = (
+				744D458E2038292800178D04 /* StreamItem.swift */,
+				744D459020382EF800178D04 /* StreamingHelper.swift */,
+			);
+			path = Streaming;
 			sourceTree = "<group>";
 		};
 		744E75E22028DB9800170D57 /* effects */ = {
@@ -1584,6 +1601,7 @@
 				43D35B0B2034845E00C8BDBC /* PaymentPathResponse.swift in Sources */,
 				745F2BB8202C36AA008763F1 /* TransactionsService.swift in Sources */,
 				83DD2C79202DF41F00713FEE /* NotAcceptableErrorResponse.swift in Sources */,
+				744D458F2038292800178D04 /* StreamItem.swift in Sources */,
 				437D8A86202EF0770024D031 /* TradeAggregationResponse.swift in Sources */,
 				83DD2C7B202DF4B000713FEE /* StaleHistoryErrorResponse.swift in Sources */,
 				8369722C2028F79200398A98 /* OfferCreatedEffectResponse.swift in Sources */,
@@ -1597,6 +1615,7 @@
 				836972262028F65500398A98 /* TrustlineUpdatedEffectResponse.swift in Sources */,
 				743DF550201FBD2B00713DE7 /* AccountService.swift in Sources */,
 				7481B5422024B037000A783E /* EffectResponse.swift in Sources */,
+				744D459120382EF800178D04 /* StreamingHelper.swift in Sources */,
 				83697250202A809D00398A98 /* InflationOperationResponse.swift in Sources */,
 				833CBFA22033539300C23CFE /* AllowTrustOpAssetXDR.swift in Sources */,
 				833CBFE12036F4CF00C23CFE /* SetOptionsOperation.swift in Sources */,
@@ -1668,6 +1687,7 @@
 				437D8A7D202EEDCC0024D031 /* Dictionary+HttpParams.swift in Sources */,
 				4300C17F2032F5C500DC5E49 /* OffersService.swift in Sources */,
 				74824B1F203173F000CD0270 /* OperationXDR.swift in Sources */,
+				744D458C2038194300178D04 /* EventSource.swift in Sources */,
 				743DF57A202053A400713DE7 /* Ed25519Error.swift in Sources */,
 				745F2BAD202C27FF008763F1 /* XDRCodable.swift in Sources */,
 				4300C1852033026D00DC5E49 /* OrderbookService.swift in Sources */,

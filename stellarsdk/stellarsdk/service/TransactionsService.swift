@@ -13,6 +13,12 @@ public enum TransactionDetailsResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
+public enum TransactionsChange {
+    case allTransactions(cursor:String?)
+    case transactionsForAccount(account:String, cursor:String?)
+    case transactionsForLedger(ledger:String, cursor:String?)
+}
+
 public typealias TransactionDetailsResponseClosure = (_ response:TransactionDetailsResponseEnum) -> (Void)
 
 public class TransactionsService: NSObject {
@@ -59,6 +65,30 @@ public class TransactionsService: NSObject {
                 response(.failure(error:error))
             }
         }
+    }
+    
+    open func stream(for transactionsType:TransactionsChange) -> StreamItem<TransactionResponse> {
+        var subpath:String!
+        switch transactionsType {
+        case .allTransactions(let cursor):
+            subpath = "/transactions"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        case .transactionsForAccount(let accountId, let cursor):
+            subpath = "/accounts/" + accountId + "/transactions"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        case .transactionsForLedger(let ledger, let cursor):
+            subpath = "/ledgers/" + ledger + "/transactions"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        }
+        
+        let streamItem = StreamItem<TransactionResponse>(baseURL: serviceHelper.baseURL, subpath:subpath)
+        return streamItem
     }
     
     private func getTransactions(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {

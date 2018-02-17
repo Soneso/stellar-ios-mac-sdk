@@ -77,5 +77,23 @@ class LedgersTestCase: XCTestCase {
         }
         wait(for: [expectation], timeout: 15.0)
     }
+    
+    func testLedgersStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.ledgers.stream(for: .allLedgers(cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
 }
 

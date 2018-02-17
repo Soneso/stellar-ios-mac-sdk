@@ -131,4 +131,72 @@ class OperationsTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testOperationsStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.operations.stream(for: .allOperations(cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testOperationsForAccountStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.operations.stream(for: .operationsForAccount(account: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX", cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testOperationsForLedgerStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.operations.stream(for: .operationsForLedger(ledger: "2365", cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testOperationsForTransactionsStream() {
+        let expectation = XCTestExpectation(description: "Get response from stream")
+        
+        sdk.operations.stream(for: .operationsForTransaction(transaction: "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a", cursor: nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response( _, _):
+                expectation.fulfill()
+            case .error( _):
+                break
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
 }
