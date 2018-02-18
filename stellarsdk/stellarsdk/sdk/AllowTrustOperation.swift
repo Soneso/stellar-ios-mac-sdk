@@ -25,11 +25,17 @@ public class AllowTrustOperation:Operation {
         - Parameter assetCode: The asset code of the trustline. E.g. BTC
         - Parameter authorize: Flag indicating whether the trustline is authorized.
      
-        - Returns the operation if arguments are valid. Returns nil if the arguments are invalid.
+        - Throws StellarSDKError.invalidArgument if the asset code is empty or has more then 12 characters.
      */
-    public init?(trustor:KeyPair, assetCode:String, authorize:Bool) {
+    public init(trustor:KeyPair, assetCode:String, authorize:Bool) throws {
         
-        if (assetCode.count < 1 || assetCode.count > 12) {return nil}
+        if (assetCode.count == 0) {
+            throw StellarSDKError.invalidArgument(message: "Asset code can not be empty.")
+        }
+        
+        if  assetCode.count > 12 {
+            throw StellarSDKError.invalidArgument(message: "Asset code can not have more than 12 characters")
+        }
         
         self.trustor = trustor
         self.assetCode = assetCode

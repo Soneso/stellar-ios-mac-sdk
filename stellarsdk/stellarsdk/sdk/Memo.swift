@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum Memo {
+public enum Memo {
     case none
     case text (String)
     case id (UInt64)

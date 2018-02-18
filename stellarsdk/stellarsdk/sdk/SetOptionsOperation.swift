@@ -40,12 +40,14 @@ public class SetOptionsOperation:Operation {
         - Parameter signer: Signers PublicKey. If you fill this parameter you also need to fill 'signerWeight'
         - Parameter signerWeight: Add or remove the signer from parameter 'signer'. The signer is deleted if the weight is 0.
      
-        - Returns the operation if the given arguments are valid. Returns nil if invalid.
+        - Throws StellarSDKError.invalidArgument if signer is not nil but signerWeight is nil
      */
-    public init?(sourceAccount:KeyPair, inflationDestination:KeyPair?, clearFlags:Int?, setFlags:Int?, masterKeyWeight:Int?, lowThreshold:Int?, mediumThreshold:Int?, highThreshold:Int?, homeDomain:String?, signer:SignerKeyXDR?, signerWeight:Int?) {
+    public init(sourceAccount:KeyPair, inflationDestination:KeyPair?, clearFlags:Int?, setFlags:Int?, masterKeyWeight:Int?, lowThreshold:Int?, mediumThreshold:Int?, highThreshold:Int?, homeDomain:String?, signer:SignerKeyXDR?, signerWeight:Int?) throws {
         
-        if signer != nil && signerWeight == nil {return nil}
-        if signer == nil && signerWeight != nil {return nil}
+        
+        if signer != nil && signerWeight == nil {
+            throw StellarSDKError.invalidArgument(message: "Signer Weight can not be nil if signer is not nil")
+        }
         
         self.inflationDestination = inflationDestination
         self.clearFlags = clearFlags
