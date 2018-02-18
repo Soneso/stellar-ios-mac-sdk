@@ -27,25 +27,25 @@ public enum LedgerEntryChangeXDR: XDRCodable {
         let type = try container.decode(Int32.self)
         
         switch type {
-        case LedgerEntryChangeType.ledgerEntryCreated.rawValue:
-            self = .created(try container.decode(LedgerEntryXDR.self))
-        case LedgerEntryChangeType.ledgerEntryUpdated.rawValue:
-            self = .updated(try container.decode(LedgerEntryXDR.self))
-        case LedgerEntryChangeType.ledgerEntryUpdated.rawValue:
-            self = .removed(try container.decode(LedgerKeyXDR.self))
-        case LedgerEntryChangeType.ledgerEntryState.rawValue:
-            self = .state(try container.decode(LedgerEntryXDR.self))
-        default:
-            self = .created(try container.decode(LedgerEntryXDR.self))
+            case LedgerEntryChangeType.ledgerEntryCreated.rawValue:
+                self = .created(try container.decode(LedgerEntryXDR.self))
+            case LedgerEntryChangeType.ledgerEntryUpdated.rawValue:
+                self = .updated(try container.decode(LedgerEntryXDR.self))
+            case LedgerEntryChangeType.ledgerEntryUpdated.rawValue:
+                self = .removed(try container.decode(LedgerKeyXDR.self))
+            case LedgerEntryChangeType.ledgerEntryState.rawValue:
+                self = .state(try container.decode(LedgerEntryXDR.self))
+            default:
+                self = .created(try container.decode(LedgerEntryXDR.self))
         }
     }
     
     private func type() -> Int32 {
         switch self {
-        case .created: return LedgerEntryChangeType.ledgerEntryCreated.rawValue
-        case .updated: return LedgerEntryChangeType.ledgerEntryUpdated.rawValue
-        case .removed: return LedgerEntryChangeType.ledgerEntryRemoved.rawValue
-        case .state: return LedgerEntryChangeType.ledgerEntryState.rawValue
+            case .created: return LedgerEntryChangeType.ledgerEntryCreated.rawValue
+            case .updated: return LedgerEntryChangeType.ledgerEntryUpdated.rawValue
+            case .removed: return LedgerEntryChangeType.ledgerEntryRemoved.rawValue
+            case .state: return LedgerEntryChangeType.ledgerEntryState.rawValue
         }
     }
     
@@ -55,17 +55,17 @@ public enum LedgerEntryChangeXDR: XDRCodable {
         try container.encode(type())
         
         switch self {
-        case .created (let op):
-            try container.encode(op)
+            case .created (let op):
+                try container.encode(op)
             
-        case .updated (let op):
-            try container.encode(op)
+            case .updated (let op):
+                try container.encode(op)
             
-        case .removed (let op):
-            try container.encode(op)
+            case .removed (let op):
+                try container.encode(op)
             
-        case .state (let op):
-            try container.encode(op)
+            case .state (let op):
+                try container.encode(op)
         }
     }
 }

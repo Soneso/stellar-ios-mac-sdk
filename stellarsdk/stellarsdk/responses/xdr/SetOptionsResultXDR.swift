@@ -8,26 +8,30 @@
 
 import Foundation
 
-public enum SetOptionsResultCode: Int {
-    case success = 0
-    case lowReserve = -1
-    case tooManySigners = -2
-    case badFlags = -3
-    case invalidInflation = -4
-    case cantChange = -5
-    case unknownFlag = -6
-    case thresholdOutOfRange = -7
-    case badSigner = -8
-    case invalidHomeDomain = -9
+public enum SetOptionsResultCode: Int32 {
+    // codes considered as "success" for the operation
+    case success = 0 // success
+    
+    // codes considered as "failure" for the operation
+    case lowReserve = -1 // not enough funds to add a signer
+    case tooManySigners = -2 // max number of signers already reached
+    case badFlags = -3 // invalid combination of clear/set flags
+    case invalidInflation = -4 // inflation account does not exist
+    case cantChange = -5 // can no longer change this option
+    case unknownFlag = -6 // can't set an unknown flag
+    case thresholdOutOfRange = -7 // bad value for weight/threshold
+    case badSigner = -8 // signer cannot be masterkey
+    case invalidHomeDomain = -9 // malformed home domain
 }
 
-enum SetOptionsResultXDR: XDRCodable {
-    case success (Int)
-    case empty (Int)
+public enum SetOptionsResultXDR: XDRCodable {
+    case success (Int32)
+    case empty (Int32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        let code = SetOptionsResultCode(rawValue: try container.decode(Int.self))!
+        let discriminant = try container.decode(Int32.self)
+        let code = SetOptionsResultCode(rawValue: discriminant)!
         
         switch code {
         case .success:

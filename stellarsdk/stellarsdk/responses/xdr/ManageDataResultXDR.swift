@@ -8,21 +8,25 @@
 
 import Foundation
 
-public enum ManageDataResultCode: Int {
-    case success = 0
-    case notSupportedYet = -1
-    case nameNotFound = -2
-    case lowReserve = -3
-    case invalidName = -4
+public enum ManageDataResultCode: Int32 {
+    // codes considered as "success" for the operation
+    case success = 0 // success
+    
+    // codes considered as "failure" for the operation
+    case notSupportedYet = -1 // The network hasn't moved to this protocol change yet
+    case nameNotFound = -2 // Trying to remove a Data Entry that isn't there
+    case lowReserve = -3 // not enough funds to create a new Data Entry
+    case invalidName = -4 // Name not a valid string
 }
 
-enum ManageDataResultXDR: XDRCodable {
-    case success (Int)
-    case empty (Int)
+public enum ManageDataResultXDR: XDRCodable {
+    case success (Int32)
+    case empty (Int32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        let code = ManageDataResultCode(rawValue: try container.decode(Int.self))!
+        let discriminant = try container.decode(Int32.self)
+        let code = ManageDataResultCode(rawValue: discriminant)!
         
         switch code {
             case .success:

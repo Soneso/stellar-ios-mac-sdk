@@ -8,21 +8,25 @@
 
 import Foundation
 
-public enum CreateAccountResultCode: Int {
-    case success = 0
-    case malformed = -1
-    case underfunded = -2
-    case lowReserve = -3
-    case alreadyExists = -4
-}
+public enum CreateAccountResultCode: Int32 {
+    // codes considered as "success" for the operation
+    case success = 0 // account was created
     
-enum CreateAccountResultXDR: XDRCodable {
-    case success (Int)
-    case empty (Int)
+     // codes considered as "failure" for the operation
+    case malformed = -1 // invalid destination
+    case underfunded = -2 // not enough funds in source account
+    case lowReserve = -3  // would create an account below the min reserve
+    case alreadyExists = -4 // account already exists
+}
+
+public enum CreateAccountResultXDR: XDRCodable {
+    case success (Int32)
+    case empty (Int32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        let code = CreateAccountResultCode(rawValue: try container.decode(Int.self))!
+        let discriminant = try container.decode(Int32.self)
+        let code = CreateAccountResultCode(rawValue: discriminant)!
         
         switch code {
             case .success:

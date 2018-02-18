@@ -8,29 +8,30 @@
 
 import Foundation
 
-enum OperationResultCode: Int {
-    case inner = 0
-    case badAuth = -1
-    case noAccount = -2
+public enum OperationResultCode: Int32 {
+    case inner = 0 // inner object result is valid
+    case badAuth = -1  // too few valid signatures / wrong network
+    case noAccount = -2 // source account was not found
 }
 
-enum OperationResultXDR: XDRCodable {
-    case createAccount(Int, CreateAccountResultXDR)
-    case payment(Int, PaymentResultXDR)
-    case pathPayment(Int, PathPaymentResultXDR)
-    case manageOffer(Int, ManageOfferResultXDR)
-    case createPassiveOffer(Int, ManageOfferResultXDR)
-    case setOptions(Int, SetOptionsResultXDR)
-    case changeTrust(Int, ChangeTrustResultXDR)
-    case allowTrust(Int, AllowTrustResultXDR)
-    case accountMerge(Int, AccountMergeResultXDR)
-    case inflation(Int, InflationResultXDR)
-    case manageData(Int, ManageDataResultXDR)
-    case empty (Int)
+public enum OperationResultXDR: XDRCodable {
+    case createAccount(Int32, CreateAccountResultXDR)
+    case payment(Int32, PaymentResultXDR)
+    case pathPayment(Int32, PathPaymentResultXDR)
+    case manageOffer(Int32, ManageOfferResultXDR)
+    case createPassiveOffer(Int32, ManageOfferResultXDR)
+    case setOptions(Int32, SetOptionsResultXDR)
+    case changeTrust(Int32, ChangeTrustResultXDR)
+    case allowTrust(Int32, AllowTrustResultXDR)
+    case accountMerge(Int32, AccountMergeResultXDR)
+    case inflation(Int32, InflationResultXDR)
+    case manageData(Int32, ManageDataResultXDR)
+    case empty (Int32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        let code = OperationResultCode(rawValue: try container.decode(Int.self))!
+        let discriminant = try container.decode(Int32.self)
+        let code = OperationResultCode(rawValue: discriminant)!
         
         switch code {
         case .inner:

@@ -8,18 +8,18 @@
 
 import Foundation
 
-enum ManageOfferEffect: Int {
+public enum ManageOfferEffect: Int32 {
     case created = 0
     case updated = 1
     case deleted = 2
 }
 
-enum ManageOfferSuccessResultOfferXDR {
+public enum ManageOfferSuccessResultOfferXDR {
     case created(OfferEntryXDR)
     case updated
 }
 
-struct ManageOfferSuccessResultXDR: XDRCodable {
+public struct ManageOfferSuccessResultXDR: XDRCodable {
     public var offersClaimed:[ClaimOfferAtomXDR]
     public var offer:ManageOfferSuccessResultOfferXDR?
     
@@ -31,7 +31,8 @@ struct ManageOfferSuccessResultXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         offersClaimed = try container.decode(Array<ClaimOfferAtomXDR>.self)
-        let type = ManageOfferEffect(rawValue: try container.decode(Int.self))!
+        let discriminant = try container.decode(Int32.self)
+        let type = ManageOfferEffect(rawValue: discriminant)!
         switch type {
         case .created:
             fallthrough
@@ -40,9 +41,6 @@ struct ManageOfferSuccessResultXDR: XDRCodable {
         default:
             break
         }
-        
-        _ = try container.decode(Int.self)
-        
     }
     
     public func encode(to encoder: Encoder) throws {

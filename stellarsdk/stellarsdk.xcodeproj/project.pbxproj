@@ -178,6 +178,8 @@
 		833CBFE72036F7C200C23CFE /* AccountMergeOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFE62036F7C200C23CFE /* AccountMergeOperation.swift */; };
 		833CBFE92036F84F00C23CFE /* ManageDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFE82036F84F00C23CFE /* ManageDataOperation.swift */; };
 		833CBFED2038F9BC00C23CFE /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFEC2038F9BB00C23CFE /* Transaction.swift */; };
+		833CBFEF20395DA700C23CFE /* NetworkPassphrase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFEE20395DA700C23CFE /* NetworkPassphrase.swift */; };
+		833CBFF120395FD000C23CFE /* SubmitTransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFF020395FD000C23CFE /* SubmitTransactionResponse.swift */; };
 		836971DF2024A71B00398A98 /* AccountFlagsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */; };
 		836971E42024C47300398A98 /* LinkResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E32024C47300398A98 /* LinkResponse.swift */; };
 		836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E52024F58E00398A98 /* DataForAccountResponse.swift */; };
@@ -464,6 +466,8 @@
 		833CBFE62036F7C200C23CFE /* AccountMergeOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMergeOperation.swift; sourceTree = "<group>"; };
 		833CBFE82036F84F00C23CFE /* ManageDataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageDataOperation.swift; sourceTree = "<group>"; };
 		833CBFEC2038F9BB00C23CFE /* Transaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
+		833CBFEE20395DA700C23CFE /* NetworkPassphrase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPassphrase.swift; sourceTree = "<group>"; };
+		833CBFF020395FD000C23CFE /* SubmitTransactionResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubmitTransactionResponse.swift; sourceTree = "<group>"; };
 		836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFlagsResponse.swift; sourceTree = "<group>"; };
 		836971E32024C47300398A98 /* LinkResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkResponse.swift; sourceTree = "<group>"; };
 		836971E52024F58E00398A98 /* DataForAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountResponse.swift; sourceTree = "<group>"; };
@@ -991,6 +995,7 @@
 			isa = PBXGroup;
 			children = (
 				745F2BB5202C2E88008763F1 /* TransactionResponse.swift */,
+				833CBFF020395FD000C23CFE /* SubmitTransactionResponse.swift */,
 			);
 			path = transactions_responses;
 			sourceTree = "<group>";
@@ -1116,6 +1121,7 @@
 				833CBFE82036F84F00C23CFE /* ManageDataOperation.swift */,
 				4390830620372AF600254042 /* MemoProtocol.swift */,
 				4390830820372BAF00254042 /* Memo.swift */,
+				833CBFEE20395DA700C23CFE /* NetworkPassphrase.swift */,
 			);
 			path = sdk;
 			sourceTree = "<group>";
@@ -1640,12 +1646,14 @@
 				833CBFBF20337D3300C23CFE /* Account.swift in Sources */,
 				833CBF8E203351B200C23CFE /* TimeBoundsXDR.swift in Sources */,
 				7481B53E20248441000A783E /* EffectsService.swift in Sources */,
+				833CBFF120395FD000C23CFE /* SubmitTransactionResponse.swift in Sources */,
 				4390830920372BAF00254042 /* Memo.swift in Sources */,
 				83DD2C6B202DE3DF00713FEE /* ErrorResponse.swift in Sources */,
 				43D35B0D20348AEA00C8BDBC /* PaymentPathsService.swift in Sources */,
 				83DD2C55202CE39C00713FEE /* AssetLinksResponse.swift in Sources */,
 				833CBFD72036F01700C23CFE /* CreateAccountOperation.swift in Sources */,
 				833CBFA6203353C900C23CFE /* ChangeTrustOperationXDR.swift in Sources */,
+				833CBFEF20395DA700C23CFE /* NetworkPassphrase.swift in Sources */,
 				43E34B692031E243003104A9 /* OrderbookOfferResponse.swift in Sources */,
 				743DF54A201F70CA00713DE7 /* String+Base32.swift in Sources */,
 				833CBF8A2033510D00C23CFE /* DecoratedSignatureXDR.swift in Sources */,

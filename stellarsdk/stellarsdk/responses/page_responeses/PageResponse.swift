@@ -110,29 +110,29 @@ public struct PageResponse<Element:Decodable>: Decodable {
     
     private func getRecordsFrom(url:String, response:@escaping ResponseClosure) {
         switch Element.self {
-        case is AssetResponse.Type:
-            let service = AssetsService(baseURL:"")
-            service.getAssetsFromUrl(url:url, response:response as! PageResponse<AssetResponse>.ResponseClosure)
-        case is TradeResponse.Type:
-            let service = TradesService(baseURL:"")
-            service.getTradesFromUrl(url:url, response:response as! PageResponse<TradeResponse>.ResponseClosure)
-        case is OfferResponse.Type:
-            let service = OffersService(baseURL:"")
-            service.getOffersFromUrl(url: url, response:response as! PageResponse<OfferResponse>.ResponseClosure)
-        case is LedgerResponse.Type:
-            let service = LedgersService(baseURL:"")
-            service.getLedgersFromUrl(url: url, response:response as! PageResponse<LedgerResponse>.ResponseClosure)
-        case is OperationResponse.Type:
-            let service = PaymentsService(baseURL:"")
-            service.getPaymentsFromUrl(url: url, response:response as! PageResponse<OperationResponse>.ResponseClosure)
-        case is TransactionResponse.Type:
-            let service = TransactionsService(baseURL:"")
-            service.getTransactionsFromUrl(url: url, response:response as! PageResponse<TransactionResponse>.ResponseClosure)
-        case is EffectResponse.Type:
-            let service = EffectsService(baseURL:"")
-            service.getEffectsFromUrl(url: url, response:response as! PageResponse<EffectResponse>.ResponseClosure)
-        default:
-            assertionFailure("You should implement this case:\(Element.self)")
+            case is AssetResponse.Type:
+                let service = AssetsService(baseURL:"")
+                service.getAssetsFromUrl(url:url, response:response as! PageResponse<AssetResponse>.ResponseClosure)
+            case is TradeResponse.Type:
+                let service = TradesService(baseURL:"")
+                service.getTradesFromUrl(url:url, response:response as! PageResponse<TradeResponse>.ResponseClosure)
+            case is OfferResponse.Type:
+                let service = OffersService(baseURL:"")
+                service.getOffersFromUrl(url: url, response:response as! PageResponse<OfferResponse>.ResponseClosure)
+            case is LedgerResponse.Type:
+                let service = LedgersService(baseURL:"")
+                service.getLedgersFromUrl(url: url, response:response as! PageResponse<LedgerResponse>.ResponseClosure)
+            case is OperationResponse.Type:
+                let service = PaymentsService(baseURL:"")
+                service.getPaymentsFromUrl(url: url, response:response as! PageResponse<OperationResponse>.ResponseClosure)
+            case is TransactionResponse.Type:
+                let service = TransactionsService(baseURL:"")
+                service.getTransactionsFromUrl(url: url, response:response as! PageResponse<TransactionResponse>.ResponseClosure)
+            case is EffectResponse.Type:
+                let service = EffectsService(baseURL:"")
+                service.getEffectsFromUrl(url: url, response:response as! PageResponse<EffectResponse>.ResponseClosure)
+            default:
+                assertionFailure("You should implement this case:\(Element.self)")
         }
     }
 }

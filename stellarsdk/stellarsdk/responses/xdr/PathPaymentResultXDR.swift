@@ -8,30 +8,35 @@
 
 import Foundation
 
-public enum PathPaymentResultCode: Int {
+public enum PathPaymentResultCode: Int32 {
+
+    // codes considered as "success" for the operation
     case success = 0
-    case malformed = -1
-    case underfounded = -2
-    case srcNoTrust = -3
-    case srcNotAuthorized = -4
-    case noDestination = -5
-    case noTrust = -6
-    case notAuthorized = -7
-    case lineFull = -8
-    case noIssuer = -9
-    case tooFewOffers = -10
-    case offerCrossSelf = -11
-    case overSendMax = -12
+    
+    // codes considered as "failure" for the operation
+    case malformed = -1 // bad input
+    case underfounded = -2 // not enough funds in source account
+    case srcNoTrust = -3 // no trust line on source account
+    case srcNotAuthorized = -4 // source not authorized to transfer
+    case noDestination = -5 // destination account does not exist
+    case noTrust = -6 // dest missing a trust line for asset
+    case notAuthorized = -7 // dest not authorized to hold asset
+    case lineFull = -8 // dest would go above their limit
+    case noIssuer = -9 // missing issuer on one asset
+    case tooFewOffers = -10 // not enough offers to satisfy path
+    case offerCrossSelf = -11 // would cross one of its own offers
+    case overSendMax = -12 // could not satisfy sendmax
 }
 
-enum PathPaymentResultXDR: XDRCodable {
-    case success(Int, [ClaimOfferAtomXDR], SimplePaymentResultXDR)
-    case noIssuer(Int, AssetXDR)
-    case empty (Int)
+public enum PathPaymentResultXDR: XDRCodable {
+    case success(Int32, [ClaimOfferAtomXDR], SimplePaymentResultXDR)
+    case noIssuer(Int32, AssetXDR)
+    case empty (Int32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        let code = PathPaymentResultCode(rawValue: try container.decode(Int.self))!
+        let discriminant = try container.decode(Int32.self)
+        let code = PathPaymentResultCode(rawValue: discriminant)!
         
         switch code {
             case .success:

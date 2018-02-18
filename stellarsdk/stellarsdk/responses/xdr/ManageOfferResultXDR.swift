@@ -8,29 +8,35 @@
 
 import Foundation
 
-public enum ManageOfferResultCode: Int {
-    case success = 0
-    case malformed = -1
-    case sellNoTrust = -2
-    case buyNoTrust = -3
-    case sellNotAuthorized = -4
-    case buyNotAuthorized = -5
-    case lineFull = -6
-    case underfunded = -7
-    case crossSelf = -8
-    case sellNoIssuer = -9
-    case buyNoIssuer = -10
-    case notFound = -11
-    case lowReserve = -12
+public enum ManageOfferResultCode: Int32 {
+    // codes considered as "success" for the operation
+    case success = 0 // success
+    
+    // codes considered as "failure" for the operation
+    case malformed = -1 // generated offer would be invalid
+    case sellNoTrust = -2 // no trust line for what we're selling
+    case buyNoTrust = -3 // no trust line for what we're buying
+    case sellNotAuthorized = -4 // not authorized to sell
+    case buyNotAuthorized = -5 // not authorized to buy
+    case lineFull = -6 // can't receive more of what it's buying
+    case underfunded = -7 // doesn't hold what it's trying to sell
+    case crossSelf = -8 // would cross an offer from the same user
+    case sellNoIssuer = -9 // no issuer for what we're selling
+    case buyNoIssuer = -10 // no issuer for what we're buying
+    
+    // update errors
+    case notFound = -11 // offerID does not match an existing offer
+    case lowReserve = -12 // not enough funds to create a new Offer
 }
 
-enum ManageOfferResultXDR: XDRCodable {
-    case success(Int, ManageOfferSuccessResultXDR)
-    case empty (Int)
+public enum ManageOfferResultXDR: XDRCodable {
+    case success(Int32, ManageOfferSuccessResultXDR)
+    case empty (Int32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        let code = ManageOfferResultCode(rawValue: try container.decode(Int.self))!
+        let discriminant = try container.decode(Int32.self)
+        let code = ManageOfferResultCode(rawValue: discriminant)!
         
         switch code {
             case .success:

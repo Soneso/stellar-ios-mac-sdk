@@ -8,18 +8,21 @@
 
 import Foundation
 
-public enum InflationResultCode: Int {
+public enum InflationResultCode: Int32 {
+    // codes considered as "success" for the operation
     case success = 0
+    // codes considered as "failure" for the operation
     case notTime = -1
 }
 
-enum InflationResultXDR: XDRCodable {
-    case success(Int, [InflationPayoutXDR])
-    case empty (Int)
+public enum InflationResultXDR: XDRCodable {
+    case success(Int32, [InflationPayoutXDR])
+    case empty (Int32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        let code = InflationResultCode(rawValue: try container.decode(Int.self))!
+        let discriminant = try container.decode(Int32.self)
+        let code = InflationResultCode(rawValue: discriminant)!
         
         switch code {
             case .success:

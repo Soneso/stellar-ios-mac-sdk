@@ -8,26 +8,30 @@
 
 import Foundation
 
-public enum PaymentResultCode: Int {
-    case success = 0
-    case malformed = -1
-    case underfunded = -2
-    case srcNoTrust = -3
-    case srcNotAuthorized = -4
-    case noDestination = -5
-    case noTrust = -6
-    case notAuthorized = -7
-    case lineFull = -8
-    case noIssuer = -9
+public enum PaymentResultCode: Int32 {
+    // codes considered as "success" for the operation
+    case success = 0 // payment successfuly completed
+    
+    // codes considered as "failure" for the operation
+    case malformed = -1  // bad input
+    case underfunded = -2 // not enough funds in source account
+    case srcNoTrust = -3 // no trust line on source account
+    case srcNotAuthorized = -4 // source not authorized to transfer
+    case noDestination = -5 // destination account does not exist
+    case noTrust = -6 // destination missing a trust line for asset
+    case notAuthorized = -7 // destination not authorized to hold asset
+    case lineFull = -8 // destination would go above their limit
+    case noIssuer = -9 // missing issuer on asset
 }
 
-enum PaymentResultXDR: XDRCodable {
-    case success (Int)
-    case empty (Int)
+public enum PaymentResultXDR: XDRCodable {
+    case success (Int32)
+    case empty (Int32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        let code = PaymentResultCode(rawValue: try container.decode(Int.self))!
+        let discriminant = try container.decode(Int32.self)
+        let code = PaymentResultCode(rawValue: discriminant)!
         
         switch code {
         case .success:

@@ -31,6 +31,7 @@ public enum LedgerEntryDataXDR: XDRCodable {
             default:
                 self = .account(try container.decode(AccountEntryXDR.self))
         }
+        
     }
     
     public func type() -> Int32 {
