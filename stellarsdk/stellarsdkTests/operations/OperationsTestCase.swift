@@ -131,7 +131,7 @@ class OperationsTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testOperationsStream() {
+/*    func testOperationsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
         sdk.operations.stream(for: .allOperations(cursor: nil)).onReceive { (response) -> (Void) in
@@ -198,5 +198,5 @@ class OperationsTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
-    
+    */
 }

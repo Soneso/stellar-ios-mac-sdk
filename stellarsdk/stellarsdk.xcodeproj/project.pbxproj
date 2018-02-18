@@ -180,6 +180,7 @@
 		833CBFED2038F9BC00C23CFE /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFEC2038F9BB00C23CFE /* Transaction.swift */; };
 		833CBFEF20395DA700C23CFE /* NetworkPassphrase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFEE20395DA700C23CFE /* NetworkPassphrase.swift */; };
 		833CBFF120395FD000C23CFE /* SubmitTransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFF020395FD000C23CFE /* SubmitTransactionResponse.swift */; };
+		833CBFF3203A10FD00C23CFE /* FindPaymentPathsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFF2203A10FD00C23CFE /* FindPaymentPathsResponse.swift */; };
 		836971DF2024A71B00398A98 /* AccountFlagsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */; };
 		836971E42024C47300398A98 /* LinkResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E32024C47300398A98 /* LinkResponse.swift */; };
 		836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E52024F58E00398A98 /* DataForAccountResponse.swift */; };
@@ -468,6 +469,7 @@
 		833CBFEC2038F9BB00C23CFE /* Transaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		833CBFEE20395DA700C23CFE /* NetworkPassphrase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPassphrase.swift; sourceTree = "<group>"; };
 		833CBFF020395FD000C23CFE /* SubmitTransactionResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubmitTransactionResponse.swift; sourceTree = "<group>"; };
+		833CBFF2203A10FD00C23CFE /* FindPaymentPathsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindPaymentPathsResponse.swift; sourceTree = "<group>"; };
 		836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFlagsResponse.swift; sourceTree = "<group>"; };
 		836971E32024C47300398A98 /* LinkResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkResponse.swift; sourceTree = "<group>"; };
 		836971E52024F58E00398A98 /* DataForAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountResponse.swift; sourceTree = "<group>"; };
@@ -654,6 +656,7 @@
 		43D35B092034842E00C8BDBC /* payment_path_responses */ = {
 			isa = PBXGroup;
 			children = (
+				833CBFF2203A10FD00C23CFE /* FindPaymentPathsResponse.swift */,
 				43D35B0A2034845E00C8BDBC /* PaymentPathResponse.swift */,
 			);
 			path = payment_path_responses;
@@ -1716,6 +1719,7 @@
 				83DD2C69202DE17000713FEE /* InternalServerErrorResponse.swift in Sources */,
 				833CBF9A2033530F00C23CFE /* PathPaymentOperationXDR.swift in Sources */,
 				746AD2CC20342D1600A9CF21 /* AllowTrustResultXDR.swift in Sources */,
+				833CBFF3203A10FD00C23CFE /* FindPaymentPathsResponse.swift in Sources */,
 				833CBFBC20337A1700C23CFE /* LedgerExtryDataXDR.swift in Sources */,
 				833CBFDD2036F2B500C23CFE /* ManageOfferOperation.swift in Sources */,
 				836971DF2024A71B00398A98 /* AccountFlagsResponse.swift in Sources */,
