@@ -189,4 +189,66 @@ class AssetsLocalTestCase: XCTestCase {
         
         return accountResponseString
     }
+    
+    func testAssetNative() {
+        do {
+            let assetNative = Asset(type: AssetType.ASSET_TYPE_NATIVE)
+            XCTAssertNotNil(assetNative)
+
+            let assetXDR = try assetNative!.toXDR()
+            let parsedAsset = try Asset.fromXDR(assetXDR: assetXDR)
+        
+            XCTAssertNotNil(parsedAsset)
+            XCTAssertEqual(parsedAsset.type, AssetType.ASSET_TYPE_NATIVE)
+            XCTAssertNil(parsedAsset.code)
+            XCTAssertNil(parsedAsset.issuer)
+            
+        }catch {
+            XCTAssert(false)
+        }
+    }
+    
+    func testAssetTypeCreditAlphaNum4() {
+        do {
+            let code = "USDA"
+            let keyPair = try! KeyPair.generateRandomKeyPair()
+            let asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code:code, issuer:keyPair)
+            XCTAssertNotNil(asset)
+            
+            let assetXDR = try asset!.toXDR()
+            let parsedAsset = try Asset.fromXDR(assetXDR: assetXDR)
+            
+            XCTAssertNotNil(parsedAsset)
+            XCTAssertEqual(parsedAsset.type, AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
+            XCTAssertNotNil(parsedAsset.code)
+            XCTAssertEqual(parsedAsset.code, code)
+            XCTAssertNotNil(parsedAsset.issuer)
+            // TODO compare public key
+            
+        }catch {
+            XCTAssert(false)
+        }
+    }
+    
+    func testAssetTypeCreditAlphaNum12() {
+        do {
+            let code = "TESTTEST"
+            let keyPair = try! KeyPair.generateRandomKeyPair()
+            let asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM12, code:code, issuer:keyPair)
+            XCTAssertNotNil(asset)
+            
+            let assetXDR = try asset!.toXDR()
+            let parsedAsset = try Asset.fromXDR(assetXDR: assetXDR)
+            
+            XCTAssertNotNil(parsedAsset)
+            XCTAssertEqual(parsedAsset.type, AssetType.ASSET_TYPE_CREDIT_ALPHANUM12)
+            XCTAssertNotNil(parsedAsset.code)
+            XCTAssertEqual(parsedAsset.code, code)
+            XCTAssertNotNil(parsedAsset.issuer)
+            // TODO compare public key
+            
+        }catch {
+            XCTAssert(false)
+        }
+    }
 }
