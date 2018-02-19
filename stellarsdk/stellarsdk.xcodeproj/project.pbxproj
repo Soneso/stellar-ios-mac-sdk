@@ -39,7 +39,7 @@
 		743DF4EE201F130200713DE7 /* stellarsdk_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 743DF4E5201F130100713DE7 /* stellarsdk_macOS.framework */; };
 		743DF4F3201F130200713DE7 /* stellarsdk_macOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4F2201F130200713DE7 /* stellarsdk_macOSTests.swift */; };
 		743DF4F5201F130200713DE7 /* stellarsdk_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF4E7201F130100713DE7 /* stellarsdk_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		743DF503201F3B0800713DE7 /* AccountTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF502201F3B0800713DE7 /* AccountTestCase.swift */; };
+		743DF503201F3B0800713DE7 /* AccountLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF502201F3B0800713DE7 /* AccountLocalTestCase.swift */; };
 		743DF50D201F458400713DE7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF50C201F458400713DE7 /* AppDelegate.swift */; };
 		743DF50F201F458400713DE7 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF50E201F458400713DE7 /* ViewController.swift */; };
 		743DF512201F458400713DE7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 743DF510201F458400713DE7 /* Main.storyboard */; };
@@ -181,6 +181,8 @@
 		833CBFEF20395DA700C23CFE /* NetworkPassphrase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFEE20395DA700C23CFE /* NetworkPassphrase.swift */; };
 		833CBFF120395FD000C23CFE /* SubmitTransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFF020395FD000C23CFE /* SubmitTransactionResponse.swift */; };
 		833CBFF3203A10FD00C23CFE /* FindPaymentPathsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFF2203A10FD00C23CFE /* FindPaymentPathsResponse.swift */; };
+		8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */; };
+		8357A913203B004700A144A9 /* String+Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A912203B004700A144A9 /* String+Base64.swift */; };
 		836971DF2024A71B00398A98 /* AccountFlagsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */; };
 		836971E42024C47300398A98 /* LinkResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E32024C47300398A98 /* LinkResponse.swift */; };
 		836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E52024F58E00398A98 /* DataForAccountResponse.swift */; };
@@ -319,7 +321,7 @@
 		743DF4ED201F130200713DE7 /* stellarsdk-macOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "stellarsdk-macOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		743DF4F2201F130200713DE7 /* stellarsdk_macOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdk_macOSTests.swift; sourceTree = "<group>"; };
 		743DF4F4201F130200713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		743DF502201F3B0800713DE7 /* AccountTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTestCase.swift; sourceTree = "<group>"; };
+		743DF502201F3B0800713DE7 /* AccountLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountLocalTestCase.swift; sourceTree = "<group>"; };
 		743DF50A201F458400713DE7 /* stellarsdkTests-Host.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "stellarsdkTests-Host.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		743DF50C201F458400713DE7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		743DF50E201F458400713DE7 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -470,6 +472,8 @@
 		833CBFEE20395DA700C23CFE /* NetworkPassphrase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPassphrase.swift; sourceTree = "<group>"; };
 		833CBFF020395FD000C23CFE /* SubmitTransactionResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubmitTransactionResponse.swift; sourceTree = "<group>"; };
 		833CBFF2203A10FD00C23CFE /* FindPaymentPathsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindPaymentPathsResponse.swift; sourceTree = "<group>"; };
+		8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountRemoteTestCase.swift; sourceTree = "<group>"; };
+		8357A912203B004700A144A9 /* String+Base64.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Base64.swift"; sourceTree = "<group>"; };
 		836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFlagsResponse.swift; sourceTree = "<group>"; };
 		836971E32024C47300398A98 /* LinkResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkResponse.swift; sourceTree = "<group>"; };
 		836971E52024F58E00398A98 /* DataForAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountResponse.swift; sourceTree = "<group>"; };
@@ -733,7 +737,8 @@
 			isa = PBXGroup;
 			children = (
 				8369723D202A708300398A98 /* AccountResponsesMock.swift */,
-				743DF502201F3B0800713DE7 /* AccountTestCase.swift */,
+				743DF502201F3B0800713DE7 /* AccountLocalTestCase.swift */,
+				8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */,
 			);
 			path = account;
 			sourceTree = "<group>";
@@ -812,6 +817,7 @@
 				743DF547201F70A700713DE7 /* Data+Base32.swift */,
 				743DF549201F70CA00713DE7 /* String+Base32.swift */,
 				744C4DC3202A364300B46CDE /* DateFormatter+ISOParsing.swift */,
+				8357A912203B004700A144A9 /* String+Base64.swift */,
 			);
 			path = extensions;
 			sourceTree = "<group>";
@@ -918,6 +924,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				743DF501201F3AE100713DE7 /* account */,
 				430BE2E72035A32600E6AB97 /* price */,
 				43D35B0E20348EBF00C8BDBC /* payment_paths */,
 				4300C1862033042900DC5E49 /* orderbooks */,
@@ -931,7 +938,6 @@
 				836971F8202548C900398A98 /* assets */,
 				437D8A90202F15AA0024D031 /* trades */,
 				437D8A93202F16C40024D031 /* trade_aggregations */,
-				743DF501201F3AE100713DE7 /* account */,
 				7445EA0A201B106500470E0A /* stellarsdkTests.swift */,
 				7445EA0C201B106500470E0A /* Info.plist */,
 			);
@@ -1602,6 +1608,7 @@
 				8369721E2028F4E400398A98 /* TrustlineCreatedEffectResponse.swift in Sources */,
 				743DF5912020C2CD00713DE7 /* AccountThresholdsResponse.swift in Sources */,
 				743DF56C2020530A00713DE7 /* fe.c in Sources */,
+				8357A913203B004700A144A9 /* String+Base64.swift in Sources */,
 				833CBF942033529000C23CFE /* OperationBodyXDR.swift in Sources */,
 				833CBFED2038F9BC00C23CFE /* Transaction.swift in Sources */,
 				833CBFD52036EF3100C23CFE /* Operation.swift in Sources */,
@@ -1775,13 +1782,14 @@
 				7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */,
 				83DD2C9D202F24CD00713FEE /* PaymentsTestCase.swift in Sources */,
 				437D8A95202F16EB0024D031 /* TradeAggregationsTestCase.swift in Sources */,
+				8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */,
 				83697206202631D600398A98 /* LedgersTestCase.swift in Sources */,
 				745F2BC1202C4D24008763F1 /* TransactionsTestCase.swift in Sources */,
 				43D35B1020348EF800C8BDBC /* PaymentPathsTestCase.swift in Sources */,
 				8369723E202A708300398A98 /* AccountResponsesMock.swift in Sources */,
 				430BE2E92035A33D00E6AB97 /* PriceTestCase.swift in Sources */,
 				4300C1832032FBE500DC5E49 /* OffersTestCase.swift in Sources */,
-				743DF503201F3B0800713DE7 /* AccountTestCase.swift in Sources */,
+				743DF503201F3B0800713DE7 /* AccountLocalTestCase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,5 +1,5 @@
 //
-//  AccountTestCase.swift
+//  AccountLocalTestCase.swift
 //  stellarsdkTests
 //
 //  Created by Razvan Chelemen on 29/01/2018.
@@ -9,7 +9,7 @@
 import XCTest
 import stellarsdk
 
-class AccountTestCase: XCTestCase {
+class AccountLocalTestCase: XCTestCase {
     let sdk = StellarSDK()
     var accountResponsesMock: AccountResponsesMock? = nil
     var mockRegistered = false
