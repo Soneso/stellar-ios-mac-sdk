@@ -186,6 +186,9 @@
 		8357A915203B097D00A144A9 /* AssetsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A914203B097D00A144A9 /* AssetsLocalTestCase.swift */; };
 		8357A917203B0AD300A144A9 /* ResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A916203B0AD300A144A9 /* ResponseMock.swift */; };
 		8357A919203B0EEE00A144A9 /* AssetsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A918203B0EEE00A144A9 /* AssetsResponsesMock.swift */; };
+		8357A91B203B6F6100A144A9 /* DataForAccountLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A91A203B6F6100A144A9 /* DataForAccountLocalTestCase.swift */; };
+		8357A91D203B6F8500A144A9 /* DataForAccountResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A91C203B6F8500A144A9 /* DataForAccountResponsesMock.swift */; };
+		8357A91F203B768A00A144A9 /* DataForAccountRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A91E203B768A00A144A9 /* DataForAccountRemoteTestCase.swift */; };
 		836971DF2024A71B00398A98 /* AccountFlagsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */; };
 		836971E42024C47300398A98 /* LinkResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E32024C47300398A98 /* LinkResponse.swift */; };
 		836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E52024F58E00398A98 /* DataForAccountResponse.swift */; };
@@ -480,6 +483,9 @@
 		8357A914203B097D00A144A9 /* AssetsLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsLocalTestCase.swift; sourceTree = "<group>"; };
 		8357A916203B0AD300A144A9 /* ResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseMock.swift; sourceTree = "<group>"; };
 		8357A918203B0EEE00A144A9 /* AssetsResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsResponsesMock.swift; sourceTree = "<group>"; };
+		8357A91A203B6F6100A144A9 /* DataForAccountLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountLocalTestCase.swift; sourceTree = "<group>"; };
+		8357A91C203B6F8500A144A9 /* DataForAccountResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountResponsesMock.swift; sourceTree = "<group>"; };
+		8357A91E203B768A00A144A9 /* DataForAccountRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountRemoteTestCase.swift; sourceTree = "<group>"; };
 		836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFlagsResponse.swift; sourceTree = "<group>"; };
 		836971E32024C47300398A98 /* LinkResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkResponse.swift; sourceTree = "<group>"; };
 		836971E52024F58E00398A98 /* DataForAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountResponse.swift; sourceTree = "<group>"; };
@@ -745,6 +751,9 @@
 				743DF502201F3B0800713DE7 /* AccountLocalTestCase.swift */,
 				8369723D202A708300398A98 /* AccountResponsesMock.swift */,
 				8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */,
+				8357A91A203B6F6100A144A9 /* DataForAccountLocalTestCase.swift */,
+				8357A91C203B6F8500A144A9 /* DataForAccountResponsesMock.swift */,
+				8357A91E203B768A00A144A9 /* DataForAccountRemoteTestCase.swift */,
 			);
 			path = account;
 			sourceTree = "<group>";
@@ -1796,10 +1805,13 @@
 				83697206202631D600398A98 /* LedgersTestCase.swift in Sources */,
 				745F2BC1202C4D24008763F1 /* TransactionsTestCase.swift in Sources */,
 				8357A915203B097D00A144A9 /* AssetsLocalTestCase.swift in Sources */,
+				8357A91D203B6F8500A144A9 /* DataForAccountResponsesMock.swift in Sources */,
+				8357A91F203B768A00A144A9 /* DataForAccountRemoteTestCase.swift in Sources */,
 				43D35B1020348EF800C8BDBC /* PaymentPathsTestCase.swift in Sources */,
 				8369723E202A708300398A98 /* AccountResponsesMock.swift in Sources */,
 				430BE2E92035A33D00E6AB97 /* PriceTestCase.swift in Sources */,
 				4300C1832032FBE500DC5E49 /* OffersTestCase.swift in Sources */,
+				8357A91B203B6F6100A144A9 /* DataForAccountLocalTestCase.swift in Sources */,
 				743DF503201F3B0800713DE7 /* AccountLocalTestCase.swift in Sources */,
 				8357A917203B0AD300A144A9 /* ResponseMock.swift in Sources */,
 			);
