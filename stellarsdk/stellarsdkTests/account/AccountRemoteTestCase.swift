@@ -79,7 +79,7 @@ class AccountRemoteTestCase: XCTestCase {
                 let balance = accountDetails.balances.first!
                 XCTAssertNotNil(balance)
                 XCTAssertNotNil(balance.assetType)
-                if balance.assetType == AssetConstants.NATIVE {
+                if balance.assetType == AssetTypeAsString.NATIVE {
                     XCTAssertNil(balance.assetCode)
                     XCTAssertNil(balance.assetIssuer)
                 } else {
