@@ -70,9 +70,9 @@ public class TradeEffectResponse: EffectResponse {
         soldAssetCode = try values.decodeIfPresent(String.self, forKey: .soldAssetCode)
         soldAssetIssuer = try values.decodeIfPresent(String.self, forKey: .soldAssetIssuer)
         boughtAmount = try values.decode(String.self, forKey: .boughtAmount)
-        boughtAssetType = try values.decode(String.self, forKey: .soldAssetType)
-        boughtAssetCode = try values.decodeIfPresent(String.self, forKey: .soldAssetCode)
-        boughtAssetIssuer = try values.decodeIfPresent(String.self, forKey: .soldAssetIssuer)
+        boughtAssetType = try values.decode(String.self, forKey: .boughtAssetType)
+        boughtAssetCode = try values.decodeIfPresent(String.self, forKey: .boughtAssetCode)
+        boughtAssetIssuer = try values.decodeIfPresent(String.self, forKey: .boughtAssetIssuer)
         
         try super.init(from: decoder)
     }
