@@ -25,7 +25,7 @@ public class LedgerResponse: NSObject, Decodable {
     public var hashXdr:String
     
     /// The hash of the ledger that chronologically came before this one.
-    public var previousHashXdr:String
+    public var previousHashXdr:String?
     
     /// Sequence number of this ledger, suitable for use as the as the :id parameter for url templates that require a ledger number.
     public var sequenceNumber:Int64
@@ -89,7 +89,7 @@ public class LedgerResponse: NSObject, Decodable {
         id = try values.decode(String.self, forKey: .id)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         hashXdr = try values.decode(String.self, forKey: .hashXdr)
-        previousHashXdr = try values.decode(String.self, forKey: .previousHashXdr)
+        previousHashXdr = try values.decodeIfPresent(String.self, forKey: .previousHashXdr)
         sequenceNumber = try values.decode(Int64.self, forKey: .sequenceNumber)
         transactionCount = try values.decode(Int.self, forKey: .transactionCount)
         operationCount = try values.decode(Int.self, forKey: .operationCount)

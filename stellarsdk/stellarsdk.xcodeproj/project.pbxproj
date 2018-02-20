@@ -203,7 +203,7 @@
 		836971FA202548E100398A98 /* AssetsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971F9202548E100398A98 /* AssetsRemoteTestCase.swift */; };
 		836971FF2025532900398A98 /* LedgerResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971FE2025532900398A98 /* LedgerResponse.swift */; };
 		8369720120255AB800398A98 /* LedgersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720020255AB800398A98 /* LedgersService.swift */; };
-		83697206202631D600398A98 /* LedgersTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697205202631D600398A98 /* LedgersTestCase.swift */; };
+		83697206202631D600398A98 /* LedgersRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697205202631D600398A98 /* LedgersRemoteTestCase.swift */; };
 		8369720A2028BA3E00398A98 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972092028BA3E00398A98 /* Constants.swift */; };
 		8369720C2028ED6400398A98 /* AccountRemovedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720B2028ED6400398A98 /* AccountRemovedEffectResponse.swift */; };
 		8369720E2028EDB100398A98 /* AccountCreditedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720D2028EDB100398A98 /* AccountCreditedEffectResponse.swift */; };
@@ -257,6 +257,8 @@
 		83DD2C81202E192A00713FEE /* TransactionMalformedErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C80202E192A00713FEE /* TransactionMalformedErrorResponse.swift */; };
 		83DD2C98202F249800713FEE /* PaymentsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C97202F249800713FEE /* PaymentsService.swift */; };
 		83DD2C9D202F24CD00713FEE /* PaymentsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C9C202F24CD00713FEE /* PaymentsTestCase.swift */; };
+		83EA4763203C7F650031F13E /* LedgersLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */; };
+		83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -506,7 +508,7 @@
 		836971F9202548E100398A98 /* AssetsRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsRemoteTestCase.swift; sourceTree = "<group>"; };
 		836971FE2025532900398A98 /* LedgerResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerResponse.swift; sourceTree = "<group>"; };
 		8369720020255AB800398A98 /* LedgersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersService.swift; sourceTree = "<group>"; };
-		83697205202631D600398A98 /* LedgersTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersTestCase.swift; sourceTree = "<group>"; };
+		83697205202631D600398A98 /* LedgersRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersRemoteTestCase.swift; sourceTree = "<group>"; };
 		836972092028BA3E00398A98 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		8369720B2028ED6400398A98 /* AccountRemovedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountRemovedEffectResponse.swift; sourceTree = "<group>"; };
 		8369720D2028EDB100398A98 /* AccountCreditedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreditedEffectResponse.swift; sourceTree = "<group>"; };
@@ -560,6 +562,8 @@
 		83DD2C80202E192A00713FEE /* TransactionMalformedErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMalformedErrorResponse.swift; sourceTree = "<group>"; };
 		83DD2C97202F249800713FEE /* PaymentsService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaymentsService.swift; sourceTree = "<group>"; };
 		83DD2C9C202F24CD00713FEE /* PaymentsTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaymentsTestCase.swift; path = stellarsdkTests/payments/PaymentsTestCase.swift; sourceTree = SOURCE_ROOT; };
+		83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersLocalTestCase.swift; sourceTree = "<group>"; };
+		83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersResponsesMock.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -957,6 +961,7 @@
 				743DF501201F3AE100713DE7 /* account */,
 				836971F8202548C900398A98 /* assets */,
 				744E75E22028DB9800170D57 /* effects */,
+				83697204202631B800398A98 /* ledgers */,
 				430BE2E72035A32600E6AB97 /* price */,
 				43D35B0E20348EBF00C8BDBC /* payment_paths */,
 				4300C1862033042900DC5E49 /* orderbooks */,
@@ -965,7 +970,6 @@
 				745F2BBF202C4CED008763F1 /* transactions */,
 				744C4DC0202A326600B46CDE /* operations */,
 				83DD2C9B202F24B900713FEE /* payments */,
-				83697204202631B800398A98 /* ledgers */,
 				437D8A90202F15AA0024D031 /* trades */,
 				437D8A93202F16C40024D031 /* trade_aggregations */,
 				7445EA0A201B106500470E0A /* stellarsdkTests.swift */,
@@ -1205,7 +1209,9 @@
 		83697204202631B800398A98 /* ledgers */ = {
 			isa = PBXGroup;
 			children = (
-				83697205202631D600398A98 /* LedgersTestCase.swift */,
+				83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */,
+				83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */,
+				83697205202631D600398A98 /* LedgersRemoteTestCase.swift */,
 			);
 			path = ledgers;
 			sourceTree = "<group>";
@@ -1832,19 +1838,21 @@
 				83DD2C9D202F24CD00713FEE /* PaymentsTestCase.swift in Sources */,
 				437D8A95202F16EB0024D031 /* TradeAggregationsTestCase.swift in Sources */,
 				8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */,
-				83697206202631D600398A98 /* LedgersTestCase.swift in Sources */,
+				83697206202631D600398A98 /* LedgersRemoteTestCase.swift in Sources */,
 				8357A923203B7B5100A144A9 /* EffectsResponsesMock.swift in Sources */,
 				8357A921203B7B1F00A144A9 /* EffectsLocalTestCase.swift in Sources */,
 				745F2BC1202C4D24008763F1 /* TransactionsTestCase.swift in Sources */,
 				8357A915203B097D00A144A9 /* AssetsLocalTestCase.swift in Sources */,
 				8357A91D203B6F8500A144A9 /* DataForAccountResponsesMock.swift in Sources */,
 				8357A91F203B768A00A144A9 /* DataForAccountRemoteTestCase.swift in Sources */,
+				83EA4763203C7F650031F13E /* LedgersLocalTestCase.swift in Sources */,
 				43D35B1020348EF800C8BDBC /* PaymentPathsTestCase.swift in Sources */,
 				8369723E202A708300398A98 /* AccountResponsesMock.swift in Sources */,
 				430BE2E92035A33D00E6AB97 /* PriceTestCase.swift in Sources */,
 				4300C1832032FBE500DC5E49 /* OffersTestCase.swift in Sources */,
 				8357A91B203B6F6100A144A9 /* DataForAccountLocalTestCase.swift in Sources */,
 				743DF503201F3B0800713DE7 /* AccountLocalTestCase.swift in Sources */,
+				83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */,
 				8357A917203B0AD300A144A9 /* ResponseMock.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

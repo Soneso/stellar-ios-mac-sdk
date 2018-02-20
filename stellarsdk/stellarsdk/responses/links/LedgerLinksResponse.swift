@@ -21,6 +21,9 @@ public class LedgerLinksResponse: NSObject, Decodable {
     /// Link to the operations in this ledger.
     public var operations:LinkResponse
     
+    /// Link to the payments in this ledger.
+    public var payments:LinkResponse
+    
     /// Link to the transactions in this ledger.
     public var transactions:LinkResponse
     
@@ -29,6 +32,7 @@ public class LedgerLinksResponse: NSObject, Decodable {
         case selflink = "self"
         case effects
         case operations
+        case payments
         case transactions
     }
     
@@ -42,6 +46,7 @@ public class LedgerLinksResponse: NSObject, Decodable {
         selflink = try values.decode(LinkResponse.self, forKey: .selflink)
         effects = try values.decode(LinkResponse.self, forKey: .effects)
         operations = try values.decode(LinkResponse.self, forKey: .operations)
+        payments = try values.decode(LinkResponse.self, forKey: .payments)
         transactions = try values.decode(LinkResponse.self, forKey: .transactions)
     }
 }

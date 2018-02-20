@@ -1,5 +1,5 @@
 //
-//  LedgersTestCase.swift
+//  LedgersRemoteTestCase.swift
 //  stellarsdkTests
 //
 //  Created by Rogobete Christian on 03.02.18.
@@ -17,7 +17,7 @@
 import XCTest
 import stellarsdk
 
-class LedgersTestCase: XCTestCase {
+class LedgersRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
     
     override func setUp() {

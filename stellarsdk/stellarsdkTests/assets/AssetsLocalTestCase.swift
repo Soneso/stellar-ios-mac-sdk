@@ -6,8 +6,6 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import Foundation
-
 import XCTest
 import stellarsdk
 
