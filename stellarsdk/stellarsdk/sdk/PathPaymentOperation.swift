@@ -49,6 +49,20 @@ public class PathPaymentOperation:Operation {
         super.init(sourceAccount:sourceAccount)
     }
     
+    public init(fromXDR:PathPaymentOperationXDR) {
+        self.sendAsset = try! Asset.fromXDR(assetXDR: fromXDR.sendAsset)
+        self.sendMax = Operation.fromXDRAmount(Int64(fromXDR.sendMax))
+        self.destination = KeyPair.fromXDRPublicKey(fromXDR.destinationID)
+        self.destAsset = try! Asset.fromXDR(assetXDR: fromXDR.destinationAsset)
+        self.destAmount = Operation.fromXDRAmount(Int64(fromXDR.destinationAmount))
+        var path = [Asset]()
+        for asset in fromXDR.path {
+            path.append(try! Asset.fromXDR(assetXDR: asset))
+        }
+        self.path = path
+        super.init(sourceAccount: nil)
+    }
+    
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let sendAssetXDR = try sendAsset.toXDR()
         let destAssetXDR = try destAsset.toXDR()

@@ -25,6 +25,7 @@
 		437D8A95202F16EB0024D031 /* TradeAggregationsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A94202F16EB0024D031 /* TradeAggregationsTestCase.swift */; };
 		4390830720372AF600254042 /* MemoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4390830620372AF600254042 /* MemoProtocol.swift */; };
 		4390830920372BAF00254042 /* Memo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4390830820372BAF00254042 /* Memo.swift */; };
+		43AEB4CE203ADEC10078637D /* Data+Base16.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AEB4CD203ADEC10078637D /* Data+Base16.swift */; };
 		43D35B0B2034845E00C8BDBC /* PaymentPathResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0A2034845E00C8BDBC /* PaymentPathResponse.swift */; };
 		43D35B0D20348AEA00C8BDBC /* PaymentPathsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0C20348AEA00C8BDBC /* PaymentPathsService.swift */; };
 		43D35B1020348EF800C8BDBC /* PaymentPathsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0F20348EF800C8BDBC /* PaymentPathsTestCase.swift */; };
@@ -302,6 +303,7 @@
 		437D8A94202F16EB0024D031 /* TradeAggregationsTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradeAggregationsTestCase.swift; sourceTree = "<group>"; };
 		4390830620372AF600254042 /* MemoProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoProtocol.swift; sourceTree = "<group>"; };
 		4390830820372BAF00254042 /* Memo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Memo.swift; sourceTree = "<group>"; };
+		43AEB4CD203ADEC10078637D /* Data+Base16.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Base16.swift"; sourceTree = "<group>"; };
 		43D35B0A2034845E00C8BDBC /* PaymentPathResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentPathResponse.swift; sourceTree = "<group>"; };
 		43D35B0C20348AEA00C8BDBC /* PaymentPathsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentPathsService.swift; sourceTree = "<group>"; };
 		43D35B0F20348EF800C8BDBC /* PaymentPathsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentPathsTestCase.swift; sourceTree = "<group>"; };
@@ -812,6 +814,7 @@
 				743DF547201F70A700713DE7 /* Data+Base32.swift */,
 				743DF549201F70CA00713DE7 /* String+Base32.swift */,
 				744C4DC3202A364300B46CDE /* DateFormatter+ISOParsing.swift */,
+				43AEB4CD203ADEC10078637D /* Data+Base16.swift */,
 			);
 			path = extensions;
 			sourceTree = "<group>";
@@ -1683,6 +1686,7 @@
 				743DF5672020530A00713DE7 /* add_scalar.c in Sources */,
 				836972242028F62A00398A98 /* TrustlineRemovedEffectResponse.swift in Sources */,
 				743DF5682020530A00713DE7 /* seed.c in Sources */,
+				43AEB4CE203ADEC10078637D /* Data+Base16.swift in Sources */,
 				8369724E202A803E00398A98 /* AccountMergeOperationResponse.swift in Sources */,
 				74824B212031760100CD0270 /* AssetXDR.swift in Sources */,
 				430BE2E6203577F200E6AB97 /* Price.swift in Sources */,

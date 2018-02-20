@@ -31,6 +31,33 @@ public class Operation {
         return try OperationXDR(sourceAccount: sourceAccount?.publicKey, body: getOperationBodyXDR())
     }
     
+    public func fromXDR(operationXDR:OperationXDR) throws -> Operation {
+        switch operationXDR.body {
+        case .createAccount(let account):
+            return CreateAccountOperation(fromXDR: account)
+        case .payment(let payment):
+            return PaymentOperation(fromXDR: payment)
+        case .pathPayment(let pathPayment):
+            return PathPaymentOperation(fromXDR: pathPayment)
+        case .manageOffer(let manageOffer):
+            return ManageOfferOperation(fromXDR: manageOffer)
+        case .createPassiveOffer(let passiveOffer):
+            return CreatePassiveOfferOperation(fromXDR: passiveOffer)
+        case .setOptions(let setOptions):
+            return SetOptionsOperation(fromXDR: setOptions)
+        case .changeTrust(let changeTrust):
+            return ChangeTrustOperation(fromXDR: changeTrust)
+        case .allowTrust(let allowTrust):
+            return AllowTrustOperation(fromXDR: allowTrust)
+        case .accountMerge(let publicKey):
+            return AccountMergeOperation(publicKeyXDR: publicKey)
+        case .manageData(let manageData):
+            return ManageDataOperation(fromXDR: manageData)
+        default:
+            throw StellarSDKError.invalidArgument(message: "Unknown operation body \(operationXDR.body)")
+        }
+    }
+    
     func getOperationBodyXDR() throws -> OperationBodyXDR {
         return OperationBodyXDR.inflation
     }
@@ -39,7 +66,7 @@ public class Operation {
         return amount * 10000000
     }
     
-    func fromXDRAmount(xdrAmount:Int64) -> Int64 {
+    static func fromXDRAmount(_ xdrAmount:Int64) -> Int64 {
         return xdrAmount / 10000000
     }
 }

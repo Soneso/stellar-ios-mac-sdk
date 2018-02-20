@@ -62,6 +62,28 @@ public class SetOptionsOperation:Operation {
         super.init(sourceAccount:sourceAccount)
     }
     
+    public init(fromXDR:SetOptionsOperationXDR) {
+        if let inflation = fromXDR.inflationDestination {
+            self.inflationDestination = KeyPair.fromXDRPublicKey(inflation)
+        } else {
+            self.inflationDestination = nil
+        }
+        self.clearFlags = fromXDR.clearFlags
+        self.setFlags = fromXDR.setFlags
+        self.masterKeyWeight = fromXDR.masterWeight
+        self.lowThreshold = fromXDR.lowThreshold
+        self.mediumThreshold = fromXDR.medThreshold
+        self.highThreshold = fromXDR.highThreshold
+        self.homeDomain = fromXDR.homeDomain
+        self.signer = fromXDR.signer?.key
+        if let weight = fromXDR.signer?.weight {
+            self.signerWeight = weight & 0xFF
+        } else {
+            self.signerWeight = fromXDR.signer?.weight
+        }
+        super.init(sourceAccount: nil)
+    }
+    
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
 
         

@@ -43,6 +43,13 @@ public class AllowTrustOperation:Operation {
         super.init(sourceAccount:nil)
     }
     
+    public init(fromXDR:AllowTrustOperationXDR) {
+        self.trustor = KeyPair.fromXDRPublicKey(fromXDR.trustor)
+        self.assetCode = fromXDR.asset.assetCode
+        self.authorize = fromXDR.authorize
+        super.init(sourceAccount: nil)
+    }
+    
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
 
         let allowTrustOpAsset: AllowTrustOpAssetXDR

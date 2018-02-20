@@ -54,6 +54,25 @@ public final class KeyPair {
         self.init(publicKey: PublicKey(unchecked: pubBuffer),
                   privateKey: PrivateKey(unchecked: privBuffer))
     }
+    
+    public static func fromXDRPublicKey(_ publicKey: PublicKey) -> KeyPair {
+        var seedBuffer = [UInt8](repeating: 0, count: 32)
+        var privBuffer = [UInt8](repeating: 0, count: 64)
+        var pubBuffer = [UInt8](publicKey.bytes)
+        
+        privBuffer.withUnsafeMutableBufferPointer { priv in
+            pubBuffer.withUnsafeMutableBufferPointer { pub in
+                seedBuffer.withUnsafeMutableBufferPointer { seed in
+                    ed25519_create_keypair(pub.baseAddress,
+                                           priv.baseAddress,
+                                           seed.baseAddress)
+                }
+            }
+        }
+        
+        return KeyPair(publicKey: PublicKey(unchecked: pubBuffer),
+                  privateKey: PrivateKey(unchecked: privBuffer))
+    }
 
     /*
      public convenience init(publicKey: [UInt8], privateKey: [UInt8]) throws {
