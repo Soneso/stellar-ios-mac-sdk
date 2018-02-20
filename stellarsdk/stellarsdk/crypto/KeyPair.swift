@@ -108,7 +108,7 @@ public final class KeyPair {
     }
 
     /// TODO: is this needed?
-    public static func fromXDRPublicKey(_ publicKey: PublicKey) -> KeyPair {
+    /*public static func fromXDRPublicKey(_ publicKey: PublicKey) -> KeyPair {
         var seedBuffer = [UInt8](repeating: 0, count: 32)
         var privBuffer = [UInt8](repeating: 0, count: 64)
         var pubBuffer = [UInt8](publicKey.bytes)
@@ -125,7 +125,7 @@ public final class KeyPair {
         
         return KeyPair(publicKey: PublicKey(unchecked: pubBuffer),
                   privateKey: PrivateKey(unchecked: privBuffer))
-    }
+    }*/
     
     /// Sign the provided data with the keypair's private key.
     ///

@@ -8,24 +8,21 @@
 
 import Foundation
 
-/**
-    Represents a payment operation. Sends an amount in a specific asset to a destination account.
-    See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html#payment, "Payment Operation")
- */
+/// Represents a payment operation. Sends an amount in a specific asset to a destination account.
+/// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html#payment, "Payment Operation").
 public class PaymentOperation:Operation {
     
     public let destination:KeyPair
     public let asset:Asset
     public let amount:Int64
     
-    /**
-        Constructor
-     
-        - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
-        - Parameter destination: Account address that receives the payment.
-        - Parameter asset: Asset to send to the destination account.
-        - Parameter amount: Amount of the aforementioned asset to send.
-     */
+    /// Creates a new PaymentOperation object.
+    ///
+    /// - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
+    /// - Parameter destination: Account address that receives the payment.
+    /// - Parameter asset: Asset to send to the destination account.
+    /// - Parameter amount: Amount of the aforementioned asset to send.
+    ///
     public init(sourceAccount:KeyPair, destination:KeyPair, asset:Asset, amount:Int64) {
         self.destination = destination
         self.asset = asset
@@ -33,8 +30,12 @@ public class PaymentOperation:Operation {
         super.init(sourceAccount:sourceAccount)
     }
     
+    /// Creates a new PaymentOperation object from the given PaymentOperationXDR object.
+    ///
+    /// - Parameter fromXDR: the PaymentOperationXDR object to be used to create a new PaymentOperation object.
+    ///
     public init(fromXDR:PaymentOperationXDR) {
-        self.destination = KeyPair.fromXDRPublicKey(fromXDR.destination)
+        self.destination = KeyPair(publicKey: fromXDR.destination)
         self.asset = try! Asset.fromXDR(assetXDR: fromXDR.asset)
         self.amount = Operation.fromXDRAmount(Int64(fromXDR.amount))
         super.init(sourceAccount: nil)

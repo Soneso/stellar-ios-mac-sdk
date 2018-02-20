@@ -8,21 +8,22 @@
 
 import Foundation
 
-/**
-    TimeBounds represents the time interval that a transaction is valid.
- 
-    - See Transaction
- */
+/// TimeBounds represents the time interval that a transaction is valid.
 final public class TimeBounds {
-    final let minTime:UInt64
-    final let maxTime:UInt64
     
-    /**
-        Init
-     
-        - Parameter minTime: 64bit Unix timestamp
-        - Parameter maxTime 64bit Unix timestamp
-     */
+    /// minTime - 64bit Unix timestamp
+    final public let minTime:UInt64
+    
+    /// maxTime - 64bit Unix timestamp
+    final public let maxTime:UInt64
+    
+    /// Creates a new TimeBounds object.
+    ///
+    /// - Parameter minTime: 64bit Unix timestamp
+    /// - Parameter maxTime 64bit Unix timestamp
+    ///
+    /// - Throws a StellarSDKError.invalidArgument error if minTime is not less then maxTime
+    ///
     public init(minTime:UInt64, maxTime:UInt64) throws {
         if minTime >= maxTime {
             throw StellarSDKError.invalidArgument(message: "minTime must be less than maxTime")
@@ -31,8 +32,10 @@ final public class TimeBounds {
         self.maxTime = maxTime
     }
     
-     /// Generates Time Bounds XDR object.
+    /// Creates a TimeBounds XDR object from the current TimeBounds object.
+    ///
+    /// - Returns the created TimeBoundsXDR object.
     public func toXdr() -> TimeBoundsXDR {
-        return TimeBoundsXDR(minTime: minTime, maxTime: maxTime)
+        return TimeBoundsXDR(minTime:minTime, maxTime:maxTime)
     }
 }

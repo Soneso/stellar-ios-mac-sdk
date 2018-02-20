@@ -8,6 +8,16 @@
 
 import Foundation
 
+///  The memo contains optional extra information. It is the responsibility of the client to interpret this value.
+///  See [Horizon Guides](https://www.stellar.org/developers/guides/concepts/transactions.html#memo, "Memo")
+///
+///  Memos can be one of the following types:
+/// - none: Empty memo.
+/// - text: A string encoded using either ASCII or UTF-8, up to 28-bytes long.
+/// - id: A 64 bit unsigned integer.
+/// - hash: A 32 byte hash.
+/// - returnHash:  A 32 byte hash intended to be interpreted as the hash of the transaction the sender is refunding.
+///
 public enum Memo {
     case none
     case text (String)
@@ -27,6 +37,12 @@ extension Memo: MemoProtocol {
         }
     }
     
+    /// Creates a memo of type text. Validates if the String is up to 28-bytes long.
+    ///
+    /// - Parameter text: String representing the text for the memo. Must be not larger than 28 bytes.
+    ///
+    /// - Throws an StellarSDKError.invalidArgument error if the given string is larger than 28 bytes.
+    ///
     init?(text:String) throws {
         if text.utf8CString.count > 28 {
             throw StellarSDKError.invalidArgument(message: "text must be <= 28 bytes. length=\(text.count)" )
@@ -34,6 +50,12 @@ extension Memo: MemoProtocol {
         self = .text(text)
     }
     
+    /// Creates a memo of type hash. Validates if the hash is up to 32-bytes long.
+    ///
+    /// - Parameter hash: Data representing the hash for the memo. Must be not larger than 32 bytes.
+    ///
+    /// - Throws an StellarSDKError.invalidArgument error if the given data is larger than 32 bytes.
+    ///
     init?(hash:Data) throws {
         if (hash.count > 32) {
             throw StellarSDKError.invalidArgument(message: "MEMO_HASH can contain 32 bytes at max.")
@@ -41,6 +63,12 @@ extension Memo: MemoProtocol {
         self = .hash(hash)
     }
     
+    /// Creates a memo of type returnHash. Validates if the hash is up to 32-bytes long.
+    ///
+    /// - Parameter hash: Data representing the hash for the memo. Must be not larger than 32 bytes.
+    ///
+    /// - Throws an StellarSDKError.invalidArgument error if the given data is larger than 32 bytes.
+    ///
     init?(returnHash:Data) throws {
         if (returnHash.count > 32) {
             throw StellarSDKError.invalidArgument(message: "MEMO_RETURN_HASH can contain 32 bytes at max.")

@@ -8,7 +8,7 @@
 
 import Foundation
 
-/// Specifies protocol for Account object used in the TransactionBuilder
+/// Specifies protocol for Account object used in the TransactionBuilder.
 protocol TransactionBuilderAccount {
     
     /// Returns keypair associated with this Account.

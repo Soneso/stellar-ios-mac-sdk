@@ -14,10 +14,10 @@ public class Account: TransactionBuilderAccount
     public private (set) var keyPair: KeyPair
     public private (set) var sequenceNumber: UInt64
     
-    /// Constructor
+    /// Creates a new Account object.
     ///
-    /// - Parameter keyPair: KeyPair associated with this Account
-    /// - Parameter sequenceNumber: Current sequence number of the account (can be obtained using the sdk or horizon server)
+    /// - Parameter keyPair: KeyPair associated with this Account.
+    /// - Parameter sequenceNumber: Current sequence number of the account (can be obtained using the sdk or horizon server).
     ///
     public init(keyPair: KeyPair, sequenceNumber: UInt64) {
         self.keyPair = keyPair

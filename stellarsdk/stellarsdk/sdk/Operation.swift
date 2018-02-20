@@ -8,20 +8,16 @@
 
 import Foundation
 
-/**
-    Superclass for operations. You should never use this class directly. Please use one of its subclasses.
-    See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/operations.html, "Operations")
-    See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html, "List of Operations")
- */
-
+/// Superclass for operations. You should never use this class directly. Please use one of its subclasses.
+/// See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/operations.html, "Operations")
+/// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html, "List of Operations")
 public class Operation {
     let sourceAccount:KeyPair?
     
-    /**
-        Initializer
-     
-        - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
-     */
+    /// Creates a new operation object.
+    ///
+    /// - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
+    ///
     public init(sourceAccount:KeyPair?) {
         self.sourceAccount = sourceAccount
     }
@@ -31,6 +27,14 @@ public class Operation {
         return try OperationXDR(sourceAccount: sourceAccount?.publicKey, body: getOperationBodyXDR())
     }
     
+    /// Creates a new Operation object from the given OperationXDR object.
+    ///
+    /// - Parameter operationXDR: the OperationXDR object to be used for creating the new Operation object.
+    ///
+    /// - Returns the created Operation object
+    ///
+    /// - Throws StellarSDKError.invalidArgument error if the given OperationXDR object has an unknown type.
+    ///
     public func fromXDR(operationXDR:OperationXDR) throws -> Operation {
         switch operationXDR.body {
         case .createAccount(let account):
@@ -50,7 +54,7 @@ public class Operation {
         case .allowTrust(let allowTrust):
             return AllowTrustOperation(fromXDR: allowTrust)
         case .accountMerge(let publicKey):
-            return AccountMergeOperation(publicKeyXDR: publicKey)
+            return AccountMergeOperation(destinatioAccountPublicKey: publicKey)
         case .manageData(let manageData):
             return ManageDataOperation(fromXDR: manageData)
         default:

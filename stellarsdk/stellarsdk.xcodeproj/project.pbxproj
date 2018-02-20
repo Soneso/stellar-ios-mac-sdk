@@ -169,7 +169,6 @@
 		833CBFCB2034742300C23CFE /* StellarSDKError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFCA2034742200C23CFE /* StellarSDKError.swift */; };
 		833CBFCF2035CBF500C23CFE /* ManageOfferSuccessResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFCE2035CBF500C23CFE /* ManageOfferSuccessResult.swift */; };
 		833CBFD1203638C500C23CFE /* InflationPayoutXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFD0203638C500C23CFE /* InflationPayoutXDR.swift */; };
-		833CBFD3203644AB00C23CFE /* AccountFlag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFD2203644AB00C23CFE /* AccountFlag.swift */; };
 		833CBFD52036EF3100C23CFE /* Operation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFD42036EF3100C23CFE /* Operation.swift */; };
 		833CBFD72036F01700C23CFE /* CreateAccountOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFD62036F01700C23CFE /* CreateAccountOperation.swift */; };
 		833CBFD92036F19000C23CFE /* PaymentOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFD82036F19000C23CFE /* PaymentOperation.swift */; };
@@ -473,7 +472,6 @@
 		833CBFCA2034742200C23CFE /* StellarSDKError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StellarSDKError.swift; sourceTree = "<group>"; };
 		833CBFCE2035CBF500C23CFE /* ManageOfferSuccessResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageOfferSuccessResult.swift; sourceTree = "<group>"; };
 		833CBFD0203638C500C23CFE /* InflationPayoutXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InflationPayoutXDR.swift; sourceTree = "<group>"; };
-		833CBFD2203644AB00C23CFE /* AccountFlag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFlag.swift; sourceTree = "<group>"; };
 		833CBFD42036EF3100C23CFE /* Operation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Operation.swift; sourceTree = "<group>"; };
 		833CBFD62036F01700C23CFE /* CreateAccountOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAccountOperation.swift; sourceTree = "<group>"; };
 		833CBFD82036F19000C23CFE /* PaymentOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentOperation.swift; sourceTree = "<group>"; };
@@ -1144,13 +1142,9 @@
 		833CBFBD20337D1600C23CFE /* sdk */ = {
 			isa = PBXGroup;
 			children = (
-				833CBFEC2038F9BB00C23CFE /* Transaction.swift */,
-				833CBFC82034741300C23CFE /* Asset.swift */,
 				833CBFBE20337D3300C23CFE /* Account.swift */,
-				833CBFD2203644AB00C23CFE /* AccountFlag.swift */,
 				833CBFC02033804B00C23CFE /* TransactionBuilderAccount.swift */,
-				430BE2E5203577F200E6AB97 /* Price.swift */,
-				430BE2EA2035B4D400E6AB97 /* TimeBounds.swift */,
+				833CBFC82034741300C23CFE /* Asset.swift */,
 				833CBFD42036EF3100C23CFE /* Operation.swift */,
 				833CBFD62036F01700C23CFE /* CreateAccountOperation.swift */,
 				833CBFD82036F19000C23CFE /* PaymentOperation.swift */,
@@ -1162,8 +1156,11 @@
 				833CBFE42036F73700C23CFE /* AllowTrustOperation.swift */,
 				833CBFE62036F7C200C23CFE /* AccountMergeOperation.swift */,
 				833CBFE82036F84F00C23CFE /* ManageDataOperation.swift */,
+				833CBFEC2038F9BB00C23CFE /* Transaction.swift */,
 				4390830620372AF600254042 /* MemoProtocol.swift */,
 				4390830820372BAF00254042 /* Memo.swift */,
+				430BE2E5203577F200E6AB97 /* Price.swift */,
+				430BE2EA2035B4D400E6AB97 /* TimeBounds.swift */,
 				744602E3203B22CC00D807C1 /* Network.swift */,
 			);
 			path = sdk;
@@ -1771,7 +1768,6 @@
 				833CBFBC20337A1700C23CFE /* LedgerExtryDataXDR.swift in Sources */,
 				833CBFDD2036F2B500C23CFE /* ManageOfferOperation.swift in Sources */,
 				836971DF2024A71B00398A98 /* AccountFlagsResponse.swift in Sources */,
-				833CBFD3203644AB00C23CFE /* AccountFlag.swift in Sources */,
 				437D8A8D202F0B980024D031 /* TradesService.swift in Sources */,
 				743DF582202053B100713DE7 /* Seed.swift in Sources */,
 				8369722E2028F7A000398A98 /* OfferRemovedEffectResponse.swift in Sources */,

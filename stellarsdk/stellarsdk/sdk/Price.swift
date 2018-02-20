@@ -10,25 +10,29 @@ import Foundation
 
 /// Represents Price. Price in Stellar is represented as a fraction.
 public class Price {
+    
+    /// Numerator.
     public final let n:Int
+    
+    /// Denominator.
     public final let d:Int
     
-    /**
-        Create a new price. Price in Stellar is represented as a fraction. E.g. Price of 1 unit of selling in terms of buying. For example, if you wanted to sell 30 XLM and buy 5 BTC, the price would be {numerator, denominator} = {5,30}.
-     
-        - Parameter numerator: numerator
-        - Parameter denominator: denominator
-     */
+    /// Create a new price. Price in Stellar is represented as a fraction. E.g. Price of 1 unit of selling in terms of buying. For example, if you wanted to sell 30 XLM and buy 5 BTC, the price would be {numerator, denominator} = {5,30}.
+    ///
+    /// - Parameter numerator: numerator
+    /// - Parameter denominator: denominator
+    ///
     public init(numerator:Int, denominator:Int) {
         self.n = numerator
         self.d = denominator
     }
     
-    /**
-        Approximates 'price' to a fraction. Please remember that this function can give unexpected results for values that cannot be represented as a fraction with 32-bit numerator and denominator. It's safer to create a Price object using the constructor.
-     
-        - Parameter price: E.g. "1.25"
-     */
+    /// Approximates 'price' to a fraction. Please remember that this function can give unexpected results for values that cannot be represented as a fraction with 32-bit numerator and denominator. It's safer to create a Price object using the constructor.
+    ///
+    /// - Parameter price: E.g. "1.25"
+    ///
+    /// - Returns the created Price object.
+    ///
     public static func fromString(price:String) -> Price {
         
         let maxInt:Decimal = Decimal(Int.max)
@@ -41,7 +45,6 @@ public class Price {
         var i:Int = 2
         while (true) {
             if number > maxInt { break }
-//            a = number.setScale(0, BigDecimal.ROUND_FLOOR);
             NSDecimalRound(&a, &number, 0, .plain)
             f = number - a
             let h:Decimal = a * fractions[i-1][0] + fractions[i-2][0]
@@ -58,7 +61,9 @@ public class Price {
     }
     
     
-    /// Generates Price XDR object.
+    /// Generates a PriceXDR object from the current Price object.
+    ///
+    /// - Returns the generated PriceXDR object.
     public func toXdr() -> PriceXDR {
         return PriceXDR(n: Int32(n), d: Int32(d))
     }

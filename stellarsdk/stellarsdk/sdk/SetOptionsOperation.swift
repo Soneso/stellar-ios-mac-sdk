@@ -8,10 +8,8 @@
 
 import Foundation
 
-/**
-    Represents a set options operation. This operation sets the options for an account.
-    See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html#set-options, "Set Options Operations")
- */
+/// Represents a set options operation. This operation sets the options for an account.
+/// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html#set-options, "Set Options Operations").
 public class SetOptionsOperation:Operation {
     
     public let inflationDestination:KeyPair?
@@ -25,23 +23,22 @@ public class SetOptionsOperation:Operation {
     public let signer:SignerKeyXDR?
     public let signerWeight:UInt32?
     
-    /**
-     Constructor
-     
-        - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
-        - Parameter inflationDestination: Account of the inflation destination.
-        - Parameter clearFlags: The asset you would like to buy. Indicates which flags to clear. For details about the flags, please refer to the accounts doc (https://www.stellar.org/developers/guides/concepts/accounts.html). The bit mask integer subtracts from the existing flags of the account. This allows for setting specific bits without knowledge of existing flags.
-        - Parameter setFlags: Indicates which flags to set. For details about the flags, please refer to the accounts doc (https://www.stellar.org/developers/guides/concepts/accounts.html). The bit mask integer adds onto the existing flags of the account. This allows for setting specific bits without knowledge of existing flags.
-        - Parameter masterKeyWeight: Weight of the master key. This account may also add other keys with which to sign transactions using signer below.
-        - Parameter lowThreshold: A number from 0-255 representing the threshold this account sets on all operations it performs that have a low threshold.
-        - Parameter mediumThreshold: A number from 0-255 representing the threshold this account sets on all operations it performs that have a medium threshold.
-        - Parameter highThreshold: A number from 0-255 representing the threshold this account sets on all operations it performs that have a high threshold.
-        - Parameter homeDomain: Sets the home domain of an account. See Federation (https://www.stellar.org/developers/guides/concepts/federation.html).
-        - Parameter signer: Signers PublicKey. If you fill this parameter you also need to fill 'signerWeight'
-        - Parameter signerWeight: Add or remove the signer from parameter 'signer'. The signer is deleted if the weight is 0.
-     
-        - Throws StellarSDKError.invalidArgument if signer is not nil but signerWeight is nil
-     */
+    /// Creates a new SetOptionsOperation object.
+    ///
+    /// - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
+    /// - Parameter inflationDestination: Account of the inflation destination.
+    /// - Parameter clearFlags: The asset you would like to buy. Indicates which flags to clear. For details about the flags, please refer to the accounts doc (https://www.stellar.org/developers/guides/concepts/accounts.html). The bit mask integer subtracts from the existing flags of the account. This allows for setting specific bits without knowledge of existing flags.
+    /// - Parameter setFlags: Indicates which flags to set. For details about the flags, please refer to the accounts doc (https://www.stellar.org/developers/guides/concepts/accounts.html). The bit mask integer adds onto the existing flags of the account. This allows for setting specific bits without knowledge of existing flags.
+    /// - Parameter masterKeyWeight: Weight of the master key. This account may also add other keys with which to sign transactions using signer below.
+    /// - Parameter lowThreshold: A number from 0-255 representing the threshold this account sets on all operations it performs that have a low threshold.
+    /// - Parameter mediumThreshold: A number from 0-255 representing the threshold this account sets on all operations it performs that have a medium threshold.
+    /// - Parameter highThreshold: A number from 0-255 representing the threshold this account sets on all operations it performs that have a high threshold.
+    /// - Parameter homeDomain: Sets the home domain of an account. See Federation (https://www.stellar.org/developers/guides/concepts/federation.html).
+    /// - Parameter signer: Signers PublicKey. If you fill this parameter you also need to fill 'signerWeight'
+    /// - Parameter signerWeight: Add or remove the signer from parameter 'signer'. The signer is deleted if the weight is 0.
+    ///
+    /// - Throws StellarSDKError.invalidArgument if signer is not nil but signerWeight is nil
+    ///
     public init(sourceAccount:KeyPair, inflationDestination:KeyPair?, clearFlags:UInt32?, setFlags:UInt32?, masterKeyWeight:UInt32?, lowThreshold:UInt32?, mediumThreshold:UInt32?, highThreshold:UInt32?, homeDomain:String?, signer:SignerKeyXDR?, signerWeight:UInt32?) throws {
         
         
@@ -62,9 +59,13 @@ public class SetOptionsOperation:Operation {
         super.init(sourceAccount:sourceAccount)
     }
     
+    /// Creates a new SetOptionsOperation object from the given SetOptionsOperationXDR object.
+    ///
+    /// - Parameter fromXDR: the SetOptionsOperationXDR object to be used to create a new SetOptionsOperation object.
+    ///
     public init(fromXDR:SetOptionsOperationXDR) {
         if let inflation = fromXDR.inflationDestination {
-            self.inflationDestination = KeyPair.fromXDRPublicKey(inflation)
+            self.inflationDestination = KeyPair(publicKey: inflation)
         } else {
             self.inflationDestination = nil
         }
