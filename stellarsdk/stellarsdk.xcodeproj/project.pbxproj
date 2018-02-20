@@ -899,11 +899,11 @@
 		743DF5782020538A00713DE7 /* crypto */ = {
 			isa = PBXGroup;
 			children = (
-				743DF579202053A400713DE7 /* Ed25519Error.swift */,
 				743DF57B202053B100713DE7 /* KeyPair.swift */,
-				743DF57D202053B100713DE7 /* PrivateKey.swift */,
 				743DF57C202053B100713DE7 /* PublicKey.swift */,
+				743DF57D202053B100713DE7 /* PrivateKey.swift */,
 				743DF57E202053B100713DE7 /* Seed.swift */,
+				743DF579202053A400713DE7 /* Ed25519Error.swift */,
 			);
 			path = crypto;
 			sourceTree = "<group>";

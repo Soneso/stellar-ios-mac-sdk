@@ -8,6 +8,7 @@
 
 import ed25519C
 
+/// Holds a Stellar seed.
 public class Seed {
     private let buffer: [UInt8]
 
@@ -37,7 +38,7 @@ public class Seed {
         self.init(unchecked: buffer)
     }
     
-    public convenience init(secret:String) throws {
+    public convenience init(secret: String) throws {
         if let data = secret.base32DecodedData {
             try self.init(bytes:Array(([UInt8](data))[1...data.count - 3]))
         } else {

@@ -8,9 +8,16 @@
 
 import ed25519C
 
+/// Holds a Stellar private key.
 public final class PrivateKey {
     private let buffer: [UInt8]
     
+    /// Creates a new Stellar private key from the given bytes
+    ///
+    /// - Parameter bytes: the byte array of the key. The length of the byte array must be 64
+    ///
+    /// - Throws Ed25519Error.invalidPrivateKeyLength if the lenght of the given byte array != 64
+    ///
     public init(_ bytes: [UInt8]) throws {
         guard bytes.count == 64 else {
             throw Ed25519Error.invalidPrivateKeyLength
@@ -23,17 +30,17 @@ public final class PrivateKey {
         self.buffer = buffer
     }
     
+    /// Byte array representation of the private key.
+    public var bytes: [UInt8] {
+        return buffer
+    }
     
-    public init(key: String) throws {
+    /*public init(key: String) throws {
         if let data = key.base32DecodedData {
             self.buffer = [UInt8](data)
         } else {
             throw Ed25519Error.invalidPrivateKey
         }
-    }
-    
-    public var bytes: [UInt8] {
-        return buffer
     }
     
     public var key: String {
@@ -57,5 +64,5 @@ public final class PrivateKey {
         }
         
         return PrivateKey(unchecked: priv)
-    }
+    }*/
 }
