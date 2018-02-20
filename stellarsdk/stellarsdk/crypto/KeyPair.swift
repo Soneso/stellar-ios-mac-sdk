@@ -54,19 +54,12 @@ public final class KeyPair {
         self.init(publicKey: PublicKey(unchecked: pubBuffer),
                   privateKey: PrivateKey(unchecked: privBuffer))
     }
-
-    /*
-     public convenience init(publicKey: [UInt8], privateKey: [UInt8]) throws {
-        let pub = try PublicKey(publicKey)
-        let priv = try PrivateKey(privateKey)
-        self.init(publicKey: pub, privateKey: priv)
-    }
     
     public func sign(_ message: [UInt8]) -> [UInt8] {
         var signature = [UInt8](repeating: 0, count: 64)
         
         signature.withUnsafeMutableBufferPointer { signature in
-            privateKey.bytes.withUnsafeBufferPointer { priv in
+            privateKey?.bytes.withUnsafeBufferPointer { priv in
                 publicKey.bytes.withUnsafeBufferPointer { pub in
                     message.withUnsafeBufferPointer { msg in
                         ed25519_sign(signature.baseAddress,
@@ -80,6 +73,23 @@ public final class KeyPair {
         }
         
         return signature
+    }
+    
+    public func signDecorated(_ message: [UInt8]) -> DecoratedSignatureXDR {
+        var signatureBytes = sign(message)
+        let signatureData = Data(bytes: &signatureBytes, count: signatureBytes.count)
+        var publicKeyData = publicKey.bytes
+        let hint = Data(bytes: &publicKeyData, count: publicKeyData.count).suffix(4)
+        let decoratedSignature = DecoratedSignatureXDR(hint: WrappedData4(hint) , signature: signatureData)
+        
+        return decoratedSignature
+    }
+
+    /*
+     public convenience init(publicKey: [UInt8], privateKey: [UInt8]) throws {
+        let pub = try PublicKey(publicKey)
+        let priv = try PrivateKey(privateKey)
+        self.init(publicKey: pub, privateKey: priv)
     }
     
     public func verify(signature: [UInt8], message: [UInt8]) throws -> Bool {

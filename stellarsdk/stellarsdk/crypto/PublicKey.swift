@@ -43,8 +43,10 @@ public class PublicKey: XDRCodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         
-        try container.encode(0)
-        try container.encode(bytes)
+        try container.encode(Int32(0))
+        var bytesArray = bytes
+        let wrapped = WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))
+        try container.encode(wrapped)
     }
 
     public func verify(signature: [UInt8], message: [UInt8]) throws -> Bool {

@@ -8,6 +8,12 @@
 
 import Foundation
 
+public enum EnvelopeType: Int32 {
+    case typeSCP = 1
+    case typeTX = 2
+    case typeAUTH = 3
+}
+
 public class TransactionEnvelopeXDR: NSObject, XDRCodable {
     public let tx: TransactionXDR
     public let signatures: [DecoratedSignatureXDR]
@@ -23,4 +29,12 @@ public class TransactionEnvelopeXDR: NSObject, XDRCodable {
         tx = try container.decode(TransactionXDR.self)
         signatures = try container.decode([DecoratedSignatureXDR].self)
     }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(tx)
+        try container.encode(signatures)
+    }
+    
 }

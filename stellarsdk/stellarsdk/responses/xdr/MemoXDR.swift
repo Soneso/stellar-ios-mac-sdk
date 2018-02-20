@@ -70,4 +70,5 @@ public enum MemoXDR: XDRCodable {
             case .returnHash(let hash): try container.encode(hash)
         }
     }
+    
 }

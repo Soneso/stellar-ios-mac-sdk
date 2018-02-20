@@ -1,4 +1,4 @@
-//
+ //
 //  OperationBodyXDR.swift
 //  stellarsdk
 //
@@ -43,12 +43,14 @@ public enum OperationBodyXDR: XDRCodable {
                 self = .allowTrust(try container.decode(AllowTrustOperationXDR.self))
             case OperationType.changeTrust.rawValue:
                 self = .changeTrust(try container.decode(ChangeTrustOperationXDR.self))
+            case OperationType.inflation.rawValue:
+                self = .inflation
             case OperationType.manageData.rawValue:
                 self = .manageData(try container.decode(ManageDataOperationXDR.self))
             case OperationType.accountMerge.rawValue:
                 self = .accountMerge(try container.decode(PublicKey.self))
             default:
-                self = .createAccount(try container.decode(CreateAccountOperationXDR.self))
+                throw StellarSDKError.xdrDecodingError(message: "Could not decode operation")
         }
     }
     

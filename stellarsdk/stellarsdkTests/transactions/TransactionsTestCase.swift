@@ -116,6 +116,31 @@ class TransactionsTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testTransactionSigning() {
+        let publicKey = Data(base64Encoded:"uHFsF4DaBlIsPUzFlMuBFkgEROGR9DlEBYCg3x+V72A=")!
+        let privateKey = Data(base64Encoded: "KJJ6vrrDOe9XIDAj6iSftUzux0qWwSwf3er27YKUOU2ZbT/G/wqFm/tDeez3REW5YlD5mrf3iidmGjREBzOEjQ==")!
+        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
+        
+        let expectation = XCTestExpectation(description: "Get transaction details")
+        sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
+            switch response {
+            case .success(let data):
+                let operationBody = OperationBodyXDR.inflation
+                let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
+                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: UInt64(data.sequenceNumber)! + 1, timeBounds: nil, memo: .none, operations: [operation])
+                
+                try! transaction.sign(keyPair: keyPair, network: .testnet)
+                let xdrEnvelope = try! transaction.encodedEnvelope()
+                print(xdrEnvelope)
+                expectation.fulfill()
+            case .failure(_):
+                XCTAssert(false)
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
     func testTransactionsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
