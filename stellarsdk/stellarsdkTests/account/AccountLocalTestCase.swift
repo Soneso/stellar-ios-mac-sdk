@@ -40,6 +40,12 @@ class AccountLocalTestCase: XCTestCase {
         XCTAssert(keyPair.privateKey!.bytes.count == 64, "Private key length is incorrect")
     }
     
+    func testKeyCreation() {
+        let keyPair = try! KeyPair(publicKey: PublicKey(accountId:"GC5EGTDV2RFIIHAEKF47KVCIOH6IK6WCO6I5ICT2YAWF6ZYZIHNHLEPR"), privateKey:nil)
+        
+        XCTAssert(keyPair.publicKey.bytes.count == 32, "Public key length is incorrect")
+    }
+    
     func testAccountNotFoundOnHorizon() {
         let expectation = XCTestExpectation(description: "Get account details response")
         

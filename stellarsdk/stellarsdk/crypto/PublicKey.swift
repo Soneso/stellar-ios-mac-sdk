@@ -23,6 +23,22 @@ public class PublicKey: XDRCodable {
         self.buffer = buffer
     }
     
+    public init(key: String) throws {
+        if let data = key.base32DecodedData {
+            self.buffer = [UInt8](data)
+        } else {
+            throw Ed25519Error.invalidPublicKey
+        }
+    }
+    
+    public convenience init(accountId:String) throws {
+        if let data = accountId.base32DecodedData {
+            try self.init(Array(([UInt8](data))[1...data.count - 3]))
+        } else {
+            throw Ed25519Error.invalidPublicKey
+        }
+    }
+    
     public required init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         
@@ -38,6 +54,11 @@ public class PublicKey: XDRCodable {
     
     public var bytes: [UInt8] {
         return buffer
+    }
+    
+    public var key: String {
+        var bytes = buffer
+        return Data(bytes: &bytes, count: bytes.count).base32EncodedString!
     }
     
     public func encode(to encoder: Encoder) throws {

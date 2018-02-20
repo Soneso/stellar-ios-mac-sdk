@@ -23,8 +23,22 @@ public final class PrivateKey {
         self.buffer = buffer
     }
     
+    
+    public init(key: String) throws {
+        if let data = key.base32DecodedData {
+            self.buffer = [UInt8](data)
+        } else {
+            throw Ed25519Error.invalidPrivateKey
+        }
+    }
+    
     public var bytes: [UInt8] {
         return buffer
+    }
+    
+    public var key: String {
+        var bytes = buffer
+        return Data(bytes: &bytes, count: bytes.count).base32EncodedString!
     }
     
     public func add(scalar: [UInt8]) throws -> PrivateKey {
