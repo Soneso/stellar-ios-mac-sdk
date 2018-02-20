@@ -8,6 +8,7 @@
 
 public enum Ed25519Error: Error {
     case seedGenerationFailed
+    case invalidSeed
     case invalidSeedLength
     case invalidScalarLength
     case invalidPublicKey

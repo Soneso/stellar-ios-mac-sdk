@@ -36,6 +36,14 @@ public class Seed {
         
         self.init(unchecked: buffer)
     }
+    
+    public convenience init(secret:String) throws {
+        if let data = secret.base32DecodedData {
+            try self.init(bytes:Array(([UInt8](data))[1...data.count - 3]))
+        } else {
+            throw Ed25519Error.invalidSeed
+        }
+    }
 
     public var bytes: [UInt8] {
         return buffer

@@ -40,8 +40,15 @@ class AccountLocalTestCase: XCTestCase {
         XCTAssert(keyPair.privateKey!.bytes.count == 64, "Private key length is incorrect")
     }
     
-    func testKeyCreation() {
+    func testKeyFromAccountIdCreation() {
         let keyPair = try! KeyPair(publicKey: PublicKey(accountId:"GC5EGTDV2RFIIHAEKF47KVCIOH6IK6WCO6I5ICT2YAWF6ZYZIHNHLEPR"), privateKey:nil)
+        
+        XCTAssert(keyPair.publicKey.bytes.count == 32, "Public key length is incorrect")
+    }
+    
+    func testKeyFromAccountSecretCreation() {
+        let seed = try! Seed(secret:"SAOZTU5IRNFJNLJQZH5HPWVVHUFU5V6IDEFHTDGWNGUY2HM6BVO6AV4T")
+        let keyPair = KeyPair(seed: seed)
         
         XCTAssert(keyPair.publicKey.bytes.count == 32, "Public key length is incorrect")
     }
