@@ -83,11 +83,11 @@ public class Asset
             
             case .alphanum4 (let a4):
                 let issuerKeyPair = KeyPair (publicKey: a4.issuer, privateKey: nil)
-                result = Asset(type:AssetType.ASSET_TYPE_NATIVE, code:assetXDR.assetCode, issuer:issuerKeyPair)
+                result = Asset(type:AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code:assetXDR.assetCode, issuer:issuerKeyPair)
             
             case .alphanum12 (let a12):
                 let issuerKeyPair = KeyPair (publicKey: a12.issuer, privateKey: nil)
-                result = Asset(type:AssetType.ASSET_TYPE_NATIVE, code:assetXDR.assetCode, issuer:issuerKeyPair)
+                result = Asset(type:AssetType.ASSET_TYPE_CREDIT_ALPHANUM12, code:assetXDR.assetCode, issuer:issuerKeyPair)
         }
         guard let asset = result else {
             throw StellarSDKError.xdrDecodingError(message: "Error encoding asset: invalid data in xdr")

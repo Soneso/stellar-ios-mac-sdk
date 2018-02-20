@@ -25,7 +25,7 @@ class OrderbooksTestCase: XCTestCase {
     func testOrderbookLoadingSuccessful() {
         let expectation = XCTestExpectation(description: "Get orderbooks response")
         
-        sdk.orderbooks.getOrderbook(sellingAssetType: AssetConstants.NATIVE, buyingAssetType: AssetConstants.CREDIT_ALPHANUM4, buyingAssetCode:"FOO", buyingAssetIssuer:"GBAUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG", limit:10) { (response) -> (Void) in
+        sdk.orderbooks.getOrderbook(sellingAssetType: AssetTypeAsString.NATIVE, buyingAssetType: AssetTypeAsString.CREDIT_ALPHANUM4, buyingAssetCode:"FOO", buyingAssetIssuer:"GBAUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG", limit:10) { (response) -> (Void) in
             switch response {
             case .success(let orderbookResponse):
                 

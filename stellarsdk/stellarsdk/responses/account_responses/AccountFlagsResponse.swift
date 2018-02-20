@@ -15,13 +15,13 @@ import Foundation
 public class AccountFlagsResponse: NSObject, Decodable {
     
     /// Requires the issuing account to give other accounts permission before they can hold the issuing account’s credit.
-    public var authRequired:Bool?
+    public let authRequired:Bool
     
     /// Allows the issuing account to revoke its credit held by other accounts.
-    public var authRevocable:Bool?
+    public let authRevocable:Bool
     
     /// If this is set then none of the authorization flags can be set and the account can never be deleted.
-    public var authImmutable:Bool?
+    public let authImmutable:Bool
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
@@ -39,18 +39,21 @@ public class AccountFlagsResponse: NSObject, Decodable {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         
-        authRequired = try values.decodeIfPresent(Bool.self, forKey: .authRequired)
-        if authRequired == nil {
+        if let areq = try values.decodeIfPresent(Bool.self, forKey: .authRequired) {
+            authRequired = areq
+        } else {
             authRequired = false
         }
         
-        authRevocable = try values.decodeIfPresent(Bool.self, forKey: .authRevocable)
-        if authRevocable == nil {
+        if let arev = try values.decodeIfPresent(Bool.self, forKey: .authRevocable) {
+            authRevocable = arev
+        } else {
             authRevocable = false
         }
-        
-        authImmutable = try values.decodeIfPresent(Bool.self, forKey: .authImmutable)
-        if authImmutable == nil {
+
+        if let aimmu = try values.decodeIfPresent(Bool.self, forKey: .authImmutable) {
+            authImmutable = aimmu
+        } else {
             authImmutable = false
         }
     }

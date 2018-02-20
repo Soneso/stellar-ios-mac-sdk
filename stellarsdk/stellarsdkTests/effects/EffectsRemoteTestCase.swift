@@ -1,5 +1,5 @@
 //
-//  EffectsTestCase.swift
+//  EffectsRemoteTestCase.swift
 //  stellarsdkTests
 //
 //  Created by Razvan Chelemen on 05/02/2018.
@@ -9,7 +9,7 @@
 import XCTest
 import stellarsdk
 
-class EffectsTestCase: XCTestCase {
+class EffectsRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
     
     override func setUp() {
