@@ -12,7 +12,7 @@ public struct OperationXDR: XDRCodable {
     public var sourceAccount: PublicKey?
     public let body: OperationBodyXDR
     
-    init(sourceAccount: PublicKey?, body: OperationBodyXDR) {
+    public init(sourceAccount: PublicKey?, body: OperationBodyXDR) {
         self.sourceAccount = sourceAccount
         self.body = body
     }
@@ -28,11 +28,10 @@ public struct OperationXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         
         if sourceAccount != nil {
-            try container.encode(1)
-            try container.encode(sourceAccount)
+            try container.encode([sourceAccount])
         }
         else {
-            try container.encode(0)
+            try container.encode([PublicKey]())
         }
         
         try container.encode(body)

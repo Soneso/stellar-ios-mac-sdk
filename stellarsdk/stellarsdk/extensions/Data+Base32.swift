@@ -8,8 +8,8 @@
 
 import Foundation
 
-extension Data {
-    var base32EncodedString: String? {
+public extension Data {
+    public var base32EncodedString: String? {
         get {
             return Base32Encode(data: self)
         }

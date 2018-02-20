@@ -10,7 +10,9 @@ public enum Ed25519Error: Error {
     case seedGenerationFailed
     case invalidSeedLength
     case invalidScalarLength
+    case invalidPublicKey
     case invalidPublicKeyLength
+    case invalidPrivateKey
     case invalidPrivateKeyLength
     case invalidSignatureLength
 }

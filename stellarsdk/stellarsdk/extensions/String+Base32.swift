@@ -8,8 +8,8 @@
 
 import Foundation
 
-extension String {
-    var base32EncodedString: String? {
+public extension String {
+    public var base32EncodedString: String? {
         get {
             if let data = (self as NSString).data(using: String.Encoding.utf8.rawValue, allowLossyConversion: false) {
                 return Base32Encode(data: data)
@@ -19,7 +19,7 @@ extension String {
         }
     }
     
-    var base32DecodedData: Data? {
+    public var base32DecodedData: Data? {
         get {
             return Base32Decode(data: self)
         }

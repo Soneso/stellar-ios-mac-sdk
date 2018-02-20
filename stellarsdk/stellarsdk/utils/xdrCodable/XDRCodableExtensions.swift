@@ -96,6 +96,7 @@ extension Optional: XDREncodable {
 }
 extension UInt8: XDRCodable {}
 extension Int32: XDRCodable {}
+extension Int: XDRCodable {}
 extension UInt32: XDRCodable {}
 extension Int64: XDRCodable {}
 extension UInt64: XDRCodable {}
