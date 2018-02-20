@@ -59,7 +59,7 @@ public class Operation {
     }
     
     func getOperationBodyXDR() throws -> OperationBodyXDR {
-        return OperationBodyXDR.inflation
+        throw StellarSDKError.invalidArgument(message: "Method must be overridden by subclass")
     }
     
     func toXDRAmount(amount:Int64) -> Int64 {

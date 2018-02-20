@@ -61,7 +61,7 @@ class EffectsLocalTestCase: XCTestCase {
             XCTAssertEqual(effectsResponse.links.prev?.href, "https://horizon-testnet.stellar.org/effects?order=asc&limit=19&cursor=32069369748004865-2")
             XCTAssertNil(effectsResponse.links.prev?.templated)
             
-            XCTAssertEqual(effectsResponse.records.count, 3)
+            XCTAssertEqual(effectsResponse.records.count, 19)
 
             for record in effectsResponse.records {
                 switch record.effectType {
@@ -257,82 +257,400 @@ class EffectsLocalTestCase: XCTestCase {
         
         // validate account debited effect response
         func validateAccountDebitedEffectResponse(effectResponse: AccountDebitedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/65571265843201")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=65571265843201-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=65571265843201-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000065571265843201-0000000002")
+            XCTAssertEqual(effectResponse.pagingToken, "65571265843201-2")
+            XCTAssertEqual(effectResponse.account, "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.ACCOUNT_DEBITED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.accountDebited)
+            XCTAssertEqual(effectResponse.assetType, AssetTypeAsString.NATIVE)
+            XCTAssertNil(effectResponse.assetCode)
+            XCTAssertNil(effectResponse.assetIssuer)
+            XCTAssertEqual(effectResponse.amount, "30.0")
         }
         
         // validate account thresholds updated effect response
         func validateAccountThresholdsUpdatedEffectResponse(effectResponse: AccountThresholdsUpdatedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/18970870550529")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=18970870550529-1")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=18970870550529-1")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000018970870550529-0000000001")
+            XCTAssertEqual(effectResponse.pagingToken, "18970870550529-1")
+            XCTAssertEqual(effectResponse.account, "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.ACCOUNT_THRESHOLDS_UPDATED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.accountThresholdsUpdated)
+            XCTAssertEqual(effectResponse.lowThreshold, 2)
+            XCTAssertEqual(effectResponse.medThreshold, 3)
+            XCTAssertEqual(effectResponse.highThreshold, 4)
         }
             
         // validate account home domain updated effect response
         func validateAccountHomeDomainUpdatedEffectResponse(effectResponse: AccountHomeDomainUpdatedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/18970870550529")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=18970870550529-1")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=18970870550529-1")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000018970870550529-0000000001")
+            XCTAssertEqual(effectResponse.pagingToken, "18970870550529-1")
+            XCTAssertEqual(effectResponse.account, "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.ACCOUNT_HOME_DOMAIN_UPDATED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.accountHomeDomainUpdated)
+            XCTAssertEqual(effectResponse.homeDomain, "stellar.org")
         }
         
         // validate account flags updated effect response
         func validateAccountFlagsUpdatedEffectResponse(effectResponse: AccountFlagsUpdatedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/18970870550529")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=18970870550529-1")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=18970870550529-1")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000018970870550529-0000000001")
+            XCTAssertEqual(effectResponse.pagingToken, "18970870550529-1")
+            XCTAssertEqual(effectResponse.account, "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.ACCOUNT_FLAGS_UPDATED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.accountFlagsUpdated)
+            XCTAssertEqual(effectResponse.authRequired, false)
+            XCTAssertEqual(effectResponse.authRevocable, true)
         }
         
         // validate signer created effect response
         func validateSignerCreatedEffectResponse(effectResponse: SignerCreatedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/65571265859585")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=65571265859585-3")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=65571265859585-3")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000065571265859585-0000000003")
+            XCTAssertEqual(effectResponse.pagingToken, "65571265859585-3")
+            XCTAssertEqual(effectResponse.account, "GB24LPGAHYTWRYOXIDKXLI55SBRWW42T3TZKDAAW3BOJX4ADVIATFTLU")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.SIGNER_CREATED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.signerCreated)
+            XCTAssertEqual(effectResponse.weight, 1)
+            XCTAssertEqual(effectResponse.publicKey, "GB24LPGAHYTWRYOXIDKXLI55SBRWW42T3TZKDAAW3BOJX4ADVIATFTLU")
         }
         
         // validate signer removed effect response
         func validateSignerRemovedEffectResponse(effectResponse: SignerRemovedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/43658342567940")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=43658342567940-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=43658342567940-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000043658342567940-0000000002")
+            XCTAssertEqual(effectResponse.pagingToken, "43658342567940-2")
+            XCTAssertEqual(effectResponse.account, "GCFKT6BN2FEASCEVDNHEC4LLFT2KLUUPEMKM4OJPEJ65H2AEZ7IH4RV6")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.SIGNER_REMOVED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.signerRemoved)
+            XCTAssertEqual(effectResponse.weight, 0)
+            XCTAssertEqual(effectResponse.publicKey, "GCFKT6BN2FEASCEVDNHEC4LLFT2KLUUPEMKM4OJPEJ65H2AEZ7IH4RV6")
         }
         
         // validate signer updated effect response
         func validateSignerUpdatedEffectResponse(effectResponse: SignerUpdatedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/43658342567940")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=43658342567940-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=43658342567940-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000043658342567940-0000000002")
+            XCTAssertEqual(effectResponse.pagingToken, "43658342567940-2")
+            XCTAssertEqual(effectResponse.account, "GCFKT6BN2FEASCEVDNHEC4LLFT2KLUUPEMKM4OJPEJ65H2AEZ7IH4RV6")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.SIGNER_UPDATED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.signerUpdated)
+            XCTAssertEqual(effectResponse.weight, 2)
+            XCTAssertEqual(effectResponse.publicKey, "GCFKT6BN2FEASCEVDNHEC4LLFT2KLUUPEMKM4OJPEJ65H2AEZ7IH4RV6")
         }
         
         // validate trustline created effect response
         func validateTrustlineCreatedEffectResponse(effectResponse: TrustlineCreatedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/33788507721730")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000033788507721730-0000000002")
+            XCTAssertEqual(effectResponse.pagingToken, "33788507721730-2")
+            XCTAssertEqual(effectResponse.account, "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.TRUSTLINE_CREATED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.trustlineCreated)
+            XCTAssertEqual(effectResponse.assetType, AssetTypeAsString.CREDIT_ALPHANUM4)
+            XCTAssertEqual(effectResponse.assetCode, "EUR")
+            XCTAssertEqual(effectResponse.assetIssuer, "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA")
+            XCTAssertEqual(effectResponse.limit, "1000.0")
         }
         
         // validate trustline removed effect response
         func validateTrustlineRemovedEffectResponse(effectResponse: TrustlineRemovedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/33788507721730")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000033788507721730-0000000002")
+            XCTAssertEqual(effectResponse.pagingToken, "33788507721730-2")
+            XCTAssertEqual(effectResponse.account, "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.TRUSTLINE_REMOVED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.trustlineRemoved)
+            XCTAssertEqual(effectResponse.assetType, AssetTypeAsString.CREDIT_ALPHANUM4)
+            XCTAssertEqual(effectResponse.assetCode, "EUR")
+            XCTAssertEqual(effectResponse.assetIssuer, "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA")
+            XCTAssertEqual(effectResponse.limit, "0.0")
         }
         
         // validate trustline updated effect response
         func validateTrustlineUpdatedEffectResponse(effectResponse: TrustlineUpdatedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/33788507721730")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000033788507721730-0000000002")
+            XCTAssertEqual(effectResponse.pagingToken, "33788507721730-2")
+            XCTAssertEqual(effectResponse.account, "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.TRUSTLINE_UPDATED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.trustlineUpdated)
+            XCTAssertEqual(effectResponse.assetType, AssetTypeAsString.CREDIT_ALPHANUM12)
+            XCTAssertEqual(effectResponse.assetCode, "TESTTEST")
+            XCTAssertEqual(effectResponse.assetIssuer, "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA")
+            XCTAssertEqual(effectResponse.limit, "100.0")
         }
         
         // validate trustline authorized effect response
         func validateTrustlineAuthorizedEffectResponse(effectResponse: TrustlineAuthorizedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/33788507721730")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000033788507721730-0000000002")
+            XCTAssertEqual(effectResponse.pagingToken, "33788507721730-2")
+            XCTAssertEqual(effectResponse.account, "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.TRUSTLINE_AUTHORIZED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.trustlineAuthorized)
+            XCTAssertEqual(effectResponse.assetType, AssetTypeAsString.CREDIT_ALPHANUM12)
+            XCTAssertEqual(effectResponse.assetCode, "TESTTEST")
+            XCTAssertEqual(effectResponse.assetIssuer, "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA")
+            XCTAssertEqual(effectResponse.limit, "100.0")
         }
         
         // validate trustline deauthorized effect response
         func validateTrustlineDeauthorizedEffectResponse(effectResponse: TrustlineDeauthorizedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/33788507721730")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000033788507721730-0000000002")
+            XCTAssertEqual(effectResponse.pagingToken, "33788507721730-2")
+            XCTAssertEqual(effectResponse.account, "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.TRUSTLINE_DEAUTHORIZED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.trustlineDeauthorized)
+            XCTAssertEqual(effectResponse.assetType, AssetTypeAsString.CREDIT_ALPHANUM4)
+            XCTAssertEqual(effectResponse.assetCode, "EUR")
+            XCTAssertEqual(effectResponse.assetIssuer, "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA")
+            XCTAssertEqual(effectResponse.limit, "100.0")
         }
         
         // validate offer created effect response
         func validateOfferCreatedEffectResponse(effectResponse: OfferCreatedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/33788507721730")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000033788507721730-0000000002")
+            XCTAssertEqual(effectResponse.pagingToken, "33788507721730-2")
+            XCTAssertEqual(effectResponse.account, "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.OFFER_CREATED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.offerCreated)
         }
         
         // validate offer removed effect response
         func validateOfferRemovedEffectResponse(effectResponse: OfferRemovedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/33788507721730")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000033788507721730-0000000002")
+            XCTAssertEqual(effectResponse.pagingToken, "33788507721730-2")
+            XCTAssertEqual(effectResponse.account, "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.OFFER_REMOVED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.offerRemoved)
         }
         
         // validate offer updated effect response
         func validateOfferUpdatedEffectResponse(effectResponse: OfferUpdatedEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/33788507721730")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000033788507721730-0000000002")
+            XCTAssertEqual(effectResponse.pagingToken, "33788507721730-2")
+            XCTAssertEqual(effectResponse.account, "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.OFFER_UPDATED)
+            XCTAssertEqual(effectResponse.effectType, EffectType.offerUpdated)
         }
         
         // validate trade  effect response
         func validateTradeEffectResponse(effectResponse: TradeEffectResponse) {
-            // TODO
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/33788507721730")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000033788507721730-0000000002")
+            XCTAssertEqual(effectResponse.pagingToken, "33788507721730-2")
+            XCTAssertEqual(effectResponse.account, "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.TRADE)
+            XCTAssertEqual(effectResponse.effectType, EffectType.tradeEffect)
+            XCTAssertEqual(effectResponse.seller, "GCVHDLN6EHZBYW2M3BQIY32C23E4GPIRZZDBNF2Q73DAZ5VJDRGSMYRB")
+            XCTAssertEqual(effectResponse.offerId, 1)
+            XCTAssertEqual(effectResponse.soldAmount, "1000.0")
+            XCTAssertEqual(effectResponse.soldAssetType, AssetTypeAsString.CREDIT_ALPHANUM4)
+            XCTAssertEqual(effectResponse.soldAssetCode, "EUR")
+            XCTAssertEqual(effectResponse.soldAssetIssuer, "GCWVFBJ24754I5GXG4JOEB72GJCL3MKWC7VAEYWKGQHPVH3ENPNBSKWS")
+            XCTAssertEqual(effectResponse.boughtAmount, "60.0")
+            XCTAssertEqual(effectResponse.boughtAssetType, AssetTypeAsString.CREDIT_ALPHANUM12)
+            XCTAssertEqual(effectResponse.boughtAssetCode, "TESTTEST")
+            XCTAssertEqual(effectResponse.boughtAssetIssuer, "GAHXPUDP3AK6F2QQM4FIRBGPNGKLRDDSTQCVKEXXKKRHJZUUQ23D5BU7")
         }
         
         wait(for: [expectation], timeout: 15.0)
@@ -361,22 +679,22 @@ class EffectsLocalTestCase: XCTestCase {
         effectsResponseString.append(accountCreatedEffect)
         effectsResponseString.append("," + accountRemovedEffect)
         effectsResponseString.append("," + accountCreditedEffect)
-//        effectsResponseString.append("," + accountDebitedEffect)
-//        effectsResponseString.append("," + accountThresholdsUpdatedEffect)
-//        effectsResponseString.append("," + accountHomeDomainUpdatedEffect)
-//        effectsResponseString.append("," + accountFlagsUpdatedEffect)
-//        effectsResponseString.append("," + signerCreatedEffect)
-//        effectsResponseString.append("," + signerRemovedEffect)
-//        effectsResponseString.append("," + signerUpdatedEffect)
-//        effectsResponseString.append("," + trustlineCreatedEffect)
-//        effectsResponseString.append("," + trustlineRemovedEffect)
-//        effectsResponseString.append("," + trustlineUpdatedEffect)
-//        effectsResponseString.append("," + trustlineAuthorizedEffect)
-//        effectsResponseString.append("," + trustlineDeauthorizedEffect)
-//        effectsResponseString.append("," + offerCreatedEffect)
-//        effectsResponseString.append("," + offerRemovedEffect)
-//        effectsResponseString.append("," + offerUpdatedEffect)
-//        effectsResponseString.append("," + tradeEffect)
+        effectsResponseString.append("," + accountDebitedEffect)
+        effectsResponseString.append("," + accountThresholdsUpdatedEffect)
+        effectsResponseString.append("," + accountHomeDomainUpdatedEffect)
+        effectsResponseString.append("," + accountFlagsUpdatedEffect)
+        effectsResponseString.append("," + signerCreatedEffect)
+        effectsResponseString.append("," + signerRemovedEffect)
+        effectsResponseString.append("," + signerUpdatedEffect)
+        effectsResponseString.append("," + trustlineCreatedEffect)
+        effectsResponseString.append("," + trustlineRemovedEffect)
+        effectsResponseString.append("," + trustlineUpdatedEffect)
+        effectsResponseString.append("," + trustlineAuthorizedEffect)
+        effectsResponseString.append("," + trustlineDeauthorizedEffect)
+        effectsResponseString.append("," + offerCreatedEffect)
+        effectsResponseString.append("," + offerRemovedEffect)
+        effectsResponseString.append("," + offerUpdatedEffect)
+        effectsResponseString.append("," + tradeEffect)
         
     
         let end = """
@@ -454,21 +772,369 @@ class EffectsLocalTestCase: XCTestCase {
                 "amount": "1000.0"
             }
     """
-    private let accountDebitedEffect = "" //TODO
-    private let accountThresholdsUpdatedEffect = "" //TODO
-    private let accountHomeDomainUpdatedEffect = "" //TODO
-    private let accountFlagsUpdatedEffect = "" //TODO
-    private let signerCreatedEffect = "" //TODO
-    private let signerRemovedEffect = "" //TODO
-    private let signerUpdatedEffect = "" //TODO
-    private let trustlineCreatedEffect = "" //TODO
-    private let trustlineRemovedEffect = "" //TODO
-    private let trustlineUpdatedEffect = "" //TODO
-    private let trustlineAuthorizedEffect = "" //TODO
-    private let trustlineDeauthorizedEffect = "" //TODO
-    private let offerCreatedEffect = "" //TODO
-    private let offerRemovedEffect = "" //TODO
-    private let offerUpdatedEffect = "" //TODO
-    private let tradeEffect = "" //TODO
+    private let accountDebitedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/65571265843201"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=65571265843201-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=65571265843201-2"
+                    }
+                },
+                "id": "0000065571265843201-0000000002",
+                "paging_token": "65571265843201-2",
+                "account": "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H",
+                "type": "account_debited",
+                "type_i": 3,
+                "asset_type": "native",
+                "amount": "30.0"
+            }
+    """
+    private let accountThresholdsUpdatedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/18970870550529"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=18970870550529-1"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=18970870550529-1"
+                    }
+                },
+                "id": "0000018970870550529-0000000001",
+                "paging_token": "18970870550529-1",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "account_thresholds_updated",
+                "type_i": 4,
+                "low_threshold": 2,
+                "med_threshold": 3,
+                "high_threshold": 4
+            }
+    """
+    private let accountHomeDomainUpdatedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/18970870550529"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=18970870550529-1"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=18970870550529-1"
+                    }
+                },
+                "id": "0000018970870550529-0000000001",
+                "paging_token": "18970870550529-1",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "account_home_domain_updated",
+                "type_i": 5,
+                "home_domain": "stellar.org"
+            }
+    """
+    private let accountFlagsUpdatedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/18970870550529"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=18970870550529-1"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=18970870550529-1"
+                    }
+                },
+                "id": "0000018970870550529-0000000001",
+                "paging_token": "18970870550529-1",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "account_flags_updated",
+                "type_i": 6,
+                "auth_required": false,
+                "auth_revocable": true
+            }
+    """
+    private let signerCreatedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/65571265859585"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=65571265859585-3"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=65571265859585-3"
+                    }
+                },
+                "id": "0000065571265859585-0000000003",
+                "paging_token": "65571265859585-3",
+                "account": "GB24LPGAHYTWRYOXIDKXLI55SBRWW42T3TZKDAAW3BOJX4ADVIATFTLU",
+                "type": "signer_created",
+                "type_i": 10,
+                "weight": 1,
+                "public_key": "GB24LPGAHYTWRYOXIDKXLI55SBRWW42T3TZKDAAW3BOJX4ADVIATFTLU"
+            }
+    """
+    private let signerRemovedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/43658342567940"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=43658342567940-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=43658342567940-2"
+                    }
+                },
+                "id": "0000043658342567940-0000000002",
+                "paging_token": "43658342567940-2",
+                "account": "GCFKT6BN2FEASCEVDNHEC4LLFT2KLUUPEMKM4OJPEJ65H2AEZ7IH4RV6",
+                "type": "signer_removed",
+                "type_i": 11,
+                "weight": 0,
+                "public_key": "GCFKT6BN2FEASCEVDNHEC4LLFT2KLUUPEMKM4OJPEJ65H2AEZ7IH4RV6"
+            }
+    """
+    private let signerUpdatedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/43658342567940"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=43658342567940-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=43658342567940-2"
+                    }
+                },
+                "id": "0000043658342567940-0000000002",
+                "paging_token": "43658342567940-2",
+                "account": "GCFKT6BN2FEASCEVDNHEC4LLFT2KLUUPEMKM4OJPEJ65H2AEZ7IH4RV6",
+                "type": "signer_updated",
+                "type_i": 12,
+                "weight": 2,
+                "public_key": "GCFKT6BN2FEASCEVDNHEC4LLFT2KLUUPEMKM4OJPEJ65H2AEZ7IH4RV6"
+            }
+    """
+    private let trustlineCreatedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/33788507721730"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2"
+                    }
+                },
+                "id": "0000033788507721730-0000000002",
+                "paging_token": "33788507721730-2",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "trustline_created",
+                "type_i": 20,
+                "asset_type": "credit_alphanum4",
+                "asset_code": "EUR",
+                "asset_issuer": "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA",
+                "limit": "1000.0"
+            }
+    """
+    private let trustlineRemovedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/33788507721730"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2"
+                    }
+                },
+                "id": "0000033788507721730-0000000002",
+                "paging_token": "33788507721730-2",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "trustline_removed",
+                "type_i": 21,
+                "asset_type": "credit_alphanum4",
+                "asset_code": "EUR",
+                "asset_issuer": "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA",
+                "limit": "0.0"
+            }
+    """
+    private let trustlineUpdatedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/33788507721730"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2"
+                    }
+                },
+                "id": "0000033788507721730-0000000002",
+                "paging_token": "33788507721730-2",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "trustline_updated",
+                "type_i": 22,
+                "asset_type": "credit_alphanum12",
+                "asset_code": "TESTTEST",
+                "asset_issuer": "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA",
+                "limit": "100.0"
+            }
+    """
+    private let trustlineAuthorizedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/33788507721730"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2"
+                    }
+                },
+                "id": "0000033788507721730-0000000002",
+                "paging_token": "33788507721730-2",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "trustline_authorized",
+                "type_i": 23,
+                "asset_type": "credit_alphanum12",
+                "asset_code": "TESTTEST",
+                "asset_issuer": "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA",
+                "limit": "100.0"
+            }
+    """
+    private let trustlineDeauthorizedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/33788507721730"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2"
+                    }
+                },
+                "id": "0000033788507721730-0000000002",
+                "paging_token": "33788507721730-2",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "trustline_deauthorized",
+                "type_i": 24,
+                "asset_type": "credit_alphanum4",
+                "asset_code": "EUR",
+                "asset_issuer": "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA",
+                "limit": "100.0"
+            }
+    """
+    private let offerCreatedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/33788507721730"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2"
+                    }
+                },
+                "id": "0000033788507721730-0000000002",
+                "paging_token": "33788507721730-2",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "offer_created",
+                "type_i": 30
+            }
+    """
+    private let offerRemovedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/33788507721730"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2"
+                    }
+                },
+                "id": "0000033788507721730-0000000002",
+                "paging_token": "33788507721730-2",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "offer_removed",
+                "type_i": 31
+            }
+    """
+    private let offerUpdatedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/33788507721730"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2"
+                    }
+                },
+                "id": "0000033788507721730-0000000002",
+                "paging_token": "33788507721730-2",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "offer_updated",
+                "type_i": 32
+            }
+    """
+    private let tradeEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/33788507721730"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2"
+                    }
+                },
+                "id": "0000033788507721730-0000000002",
+                "paging_token": "33788507721730-2",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "trade",
+                "type_i": 33,
+                "seller": "GCVHDLN6EHZBYW2M3BQIY32C23E4GPIRZZDBNF2Q73DAZ5VJDRGSMYRB",
+                "offer_id": 1,
+                "sold_amount": "1000.0",
+                "sold_asset_type": "credit_alphanum4",
+                "sold_asset_code": "EUR",
+                "sold_asset_issuer": "GCWVFBJ24754I5GXG4JOEB72GJCL3MKWC7VAEYWKGQHPVH3ENPNBSKWS",
+                "bought_amount": "60.0",
+                "bought_asset_type": "credit_alphanum12",
+                "bought_asset_code": "TESTTEST",
+                "bought_asset_issuer": "GAHXPUDP3AK6F2QQM4FIRBGPNGKLRDDSTQCVKEXXKKRHJZUUQ23D5BU7"
+            }
+    """
     
 }
