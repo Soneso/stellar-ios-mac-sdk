@@ -182,7 +182,6 @@
 		833CBFE72036F7C200C23CFE /* AccountMergeOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFE62036F7C200C23CFE /* AccountMergeOperation.swift */; };
 		833CBFE92036F84F00C23CFE /* ManageDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFE82036F84F00C23CFE /* ManageDataOperation.swift */; };
 		833CBFED2038F9BC00C23CFE /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFEC2038F9BB00C23CFE /* Transaction.swift */; };
-		833CBFEF20395DA700C23CFE /* NetworkPassphrase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFEE20395DA700C23CFE /* NetworkPassphrase.swift */; };
 		833CBFF120395FD000C23CFE /* SubmitTransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFF020395FD000C23CFE /* SubmitTransactionResponse.swift */; };
 		833CBFF3203A10FD00C23CFE /* FindPaymentPathsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFF2203A10FD00C23CFE /* FindPaymentPathsResponse.swift */; };
 		8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */; };
@@ -487,7 +486,6 @@
 		833CBFE62036F7C200C23CFE /* AccountMergeOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMergeOperation.swift; sourceTree = "<group>"; };
 		833CBFE82036F84F00C23CFE /* ManageDataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageDataOperation.swift; sourceTree = "<group>"; };
 		833CBFEC2038F9BB00C23CFE /* Transaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
-		833CBFEE20395DA700C23CFE /* NetworkPassphrase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPassphrase.swift; sourceTree = "<group>"; };
 		833CBFF020395FD000C23CFE /* SubmitTransactionResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubmitTransactionResponse.swift; sourceTree = "<group>"; };
 		833CBFF2203A10FD00C23CFE /* FindPaymentPathsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindPaymentPathsResponse.swift; sourceTree = "<group>"; };
 		8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountRemoteTestCase.swift; sourceTree = "<group>"; };
@@ -939,7 +937,6 @@
 		7445E9FE201B106500470E0A /* stellarsdk */ = {
 			isa = PBXGroup;
 			children = (
-				744602E2203B22A700D807C1 /* network */,
 				833CBFBD20337D1600C23CFE /* sdk */,
 				83DD2C5C202D04E100713FEE /* responses */,
 				743DF5782020538A00713DE7 /* crypto */,
@@ -976,14 +973,6 @@
 				7445EA0C201B106500470E0A /* Info.plist */,
 			);
 			path = stellarsdkTests;
-			sourceTree = "<group>";
-		};
-		744602E2203B22A700D807C1 /* network */ = {
-			isa = PBXGroup;
-			children = (
-				744602E3203B22CC00D807C1 /* Network.swift */,
-			);
-			path = network;
 			sourceTree = "<group>";
 		};
 		744C4DB3202A242B00B46CDE /* operations_responses */ = {
@@ -1175,7 +1164,7 @@
 				833CBFE82036F84F00C23CFE /* ManageDataOperation.swift */,
 				4390830620372AF600254042 /* MemoProtocol.swift */,
 				4390830820372BAF00254042 /* Memo.swift */,
-				833CBFEE20395DA700C23CFE /* NetworkPassphrase.swift */,
+				744602E3203B22CC00D807C1 /* Network.swift */,
 			);
 			path = sdk;
 			sourceTree = "<group>";
@@ -1714,7 +1703,6 @@
 				83DD2C55202CE39C00713FEE /* AssetLinksResponse.swift in Sources */,
 				833CBFD72036F01700C23CFE /* CreateAccountOperation.swift in Sources */,
 				833CBFA6203353C900C23CFE /* ChangeTrustOperationXDR.swift in Sources */,
-				833CBFEF20395DA700C23CFE /* NetworkPassphrase.swift in Sources */,
 				43E34B692031E243003104A9 /* OrderbookOfferResponse.swift in Sources */,
 				743DF54A201F70CA00713DE7 /* String+Base32.swift in Sources */,
 				833CBF8A2033510D00C23CFE /* DecoratedSignatureXDR.swift in Sources */,
