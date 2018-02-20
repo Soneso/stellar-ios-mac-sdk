@@ -8,22 +8,26 @@
 
 import Foundation
 
-public enum AllowTrustResultCode: Int {
-    case success = 0
-    case malformed = -1
-    case noTrustline = -2
-    case trustNotRequired = -3
-    case cantRevoke = -4
-    case selfNotAllowed = -5
+public enum AllowTrustResultCode: Int32 {
+    // codes considered as "success" for the operation
+    case success = 0 // success
+    
+    // codes considered as "failure" for the operation
+    case malformed = -1 // asset is not ASSET_TYPE_ALPHANUM
+    case noTrustline = -2 // trustor does not have a trustline
+    case trustNotRequired = -3 // source account does not require trust
+    case cantRevoke = -4  // source account can't revoke trust
+    case selfNotAllowed = -5 // trusting self is not allowed
 }
 
-enum AllowTrustResultXDR: XDRCodable {
-    case success (Int)
-    case empty (Int)
+public enum AllowTrustResultXDR: XDRCodable {
+    case success (Int32)
+    case empty (Int32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        let code = AllowTrustResultCode(rawValue: try container.decode(Int.self))!
+        let discriminant = try container.decode(Int32.self)
+        let code = AllowTrustResultCode(rawValue: discriminant)!
         
         switch code {
         case .success:

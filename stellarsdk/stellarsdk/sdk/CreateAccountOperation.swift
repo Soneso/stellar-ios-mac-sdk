@@ -29,6 +29,12 @@ public class CreateAccountOperation:Operation {
         self.startBalance = startBalance
         super.init(sourceAccount:sourceAccount)
     }
+
+    public init(fromXDR:CreateAccountOperationXDR) {
+        self.destination = KeyPair.fromXDRPublicKey(fromXDR.destination)
+        self.startBalance = Operation.fromXDRAmount(Int64(fromXDR.startingBalance))
+        super.init(sourceAccount: nil)
+    }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         return OperationBodyXDR.createAccount(CreateAccountOperationXDR(destination: destination.publicKey,

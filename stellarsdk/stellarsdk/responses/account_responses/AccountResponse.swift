@@ -45,7 +45,7 @@ public class AccountResponse: NSObject, Decodable {
     /// An array of account signers with their weights.
     public var signers:[AccountSignerResponse]
     
-    /// An array of account data fields.
+    /// An array of account data fields. The values are base64 encoded.
     public var data:[String:String]
 
     // Properties to encode and decode

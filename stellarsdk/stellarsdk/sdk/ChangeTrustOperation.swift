@@ -30,6 +30,12 @@ public class ChangeTrustOperation:Operation {
         super.init(sourceAccount:sourceAccount)
     }
     
+    public init(fromXDR:ChangeTrustOperationXDR) {
+        self.asset = try! Asset.fromXDR(assetXDR: fromXDR.asset)
+        self.limit = Operation.fromXDRAmount(fromXDR.limit)
+        super.init(sourceAccount: nil)
+    }
+    
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let assetXDR = try asset.toXDR()
         let limitXDR = toXDRAmount(amount: limit)

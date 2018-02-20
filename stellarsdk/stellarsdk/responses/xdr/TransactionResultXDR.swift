@@ -8,27 +8,27 @@
 
 import UIKit
 
-enum TransactionResultCode: Int {
-    case success = 0
-    case failed = -1
-    case tooEarly = -2
-    case tooLate = -3
-    case missingOperation = -4
-    case badSeq = -5
-    case badAuth = -6
-    case insufficientBalance = -7
-    case noAccount = -8
-    case insufficientFee = -9
-    case badAuthExtra = -10
-    case internalError = -11
+public enum TransactionResultCode: Int32 {
+    case success = 0 // all operations succeeded
+    case failed = -1 // one of the operations failed (none were applied)
+    case tooEarly = -2 // ledger closeTime before minTime
+    case tooLate = -3  // ledger closeTime after maxTime
+    case missingOperation = -4 // no operation was specified
+    case badSeq = -5 // sequence number does not match source account
+    case badAuth = -6 // too few valid signatures / wrong network
+    case insufficientBalance = -7 // fee would bring account below reserve
+    case noAccount = -8 // source account not found
+    case insufficientFee = -9 // fee is too small
+    case badAuthExtra = -10 // unused signatures attached to transaction
+    case internalError = -11 // an unknown error occured
 }
 
-enum TransactionResultBodyXDR {
+public enum TransactionResultBodyXDR {
     case success([OperationResultXDR])
     case failed
 }
 
-struct TransactionResultXDR: XDRCodable {
+public struct TransactionResultXDR: XDRCodable {
     public var feeCharged:Int64
     public var resultBody:TransactionResultBodyXDR?
     public var code:TransactionResultCode
@@ -43,7 +43,8 @@ struct TransactionResultXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         feeCharged = try container.decode(Int64.self)
-        code = TransactionResultCode(rawValue: try container.decode(Int.self))!
+        let discriminant = try container.decode(Int32.self)
+        code = TransactionResultCode(rawValue: discriminant)!
         switch code {
             case .success:
                 fallthrough
@@ -52,7 +53,7 @@ struct TransactionResultXDR: XDRCodable {
             default:
                 break
         }
-        _ = try container.decode(Int.self)
+        _ = try container.decode(Int32.self)
         
     }
     

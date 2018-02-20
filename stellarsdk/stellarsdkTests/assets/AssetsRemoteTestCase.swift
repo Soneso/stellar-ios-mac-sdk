@@ -9,7 +9,7 @@
 import XCTest
 import stellarsdk
 
-class AssetsTestCase: XCTestCase {
+class AssetsRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
     
     override func setUp() {
@@ -23,7 +23,7 @@ class AssetsTestCase: XCTestCase {
     }
     
     func testAssetsLoadingSuccessful() {
-        let expectation = XCTestExpectation(description: "Get assets response")
+        let expectation = XCTestExpectation(description: "Get assets and validate assets parsing")
         
         sdk.assets.getAssets(order:Order.descending, limit:2) { (response) -> (Void) in
             switch response {
@@ -40,7 +40,7 @@ class AssetsTestCase: XCTestCase {
                                 let asset2 = prevAssetsResponse.records.last // because ordering is asc now.
                                 XCTAssertTrue(asset1?.amount == asset2?.amount)
                                 XCTAssertTrue(asset1?.assetType == asset2?.assetType)
-                                if (asset1?.assetType != AssetConstants.NATIVE) {
+                                if (asset1?.assetType != AssetTypeAsString.NATIVE) {
                                     XCTAssertTrue(asset1?.assetCode == asset2?.assetCode)
                                     XCTAssertTrue(asset1?.assetIssuer == asset2?.assetIssuer)
                                 }

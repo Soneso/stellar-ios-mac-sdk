@@ -15,15 +15,15 @@ import Foundation
 public class SetOptionsOperation:Operation {
     
     public let inflationDestination:KeyPair?
-    public let clearFlags:Int?
-    public let setFlags:Int?
-    public let masterKeyWeight:Int?
-    public let lowThreshold:Int?
-    public let mediumThreshold:Int?
-    public let highThreshold:Int?
+    public let clearFlags:UInt32?
+    public let setFlags:UInt32?
+    public let masterKeyWeight:UInt32?
+    public let lowThreshold:UInt32?
+    public let mediumThreshold:UInt32?
+    public let highThreshold:UInt32?
     public let homeDomain:String?
     public let signer:SignerKeyXDR?
-    public let signerWeight:Int?
+    public let signerWeight:UInt32?
     
     /**
      Constructor
@@ -40,12 +40,14 @@ public class SetOptionsOperation:Operation {
         - Parameter signer: Signers PublicKey. If you fill this parameter you also need to fill 'signerWeight'
         - Parameter signerWeight: Add or remove the signer from parameter 'signer'. The signer is deleted if the weight is 0.
      
-        - Returns the operation if the given arguments are valid. Returns nil if invalid.
+        - Throws StellarSDKError.invalidArgument if signer is not nil but signerWeight is nil
      */
-    public init?(sourceAccount:KeyPair, inflationDestination:KeyPair?, clearFlags:Int?, setFlags:Int?, masterKeyWeight:Int?, lowThreshold:Int?, mediumThreshold:Int?, highThreshold:Int?, homeDomain:String?, signer:SignerKeyXDR?, signerWeight:Int?) {
+    public init(sourceAccount:KeyPair, inflationDestination:KeyPair?, clearFlags:UInt32?, setFlags:UInt32?, masterKeyWeight:UInt32?, lowThreshold:UInt32?, mediumThreshold:UInt32?, highThreshold:UInt32?, homeDomain:String?, signer:SignerKeyXDR?, signerWeight:UInt32?) throws {
         
-        if signer != nil && signerWeight == nil {return nil}
-        if signer == nil && signerWeight != nil {return nil}
+        
+        if signer != nil && signerWeight == nil {
+            throw StellarSDKError.invalidArgument(message: "Signer Weight can not be nil if signer is not nil")
+        }
         
         self.inflationDestination = inflationDestination
         self.clearFlags = clearFlags
@@ -58,5 +60,53 @@ public class SetOptionsOperation:Operation {
         self.signer = signer
         self.signerWeight = signerWeight
         super.init(sourceAccount:sourceAccount)
+    }
+    
+    public init(fromXDR:SetOptionsOperationXDR) {
+        if let inflation = fromXDR.inflationDestination {
+            self.inflationDestination = KeyPair.fromXDRPublicKey(inflation)
+        } else {
+            self.inflationDestination = nil
+        }
+        self.clearFlags = fromXDR.clearFlags
+        self.setFlags = fromXDR.setFlags
+        self.masterKeyWeight = fromXDR.masterWeight
+        self.lowThreshold = fromXDR.lowThreshold
+        self.mediumThreshold = fromXDR.medThreshold
+        self.highThreshold = fromXDR.highThreshold
+        self.homeDomain = fromXDR.homeDomain
+        self.signer = fromXDR.signer?.key
+        if let weight = fromXDR.signer?.weight {
+            self.signerWeight = weight & 0xFF
+        } else {
+            self.signerWeight = fromXDR.signer?.weight
+        }
+        super.init(sourceAccount: nil)
+    }
+    
+    override func getOperationBodyXDR() throws -> OperationBodyXDR {
+
+        
+        if signer != nil && signerWeight != nil {
+            return OperationBodyXDR.setOptions(SetOptionsOperationXDR(inflationDestination: inflationDestination?.publicKey,
+                                                                      clearFlags: clearFlags,
+                                                                      setFlags: setFlags,
+                                                                      masterWeight: masterKeyWeight,
+                                                                      lowThreshold: lowThreshold,
+                                                                      medThreshold: mediumThreshold,
+                                                                      highThreshold: highThreshold,
+                                                                      homeDomain: homeDomain,
+                                                                      signer:SignerXDR(key: signer!, weight: signerWeight!)))
+        } else {
+            return OperationBodyXDR.setOptions(SetOptionsOperationXDR(inflationDestination: inflationDestination?.publicKey,
+                                                                      clearFlags: clearFlags,
+                                                                      setFlags: setFlags,
+                                                                      masterWeight: masterKeyWeight,
+                                                                      lowThreshold: lowThreshold,
+                                                                      medThreshold: mediumThreshold,
+                                                                      highThreshold: highThreshold,
+                                                                      homeDomain: homeDomain,
+                                                                      signer:nil))
+        }
     }
 }

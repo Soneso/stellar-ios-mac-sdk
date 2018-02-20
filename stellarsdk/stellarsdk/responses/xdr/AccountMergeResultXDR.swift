@@ -8,21 +8,25 @@
 
 import Foundation
 
-public enum AccountMergeResultCode: Int {
-    case success = 0
-    case malformed = -1
-    case noAccount = -2
-    case immutableSet = -3
-    case hasSubEntries = -4
+public enum AccountMergeResultCode: Int32 {
+    // codes considered as "success" for the operation
+    case success = 0 // success
+    
+     // codes considered as "failure" for the operation
+    case malformed = -1 // can't merge onto itself
+    case noAccount = -2 // destination does not exist
+    case immutableSet = -3 // source account has AUTH_IMMUTABLE set
+    case hasSubEntries = -4 // account has trust lines/offers
 }
 
-enum AccountMergeResultXDR: XDRCodable {
-    case success(Int, Int64)
-    case empty (Int)
+public enum AccountMergeResultXDR: XDRCodable {
+    case success(Int32, Int64)
+    case empty (Int32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        let code = AccountMergeResultCode(rawValue: try container.decode(Int.self))!
+        let discriminant = try container.decode(Int32.self)
+        let code = AccountMergeResultCode(rawValue: discriminant)!
         
         switch code {
         case .success:

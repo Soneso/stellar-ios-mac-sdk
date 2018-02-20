@@ -34,7 +34,7 @@ public struct SetOptionsOperationXDR: XDRCodable {
         
     }
     
-    public init(inflationDestination: PublicKey?, clearFlags:UInt32?, setFlags:UInt32, masterWeight:UInt32?, lowThreshold:UInt32, medThreshold:UInt32, highThreshold:UInt32?, homeDomain:String?, signer:SignerXDR?) {
+    public init(inflationDestination: PublicKey?, clearFlags:UInt32?, setFlags:UInt32?, masterWeight:UInt32?, lowThreshold:UInt32?, medThreshold:UInt32?, highThreshold:UInt32?, homeDomain:String?, signer:SignerXDR?) {
         self.inflationDestination = inflationDestination
         self.clearFlags = clearFlags
         self.setFlags = setFlags

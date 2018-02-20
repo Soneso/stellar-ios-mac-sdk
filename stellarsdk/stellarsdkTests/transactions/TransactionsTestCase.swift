@@ -102,7 +102,7 @@ class TransactionsTestCase: XCTestCase {
     func testGetTransactionDetails() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         
-        sdk.transactions.getTransactionDetails(transactionHash: "db8d0da33ff3b40d24ba80318e49cc256e64f4e79e3780100730f4f1695c3ff9") { (response) -> (Void) in
+        sdk.transactions.getTransactionDetails(transactionHash: "6a1e3ff103473d8edbdb05a7a4bd17c9e84c310ff4f52b80596441d9e814e180") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -191,5 +191,5 @@ class TransactionsTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
-    
+ 
 }

@@ -18,7 +18,7 @@ public struct OperationMetaXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         changes = try container.decode(LedgerEntryChangesXDR.self)
-    }
+     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()

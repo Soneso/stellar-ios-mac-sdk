@@ -9,19 +9,19 @@
 import Foundation
 
 public struct LedgerEntryChangesXDR: XDRCodable {
-    public let LedgerEntryChanges: [LedgerEntryChangeXDR]
+    public let ledgerEntryChanges: [LedgerEntryChangeXDR]
     
     public init(LedgerEntryChanges: [LedgerEntryChangeXDR]) {
-        self.LedgerEntryChanges = LedgerEntryChanges
+        self.ledgerEntryChanges = LedgerEntryChanges
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        LedgerEntryChanges = try container.decode([LedgerEntryChangeXDR].self)
+        ledgerEntryChanges = try container.decode([LedgerEntryChangeXDR].self)
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(LedgerEntryChanges)
+        try container.encode(ledgerEntryChanges)
     }
 }

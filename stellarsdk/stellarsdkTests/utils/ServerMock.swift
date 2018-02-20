@@ -125,7 +125,8 @@ class RequestMock {
             return false
         }
         
-        var mockPathComps = path.components(separatedBy: "/")
+        let mockPathAndParams = path.components(separatedBy: "?")
+        var mockPathComps = mockPathAndParams.first!.components(separatedBy: "/")
         var reqPathComps = reqComps.path.components(separatedBy: "/")
         
         if path.starts(with: "/") {
@@ -146,6 +147,11 @@ class RequestMock {
         
         var handles = true
         
+        func getQueryStringParameter(url: URL, param: String) -> String? {
+            guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
+            return url.queryItems?.first(where: { $0.name == param })?.value
+        }
+        
         for i in 0..<mockPathComps.count {
             let mockPath = mockPathComps[i]
             let reqPath = reqPathComps[i]
@@ -154,6 +160,17 @@ class RequestMock {
                 variables[variable] = reqPath
                 
                 continue
+            }
+            
+            if mockPathAndParams.count == 2 {
+                let mockParameters = mockPathAndParams.last!.components(separatedBy: "&")
+                for nextMockParameter in mockParameters {
+                    let keyValue = nextMockParameter.components(separatedBy: "=")
+                    if keyValue.count == 2, let variable = self.variable(keyValue.last!),
+                        let variableValue = getQueryStringParameter(url: url, param: variable) {
+                        variables[variable] = variableValue
+                    }
+                }
             }
             
             if mockPath != "*" && mockPath != reqPath {

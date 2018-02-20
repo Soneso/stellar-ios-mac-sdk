@@ -12,4 +12,11 @@ protocol MemoProtocol {
     func toXDR() -> MemoXDR
     init?(text:String) throws
     init?(hash:Data) throws
+    init?(returnHash:Data) throws
+}
+
+protocol MemoHashProtocol {
+//    init?(hexString:String) throws
+    func hexValue() throws -> String
+    func trimmedHexValue() throws -> String
 }

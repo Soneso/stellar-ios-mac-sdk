@@ -1,5 +1,5 @@
 //
-//  EffectsTestCase.swift
+//  EffectsRemoteTestCase.swift
 //  stellarsdkTests
 //
 //  Created by Razvan Chelemen on 05/02/2018.
@@ -9,7 +9,7 @@
 import XCTest
 import stellarsdk
 
-class EffectsTestCase: XCTestCase {
+class EffectsRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
     
     override func setUp() {
@@ -146,7 +146,7 @@ class EffectsTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testEffectsForAccountStream() {
+    /*func testEffectsForAccountStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
         sdk.effects.stream(for: .effectsForAccount(account: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX", cursor: nil)).onReceive { (response) -> (Void) in
@@ -212,6 +212,6 @@ class EffectsTestCase: XCTestCase {
         }
         
         wait(for: [expectation], timeout: 15.0)
-    }
+    }*/
     
 }

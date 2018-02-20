@@ -33,6 +33,13 @@ public class PaymentOperation:Operation {
         super.init(sourceAccount:sourceAccount)
     }
     
+    public init(fromXDR:PaymentOperationXDR) {
+        self.destination = KeyPair.fromXDRPublicKey(fromXDR.destination)
+        self.asset = try! Asset.fromXDR(assetXDR: fromXDR.asset)
+        self.amount = Operation.fromXDRAmount(Int64(fromXDR.amount))
+        super.init(sourceAccount: nil)
+    }
+    
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let assetXDR = try asset.toXDR()
         let xdrAmount = toXDRAmount(amount: amount)

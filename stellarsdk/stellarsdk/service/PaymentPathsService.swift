@@ -8,6 +8,14 @@
 
 import Foundation
 
+public enum PaymentPathsResponseEnum {
+    case success(details: FindPaymentPathsResponse)
+    case failure(error: HorizonRequestError)
+}
+
+/// A closure to be called with the response from a payment path request
+public typealias FindPaymentPathsResponseClosure = (_ response:PaymentPathsResponseEnum) -> (Void)
+
 public class PaymentPathsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
@@ -20,7 +28,7 @@ public class PaymentPathsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getPaymentPaths(destinationAccount:String, destinationAssetType:String, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String, sourceAccount:String, response:@escaping PageResponse<PaymentPathResponse>.ResponseClosure) {
+    open func findPaymentPaths(destinationAccount:String, destinationAssetType:String, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String, sourceAccount:String, response:@escaping FindPaymentPathsResponseClosure) {
         
         var requestPath = "/paths"
         var params = Dictionary<String,String>()
@@ -36,16 +44,16 @@ public class PaymentPathsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getPaymentPathsFrom(url:serviceHelper.baseURL + requestPath, response:response)
+        findPaymentPathsFrom(url:serviceHelper.baseURL + requestPath, response:response)
     }
     
-    func getPaymentPathsFrom(url:String, response:@escaping PageResponse<PaymentPathResponse>.ResponseClosure) {
+    func findPaymentPathsFrom(url:String, response:@escaping FindPaymentPathsResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
-                    let paymentPaths = try self.jsonDecoder.decode(PageResponse<PaymentPathResponse>.self, from: data)
-                    response(.success(details: paymentPaths))
+                    let findPaymentPaths = try self.jsonDecoder.decode(FindPaymentPathsResponse.self, from: data)
+                    response(.success(details: findPaymentPaths))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }

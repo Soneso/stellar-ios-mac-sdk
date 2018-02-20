@@ -36,6 +36,14 @@ public class CreatePassiveOfferOperation:Operation {
         super.init(sourceAccount:sourceAccount)
     }
     
+    public init(fromXDR:CreatePassiveOfferOperationXDR) {
+        self.selling = try! Asset.fromXDR(assetXDR: fromXDR.selling)
+        self.buying = try! Asset.fromXDR(assetXDR: fromXDR.buying)
+        self.amount = Operation.fromXDRAmount(Int64(fromXDR.amount))
+        self.price = Price(numerator: Int(fromXDR.price.n), denominator: Int(fromXDR.price.d))
+        super.init(sourceAccount: nil)
+    }
+    
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let sellingXDR = try selling.toXDR()
         let buyingXDR = try buying.toXDR()

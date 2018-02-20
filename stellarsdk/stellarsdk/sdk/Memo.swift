@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum Memo {
+public enum Memo {
     case none
     case text (String)
     case id (UInt64)
@@ -29,7 +29,6 @@ extension Memo: MemoProtocol {
     
     init?(text:String) throws {
         if text.utf8CString.count > 28 {
-            // TODO: use runtime exception
             throw StellarSDKError.invalidArgument(message: "text must be <= 28 bytes. length=\(text.count)" )
         }
         self = .text(text)
@@ -37,11 +36,35 @@ extension Memo: MemoProtocol {
     
     init?(hash:Data) throws {
         if (hash.count > 32) {
-            //TODO: use runtime exception
             throw StellarSDKError.invalidArgument(message: "MEMO_HASH can contain 32 bytes at max.")
         }
         self = .hash(hash)
     }
     
+    init?(returnHash:Data) throws {
+        if (returnHash.count > 32) {
+            throw StellarSDKError.invalidArgument(message: "MEMO_RETURN_HASH can contain 32 bytes at max.")
+        }
+        self = .returnHash(returnHash)
+    }
+}
+
+extension Memo:MemoHashProtocol {
+    
+    func hexValue() throws -> String {
+        switch self {
+        case .hash(let hash):
+            return hash.hexEncodedString()
+        case .returnHash(let returnHash):
+            return returnHash.hexEncodedString()
+        default:
+            throw StellarSDKError.invalidArgument(message: "Only hash, return_hash has hex value")
+        }
+    }
+    
+    func trimmedHexValue() throws -> String {
+        let str = try self.hexValue().split(separator: "0").first
+        return String(describing: str)
+    }
 }
 
