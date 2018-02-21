@@ -141,6 +141,22 @@ class TransactionsTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testTransactionPost() {
+        let expectation = XCTestExpectation(description: "Get transaction details")
+        let xdrEnvelope = "AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAByE3sAAAAIAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAR+V72AAAABAAuiJ2+1FGpG7D+sS9qqZlk2/dsu8mdECuR1jiX9PaawJaJMETUP6u06cZgzrqopzmypJMOS/ob7BRvCQ3JkwDg=="
+        
+        sdk.transactions.postTransaction(transactionEnvelope: xdrEnvelope, response: { (response) -> (Void) in
+            switch response {
+            case .success(_):
+                expectation.fulfill()
+            case .failure(_):
+                XCTAssert(false)
+            }
+        })
+        
+        wait(for: [expectation], timeout: 25.0)
+    }
+    
  /*   func testTransactionsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         

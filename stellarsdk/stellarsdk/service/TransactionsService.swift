@@ -13,6 +13,11 @@ public enum TransactionDetailsResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
+public enum TransactionPostResponseEnum {
+    case success(details: SubmitTransactionResponse)
+    case failure(error: HorizonRequestError)
+}
+
 public enum TransactionsChange {
     case allTransactions(cursor:String?)
     case transactionsForAccount(account:String, cursor:String?)
@@ -20,6 +25,7 @@ public enum TransactionsChange {
 }
 
 public typealias TransactionDetailsResponseClosure = (_ response:TransactionDetailsResponseEnum) -> (Void)
+public typealias TransactionPostResponseClosure = (_ response:TransactionPostResponseEnum) -> (Void)
 
 public class TransactionsService: NSObject {
     let serviceHelper: ServiceHelper
@@ -64,6 +70,30 @@ public class TransactionsService: NSObject {
             case .failure(let error):
                 response(.failure(error:error))
             }
+        }
+    }
+    
+    open func postTransaction(transactionEnvelope:String, response:@escaping TransactionPostResponseClosure) {
+        let requestPath = "/transactions"
+        if let encoded = transactionEnvelope.urlEncoded {
+            let data = ("tx=" + encoded).data(using: .utf8)
+        
+            serviceHelper.POSTRequestWithPath(path: requestPath, body: data) { (result) -> (Void) in
+                switch result {
+                case .success(let data):
+                    do {
+                        self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                        let transaction = try self.jsonDecoder.decode(SubmitTransactionResponse.self, from: data)
+                        response(.success(details: transaction))
+                    } catch {
+                        response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+                    }
+                case .failure(let error):
+                    response(.failure(error:error))
+                }
+            }
+        } else {
+            response(.failure(error: .parsingResponseFailed(message: "Failed to URL encode the xdr enveloper")))
         }
     }
     

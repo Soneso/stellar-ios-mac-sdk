@@ -8,6 +8,12 @@
 
 import Foundation
 
+/// An enum for HTTP methods
+enum HTTPMethod {
+    case get
+    case post
+}
+
 /// An enum to diferentiate between succesful and failed responses
 enum Result {
     case success(data: Data)
@@ -36,13 +42,39 @@ class ServiceHelper: NSObject {
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter response:   The closure to be called upon response.
     open func GETRequestWithPath(path: String, completion: @escaping ResponseClosure) {
-        GETRequestFromUrl(url: baseURL+path, completion:completion)
+        requestFromUrl(url: baseURL + path, method:.get, completion:completion)
+    }
+
+    /// Performs a get request to the spcified path.
+    ///
+    /// - parameter path:  A URL for the request. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
+    /// - parameter response:   The closure to be called upon response.
+    open func GETRequestFromUrl(url: String, completion: @escaping ResponseClosure) {
+        requestFromUrl(url: url, method:.get, completion:completion)
+    }
+    
+    /// Performs a post request to the spcified path.
+    ///
+    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
+    /// - parameter body:  An optional parameter with the data that should be contained in the request body
+    /// - parameter response:   The closure to be called upon response.
+    open func POSTRequestWithPath(path: String, body:Data? = nil, completion: @escaping ResponseClosure) {
+        requestFromUrl(url: baseURL + path, method:.post, body:body, completion:completion)
     }
         
-    open func GETRequestFromUrl(url: String, completion: @escaping ResponseClosure) {
+    open func requestFromUrl(url: String, method: HTTPMethod, body:Data? = nil, completion: @escaping ResponseClosure) {
         let url = URL(string: url)!
+        var urlRequest = URLRequest(url: url)
         
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+        switch method {
+        case .get:
+            break
+        case .post:
+            urlRequest.httpMethod = "POST"
+            urlRequest.httpBody = body
+        }
+        
+        let task = URLSession.shared.dataTask(with: urlRequest) { data, response, error in
             if let error = error {
                 completion(.failure(error:.requestFailed(message:error.localizedDescription)))
                 return

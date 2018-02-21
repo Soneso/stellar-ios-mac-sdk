@@ -38,6 +38,7 @@
 		43E34B672031DCFB003104A9 /* OfferAssetResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B662031DCFB003104A9 /* OfferAssetResponse.swift */; };
 		43E34B692031E243003104A9 /* OrderbookOfferResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B682031E243003104A9 /* OrderbookOfferResponse.swift */; };
 		43E34B6D2031E99D003104A9 /* PageResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B6C2031E99D003104A9 /* PageResponse.swift */; };
+		741B8B4A203DE47A0098464A /* String+Encoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741B8B49203DE47A0098464A /* String+Encoding.swift */; };
 		743DF4DC201F0BBD00713DE7 /* StellarSDK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */; };
 		743DF4EE201F130200713DE7 /* stellarsdk_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 743DF4E5201F130100713DE7 /* stellarsdk_macOS.framework */; };
 		743DF4F3201F130200713DE7 /* stellarsdk_macOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4F2201F130200713DE7 /* stellarsdk_macOSTests.swift */; };
@@ -331,6 +332,7 @@
 		43E34B662031DCFB003104A9 /* OfferAssetResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferAssetResponse.swift; sourceTree = "<group>"; };
 		43E34B682031E243003104A9 /* OrderbookOfferResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderbookOfferResponse.swift; sourceTree = "<group>"; };
 		43E34B6C2031E99D003104A9 /* PageResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageResponse.swift; sourceTree = "<group>"; };
+		741B8B49203DE47A0098464A /* String+Encoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Encoding.swift"; sourceTree = "<group>"; };
 		743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StellarSDK.swift; sourceTree = "<group>"; };
 		743DF4E5201F130100713DE7 /* stellarsdk_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = stellarsdk_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		743DF4E7201F130100713DE7 /* stellarsdk_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stellarsdk_macOS.h; sourceTree = "<group>"; };
@@ -851,6 +853,7 @@
 				744602E5203B257000D807C1 /* Data+Hash.swift */,
 				8357A912203B004700A144A9 /* String+Base64.swift */,
 				43AEB4CD203ADEC10078637D /* Data+Base16.swift */,
+				741B8B49203DE47A0098464A /* String+Encoding.swift */,
 			);
 			path = extensions;
 			sourceTree = "<group>";
@@ -1704,6 +1707,7 @@
 				83DD2C6B202DE3DF00713FEE /* ErrorResponse.swift in Sources */,
 				43D35B0D20348AEA00C8BDBC /* PaymentPathsService.swift in Sources */,
 				83DD2C55202CE39C00713FEE /* AssetLinksResponse.swift in Sources */,
+				741B8B4A203DE47A0098464A /* String+Encoding.swift in Sources */,
 				833CBFD72036F01700C23CFE /* CreateAccountOperation.swift in Sources */,
 				833CBFA6203353C900C23CFE /* ChangeTrustOperationXDR.swift in Sources */,
 				43E34B692031E243003104A9 /* OrderbookOfferResponse.swift in Sources */,
