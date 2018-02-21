@@ -49,4 +49,17 @@ public class Seed {
     public var bytes: [UInt8] {
         return buffer
     }
+    
+    public var secret: String {
+        get {
+            var versionByte = VersionByte.accountId.rawValue
+            let versionByteData = Data(bytes: &versionByte, count: MemoryLayout.size(ofValue: versionByte))
+            let payload = NSMutableData(data: versionByteData)
+            payload.append(Data(bytes: bytes))
+            let checksumedData = (payload as Data).crc16Data()
+            
+            return checksumedData.base32EncodedString!
+        }
+    }
+    
 }
