@@ -15,7 +15,7 @@ public class LedgerLinksResponse: NSObject, Decodable {
     /// Link to the current ledger request URL of this ledger.
     public var selflink:LinkResponse
     
-    /// Link to the effetcs in this ledger.
+    /// Link to the effects in this ledger.
     public var effects:LinkResponse
     
     /// Link to the operations in this ledger.

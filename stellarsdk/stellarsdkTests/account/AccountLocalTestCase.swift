@@ -35,9 +35,26 @@ class AccountLocalTestCase: XCTestCase {
     }
     
     func testKeyGeneration() {
+        
+        // let expectation = XCTestExpectation(description: "Create key and ask freindbot to fund it.")
+        
         let keyPair = try! KeyPair.generateRandomKeyPair()
         XCTAssert(keyPair.publicKey.bytes.count == 32, "Public key length is incorrect")
         XCTAssert(keyPair.privateKey!.bytes.count == 64, "Private key length is incorrect")
+        
+        /*
+        print("Account ID: " + keyPair.accountId)
+        sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Void) in
+            switch response {
+                case .success(let details):
+                    print(details)
+                case .failure(_):
+                    XCTAssert(false)
+            }
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 15.0)
+         */
     }
     
     func testKeyFromAccountIdCreation() {

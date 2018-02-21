@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-///  Represents an account trustline effect response. Superclass for trustline created, updated, removed, authorized and deauthorized effetcs.
+///  Represents an account trustline effect response. Superclass for trustline created, updated, removed, authorized and deauthorized effects.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
 ///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/assets.html#trustlines "Trustlines")
 public class TrustlineEffectResponse: EffectResponse {

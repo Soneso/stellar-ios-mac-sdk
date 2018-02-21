@@ -15,7 +15,7 @@ public enum EventSourceState {
 }
 
 open class EventSource: NSObject, URLSessionDataDelegate {
-    static let DefaultsKey = "com.inaka.eventSource.lastEventId"
+    static let DefaultsKey = "com.soneso.eventSource.lastEventId"
     
     let url: URL
     fileprivate let lastEventIDKey: String

@@ -8,7 +8,7 @@
 
 import Foundation
 
-///  Represents an account signer (create,update,remove) effect response. Superclass for signer created, signer updated and signer removed effetcs.
+///  Represents an account signer (create,update,remove) effect response. Superclass for signer created, signer updated and signer removed effects.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
 ///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/accounts.html#signers "Account Signer")
 public class SignerEffectResponse: EffectResponse {
