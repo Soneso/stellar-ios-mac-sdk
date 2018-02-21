@@ -1,5 +1,5 @@
 //
-//  OperationsTestCase.swift
+//  OperationsRemoteTestCase.swift
 //  stellarsdkTests
 //
 //  Created by Razvan Chelemen on 06/02/2018.
@@ -9,7 +9,7 @@
 import XCTest
 import stellarsdk
 
-class OperationsTestCase: XCTestCase {
+class OperationsRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
     
     override func setUp() {
