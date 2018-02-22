@@ -66,11 +66,17 @@ public class Operation {
         throw StellarSDKError.invalidArgument(message: "Method must be overridden by subclass")
     }
     
-    func toXDRAmount(amount:Int64) -> Int64 {
-        return amount * 10000000
+    static func toXDRAmount(amount:Decimal) -> Int64 {
+        let multiplied = amount * 10000000
+        let decimalNumber = NSDecimalNumber(decimal: multiplied)
+        
+        return decimalNumber.int64Value
     }
     
-    static func fromXDRAmount(_ xdrAmount:Int64) -> Int64 {
-        return xdrAmount / 10000000
+    static func fromXDRAmount(_ xdrAmount:Int64) -> Decimal {
+        var decimal = Decimal(xdrAmount)
+        decimal = decimal / 10000000
+        
+        return decimal
     }
 }
