@@ -14,10 +14,12 @@ public class TradesService: NSObject {
     
     private override init() {
         serviceHelper = ServiceHelper(baseURL: "")
+        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
     init(baseURL: String) {
         serviceHelper = ServiceHelper(baseURL: baseURL)
+        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
     open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {

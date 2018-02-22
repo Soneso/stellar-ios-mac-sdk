@@ -22,7 +22,7 @@ public class TradeResponse: NSObject, Decodable {
     public var pagingToken:String
     
     /// An ISO 8601 formatted string of when the ledger with this trade was closed.
-    public var ledgerCloseTime:String
+    public var ledgerCloseTime:Date
     
     /// base party of this trade
     public var baseAccount:String
@@ -87,7 +87,7 @@ public class TradeResponse: NSObject, Decodable {
         links = try values.decode(TradeLinksResponse.self, forKey: .links)
         id = try values.decode(String.self, forKey: .id)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
-        ledgerCloseTime = try values.decode(String.self, forKey: .ledgerCloseTime)
+        ledgerCloseTime = try values.decode(Date.self, forKey: .ledgerCloseTime)
         baseAccount = try values.decode(String.self, forKey: .baseAccount)
         baseAmount = try values.decode(String.self, forKey: .baseAmount)
         baseAssetType = try values.decode(String.self, forKey: .baseAssetType)

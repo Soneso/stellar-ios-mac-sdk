@@ -25,10 +25,12 @@ public class LedgersService: NSObject {
     
     private override init() {
         serviceHelper = ServiceHelper(baseURL: "")
+        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
     init(baseURL: String) {
         serviceHelper = ServiceHelper(baseURL: baseURL)
+        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
     open func getLedger(sequenceNumber:String, response:@escaping LedgerDetailsResponseClosure) {

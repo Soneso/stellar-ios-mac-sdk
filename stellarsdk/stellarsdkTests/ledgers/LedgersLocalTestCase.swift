@@ -36,7 +36,7 @@ class LedgersLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadAccountFromHorizon() {
+    func testLoadLedgersFromHorizon() {
         let expectation = XCTestExpectation(description: "Get ledgers and parse their details")
         
         sdk.ledgers.getLedgers(limit: 1) { (response) -> (Void) in
@@ -104,7 +104,8 @@ class LedgersLocalTestCase: XCTestCase {
             XCTAssertEqual(firstLedger?.sequenceNumber, 1)
             XCTAssertEqual(firstLedger?.transactionCount, 0)
             XCTAssertEqual(firstLedger?.operationCount, 0)
-            XCTAssertEqual(firstLedger?.closedAt, "1970-01-01T00:00:00Z") // TODO make it a date.
+            let closedAt = DateFormatter.iso8601.date(from:"1970-01-01T00:00:00Z")
+            XCTAssertEqual(firstLedger?.closedAt, closedAt)
             XCTAssertEqual(firstLedger?.feePool, "0.0000000")
             XCTAssertEqual(firstLedger?.baseFee, 100)
             XCTAssertEqual(firstLedger?.baseReserve, "10.0000000")
@@ -147,7 +148,8 @@ class LedgersLocalTestCase: XCTestCase {
                 XCTAssertEqual(secondLedger?.sequenceNumber, 2)
                 XCTAssertEqual(secondLedger?.transactionCount, 20)
                 XCTAssertEqual(secondLedger?.operationCount, 30)
-                XCTAssertEqual(secondLedger?.closedAt, "2017-03-20T17:09:53Z") // TODO make it a date.
+                let closedAt = DateFormatter.iso8601.date(from:"2017-03-20T17:09:53Z")
+                XCTAssertEqual(secondLedger?.closedAt, closedAt)
                 XCTAssertEqual(secondLedger?.feePool, "23.0000000")
                 XCTAssertEqual(secondLedger?.baseFee, 200)
                 XCTAssertEqual(secondLedger?.baseReserve, "13.0000000")
