@@ -107,8 +107,8 @@ class LedgersLocalTestCase: XCTestCase {
             let closedAt = DateFormatter.iso8601.date(from:"1970-01-01T00:00:00Z")
             XCTAssertEqual(firstLedger?.closedAt, closedAt)
             XCTAssertEqual(firstLedger?.feePool, "0.0000000")
-            XCTAssertEqual(firstLedger?.baseFee, 100)
-            XCTAssertEqual(firstLedger?.baseReserve, "10.0000000")
+            XCTAssertEqual(firstLedger?.baseFeeInStroops, 100)
+            XCTAssertEqual(firstLedger?.baseReserveInStroops, 100000000)
             XCTAssertEqual(firstLedger?.maxTxSetSize, 100)
             XCTAssertEqual(firstLedger?.protocolVersion, 0)
             
@@ -151,8 +151,8 @@ class LedgersLocalTestCase: XCTestCase {
                 let closedAt = DateFormatter.iso8601.date(from:"2017-03-20T17:09:53Z")
                 XCTAssertEqual(secondLedger?.closedAt, closedAt)
                 XCTAssertEqual(secondLedger?.feePool, "23.0000000")
-                XCTAssertEqual(secondLedger?.baseFee, 200)
-                XCTAssertEqual(secondLedger?.baseReserve, "13.0000000")
+                XCTAssertEqual(secondLedger?.baseFeeInStroops, 200)
+                XCTAssertEqual(secondLedger?.baseReserveInStroops, 130000000)
                 XCTAssertEqual(secondLedger?.maxTxSetSize, 50)
                 XCTAssertEqual(secondLedger?.protocolVersion, 4)
                 expectation.fulfill()
@@ -221,8 +221,8 @@ class LedgersLocalTestCase: XCTestCase {
                     "closed_at": "1970-01-01T00:00:00Z",
                     "total_coins": "100000000000.0000000",
                     "fee_pool": "0.0000000",
-                    "base_fee": 100,
-                    "base_reserve": "10.0000000",
+                    "base_fee_in_stroops": 100,
+                    "base_reserve_in_stroops": 100000000,
                     "max_tx_set_size": 100,
                     "protocol_version": 0
                 }
@@ -262,8 +262,8 @@ class LedgersLocalTestCase: XCTestCase {
                             "closed_at": "2017-03-20T17:09:53Z",
                             "total_coins": "100000000000.0000000",
                             "fee_pool": "23.0000000",
-                            "base_fee": 200,
-                            "base_reserve": "13.0000000",
+                            "base_fee_in_stroops": 200,
+                            "base_reserve_in_stroops": 130000000,
                             "max_tx_set_size": 50,
                             "protocol_version": 4
                         }

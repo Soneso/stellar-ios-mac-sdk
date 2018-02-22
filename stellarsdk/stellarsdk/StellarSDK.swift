@@ -58,9 +58,4 @@ public class StellarSDK: NSObject {
         orderbooks = OrderbookService(baseURL: horizonURL)
         paymentPaths = PaymentPathsService(baseURL: horizonURL)
     }
-    
-    /*public func submitTransaction(transaction:Transaction) throws -> SubmitTransactionResponse {
-        
-    }*/
-    
 }

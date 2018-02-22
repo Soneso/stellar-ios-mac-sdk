@@ -1,5 +1,5 @@
 //
-//  TransactionBuilderAccount.swift
+//  TransactionAccount.swift
 //  stellarsdk
 //
 //  Created by Rogobete Christian on 13.02.18.
@@ -8,8 +8,8 @@
 
 import Foundation
 
-/// Specifies protocol for Account object used in the TransactionBuilder.
-protocol TransactionBuilderAccount {
+/// Specifies protocol for Account object used when creating an Transaction object.
+public protocol TransactionAccount {
     
     /// Returns keypair associated with this Account.
     var keyPair: KeyPair { get }

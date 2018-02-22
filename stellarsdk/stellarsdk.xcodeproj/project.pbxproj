@@ -175,7 +175,7 @@
 		833CBFBA2033552600C23CFE /* SignerKeyXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFB92033552600C23CFE /* SignerKeyXDR.swift */; };
 		833CBFBC20337A1700C23CFE /* LedgerExtryDataXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFBB20337A1700C23CFE /* LedgerExtryDataXDR.swift */; };
 		833CBFBF20337D3300C23CFE /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFBE20337D3300C23CFE /* Account.swift */; };
-		833CBFC12033804B00C23CFE /* TransactionBuilderAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFC02033804B00C23CFE /* TransactionBuilderAccount.swift */; };
+		833CBFC12033804B00C23CFE /* TransactionAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFC02033804B00C23CFE /* TransactionAccount.swift */; };
 		833CBFC92034741300C23CFE /* Asset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFC82034741300C23CFE /* Asset.swift */; };
 		833CBFCB2034742300C23CFE /* StellarSDKError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFCA2034742200C23CFE /* StellarSDKError.swift */; };
 		833CBFCF2035CBF500C23CFE /* ManageOfferSuccessResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFCE2035CBF500C23CFE /* ManageOfferSuccessResult.swift */; };
@@ -489,7 +489,7 @@
 		833CBFB92033552600C23CFE /* SignerKeyXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerKeyXDR.swift; sourceTree = "<group>"; };
 		833CBFBB20337A1700C23CFE /* LedgerExtryDataXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerExtryDataXDR.swift; sourceTree = "<group>"; };
 		833CBFBE20337D3300C23CFE /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
-		833CBFC02033804B00C23CFE /* TransactionBuilderAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBuilderAccount.swift; sourceTree = "<group>"; };
+		833CBFC02033804B00C23CFE /* TransactionAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionAccount.swift; sourceTree = "<group>"; };
 		833CBFC82034741300C23CFE /* Asset.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Asset.swift; sourceTree = "<group>"; };
 		833CBFCA2034742200C23CFE /* StellarSDKError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StellarSDKError.swift; sourceTree = "<group>"; };
 		833CBFCE2035CBF500C23CFE /* ManageOfferSuccessResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageOfferSuccessResult.swift; sourceTree = "<group>"; };
@@ -1174,7 +1174,7 @@
 			isa = PBXGroup;
 			children = (
 				833CBFBE20337D3300C23CFE /* Account.swift */,
-				833CBFC02033804B00C23CFE /* TransactionBuilderAccount.swift */,
+				833CBFC02033804B00C23CFE /* TransactionAccount.swift */,
 				833CBFC82034741300C23CFE /* Asset.swift */,
 				833CBFD42036EF3100C23CFE /* Operation.swift */,
 				833CBFD62036F01700C23CFE /* CreateAccountOperation.swift */,
@@ -1771,7 +1771,7 @@
 				745F2BAF202C281F008763F1 /* XDRCodableExtensions.swift in Sources */,
 				836972302028F7AD00398A98 /* OfferUpdatedEffectResponse.swift in Sources */,
 				833CBFB2203354A500C23CFE /* LedgerKeyAccountXDR.swift in Sources */,
-				833CBFC12033804B00C23CFE /* TransactionBuilderAccount.swift in Sources */,
+				833CBFC12033804B00C23CFE /* TransactionAccount.swift in Sources */,
 				746AD2C220342CA700A9CF21 /* PathPaymentResultXDR.swift in Sources */,
 				833CBFE92036F84F00C23CFE /* ManageDataOperation.swift in Sources */,
 				437D8A7D202EEDCC0024D031 /* Dictionary+HttpParams.swift in Sources */,

@@ -116,18 +116,87 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testSendPayment() {
+        
+        let expectation = XCTestExpectation(description: "Payment successfully sent and received")
+        
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
+            let destinationAccountKeyPair = try KeyPair(accountId: "GCKECJ5DYFZUX6DMTNJFHO2M4QKTUO5OS5JZ4EIIS7C3VTLIGXNGRTRC")
+            
+            var initialBalance:Decimal = 0.0
+            
+            sdk.accounts.getAccountDetails(accountId: destinationAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    for balance in accountResponse.balances {
+                        if balance.assetType == AssetTypeAsString.NATIVE {
+                            initialBalance = Decimal(string: balance.balance)!
+                            send()
+                        }
+                    }
+                case .failure(_):
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+            
+            func send() {
+                print("Balance: " + String(describing:initialBalance))
+                sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                    switch response {
+                    case .success(let accountResponse):
+                        do {
+                            let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
+                                                                    destination: destinationAccountKeyPair,
+                                                                    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                                    amount: 1.5)
+                            let transaction = try Transaction(sourceAccount: accountResponse,
+                                                              operations: [paymentOperation],
+                                                              memo: Memo.none,
+                                                              timeBounds:nil)
+                            try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                            
+                            try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                                switch response {
+                                case .success(_):
+                                    XCTAssert(true)
+                                    expectation.fulfill()
+                                case .failure(_):
+                                    XCTAssert(false)
+                                    expectation.fulfill()
+                                }
+                            }
+                        } catch {
+                            XCTAssert(false)
+                            expectation.fulfill()
+                        }
+                    case .failure(_):
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                }
+            }
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
     func testTransactionSigning() {
         let publicKey = Data(base64Encoded:"uHFsF4DaBlIsPUzFlMuBFkgEROGR9DlEBYCg3x+V72A=")!
         let privateKey = Data(base64Encoded: "KJJ6vrrDOe9XIDAj6iSftUzux0qWwSwf3er27YKUOU2ZbT/G/wqFm/tDeez3REW5YlD5mrf3iidmGjREBzOEjQ==")!
         let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
         
-        let expectation = XCTestExpectation(description: "Get transaction details")
+        let expectation = XCTestExpectation(description: "Transaction successfully signed.")
         sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
             switch response {
             case .success(let data):
                 let operationBody = OperationBodyXDR.inflation
                 let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
-                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: UInt64(data.sequenceNumber)! + 1, timeBounds: nil, memo: .none, operations: [operation])
+                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation])
                 
                 try! transaction.sign(keyPair: keyPair, network: .testnet)
                 let xdrEnvelope = try! transaction.encodedEnvelope()
@@ -141,7 +210,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testTransactionPost() {
+    func testTransactionEnvelopePost() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         let xdrEnvelope = "AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAByE3sAAAAIAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAR+V72AAAABAAuiJ2+1FGpG7D+sS9qqZlk2/dsu8mdECuR1jiX9PaawJaJMETUP6u06cZgzrqopzmypJMOS/ob7BRvCQ3JkwDg=="
         
@@ -157,7 +226,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 25.0)
     }
     
- /*   func testTransactionsStream() {
+ /* func testTransactionsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
         sdk.transactions.stream(for: .allTransactions(cursor: nil)).onReceive { (response) -> (Void) in

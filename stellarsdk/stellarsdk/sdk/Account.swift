@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents an account in Stellar network with it's sequence number.
-public class Account: TransactionBuilderAccount
+public class Account: TransactionAccount
 {
     public private (set) var keyPair: KeyPair
     public private (set) var sequenceNumber: UInt64

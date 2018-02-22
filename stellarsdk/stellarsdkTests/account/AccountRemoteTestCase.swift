@@ -36,7 +36,7 @@ class AccountRemoteTestCase: XCTestCase {
             case .success(let accountDetails):
                 XCTAssertEqual(self.testSuccessAccountId, accountDetails.accountId)
                 XCTAssertNotNil(accountDetails.sequenceNumber)
-                XCTAssertEqual(accountDetails.sequenceNumber, "30232549674450946")
+                XCTAssertEqual(accountDetails.sequenceNumber, 30232549674450946)
                 XCTAssertNotNil(accountDetails.links)
                 XCTAssertNotNil(accountDetails.links.selflink)
                 XCTAssertNotNil(accountDetails.links.selflink.href)
