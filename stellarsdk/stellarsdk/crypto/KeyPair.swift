@@ -12,8 +12,9 @@ import ed25519C
 public final class KeyPair {
     public let publicKey: PublicKey
     public let privateKey: PrivateKey?
+    public let seed:Seed?
 
-    /// Human readable Stellar account ID
+    /// Human readable Stellar account ID.
     public var accountId: String {
         get {
             var versionByte = VersionByte.accountId.rawValue
@@ -23,6 +24,12 @@ public final class KeyPair {
             let checksumedData = (payload as Data).crc16Data()
             
             return checksumedData.base32EncodedString!
+        }
+    }
+    /// Human readable Stellar secret seed.
+    public var secretSeed: String! {
+        get {
+            return seed?.secret
         }
     }
     

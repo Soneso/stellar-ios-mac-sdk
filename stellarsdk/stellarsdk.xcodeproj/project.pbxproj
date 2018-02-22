@@ -837,7 +837,6 @@
 			children = (
 				745F2BAB202C27CD008763F1 /* xdrCodable */,
 				743DF540201F6A9C00713DE7 /* Base32.swift */,
-				743DF54B201F73FC00713DE7 /* VersionByte.swift */,
 				7481B53F2024A419000A783E /* Order.swift */,
 				836972092028BA3E00398A98 /* Constants.swift */,
 				744148F7202E05AD006590BE /* DataTypes.swift */,
@@ -906,6 +905,7 @@
 		743DF5782020538A00713DE7 /* crypto */ = {
 			isa = PBXGroup;
 			children = (
+				743DF54B201F73FC00713DE7 /* VersionByte.swift */,
 				743DF57B202053B100713DE7 /* KeyPair.swift */,
 				743DF57C202053B100713DE7 /* PublicKey.swift */,
 				743DF57D202053B100713DE7 /* PrivateKey.swift */,
