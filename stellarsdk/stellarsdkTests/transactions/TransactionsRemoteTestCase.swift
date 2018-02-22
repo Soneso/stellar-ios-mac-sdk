@@ -116,7 +116,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testSendPayment() {
+    func testSendAndReceivePayment() {
         
         let expectation = XCTestExpectation(description: "Payment successfully sent and received")
         
@@ -124,25 +124,7 @@ class TransactionsRemoteTestCase: XCTestCase {
             let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
             let destinationAccountKeyPair = try KeyPair(accountId: "GCKECJ5DYFZUX6DMTNJFHO2M4QKTUO5OS5JZ4EIIS7C3VTLIGXNGRTRC")
             
-            var initialBalance:Decimal = 0.0
-            
-            sdk.accounts.getAccountDetails(accountId: destinationAccountKeyPair.accountId) { (response) -> (Void) in
-                switch response {
-                case .success(let accountResponse):
-                    for balance in accountResponse.balances {
-                        if balance.assetType == AssetTypeAsString.NATIVE {
-                            initialBalance = Decimal(string: balance.balance)!
-                            send()
-                        }
-                    }
-                case .failure(_):
-                    XCTAssert(false)
-                    expectation.fulfill()
-                }
-            }
-            
             func send() {
-                print("Balance: " + String(describing:initialBalance))
                 sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                     switch response {
                     case .success(let accountResponse):
@@ -160,8 +142,7 @@ class TransactionsRemoteTestCase: XCTestCase {
                             try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                                 switch response {
                                 case .success(_):
-                                    XCTAssert(true)
-                                    expectation.fulfill()
+                                    receive()
                                 case .failure(_):
                                     XCTAssert(false)
                                     expectation.fulfill()
@@ -177,6 +158,45 @@ class TransactionsRemoteTestCase: XCTestCase {
                     }
                 }
             }
+            
+            func receive() {
+                sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+                    switch response {
+                        case .open:
+                            break
+                        case .response(let id, let paymentResponse):
+                            print("Payment of \(paymentResponse.amount) XLM from \(paymentResponse.sourceAccount) received -  id \(id)" )
+                            showDestinationAccountBalance(finish: true)
+                        case .error( _):
+                            XCTAssert(false)
+                            expectation.fulfill()
+                    }
+                }
+            }
+            
+            func showDestinationAccountBalance(finish:Bool) {
+                sdk.accounts.getAccountDetails(accountId: destinationAccountKeyPair.accountId) { (response) -> (Void) in
+                    switch response {
+                    case .success(let accountResponse):
+                        for balance in accountResponse.balances {
+                            if balance.assetType == AssetTypeAsString.NATIVE {
+                                print("Destination account balance: \(balance.balance) XLM")
+                                if (finish) {
+                                    XCTAssert(true)
+                                    expectation.fulfill()
+                                }
+                            }
+                        }
+                    case .failure(_):
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                }
+            }
+            
+            showDestinationAccountBalance(finish: false)
+            send()
+            
         } catch {
             XCTAssert(false)
             expectation.fulfill()
