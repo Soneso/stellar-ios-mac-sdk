@@ -52,7 +52,7 @@ public class Seed {
     
     public var secret: String {
         get {
-            var versionByte = VersionByte.accountId.rawValue
+            var versionByte = VersionByte.seed.rawValue
             let versionByteData = Data(bytes: &versionByte, count: MemoryLayout.size(ofValue: versionByte))
             let payload = NSMutableData(data: versionByteData)
             payload.append(Data(bytes: bytes))
@@ -61,5 +61,4 @@ public class Seed {
             return checksumedData.base32EncodedString!
         }
     }
-    
 }

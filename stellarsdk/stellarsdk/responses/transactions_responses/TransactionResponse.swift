@@ -45,6 +45,8 @@ public class TransactionResponse: NSObject, Decodable {
     /// The memo type. See enum MemoType. The memo contains optional extra information.
     public var memoType:String
     
+    // TODO add memo
+    
     public var signatures:[String]
     
     public var transactionEnvelope: TransactionEnvelopeXDR
@@ -95,6 +97,5 @@ public class TransactionResponse: NSObject, Decodable {
         let encodedMeta = try values.decode(String.self, forKey: .transactionMeta)
         let metaData = Data(base64Encoded: encodedMeta)!
         transactionMeta = try XDRDecoder.decode(TransactionMetaXDR.self, data:metaData)
-        
     }
 }

@@ -12,8 +12,9 @@ import ed25519C
 public final class KeyPair {
     public let publicKey: PublicKey
     public let privateKey: PrivateKey?
+    public private(set) var seed:Seed?
 
-    /// Human readable Stellar account ID
+    /// Human readable Stellar account ID.
     public var accountId: String {
         get {
             var versionByte = VersionByte.accountId.rawValue
@@ -23,6 +24,12 @@ public final class KeyPair {
             let checksumedData = (payload as Data).crc16Data()
             
             return checksumedData.base32EncodedString!
+        }
+    }
+    /// Human readable Stellar secret seed.
+    public var secretSeed: String! {
+        get {
+            return seed?.secret
         }
     }
     
@@ -76,6 +83,7 @@ public final class KeyPair {
     /// - Parameter seed: the seed object
     ///
     public convenience init(seed: Seed) {
+        
         var pubBuffer = [UInt8](repeating: 0, count: 32)
         var privBuffer = [UInt8](repeating: 0, count: 64)
 
@@ -91,6 +99,8 @@ public final class KeyPair {
 
         self.init(publicKey: PublicKey(unchecked: pubBuffer),
                   privateKey: PrivateKey(unchecked: privBuffer))
+        
+        self.seed = seed
     }
     
     /// Creates a new Stellar keypair from a public key byte array and a private key byte array.

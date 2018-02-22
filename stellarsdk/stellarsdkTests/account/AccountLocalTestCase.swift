@@ -41,6 +41,8 @@ class AccountLocalTestCase: XCTestCase {
         let keyPair = try! KeyPair.generateRandomKeyPair()
         XCTAssert(keyPair.publicKey.bytes.count == 32, "Public key length is incorrect")
         XCTAssert(keyPair.privateKey!.bytes.count == 64, "Private key length is incorrect")
+        XCTAssert(keyPair.seed!.bytes.count == 32, "Seed length is incorrect")
+        XCTAssertNotNil(keyPair.secretSeed)
         
         /*
         print("Account ID: " + keyPair.accountId)

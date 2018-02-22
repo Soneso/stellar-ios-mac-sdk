@@ -31,7 +31,7 @@ public enum LedgerEntryChangeXDR: XDRCodable {
                 self = .created(try container.decode(LedgerEntryXDR.self))
             case LedgerEntryChangeType.ledgerEntryUpdated.rawValue:
                 self = .updated(try container.decode(LedgerEntryXDR.self))
-            case LedgerEntryChangeType.ledgerEntryUpdated.rawValue:
+            case LedgerEntryChangeType.ledgerEntryRemoved.rawValue:
                 self = .removed(try container.decode(LedgerKeyXDR.self))
             case LedgerEntryChangeType.ledgerEntryState.rawValue:
                 self = .state(try container.decode(LedgerEntryXDR.self))
