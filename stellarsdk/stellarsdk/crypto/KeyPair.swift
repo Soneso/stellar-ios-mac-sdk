@@ -12,7 +12,7 @@ import ed25519C
 public final class KeyPair {
     public let publicKey: PublicKey
     public let privateKey: PrivateKey?
-    public let seed:Seed?
+    public private(set) var seed:Seed?
 
     /// Human readable Stellar account ID.
     public var accountId: String {
@@ -83,6 +83,7 @@ public final class KeyPair {
     /// - Parameter seed: the seed object
     ///
     public convenience init(seed: Seed) {
+        
         var pubBuffer = [UInt8](repeating: 0, count: 32)
         var privBuffer = [UInt8](repeating: 0, count: 64)
 
@@ -98,6 +99,8 @@ public final class KeyPair {
 
         self.init(publicKey: PublicKey(unchecked: pubBuffer),
                   privateKey: PrivateKey(unchecked: privBuffer))
+        
+        self.seed = seed
     }
     
     /// Creates a new Stellar keypair from a public key byte array and a private key byte array.
