@@ -13,10 +13,10 @@ import Foundation
 public class PathPaymentOperation:Operation {
     
     public let sendAsset:Asset
-    public let sendMax:Int64
+    public let sendMax:Decimal
     public let destination:KeyPair
     public let destAsset:Asset
-    public let destAmount:Int64
+    public let destAmount:Decimal
     public let path:[Asset]
     
     /// Creates a new PathPaymentOperation object.
@@ -31,7 +31,7 @@ public class PathPaymentOperation:Operation {
     ///
     /// - Throws StellarSDKError.invalidArgument if maximum number of assets in the path is > 5
     ///
-    public init(sourceAccount:KeyPair, sendAsset:Asset, sendMax:Int64, destination:KeyPair, destAsset:Asset, destAmount:Int64, path:[Asset]) throws {
+    public init(sourceAccount:KeyPair, sendAsset:Asset, sendMax:Decimal, destination:KeyPair, destAsset:Asset, destAmount:Decimal, path:[Asset]) throws {
         
         if path.count > 5 {
             throw StellarSDKError.invalidArgument(message: "The maximum number of assets in the path is 5")
@@ -52,10 +52,10 @@ public class PathPaymentOperation:Operation {
     ///
     public init(fromXDR:PathPaymentOperationXDR) {
         self.sendAsset = try! Asset.fromXDR(assetXDR: fromXDR.sendAsset)
-        self.sendMax = Operation.fromXDRAmount(Int64(fromXDR.sendMax))
+        self.sendMax = Operation.fromXDRAmount(fromXDR.sendMax)
         self.destination = KeyPair(publicKey: fromXDR.destinationID)
         self.destAsset = try! Asset.fromXDR(assetXDR: fromXDR.destinationAsset)
-        self.destAmount = Operation.fromXDRAmount(Int64(fromXDR.destinationAmount))
+        self.destAmount = Operation.fromXDRAmount(fromXDR.destinationAmount)
         var path = [Asset]()
         for asset in fromXDR.path {
             path.append(try! Asset.fromXDR(assetXDR: asset))
@@ -73,8 +73,8 @@ public class PathPaymentOperation:Operation {
             try pathXDR.append(asset.toXDR())
         }
         
-        let sendMaxXDR = toXDRAmount(amount: sendMax)
-        let destAmountXDR = toXDRAmount(amount: destAmount)
+        let sendMaxXDR = Operation.toXDRAmount(amount: sendMax)
+        let destAmountXDR = Operation.toXDRAmount(amount: destAmount)
         
         return OperationBodyXDR.pathPayment(PathPaymentOperationXDR(sendAsset: sendAssetXDR,
                                                                     sendMax:sendMaxXDR,
