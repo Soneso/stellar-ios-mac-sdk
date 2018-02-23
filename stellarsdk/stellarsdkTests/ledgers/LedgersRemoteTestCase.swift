@@ -30,8 +30,8 @@ class LedgersRemoteTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLedgersLoadingSuccessful() {
-        let expectation = XCTestExpectation(description: "Get ledgers response")
+    func testGetLedgers() {
+        let expectation = XCTestExpectation(description: "Get ledgers and parse their details successfully")
         
         sdk.ledgers.getLedgers(order:Order.descending, limit:10) { (response) -> (Void) in
             switch response {
@@ -62,15 +62,18 @@ class LedgersRemoteTestCase: XCTestCase {
                                 XCTAssertTrue(ledger1?.protocolVersion == ledger2?.protocolVersion)
                                 XCTAssert(true)
                                 expectation.fulfill()
-                            case .failure(_):
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GL Test", horizonRequestError: error)
                                 XCTAssert(false)
                             }
                         }
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GL Test", horizonRequestError: error)
                         XCTAssert(false)
                     }
                 }
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GL Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             expectation.fulfill()

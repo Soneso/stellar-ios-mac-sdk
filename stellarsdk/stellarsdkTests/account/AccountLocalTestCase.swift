@@ -102,8 +102,8 @@ class AccountLocalTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testLoadAccount() {
-        let expectation = XCTestExpectation(description: "Get account details response")
+    func testGetAccountDetails() {
+        let expectation = XCTestExpectation(description: "Get account details and parse the successfully.")
         
         sdk.accounts.getAccountDetails(accountId: testSuccessAccountId) { (response) -> (Void) in
             switch response {
@@ -224,7 +224,8 @@ class AccountLocalTestCase: XCTestCase {
                 XCTAssertTrue(key2found)
                 
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GAD Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             expectation.fulfill()

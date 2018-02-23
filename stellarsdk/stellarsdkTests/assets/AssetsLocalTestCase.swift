@@ -36,14 +36,15 @@ class AssetsLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadAccountFromHorizon() {
-        let expectation = XCTestExpectation(description: "Get assets and parse their details")
+    func testGetAssets() {
+        let expectation = XCTestExpectation(description: "Get assets and parse their details successfully")
         
         sdk.assets.getAssets(limit: 1) { (response) -> (Void) in
             switch response {
             case .success(let assetsResponse):
                 checkResult(assetsResponse:assetsResponse, limit:1)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GA Test", horizonRequestError: error)
                 XCTAssert(false)
                 expectation.fulfill()
             }
@@ -108,7 +109,8 @@ class AssetsLocalTestCase: XCTestCase {
                     switch response {
                     case .success(let assetsResponse):
                         checkResult(assetsResponse:assetsResponse, limit:2)
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GA Test", horizonRequestError: error)
                         XCTAssert(false)
                         expectation.fulfill()
                     }

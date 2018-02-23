@@ -22,8 +22,8 @@ class OperationsRemoteTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetAllOperations() {
-        let expectation = XCTestExpectation(description: "Get operations")
+    func testGetOperations() {
+        let expectation = XCTestExpectation(description: "Get operations and parse their details successfully")
         
         sdk.operations.getOperations { (response) -> (Void) in
             switch response {
@@ -47,15 +47,18 @@ class OperationsRemoteTestCase: XCTestCase {
                                 XCTAssertTrue(operation1?.transactionHash == operation2?.transactionHash)
                                 XCTAssert(true)
                                 expectation.fulfill()
-                            case .failure(_):
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GO Test", horizonRequestError: error)
                                 XCTAssert(false)
                             }
                         }
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GO Test", horizonRequestError: error)
                         XCTAssert(false)
                     }
                 }
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GO Test", horizonRequestError: error)
                 XCTAssert(false)
             }
         }
@@ -64,13 +67,14 @@ class OperationsRemoteTestCase: XCTestCase {
     }
     
     func testGetOperationsForAccount() {
-        let expectation = XCTestExpectation(description: "Get operations")
+        let expectation = XCTestExpectation(description: "Get operations for account")
         
         sdk.operations.getOperations(forAccount: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOFA Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -81,13 +85,14 @@ class OperationsRemoteTestCase: XCTestCase {
     }
     
     func testGetOperationsForLedger() {
-        let expectation = XCTestExpectation(description: "Get operations")
+        let expectation = XCTestExpectation(description: "Get operations for ledger")
         
         sdk.operations.getOperations(forLedger: "1") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOFL Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -98,13 +103,14 @@ class OperationsRemoteTestCase: XCTestCase {
     }
     
     func testGetOperationsForTransaction() {
-        let expectation = XCTestExpectation(description: "Get operations")
+        let expectation = XCTestExpectation(description: "Get operations for transaction")
         
         sdk.operations.getOperations(forTransaction: "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOFT Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -121,7 +127,8 @@ class OperationsRemoteTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOD Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -130,7 +137,8 @@ class OperationsRemoteTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
-    
+
+/*
     func testOperationsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
@@ -147,7 +155,6 @@ class OperationsRemoteTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
-/*
     func testOperationsForAccountStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         

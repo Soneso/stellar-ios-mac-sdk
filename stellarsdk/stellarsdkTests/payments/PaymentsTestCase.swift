@@ -22,8 +22,8 @@ class PaymentsTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetAllPayments() {
-        let expectation = XCTestExpectation(description: "Get payments")
+    func testGetPayments() {
+        let expectation = XCTestExpectation(description: "Test get payments and paging")
         
         sdk.payments.getPayments { (response) -> (Void) in
             switch response {
@@ -47,15 +47,18 @@ class PaymentsTestCase: XCTestCase {
                                 XCTAssertTrue(payment1?.transactionHash == payment2?.transactionHash)
                                 XCTAssert(true)
                                 expectation.fulfill()
-                            case .failure(_):
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GP Test", horizonRequestError: error)
                                 XCTAssert(false)
                             }
                         }
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GP Test", horizonRequestError: error)
                         XCTAssert(false)
                     }
                 }
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GP Test", horizonRequestError: error)
                 XCTAssert(false)
             }
         }
@@ -70,7 +73,8 @@ class PaymentsTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GPFA Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -87,7 +91,8 @@ class PaymentsTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GPFL Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -104,7 +109,8 @@ class PaymentsTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GPFT Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -113,7 +119,7 @@ class PaymentsTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
-    
+/*
    func testPaymentsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
@@ -130,7 +136,7 @@ class PaymentsTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
- /*
+
     func testPaymentsForAccountStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         

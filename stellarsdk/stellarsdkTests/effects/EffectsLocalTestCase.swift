@@ -33,14 +33,15 @@ class EffectsLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadEffects() {
-        let expectation = XCTestExpectation(description: "Get effects and parse their details")
+    func testGetEffects() {
+        let expectation = XCTestExpectation(description: "Get effects and parse their details succesffully")
         
         sdk.effects.getEffects(limit: 19) { (response) -> (Void) in
             switch response {
             case .success(let effectsResponse):
                 validateResult(effectsResponse:effectsResponse)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GE Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             expectation.fulfill()

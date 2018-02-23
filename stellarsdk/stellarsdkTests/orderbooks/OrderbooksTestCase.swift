@@ -22,33 +22,33 @@ class OrderbooksTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testOrderbookLoadingSuccessful() {
-        let expectation = XCTestExpectation(description: "Get orderbooks response")
+    func testGetOrderbook() {
+        let expectation = XCTestExpectation(description: "Get orderbook response and parse it successfully")
         
         sdk.orderbooks.getOrderbook(sellingAssetType: AssetTypeAsString.NATIVE, buyingAssetType: AssetTypeAsString.CREDIT_ALPHANUM4, buyingAssetCode:"FOO", buyingAssetIssuer:"GBAUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG", limit:10) { (response) -> (Void) in
             switch response {
             case .success(let orderbookResponse):
                 
                 for bid in orderbookResponse.bids {
-                    print("\(bid.amount) is the bid amount")
-                    print("\(bid.price) is the bid price")
-                    print("\(bid.priceR) is the bid priceR")
+                    print("GOB Test: \(bid.amount) is the bid amount")
+                    print("GOB Test: \(bid.price) is the bid price")
+                    print("GOB Test: \(bid.priceR) is the bid priceR")
                 }
                 for ask in orderbookResponse.asks {
-                    print("\(ask.amount) is the ask amount")
-                    print("\(ask.price) is the ask price")
-                    print("\(ask.priceR) is the ask priceR")
+                    print("GOB Test: \(ask.amount) is the ask amount")
+                    print("GOB Test: \(ask.price) is the ask price")
+                    print("GOB Test: \(ask.priceR) is the ask priceR")
                 }
-                print("\(orderbookResponse.buying) is the asset this offer wants to buy.")
-                print("\(orderbookResponse.selling) is the asset this offer wants to sell.")
+                print("GOB Test: \(orderbookResponse.buying) is the asset this offer wants to buy.")
+                print("GOB Test: \(orderbookResponse.selling) is the asset this offer wants to sell.")
                 
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOB Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 15.0)
     }
-    
 }

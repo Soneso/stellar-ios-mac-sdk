@@ -34,14 +34,15 @@ class TradesLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadTradesFromHorizon() {
-        let expectation = XCTestExpectation(description: "Get trades and parse their details")
+    func testGetTrades() {
+        let expectation = XCTestExpectation(description: "Get trades and parse their details successfully")
         
         sdk.trades.getTrades(limit: limit) { response in
             switch response {
             case .success(let tradesResponse):
                 checkResult(response: tradesResponse)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                 XCTAssert(false)
                 expectation.fulfill()
             }

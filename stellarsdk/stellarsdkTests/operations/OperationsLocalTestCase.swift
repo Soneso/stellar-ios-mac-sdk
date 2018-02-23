@@ -32,14 +32,15 @@ class OperationsLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadOperations() {
+    func testGetOperations() {
         let expectation = XCTestExpectation(description: "Get operations and parse their details")
         
         sdk.operations.getOperations(limit: 19) { (response) -> (Void) in
             switch response {
             case .success(let operationsResponse):
                 validateResult(operationsResponse:operationsResponse)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GO Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             expectation.fulfill()

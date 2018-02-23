@@ -22,7 +22,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetAllTransactions() {
+    func testGetTransactions() {
         let expectation = XCTestExpectation(description: "Get transactions")
         
         sdk.transactions.getTransactions(from: nil, order: nil, limit: 15) { (response) -> (Void) in
@@ -49,15 +49,18 @@ class TransactionsRemoteTestCase: XCTestCase {
                                 XCTAssertTrue(transaction1?.memoType == transaction2?.memoType)
                                 XCTAssert(true)
                                 expectation.fulfill()
-                            case .failure(_):
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                                 XCTAssert(false)
                             }
                         }
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                         XCTAssert(false)
                     }
                 }
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                 XCTAssert(false)
             }
         }
@@ -72,7 +75,8 @@ class TransactionsRemoteTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GTFA Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -89,7 +93,8 @@ class TransactionsRemoteTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GTFL Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -106,7 +111,8 @@ class TransactionsRemoteTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GTD Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -116,21 +122,176 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func printAccountBalances(accountId: String) {
+    func printAccountDetails(tag: String, accountId: String) {
         sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
             switch response {
             case .success(let accountResponse):
+                print("\(tag): Account ID: \(accountResponse.accountId)")
+                print("\(tag): Account Sequence: \(accountResponse.sequenceNumber)")
                 for balance in accountResponse.balances {
                     if balance.assetType == AssetTypeAsString.NATIVE {
-                        print("Account balance: \(balance.balance) XLM")
+                        print("\(tag): Account balance: \(balance.balance) XLM")
                     } else {
-                        print("Account balance: \(balance.balance) \(balance.assetCode!) of issuer: \(balance.assetIssuer!)")
+                        print("\(tag): Account balance: \(balance.balance) \(balance.assetCode!) of issuer: \(balance.assetIssuer!)")
                     }
                 }
             case .failure(let error):
                 print(error.localizedDescription)
             }
         }
+    }
+    
+    func testCreateAccount() {
+        let expectation = XCTestExpectation(description: "Create and fund a new account")
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
+            let destinationKeyPair = try KeyPair.generateRandomKeyPair()
+            
+            print("CA Test: New destination keipair created with accountId: \(destinationKeyPair.accountId)")
+            
+            sdk.effects.stream(for: .effectsForAccount(account:sourceAccountKeyPair.accountId, cursor:nil)).onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(let id, let effectResponse):
+                    if let accountDebitedResponse = effectResponse as? AccountDebitedEffectResponse {
+                        print("CA Test: Stream source account received response with effect-ID: \(id) - type: Account debited - debited amount: \(accountDebitedResponse.amount)")
+                        self.printAccountDetails(tag:"Create account testcase", accountId: destinationKeyPair.accountId)
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"CA Test - source", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("CA Test: Stream error on source account: \(error?.localizedDescription ?? "")")
+                    }
+                }
+            }
+        
+            sdk.effects.stream(for: .effectsForAccount(account:destinationKeyPair.accountId, cursor:nil)).onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(let id, let effectResponse):
+                    if let accountCreatedResponse = effectResponse as? AccountCreatedEffectResponse {
+                        print("CA Test: Stream source account received response with effect-ID: \(id) - type: Account created - New account with accountId: \(destinationKeyPair.accountId) now has a balance of : \(accountCreatedResponse.startingBalance) XLM" )
+                        print("CA Test: Success")
+                        XCTAssert(true)
+                        expectation.fulfill()
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"CCA Test - destination", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("CA Test: Stream error on destination account: \(error?.localizedDescription ?? "")")
+                    }
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        
+                        let createAccount = CreateAccountOperation(sourceAccount: nil, destination: destinationKeyPair, startBalance: 2.0)
+                        
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [createAccount],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(_):
+                                print("CA Test: Transaction successfully sent")
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test send error", horizonRequestError: error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"CA Test", horizonRequestError: error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+            
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+        
+    }
+    
+    func testUpdateHomeDomain() {
+        let expectation = XCTestExpectation(description: "Set www.soneso.com as home domain")
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
+            sdk.effects.stream(for: .effectsForAccount(account:sourceAccountKeyPair.accountId, cursor:nil)).onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(_, let effectResponse):
+                    if let updateHomeDomainResponse = effectResponse as? AccountHomeDomainUpdatedEffectResponse {
+                        print("UHD Test: Home domain updated to: \(updateHomeDomainResponse.homeDomain)" )
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"UDH Test - source", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("Error \(error?.localizedDescription ?? "")")
+                    }
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+
+                        let setHomeDomainOperation = try SetOptionsOperation(sourceAccount: sourceAccountKeyPair, homeDomain: "www.soneso.com")
+                        
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [setHomeDomainOperation],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(_):
+                                print("UHD Test: Transaction successfully sent")
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"UHD Test - send error", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"UHD Test", horizonRequestError: error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+            
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+        
     }
     
     func testSendAndReceivePayment() {
@@ -153,9 +314,12 @@ class TransactionsRemoteTestCase: XCTestCase {
                         XCTAssert(true)
                         expectation.fulfill()
                     }
-                case .error( _):
-                    XCTAssert(false)
-                    expectation.fulfill()
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test - destination", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("Error \(error?.localizedDescription ?? "")")
+                    }
                 }
             }
             
@@ -176,8 +340,9 @@ class TransactionsRemoteTestCase: XCTestCase {
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                             switch response {
                             case .success(_):
-                                print("Transaction successfully sent")
-                            case .failure(_):
+                                print("SRP Test: Transaction successfully sent")
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
                                 XCTAssert(false)
                                 expectation.fulfill()
                             }
@@ -186,7 +351,8 @@ class TransactionsRemoteTestCase: XCTestCase {
                         XCTAssert(false)
                         expectation.fulfill()
                     }
-                case .failure(_):
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
                     XCTAssert(false)
                     expectation.fulfill()
                 }
@@ -216,7 +382,8 @@ class TransactionsRemoteTestCase: XCTestCase {
                 let xdrEnvelope = try! transaction.encodedEnvelope()
                 print(xdrEnvelope)
                 expectation.fulfill()
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"TS Test", horizonRequestError:error)
                 XCTAssert(false)
             }
         }
@@ -232,7 +399,8 @@ class TransactionsRemoteTestCase: XCTestCase {
             switch response {
             case .success(_):
                 expectation.fulfill()
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"TEP Test", horizonRequestError:error)
                 XCTAssert(false)
             }
         })
@@ -240,6 +408,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 25.0)
     }
     
+ /*
     func testTransactionsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
@@ -256,7 +425,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
-/*
+
     func testTransactionsForAccountStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         

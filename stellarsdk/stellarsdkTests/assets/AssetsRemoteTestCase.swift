@@ -22,8 +22,8 @@ class AssetsRemoteTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testAssetsLoadingSuccessful() {
-        let expectation = XCTestExpectation(description: "Get assets and validate assets parsing")
+    func testGetAssets() {
+        let expectation = XCTestExpectation(description: "Get assets and parse their details successfully")
         
         sdk.assets.getAssets(order:Order.descending, limit:2) { (response) -> (Void) in
             switch response {
@@ -46,15 +46,18 @@ class AssetsRemoteTestCase: XCTestCase {
                                 }
                                 XCTAssert(true)
                                 expectation.fulfill()
-                            case .failure(_):
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load assets testcase", horizonRequestError: error)
                                 XCTAssert(false)
                             }
                         }
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load assets testcase", horizonRequestError: error)
                         XCTAssert(false)
                     }
                 }
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load assets testcase", horizonRequestError: error)
                 XCTAssert(false)
                 expectation.fulfill()
             }

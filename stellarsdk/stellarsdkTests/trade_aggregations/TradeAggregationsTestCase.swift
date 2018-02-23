@@ -22,7 +22,7 @@ class TradeAggregationsTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testTradeAggregationsLoadingSuccessful() {
+    func testGetTradeAggregations() {
         let expectation = XCTestExpectation(description: "Get trade aggregations response")
         
         sdk.tradeAggregations.getTradeAggregations(baseAssetType: AssetTypeAsString.NATIVE, counterAssetType: AssetTypeAsString.CREDIT_ALPHANUM4, counterAssetCode: "BTC", counterAssetIssuer: "GA77B6GK5K3FH2YJ6I5VJ7VPFZKPBQUX2IIC2MJYAERQTGJI4VOPKRYJ", order: Order.ascending, limit: 10) { (response) -> (Void) in
@@ -42,7 +42,8 @@ class TradeAggregationsTestCase: XCTestCase {
                 }
                 
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GTA Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             expectation.fulfill()
