@@ -96,7 +96,6 @@ sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Vo
 You can check the most recent payments by:
 
 ```swift
-let accountId = "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX"
 sdk.payments.getPayments(order:Order.descending, limit:10) { response in
     switch response {
     case .success(let paymentsResponse):
@@ -120,7 +119,7 @@ sdk.payments.getPayments(order:Order.descending, limit:10) { response in
 ```
 You can use the parameters:`limit`, `order`, and `cursor` to customize the query. You can also get most recent payments for accounts, ledgers and transactions. 
 
-Horizon has SSE support for push data, if you really want to, use it like this:
+Horizon has SSE support for push data. You can use it like this:
 
 ```swift
 sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
