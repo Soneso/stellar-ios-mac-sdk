@@ -152,7 +152,7 @@ sdk.operations.getOperations()
 // andd so on ...
 ```
 
-### 4. Building ans submitting transactions
+### 4. Building and submitting transactions
 
 Example payment:
 
@@ -182,9 +182,6 @@ try self.sdk.transactions.submitTransaction(transaction: transaction) { (respons
     }
 }
 ```
-
-## Documentation
-coming soon
 
 # How to contribute
 
