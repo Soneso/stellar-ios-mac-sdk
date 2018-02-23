@@ -21,4 +21,5 @@ public enum HorizonRequestError: Error {
     case staleHistory(message:String, horizonErrorResponse:StaleHistoryErrorResponse?) // HTTP Status code 503
     case emptyResponse
     case parsingResponseFailed(message:String)
+    case errorOnStreamReceive(message:String)
 }
