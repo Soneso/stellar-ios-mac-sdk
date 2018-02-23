@@ -118,7 +118,7 @@ public class PaymentsService: NSObject {
     /// Allows to stream SSE events from horizon.
     /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events. This mode will keep the connection to horizon open and horizon will continue to return responses as ledgers close.
     ///
-    open func stream(for transactionsType:PaymentsChange) -> StreamItem<PaymentOperationResponse> {
+    open func stream(for transactionsType:PaymentsChange) -> OperationsStreamItem {
         var subpath:String!
         switch transactionsType {
         case .allPayments(let cursor):
@@ -143,7 +143,7 @@ public class PaymentsService: NSObject {
             }
         }
     
-        let streamItem = StreamItem<PaymentOperationResponse>(baseURL: serviceHelper.baseURL, subpath:subpath)
+        let streamItem = OperationsStreamItem(baseURL: serviceHelper.baseURL, subpath:subpath)
         return streamItem
     }
 }

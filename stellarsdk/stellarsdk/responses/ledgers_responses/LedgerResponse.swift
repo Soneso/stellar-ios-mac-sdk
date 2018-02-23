@@ -46,10 +46,10 @@ public class LedgerResponse: NSObject, Decodable {
     public var feePool:String
     
     /// The fee the network charges per operation in a transaction.
-    public var baseFee:Decimal
+    public var baseFee:Decimal?
     
     /// The reserve the network uses when calculating an account’s minimum balance.
-    public var baseReserve:String
+    public var baseReserve:String?
     
     /// The maximum number of transactions validators have agreed to process in a given ledger.
     public var maxTxSetSize:Int
@@ -96,8 +96,8 @@ public class LedgerResponse: NSObject, Decodable {
         closedAt = try values.decode(String.self, forKey: .closedAt)
         totalCoins = try values.decode(String.self, forKey: .totalCoins)
         feePool = try values.decode(String.self, forKey: .feePool)
-        baseFee = try values.decode(Decimal.self, forKey: .baseFee)
-        baseReserve = try values.decode(String.self, forKey: .baseReserve)
+        baseFee = try values.decodeIfPresent(Decimal.self, forKey: .baseFee)
+        baseReserve = try values.decodeIfPresent(String.self, forKey: .baseReserve)
         maxTxSetSize = try values.decode(Int.self, forKey: .maxTxSetSize)
         protocolVersion = try values.decode(Decimal.self, forKey: .protocolVersion)
     }

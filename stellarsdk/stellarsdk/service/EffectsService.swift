@@ -106,7 +106,7 @@ public class EffectsService: NSObject {
     /// Allows to stream SSE events from horizon.
     /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events. This mode will keep the connection to horizon open and horizon will continue to return responses as ledgers close.
     ///
-    open func stream(for transactionsType:EffectsChange) -> StreamItem<EffectResponse> {
+    open func stream(for transactionsType:EffectsChange) -> EffectsStreamItem {
         var subpath:String!
         switch transactionsType {
         case .allEffects(let cursor):
@@ -136,7 +136,7 @@ public class EffectsService: NSObject {
             }
         }
         
-        let streamItem = StreamItem<EffectResponse>(baseURL: serviceHelper.baseURL, subpath:subpath)
+        let streamItem = EffectsStreamItem(baseURL: serviceHelper.baseURL, subpath:subpath)
         return streamItem
     }
     

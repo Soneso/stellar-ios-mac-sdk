@@ -80,7 +80,7 @@ public class LedgersService: NSObject {
         }
     }
     
-    open func stream(for transactionsType:LedgersChange) -> StreamItem<LedgerResponse> {
+    open func stream(for transactionsType:LedgersChange) -> LedgersStreamItem {
         var subpath:String!
         switch transactionsType {
         case .allLedgers(let cursor):
@@ -90,7 +90,7 @@ public class LedgersService: NSObject {
             }
         }
         
-        let streamItem = StreamItem<LedgerResponse>(baseURL: serviceHelper.baseURL, subpath:subpath)
+        let streamItem = LedgersStreamItem(baseURL: serviceHelper.baseURL, subpath:subpath)
         return streamItem
     }
     

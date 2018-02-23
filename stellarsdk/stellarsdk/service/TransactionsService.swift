@@ -97,7 +97,7 @@ public class TransactionsService: NSObject {
         }
     }
     
-    open func stream(for transactionsType:TransactionsChange) -> StreamItem<TransactionResponse> {
+    open func stream(for transactionsType:TransactionsChange) -> TransactionsStreamItem {
         var subpath:String!
         switch transactionsType {
         case .allTransactions(let cursor):
@@ -117,7 +117,7 @@ public class TransactionsService: NSObject {
             }
         }
         
-        let streamItem = StreamItem<TransactionResponse>(baseURL: serviceHelper.baseURL, subpath:subpath)
+        let streamItem = TransactionsStreamItem(baseURL: serviceHelper.baseURL, subpath:subpath)
         return streamItem
     }
     

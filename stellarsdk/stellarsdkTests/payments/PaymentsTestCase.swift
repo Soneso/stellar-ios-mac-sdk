@@ -114,14 +114,14 @@ class PaymentsTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
- /*   func testPaymentsStream() {
+   func testPaymentsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
         sdk.payments.stream(for: .allPayments(cursor: nil)).onReceive { (response) -> (Void) in
             switch response {
             case .open:
                 break
-            case .response( _, _):
+            case .response(_,_):
                 expectation.fulfill()
             case .error( _):
                 break
@@ -130,7 +130,7 @@ class PaymentsTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
-    
+ /*
     func testPaymentsForAccountStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         

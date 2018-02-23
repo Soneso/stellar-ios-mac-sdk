@@ -100,9 +100,12 @@
 		744C4DC2202A328100B46CDE /* OperationsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DC1202A328100B46CDE /* OperationsRemoteTestCase.swift */; };
 		744C4DC4202A364300B46CDE /* DateFormatter+ISOParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DC3202A364300B46CDE /* DateFormatter+ISOParsing.swift */; };
 		744D458C2038194300178D04 /* EventSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744D458B2038194300178D04 /* EventSource.swift */; };
-		744D458F2038292800178D04 /* StreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744D458E2038292800178D04 /* StreamItem.swift */; };
+		744D458F2038292800178D04 /* TransactionsStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744D458E2038292800178D04 /* TransactionsStreamItem.swift */; };
 		744D459120382EF800178D04 /* StreamingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744D459020382EF800178D04 /* StreamingHelper.swift */; };
 		744E75E42028DBD500170D57 /* EffectsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744E75E32028DBD500170D57 /* EffectsRemoteTestCase.swift */; };
+		745C41532040388900E33006 /* OperationsStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745C41522040388900E33006 /* OperationsStreamItem.swift */; };
+		745C415520403B4600E33006 /* EffectsStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745C415420403B4600E33006 /* EffectsStreamItem.swift */; };
+		745C415720403CDF00E33006 /* LedgersStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745C415620403CDF00E33006 /* LedgersStreamItem.swift */; };
 		745F2BAD202C27FF008763F1 /* XDRCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BAC202C27FF008763F1 /* XDRCodable.swift */; };
 		745F2BAF202C281F008763F1 /* XDRCodableExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BAE202C281F008763F1 /* XDRCodableExtensions.swift */; };
 		745F2BB1202C2852008763F1 /* XDRDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BB0202C2852008763F1 /* XDRDecoder.swift */; };
@@ -408,9 +411,12 @@
 		744C4DC1202A328100B46CDE /* OperationsRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationsRemoteTestCase.swift; sourceTree = "<group>"; };
 		744C4DC3202A364300B46CDE /* DateFormatter+ISOParsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DateFormatter+ISOParsing.swift"; sourceTree = "<group>"; };
 		744D458B2038194300178D04 /* EventSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventSource.swift; sourceTree = "<group>"; };
-		744D458E2038292800178D04 /* StreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamItem.swift; sourceTree = "<group>"; };
+		744D458E2038292800178D04 /* TransactionsStreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsStreamItem.swift; sourceTree = "<group>"; };
 		744D459020382EF800178D04 /* StreamingHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingHelper.swift; sourceTree = "<group>"; };
 		744E75E32028DBD500170D57 /* EffectsRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsRemoteTestCase.swift; sourceTree = "<group>"; };
+		745C41522040388900E33006 /* OperationsStreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationsStreamItem.swift; sourceTree = "<group>"; };
+		745C415420403B4600E33006 /* EffectsStreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsStreamItem.swift; sourceTree = "<group>"; };
+		745C415620403CDF00E33006 /* LedgersStreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersStreamItem.swift; sourceTree = "<group>"; };
 		745F2BAC202C27FF008763F1 /* XDRCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XDRCodable.swift; sourceTree = "<group>"; };
 		745F2BAE202C281F008763F1 /* XDRCodableExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XDRCodableExtensions.swift; sourceTree = "<group>"; };
 		745F2BB0202C2852008763F1 /* XDRDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XDRDecoder.swift; sourceTree = "<group>"; };
@@ -1017,8 +1023,11 @@
 		744D458D2038288700178D04 /* Streaming */ = {
 			isa = PBXGroup;
 			children = (
-				744D458E2038292800178D04 /* StreamItem.swift */,
+				744D458E2038292800178D04 /* TransactionsStreamItem.swift */,
 				744D459020382EF800178D04 /* StreamingHelper.swift */,
+				745C41522040388900E33006 /* OperationsStreamItem.swift */,
+				745C415420403B4600E33006 /* EffectsStreamItem.swift */,
+				745C415620403CDF00E33006 /* LedgersStreamItem.swift */,
 			);
 			path = Streaming;
 			sourceTree = "<group>";
@@ -1669,7 +1678,7 @@
 				43D35B0B2034845E00C8BDBC /* PaymentPathResponse.swift in Sources */,
 				745F2BB8202C36AA008763F1 /* TransactionsService.swift in Sources */,
 				83DD2C79202DF41F00713FEE /* NotAcceptableErrorResponse.swift in Sources */,
-				744D458F2038292800178D04 /* StreamItem.swift in Sources */,
+				744D458F2038292800178D04 /* TransactionsStreamItem.swift in Sources */,
 				437D8A86202EF0770024D031 /* TradeAggregationResponse.swift in Sources */,
 				83DD2C7B202DF4B000713FEE /* StaleHistoryErrorResponse.swift in Sources */,
 				8369722C2028F79200398A98 /* OfferCreatedEffectResponse.swift in Sources */,
@@ -1709,6 +1718,7 @@
 				833CBF8E203351B200C23CFE /* TimeBoundsXDR.swift in Sources */,
 				7481B53E20248441000A783E /* EffectsService.swift in Sources */,
 				833CBFF120395FD000C23CFE /* SubmitTransactionResponse.swift in Sources */,
+				745C415520403B4600E33006 /* EffectsStreamItem.swift in Sources */,
 				4390830920372BAF00254042 /* Memo.swift in Sources */,
 				83DD2C6B202DE3DF00713FEE /* ErrorResponse.swift in Sources */,
 				43D35B0D20348AEA00C8BDBC /* PaymentPathsService.swift in Sources */,
@@ -1782,6 +1792,7 @@
 				746AD2CC20342D1600A9CF21 /* AllowTrustResultXDR.swift in Sources */,
 				833CBFF3203A10FD00C23CFE /* FindPaymentPathsResponse.swift in Sources */,
 				833CBFBC20337A1700C23CFE /* LedgerExtryDataXDR.swift in Sources */,
+				745C415720403CDF00E33006 /* LedgersStreamItem.swift in Sources */,
 				833CBFDD2036F2B500C23CFE /* ManageOfferOperation.swift in Sources */,
 				836971DF2024A71B00398A98 /* AccountFlagsResponse.swift in Sources */,
 				437D8A8D202F0B980024D031 /* TradesService.swift in Sources */,
@@ -1820,6 +1831,7 @@
 				8369722A2028F6A700398A98 /* TrustlineDeauthorizedEffectResponse.swift in Sources */,
 				833CBF9C2033533100C23CFE /* ManageOfferOperationXDR.swift in Sources */,
 				743DF54C201F73FC00713DE7 /* VersionByte.swift in Sources */,
+				745C41532040388900E33006 /* OperationsStreamItem.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
