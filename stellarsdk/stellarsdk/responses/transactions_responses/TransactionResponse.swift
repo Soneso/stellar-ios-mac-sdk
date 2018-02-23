@@ -45,7 +45,7 @@ public class TransactionResponse: NSObject, Decodable {
     /// The memo type. See enum MemoType. The memo contains optional extra information.
     public var memoType:String
     
-    // TODO add memo
+    public var memo:Memo?
     
     public var signatures:[String]
     
@@ -65,6 +65,7 @@ public class TransactionResponse: NSObject, Decodable {
         case feePaid = "fee_paid"
         case operationCount = "operation_count"
         case memoType = "memo_type"
+        case memo = "memo"
         case signatures
         case envelopeXDR = "envelope_xdr"
         case transactionResult = "result_xdr"
@@ -84,6 +85,30 @@ public class TransactionResponse: NSObject, Decodable {
         feePaid = try values.decode(Int.self, forKey: .feePaid)
         operationCount = try values.decode(Int.self, forKey: .operationCount)
         memoType = try values.decode(String.self, forKey: .memoType)
+        
+        if memoType == "none" {
+            memo = Memo.none
+        } else {
+            let memo = try values.decodeIfPresent(String.self, forKey: .memo)
+            if memoType == "text" {
+                try self.memo = Memo(text: memo ?? "")
+            } else if memoType == "id" {
+                if let m = memo, let memoId = UInt64(m) {
+                    self.memo = .id(memoId)
+                }
+            } else if memoType == "hash" {
+                if let m = memo , let data = Data(base64Encoded: m) {
+                    try self.memo = Memo(hash: data)
+                }
+            } else if memoType == "return" {
+                if let m = memo , let data = Data(base64Encoded: m) {
+                    try self.memo = Memo(returnHash: data)
+                }
+            } else {
+                throw StellarSDKError.decodingError(message: "Unknown memo type.")
+            }
+        }
+        
         signatures = try values.decode([String].self, forKey: .signatures)
         
         let encodedEnvelope = try values.decode(String.self, forKey: .envelopeXDR)

@@ -26,7 +26,8 @@ public enum Memo {
     case returnHash (Data)
 }
 
-extension Memo: MemoProtocol {
+extension Memo: MemoProtocol{
+    
     func toXDR() -> MemoXDR {
         switch self {
             case .none: return MemoXDR.none
@@ -93,6 +94,19 @@ extension Memo:MemoHashProtocol {
     func trimmedHexValue() throws -> String {
         let str = try self.hexValue().split(separator: "0").first
         return String(describing: str)
+    }
+}
+
+extension Memo: Equatable {
+    public static func ==(lhs: Memo, rhs: Memo) -> Bool {
+        switch (lhs, rhs) {
+        case (.none, .none): return true
+        case let (.text(l), .text(r)): return l == r
+        case let (.id(l), .id(r)): return l == r
+        case let (.hash(l), .hash(r)): return l == r
+        case let (.returnHash(l), .returnHash(r)): return l == r
+        default: return false
+        }
     }
 }
 

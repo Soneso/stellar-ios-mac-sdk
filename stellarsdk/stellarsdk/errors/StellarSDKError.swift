@@ -12,4 +12,6 @@ public enum StellarSDKError: Error {
     case invalidArgument(message: String)
     case xdrDecodingError(message: String)
     case xdrEncodingError(message: String)
+    case encodingError(message: String)
+    case decodingError(message: String)
 }
