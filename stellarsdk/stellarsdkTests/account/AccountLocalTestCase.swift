@@ -34,29 +34,15 @@ class AccountLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
+    
+ 
     func testKeyGeneration() {
-        
-        //let expectation = XCTestExpectation(description: "Create key and ask freindbot to fund it.")
         
         let keyPair = try! KeyPair.generateRandomKeyPair()
         XCTAssert(keyPair.publicKey.bytes.count == 32, "Public key length is incorrect")
         XCTAssert(keyPair.privateKey!.bytes.count == 64, "Private key length is incorrect")
         XCTAssert(keyPair.seed!.bytes.count == 32, "Seed length is incorrect")
         XCTAssertNotNil(keyPair.secretSeed)
-        
-        
-        print("Account ID: " + keyPair.accountId)
-        print("Secret Seed: " + keyPair.secretSeed)
-        /*sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Void) in
-            switch response {
-                case .success(let details):
-                    print(details)
-                case .failure(_):
-                    XCTAssert(false)
-            }
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 15.0)*/
     }
     
     func testKeyFromAccountIdCreation() {
@@ -72,8 +58,32 @@ class AccountLocalTestCase: XCTestCase {
         XCTAssert(keyPair.publicKey.bytes.count == 32, "Public key length is incorrect")
     }
     
-    func testAccountNotFoundOnHorizon() {
-        let expectation = XCTestExpectation(description: "Get account details response")
+    /*func testCreateTestAccount() {
+        
+        let expectation = XCTestExpectation(description: "Create key and ask friendbot to fund it.")
+        
+        let keyPair = try! KeyPair.generateRandomKeyPair()
+        XCTAssertNotNil(keyPair.secretSeed)
+        
+        
+        print("Account ID: " + keyPair.accountId)
+        print("Secret Seed: " + keyPair.secretSeed)
+        
+        sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Void) in
+            switch response {
+            case .success(let details):
+                print(details)
+                XCTAssert(true)
+            case .failure(_):
+                XCTAssert(false)
+            }
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }*/
+    
+    func testAccountNotFound() {
+        let expectation = XCTestExpectation(description: "Get and parse account not found error")
         
         sdk.accounts.getAccountDetails(accountId: "AAAAA") { (response) -> (Void) in
             switch response {
@@ -92,7 +102,7 @@ class AccountLocalTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testLoadAccountFromHorizon() {
+    func testLoadAccount() {
         let expectation = XCTestExpectation(description: "Get account details response")
         
         sdk.accounts.getAccountDetails(accountId: testSuccessAccountId) { (response) -> (Void) in

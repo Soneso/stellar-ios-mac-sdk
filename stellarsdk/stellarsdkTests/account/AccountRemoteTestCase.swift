@@ -26,7 +26,7 @@ class AccountRemoteTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadAccountFromHorizon() {
+    func testLoadAccount() {
         
         let expectation = XCTestExpectation(description: "Get account details response")
         

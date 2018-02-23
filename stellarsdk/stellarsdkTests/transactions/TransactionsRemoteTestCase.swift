@@ -116,6 +116,23 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func printAccountBalances(accountId: String) {
+        sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+            switch response {
+            case .success(let accountResponse):
+                for balance in accountResponse.balances {
+                    if balance.assetType == AssetTypeAsString.NATIVE {
+                        print("Account balance: \(balance.balance) XLM")
+                    } else {
+                        print("Account balance: \(balance.balance) \(balance.assetCode!) of issuer: \(balance.assetIssuer!)")
+                    }
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
     func testSendAndReceivePayment() {
         
         let expectation = XCTestExpectation(description: "Payment successfully sent and received")
@@ -124,81 +141,56 @@ class TransactionsRemoteTestCase: XCTestCase {
             let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
             let destinationAccountKeyPair = try KeyPair(accountId: "GCKECJ5DYFZUX6DMTNJFHO2M4QKTUO5OS5JZ4EIIS7C3VTLIGXNGRTRC")
             
-            func send() {
-                sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
-                    switch response {
-                    case .success(let accountResponse):
-                        do {
-                            let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
-                                                                    destination: destinationAccountKeyPair,
-                                                                    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
-                                                                    amount: 1.5)
-                            let transaction = try Transaction(sourceAccount: accountResponse,
-                                                              operations: [paymentOperation],
-                                                              memo: Memo.none,
-                                                              timeBounds:nil)
-                            try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                            
-                            try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                                switch response {
-                                case .success(_):
-                                    receive()
-                                case .failure(_):
-                                    XCTAssert(false)
-                                    expectation.fulfill()
-                                }
+            //printAccountBalances(accountId: destinationAccountKeyPair.accountId)
+            
+            sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(let id, let operationResponse):
+                    if let paymentResponse = operationResponse as? PaymentOperationResponse {
+                        print("Payment of \(paymentResponse.amount) XLM from \(paymentResponse.sourceAccount) received -  id \(id)" )
+                        XCTAssert(true)
+                        expectation.fulfill()
+                    }
+                case .error( _):
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
+                                                                destination: destinationAccountKeyPair,
+                                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                                amount: 1.5)
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [paymentOperation],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(_):
+                                print("Transaction successfully sent")
+                            case .failure(_):
+                                XCTAssert(false)
+                                expectation.fulfill()
                             }
-                        } catch {
-                            XCTAssert(false)
-                            expectation.fulfill()
                         }
-                    case .failure(_):
+                    } catch {
                         XCTAssert(false)
                         expectation.fulfill()
                     }
+                case .failure(_):
+                    XCTAssert(false)
+                    expectation.fulfill()
                 }
             }
-            
-            func receive() {
-                sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
-                    switch response {
-                        case .open:
-                            break
-                        case .response(let id, let operationResponse):
-                            if let paymentResponse = operationResponse as? PaymentOperationResponse {
-                                print("Payment of \(paymentResponse.amount) XLM from \(paymentResponse.sourceAccount) received -  id \(id)" )
-                                showDestinationAccountBalance(finish: true)
-                            }
-                        case .error( _):
-                            XCTAssert(false)
-                            expectation.fulfill()
-                    }
-                }
-            }
-            
-            func showDestinationAccountBalance(finish:Bool) {
-                sdk.accounts.getAccountDetails(accountId: destinationAccountKeyPair.accountId) { (response) -> (Void) in
-                    switch response {
-                    case .success(let accountResponse):
-                        for balance in accountResponse.balances {
-                            if balance.assetType == AssetTypeAsString.NATIVE {
-                                print("Destination account balance: \(balance.balance) XLM")
-                                if (finish) {
-                                    XCTAssert(true)
-                                    expectation.fulfill()
-                                }
-                            }
-                        }
-                    case .failure(_):
-                        XCTAssert(false)
-                        expectation.fulfill()
-                    }
-                }
-            }
-            
-            showDestinationAccountBalance(finish: false)
-            send()
-            
         } catch {
             XCTAssert(false)
             expectation.fulfill()
