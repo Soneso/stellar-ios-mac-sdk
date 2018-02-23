@@ -36,7 +36,7 @@ class AccountLocalTestCase: XCTestCase {
     
     func testKeyGeneration() {
         
-        // let expectation = XCTestExpectation(description: "Create key and ask freindbot to fund it.")
+        //let expectation = XCTestExpectation(description: "Create key and ask freindbot to fund it.")
         
         let keyPair = try! KeyPair.generateRandomKeyPair()
         XCTAssert(keyPair.publicKey.bytes.count == 32, "Public key length is incorrect")
@@ -44,9 +44,10 @@ class AccountLocalTestCase: XCTestCase {
         XCTAssert(keyPair.seed!.bytes.count == 32, "Seed length is incorrect")
         XCTAssertNotNil(keyPair.secretSeed)
         
-        /*
+        
         print("Account ID: " + keyPair.accountId)
-        sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Void) in
+        print("Secret Seed: " + keyPair.secretSeed)
+        /*sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Void) in
             switch response {
                 case .success(let details):
                     print(details)
@@ -55,8 +56,7 @@ class AccountLocalTestCase: XCTestCase {
             }
             expectation.fulfill()
         }
-        wait(for: [expectation], timeout: 15.0)
-         */
+        wait(for: [expectation], timeout: 15.0)*/
     }
     
     func testKeyFromAccountIdCreation() {
@@ -100,7 +100,7 @@ class AccountLocalTestCase: XCTestCase {
             case .success(let accountDetails):
                 XCTAssertEqual(self.testSuccessAccountId, accountDetails.accountId)
                 XCTAssertNotNil(accountDetails.sequenceNumber)
-                XCTAssertEqual(accountDetails.sequenceNumber, "30232549674450945")
+                XCTAssertEqual(accountDetails.sequenceNumber, 30232549674450945)
                 XCTAssertNotNil(accountDetails.links)
                 XCTAssertNotNil(accountDetails.links.selflink)
                 XCTAssertNotNil(accountDetails.links.selflink.href)

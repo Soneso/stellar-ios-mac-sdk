@@ -106,15 +106,54 @@ class TransactionsLocalTestCase: XCTestCase {
             XCTAssertEqual(firstTransaction?.feePaid, 100)
             XCTAssertEqual(firstTransaction?.operationCount,1)
             // TODO xdrs
-            // TODO add memo types
-            // TODO add memo
             XCTAssertEqual(firstTransaction?.memoType, "none")
+            XCTAssertEqual(firstTransaction?.memo, Memo.none)
             XCTAssertNotNil(firstTransaction?.signatures.first)
             XCTAssertEqual(firstTransaction?.signatures.first, "ioDroKPUAZn2Pp4OTksPKmitQTZpsFSAN259vcI0E3YtCbOWUQkpOJV68myqgL62CPzK3YIsg+Kok4lQ6ys5Ag==")
             
             if (limit == 2) {
                 let secondTransaction = transactionsResponse.records.last
                 XCTAssertNotNil(secondTransaction)
+                
+                XCTAssertNotNil(secondTransaction?.links)
+                XCTAssertNotNil(secondTransaction?.links.selfLink)
+                XCTAssertEqual(secondTransaction?.links.selfLink.href, "https://horizon-testnet.stellar.org/transactions/d62dc796bef7e2b838a97a6f91afb21e6dbab54974473176ea293fae2aa40fb2")
+                XCTAssertNotNil(secondTransaction?.links.account)
+                XCTAssertNotNil(secondTransaction?.links.account.href, "https://horizon-testnet.stellar.org/accounts/GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN")
+                XCTAssertNil(secondTransaction?.links.account.templated)
+                XCTAssertNotNil(secondTransaction?.links.ledger)
+                XCTAssertNotNil(secondTransaction?.links.ledger.href, "https://horizon-testnet.stellar.org/ledgers/7505182")
+                XCTAssertNil(secondTransaction?.links.ledger.templated)
+                XCTAssertNotNil(secondTransaction?.links.operations)
+                XCTAssertNotNil(secondTransaction?.links.operations.href, "https://horizon-testnet.stellar.org/transactions/1d1e64643c3351b578e3b87e4430c3aa4764a08b40840c234d4ace2d98933b36/operations{?cursor,limit,order}")
+                XCTAssertNotNil(secondTransaction?.links.operations.templated)
+                XCTAssertTrue((secondTransaction?.links.operations.templated)!)
+                XCTAssertNotNil(secondTransaction?.links.effects)
+                XCTAssertNotNil(secondTransaction?.links.effects.href, "https://horizon-testnet.stellar.org/transactions/1d1e64643c3351b578e3b87e4430c3aa4764a08b40840c234d4ace2d98933b36/effects{?cursor,limit,order}")
+                XCTAssertNotNil(secondTransaction?.links.effects.templated)
+                XCTAssertTrue((secondTransaction?.links.effects.templated)!)
+                XCTAssertNotNil(secondTransaction?.links.precedes)
+                XCTAssertNotNil(secondTransaction?.links.precedes.href, "https://horizon-testnet.stellar.org/transactions?order=asc&cursor=32234511240531968")
+                XCTAssertNil(secondTransaction?.links.precedes.templated)
+                XCTAssertNotNil(secondTransaction?.links.succeeds)
+                XCTAssertNotNil(secondTransaction?.links.succeeds.href, "https://horizon-testnet.stellar.org/transactions?order=desc&cursor=32234511240531968")
+                XCTAssertNil(secondTransaction?.links.precedes.templated)
+                XCTAssertEqual(secondTransaction?.id, "d62dc796bef7e2b838a97a6f91afb21e6dbab54974473176ea293fae2aa40fb2")
+                XCTAssertEqual(secondTransaction?.pagingToken, "32234506945564672")
+                XCTAssertEqual(secondTransaction?.transactionHash, "d62dc796bef7e2b838a97a6f91afb21e6dbab54974473176ea293fae2aa40fb2")
+                XCTAssertEqual(secondTransaction?.ledger, 7505181)
+                let createdAt = DateFormatter.iso8601.date(from:"2018-02-21T15:16:00Z")
+                XCTAssertEqual(secondTransaction?.createdAt,createdAt)
+                XCTAssertEqual(secondTransaction?.sourceAccount,"GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN")
+                XCTAssertEqual(secondTransaction?.sourceAccountSequence,"31398186618716186")
+                XCTAssertEqual(secondTransaction?.feePaid, 100)
+                XCTAssertEqual(secondTransaction?.operationCount,1)
+                // TODO xdrs
+                XCTAssertEqual(secondTransaction?.memoType, "hash")
+                XCTAssertNotNil(secondTransaction?.memo)
+                XCTAssertEqual(secondTransaction?.memo, Memo.hash(Data(base64Encoded:"UQQWROg9ashoyElBi2OS3b6d9T8AAAAAAAAAAAAAAAA=")!))
+                XCTAssertNotNil(secondTransaction?.signatures.first)
+                XCTAssertEqual(secondTransaction?.signatures.first, "9mofj/v3nFoJpHpImh/lmmV6C3zm0IISI62arI1MurcDkDzo43iR6pNBtPGxHlcYd1ZhOHWyaWGfFrYTsxarAA==")
                 
                 expectation.fulfill()
             } else {

@@ -37,7 +37,7 @@ public class LedgerResponse: NSObject, Decodable {
     public var operationCount:Int
     
     /// An ISO 8601 formatted string of when this ledger was closed.
-    public var closedAt:String
+    public var closedAt:Date
     
     /// The total number of lumens in circulation.
     public var totalCoins:String
@@ -46,10 +46,10 @@ public class LedgerResponse: NSObject, Decodable {
     public var feePool:String
     
     /// The fee the network charges per operation in a transaction.
-    public var baseFee:Decimal?
-    
+    public var baseFeeInStroops:Int?
+
     /// The reserve the network uses when calculating an account’s minimum balance.
-    public var baseReserve:String?
+    public var baseReserveInStroops:Int?
     
     /// The maximum number of transactions validators have agreed to process in a given ledger.
     public var maxTxSetSize:Int
@@ -70,8 +70,8 @@ public class LedgerResponse: NSObject, Decodable {
         case closedAt = "closed_at"
         case totalCoins = "total_coins"
         case feePool = "fee_pool"
-        case baseFee = "base_fee"
-        case baseReserve = "base_reserve"
+        case baseFeeInStroops = "base_fee_in_stroops"
+        case baseReserveInStroops = "base_reserve_in_stroops"
         case maxTxSetSize = "max_tx_set_size"
         case protocolVersion = "protocol_version"
         
@@ -93,11 +93,11 @@ public class LedgerResponse: NSObject, Decodable {
         sequenceNumber = try values.decode(Int64.self, forKey: .sequenceNumber)
         transactionCount = try values.decode(Int.self, forKey: .transactionCount)
         operationCount = try values.decode(Int.self, forKey: .operationCount)
-        closedAt = try values.decode(String.self, forKey: .closedAt)
+        closedAt = try values.decode(Date.self, forKey: .closedAt)
         totalCoins = try values.decode(String.self, forKey: .totalCoins)
         feePool = try values.decode(String.self, forKey: .feePool)
-        baseFee = try values.decodeIfPresent(Decimal.self, forKey: .baseFee)
-        baseReserve = try values.decodeIfPresent(String.self, forKey: .baseReserve)
+        baseFeeInStroops = try values.decodeIfPresent(Int.self, forKey: .baseFeeInStroops)
+        baseReserveInStroops = try values.decodeIfPresent(Int.self, forKey: .baseReserveInStroops)
         maxTxSetSize = try values.decode(Int.self, forKey: .maxTxSetSize)
         protocolVersion = try values.decode(Decimal.self, forKey: .protocolVersion)
     }

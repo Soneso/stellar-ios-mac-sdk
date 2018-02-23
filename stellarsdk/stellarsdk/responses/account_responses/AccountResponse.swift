@@ -10,7 +10,7 @@ import Foundation
 
 ///  Represents an account response, containing information and links relating to a single account.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account Details")
-public class AccountResponse: NSObject, Decodable {
+public class AccountResponse: NSObject, Decodable, TransactionAccount {
 
     /// A list of Links related to this account.
     public var links:AccountLinksResponse
@@ -18,8 +18,11 @@ public class AccountResponse: NSObject, Decodable {
     /// The account’s id / public key.
     public var accountId:String
     
+    /// Keypair of the account containing the public key.
+    public var keyPair: KeyPair
+    
     /// The current sequence number that can be used when submitting a transaction from this account.
-    public var sequenceNumber:String
+    public private (set) var sequenceNumber: UInt64
     
     /// The number of account subentries.
     public var subentryCount:UInt
@@ -73,7 +76,9 @@ public class AccountResponse: NSObject, Decodable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         links = try values.decode(AccountLinksResponse.self, forKey: .links)
         accountId = try values.decode(String.self, forKey: .accountId)
-        sequenceNumber = try values.decode(String.self, forKey: .sequenceNumber)
+        self.keyPair = try KeyPair(accountId: accountId)
+        let sequenceNumberString = try values.decode(String.self, forKey: .sequenceNumber)
+        sequenceNumber = UInt64(sequenceNumberString)!
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         subentryCount = try values.decode(UInt.self, forKey: .subentryCount)
         thresholds = try values.decode(AccountThresholdsResponse.self, forKey: .thresholds)
@@ -83,5 +88,15 @@ public class AccountResponse: NSObject, Decodable {
         data = try values.decode([String:String].self, forKey: .data)
         homeDomain = try values.decodeIfPresent(String.self, forKey: .homeDomain)
         inflationDestination = try values.decodeIfPresent(String.self, forKey: .inflationDestination)
+    }
+    
+    ///  Returns sequence number incremented by one, but does not increment internal counter.
+    public func incrementedSequenceNumber() -> UInt64 {
+        return sequenceNumber + 1
+    }
+    
+    /// Increments sequence number in this object by one.
+    public func incrementSequenceNumber() {
+        sequenceNumber += 1
     }
 }

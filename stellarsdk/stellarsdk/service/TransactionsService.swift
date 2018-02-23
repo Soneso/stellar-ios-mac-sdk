@@ -73,6 +73,11 @@ public class TransactionsService: NSObject {
         }
     }
     
+    open func submitTransaction(transaction:Transaction, response:@escaping TransactionPostResponseClosure) throws {
+        let envelope = try transaction.encodedEnvelope()
+        postTransaction(transactionEnvelope:envelope, response: response)
+    }
+    
     open func postTransaction(transactionEnvelope:String, response:@escaping TransactionPostResponseClosure) {
         let requestPath = "/transactions"
         if let encoded = transactionEnvelope.urlEncoded {

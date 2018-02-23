@@ -25,10 +25,12 @@ public class LedgersService: NSObject {
     
     private override init() {
         serviceHelper = ServiceHelper(baseURL: "")
+        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
     init(baseURL: String) {
         serviceHelper = ServiceHelper(baseURL: baseURL)
+        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
     open func getLedger(sequenceNumber:String, response:@escaping LedgerDetailsResponseClosure) {
@@ -37,6 +39,7 @@ public class LedgersService: NSObject {
             switch result {
             case .success(let data):
                 do {
+                    self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
                     let ledger = try self.jsonDecoder.decode(LedgerResponse.self, from: data)
                     response(.success(details: ledger))
                 } catch {
@@ -69,6 +72,7 @@ public class LedgersService: NSObject {
             switch result {
             case .success(let data):
                 do {
+                    self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
                     let ledgers = try self.jsonDecoder.decode(PageResponse<LedgerResponse>.self, from: data)
                     response(.success(details: ledgers))
                 } catch {

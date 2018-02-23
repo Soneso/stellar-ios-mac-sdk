@@ -56,8 +56,8 @@ class LedgersRemoteTestCase: XCTestCase {
                                 XCTAssertTrue(ledger1?.closedAt == ledger2?.closedAt)
                                 XCTAssertTrue(ledger1?.totalCoins == ledger2?.totalCoins)
                                 XCTAssertTrue(ledger1?.feePool == ledger2?.feePool)
-                                XCTAssertTrue(ledger1?.baseFee == ledger2?.baseFee)
-                                XCTAssertTrue(ledger1?.baseReserve == ledger2?.baseReserve)
+                                XCTAssertTrue(ledger1?.baseFeeInStroops == ledger2?.baseFeeInStroops)
+                                XCTAssertTrue(ledger1?.baseReserveInStroops == ledger2?.baseReserveInStroops)
                                 XCTAssertTrue(ledger1?.maxTxSetSize == ledger2?.maxTxSetSize)
                                 XCTAssertTrue(ledger1?.protocolVersion == ledger2?.protocolVersion)
                                 XCTAssert(true)
@@ -78,7 +78,7 @@ class LedgersRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testLedgersStream() {
+  /*  func testLedgersStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
         sdk.ledgers.stream(for: .allLedgers(cursor: nil)).onReceive { (response) -> (Void) in
@@ -94,6 +94,6 @@ class LedgersRemoteTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
-    
+    */
 }
 
