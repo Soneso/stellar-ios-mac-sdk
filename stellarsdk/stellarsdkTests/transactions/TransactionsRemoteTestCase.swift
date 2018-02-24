@@ -246,7 +246,7 @@ class TransactionsRemoteTestCase: XCTestCase {
                     if let horizonRequestError = error as? HorizonRequestError {
                         StellarSDKLog.printHorizonRequestErrorMessage(tag:"UDH Test - source", horizonRequestError:horizonRequestError)
                     } else {
-                        print("Error \(error?.localizedDescription ?? "")")
+                        print("UID Test stream error \(error?.localizedDescription ?? "")")
                     }
                 }
             }
@@ -256,7 +256,7 @@ class TransactionsRemoteTestCase: XCTestCase {
                 case .success(let accountResponse):
                     do {
 
-                        let setHomeDomainOperation = try SetOptionsOperation(sourceAccount: sourceAccountKeyPair, homeDomain: "www.soneso.com")
+                        let setHomeDomainOperation = try SetOptionsOperation(homeDomain: "www.soneso.com")
                         
                         let transaction = try Transaction(sourceAccount: accountResponse,
                                                           operations: [setHomeDomainOperation],
@@ -280,6 +280,76 @@ class TransactionsRemoteTestCase: XCTestCase {
                     }
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"UHD Test", horizonRequestError: error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+            
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+        
+    }
+    
+    func testUpdateInflationDestination() {
+        let expectation = XCTestExpectation(description: "Set inflation destination")
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
+            print (sourceAccountKeyPair.accountId)
+            let destinationAccountId = "GDVCTSOSX4NIQAWSMCEBQ5MRYNOG7EVSH3TDCWVORCAFMM7XDVPP3OO7"
+            
+            sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response( _, let operationResponse):
+                    if let setOptionsResponse = operationResponse as? SetOptionsOperationResponse {
+                        if (setOptionsResponse.inflationDestination == destinationAccountId) {
+                            expectation.fulfill()
+                        }
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test - stream", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("UID Test stream error \(error?.localizedDescription ?? "")")
+                    }
+                    break
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        
+                        let setInflationOperation = try SetOptionsOperation(inflationDestination: KeyPair(accountId:destinationAccountId))
+                        
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [setInflationOperation],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(_):
+                                print("UID Test: Transaction successfully sent")
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test - send error", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test", horizonRequestError: error)
                     XCTAssert(false)
                     expectation.fulfill()
                 }
@@ -408,6 +478,77 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 25.0)
     }
     
+    func testManageAccountData() {
+        let expectation = XCTestExpectation(description: "Add a key value pair to an account")
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
+            print (sourceAccountKeyPair.accountId)
+            
+            let name = "soneso"
+            let value = "is super"
+            
+            sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response( _, let operationResponse):
+                    if let manageDataResponse = operationResponse as? ManageDataOperationResponse {
+                        if (manageDataResponse.name == name && manageDataResponse.value == value) {
+                            expectation.fulfill()
+                        }
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"MAD Test - stream", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("MAD Test stream error \(error?.localizedDescription ?? "")")
+                    }
+                    break
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        
+                        let manageDataOperation = ManageDataOperation(name:name, data:value.data(using: .utf8))
+                        
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [manageDataOperation],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(_):
+                                print("MAD Test: Transaction successfully sent")
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"MAD Test - send error", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"MAD Test", horizonRequestError: error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+            
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+        
+    }
  /*
     func testTransactionsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")

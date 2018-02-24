@@ -27,6 +27,6 @@ public struct ManageDataOperationXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         
         try container.encode(dataName)
-        try container.encode(dataName)
+        try container.encode(dataValue)
     }
 }

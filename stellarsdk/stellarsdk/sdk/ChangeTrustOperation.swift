@@ -21,7 +21,7 @@ public class ChangeTrustOperation:Operation {
     /// - Parameter asset: The asset of the trustline. For example, if a user extends a trustline of up to 200 USD to an anchor, the line is USD:anchor.
     /// - Parameter limit: The limit of the trustline. In the previous example, the limit would be 200.
     ///
-    public init(sourceAccount:KeyPair, asset:Asset, limit:Decimal) {
+    public init(sourceAccount:KeyPair? = nil, asset:Asset, limit:Decimal) {
         self.asset = asset
         self.limit = limit
         super.init(sourceAccount:sourceAccount)

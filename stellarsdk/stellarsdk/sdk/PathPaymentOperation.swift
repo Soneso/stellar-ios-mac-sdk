@@ -31,7 +31,7 @@ public class PathPaymentOperation:Operation {
     ///
     /// - Throws StellarSDKError.invalidArgument if maximum number of assets in the path is > 5
     ///
-    public init(sourceAccount:KeyPair, sendAsset:Asset, sendMax:Decimal, destination:KeyPair, destAsset:Asset, destAmount:Decimal, path:[Asset]) throws {
+    public init(sourceAccount:KeyPair? = nil, sendAsset:Asset, sendMax:Decimal, destination:KeyPair, destAsset:Asset, destAmount:Decimal, path:[Asset]) throws {
         
         if path.count > 5 {
             throw StellarSDKError.invalidArgument(message: "The maximum number of assets in the path is 5")

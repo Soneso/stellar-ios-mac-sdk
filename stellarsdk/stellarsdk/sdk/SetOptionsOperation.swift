@@ -39,7 +39,7 @@ public class SetOptionsOperation:Operation {
     ///
     /// - Throws StellarSDKError.invalidArgument if signer is not nil but signerWeight is nil
     ///
-    public init(sourceAccount:KeyPair, inflationDestination:KeyPair? = nil, clearFlags:UInt32? = nil, setFlags:UInt32? = nil, masterKeyWeight:UInt32? = nil, lowThreshold:UInt32? = nil, mediumThreshold:UInt32? = nil, highThreshold:UInt32? = nil, homeDomain:String? = nil, signer:SignerKeyXDR? = nil, signerWeight:UInt32? = nil) throws {
+    public init(sourceAccount:KeyPair? = nil, inflationDestination:KeyPair? = nil, clearFlags:UInt32? = nil, setFlags:UInt32? = nil, masterKeyWeight:UInt32? = nil, lowThreshold:UInt32? = nil, mediumThreshold:UInt32? = nil, highThreshold:UInt32? = nil, homeDomain:String? = nil, signer:SignerKeyXDR? = nil, signerWeight:UInt32? = nil) throws {
         
         
         if signer != nil && signerWeight == nil {
