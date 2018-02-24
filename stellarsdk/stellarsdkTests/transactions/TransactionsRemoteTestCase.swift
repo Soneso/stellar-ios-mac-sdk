@@ -371,8 +371,8 @@ class TransactionsRemoteTestCase: XCTestCase {
         do {
             let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
             let destinationAccountKeyPair = try KeyPair(accountId: "GCKECJ5DYFZUX6DMTNJFHO2M4QKTUO5OS5JZ4EIIS7C3VTLIGXNGRTRC")
-            
-            //printAccountBalances(accountId: destinationAccountKeyPair.accountId)
+            // printAccountDetails(tag: "SRP Test - source", accountId: sourceAccountKeyPair.accountId)
+            // printAccountDetails(tag: "SRP Test - dest", accountId: destinationAccountKeyPair.accountId)
             
             sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
                 switch response {

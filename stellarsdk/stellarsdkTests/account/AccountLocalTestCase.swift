@@ -69,15 +69,35 @@ class AccountLocalTestCase: XCTestCase {
         print("Account ID: " + keyPair.accountId)
         print("Secret Seed: " + keyPair.secretSeed)
         
+        sdk.effects.stream(for: .effectsForAccount(account:keyPair.accountId, cursor:nil)).onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response(let id, let effectResponse):
+                if let accountCreatedResponse = effectResponse as? AccountCreatedEffectResponse {
+                    // success
+                    print("CTA Test: Stream source account received response with effect-ID: \(id) - type: Account created - starting balance: \(accountCreatedResponse.startingBalance)")
+                    XCTAssert(true)
+                    expectation.fulfill()
+                }
+            case .error(let error):
+                if let horizonRequestError = error as? HorizonRequestError {
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"CA Test - source", horizonRequestError:horizonRequestError)
+                } else {
+                    print("CTA Test: Stream error on source account: \(error?.localizedDescription ?? "")")
+                } // ignore sse errors, some are just nil
+            }
+        }
+        
         sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Void) in
             switch response {
             case .success(let details):
                 print(details)
-                XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"CTA Test", horizonRequestError: error)
                 XCTAssert(false)
+                expectation.fulfill()
             }
-            expectation.fulfill()
         }
         wait(for: [expectation], timeout: 15.0)
     }*/

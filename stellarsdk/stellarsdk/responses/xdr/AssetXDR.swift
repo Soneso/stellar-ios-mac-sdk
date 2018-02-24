@@ -31,6 +31,37 @@ public enum AssetXDR: XDRCodable {
         }
     }
     
+    public init(assetCode: String, issuer: KeyPair) throws {
+        if assetCode.count <= 4 {
+            guard var codeData = assetCode.data(using: .utf8) else {
+                throw StellarSDKError.invalidArgument(message: "Invalid asset type")
+            }
+            
+            let extraCount = 4 - assetCode.count
+            codeData.append(contentsOf: Array<UInt8>(repeating: 0, count: extraCount))
+            
+            let a4 = Alpha4XDR(assetCode: WrappedData4(codeData), issuer: issuer.publicKey)
+            self = .alphanum4(a4)
+            
+            return
+        }
+        else if assetCode.count <= 12 {
+            guard var codeData = assetCode.data(using: .utf8) else {
+                throw StellarSDKError.invalidArgument(message: "Invalid asset type")
+            }
+            
+            let extraCount = 12 - assetCode.count
+            codeData.append(contentsOf: Array<UInt8>(repeating: 0, count: extraCount))
+            
+            let a12 = Alpha12XDR(assetCode: WrappedData12(codeData), issuer: issuer.publicKey)
+            self = .alphanum12(a12)
+            
+            return
+        }
+        
+        throw StellarSDKError.invalidArgument(message: "Invalid asset type")
+    }
+    
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         

@@ -23,7 +23,7 @@ public enum DataForAccountResponseEnum {
 /// An enum used to diferentiate between successful and failed create test account responses.
 public enum CreateTestAccountResponseEnum {
     case success(details: Any)
-    case failure(error: Error)
+    case failure(error: HorizonRequestError)
 }
 
 /// A closure to be called with the response from a create test account request.
@@ -126,9 +126,11 @@ open class AccountService: NSObject {
         
         let task = URLSession.shared.dataTask(with: components!.url!) { data, httpResponse, error in
             guard error == nil else {
+                response(.failure(error: HorizonRequestError.requestFailed(message: error!.localizedDescription)))
                 return
             }
             guard let data = data else {
+                response(.failure(error: HorizonRequestError.emptyResponse))
                 return
             }
             

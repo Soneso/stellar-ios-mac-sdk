@@ -138,6 +138,96 @@ class OperationsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
 
+    func testChangeTrustline() {
+        let expectation = XCTestExpectation(description: "Change trustline, allow destination account to receive IOM - our sdk token")
+        do {
+            
+            let issuingAccountKeyPair = try KeyPair(accountId: "GCXIZK3YMSKES64ATQWMQN5CX73EWHRHUSEZXIMHP5GYHXL5LNGCOGXU")
+            let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
+            let trustingAccountKeyPair = try KeyPair(secretSeed: "SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
+            
+            printAccountDetails(tag: "CTL Test - trusting account", accountId: trustingAccountKeyPair.accountId)
+            
+            sdk.operations.stream(for: .operationsForAccount(account: trustingAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response( _, let operationResponse):
+                    if let changeTrustlineResponse = operationResponse as? ChangeTrustOperationResponse {
+                        if let assetCode = changeTrustlineResponse.assetCode, let assetIssuer = changeTrustlineResponse.assetIssuer, let limit = changeTrustlineResponse.limit {
+                            if assetCode == "IOM", assetIssuer ==  issuingAccountKeyPair.accountId, limit == "100000000.0000000" {
+                                expectation.fulfill()
+                            }
+                        }
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test - stream", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("CTL Test stream error \(error?.localizedDescription ?? "")")
+                    }
+                    break
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: trustingAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let changeTrustOp = ChangeTrustOperation(asset:IOM!, limit: 100000000)
+                        
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [changeTrustOp],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        
+                        try transaction.sign(keyPair: trustingAccountKeyPair, network: Network.testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(_):
+                                print("CTL Test: Transaction successfully sent")
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"CTL Test", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"CTL Test", horizonRequestError:error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func printAccountDetails(tag: String, accountId: String) {
+        sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+            switch response {
+            case .success(let accountResponse):
+                print("\(tag): Account ID: \(accountResponse.accountId)")
+                print("\(tag): Account Sequence: \(accountResponse.sequenceNumber)")
+                for balance in accountResponse.balances {
+                    if balance.assetType == AssetTypeAsString.NATIVE {
+                        print("\(tag): Account balance: \(balance.balance) XLM")
+                    } else {
+                        print("\(tag): Account balance: \(balance.balance) \(balance.assetCode!) of issuer: \(balance.assetIssuer!)")
+                    }
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+    }
 /*
     func testOperationsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
