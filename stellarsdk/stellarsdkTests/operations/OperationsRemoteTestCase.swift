@@ -461,24 +461,51 @@ class OperationsRemoteTestCase: XCTestCase {
             
             let issuingAccountKeyPair = try KeyPair(accountId: "GCXIZK3YMSKES64ATQWMQN5CX73EWHRHUSEZXIMHP5GYHXL5LNGCOGXU")
             let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
-            
             let XLM = Asset(type: AssetType.ASSET_TYPE_NATIVE)
         
+            /*var eventReceived = false
+            
+             // TODO: find out why this is not receiving events.
+            sdk.effects.stream(for: .effectsForAccount(account: sourceAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response( _, let effectResponse):
+                    if let updateOfferResponse = effectResponse as? OfferUpdatedEffectResponse {
+                        if updateOfferResponse.id == "113064" {
+                            print("Update offer id: \(updateOfferResponse.id)" )
+                            if eventReceived {
+                                XCTAssert(true)
+                                expectation.fulfill()
+                            } else {
+                                eventReceived = true
+                            }
+                        }
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test - stream", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("MOF Test: stream error \(error?.localizedDescription ?? "")")
+                    }
+                    break
+                }
+            }*/
+            
             sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
                 case .response( _, let operationResponse):
                     if let manageOfferResponse = operationResponse as? ManageOfferOperationResponse {
-                        if manageOfferResponse.buyingAssetType == AssetTypeAsString.NATIVE {
-                            print("Manage offer id: \(manageOfferResponse.offerId)" )
+                        if manageOfferResponse.buyingAssetType == AssetTypeAsString.NATIVE, manageOfferResponse.offerId == 113064 {
                             XCTAssert(true)
                             expectation.fulfill()
                         }
                     }
                 case .error(let error):
                     if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test - stream", horizonRequestError:horizonRequestError)
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"MOF Test - stream", horizonRequestError:horizonRequestError)
                     } else {
                         print("MOF Test: stream error \(error?.localizedDescription ?? "")")
                     }
@@ -490,7 +517,8 @@ class OperationsRemoteTestCase: XCTestCase {
                 switch response {
                 case .success(let accountResponse):
                     do {
-                        let manageOfferOperation = ManageOfferOperation(selling:IOM!, buying:XLM!, amount:35, price:Price(numerator:5, denominator:15), offerId:113064)
+                        let random = arc4random_uniform(21) + 10;
+                        let manageOfferOperation = ManageOfferOperation(selling:IOM!, buying:XLM!, amount:Decimal(random), price:Price(numerator:5, denominator:15), offerId:113064)
                         
                         let transaction = try Transaction(sourceAccount: accountResponse,
                                                           operations: [manageOfferOperation],
@@ -514,6 +542,80 @@ class OperationsRemoteTestCase: XCTestCase {
                     }
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"MOF Test", horizonRequestError: error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+            
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testCreatePassiveOffer() {
+        let expectation = XCTestExpectation(description: "Create a passive offer for IOM, the sdk token.")
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
+            print ("CPO Test source accountId: \(sourceAccountKeyPair.accountId)")
+            
+            let issuingAccountKeyPair = try KeyPair(accountId: "GCXIZK3YMSKES64ATQWMQN5CX73EWHRHUSEZXIMHP5GYHXL5LNGCOGXU")
+            let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
+            let XLM = Asset(type: AssetType.ASSET_TYPE_NATIVE)
+            
+            sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response( _, let operationResponse):
+                    if let createOfferResponse = operationResponse as? CreatePassiveOfferOperationResponse {
+                        if createOfferResponse.buyingAssetType == AssetTypeAsString.NATIVE {
+                            XCTAssert(true)
+                            expectation.fulfill()
+                        }
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"CPO Test - stream", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("CPO Test: stream error \(error?.localizedDescription ?? "")")
+                    }
+                    break
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let random = arc4random_uniform(81) + 10;
+                        
+                        let createPassiveOfferOperation = CreatePassiveOfferOperation(selling:IOM!, buying:XLM!, amount:Decimal(random), price:Price(numerator:6, denominator:17))
+                        
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [createPassiveOfferOperation],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(_):
+                                print("CPO Test: Transaction successfully sent")
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"CPO Test - send error", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"CPO Test", horizonRequestError: error)
                     XCTAssert(false)
                     expectation.fulfill()
                 }
