@@ -15,13 +15,13 @@ public struct AccountEntryXDR: XDRCodable {
     public let numSubEntries:UInt32
     public var inflationDest: PublicKey?
     public let flags:UInt32
-    public let homeDomain:String
+    public let homeDomain:String?
     public let thresholds:WrappedData4
     public let signers: [SignerXDR]
     public let reserved: Int32 = 0
     
 
-    public init(accountID: PublicKey, balance:Int64, sequenceNumber:UInt64, numSubEntries:UInt32, inflationDest:PublicKey?, flags:UInt32, homeDomain:String, thresholds: WrappedData4, signers: [SignerXDR]) {
+    public init(accountID: PublicKey, balance:Int64, sequenceNumber:UInt64, numSubEntries:UInt32, inflationDest:PublicKey? = nil, flags:UInt32, homeDomain:String? = nil, thresholds: WrappedData4, signers: [SignerXDR]) {
         self.accountID = accountID
         self.balance = balance
         self.sequenceNumber = sequenceNumber
@@ -41,7 +41,7 @@ public struct AccountEntryXDR: XDRCodable {
         numSubEntries = try container.decode(UInt32.self)
         inflationDest = try container.decode(Array<PublicKey>.self).first
         flags = try container.decode(UInt32.self)
-        homeDomain = try container.decode(String.self)
+        homeDomain = try container.decode(Array<String>.self).first
         thresholds = try container.decode(WrappedData4.self)
         signers = try container.decode(Array<SignerXDR>.self)
         _ = try container.decode(Int32.self)

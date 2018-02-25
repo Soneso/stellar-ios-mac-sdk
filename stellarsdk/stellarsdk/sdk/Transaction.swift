@@ -77,4 +77,10 @@ public class Transaction {
     public func encodedEnvelope() throws -> String {
         return try transactionXDR.encodedEnvelope()
     }
+    
+    public func getTransactionHash(network:Network) throws -> String {
+        let transactionHash = try [UInt8](transactionXDR.hash(network: network))
+        let str = Data(bytes: transactionHash).hexEncodedString()
+        return str
+    }
 }

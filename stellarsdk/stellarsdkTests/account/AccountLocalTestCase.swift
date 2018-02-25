@@ -58,7 +58,7 @@ class AccountLocalTestCase: XCTestCase {
         XCTAssert(keyPair.publicKey.bytes.count == 32, "Public key length is incorrect")
     }
     
-    /*func testCreateTestAccount() {
+ /*   func testCreateTestAccount() {
         
         let expectation = XCTestExpectation(description: "Create key and ask friendbot to fund it.")
         
@@ -100,8 +100,8 @@ class AccountLocalTestCase: XCTestCase {
             }
         }
         wait(for: [expectation], timeout: 15.0)
-    }*/
-    
+    }
+    */
     func testAccountNotFound() {
         let expectation = XCTestExpectation(description: "Get and parse account not found error")
         

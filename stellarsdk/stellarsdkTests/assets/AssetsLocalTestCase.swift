@@ -210,7 +210,7 @@ class AssetsLocalTestCase: XCTestCase {
     
     func testAssetTypeCreditAlphaNum4() {
         do {
-            let code = "USDA"
+            let code = "USB"
             let keyPair = try! KeyPair.generateRandomKeyPair()
             let asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code:code, issuer:keyPair)
             XCTAssertNotNil(asset)
@@ -221,7 +221,7 @@ class AssetsLocalTestCase: XCTestCase {
             XCTAssertNotNil(parsedAsset)
             XCTAssertEqual(parsedAsset.type, AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
             XCTAssertNotNil(parsedAsset.code)
-            XCTAssertEqual(parsedAsset.code, code)
+            XCTAssertTrue(parsedAsset.code!.hasPrefix(code))
             XCTAssertNotNil(parsedAsset.issuer)
             // TODO compare public key
             
@@ -243,7 +243,7 @@ class AssetsLocalTestCase: XCTestCase {
             XCTAssertNotNil(parsedAsset)
             XCTAssertEqual(parsedAsset.type, AssetType.ASSET_TYPE_CREDIT_ALPHANUM12)
             XCTAssertNotNil(parsedAsset.code)
-            XCTAssertEqual(parsedAsset.code, code)
+            XCTAssertTrue(parsedAsset.code!.hasPrefix(code))
             XCTAssertNotNil(parsedAsset.issuer)
             // TODO compare public key
             

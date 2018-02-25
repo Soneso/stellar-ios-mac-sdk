@@ -13,7 +13,7 @@ import Foundation
 public class CreatePassiveOfferOperationResponse: OperationResponse {
     
     /// Offer ID.
-    public var offerId:String
+    public var offerId:Int
     
     /// Amount of asset to be sold.
     public var amount:String
@@ -60,7 +60,7 @@ public class CreatePassiveOfferOperationResponse: OperationResponse {
      */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        offerId = try values.decode(String.self, forKey: .offerId)
+        offerId = try values.decode(Int.self, forKey: .offerId)
         amount = try values.decode(String.self, forKey: .amount)
         price = try values.decode(String.self, forKey: .price)
         buyingAssetType = try values.decode(String.self, forKey: .buyingAssetType)

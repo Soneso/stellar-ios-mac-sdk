@@ -284,7 +284,7 @@ class OperationsLocalTestCase: XCTestCase {
             
             XCTAssertEqual(operationResponse.operationTypeString, "manage_offer")
             XCTAssertEqual(operationResponse.operationType, OperationType.manageOffer)
-            XCTAssertEqual(operationResponse.offerId, "5b422945c99ec8bd8b29b0086aeb89027a774be")
+            XCTAssertEqual(operationResponse.offerId, 77309415424)
             XCTAssertEqual(operationResponse.amount, "100.0")
             XCTAssertEqual(operationResponse.price, "50.0")
             XCTAssertEqual(operationResponse.sellingAssetType, AssetTypeAsString.NATIVE)
@@ -326,7 +326,7 @@ class OperationsLocalTestCase: XCTestCase {
             
             XCTAssertEqual(operationResponse.operationTypeString, "create_passive_offer")
             XCTAssertEqual(operationResponse.operationType, OperationType.createPassiveOffer)
-            XCTAssertEqual(operationResponse.offerId, "5b422945c99ec8bd8b29b0086aeb89027a774be")
+            XCTAssertEqual(operationResponse.offerId, 77309415424)
             XCTAssertEqual(operationResponse.amount, "100.0")
             XCTAssertEqual(operationResponse.price, "50.0")
             XCTAssertEqual(operationResponse.sellingAssetType, AssetTypeAsString.NATIVE)
@@ -738,7 +738,7 @@ class OperationsLocalTestCase: XCTestCase {
                 "source_account": "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY",
                 "created_at": "2018-02-21T09:56:26Z",
                 "transaction_hash": "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d",
-                "offer_id": "5b422945c99ec8bd8b29b0086aeb89027a774be",
+                "offer_id": 77309415424,
                 "amount": "100.0",
                 "price": "50.0",
                 "selling_asset_type": "native",
@@ -775,7 +775,7 @@ class OperationsLocalTestCase: XCTestCase {
                 "source_account": "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY",
                 "created_at": "2018-02-21T09:56:26Z",
                 "transaction_hash": "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d",
-                "offer_id": "5b422945c99ec8bd8b29b0086aeb89027a774be",
+                "offer_id": 77309415424,
                 "amount": "100.0",
                 "price": "50.0",
                 "selling_asset_type": "native",
