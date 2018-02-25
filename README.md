@@ -183,6 +183,10 @@ try self.sdk.transactions.submitTransaction(transaction: transaction) { (respons
 }
 ```
 
+# Sample IOS app
+
+Satraj from Block-Equity created a [sample ios app](https://github.com/Block-Equity/stellar-ios-sample-wallet), that uses our sdk. Thank you Satraj for your contribution to this project! 
+
 # How to contribute
 
 Please read our [Contribution Guide](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/CONTRIBUTING.md).
