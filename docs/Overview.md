@@ -35,7 +35,7 @@ sdk.accounts.getAccountDetails(accountId: "GAWE7LGEFNRN3QZL5ILVLYKKKGGVYCXXDCIBU
 }
  
 ```
-## Building requests
+## Building and submitting transactions
 
 Actions that change things in Stellar, like sending payments, changing your account, or making offers to trade various kinds of currencies, are called operations. In order to actually perform an operation, you create a transaction, which is just a group of operations accompanied by some extra information, like what account is making the transaction and a cryptographic signature to verify that the transaction is authentic. You can use the Transaction class to create the requests to send to Horizon. 
 
@@ -83,6 +83,31 @@ sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (res
         case .failure(let error):
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"Sample", horizonRequestError:error)
 
+    }
+}
+```
+
+## Streaming mode
+
+The SDK provides streaming support for all Horizon endpoints that can be used in streaming mode.
+
+It is possible to use the streaming mode for example to listen for new payments as transactions happen in the Stellar network. If called in streaming mode Horizon will start at the earliest known payment unless a cursor is set. In that case it will start from the cursor. You can also set cursor value to now to only stream effects created since your request time.
+
+Following example shows how to stream on payments and filter the received payments for the asset named "IOM".
+
+```swift
+sdk.payments.stream(for: .paymentsForAccount(account: accountId, cursor: "now")).onReceive { (response) -> (Void) in
+    switch response {
+    case .open:
+        break
+    case .response(let id, let operationResponse):
+        if let paymentResponse = operationResponse as? PaymentOperationResponse {
+            if paymentResponse.assetCode == IOM?.code {
+                print("Payment of \(paymentResponse.amount) IOM from \(paymentResponse.sourceAccount) received -  id \(id)" )
+            }
+        }
+    case .error(let error):
+        ...
     }
 }
 ```
