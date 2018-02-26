@@ -91,11 +91,17 @@ sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (res
 
 The SDK provides streaming support for all Horizon endpoints that can be used in streaming mode.
 
-It is possible to use the streaming mode for example to listen for new payments as transactions happen in the Stellar network. If called in streaming mode Horizon will start at the earliest known payment unless a cursor is set. In that case it will start from the cursor. You can also set cursor value to now to only stream effects created since your request time.
+It is possible to use the streaming mode for example to listen for new payments as transactions happen in the Stellar network. If called in streaming mode Horizon will start at the earliest known payment unless a cursor is set. In that case it will start from the cursor. You can also set cursor value to "now" to only stream effects created since your request time.
 
 Following example shows how to stream on payments and filter the received payments for the asset named "IOM".
 
 ```swift
+
+// specify asset
+let issuingAccountKeyPair = try KeyPair(accountId: "GCXIZK3YMSKES64ATQWMQN5CX73EWHRHUSEZXIMHP5GYHXL5LNGCOGXU")
+let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
+
+// listen for payments
 sdk.payments.stream(for: .paymentsForAccount(account: accountId, cursor: "now")).onReceive { (response) -> (Void) in
     switch response {
     case .open:
