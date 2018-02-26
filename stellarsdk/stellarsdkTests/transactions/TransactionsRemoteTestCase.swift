@@ -25,7 +25,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetAllTransactions() {
         let expectation = XCTestExpectation(description: "Get transactions")
         
-        sdk.transactions.getTransactions(from: nil, order: nil, limit: 15) { (response) -> (Void) in
+        sdk.transactions.getTransactions(limit: 15) { (response) -> (Void) in
             switch response {
             case .success(let transactionsResponse):
                 // load next page
@@ -127,7 +127,7 @@ class TransactionsRemoteTestCase: XCTestCase {
             case .success(let data):
                 let operationBody = OperationBodyXDR.inflation
                 let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
-                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: UInt64(data.sequenceNumber)! + 1, timeBounds: nil, memo: .none, operations: [operation])
+                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: UInt64(data.sequenceNumber) + 1, timeBounds: nil, memo: .none, operations: [operation])
                 
                 try! transaction.sign(keyPair: keyPair, network: .testnet)
                 let xdrEnvelope = try! transaction.encodedEnvelope()

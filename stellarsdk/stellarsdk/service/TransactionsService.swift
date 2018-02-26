@@ -39,7 +39,7 @@ public class TransactionsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getTransactions(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
+    open func getTransactions(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
         let path = "/transactions"
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }

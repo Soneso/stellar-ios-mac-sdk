@@ -37,6 +37,7 @@
 		43D35B0B2034845E00C8BDBC /* PaymentPathResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0A2034845E00C8BDBC /* PaymentPathResponse.swift */; };
 		43D35B0D20348AEA00C8BDBC /* PaymentPathsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0C20348AEA00C8BDBC /* PaymentPathsService.swift */; };
 		43D35B1020348EF800C8BDBC /* PaymentPathsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0F20348EF800C8BDBC /* PaymentPathsTestCase.swift */; };
+		43E24867204056FD00C83458 /* OperationXdrRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E24866204056FD00C83458 /* OperationXdrRemoteTestCase.swift */; };
 		43E34B5E2031BE33003104A9 /* OrderbookResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B5D2031BE33003104A9 /* OrderbookResponse.swift */; };
 		43E34B612031CF09003104A9 /* OfferResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B602031CF09003104A9 /* OfferResponse.swift */; };
 		43E34B632031D7AF003104A9 /* OfferLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B622031D7AF003104A9 /* OfferLinksResponse.swift */; };
@@ -342,6 +343,7 @@
 		43D35B0A2034845E00C8BDBC /* PaymentPathResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentPathResponse.swift; sourceTree = "<group>"; };
 		43D35B0C20348AEA00C8BDBC /* PaymentPathsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentPathsService.swift; sourceTree = "<group>"; };
 		43D35B0F20348EF800C8BDBC /* PaymentPathsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentPathsTestCase.swift; sourceTree = "<group>"; };
+		43E24866204056FD00C83458 /* OperationXdrRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationXdrRemoteTestCase.swift; sourceTree = "<group>"; };
 		43E34B5D2031BE33003104A9 /* OrderbookResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderbookResponse.swift; sourceTree = "<group>"; };
 		43E34B602031CF09003104A9 /* OfferResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferResponse.swift; sourceTree = "<group>"; };
 		43E34B622031D7AF003104A9 /* OfferLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferLinksResponse.swift; sourceTree = "<group>"; };
@@ -730,6 +732,14 @@
 			path = payment_paths;
 			sourceTree = "<group>";
 		};
+		43E248652040512D00C83458 /* xdr */ = {
+			isa = PBXGroup;
+			children = (
+				43E24866204056FD00C83458 /* OperationXdrRemoteTestCase.swift */,
+			);
+			path = xdr;
+			sourceTree = "<group>";
+		};
 		43E34B5C2031BD09003104A9 /* orderbook_responses */ = {
 			isa = PBXGroup;
 			children = (
@@ -1029,6 +1039,7 @@
 		744C4DC0202A326600B46CDE /* operations */ = {
 			isa = PBXGroup;
 			children = (
+				43E248652040512D00C83458 /* xdr */,
 				43464794203D553B0082B96A /* OperationsLocalTestCase.swift */,
 				744C4DC1202A328100B46CDE /* OperationsRemoteTestCase.swift */,
 				43464796203D56AF0082B96A /* OperationsResponsesMock.swift */,
@@ -1875,6 +1886,7 @@
 				4367E604203EE7A800C0AB4F /* TradesResponsesMock.swift in Sources */,
 				4367E600203ED42D00C0AB4F /* OffersLocalTestCase.swift in Sources */,
 				83697206202631D600398A98 /* LedgersRemoteTestCase.swift in Sources */,
+				43E24867204056FD00C83458 /* OperationXdrRemoteTestCase.swift in Sources */,
 				8357A923203B7B5100A144A9 /* EffectsResponsesMock.swift in Sources */,
 				8357A921203B7B1F00A144A9 /* EffectsLocalTestCase.swift in Sources */,
 				745F2BC1202C4D24008763F1 /* TransactionsRemoteTestCase.swift in Sources */,
