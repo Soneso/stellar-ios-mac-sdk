@@ -31,10 +31,10 @@ public class CreateAccountOperation:Operation {
     ///
     /// - Parameter fromXDR: the CreateAccountOperationXDR object to be used to create a new CreateAccountOperation object.
     ///
-    public init(fromXDR:CreateAccountOperationXDR) {
+    public init(fromXDR:CreateAccountOperationXDR, sourceAccount:KeyPair? = nil) {
         self.destination = KeyPair(publicKey: fromXDR.destination)
         self.startBalance = Operation.fromXDRAmount(fromXDR.startingBalance)
-        super.init(sourceAccount: nil)
+        super.init(sourceAccount: sourceAccount)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {

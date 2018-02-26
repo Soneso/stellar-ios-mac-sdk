@@ -12,7 +12,7 @@ import Foundation
 /// See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/operations.html, "Operations")
 /// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html, "List of Operations")
 public class Operation {
-    let sourceAccount:KeyPair?
+    public let sourceAccount:KeyPair?
     
     /// Creates a new operation object.
     ///
@@ -35,10 +35,14 @@ public class Operation {
     ///
     /// - Throws StellarSDKError.invalidArgument error if the given OperationXDR object has an unknown type.
     ///
-    public func fromXDR(operationXDR:OperationXDR) throws -> Operation {
+    public static func fromXDR(operationXDR:OperationXDR) throws -> Operation {
         switch operationXDR.body {
         case .createAccount(let account):
-            return CreateAccountOperation(fromXDR: account)
+            var source: KeyPair?
+            if let publicKey = operationXDR.sourceAccount {
+                source = KeyPair(publicKey: publicKey)
+            }
+            return CreateAccountOperation(fromXDR: account, sourceAccount: source)
         case .payment(let payment):
             return PaymentOperation(fromXDR: payment)
         case .pathPayment(let pathPayment):
@@ -60,6 +64,11 @@ public class Operation {
         default:
             throw StellarSDKError.invalidArgument(message: "Unknown operation body \(operationXDR.body)")
         }
+    }
+    
+    public func toXDRBase64() throws -> String {
+        let xdr = try toXDR()
+        return try Data(bytes: XDREncoder.encode(xdr)).base64EncodedString()
     }
     
     func getOperationBodyXDR() throws -> OperationBodyXDR {
