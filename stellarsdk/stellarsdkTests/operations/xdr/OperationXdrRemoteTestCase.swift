@@ -22,7 +22,7 @@ class OperationXdrRemoteTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testSubmitTransaction() {
+    /*func testSubmitTransaction() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         let xdrEnvelope = "AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAByE3sAAAAIAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAR+V72AAAABAAuiJ2+1FGpG7D+sS9qqZlk2/dsu8mdECuR1jiX9PaawJaJMETUP6u06cZgzrqopzmypJMOS/ob7BRvCQ3JkwDg=="
         
@@ -72,6 +72,6 @@ class OperationXdrRemoteTestCase: XCTestCase {
             break
         }
         
-    }
+    }*/
 }
 

@@ -17,13 +17,7 @@ public final class KeyPair {
     /// Human readable Stellar account ID.
     public var accountId: String {
         get {
-            var versionByte = VersionByte.accountId.rawValue
-            let versionByteData = Data(bytes: &versionByte, count: MemoryLayout.size(ofValue: versionByte))
-            let payload = NSMutableData(data: versionByteData)
-            payload.append(Data(bytes: publicKey.bytes))
-            let checksumedData = (payload as Data).crc16Data()
-            
-            return checksumedData.base32EncodedString!
+            return publicKey.accountId
         }
     }
     /// Human readable Stellar secret seed.

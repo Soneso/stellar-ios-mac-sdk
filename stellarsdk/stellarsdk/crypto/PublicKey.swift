@@ -12,6 +12,19 @@ import ed25519C
 public class PublicKey: XDRCodable {
     private let buffer: [UInt8]
     
+    /// Human readable Stellar account ID.
+    public var accountId: String {
+        get {
+            var versionByte = VersionByte.accountId.rawValue
+            let versionByteData = Data(bytes: &versionByte, count: MemoryLayout.size(ofValue: versionByte))
+            let payload = NSMutableData(data: versionByteData)
+            payload.append(Data(bytes: self.bytes))
+            let checksumedData = (payload as Data).crc16Data()
+            
+            return checksumedData.base32EncodedString!
+        }
+    }
+    
     init(unchecked buffer: [UInt8]) {
         self.buffer = buffer
     }

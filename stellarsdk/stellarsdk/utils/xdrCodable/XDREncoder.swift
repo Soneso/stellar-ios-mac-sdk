@@ -6,7 +6,9 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import Foundation
+// Based on https://github.com/kinfoundation/StellarKit
+
+import CoreFoundation
 
 /// A protocol for types which can be encoded to binary.
 public protocol XDREncodable: Encodable {
@@ -47,6 +49,7 @@ public extension XDREncoder {
         /// require `XDREncodable` because `XDREncoder` doesn't support full keyed
         /// coding functionality.)
         case typeNotConformingToXDREncodable(Any.Type)
+        case notUTF8Encodable(String)
     }
 }
 
