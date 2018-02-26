@@ -169,7 +169,6 @@
 		833CBFA4203353AE00C23CFE /* AllowTrustOperationXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFA3203353AE00C23CFE /* AllowTrustOperationXDR.swift */; };
 		833CBFA6203353C900C23CFE /* ChangeTrustOperationXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFA5203353C900C23CFE /* ChangeTrustOperationXDR.swift */; };
 		833CBFA8203353E400C23CFE /* ManageDataOperationXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFA7203353E400C23CFE /* ManageDataOperationXDR.swift */; };
-		833CBFAA203353FC00C23CFE /* DataValueXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFA9203353FC00C23CFE /* DataValueXDR.swift */; };
 		833CBFAC2033542D00C23CFE /* LedgerEntryChangesXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFAB2033542D00C23CFE /* LedgerEntryChangesXDR.swift */; };
 		833CBFAE2033544D00C23CFE /* LedgerEntryChangeXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFAD2033544D00C23CFE /* LedgerEntryChangeXDR.swift */; };
 		833CBFB02033548A00C23CFE /* LedgerKeyXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFAF2033548A00C23CFE /* LedgerKeyXDR.swift */; };
@@ -489,7 +488,6 @@
 		833CBFA3203353AE00C23CFE /* AllowTrustOperationXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllowTrustOperationXDR.swift; sourceTree = "<group>"; };
 		833CBFA5203353C900C23CFE /* ChangeTrustOperationXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeTrustOperationXDR.swift; sourceTree = "<group>"; };
 		833CBFA7203353E400C23CFE /* ManageDataOperationXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageDataOperationXDR.swift; sourceTree = "<group>"; };
-		833CBFA9203353FC00C23CFE /* DataValueXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataValueXDR.swift; sourceTree = "<group>"; };
 		833CBFAB2033542D00C23CFE /* LedgerEntryChangesXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerEntryChangesXDR.swift; sourceTree = "<group>"; };
 		833CBFAD2033544D00C23CFE /* LedgerEntryChangeXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerEntryChangeXDR.swift; sourceTree = "<group>"; };
 		833CBFAF2033548A00C23CFE /* LedgerKeyXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerKeyXDR.swift; sourceTree = "<group>"; };
@@ -1160,7 +1158,6 @@
 				833CBFA3203353AE00C23CFE /* AllowTrustOperationXDR.swift */,
 				833CBFA5203353C900C23CFE /* ChangeTrustOperationXDR.swift */,
 				833CBFA7203353E400C23CFE /* ManageDataOperationXDR.swift */,
-				833CBFA9203353FC00C23CFE /* DataValueXDR.swift */,
 				74824B202031760100CD0270 /* AssetXDR.swift */,
 				830EFC622032437000607C35 /* LedgerEntryXDR.swift */,
 				833CBFBB20337A1700C23CFE /* LedgerExtryDataXDR.swift */,
@@ -1815,7 +1812,6 @@
 				833CBFD1203638C500C23CFE /* InflationPayoutXDR.swift in Sources */,
 				836972162028F19000398A98 /* AccountFlagsUpdatedEffectResponse.swift in Sources */,
 				744148F8202E05AD006590BE /* DataTypes.swift in Sources */,
-				833CBFAA203353FC00C23CFE /* DataValueXDR.swift in Sources */,
 				833CBF96203352CD00C23CFE /* CreateAccountOperationXDR.swift in Sources */,
 				743DF57F202053B100713DE7 /* KeyPair.swift in Sources */,
 				830EFC672032464600607C35 /* AccountEntryXDR.swift in Sources */,

@@ -102,11 +102,11 @@ extension Data: XDRCodable {
 extension Optional: XDREncodable {
     public func xdrEncode(to encoder: XDREncoder) throws {
         guard let unwrapped = self else {
-            try encoder.encode(Int32(0))
+            try encoder.encode(UInt32(0))
             return
         }
         
-        try encoder.encode(Int32(1))
+        try encoder.encode(UInt32(1))
         guard let encodable = unwrapped as? XDREncodable else {
             throw XDREncoder.Error.typeNotConformingToXDREncodable(type(of: unwrapped))
         }

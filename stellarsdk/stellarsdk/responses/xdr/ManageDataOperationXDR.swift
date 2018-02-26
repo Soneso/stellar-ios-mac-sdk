@@ -10,9 +10,9 @@ import Foundation
 
 public struct ManageDataOperationXDR: XDRCodable {
     public let dataName: String
-    public var dataValue: DataValueXDR?
+    public var dataValue: Data?
     
-    public init(dataName: String, dataValue: DataValueXDR?) {
+    public init(dataName: String, dataValue: Data?) {
         self.dataName = dataName
         self.dataValue = dataValue
     }
@@ -21,7 +21,8 @@ public struct ManageDataOperationXDR: XDRCodable {
         var container = try decoder.unkeyedContainer()
         
         dataName = try container.decode(String.self)
-        dataValue = try container.decode(Array<DataValueXDR>.self).first
+        let strData = try container.decode(Array<String>.self).first
+        dataValue = strData?.data(using: .utf8)
     }
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()

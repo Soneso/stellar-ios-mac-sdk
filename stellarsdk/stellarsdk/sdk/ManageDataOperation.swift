@@ -33,12 +33,13 @@ public class ManageDataOperation:Operation {
     ///
     public init(fromXDR:ManageDataOperationXDR) {
         self.name = fromXDR.dataName
-        self.data = fromXDR.dataValue?.dataValue
+        self.data = fromXDR.dataValue
         super.init(sourceAccount: nil)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
+
         return OperationBodyXDR.manageData(ManageDataOperationXDR(dataName: name,
-                                                                  dataValue: DataValueXDR(dataValue:data)))
+                                                                  dataValue: data))
     }
 }

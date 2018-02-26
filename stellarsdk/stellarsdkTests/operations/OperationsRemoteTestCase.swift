@@ -640,13 +640,13 @@ class OperationsRemoteTestCase: XCTestCase {
             let name = "soneso"
             let value = "is super"
             
-            /*sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+            sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
                 case .response( _, let operationResponse):
                     if let manageDataResponse = operationResponse as? ManageDataOperationResponse {
-                        if (manageDataResponse.name == name && manageDataResponse.value == value) {
+                        if (manageDataResponse.name == name && manageDataResponse.value.base64Decoded() == value) {
                             expectation.fulfill()
                         }
                     }
@@ -658,7 +658,7 @@ class OperationsRemoteTestCase: XCTestCase {
                     }
                     break
                 }
-            }*/
+            }
             
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
