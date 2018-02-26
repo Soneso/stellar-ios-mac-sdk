@@ -238,16 +238,18 @@ class OperationsRemoteTestCase: XCTestCase {
             let homeDomain = "http://www.soneso.com"
             print ("Home domain: \(homeDomain)")
             
-            sdk.effects.stream(for: .effectsForAccount(account:sourceAccountKeyPair.accountId, cursor:nil)).onReceive { (response) -> (Void) in
+            sdk.operations.stream(for: .operationsForAccount(account:sourceAccountKeyPair.accountId, cursor:nil)).onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
-                case .response(_, let effectResponse):
-                    if let updateHomeDomainResponse = effectResponse as? AccountHomeDomainUpdatedEffectResponse {
-                        print("UHD Test: Home domain updated to: \(updateHomeDomainResponse.homeDomain)-" )
-                        if homeDomain == updateHomeDomainResponse.homeDomain {
-                            print("Success")
-                            expectation.fulfill()
+                case .response(_, let operationResponse):
+                    if let updateHomeDomainResponse = operationResponse as?  SetOptionsOperationResponse {
+                        if let responseHomeDomain = updateHomeDomainResponse.homeDomain {
+                            print("UHD Test: Home domain updated to: \(responseHomeDomain)-" )
+                            if homeDomain == responseHomeDomain {
+                                print("Success")
+                                expectation.fulfill()
+                            }
                         }
                     }
                 case .error(let error):
@@ -633,7 +635,7 @@ class OperationsRemoteTestCase: XCTestCase {
         let expectation = XCTestExpectation(description: "Add a key value pair to an account")
         do {
             let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
-            print (sourceAccountKeyPair.accountId)
+            print ("MAD Test: source accoint Id \(sourceAccountKeyPair.accountId)")
             
             let name = "soneso"
             let value = "is super"
@@ -644,7 +646,7 @@ class OperationsRemoteTestCase: XCTestCase {
                     break
                 case .response( _, let operationResponse):
                     if let manageDataResponse = operationResponse as? ManageDataOperationResponse {
-                        if (manageDataResponse.name == name && manageDataResponse.value == value) {
+                        if (manageDataResponse.name == name && manageDataResponse.value.base64Decoded() == value) {
                             expectation.fulfill()
                         }
                     }

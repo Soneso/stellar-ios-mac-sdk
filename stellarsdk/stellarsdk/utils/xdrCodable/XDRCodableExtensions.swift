@@ -6,11 +6,13 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+// Based on https://github.com/kinfoundation/StellarKit
+
 import Foundation
 
 extension Array: XDRCodable {
     public func xdrEncode(to encoder: XDREncoder) throws {
-        try encoder.encode(Int32(self.count))
+        try encoder.encode(UInt32(self.count))
         for element in self {
             try (element as! Encodable).encode(to: encoder)
         }
@@ -21,7 +23,7 @@ extension Array: XDRCodable {
             throw XDRDecoder.Error.typeNotConformingToDecodable(Element.self)
         }
         
-        let count = try decoder.decode(Int32.self)
+        let count = try decoder.decode(UInt32.self)
         self.init()
         self.reserveCapacity(Int(count))
         for _ in 0 ..< count {
@@ -33,7 +35,11 @@ extension Array: XDRCodable {
 
 extension String: XDRCodable {
     public func xdrEncode(to encoder: XDREncoder) throws {
-        try Array(self.utf8).xdrEncode(to: encoder)
+        guard let data = self.data(using: .utf8) else {
+            throw XDREncoder.Error.notUTF8Encodable(self)
+        }
+        
+        try data.xdrEncode(to: encoder)
     }
     
     public init(fromBinary decoder: XDRDecoder) throws {
@@ -42,6 +48,10 @@ extension String: XDRCodable {
             self = str
         } else {
             throw XDRDecoder.Error.invalidUTF8(utf8)
+        }
+        
+        if utf8.count % 4 != 0 {
+            _ = try (0..<(4 - utf8.count % 4)).forEach { _ in try _ = UInt8(fromBinary: decoder) }
         }
     }
 }
@@ -63,15 +73,24 @@ extension FixedWidthInteger where Self: XDRDecodable {
 extension Data: XDRCodable {
     public func xdrEncode(to encoder: XDREncoder) throws {
         try encoder.encode(map { $0 })
+        
+        let padding = Data(repeating: 0, count: 4 - count % 4)
+        if (1...3).contains(padding.count) {
+            try padding.xdrEncodeFixed(to: encoder)
+        }
     }
     
     public func xdrEncodeFixed(to encoder: XDREncoder) throws {
         try forEach { try $0.encode(to: encoder) }
     }
     
-    public init(fromBinary xdrDecoder: XDRDecoder) throws {
-        let bytes: [UInt8] = try Array(fromBinary: xdrDecoder)
+    public init(fromBinary decoder: XDRDecoder) throws {
+        let bytes: [UInt8] = try Array(fromBinary: decoder)
         self.init(bytes: bytes)
+        
+        if bytes.count % 4 != 0 {
+            _ = try (0..<(4 - bytes.count % 4)).forEach { _ in try _ = UInt8(fromBinary: decoder) }
+        }
     }
     
     public init(fromBinary xdrDecoder: XDRDecoder, count: Int) throws {
@@ -82,23 +101,22 @@ extension Data: XDRCodable {
 
 extension Optional: XDREncodable {
     public func xdrEncode(to encoder: XDREncoder) throws {
-        switch self {
-        case .some(let a):
-            try encoder.encode(Int32(1))
-            guard let encodable = a as? XDREncodable else {
-                throw XDREncoder.Error.typeNotConformingToXDREncodable(type(of: a))
-            }
-            try encoder.encode(encodable)
-        case nil:
-            try encoder.encode(Int32(0))
+        guard let unwrapped = self else {
+            try encoder.encode(UInt32(0))
+            return
         }
+        
+        try encoder.encode(UInt32(1))
+        guard let encodable = unwrapped as? XDREncodable else {
+            throw XDREncoder.Error.typeNotConformingToXDREncodable(type(of: unwrapped))
+        }
+        try encoder.encode(encodable)
     }
 }
+
 extension UInt8: XDRCodable {}
 extension Int32: XDRCodable {}
-extension Int: XDRCodable {}
 extension UInt32: XDRCodable {}
 extension Int64: XDRCodable {}
 extension UInt64: XDRCodable {}
 extension Bool: XDRCodable {}
-

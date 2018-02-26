@@ -41,7 +41,7 @@ public struct AccountEntryXDR: XDRCodable {
         numSubEntries = try container.decode(UInt32.self)
         inflationDest = try container.decode(Array<PublicKey>.self).first
         flags = try container.decode(UInt32.self)
-        homeDomain = try container.decode(Array<String>.self).first
+        homeDomain = try container.decode(String.self)
         thresholds = try container.decode(WrappedData4.self)
         signers = try container.decode(Array<SignerXDR>.self)
         _ = try container.decode(Int32.self)

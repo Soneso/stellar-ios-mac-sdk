@@ -6,6 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+// Based on https://github.com/kinfoundation/StellarKit
+
 import Foundation
 
 /// A protocol for types which can be decoded from binary.
@@ -34,6 +36,10 @@ public class XDRDecoder {
     
     public init(data: [UInt8]) {
         self.data = data
+    }
+    
+    public init(data: Data) {
+        self.data = data.map { $0 }
     }
 }
 
