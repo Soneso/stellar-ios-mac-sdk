@@ -50,17 +50,8 @@ public class Asset
             switch self.type {
                 case AssetType.ASSET_TYPE_NATIVE:
                     return AssetXDR.native
-                
-                case AssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-                    let assetCode = WrappedData4(self.code!.data(using: .utf8)!)
-                    return AssetXDR.alphanum4(AssetXDR.Alpha4XDR(assetCode:assetCode, issuer:issuer!.publicKey))
-                
-                case AssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-                    let assetCode = WrappedData12(self.code!.data(using: .utf8)!)
-                    return AssetXDR.alphanum12(AssetXDR.Alpha12XDR(assetCode:assetCode, issuer:issuer!.publicKey))
-                
                 default:
-                    throw StellarSDKError.invalidArgument(message: "Invalid asset type")
+                    return try AssetXDR(assetCode:code!, issuer:issuer!)
             }
         } catch {
             throw StellarSDKError.xdrDecodingError(message: "Error decoding asset: " + error.localizedDescription)

@@ -36,14 +36,15 @@ class TransactionsLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadTransactions() {
-        let expectation = XCTestExpectation(description: "Get transactions and parse their details")
+    func testGetTransactions() {
+        let expectation = XCTestExpectation(description: "Get transactions and parse their details successfully")
         
         sdk.transactions.getTransactions(limit: 1) { (response) -> (Void) in
             switch response {
             case .success(let transactionsResponse):
                 checkResult(transactionsResponse:transactionsResponse, limit:1)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                 XCTAssert(false)
                 expectation.fulfill()
             }
@@ -161,7 +162,8 @@ class TransactionsLocalTestCase: XCTestCase {
                     switch response {
                     case .success(let transactionsResponse):
                         checkResult(transactionsResponse:transactionsResponse, limit:2)
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                         XCTAssert(false)
                         expectation.fulfill()
                     }

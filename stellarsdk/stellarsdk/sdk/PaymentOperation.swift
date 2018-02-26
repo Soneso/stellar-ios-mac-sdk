@@ -23,7 +23,7 @@ public class PaymentOperation:Operation {
     /// - Parameter asset: Asset to send to the destination account.
     /// - Parameter amount: Amount of the aforementioned asset to send.
     ///
-    public init(sourceAccount:KeyPair, destination:KeyPair, asset:Asset, amount:Decimal) {
+    public init(sourceAccount:KeyPair? = nil , destination:KeyPair, asset:Asset, amount:Decimal) {
         self.destination = destination
         self.asset = asset
         self.amount = amount

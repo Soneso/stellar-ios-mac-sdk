@@ -19,7 +19,7 @@ public class AccountMergeOperation:Operation {
     /// - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
     /// - Parameter destination: The account that receives the remaining XLM balance of the source account.
     ///
-    public init(sourceAccount:KeyPair, destination:KeyPair) {
+    public init(sourceAccount:KeyPair? = nil, destination:KeyPair) {
         self.destination = destination
         super.init(sourceAccount:sourceAccount)
     }

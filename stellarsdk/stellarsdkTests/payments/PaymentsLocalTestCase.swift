@@ -35,14 +35,15 @@ class PaymentsLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadPaymentsFromHorizon() {
-        let expectation = XCTestExpectation(description: "Get payments and parse their details")
+    func testGetPayments() {
+        let expectation = XCTestExpectation(description: "Get payments and parse their details successfully")
         
         sdk.payments.getPayments(forLedger: ledgerId, limit:limit) { response in
             switch response {
             case .success(let paymentsResponse):
                 checkResult(paymentsResponse:paymentsResponse, ledgerId:"69859")
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GP Test", horizonRequestError: error)
                 XCTAssert(false)
                 expectation.fulfill()
             }

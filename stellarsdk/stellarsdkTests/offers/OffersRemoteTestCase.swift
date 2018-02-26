@@ -1,5 +1,5 @@
 //
-//  OffersTestCase.swift
+//  OffersRemoteTestCase.swift
 //  stellarsdkTests
 //
 //  Created by Istvan Elekes on 2/13/18.
@@ -9,7 +9,7 @@
 import XCTest
 import stellarsdk
 
-class OffersTestCase: XCTestCase {
+class OffersRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
     
     override func setUp() {
@@ -22,7 +22,7 @@ class OffersTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetOffersForAccount() {
+    func testLoadOffersForAccount() {
         let expectation = XCTestExpectation(description: "Get offers")
         
         sdk.offers.getOffers(forAccount: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX") { (response) -> (Void) in
@@ -48,15 +48,18 @@ class OffersTestCase: XCTestCase {
                                 XCTAssertTrue(offer1?.priceR == offer2?.priceR)
                                 XCTAssert(true)
                                 expectation.fulfill()
-                            case .failure(_):
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load offers testcase", horizonRequestError: error)
                                 XCTAssert(false)
                             }
                         }
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load offers testcase", horizonRequestError: error)
                         XCTAssert(false)
                     }
                 }
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load offers testcase", horizonRequestError: error)
                 XCTAssert(false)
             }
         }

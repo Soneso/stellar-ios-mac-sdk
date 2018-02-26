@@ -22,7 +22,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetAllTransactions() {
+    func testGetTransactions() {
         let expectation = XCTestExpectation(description: "Get transactions")
         
         sdk.transactions.getTransactions(limit: 15) { (response) -> (Void) in
@@ -49,15 +49,18 @@ class TransactionsRemoteTestCase: XCTestCase {
                                 XCTAssertTrue(transaction1?.memoType == transaction2?.memoType)
                                 XCTAssert(true)
                                 expectation.fulfill()
-                            case .failure(_):
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                                 XCTAssert(false)
                             }
                         }
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                         XCTAssert(false)
                     }
                 }
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                 XCTAssert(false)
             }
         }
@@ -72,7 +75,8 @@ class TransactionsRemoteTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GTFA Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -89,7 +93,8 @@ class TransactionsRemoteTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GTFL Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -106,7 +111,8 @@ class TransactionsRemoteTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GTD Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -115,25 +121,26 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
-    
+
     func testTransactionSigning() {
         let publicKey = Data(base64Encoded:"uHFsF4DaBlIsPUzFlMuBFkgEROGR9DlEBYCg3x+V72A=")!
         let privateKey = Data(base64Encoded: "KJJ6vrrDOe9XIDAj6iSftUzux0qWwSwf3er27YKUOU2ZbT/G/wqFm/tDeez3REW5YlD5mrf3iidmGjREBzOEjQ==")!
         let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
         
-        let expectation = XCTestExpectation(description: "Get transaction details")
+        let expectation = XCTestExpectation(description: "Transaction successfully signed.")
         sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
             switch response {
             case .success(let data):
                 let operationBody = OperationBodyXDR.inflation
                 let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
-                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: UInt64(data.sequenceNumber) + 1, timeBounds: nil, memo: .none, operations: [operation])
+                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation])
                 
                 try! transaction.sign(keyPair: keyPair, network: .testnet)
                 let xdrEnvelope = try! transaction.encodedEnvelope()
                 print(xdrEnvelope)
                 expectation.fulfill()
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"TS Test", horizonRequestError:error)
                 XCTAssert(false)
             }
         }
@@ -141,7 +148,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testTransactionPost() {
+    func testTransactionEnvelopePost() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         let xdrEnvelope = "AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAByE3sAAAAIAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAR+V72AAAABAAuiJ2+1FGpG7D+sS9qqZlk2/dsu8mdECuR1jiX9PaawJaJMETUP6u06cZgzrqopzmypJMOS/ob7BRvCQ3JkwDg=="
         
@@ -149,22 +156,24 @@ class TransactionsRemoteTestCase: XCTestCase {
             switch response {
             case .success(_):
                 expectation.fulfill()
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"TEP Test", horizonRequestError:error)
                 XCTAssert(false)
             }
         })
         
         wait(for: [expectation], timeout: 25.0)
     }
-    
-  func testTransactionsStream() {
+
+ /*
+    func testTransactionsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
         sdk.transactions.stream(for: .allTransactions(cursor: nil)).onReceive { (response) -> (Void) in
             switch response {
             case .open:
                 break
-            case .response(_,_):
+            case .response( _, _):
                 expectation.fulfill()
             case .error( _):
                 break
@@ -173,7 +182,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
- /*
+
     func testTransactionsForAccountStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         

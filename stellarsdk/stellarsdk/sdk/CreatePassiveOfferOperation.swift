@@ -25,7 +25,7 @@ public class CreatePassiveOfferOperation:Operation {
     /// - Parameter amount: Amount of selling being sold..
     /// - Parameter price: Price of 1 unit of selling in terms of buying. For example, if you wanted to sell 30 XLM and buy 5 BTC, the price would be {numerator, denominator} = {5,30}.
     ///
-    public init(sourceAccount:KeyPair, selling:Asset, buying:Asset, amount:Decimal, price:Price) {
+    public init(sourceAccount:KeyPair? = nil, selling:Asset, buying:Asset, amount:Decimal, price:Price) {
         self.selling = selling
         self.buying = buying
         self.amount = amount

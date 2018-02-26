@@ -21,7 +21,7 @@ public class ManageDataOperation:Operation {
     /// - Parameter name: String up to 64 bytes long. If this is a new Name it will add the given name/value pair to the account. If this Name is already present then the associated value will be modified.
     /// - Parameter value: (optional) If not present then the existing Name will be deleted. If present then this value will be set in the DataEntry. Up to 64 bytes long.
     ///
-    public init(sourceAccount:KeyPair, name:String, data:Data?) {
+    public init(sourceAccount:KeyPair? = nil, name:String, data:Data?) {
         self.name = name
         self.data = data
         super.init(sourceAccount:sourceAccount)

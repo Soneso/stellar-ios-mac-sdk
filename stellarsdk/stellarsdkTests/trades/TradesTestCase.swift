@@ -22,7 +22,7 @@ class TradesTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testTradesLoadingSuccessful() {
+    func testGetTrades() {
         let expectation = XCTestExpectation(description: "Get trades response")
         
         sdk.trades.getTrades(limit: 10) { (response) -> (Void) in
@@ -67,20 +67,22 @@ class TradesTestCase: XCTestCase {
                                 }
                                 XCTAssert(true)
                                 expectation.fulfill()
-                            case .failure(_):
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                                 XCTAssert(false)
                             }
                         }
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                         XCTAssert(false)
                     }
                 }
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 15.0)
     }
-    
 }

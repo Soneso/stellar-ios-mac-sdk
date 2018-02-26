@@ -36,14 +36,15 @@ class AssetsLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadAccountFromHorizon() {
-        let expectation = XCTestExpectation(description: "Get assets and parse their details")
+    func testGetAssets() {
+        let expectation = XCTestExpectation(description: "Get assets and parse their details successfully")
         
         sdk.assets.getAssets(limit: 1) { (response) -> (Void) in
             switch response {
             case .success(let assetsResponse):
                 checkResult(assetsResponse:assetsResponse, limit:1)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GA Test", horizonRequestError: error)
                 XCTAssert(false)
                 expectation.fulfill()
             }
@@ -108,7 +109,8 @@ class AssetsLocalTestCase: XCTestCase {
                     switch response {
                     case .success(let assetsResponse):
                         checkResult(assetsResponse:assetsResponse, limit:2)
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GA Test", horizonRequestError: error)
                         XCTAssert(false)
                         expectation.fulfill()
                     }
@@ -208,7 +210,7 @@ class AssetsLocalTestCase: XCTestCase {
     
     func testAssetTypeCreditAlphaNum4() {
         do {
-            let code = "USDA"
+            let code = "USB"
             let keyPair = try! KeyPair.generateRandomKeyPair()
             let asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code:code, issuer:keyPair)
             XCTAssertNotNil(asset)
@@ -219,7 +221,7 @@ class AssetsLocalTestCase: XCTestCase {
             XCTAssertNotNil(parsedAsset)
             XCTAssertEqual(parsedAsset.type, AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
             XCTAssertNotNil(parsedAsset.code)
-            XCTAssertEqual(parsedAsset.code, code)
+            XCTAssertTrue(parsedAsset.code!.hasPrefix(code))
             XCTAssertNotNil(parsedAsset.issuer)
             // TODO compare public key
             
@@ -241,7 +243,7 @@ class AssetsLocalTestCase: XCTestCase {
             XCTAssertNotNil(parsedAsset)
             XCTAssertEqual(parsedAsset.type, AssetType.ASSET_TYPE_CREDIT_ALPHANUM12)
             XCTAssertNotNil(parsedAsset.code)
-            XCTAssertEqual(parsedAsset.code, code)
+            XCTAssertTrue(parsedAsset.code!.hasPrefix(code))
             XCTAssertNotNil(parsedAsset.issuer)
             // TODO compare public key
             

@@ -22,8 +22,8 @@ class PaymentsTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetAllPayments() {
-        let expectation = XCTestExpectation(description: "Get payments")
+    func testGetPayments() {
+        let expectation = XCTestExpectation(description: "Test get payments and paging")
         
         sdk.payments.getPayments { (response) -> (Void) in
             switch response {
@@ -47,15 +47,18 @@ class PaymentsTestCase: XCTestCase {
                                 XCTAssertTrue(payment1?.transactionHash == payment2?.transactionHash)
                                 XCTAssert(true)
                                 expectation.fulfill()
-                            case .failure(_):
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GP Test", horizonRequestError: error)
                                 XCTAssert(false)
                             }
                         }
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GP Test", horizonRequestError: error)
                         XCTAssert(false)
                     }
                 }
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GP Test", horizonRequestError: error)
                 XCTAssert(false)
             }
         }
@@ -70,7 +73,8 @@ class PaymentsTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GPFA Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -87,7 +91,8 @@ class PaymentsTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GPFL Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -104,7 +109,8 @@ class PaymentsTestCase: XCTestCase {
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GPFT Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -114,6 +120,173 @@ class PaymentsTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testSendAndReceiveNativePayment() {
+        
+        let expectation = XCTestExpectation(description: "Native payment successfully sent and received")
+        
+        do {
+            //let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")// has home domain and fails parsing XDR, TODO: fix home domain xdr
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
+            let destinationAccountKeyPair = try KeyPair(accountId: "GCKECJ5DYFZUX6DMTNJFHO2M4QKTUO5OS5JZ4EIIS7C3VTLIGXNGRTRC")
+            // printAccountDetails(tag: "SRP Test - source", accountId: sourceAccountKeyPair.accountId)
+            // printAccountDetails(tag: "SRP Test - dest", accountId: destinationAccountKeyPair.accountId)
+            
+            sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(let id, let operationResponse):
+                    if let paymentResponse = operationResponse as? PaymentOperationResponse {
+                        print("Payment of \(paymentResponse.amount) XLM from \(paymentResponse.sourceAccount) received -  id \(id)" )
+                        XCTAssert(true)
+                        expectation.fulfill()
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test - destination", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("Error \(error?.localizedDescription ?? "")")
+                    }
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
+                                                                destination: destinationAccountKeyPair,
+                                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                                amount: 1.5)
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [paymentOperation],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(_):
+                                print("SRP Test: Transaction successfully sent")
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testSendAndReceiveNonNativePayment() {
+        
+        let expectation = XCTestExpectation(description: "Non native payment successfully sent and received")
+        
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
+            let destinationAccountKeyPair = try KeyPair(accountId: "GAWE7LGEFNRN3QZL5ILVLYKKKGGVYCXXDCIBUJ3RVOC2ZWW6WLGK76TJ")
+            printAccountDetails(tag: "SRNNP Test - source", accountId: sourceAccountKeyPair.accountId)
+            printAccountDetails(tag: "SRNNP Test - dest", accountId: destinationAccountKeyPair.accountId)
+            
+            let issuingAccountKeyPair = try KeyPair(accountId: "GCXIZK3YMSKES64ATQWMQN5CX73EWHRHUSEZXIMHP5GYHXL5LNGCOGXU")
+            let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
+            
+            sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(let id, let operationResponse):
+                    if let paymentResponse = operationResponse as? PaymentOperationResponse {
+                        if paymentResponse.assetCode == IOM?.code {
+                            print("Payment of \(paymentResponse.amount) IOM from \(paymentResponse.sourceAccount) received -  id \(id)" )
+                            XCTAssert(true)
+                            expectation.fulfill()
+                        }
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRNNP Test - destination", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("Error \(error?.localizedDescription ?? "")")
+                    }
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
+                                                                destination: destinationAccountKeyPair,
+                                                                asset: IOM!,
+                                                                amount: 2.5)
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [paymentOperation],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(_):
+                                print("SRNNP Test: Transaction successfully sent")
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRNNP Test", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRNNP Test", horizonRequestError:error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func printAccountDetails(tag: String, accountId: String) {
+        sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+            switch response {
+            case .success(let accountResponse):
+                print("\(tag): Account ID: \(accountResponse.accountId)")
+                print("\(tag): Account Sequence: \(accountResponse.sequenceNumber)")
+                for balance in accountResponse.balances {
+                    if balance.assetType == AssetTypeAsString.NATIVE {
+                        print("\(tag): Account balance: \(balance.balance) XLM")
+                    } else {
+                        print("\(tag): Account balance: \(balance.balance) \(balance.assetCode!) of issuer: \(balance.assetIssuer!)")
+                    }
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+    }
+/*
    func testPaymentsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
@@ -130,7 +303,7 @@ class PaymentsTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
- /*
+
     func testPaymentsForAccountStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         

@@ -21,7 +21,7 @@ public class CreateAccountOperation:Operation {
     /// - Parameter destination: Account address that is created and funded.
     /// - Parameter startBalance: Amount of XLM to send to the newly created account. This XLM comes from the source account.
     ///
-    public init(sourceAccount:KeyPair?, destination:KeyPair, startBalance:Decimal) {
+    public init(sourceAccount:KeyPair? = nil, destination:KeyPair, startBalance:Decimal) {
         self.destination = destination
         self.startBalance = startBalance
         super.init(sourceAccount:sourceAccount)

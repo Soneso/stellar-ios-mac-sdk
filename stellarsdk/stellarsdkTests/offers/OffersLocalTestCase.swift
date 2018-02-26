@@ -35,14 +35,15 @@ class OffersLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadOffersFromHorizon() {
-        let expectation = XCTestExpectation(description: "Get offers and parse their details")
+    func testGetOffersForAccount() {
+        let expectation = XCTestExpectation(description: "Get offers for account and parse their details successfully")
         
         sdk.offers.getOffers(forAccount: accountId, limit: limit) { response in
             switch response {
             case .success(let offersResponse):
                 checkResult(offersResponse: offersResponse)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOFA Test", horizonRequestError: error)
                 XCTAssert(false)
                 expectation.fulfill()
             }
@@ -159,4 +160,3 @@ class OffersLocalTestCase: XCTestCase {
         return responseString
     }
 }
-

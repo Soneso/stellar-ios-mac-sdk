@@ -32,7 +32,7 @@ public class EffectsStreamItem: NSObject {
                     response(.error(error: HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .error(let error):
-                response(.error(error: HorizonRequestError.parsingResponseFailed(message: error?.localizedDescription ?? "Something went wrong")))
+                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with path \(self.subpath): \(error?.localizedDescription ?? "nil")")))
             }
         }
     }

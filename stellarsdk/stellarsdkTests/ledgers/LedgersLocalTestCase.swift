@@ -36,14 +36,15 @@ class LedgersLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadLedgersFromHorizon() {
-        let expectation = XCTestExpectation(description: "Get ledgers and parse their details")
+    func testGetLedgers() {
+        let expectation = XCTestExpectation(description: "Get ledgers and parse their details successfully")
         
         sdk.ledgers.getLedgers(limit: 1) { (response) -> (Void) in
             switch response {
             case .success(let ledgersResponse):
                 checkResult(ledgersResponse:ledgersResponse, limit:1)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GL Test", horizonRequestError: error)
                 XCTAssert(false)
                 expectation.fulfill()
             }
@@ -162,7 +163,8 @@ class LedgersLocalTestCase: XCTestCase {
                     switch response {
                     case .success(let ledgersResponse):
                         checkResult(ledgersResponse:ledgersResponse, limit:2)
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load ledgers testcase", horizonRequestError: error)
                         XCTAssert(false)
                         expectation.fulfill()
                     }

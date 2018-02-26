@@ -100,15 +100,15 @@ sdk.payments.getPayments(order:Order.descending, limit:10) { response in
     switch response {
     case .success(let paymentsResponse):
         for payment in paymentsResponse.records {
-            if payment is PaymentOperationResponse {
-                let nextPayment = payment as! PaymentOperationResponse
+            if let nextPayment = payment as? PaymentOperationResponse {
                 if (nextPayment.assetType == AssetTypeAsString.NATIVE) {
                     print("received: \(nextPayment.amount) lumen" )
                 } else {
                     print("received: \(nextPayment.amount) \(nextPayment.assetCode!)" )
                 }
                 print("from: \(nextPayment.from)" )
-            } else if payment is AccountCreatedOperationResponse {
+            }
+            else if let nextPayment = payment as? AccountCreatedOperationResponse {
                 //...
             }
         }
@@ -124,18 +124,19 @@ Horizon has SSE support for push data. You can use it like this:
 ```swift
 sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
     switch response {
-        case .open:
-            break
-        case .response(let id, let paymentResponse):
-            if paymentResponse.assetType == AssetTypeAsString.NATIVE {
+    case .open:
+        break
+    case .response(let id, let operationResponse):
+        if let paymentResponse = operationResponse as? PaymentOperationResponse {
+            switch paymentResponse.assetType {
+            case AssetTypeAsString.NATIVE:
                 print("Payment of \(paymentResponse.amount) XLM from \(paymentResponse.sourceAccount) received -  id \(id)" )
-            } else {
+            default:
                 print("Payment of \(paymentResponse.amount) \(paymentResponse.assetCode!) from \(paymentResponse.sourceAccount) received -  id \(id)" )
             }
-            showDestinationAccountBalance(finish: true)
-        case .error( _):
-            XCTAssert(false)
-            expectation.fulfill()
+        }
+    case .error(let err):
+        print(err?.localizedDescription ?? "Error")
     }
 }
 ```
@@ -148,12 +149,12 @@ sdk.transactions.getTransactions()
 sdk.effects.getEffects()
 sdk.offers.getOffers()
 sdk.operations.getOperations()
-// andd so on ...
+// add so on ...
 ```
 
 ### 4. Building and submitting transactions
 
-Example payment:
+Example "send payment":
 
 ```swift
 // create the payment operation
@@ -181,6 +182,10 @@ try self.sdk.transactions.submitTransaction(transaction: transaction) { (respons
     }
 }
 ```
+
+# Sample IOS app
+
+Satraj from Block-Equity created a [sample ios app](https://github.com/Block-Equity/stellar-ios-sample-wallet), that uses our sdk. Thank you Satraj for your contribution to this project! 
 
 # How to contribute
 

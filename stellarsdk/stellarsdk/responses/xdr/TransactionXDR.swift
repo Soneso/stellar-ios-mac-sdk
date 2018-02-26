@@ -59,14 +59,15 @@ public struct TransactionXDR: XDRCodable {
     }
     
     public mutating func sign(keyPair:KeyPair, network:Network) throws {
-        let signature = try keyPair.signDecorated([UInt8](signatureBase(network: network)))
+        let transactionHash = try [UInt8](hash(network: network))
+        let signature = keyPair.signDecorated(transactionHash)
         signatures.append(signature)
     }
     
-    public func signatureBase(network:Network) throws -> Data {
+    private func signatureBase(network:Network) throws -> Data {
         let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .typeTX(self))
         
-        return try Data(bytes: XDREncoder.encode(payload)).sha256
+        return try Data(bytes: XDREncoder.encode(payload))
     }
     
     public func hash(network:Network) throws -> Data {

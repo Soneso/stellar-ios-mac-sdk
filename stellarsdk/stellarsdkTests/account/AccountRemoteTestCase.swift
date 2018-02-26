@@ -26,9 +26,9 @@ class AccountRemoteTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testLoadAccountFromHorizon() {
+    func testGetAccountDetails() {
         
-        let expectation = XCTestExpectation(description: "Get account details response")
+        let expectation = XCTestExpectation(description: "Get account details and parse them successfully")
         
         
         sdk.accounts.getAccountDetails(accountId: testSuccessAccountId) { (response) -> (Void) in
@@ -114,8 +114,8 @@ class AccountRemoteTestCase: XCTestCase {
                 XCTAssertTrue(key2found)
                 
                 XCTAssert(true)
-            case .failure(_):
-                XCTAssert(false)
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GAD Test", horizonRequestError: error)
             }
             expectation.fulfill()
         }

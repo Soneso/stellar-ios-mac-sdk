@@ -57,5 +57,6 @@ public struct SetOptionsOperationXDR: XDRCodable {
         try container.encode(medThreshold)
         try container.encode(highThreshold)
         try container.encode(homeDomain)
+        try container.encode(signer)
     }
 }

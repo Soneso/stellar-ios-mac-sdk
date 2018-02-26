@@ -22,8 +22,8 @@ class EffectsRemoteTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetAllEffects() {
-        let expectation = XCTestExpectation(description: "Get effects")
+    func testGetEffects() {
+        let expectation = XCTestExpectation(description: "Get effects and parse their details successfully")
         
         sdk.effects.getEffects { (response) -> (Void) in
             switch response {
@@ -44,31 +44,35 @@ class EffectsRemoteTestCase: XCTestCase {
                                 XCTAssertTrue(effect1?.effectTypeString == effect2?.effectTypeString)
                                 XCTAssert(true)
                                 expectation.fulfill()
-                            case .failure(_):
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GE Test", horizonRequestError: error)
                                 XCTAssert(false)
                             }
                         }
-                    case .failure(_):
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GE Test", horizonRequestError: error)
                         XCTAssert(false)
                     }
                 }
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GE Test", horizonRequestError: error)
                 XCTAssert(false)
-                 expectation.fulfill()
+                expectation.fulfill()
             }
         }
         
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetAccountEffects() {
-        let expectation = XCTestExpectation(description: "Get effects for account")
+    func testGetEffectsForAccount() {
+        let expectation = XCTestExpectation(description: "Get effects for account and parse their details successfuly")
         
         sdk.effects.getEffects(forAccount: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GEFA Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -78,14 +82,15 @@ class EffectsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetOperationEffects() {
+    func testGetEffectsForOperation() {
         let expectation = XCTestExpectation(description: "Get effects for operation")
         
         sdk.effects.getEffects(forOperation: "10157597659137") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GEFO Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -95,14 +100,15 @@ class EffectsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetLedgerEffects() {
+    func testGetEffectsForLedger() {
         let expectation = XCTestExpectation(description: "Get effects for ledger")
         
         sdk.effects.getEffects(forLedger: "1") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GEFL Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -112,14 +118,15 @@ class EffectsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetTransactionEffects() {
-        let expectation = XCTestExpectation(description: "Get effects for account")
+    func testGetEffectsForTransaction() {
+        let expectation = XCTestExpectation(description: "Get effects for transaction")
         
         sdk.effects.getEffects(forTransaction: "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
-            case .failure(_):
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GEFT Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             
@@ -129,7 +136,7 @@ class EffectsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testEffectsStream() {
+    /*func testEffectsStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
     
         sdk.effects.stream(for: .allEffects(cursor: nil)).onReceive { (response) -> (Void) in
@@ -146,7 +153,7 @@ class EffectsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    /*func testEffectsForAccountStream() {
+    func testEffectsForAccountStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
         sdk.effects.stream(for: .effectsForAccount(account: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX", cursor: nil)).onReceive { (response) -> (Void) in

@@ -85,7 +85,8 @@ class DataForAccountLocalTestCase: XCTestCase {
             switch response {
                 case .success(let dataForAccount):
                     XCTAssertEqual(dataForAccount.value.base64Decoded(), "is fun")
-                case .failure(_):
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"GDFA Test", horizonRequestError: error)
                     XCTAssert(false)
             }
             expectation.fulfill()
