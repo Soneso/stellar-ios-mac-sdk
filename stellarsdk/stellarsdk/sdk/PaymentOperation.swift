@@ -34,11 +34,11 @@ public class PaymentOperation:Operation {
     ///
     /// - Parameter fromXDR: the PaymentOperationXDR object to be used to create a new PaymentOperation object.
     ///
-    public init(fromXDR:PaymentOperationXDR) {
+    public init(fromXDR:PaymentOperationXDR, sourceAccount:KeyPair? = nil) {
         self.destination = KeyPair(publicKey: fromXDR.destination)
         self.asset = try! Asset.fromXDR(assetXDR: fromXDR.asset)
         self.amount = Operation.fromXDRAmount(fromXDR.amount)
-        super.init(sourceAccount: nil)
+        super.init(sourceAccount: sourceAccount)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {

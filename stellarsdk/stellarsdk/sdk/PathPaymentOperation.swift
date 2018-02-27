@@ -50,7 +50,7 @@ public class PathPaymentOperation:Operation {
     ///
     /// - Parameter fromXDR: the PathPaymentOperationXDR object to be used to create a new PathPaymentOperation object.
     ///
-    public init(fromXDR:PathPaymentOperationXDR) {
+    public init(fromXDR:PathPaymentOperationXDR, sourceAccount:KeyPair? = nil) {
         self.sendAsset = try! Asset.fromXDR(assetXDR: fromXDR.sendAsset)
         self.sendMax = Operation.fromXDRAmount(fromXDR.sendMax)
         self.destination = KeyPair(publicKey: fromXDR.destinationID)
@@ -61,7 +61,7 @@ public class PathPaymentOperation:Operation {
             path.append(try! Asset.fromXDR(assetXDR: asset))
         }
         self.path = path
-        super.init(sourceAccount: nil)
+        super.init(sourceAccount: sourceAccount)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {

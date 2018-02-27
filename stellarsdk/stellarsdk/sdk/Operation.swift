@@ -36,27 +36,27 @@ public class Operation {
     /// - Throws StellarSDKError.invalidArgument error if the given OperationXDR object has an unknown type.
     ///
     public static func fromXDR(operationXDR:OperationXDR) throws -> Operation {
+        var source: KeyPair?
+        if let publicKey = operationXDR.sourceAccount {
+            source = KeyPair(publicKey: publicKey)
+        }
         switch operationXDR.body {
         case .createAccount(let account):
-            var source: KeyPair?
-            if let publicKey = operationXDR.sourceAccount {
-                source = KeyPair(publicKey: publicKey)
-            }
             return CreateAccountOperation(fromXDR: account, sourceAccount: source)
         case .payment(let payment):
-            return PaymentOperation(fromXDR: payment)
+            return PaymentOperation(fromXDR: payment, sourceAccount: source)
         case .pathPayment(let pathPayment):
-            return PathPaymentOperation(fromXDR: pathPayment)
+            return PathPaymentOperation(fromXDR: pathPayment, sourceAccount: source)
         case .manageOffer(let manageOffer):
             return ManageOfferOperation(fromXDR: manageOffer)
         case .createPassiveOffer(let passiveOffer):
             return CreatePassiveOfferOperation(fromXDR: passiveOffer)
         case .setOptions(let setOptions):
-            return SetOptionsOperation(fromXDR: setOptions)
+            return SetOptionsOperation(fromXDR: setOptions, sourceAccount: source)
         case .changeTrust(let changeTrust):
-            return ChangeTrustOperation(fromXDR: changeTrust)
+            return ChangeTrustOperation(fromXDR: changeTrust, sourceAccount: source)
         case .allowTrust(let allowTrust):
-            return AllowTrustOperation(fromXDR: allowTrust)
+            return AllowTrustOperation(fromXDR: allowTrust, sourceAccount: source)
         case .accountMerge(let publicKey):
             return AccountMergeOperation(destinatioAccountPublicKey: publicKey)
         case .manageData(let manageData):

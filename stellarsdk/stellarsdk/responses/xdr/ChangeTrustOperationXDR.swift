@@ -16,7 +16,7 @@ public struct ChangeTrustOperationXDR: XDRCodable {
         var container = try decoder.unkeyedContainer()
         
         asset = try container.decode(AssetXDR.self)
-        _ = try container.decode(Int64.self)
+        limit = try container.decode(Int64.self)
     }
     
     public init(asset: AssetXDR, limit:Int64) {

@@ -63,7 +63,7 @@ public class SetOptionsOperation:Operation {
     ///
     /// - Parameter fromXDR: the SetOptionsOperationXDR object to be used to create a new SetOptionsOperation object.
     ///
-    public init(fromXDR:SetOptionsOperationXDR) {
+    public init(fromXDR:SetOptionsOperationXDR, sourceAccount:KeyPair? = nil) {
         if let inflation = fromXDR.inflationDestination {
             self.inflationDestination = KeyPair(publicKey: inflation)
         } else {
@@ -82,7 +82,7 @@ public class SetOptionsOperation:Operation {
         } else {
             self.signerWeight = fromXDR.signer?.weight
         }
-        super.init(sourceAccount: nil)
+        super.init(sourceAccount: sourceAccount)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {

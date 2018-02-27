@@ -23,7 +23,7 @@ public class AllowTrustOperation:Operation {
     /// - Parameter authorize: Flag indicating whether the trustline is authorized.
     /// - Throws StellarSDKError.invalidArgument if the asset code is empty or has more then 12 characters.
     ///
-    public init(trustor:KeyPair, assetCode:String, authorize:Bool) throws {
+    public init(sourceAccount:KeyPair? = nil, trustor:KeyPair, assetCode:String, authorize:Bool) throws {
         
         if assetCode.count == 0 {
             throw StellarSDKError.invalidArgument(message: "Asset code can not be empty.")
@@ -36,18 +36,18 @@ public class AllowTrustOperation:Operation {
         self.trustor = trustor
         self.assetCode = assetCode
         self.authorize = authorize
-        super.init(sourceAccount:nil)
+        super.init(sourceAccount:sourceAccount)
     }
     
     /// Creates a new AllowTrustOperation object from the given AllowTrustOperationXDR object.
     ///
     /// - Parameter fromXDR: the AllowTrustOperationXDR object to be used to create a new AllowTrustOperation object.
     ///
-    public init(fromXDR:AllowTrustOperationXDR) {
+    public init(fromXDR:AllowTrustOperationXDR, sourceAccount:KeyPair? = nil) {
         self.trustor = KeyPair(publicKey: fromXDR.trustor)
         self.assetCode = fromXDR.asset.assetCode
         self.authorize = fromXDR.authorize
-        super.init(sourceAccount: nil)
+        super.init(sourceAccount: sourceAccount)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {

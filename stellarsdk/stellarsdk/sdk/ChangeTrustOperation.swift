@@ -31,10 +31,10 @@ public class ChangeTrustOperation:Operation {
     ///
     /// - Parameter fromXDR: the ChangeTrustOperationXDR object to be used to create a new ChangeTrustOperation object.
     ///
-    public init(fromXDR:ChangeTrustOperationXDR) {
+    public init(fromXDR:ChangeTrustOperationXDR, sourceAccount:KeyPair? = nil) {
         self.asset = try! Asset.fromXDR(assetXDR: fromXDR.asset)
         self.limit = Operation.fromXDRAmount(fromXDR.limit)
-        super.init(sourceAccount: nil)
+        super.init(sourceAccount: sourceAccount)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {

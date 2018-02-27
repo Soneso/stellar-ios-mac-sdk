@@ -131,6 +131,24 @@ public final class KeyPair {
                   privateKey: PrivateKey(unchecked: privBuffer))
     }*/
     
+    public static func fromXDRSignerKey(_ publicKey: PublicKey) -> SignerKeyXDR {
+         var seedBuffer = [UInt8](repeating: 0, count: 32)
+         var privBuffer = [UInt8](repeating: 0, count: 64)
+         var pubBuffer = [UInt8](publicKey.bytes)
+        
+         privBuffer.withUnsafeMutableBufferPointer { priv in
+            pubBuffer.withUnsafeMutableBufferPointer { pub in
+                seedBuffer.withUnsafeMutableBufferPointer { seed in
+                    ed25519_create_keypair(pub.baseAddress,
+                                           priv.baseAddress,
+                                           seed.baseAddress)
+                }
+            }
+        }
+     
+        return SignerKeyXDR.ed25519(WrappedData32(Data(bytes: pubBuffer)))
+     }
+    
     /// Sign the provided data with the keypair's private key.
     ///
     /// - Parameter message: The data to sign.

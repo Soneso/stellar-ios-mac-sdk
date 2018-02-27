@@ -47,6 +47,7 @@ class TransactionsRemoteTestCase: XCTestCase {
                                 XCTAssertTrue(transaction1?.feePaid == transaction2?.feePaid)
                                 XCTAssertTrue(transaction1?.operationCount == transaction2?.operationCount)
                                 XCTAssertTrue(transaction1?.memoType == transaction2?.memoType)
+                                XCTAssertTrue(transaction1?.memo == transaction2?.memo)
                                 XCTAssert(true)
                                 expectation.fulfill()
                             case .failure(let error):
