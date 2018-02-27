@@ -8,14 +8,15 @@
 
 import Foundation
 
-protocol MemoProtocol {
+public protocol MemoProtocol {
     func toXDR() -> MemoXDR
     init?(text:String) throws
     init?(hash:Data) throws
     init?(returnHash:Data) throws
+    func type() -> String
 }
 
-protocol MemoHashProtocol {
+public protocol MemoHashProtocol {
     func hexValue() throws -> String
     func trimmedHexValue() throws -> String
 }

@@ -40,3 +40,13 @@ public struct EffectTypeAsString
     
 }
 
+public struct MemoTypeAsString
+{
+    public static let NONE = "none"
+    public static let TEXT = "text"
+    public static let ID = "id"
+    public static let HASH = "hash"
+    public static let RETURN = "return"
+    
+}
+

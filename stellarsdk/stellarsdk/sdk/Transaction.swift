@@ -37,12 +37,7 @@ public class Transaction {
         self.operations = operations
         self.timeBounds = timeBounds
         self.fee = UInt32(operations.count * baseFee)
-        
-        if (memo != nil) {
-            self.memo = memo!
-        } else {
-            self.memo = Memo.none
-        }
+        self.memo = memo ?? Memo.none
         
         var operationsXDR = [OperationXDR]()
         

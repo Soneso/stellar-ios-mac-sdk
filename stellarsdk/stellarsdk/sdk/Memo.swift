@@ -26,9 +26,9 @@ public enum Memo {
     case returnHash (Data)
 }
 
-extension Memo: MemoProtocol{
+extension Memo: MemoProtocol {
     
-    func toXDR() -> MemoXDR {
+    public func toXDR() -> MemoXDR {
         switch self {
             case .none: return MemoXDR.none
             case .text(let text): return MemoXDR.text(text)
@@ -44,7 +44,7 @@ extension Memo: MemoProtocol{
     ///
     /// - Throws an StellarSDKError.invalidArgument error if the given string is larger than 28 bytes.
     ///
-    init?(text:String) throws {
+    public init?(text:String) throws {
         if text.utf8CString.count > 28 {
             throw StellarSDKError.invalidArgument(message: "text must be <= 28 bytes. length=\(text.count)" )
         }
@@ -57,7 +57,7 @@ extension Memo: MemoProtocol{
     ///
     /// - Throws an StellarSDKError.invalidArgument error if the given data is larger than 32 bytes.
     ///
-    init?(hash:Data) throws {
+    public init?(hash:Data) throws {
         if (hash.count > 32) {
             throw StellarSDKError.invalidArgument(message: "MEMO_HASH can contain 32 bytes at max.")
         }
@@ -70,17 +70,27 @@ extension Memo: MemoProtocol{
     ///
     /// - Throws an StellarSDKError.invalidArgument error if the given data is larger than 32 bytes.
     ///
-    init?(returnHash:Data) throws {
+    public init?(returnHash:Data) throws {
         if (returnHash.count > 32) {
             throw StellarSDKError.invalidArgument(message: "MEMO_RETURN_HASH can contain 32 bytes at max.")
         }
         self = .returnHash(returnHash)
     }
+    
+    public func type() -> String {
+        switch self {
+        case .none: return MemoTypeAsString.NONE
+        case .text: return MemoTypeAsString.TEXT
+        case .id: return MemoTypeAsString.ID
+        case .hash: return MemoTypeAsString.HASH
+        case .returnHash: return MemoTypeAsString.RETURN
+        }
+    }
 }
 
 extension Memo:MemoHashProtocol {
     
-    func hexValue() throws -> String {
+    public func hexValue() throws -> String {
         switch self {
         case .hash(let hash):
             return hash.hexEncodedString()
@@ -91,7 +101,7 @@ extension Memo:MemoHashProtocol {
         }
     }
     
-    func trimmedHexValue() throws -> String {
+    public func trimmedHexValue() throws -> String {
         let str = try self.hexValue().split(separator: "0").first
         return String(describing: str)
     }

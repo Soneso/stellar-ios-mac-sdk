@@ -22,6 +22,7 @@
 		4367E600203ED42D00C0AB4F /* OffersLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E5FF203ED42D00C0AB4F /* OffersLocalTestCase.swift */; };
 		4367E602203EE79700C0AB4F /* TradesLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E601203EE79700C0AB4F /* TradesLocalTestCase.swift */; };
 		4367E604203EE7A800C0AB4F /* TradesResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E603203EE7A800C0AB4F /* TradesResponsesMock.swift */; };
+		437CEBD820457E5E00CAAF93 /* MemoRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437CEBD720457E5E00CAAF93 /* MemoRemoteTestCase.swift */; };
 		437D8A7D202EEDCC0024D031 /* Dictionary+HttpParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A7C202EEDCC0024D031 /* Dictionary+HttpParams.swift */; };
 		437D8A83202EF0770024D031 /* TradeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A7F202EF0760024D031 /* TradeResponse.swift */; };
 		437D8A86202EF0770024D031 /* TradeAggregationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A82202EF0770024D031 /* TradeAggregationResponse.swift */; };
@@ -330,6 +331,7 @@
 		4367E5FF203ED42D00C0AB4F /* OffersLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OffersLocalTestCase.swift; sourceTree = "<group>"; };
 		4367E601203EE79700C0AB4F /* TradesLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradesLocalTestCase.swift; sourceTree = "<group>"; };
 		4367E603203EE7A800C0AB4F /* TradesResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradesResponsesMock.swift; sourceTree = "<group>"; };
+		437CEBD720457E5E00CAAF93 /* MemoRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoRemoteTestCase.swift; sourceTree = "<group>"; };
 		437D8A7C202EEDCC0024D031 /* Dictionary+HttpParams.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Dictionary+HttpParams.swift"; sourceTree = "<group>"; };
 		437D8A7F202EF0760024D031 /* TradeResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradeResponse.swift; sourceTree = "<group>"; };
 		437D8A82202EF0770024D031 /* TradeAggregationResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradeAggregationResponse.swift; sourceTree = "<group>"; };
@@ -685,6 +687,14 @@
 			path = price;
 			sourceTree = "<group>";
 		};
+		437CEBD620457E3D00CAAF93 /* memo */ = {
+			isa = PBXGroup;
+			children = (
+				437CEBD720457E5E00CAAF93 /* MemoRemoteTestCase.swift */,
+			);
+			path = memo;
+			sourceTree = "<group>";
+		};
 		437D8A7E202EEFBD0024D031 /* trades_responses */ = {
 			isa = PBXGroup;
 			children = (
@@ -1001,6 +1011,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				437CEBD620457E3D00CAAF93 /* memo */,
 				743DF501201F3AE100713DE7 /* account */,
 				836971F8202548C900398A98 /* assets */,
 				744E75E22028DB9800170D57 /* effects */,
@@ -1903,6 +1914,7 @@
 				8357A915203B097D00A144A9 /* AssetsLocalTestCase.swift in Sources */,
 				4367E5FA203EA65300C0AB4F /* PaymentsResponsesMock.swift in Sources */,
 				8357A91D203B6F8500A144A9 /* DataForAccountResponsesMock.swift in Sources */,
+				437CEBD820457E5E00CAAF93 /* MemoRemoteTestCase.swift in Sources */,
 				8357A91F203B768A00A144A9 /* DataForAccountRemoteTestCase.swift in Sources */,
 				83EA4763203C7F650031F13E /* LedgersLocalTestCase.swift in Sources */,
 				43D35B1020348EF800C8BDBC /* PaymentPathsTestCase.swift in Sources */,
