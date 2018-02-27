@@ -15,9 +15,11 @@ public enum AllowTrustOpAssetXDR: XDRCodable {
     public var assetCode: String {
         switch self {
         case .alphanum4(let a4):
-            return String(bytes: a4.assetCode.wrapped, encoding: .utf8) ?? ""
+            return (String(bytes: a4.assetCode.wrapped, encoding: .utf8) ?? "")
+                .trimmingCharacters(in: CharacterSet(charactersIn: "\0"))
         case .alphanum12(let a12):
-            return String(bytes: a12.assetCode.wrapped, encoding: .utf8) ?? ""
+            return (String(bytes: a12.assetCode.wrapped, encoding: .utf8) ?? "")
+                .trimmingCharacters(in: CharacterSet(charactersIn: "\0"))
         }
     }
     

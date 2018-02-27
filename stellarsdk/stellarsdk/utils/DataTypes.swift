@@ -19,68 +19,72 @@ private func decodeData(from decoder: XDRDecoder, capacity: Int) throws -> Data 
     return d
 }
 
-public struct WrappedData32: XDRCodable, Equatable {
-    let wrapped: Data
+public protocol WrappedData: XDRCodable, Equatable {
+    static var capacity: Int { get }
     
-    private let capacity = 32
+    var wrapped: Data { get set }
     
+    func xdrEncode(to encoder: XDREncoder) throws
+    
+    init()
+    init(fromBinary decoder: XDRDecoder) throws
+    init(_ data: Data)
+}
+
+extension WrappedData {
     public func xdrEncode(to encoder: XDREncoder) throws {
         try wrapped.forEach { try $0.encode(to: encoder) }
     }
     
     public init(fromBinary decoder: XDRDecoder) throws {
-        wrapped = try decodeData(from: decoder, capacity: capacity)
+        self.init()
+        wrapped = try decodeData(from: decoder, capacity: Self.capacity)
     }
     
-    init(_ data: Data) {
-        self.wrapped = data
+    public init(_ data: Data) {
+        self.init()
+        
+        if data.count >= Self.capacity {
+            self.wrapped = data
+        }
+        else {
+            var d = data
+            d.append(Data(count: Self.capacity - data.count))
+            self.wrapped = d
+        }
     }
     
-    public static func ==(lhs: WrappedData32, rhs: WrappedData32) -> Bool {
+    public static func ==(lhs: Self, rhs: Self) -> Bool {
         return lhs.wrapped == rhs.wrapped
     }
 }
 
-public struct WrappedData4: XDRCodable, Equatable {
-    let wrapped: Data
+public struct WrappedData32: WrappedData, Equatable {
+    public static let capacity: Int = 32
     
-    private let capacity = 4
+    public var wrapped: Data
     
-    public func xdrEncode(to encoder: XDREncoder) throws {
-        try wrapped.forEach { try $0.encode(to: encoder) }
-    }
-    
-    public init(fromBinary decoder: XDRDecoder) throws {
-        wrapped = try decodeData(from: decoder, capacity: capacity)
-    }
-    
-    init(_ data: Data) {
-        self.wrapped = data
-    }
-    
-    public static func ==(lhs: WrappedData4, rhs: WrappedData4) -> Bool {
-        return lhs.wrapped == rhs.wrapped
+    public init() {
+        wrapped = Data()
     }
 }
 
-public struct WrappedData12: XDRCodable, Equatable {
-    let wrapped: Data
+public struct WrappedData4: WrappedData {
+    public static let capacity: Int = 4
     
-    private let capacity = 12
+    public var wrapped: Data
     
-    public func xdrEncode(to encoder: XDREncoder) throws {
-        try wrapped.forEach { try $0.encode(to: encoder) }
+    public init() {
+        wrapped = Data()
     }
+}
+
+public struct WrappedData12: WrappedData {
+    public static let capacity: Int = 12
     
-    public init(fromBinary decoder: XDRDecoder) throws {
-        wrapped = try decodeData(from: decoder, capacity: capacity)
-    }
+    public var wrapped: Data
     
-    init(_ data: Data) {
-        self.wrapped = data
-    }
-    
-    public static func ==(lhs: WrappedData12, rhs: WrappedData12) -> Bool {
-        return lhs.wrapped == rhs.wrapped
+    public init() {
+        wrapped = Data()
     }
 }

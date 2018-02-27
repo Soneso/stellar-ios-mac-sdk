@@ -142,13 +142,13 @@ class OperationsRemoteTestCase: XCTestCase {
         let expectation = XCTestExpectation(description: "Create and fund a new account")
         do {
             
-            //let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I") // has home domain TODO fix encoding and decoding of home domain
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
+            //let sourceAccountKeyPair = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
             let destinationKeyPair = try KeyPair.generateRandomKeyPair()
             print ("CA Test: Source account id: \(sourceAccountKeyPair.accountId)")
             print("CA Test: New destination keipair created with secret seed: \(destinationKeyPair.secretSeed!) and accountId: \(destinationKeyPair.accountId)")
 
-            sdk.effects.stream(for: .effectsForAccount(account:sourceAccountKeyPair.accountId, cursor:nil)).onReceive { (response) -> (Void) in
+            sdk.effects.stream(for: .effectsForAccount(account:sourceAccountKeyPair.accountId, cursor:"now")).onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
@@ -238,7 +238,7 @@ class OperationsRemoteTestCase: XCTestCase {
             let homeDomain = "http://www.soneso.com"
             print ("Home domain: \(homeDomain)")
             
-            sdk.operations.stream(for: .operationsForAccount(account:sourceAccountKeyPair.accountId, cursor:nil)).onReceive { (response) -> (Void) in
+            sdk.operations.stream(for: .operationsForAccount(account:sourceAccountKeyPair.accountId, cursor:"now")).onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
@@ -318,7 +318,7 @@ class OperationsRemoteTestCase: XCTestCase {
             print ("UID Test source account id: \(sourceAccountKeyPair.accountId)")
             let destinationAccountId = "GD53MSTOROVW4YQ2CWNJXYIK44ILXKDN4CYPKQVAF3EXVDT7Q6HASX5T"
             
-            sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+            sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now")).onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
@@ -392,7 +392,7 @@ class OperationsRemoteTestCase: XCTestCase {
             
             printAccountDetails(tag: "CTL Test - trusting account", accountId: trustingAccountKeyPair.accountId)
             
-            sdk.operations.stream(for: .operationsForAccount(account: trustingAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+            sdk.operations.stream(for: .operationsForAccount(account: trustingAccountKeyPair.accountId, cursor: "now")).onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
@@ -494,7 +494,7 @@ class OperationsRemoteTestCase: XCTestCase {
                 }
             }*/
             
-            sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+            sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now")).onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
@@ -567,7 +567,7 @@ class OperationsRemoteTestCase: XCTestCase {
             let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
             let XLM = Asset(type: AssetType.ASSET_TYPE_NATIVE)
             
-            sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+            sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now")).onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
@@ -640,7 +640,7 @@ class OperationsRemoteTestCase: XCTestCase {
             let name = "soneso"
             let value = "is super"
             
-            sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+            sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now")).onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
