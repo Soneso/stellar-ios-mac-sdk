@@ -71,18 +71,18 @@ class MemoRemoteTestCase: XCTestCase {
         let expectation = XCTestExpectation(description: "Memo with payment transaction sent and received")
         
         do {
-            //let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")// has home domain and fails parsing XDR, TODO: fix home domain xdr
             let sourceAccountKeyPair = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
             let destinationAccountKeyPair = try KeyPair(accountId: "GCKECJ5DYFZUX6DMTNJFHO2M4QKTUO5OS5JZ4EIIS7C3VTLIGXNGRTRC")
             
-            sdk.transactions.stream(for: .transactionsForAccount(account: destinationAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+            sdk.transactions.stream(for: .transactionsForAccount(account: destinationAccountKeyPair.accountId, cursor: "now")).onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
                 case .response(_, let response):
-                    XCTAssertEqual(response.memoType, memo.type())
-                    XCTAssertEqual(response.memo, memo)
-                    expectation.fulfill()
+                    if response.memoType == memo.type(), response.memo == memo {
+                        XCTAssert(true)
+                        expectation.fulfill()
+                    }
                 case .error(let error):
                     if let horizonRequestError = error as? HorizonRequestError {
                         StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test - destination", horizonRequestError:horizonRequestError)
