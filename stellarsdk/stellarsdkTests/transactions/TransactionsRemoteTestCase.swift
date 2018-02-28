@@ -149,6 +149,83 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testTransactionMultiSigning() {
+        let expectation = XCTestExpectation(description: "Transaction Multisignature")
+        
+        do {
+            let source = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
+            let destination = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            
+            sdk.transactions.stream(for: .transactionsForAccount(account: destination.accountId, cursor: "now")).onReceive { response in
+                switch response {
+                case .open:
+                    break
+                case .response(_, let response):
+                    for sign in response.signatures {
+                        print("Signature: \(sign)")
+                    }
+                    if response.signatures.count == 2 {
+                        XCTAssert(true)
+                        expectation.fulfill()
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test - destination", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("Error \(error?.localizedDescription ?? "")")
+                    }
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: source.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let paymentOperation = PaymentOperation(destination: destination,
+                                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                                amount: 1.5)
+                        
+                        let paymentOperation2 = PaymentOperation(sourceAccount: destination,
+                                                                destination: source,
+                                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                                amount: 3.5)
+                        
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [paymentOperation, paymentOperation2],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        
+                        try transaction.sign(keyPair: source, network: .testnet)
+                        try transaction.sign(keyPair: destination, network: .testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(_):
+                                print("SRP Test: Transaction successfully sent")
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
     func testTransactionEnvelopePost() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         let xdrEnvelope = "AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAByE3sAAAAIAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAR+V72AAAABAAuiJ2+1FGpG7D+sS9qqZlk2/dsu8mdECuR1jiX9PaawJaJMETUP6u06cZgzrqopzmypJMOS/ob7BRvCQ3JkwDg=="
