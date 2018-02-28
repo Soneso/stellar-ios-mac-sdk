@@ -40,13 +40,13 @@ public class ManageOfferOperation:Operation {
     ///
     /// - Parameter fromXDR: the ManageOfferOperationXDR object to be used to create a new ManageOfferOperation object.
     ///
-    public init(fromXDR:ManageOfferOperationXDR) {
+    public init(fromXDR:ManageOfferOperationXDR, sourceAccount:KeyPair? = nil) {
         self.selling = try! Asset.fromXDR(assetXDR: fromXDR.selling)
         self.buying = try! Asset.fromXDR(assetXDR: fromXDR.buying)
         self.amount = Operation.fromXDRAmount(fromXDR.amount)
         self.price = Price(numerator: Int(fromXDR.price.n), denominator: Int(fromXDR.price.d))
         self.offerId = fromXDR.offerID
-        super.init(sourceAccount: nil)
+        super.init(sourceAccount: sourceAccount)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {

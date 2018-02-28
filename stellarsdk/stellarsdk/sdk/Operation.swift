@@ -48,9 +48,9 @@ public class Operation {
         case .pathPayment(let pathPayment):
             return PathPaymentOperation(fromXDR: pathPayment, sourceAccount: source)
         case .manageOffer(let manageOffer):
-            return ManageOfferOperation(fromXDR: manageOffer)
+            return ManageOfferOperation(fromXDR: manageOffer, sourceAccount: source)
         case .createPassiveOffer(let passiveOffer):
-            return CreatePassiveOfferOperation(fromXDR: passiveOffer)
+            return CreatePassiveOfferOperation(fromXDR: passiveOffer, sourceAccount: source)
         case .setOptions(let setOptions):
             return SetOptionsOperation(fromXDR: setOptions, sourceAccount: source)
         case .changeTrust(let changeTrust):
@@ -58,9 +58,9 @@ public class Operation {
         case .allowTrust(let allowTrust):
             return AllowTrustOperation(fromXDR: allowTrust, sourceAccount: source)
         case .accountMerge(let publicKey):
-            return AccountMergeOperation(destinatioAccountPublicKey: publicKey)
+            return AccountMergeOperation(destinatioAccountPublicKey: publicKey, sourceAccount: source)
         case .manageData(let manageData):
-            return ManageDataOperation(fromXDR: manageData)
+            return ManageDataOperation(fromXDR: manageData, sourceAccount: source)
         default:
             throw StellarSDKError.invalidArgument(message: "Unknown operation body \(operationXDR.body)")
         }

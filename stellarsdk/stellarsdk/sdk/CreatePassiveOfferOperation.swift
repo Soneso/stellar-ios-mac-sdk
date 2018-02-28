@@ -37,12 +37,12 @@ public class CreatePassiveOfferOperation:Operation {
     ///
     /// - Parameter fromXDR: the CreatePassiveOfferOperationXDR object to be used to create a new CreatePassiveOfferOperation object.
     ///
-    public init(fromXDR:CreatePassiveOfferOperationXDR) {
+    public init(fromXDR:CreatePassiveOfferOperationXDR, sourceAccount:KeyPair? = nil) {
         self.selling = try! Asset.fromXDR(assetXDR: fromXDR.selling)
         self.buying = try! Asset.fromXDR(assetXDR: fromXDR.buying)
         self.amount = Operation.fromXDRAmount(fromXDR.amount)
         self.price = Price(numerator: Int(fromXDR.price.n), denominator: Int(fromXDR.price.d))
-        super.init(sourceAccount: nil)
+        super.init(sourceAccount: sourceAccount)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {

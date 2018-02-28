@@ -28,7 +28,7 @@ extension Data {
 
 extension String {
     
-    var sha256: Data {
+    public var sha256: Data {
         get {
             let data = self.data(using: .utf8)!
             var digest = Data(count: Int(CC_SHA256_DIGEST_LENGTH))

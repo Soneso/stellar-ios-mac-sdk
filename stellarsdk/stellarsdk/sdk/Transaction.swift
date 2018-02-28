@@ -78,4 +78,10 @@ public class Transaction {
         let str = Data(bytes: transactionHash).hexEncodedString()
         return str
     }
+    
+    public func getTransactionHashData(network:Network) throws -> Data {
+        let transactionHash = try [UInt8](transactionXDR.hash(network: network))
+        let data = Data(bytes: transactionHash)
+        return data
+    }
 }

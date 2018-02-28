@@ -28,9 +28,9 @@ public class AccountMergeOperation:Operation {
     ///
     /// - Parameter destinatioAccountPublicKey: the PublicKey object representing the destination account to be used to create a new AccountMergeOperation object.
     ///
-    public init(destinatioAccountPublicKey:PublicKey) {
+    public init(destinatioAccountPublicKey:PublicKey, sourceAccount:KeyPair? = nil) {
         self.destination = KeyPair(publicKey: destinatioAccountPublicKey)
-        super.init(sourceAccount: nil)
+        super.init(sourceAccount: sourceAccount)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {

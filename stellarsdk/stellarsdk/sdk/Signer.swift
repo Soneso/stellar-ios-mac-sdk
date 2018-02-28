@@ -14,4 +14,13 @@ public class Signer {
         return KeyPair.fromXDRSignerKey(keyPair.publicKey)
     }
     
+    public static func sha256Hash(hash:Data) -> SignerKeyXDR {
+        let data = WrappedData32(hash)
+        return SignerKeyXDR.hashX(data)
+    }
+    
+    public static func preAuthTx(transaction: Transaction) throws -> SignerKeyXDR {
+        let data = try transaction.getTransactionHashData(network: .testnet)
+        return SignerKeyXDR.preAuthTx(WrappedData32(data))
+    }
 }

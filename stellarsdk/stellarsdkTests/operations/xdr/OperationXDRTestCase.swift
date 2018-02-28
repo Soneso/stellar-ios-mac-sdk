@@ -455,5 +455,308 @@ class OperationXDRTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
+    
+    func testSetOptionsOperationSingleField() {
+        let expectation = XCTestExpectation(description: "Set options operation single field")
+        
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            
+            let homeDomain = "stellar.org"
+            
+            let operation = try SetOptionsOperation(sourceAccount: source, homeDomain: homeDomain)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! SetOptionsOperation
+            
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertNil(parsedOperation.inflationDestination?.accountId)
+            XCTAssertNil(parsedOperation.clearFlags)
+            XCTAssertNil(parsedOperation.setFlags)
+            XCTAssertNil(parsedOperation.masterKeyWeight)
+            XCTAssertNil(parsedOperation.lowThreshold)
+            XCTAssertNil(parsedOperation.mediumThreshold)
+            XCTAssertNil(parsedOperation.highThreshold)
+            XCTAssertEqual(homeDomain, parsedOperation.homeDomain)
+            XCTAssertNil(parsedOperation.signer)
+            XCTAssertNil(parsedOperation.signerWeight)
+            
+            let base64 = try operation.toXDRBase64()
+            XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAtzdGVsbGFyLm9yZwAAAAAA", base64)
+            
+            expectation.fulfill()
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testSetOptionsOperationSignerSha256() {
+        let expectation = XCTestExpectation(description: "Set options operation signer sha256")
+        
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            let signer = Signer.sha256Hash(hash: "stellar.org".sha256)
+            
+            let operation = try SetOptionsOperation(sourceAccount: source, signer: signer, signerWeight:10)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! SetOptionsOperation
+            
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertNil(parsedOperation.inflationDestination?.accountId)
+            XCTAssertNil(parsedOperation.clearFlags)
+            XCTAssertNil(parsedOperation.setFlags)
+            XCTAssertNil(parsedOperation.masterKeyWeight)
+            XCTAssertNil(parsedOperation.lowThreshold)
+            XCTAssertNil(parsedOperation.mediumThreshold)
+            XCTAssertNil(parsedOperation.highThreshold)
+            XCTAssertNil(parsedOperation.homeDomain)
+            XCTAssertEqual(signer, parsedOperation.signer)
+            XCTAssertEqual(10, parsedOperation.signerWeight)
+            
+            let base64 = try operation.toXDRBase64()
+            XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAACbpRqMkaQAfCYSk/n3xIl4fCoHfKqxF34ht2iuvSYEJQAAAAK", base64)
+            
+            expectation.fulfill()
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testSetOptionsOperationPreAuthTxSigner() {
+        let expectation = XCTestExpectation(description: "Set options operation pre auth tx")
+        
+        do {
+            // GBPMKIRA2OQW2XZZQUCQILI5TMVZ6JNRKM423BSAISDM7ZFWQ6KWEBC4
+            let source = try KeyPair(secretSeed: "SCH27VUZZ6UAKB67BDNF6FA42YMBMQCBKXWGMFD5TZ6S5ZZCZFLRXKHS")
+            let destination = try KeyPair(secretSeed: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR")
+            
+            let sequenceNumber = UInt64(2908908335136768)
+            let account = Account(keyPair: source, sequenceNumber: sequenceNumber)
+            let createAccountOperation = CreateAccountOperation(destination: destination, startBalance: 2000)
+            let transaction = try Transaction(sourceAccount: account,
+                                              operations: [createAccountOperation],
+                                              memo: Memo.none,
+                                              timeBounds:nil)
+            
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let operationSource = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            
+            let signer = try Signer.preAuthTx(transaction: transaction)
+            
+            let operation = try SetOptionsOperation(sourceAccount: operationSource, signer: signer, signerWeight:10)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! SetOptionsOperation
+            
+            XCTAssertEqual(operationSource.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertNil(parsedOperation.inflationDestination?.accountId)
+            XCTAssertNil(parsedOperation.clearFlags)
+            XCTAssertNil(parsedOperation.setFlags)
+            XCTAssertNil(parsedOperation.masterKeyWeight)
+            XCTAssertNil(parsedOperation.lowThreshold)
+            XCTAssertNil(parsedOperation.mediumThreshold)
+            XCTAssertNil(parsedOperation.highThreshold)
+            XCTAssertNil(parsedOperation.homeDomain)
+            XCTAssertEqual(signer, parsedOperation.signer)
+            XCTAssertEqual(10, parsedOperation.signerWeight)
+            
+//            let base64 = try operation.toXDRBase64()
+//            XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAB1vRBIRC3w7ZH5rQa17hIBKUwZTvBP4kNmSP7jVyw1fQAAAAK", base64)
+            
+            expectation.fulfill()
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testManageOfferOperation() {
+        let expectation = XCTestExpectation(description: "Manage offer operation")
+        
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            // GBCP5W2VS7AEWV2HFRN7YYC623LTSV7VSTGIHFXDEJU7S5BAGVCSETRR
+            let issuer = try KeyPair(secretSeed: "SA64U7C5C7BS5IHWEPA7YWFN3Z6FE5L6KAMYUIT4AQ7KVTVLD23C6HEZ")
+            
+            let selling = Asset(type: AssetType.ASSET_TYPE_NATIVE)
+            let buying = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuer)
+            let amount = Decimal(0.00001)
+            let priceStr = "0.85334384" // n=5333399 d=6250000
+            let price = Price.fromString(price: priceStr)
+            let offerId = UInt64(1)
+            
+            let operation = ManageOfferOperation(sourceAccount: source, selling: selling!, buying: buying!, amount: amount, price: price, offerId: offerId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ManageOfferOperation
+            
+            switch operationXdr.body {
+            case .manageOffer(let manageOfferXdr):
+                XCTAssertEqual(100, manageOfferXdr.amount)
+            default:
+                break
+            }
+            
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertTrue(parsedOperation.selling.type == AssetType.ASSET_TYPE_NATIVE)
+            XCTAssertTrue(parsedOperation.buying.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
+//            XCTAssertEqual(parsedOperation.buying, buying)
+            XCTAssertEqual(amount, parsedOperation.amount)
+            XCTAssertEqual(price, parsedOperation.price)
+            XCTAssertEqual(offerId, parsedOperation.offerId)
+            XCTAssertEqual(price.n, 5333399)
+            XCTAssertEqual(price.d, 6250000)
+            
+            let base64 = try operation.toXDRBase64()
+            XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAMAAAAAAAAAAVVTRAAAAAAARP7bVZfAS1dHLFv8YF7W1zlX9ZTMg5bjImn5dCA1RSIAAAAAAAAAZABRYZcAX14QAAAAAAAAAAE=", base64)
+            
+            expectation.fulfill()
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testCreatePassiveOfferOperation() {
+        let expectation = XCTestExpectation(description: "Create passive offer operation")
+        
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            // GBCP5W2VS7AEWV2HFRN7YYC623LTSV7VSTGIHFXDEJU7S5BAGVCSETRR
+            let issuer = try KeyPair(secretSeed: "SA64U7C5C7BS5IHWEPA7YWFN3Z6FE5L6KAMYUIT4AQ7KVTVLD23C6HEZ")
+            
+            let selling = Asset(type: AssetType.ASSET_TYPE_NATIVE)
+            let buying = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuer)
+            let amount = Decimal(0.00001)
+            let priceStr = "2.93850088" // n=36731261 d=12500000
+            let price = Price.fromString(price: priceStr)
+            
+            let operation = CreatePassiveOfferOperation(sourceAccount: source, selling: selling!, buying: buying!, amount: amount, price: price)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! CreatePassiveOfferOperation
+            
+            switch operationXdr.body {
+            case .manageOffer(let manageOfferXdr):
+                XCTAssertEqual(100, manageOfferXdr.amount)
+            default:
+                break
+            }
+            
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertTrue(parsedOperation.selling.type == AssetType.ASSET_TYPE_NATIVE)
+            XCTAssertTrue(parsedOperation.buying.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
+            //            XCTAssertEqual(parsedOperation.buying, buying)
+            XCTAssertEqual(amount, parsedOperation.amount)
+            XCTAssertEqual(price, parsedOperation.price)
+            XCTAssertEqual(price.n, 36731261)
+            XCTAssertEqual(price.d, 12500000)
+            
+            let base64 = try operation.toXDRBase64()
+            XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAQAAAAAAAAAAVVTRAAAAAAARP7bVZfAS1dHLFv8YF7W1zlX9ZTMg5bjImn5dCA1RSIAAAAAAAAAZAIweX0Avrwg", base64)
+            
+            expectation.fulfill()
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testAccountMergeOperation() {
+        let expectation = XCTestExpectation(description: "Account merge operation")
+        
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            // GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR
+            let destination = try KeyPair(secretSeed: "SDHZGHURAYXKU2KMVHPOXI6JG2Q4BSQUQCEOY72O3QQTCLR2T455PMII")
+            
+            let operation = AccountMergeOperation(sourceAccount: source, destination: destination)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! AccountMergeOperation
+            
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(destination.accountId, parsedOperation.destination.accountId)
+            
+            let base64 = try operation.toXDRBase64()
+            XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAgAAAAA7eBSYbzcL5UKo7oXO24y1ckX+XuCtkDsyNHOp1n1bxA=", base64)
+            
+            expectation.fulfill()
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testManageDataOperation() {
+        let expectation = XCTestExpectation(description: "Manage data operation")
+        
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            let name = "test"
+            let data = Data(bytes: [0,1,2,3,4])
+            
+            let operation = ManageDataOperation(sourceAccount: source, name: name, data: data)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ManageDataOperation
+            
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(name, parsedOperation.name)
+            XCTAssertEqual(data, parsedOperation.data)
+            
+            let base64 = try operation.toXDRBase64()
+            XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAoAAAAEdGVzdAAAAAEAAAAFAAECAwQAAAA=", base64)
+            
+            expectation.fulfill()
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testManageDataOperationEmptyValue() {
+        let expectation = XCTestExpectation(description: "Manage data operation empty value")
+        
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            let name = "test"
+            
+            let operation = ManageDataOperation(sourceAccount: source, name: name)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ManageDataOperation
+            
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(name, parsedOperation.name)
+            XCTAssertNil(parsedOperation.data)
+            
+            let base64 = try operation.toXDRBase64()
+            XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAoAAAAEdGVzdAAAAAA=", base64)
+            
+            expectation.fulfill()
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
 }
 
