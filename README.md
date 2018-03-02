@@ -7,7 +7,33 @@ This sdk is under active development and should be considered beta quality. Plea
 
 ## Installation
 
-We don't support yet CocoaPods or Carthage. The recommended setup is adding the SDK project as a subproject, and having the SDK as a target dependencies. Here is a step by step that we recommend:
+### CocoaPods
+
+[CocoaPods](http://cocoapods.org) is a dependency manager for Cocoa projects. You can install it with the following command:
+
+```bash
+$ gem install cocoapods
+```
+
+To integrate stellar SDK into your Xcode project using CocoaPods, specify it in your `Podfile`:
+
+```ruby
+use_frameworks!
+
+target '<Your Target Name>' do
+    pod 'stellar-ios-mac-sdk'
+end
+```
+
+Then, run the following command:
+
+```bash
+$ pod install
+```
+
+### Manual
+
+Add the SDK project as a subproject, and having the SDK as a target dependencies. Here is a step by step that we recommend:
 
 1. Clone this repo (as a submodule or in a different directory, it's up to you);
 2. Drag `stellarsdk.xcodeproj` as a subproject;
