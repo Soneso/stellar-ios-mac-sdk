@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
 
   s.name         = "stellar-ios-mac-sdk"
   s.version      = "1.0.0"
-  s.summary      = "iOS and macOS SDK that provides APIs to build transactions and connect to Horizon server for the Stellar ecosystem."
+  s.summary      = "Fully featured iOS and macOS SDK that provides APIs to build transactions and connect to Horizon server for the Stellar ecosystem."
 
   # This description is used to generate tags and improve search results.
   #   * Think: What does it do? Why did you write it? What is the focus?
@@ -25,9 +25,10 @@ Pod::Spec.new do |s|
   #   * Write the description between the DESC delimiters below.
   #   * Finally, don't worry about the indent, CocoaPods strips it!
   s.description  = <<-DESC
-                   DESC
+  iOS and macOS SDK that provides APIs to build transactions and connect to Horizon server for the Stellar ecosystem
+  DESC
 
-  #s.homepage     = "http://EXAMPLE/stellar-ios-mac-sdk"
+  s.homepage     = "https://github.com/Soneso/stellar-ios-mac-sdk"
   # s.screenshots  = "www.example.com/screenshots_1.gif", "www.example.com/screenshots_2.gif"
 
 
@@ -63,7 +64,7 @@ Pod::Spec.new do |s|
   #  the deployment target. You can optionally include the target after the platform.
   #
 
-  s.platform     = :ios
+  s.platform     = :ios, "8.0"
   # s.platform     = :ios, "5.0"
 
   #  When using multiple platforms
@@ -79,7 +80,7 @@ Pod::Spec.new do |s|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  s.source       = { :git => "https://github.com/Soneso/stellar-ios-mac-sdk", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/Soneso/stellar-ios-mac-sdk.git", :tag => "#{s.version}" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
@@ -108,7 +109,7 @@ Pod::Spec.new do |s|
   # s.resources = "Resources/*.png"
 
   # s.preserve_paths = "FilesToSave", "MoreFilesToSave"
-  s.preserve_paths = 'stellarsdk/stellarsdk/{iphone,simulator}/*', 'stellarsdk/stellarsdk/libs/*/*.{modulemap}'
+  s.preserve_paths = 'stellarsdk/stellarsdk/{iphone,simulator}/*', 'stellarsdk/stellarsdk/libs/**/*.{modulemap}'
 
   # ――― Project Linking ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
   #
@@ -135,10 +136,11 @@ Pod::Spec.new do |s|
   # s.xcconfig = { "HEADER_SEARCH_PATHS" => "$(SDKROOT)/usr/include/libxml2" }
   # s.dependency "JSONKit", "~> 1.4"
 
+  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.0' }
   s.pod_target_xcconfig = {
-      'SWIFT_INCLUDE_PATHS'                          => '$(SRCROOT)/stellarsdk/libs/ed25519-C',
-      'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]'           => '$(SRCROOT)/stellarsdk/iphone',
-      'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]'    => '$(SRCROOT)/stellarsdk/simulator',
+      'SWIFT_INCLUDE_PATHS'                          => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/ed25519-C',
+      'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]'           => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/iphone',
+      'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]'    => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/simulator',
   }
 
 end
