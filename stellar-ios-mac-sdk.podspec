@@ -138,7 +138,7 @@ Pod::Spec.new do |s|
 
   s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.0' }
   s.pod_target_xcconfig = {
-      'SWIFT_INCLUDE_PATHS'                          => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/ed25519-C',
+      'SWIFT_INCLUDE_PATHS'                          => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/**',
       'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]'           => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/iphone',
       'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]'    => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/simulator',
   }
