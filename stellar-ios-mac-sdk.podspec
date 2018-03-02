@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "stellar-ios-mac-sdk"
-  s.version      = "1.0.0"
+  s.version      = "1.0.1"
   s.summary      = "Fully featured iOS and macOS SDK that provides APIs to build transactions and connect to Horizon server for the Stellar ecosystem."
 
   # This description is used to generate tags and improve search results.
@@ -25,7 +25,7 @@ Pod::Spec.new do |s|
   #   * Write the description between the DESC delimiters below.
   #   * Finally, don't worry about the indent, CocoaPods strips it!
   s.description  = <<-DESC
-  iOS and macOS SDK that provides APIs to build transactions and connect to Horizon server for the Stellar ecosystem
+  The Soneso iOS and macOS Stellar SDK facilitates integration with the Stellar Horizon API server and submission of Stellar transactions, either in your iOS or macOS app. It has two main uses: querying Horizon and building, signing, and submitting transactions to the Stellar network. The SDK gives you access to all the endpoints exposed by Horizon. Using Horizon, many requests can be invoked in streaming mode. All available streaming endpoints are covered by the SDK and you can use the SDK streaming functions to listen for updates. The SDK also covers encoding and decoding of all XDR Objects available.
   DESC
 
   s.homepage     = "https://github.com/Soneso/stellar-ios-mac-sdk"
@@ -91,7 +91,7 @@ Pod::Spec.new do |s|
   #  Not including the public_header_files will make all headers public.
   #
 
-  s.source_files  = "stellarsdk", "stellarsdk/stellarsdk/**/*.{h,m,swift}"
+  s.source_files  = "stellarsdk", "stellarsdk/stellarsdk/**/*.{h,m,swift,c}"
   #s.exclude_files = "Classes/Exclude"
 
   # s.public_header_files = "Classes/**/*.h"
@@ -120,10 +120,10 @@ Pod::Spec.new do |s|
   # s.framework  = "SomeFramework"
   # s.frameworks = "SomeFramework", "AnotherFramework"
 
-  s.library = 'CommonCrypto'
+  # s.library = 'CommonCrypto'
   # s.libraries = "iconv", "xml2"
 
-  s.ios.vendored_libraries = 'stellarsdk/stellarsdk/libs/**/*'
+  # s.ios.vendored_libraries = 'stellarsdk/stellarsdk/libs/**/*'
 
   # ――― Project Settings ――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
   #
@@ -138,9 +138,8 @@ Pod::Spec.new do |s|
 
   s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.0' }
   s.pod_target_xcconfig = {
-      'SWIFT_INCLUDE_PATHS'                          => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/**',
-      'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]'           => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/iphone',
-      'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]'    => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/simulator',
+      'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]'           => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/iphone', 
+      'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]'    => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/simulator',
   }
 
 end
