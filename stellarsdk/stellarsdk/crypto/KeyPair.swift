@@ -110,26 +110,6 @@ public final class KeyPair {
         let priv = try PrivateKey(privateKey)
         self.init(publicKey: pub, privateKey: priv)
     }
-
-    /// TODO: is this needed?
-    /*public static func fromXDRPublicKey(_ publicKey: PublicKey) -> KeyPair {
-        var seedBuffer = [UInt8](repeating: 0, count: 32)
-        var privBuffer = [UInt8](repeating: 0, count: 64)
-        var pubBuffer = [UInt8](publicKey.bytes)
-        
-        privBuffer.withUnsafeMutableBufferPointer { priv in
-            pubBuffer.withUnsafeMutableBufferPointer { pub in
-                seedBuffer.withUnsafeMutableBufferPointer { seed in
-                    ed25519_create_keypair(pub.baseAddress,
-                                           priv.baseAddress,
-                                           seed.baseAddress)
-                }
-            }
-        }
-        
-        return KeyPair(publicKey: PublicKey(unchecked: pubBuffer),
-                  privateKey: PrivateKey(unchecked: privBuffer))
-    }*/
     
     public static func fromXDRSignerKey(_ publicKey: PublicKey) -> SignerKeyXDR {
          var seedBuffer = [UInt8](repeating: 0, count: 32)
@@ -206,53 +186,4 @@ public final class KeyPair {
     public func verify(signature: [UInt8], message: [UInt8]) throws -> Bool {
         return try publicKey.verify(signature: signature, message: message)
     }
-    
-    /*
-    public func keyExchange() -> [UInt8] {
-        var secret = [UInt8](repeating: 0, count: 32)
-        
-        publicKey.bytes.withUnsafeBufferPointer { pub in
-            privateKey.bytes.withUnsafeBufferPointer { priv in
-                secret.withUnsafeMutableBufferPointer { sec in
-                    ed25519_key_exchange(sec.baseAddress,
-                                         pub.baseAddress,
-                                         priv.baseAddress)
-                }
-            }
-        }
-        
-        return secret
-    }
-
-    public static func keyExchange(publicKey: PublicKey, privateKey: PrivateKey) -> [UInt8] {
-        let keyPair = KeyPair(publicKey: publicKey, privateKey: privateKey)
-        return keyPair.keyExchange()
-    }
-
-    public static func keyExchange(publicKey: [UInt8], privateKey: [UInt8]) throws -> [UInt8] {
-        let keyPair = try KeyPair(publicKey: publicKey, privateKey: privateKey)
-        return keyPair.keyExchange()
-    }
-    
-    public func add(scalar: [UInt8]) throws -> KeyPair {
-        guard scalar.count == 32 else {
-            throw Ed25519Error.invalidScalarLength
-        }
-
-        var pub = publicKey.bytes
-        var priv = privateKey.bytes
-        
-        pub.withUnsafeMutableBufferPointer { pub in
-            priv.withUnsafeMutableBufferPointer { priv in
-                scalar.withUnsafeBufferPointer { scalar in
-                    ed25519_add_scalar(pub.baseAddress,
-                                       priv.baseAddress,
-                                       scalar.baseAddress)
-                }
-            }
-        }
-        
-        return KeyPair(publicKey: PublicKey(unchecked: pub),
-                       privateKey: PrivateKey(unchecked: priv))
-    }*/
 }

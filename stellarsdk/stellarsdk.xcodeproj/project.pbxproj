@@ -210,7 +210,6 @@
 		8357A91F203B768A00A144A9 /* DataForAccountRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A91E203B768A00A144A9 /* DataForAccountRemoteTestCase.swift */; };
 		8357A921203B7B1F00A144A9 /* EffectsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A920203B7B1F00A144A9 /* EffectsLocalTestCase.swift */; };
 		8357A923203B7B5100A144A9 /* EffectsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A922203B7B5100A144A9 /* EffectsResponsesMock.swift */; };
-		835CBEFA2041C1C8005757D3 /* String32XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835CBEF92041C1C8005757D3 /* String32XDR.swift */; };
 		836971DF2024A71B00398A98 /* AccountFlagsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */; };
 		836971E42024C47300398A98 /* LinkResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E32024C47300398A98 /* LinkResponse.swift */; };
 		836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E52024F58E00398A98 /* DataForAccountResponse.swift */; };
@@ -531,7 +530,6 @@
 		8357A91E203B768A00A144A9 /* DataForAccountRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountRemoteTestCase.swift; sourceTree = "<group>"; };
 		8357A920203B7B1F00A144A9 /* EffectsLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsLocalTestCase.swift; sourceTree = "<group>"; };
 		8357A922203B7B5100A144A9 /* EffectsResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectsResponsesMock.swift; sourceTree = "<group>"; };
-		835CBEF92041C1C8005757D3 /* String32XDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String32XDR.swift; sourceTree = "<group>"; };
 		836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFlagsResponse.swift; sourceTree = "<group>"; };
 		836971E32024C47300398A98 /* LinkResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkResponse.swift; sourceTree = "<group>"; };
 		836971E52024F58E00398A98 /* DataForAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountResponse.swift; sourceTree = "<group>"; };
@@ -1201,7 +1199,6 @@
 				7478C3CE20343FD5001B6441 /* ClaimOfferAtomXDR.swift */,
 				7478C3D020343FEC001B6441 /* SimplePaymentResultXDR.swift */,
 				74D07EAE203C1BAE006DEF06 /* TransactionSignaturePayload.swift */,
-				835CBEF92041C1C8005757D3 /* String32XDR.swift */,
 			);
 			path = xdr;
 			sourceTree = "<group>";
@@ -1819,7 +1816,6 @@
 				74824B1F203173F000CD0270 /* OperationXDR.swift in Sources */,
 				744D458C2038194300178D04 /* EventSource.swift in Sources */,
 				743DF57A202053A400713DE7 /* Ed25519Error.swift in Sources */,
-				835CBEFA2041C1C8005757D3 /* String32XDR.swift in Sources */,
 				745F2BAD202C27FF008763F1 /* XDRCodable.swift in Sources */,
 				4300C1852033026D00DC5E49 /* OrderbookService.swift in Sources */,
 				833CBF9E2033535000C23CFE /* CreatePassiveOfferOperationXDR.swift in Sources */,

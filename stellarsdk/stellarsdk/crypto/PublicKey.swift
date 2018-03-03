@@ -131,23 +131,4 @@ public class PublicKey: XDRCodable {
             }
         }
     }
-    /*
-    public func add(scalar: [UInt8]) throws -> PublicKey {
-        guard scalar.count == 32 else {
-            throw Ed25519Error.invalidScalarLength
-        }
-        
-        var pub = buffer
-        
-        pub.withUnsafeMutableBufferPointer { pub in
-            scalar.withUnsafeBufferPointer { scalar in
-                ed25519_add_scalar(pub.baseAddress,
-                                   nil,
-                                   scalar.baseAddress)
-            }
-        }
-        
-        return PublicKey(unchecked: pub)
-    }
-    */
 }
