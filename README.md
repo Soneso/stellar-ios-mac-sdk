@@ -2,8 +2,6 @@
 
 The Soneso open source stellar SDK for iOS &amp; Mac provides APIs to build transactions and connect to [Horizon](https://github.com/stellar/horizon).
 
-## Disclaimer
-This sdk is under active development and should be considered beta quality. Please ensure that you've tested extensively on a test network before using it on the public network.
 
 ## Installation
 
@@ -78,7 +76,32 @@ sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Vo
 ```
 
 #### 2.2 Public net
-On the other hand, if you would like to create an account in the public net, you should buy some Stellar Lumens from an exchange. When you withdraw the Lumens into your new account, the exchange will automatically create the account for you.
+On the other hand, if you would like to create an account in the public net, you should buy some Stellar Lumens from an exchange. When you withdraw the Lumens into your new account, the exchange will automatically create the account for you. However, if you want to create an account from another account of your own, you may run the following code:
+
+```swift
+
+// build the operation
+let createAccount = CreateAccountOperation(sourceAccount: nil, destination: destinationKeyPair, startBalance: 2.0)
+
+// build the transaction
+let transaction = try Transaction(sourceAccount: accountResponse,
+                                     operations: [createAccount],
+                                     memo: Memo.none,
+                                     timeBounds:nil)
+                                     
+// sign the transaction
+try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+// submit the transaction
+try sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+    switch response {
+    case .success(_):
+        //...
+    case .failure(let error):
+       // ...
+    }
+}
+```
 
 ### 3. Check account
 #### 3.1 Basic info
@@ -199,7 +222,7 @@ let transaction = try Transaction(sourceAccount: accountResponse,
 try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
 
 // submit the transaction
-try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+try sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
     switch response {
       case .success(_):
           // ...
