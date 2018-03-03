@@ -45,7 +45,7 @@ let accountId = myKeyPair.accountId
 
 ```
 
-You can obtain the human readable secret seed (base64 encoded seed) with the following command:```swift
+You can obtain the human readable secret seed (base64 encoded seed) with the following command:
 
 
 ```swift
@@ -65,7 +65,7 @@ public convenience init(seed: Seed)
 
 ```
 
-Or if it is a new Keypair object that was created by the generate random function:
+Or if it is a new KeyPair object that was created by the generate random function:
 
 ```swift
 

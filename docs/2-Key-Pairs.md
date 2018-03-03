@@ -25,7 +25,7 @@ print("Secret Seed: " + keyPair.secretSeed)
  
 ```
 
-## Create Key Pair objects
+## Create KeyPair objects
 
 KeyPair objects must contain the public key but holding of the seed is not mandatory. Depending on the usecase you can create and use key pairs with or without providing the seed. 
 
@@ -62,7 +62,7 @@ let accountId = myKeyPair.accountId
 
 ```
 
-You can obtain the human readable secret seed (base64 encoded seed) with the following command:```swift
+You can obtain the human readable secret seed (base64 encoded seed) with the following command:
 
 
 ```swift
@@ -82,7 +82,7 @@ public convenience init(seed: Seed)
 
 ```
 
-Or if it is a new Keypair object that was created by the generate random function:
+Or if it is a new KeyPair object that was created by the generate random function:
 
 ```swift
 
