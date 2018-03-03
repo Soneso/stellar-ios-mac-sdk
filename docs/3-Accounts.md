@@ -36,7 +36,7 @@ sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Vo
 	case .success(let details):
 	    print(details)
 	case .failure(let error):
-		StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error:", horizonRequestError: error)
+	    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error:", horizonRequestError: error)
 	}
 }
  
@@ -62,7 +62,8 @@ However, if you want to create an account from another account of your own, you 
 ```swift
 
 // create keypair with the seed of your already existing account.
-let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXXXTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
+// replace the seed with your own.
+let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PXXXJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
 
 // generate a random keypair representing the new account to be created.
 let destinationKeyPair = try KeyPair.generateRandomKeyPair()
@@ -154,6 +155,7 @@ Following example shows how to change/set the inflation destination:
 
 ```swift
 
+// replace the seed and account id with your own.
 let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PXXXJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
 let destinationAccountId = "GD53MSTOROVW4YQ2CWNJXYIK44ILXKDN4CYPKQVAF3EXVDT7Q6HASX5T"
 
@@ -197,6 +199,8 @@ sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (res
 Following example shows how to change/set the home domain:
 
 ```swift
+
+// replace the seed with your own.
 let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PXXXJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
 
 let homeDomain = "http://www.soneso.com"
@@ -260,6 +264,8 @@ sdk.accounts.getDataForAccount(accountId: testSuccessAccountId, key:"soneso") { 
 You can also add, change or detete key value pairs. Following example shows how to add or change a key value pair:
 
 ```swift
+
+// replace the seed with your own.
 let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PXXXJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
 
 let name = "soneso"
