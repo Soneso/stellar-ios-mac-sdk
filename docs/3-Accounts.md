@@ -33,11 +33,11 @@ print("Secret Seed: " + keyPair.secretSeed)
 // Ask the SDK to create a testnet account for you. It’ll ask the Sellar Testnet Friendbot to create the account.
 sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Void) in
 	switch response {
-        case .success(let details):
-            print(details)
-        case .failure(let error):
-           	StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error:", horizonRequestError: error)
-    }
+	case .success(let details):
+	    print(details)
+	case .failure(let error):
+		StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error:", horizonRequestError: error)
+	}
 }
  
 ```
@@ -74,18 +74,18 @@ sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (res
 	switch response {
 	case .success(let accountResponse): // source account successfully loaded.
 		do {
-			
 			// build a create account operation.
 			let createAccount = CreateAccountOperation(destination: destinationKeyPair, startBalance: 2.0)
-			
+
 			// build a transaction that contains the create account operation.
 			let transaction = try Transaction(sourceAccount: accountResponse,
-											  operations: [createAccount],
-											  memo: Memo.none,
-											  timeBounds:nil)
+								operations: [createAccount],
+								memo: Memo.none,
+								timeBounds:nil)
+								
 			// sign the transaction.
 			try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-			
+
 			// submit the transaction to the stellar network.
 			try sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
 				switch response {
@@ -169,9 +169,9 @@ sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (res
 			
 			// build the transaction that contains our operation.
 			let transaction = try Transaction(sourceAccount: accountResponse,
-											  operations: [setInflationOperation],
-											  memo: Memo.none,
-											  timeBounds:nil)
+							  operations: [setInflationOperation],
+							  memo: Memo.none,
+							  timeBounds:nil)
 											  
 			// sign the transaction.
 			try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
@@ -212,9 +212,9 @@ sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (res
 			
 			// build the transaction that contains our operation.
 			let transaction = try Transaction(sourceAccount: accountResponse,
-											  operations: [setHomeDomainOperation],
-											  memo: Memo.none,
-											  timeBounds:nil)
+							  operations: [setHomeDomainOperation],
+							  memo: Memo.none,
+							  timeBounds:nil)
 			
 			
 			// sign the transaction.
@@ -276,9 +276,9 @@ sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (res
 			
 			// build the transaction that contains our operation.
 			let transaction = try Transaction(sourceAccount: accountResponse,
-											  operations: [manageDataOperation],
-											  memo: Memo.none,
-											  timeBounds:nil)
+							  operations: [manageDataOperation],
+							  memo: Memo.none,
+							  timeBounds:nil)
 											  
 			// sign the transaction.								  
 			try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
