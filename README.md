@@ -81,7 +81,9 @@ On the other hand, if you would like to create an account in the public net, you
 ```swift
 
 // build the operation
-let createAccount = CreateAccountOperation(sourceAccount: nil, destination: destinationKeyPair, startBalance: 2.0)
+let createAccount = CreateAccountOperation(sourceAccount: nil, 
+                                           destination: destinationKeyPair, 
+                                           startBalance: 2.0)
 
 // build the transaction
 let transaction = try Transaction(sourceAccount: accountResponse,
