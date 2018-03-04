@@ -59,79 +59,43 @@ sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (res
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
 	}
 }
- 
 ```
 
-You can request the next or previous page like this:
+IMPORTANT: It’s possible that you will not receive a response from Horizon server due to a bug, network conditions, etc. In such situation it’s impossible to determine the status of your transaction. That’s why you should always save a built transaction (or transaction encoded in XDR format) in a variable or a database and resubmit it if you don’t know it’s status. If the transaction has already been successfully applied to the ledger, Horizon will simply return the saved result and not attempt to submit the transaction again. Only in cases where a transaction’s status is unknown (and thus will have a chance of being included into a ledger) will a resubmission to the network occur.
+
+Hint: Sometimes it makes sense to first check if the destination account exists before sending the payment. If the account does not exist, you will be charged the transaction fee when the transaction fails. To check if the account exists you can just try to load its details with: ```swift sdk.accounts.getAccountDetails ```
+
+## Receive Payments
+
+You don’t actually need to do anything to receive payments into a Stellar account — if a payer makes a successful transaction to send assets to you, those assets will automatically be added to your account.
+
+However, you’ll want to know that someone has actually paid you. If you are an automated rental car with a Stellar account, you’ll probably want to verify that the customer in your front seat actually paid before that person can turn on your engine.
+
+A simple program that watches the network for payments and prints each one might look like:
 
 ```swift
 
-pageResponse.getNextPage(){ (response) -> (Void) in
+sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: "now")).onReceive { (response) -> (Void) in
     switch response {
-    case .success(let nextPageResponse):
-        for assetResponse in nextPageResponse.records {
-            print("Asset code: \(assetResponse.assetCode!)")
-            print("Asset issuer: \(assetResponse.assetIssuer!)")
-        }
-    case .failure(let error):
-        StellarSDKLog.printHorizonRequestErrorMessage(tag:"get next page", horizonRequestError: error)
-    }
-}
-
-```
-
-
-## Trusting an asset
-
-Accounts must explicitly trust an issuing account before they’re able to hold the issuer’s asset. To trust an issuing account, you create a trustline. Trustlines are entries that persist in the Stellar ledger. They track the limit for which your account trusts the issuing account and the amount of credit from the issuing account that your account currently holds.
-
-If you are not familiar with trustlines you can find more information in the [Stellar Guide](https://www.stellar.org/developers/guides/concepts/assets.html#trustlines).
-
-Following example shows how to build such a trustline:
-
-
-```swift
-
-// asset issuer
-let issuingAccountKeyPair = try KeyPair(accountId: "GCXIZK3YMSKES64ATQWMQN5CX73EWHRHUSEZXIMHP5GYHXL5LNGCOGXU")
-
-// asset
-let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
-
-// our account that wants to hold "IOM" the sdk currency. Please use your own account.          
-let trustingAccountKeyPair = try KeyPair(secretSeed: "SA3XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXUM2YJ")
-
-// load our accounts details to be sure that we have the current sequence number.
-sdk.accounts.getAccountDetails(accountId: trustingAccountKeyPair.accountId) { (response) -> (Void) in
-    switch response {
-    case .success(let accountResponse):
-    do {
-        // build a change trust operation.
-        let changeTrustOp = ChangeTrustOperation(asset:IOM!, limit: 100000000)
-
-        // build the transaction containing our operation
-        let transaction = try Transaction(sourceAccount: accountResponse,
-                                          operations: [changeTrustOp],
-                                          memo: Memo.none,
-                                          timeBounds:nil)
-		// sign the transaction                        
-        try transaction.sign(keyPair: trustingAccountKeyPair, network: Network.testnet)
-        
-        // sublit the transaction
-        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                print("Success")
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Trust error", horizonRequestError:error)
+    case .open:
+        break
+    case .response(let id, let operationResponse):
+        if let paymentResponse = operationResponse as? PaymentOperationResponse {
+            switch paymentResponse.assetType {
+            case AssetTypeAsString.NATIVE:
+                print("Payment of \(paymentResponse.amount) XLM from \(paymentResponse.sourceAccount) received -  id \(id)" )
+            default:
+                print("Payment of \(paymentResponse.amount) \(paymentResponse.assetCode!) from \(paymentResponse.sourceAccount) received -  id \(id)" )
             }
         }
-    } catch {
-        //...
-    }
-    case .failure(let error):
-        StellarSDKLog.printHorizonRequestErrorMessage(tag:"Get account error", horizonRequestError:error)
+    case .error(let error):
+        if let horizonRequestError = error as? HorizonRequestError {
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"Receive payment", horizonRequestError:horizonRequestError)
+        } else {
+            print("Error \(error?.localizedDescription ?? "")") // Other error like e.g. streaming error, you may want to ignore this.
+        }
     }
 }
 
 ```
+
