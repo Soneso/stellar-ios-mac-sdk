@@ -1,4 +1,4 @@
-# 2. Accounts
+# 4. Assets
 
 
 Assets are the units that are traded on the Stellar Network.
@@ -56,7 +56,7 @@ pageResponse.getNextPage(){ (response) -> (Void) in
 ```
 
 
-## Trusting an asset
+## Trusting an asset issuer
 
 Accounts must explicitly trust an issuing account before they’re able to hold the issuer’s asset. To trust an issuing account, you create a trustline. Trustlines are entries that persist in the Stellar ledger. They track the limit for which your account trusts the issuing account and the amount of credit from the issuing account that your account currently holds.
 
