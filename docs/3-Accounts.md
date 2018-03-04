@@ -162,37 +162,36 @@ let destinationAccountId = "GD53MSTOROVW4YQ2CWNJXYIK44ILXKDN4CYPKQVAF3EXVDT7Q6HA
 
 // load the account from horizon to be sure that we have the current sequence number.
 sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
-	switch response {
+    switch response {
 	case .success(let accountResponse):
-		do {
+        do {
+            // build a set options operation, provide the new inflation destination.
+            let setInflationOperation = try SetOptionsOperation(inflationDestination: KeyPair(accountId:destinationAccountId))
 			
-			// build a set options operation, provide the new inflation destination.
-			let setInflationOperation = try SetOptionsOperation(inflationDestination: KeyPair(accountId:destinationAccountId))
-			
-			// build the transaction that contains our operation.
-			let transaction = try Transaction(sourceAccount: accountResponse,
-							  operations: [setInflationOperation],
-							  memo: Memo.none,
-							  timeBounds:nil)
+            // build the transaction that contains our operation.
+            let transaction = try Transaction(sourceAccount: accountResponse,
+                                              operations: [setInflationOperation],
+                                              memo: Memo.none,
+                                              timeBounds:nil)
 											  
-			// sign the transaction.
-			try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+            // sign the transaction.
+            try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
 			
-			// submit the transaction to the stellar network.
-			try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-				switch response {
-				case .success(_):
-					print("Success")
-				case .failure(let error):
-					StellarSDKLog.printHorizonRequestErrorMessage(tag:"Change inflation destination", horizonRequestError:error)
-				}
-			}
-		} catch {
-			// ...
-		}
-	case .failure(let error): // error loading account details
-		StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error:", horizonRequestError: error)
-	}
+            // submit the transaction to the stellar network.
+            try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    print("Success")
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Change inflation destination", horizonRequestError:error)
+                }
+            }
+        } catch {
+            // ...
+        }
+    case .failure(let error): // error loading account details
+        StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error:", horizonRequestError: error)
+    }
 }
 ```
 
@@ -207,38 +206,37 @@ let homeDomain = "http://www.soneso.com"
 
 // load the account from horizon to be sure that we have the current sequence number.            
 sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
-	switch response {
-	case .success(let accountResponse):
-		do {
+    switch response {
+    case .success(let accountResponse):
+        do {
+            // build a set options operation, provide the new home domain.
+            let setHomeDomainOperation = try SetOptionsOperation(homeDomain: homeDomain)
 			
-			// build a set options operation, provide the new home domain.
-			let setHomeDomainOperation = try SetOptionsOperation(homeDomain: homeDomain)
-			
-			// build the transaction that contains our operation.
-			let transaction = try Transaction(sourceAccount: accountResponse,
-							  operations: [setHomeDomainOperation],
-							  memo: Memo.none,
-							  timeBounds:nil)
+            // build the transaction that contains our operation.
+            let transaction = try Transaction(sourceAccount: accountResponse,
+                                              operations: [setHomeDomainOperation],
+                                              memo: Memo.none,
+                                              timeBounds:nil)
 			
 			
-			// sign the transaction.
-			try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+            // sign the transaction.
+            try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
 			
-			// submit the transaction to the stellar network.			
-			try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-				switch response {
-				case .success(_):
-					print("Success")
-				case .failure(let error):
-					StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error:", horizonRequestError:error)
-				}
-			}
-		} catch {
-			// ...
-		}
-	case .failure(let error): // error loading account details
-		StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error:", horizonRequestError: error)
-	}
+            // submit the transaction to the stellar network.			
+            try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    print("Success")
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error:", horizonRequestError:error)
+                }
+            }
+        } catch {
+            // ...
+        }
+    case .failure(let error): // error loading account details
+        StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error:", horizonRequestError: error)
+    }
 }
 ```
 
@@ -251,12 +249,12 @@ Following example shows how to retreive the value for a given key:
 ```swift
 
 sdk.accounts.getDataForAccount(accountId: testSuccessAccountId, key:"soneso") { (response) -> (Void) in
-	switch response {
-		case .success(let dataForAccount):
-			print("retrieved value: \(dataForAccount.value.base64Decoded())")
-		case .failure(let error):
-			StellarSDKLog.printHorizonRequestErrorMessage(tag:"GDFA Test", horizonRequestError: error)
-	}
+    switch response {
+    case .success(let dataForAccount):
+        print("retrieved value: \(dataForAccount.value.base64Decoded())")
+    case .failure(let error):
+        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GDFA Test", horizonRequestError: error)
+    }
 }
 
 ```
@@ -273,37 +271,36 @@ let value = "is super"
 
 // load the account from horizon to be sure that we have the current sequence number.            
 sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
-	switch response {
-	case .success(let accountResponse):
-		do {
+    switch response {
+    case .success(let accountResponse):
+        do {
+            // build a manage data operation, provide key and value
+            let manageDataOperation = ManageDataOperation(name:name, data:value.data(using: .utf8))
 			
-			// build a manage data operation, provide key and value
-			let manageDataOperation = ManageDataOperation(name:name, data:value.data(using: .utf8))
-			
-			// build the transaction that contains our operation.
-			let transaction = try Transaction(sourceAccount: accountResponse,
-							  operations: [manageDataOperation],
-							  memo: Memo.none,
-							  timeBounds:nil)
+            // build the transaction that contains our operation.
+            let transaction = try Transaction(sourceAccount: accountResponse,
+                                              operations: [manageDataOperation],
+                                              memo: Memo.none,
+                                              timeBounds:nil)
 											  
-			// sign the transaction.								  
-			try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+            // sign the transaction.								  
+            try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
 			
-			// submit the transaction to the stellar network.
-			try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-				switch response {
-				case .success(_):
-					print("Success")
-				case .failure(let error):
-					StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error: ", horizonRequestError:error)
-				}
-			}
-		} catch {
-			// ...
-		}
-	case .failure(let error): // error loading account details
-		StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error", horizonRequestError: error)
-	}
+            // submit the transaction to the stellar network.
+            try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    print("Success")
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error: ", horizonRequestError:error)
+                }
+            }
+        } catch {
+            // ...
+        }
+    case .failure(let error): // error loading account details
+        StellarSDKLog.printHorizonRequestErrorMessage(tag:"Error", horizonRequestError: error)
+    }
 }
 ```
 
