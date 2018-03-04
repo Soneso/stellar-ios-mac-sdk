@@ -234,11 +234,15 @@ try sdk.transactions.submitTransaction(transaction: transaction) { (response) ->
 }
 ```
 
-# Sample IOS app
+## Documentation and Examples
+
+You can find documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.
+
+## Sample IOS app
 
 Satraj from Block-Equity created a [sample ios app](https://github.com/Block-Equity/stellar-ios-sample-wallet), that uses our sdk. Thank you Satraj for your contribution to this project! 
 
-# How to contribute
+## How to contribute
 
 Please read our [Contribution Guide](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/CONTRIBUTING.md).
 
