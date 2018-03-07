@@ -16,7 +16,7 @@ public enum Network: String {
     
     var networkId: Data {
         get {
-            return self.rawValue.sha256
+            return self.rawValue.sha256().data(using: .utf8)!
         }
     }
 }
