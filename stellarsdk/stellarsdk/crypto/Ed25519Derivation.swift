@@ -36,8 +36,7 @@ public struct Ed25519Derivation {
         let digest = HDCrypto.HMACSHA512(key: chainCode, data: data)
         let factor = BInt(data: digest[0..<32])
         
-        let derivedPrivateKey = (factor).data
-        
+        let derivedPrivateKey = factor.data
         let derivedChainCode = digest[32..<64]
         
         return Ed25519Derivation (
