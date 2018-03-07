@@ -347,6 +347,8 @@
 		EC34A15520503CC5000FB042 /* Array+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A11520503CC5000FB042 /* Array+Extension.swift */; };
 		EC34A15720503CE7000FB042 /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15620503CE6000FB042 /* Wallet.swift */; };
 		EC34A15920503CF6000FB042 /* Ed25519Derivation.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15820503CF6000FB042 /* Ed25519Derivation.swift */; };
+		EC34A15C205043AB000FB042 /* MnemonicGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15B205043AB000FB042 /* MnemonicGeneration.swift */; };
+		EC34A15E20504F92000FB042 /* MnemonicKeyPairGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15D20504F92000FB042 /* MnemonicKeyPairGeneration.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -740,6 +742,8 @@
 		EC34A11520503CC5000FB042 /* Array+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Array+Extension.swift"; sourceTree = "<group>"; };
 		EC34A15620503CE6000FB042 /* Wallet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Wallet.swift; sourceTree = "<group>"; };
 		EC34A15820503CF6000FB042 /* Ed25519Derivation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ed25519Derivation.swift; sourceTree = "<group>"; };
+		EC34A15B205043AB000FB042 /* MnemonicGeneration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MnemonicGeneration.swift; sourceTree = "<group>"; };
+		EC34A15D20504F92000FB042 /* MnemonicKeyPairGeneration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MnemonicKeyPairGeneration.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1158,6 +1162,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				EC34A15A20504353000FB042 /* wallet */,
 				437CEBD620457E3D00CAAF93 /* memo */,
 				743DF501201F3AE100713DE7 /* account */,
 				836971F8202548C900398A98 /* assets */,
@@ -1609,6 +1614,15 @@
 				EC34A11320503CC5000FB042 /* OFB.swift */,
 			);
 			path = BlockMode;
+			sourceTree = "<group>";
+		};
+		EC34A15A20504353000FB042 /* wallet */ = {
+			isa = PBXGroup;
+			children = (
+				EC34A15B205043AB000FB042 /* MnemonicGeneration.swift */,
+				EC34A15D20504F92000FB042 /* MnemonicKeyPairGeneration.swift */,
+			);
+			path = wallet;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -2236,6 +2250,7 @@
 				4367E602203EE79700C0AB4F /* TradesLocalTestCase.swift in Sources */,
 				83DD2C9D202F24CD00713FEE /* PaymentsTestCase.swift in Sources */,
 				43464797203D56AF0082B96A /* OperationsResponsesMock.swift in Sources */,
+				EC34A15C205043AB000FB042 /* MnemonicGeneration.swift in Sources */,
 				437D8A95202F16EB0024D031 /* TradeAggregationsTestCase.swift in Sources */,
 				8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */,
 				4367E604203EE7A800C0AB4F /* TradesResponsesMock.swift in Sources */,
@@ -2260,6 +2275,7 @@
 				8331520C203E2635007F8F84 /* TransactionsResponsesMock.swift in Sources */,
 				8357A91B203B6F6100A144A9 /* DataForAccountLocalTestCase.swift in Sources */,
 				743DF503201F3B0800713DE7 /* AccountLocalTestCase.swift in Sources */,
+				EC34A15E20504F92000FB042 /* MnemonicKeyPairGeneration.swift in Sources */,
 				83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */,
 				8357A917203B0AD300A144A9 /* ResponseMock.swift in Sources */,
 			);
