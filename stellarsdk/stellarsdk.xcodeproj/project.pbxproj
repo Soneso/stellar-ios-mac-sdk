@@ -349,6 +349,7 @@
 		EC34A15920503CF6000FB042 /* Ed25519Derivation.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15820503CF6000FB042 /* Ed25519Derivation.swift */; };
 		EC34A15C205043AB000FB042 /* MnemonicGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15B205043AB000FB042 /* MnemonicGeneration.swift */; };
 		EC34A15E20504F92000FB042 /* MnemonicKeyPairGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15D20504F92000FB042 /* MnemonicKeyPairGeneration.swift */; };
+		EC34A1602050D24C000FB042 /* Data+Hash.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15F2050D24C000FB042 /* Data+Hash.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -744,6 +745,7 @@
 		EC34A15820503CF6000FB042 /* Ed25519Derivation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ed25519Derivation.swift; sourceTree = "<group>"; };
 		EC34A15B205043AB000FB042 /* MnemonicGeneration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MnemonicGeneration.swift; sourceTree = "<group>"; };
 		EC34A15D20504F92000FB042 /* MnemonicKeyPairGeneration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MnemonicKeyPairGeneration.swift; sourceTree = "<group>"; };
+		EC34A15F2050D24C000FB042 /* Data+Hash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hash.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1051,6 +1053,7 @@
 				8357A912203B004700A144A9 /* String+Base64.swift */,
 				43AEB4CD203ADEC10078637D /* Data+Base16.swift */,
 				741B8B49203DE47A0098464A /* String+Encoding.swift */,
+				EC34A15F2050D24C000FB042 /* Data+Hash.swift */,
 			);
 			path = extensions;
 			sourceTree = "<group>";
@@ -1976,6 +1979,7 @@
 				833CBFCB2034742300C23CFE /* StellarSDKError.swift in Sources */,
 				EC34A13120503CC5000FB042 /* SecureBytes.swift in Sources */,
 				744148F6202E0519006590BE /* TransactionEnvelopeXDR.swift in Sources */,
+				EC34A1602050D24C000FB042 /* Data+Hash.swift in Sources */,
 				43E34B612031CF09003104A9 /* OfferResponse.swift in Sources */,
 				836972122028EF8A00398A98 /* AccountThresholdsUpdatedEffectResponse.swift in Sources */,
 				836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */,
