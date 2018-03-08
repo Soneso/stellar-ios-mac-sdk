@@ -71,7 +71,7 @@ public struct TransactionXDR: XDRCodable {
     }
     
     public func hash(network:Network) throws -> Data {
-        return try signatureBase(network: network).sha256
+        return try signatureBase(network: network).sha256()
     }
     
     public func toEnvelopeXDR() throws -> TransactionEnvelopeXDR {
