@@ -240,7 +240,7 @@ You can find documentation and examples in the [docs](https://github.com/Soneso/
 
 ## Sample IOS app
 
-Satraj from Block-Equity created a [sample ios app](https://github.com/Block-Equity/stellar-ios-sample-wallet), that uses our sdk. Thank you Satraj for your contribution to this project! 
+Satraj from BlockEQ created a [sample ios app](https://github.com/Block-Equity/stellar-ios-sample-wallet), that uses our sdk. Thank you Satraj for your contribution to this project! 
 
 ## How to contribute
 
