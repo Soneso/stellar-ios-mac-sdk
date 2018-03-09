@@ -19,7 +19,7 @@ To integrate stellar SDK into your Xcode project using CocoaPods, specify it in 
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk'
+    pod 'stellar-ios-mac-sdk', '~> 1.1.1'
 end
 ```
 
@@ -36,7 +36,7 @@ Add the SDK project as a subproject, and having the SDK as a target dependencies
 1. Clone this repo (as a submodule or in a different directory, it's up to you);
 2. Drag `stellarsdk.xcodeproj` as a subproject;
 3. In your main `.xcodeproj` file, select the desired target(s);
-4. Go to **Build Phases**, expand Target Dependencies, and add `stellarsdk`;
+4. Go to **Build Phases**, expand Target Dependencies, and add `stellarsdk` for iOS and `stellarsdk-macOS` for OSX;
 5. In Swift, `import stellarsdk` and you are good to go! 
 
 
