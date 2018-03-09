@@ -6,6 +6,8 @@
 //  Copyright © 2018 yuzushioh. All rights reserved.
 //
 
+import Foundation
+
 final class HDCrypto {
     static func HMACSHA512(key: Data, data: Data) -> Data {
         let output: [UInt8]

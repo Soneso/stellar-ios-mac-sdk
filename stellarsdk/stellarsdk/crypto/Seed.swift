@@ -6,6 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+import Foundation
 import ed25519C
 
 /// Holds a Stellar seed.

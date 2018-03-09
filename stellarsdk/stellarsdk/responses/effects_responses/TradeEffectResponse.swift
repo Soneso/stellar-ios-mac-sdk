@@ -6,8 +6,6 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
-
 ///  Represents a trade effect response.
 ///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
 public class TradeEffectResponse: EffectResponse {

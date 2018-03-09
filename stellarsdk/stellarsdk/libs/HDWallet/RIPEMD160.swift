@@ -6,6 +6,8 @@
 //  Copyright © 2018 yuzushioh. All rights reserved.
 //
 
+import Foundation
+
 struct RIPEMD160 {
     
     private var MDbuf: (UInt32, UInt32, UInt32, UInt32, UInt32)

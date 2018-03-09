@@ -6,6 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+import Foundation
+
 /// Ed25519Derivation used to derivce and derive m/44'/148' key from BIP39 seed.
 public struct Ed25519Derivation {
     public let raw: Data

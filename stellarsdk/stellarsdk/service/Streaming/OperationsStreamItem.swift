@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
+import Foundation
 
 public class OperationsStreamItem: NSObject {
     private var streamingHelper: StreamingHelper

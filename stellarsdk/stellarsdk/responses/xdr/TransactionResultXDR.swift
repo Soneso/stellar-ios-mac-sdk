@@ -6,8 +6,6 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
-
 public enum TransactionResultCode: Int32 {
     case success = 0 // all operations succeeded
     case failed = -1 // one of the operations failed (none were applied)

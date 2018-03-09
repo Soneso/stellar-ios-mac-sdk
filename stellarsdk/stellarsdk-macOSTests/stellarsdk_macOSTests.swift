@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import stellarsdk_macOS
+@testable import stellarsdk
 
 class stellarsdk_macOSTests: XCTestCase {
     

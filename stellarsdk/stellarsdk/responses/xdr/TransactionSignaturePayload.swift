@@ -6,8 +6,6 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import UIKit
-
 struct TransactionSignaturePayload: XDREncodable {
     let networkId: WrappedData32
     let taggedTransaction: TaggedTransaction

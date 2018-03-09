@@ -6,6 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
+import Foundation
+
 /// Generates Mnemonic with corresponding Stellar Keypair.
 public final class Wallet {
     
