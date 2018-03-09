@@ -65,12 +65,12 @@ Pod::Spec.new do |s|
   #  the deployment target. You can optionally include the target after the platform.
   #
 
-  s.platform     = :ios, "8.0"
+  #s.platform     = :ios, "8.0"
   # s.platform     = :ios, "5.0"
 
   #  When using multiple platforms
-  # s.ios.deployment_target = "5.0"
-  # s.osx.deployment_target = "10.7"
+   s.ios.deployment_target = "8.0"
+   s.osx.deployment_target = "10.10"
   # s.watchos.deployment_target = "2.0"
   # s.tvos.deployment_target = "9.0"
 
@@ -92,7 +92,7 @@ Pod::Spec.new do |s|
   #  Not including the public_header_files will make all headers public.
   #
 
-  s.source_files  = "stellarsdk", "stellarsdk/stellarsdk/**/*.{h,m,swift,c}"
+  s.source_files  = "stellarsdk/stellarsdk/**/*.{h,m,swift,c}"
   #s.exclude_files = "Classes/Exclude"
 
   # s.public_header_files = "Classes/**/*.h"
@@ -110,7 +110,7 @@ Pod::Spec.new do |s|
   # s.resources = "Resources/*.png"
 
   # s.preserve_paths = "FilesToSave", "MoreFilesToSave"
-  s.preserve_paths = 'stellarsdk/stellarsdk/{iphone,simulator}/*', 'stellarsdk/stellarsdk/libs/**/*.{modulemap}'
+  s.preserve_paths = 'stellarsdk/stellarsdk/{iphone,simulator,osx}/*', 'stellarsdk/stellarsdk/libs/**/*.{modulemap}'
 
   # ――― Project Linking ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
   #
@@ -141,6 +141,7 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = {
       'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]'           => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/iphone', 
       'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]'    => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/simulator',
+      'SWIFT_INCLUDE_PATHS[sdk=macosx*]'    => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/osx',
   }
 
 end

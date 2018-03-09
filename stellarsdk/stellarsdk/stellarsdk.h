@@ -6,7 +6,6 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
 
 //! Project version number for stellarsdk.
 FOUNDATION_EXPORT double stellarsdkVersionNumber;
