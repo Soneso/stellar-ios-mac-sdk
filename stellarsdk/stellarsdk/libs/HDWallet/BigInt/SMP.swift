@@ -218,7 +218,7 @@ public struct BInt:
 		{
 			return String(format: "%.1f kb", Double(bits) / 8_000.0)
 		}
-		if bits < 8_000_000_000
+		if bits < 8_000_000_000 as UInt64
 		{
 			return String(format: "%.1f mb", Double(bits) / 8_000_000.0)
 		}
@@ -299,7 +299,7 @@ public struct BInt:
 			if let num = Limb(String(chunk))
 			{
 				limbs.addProductOf(multiplier: base, multiplicand: num)
-				base = base.multiplyingBy([10_000_000_000_000_000_000])
+				base = base.multiplyingBy([10_000_000_000_000_000_000 as UInt64])
 			}
 			else
 			{
@@ -985,7 +985,7 @@ fileprivate extension String
 		return res
 	}
 }
-fileprivate let DigitBase:     Digit = 1_000_000_000_000_000_000
+fileprivate let DigitBase:     Digit = 1_000_000_000_000_000_000 as UInt64
 fileprivate let DigitHalfBase: Digit =             1_000_000_000
 fileprivate let DigitZeros           =                        18
 fileprivate extension Array where Element == Limb
@@ -2484,7 +2484,7 @@ public struct BDouble:
 		{
 			return String(format: "%.1f kb", Double(bits) / 8_000.0)
 		}
-		if bits < 8_000_000_000
+		if bits < 8_000_000_000 as UInt64
 		{
 			return String(format: "%.1f mb", Double(bits) / 8_000_000.0)
 		}
