@@ -66,11 +66,11 @@ public struct TransactionXDR: XDRCodable {
     public func signatureBase(network:Network) throws -> Data {
         let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .typeTX(self))
         
-        return try Data(bytes: XDREncoder.encode(payload)).sha256
+        return try Data(bytes: XDREncoder.encode(payload)).sha256()
     }
     
     public func hash(network:Network) throws -> Data {
-        return try signatureBase(network: network).sha256
+        return try signatureBase(network: network).sha256()
     }
     
     public func toEnvelopeXDR() throws -> TransactionEnvelopeXDR {

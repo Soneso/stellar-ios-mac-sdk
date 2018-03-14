@@ -9,9 +9,9 @@
 import UIKit
 import CSwiftyCommonCrypto
 
+/*
 extension Data {
-
-    var sha256: Data {
+    var sha256Data: Data {
         get {
             var digest = Data(count: Int(CC_SHA256_DIGEST_LENGTH))
             
@@ -25,6 +25,7 @@ extension Data {
     }
     
 }
+ 
 
 extension String {
     
@@ -41,5 +42,4 @@ extension String {
             return digest
         }
     }
-    
-}
+}*/

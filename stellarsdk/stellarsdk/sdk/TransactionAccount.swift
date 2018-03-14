@@ -22,5 +22,4 @@ public protocol TransactionAccount {
     
     /// Increments sequence number in this object by one.
     func incrementSequenceNumber()
-    
 }
