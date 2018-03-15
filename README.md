@@ -82,7 +82,7 @@ print("key pair 0 secretSeed: \(keyPair0.secretSeed!)")
 // key pair 0 secretSeed: SAEWIVK3VLNEJ3WEJRZXQGDAS5NVG2BYSYDFRSH4GKVTS5RXNVED5AX7
 ```
 
-Generate key pairs with passwphrase
+Generate key pairs with passphrase
 ```swift
 let keyPair0 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
 let keyPair1 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
