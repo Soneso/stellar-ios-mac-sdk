@@ -45,6 +45,8 @@ Add the SDK project as a subproject, and having the SDK as a target dependencies
 
 ### 1. Create a Stellar key pair
 
+#### 1.1 Random generation
+
 ```swift
 
 // create a completely new and unique pair of keys.
@@ -57,6 +59,49 @@ print("Secret Seed: " + keyPair.secretSeed)
 // SAV76USXIJOBMEQXPANUOQM6F5LIOTLPDIDVRJBFFE2MDJXG24TAPUU7
  
 ```
+
+#### 1.2 Deterministic generation
+See [Key Derivation Methods for Stellar Accounts](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)
+
+Generate mnemonic
+```swift
+let mnemonic = Wallet.generate24WordMnemonic()
+print("generated 24 words mnemonic: \(mnemonic)")
+// bench hurt jump file august wise shallow faculty impulse spring exact slush thunder author capable act festival slice deposit sauce coconut afford frown better
+```
+
+Generate key pairs
+```swift
+let keyPair0 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 0)
+let keyPair1 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 1)
+
+print("key pair 0 accountId: \(keyPair0.accountId)")
+// key pair 0 accountId: GC3MMSXBWHL6CPOAVERSJITX7BH76YU252WGLUOM5CJX3E7UCYZBTPJQ
+
+print("key pair 0 secretSeed: \(keyPair0.secretSeed!)")
+// key pair 0 secretSeed: SAEWIVK3VLNEJ3WEJRZXQGDAS5NVG2BYSYDFRSH4GKVTS5RXNVED5AX7
+```
+
+Generate key pairs with passwphrase
+```swift
+let keyPair0 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
+let keyPair1 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
+``` 
+
+BIP and master key generation
+```swift
+let bip39Seed = Mnemonic.createSeed(mnemonic: mnemonic)
+
+let masterPrivateKey = Ed25519Derivation(seed: bip39Seed)
+let purpose = masterPrivateKey.derived(at: 44)
+let coinType = purpose.derived(at: 148)
+
+let account0 = coinType.derived(at: 0)
+let keyPair0 = try! KeyPair.init(seed: Seed(bytes: account0.raw.bytes))
+
+let account1 = coinType.derived(at: 1)
+let keyPair1 = try! KeyPair.init(seed: Seed(bytes: account1.raw.bytes))
+```      
 
 ### 2. Create an account
 After the key pair generation, you have already got the address, but it is not activated until someone transfers at least 1 lumen into it.
@@ -241,7 +286,7 @@ You can find documentation and examples in the [docs](https://github.com/Soneso/
 
 ## Sample IOS app
 
-Satraj from BlockEQ created a [sample ios app](https://github.com/Block-Equity/stellar-ios-sample-wallet), that uses our sdk. Thank you Satraj for your contribution to this project! 
+Satraj from BlockEQ created an [open source iOS wallet](https://github.com/Block-Equity/stellar-ios-wallet) for Stellar, that uses our sdk. Thank you Satraj for your contribution to this project! 
 
 ## How to contribute
 
