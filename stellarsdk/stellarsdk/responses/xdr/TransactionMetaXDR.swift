@@ -17,7 +17,7 @@ public enum TransactionMetaXDR: XDRCodable {
         
         switch type {
             default:
-                self = .operations(try container.decode([OperationMetaXDR].self))
+                self = .operations(try decodeArray(type: OperationMetaXDR.self, dec: decoder))
         }
     }
     

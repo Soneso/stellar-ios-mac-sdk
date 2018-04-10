@@ -21,7 +21,7 @@ public struct ManageDataOperationXDR: XDRCodable {
         var container = try decoder.unkeyedContainer()
         
         dataName = try container.decode(String.self)
-        let strData = try container.decode(Array<String>.self).first
+        let strData = try decodeArray(type: String.self, dec: decoder).first
         dataValue = strData?.data(using: .utf8)
     }
     public func encode(to encoder: Encoder) throws {

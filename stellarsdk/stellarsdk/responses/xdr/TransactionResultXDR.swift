@@ -21,9 +21,19 @@ public enum TransactionResultCode: Int32 {
     case internalError = -11 // an unknown error occured
 }
 
-public enum TransactionResultBodyXDR {
+public enum TransactionResultBodyXDR: Encodable {
     case success([OperationResultXDR])
     case failed
+    
+    public func encode(to encoder: Encoder) throws {
+        switch self {
+        case .success(let operationResult):
+            var container = encoder.unkeyedContainer()
+            try container.encode(operationResult)
+        default:
+            break
+        }
+    }
 }
 
 public struct TransactionResultXDR: XDRCodable {
@@ -47,7 +57,7 @@ public struct TransactionResultXDR: XDRCodable {
             case .success:
                 fallthrough
             case .failed:
-                resultBody = .success(try container.decode([OperationResultXDR].self))
+                resultBody = .success(try decodeArray(type: OperationResultXDR.self, dec: decoder))
             default:
                 break
         }

@@ -33,7 +33,7 @@ public struct PathPaymentOperationXDR: XDRCodable {
         destinationID = try container.decode(PublicKey.self)
         destinationAsset = try container.decode(AssetXDR.self)
         destinationAmount = try container.decode(Int64.self)
-        self.path = try container.decode(Array<AssetXDR>.self)
+        self.path = try decodeArray(type: AssetXDR.self, dec: decoder)
         
     }
     

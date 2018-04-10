@@ -80,12 +80,33 @@ public extension XDREncoder {
             
         case let v as Bool:
             try encode(v)
-            
+        case let array as [Any]:
+            try encode(UInt32(array.count))
+            for element in array {
+                if isOptional(element) {
+                    if let unwrapped = unwrap(any: element) {
+                        try (unwrapped as! XDREncodable).xdrEncode(to: self)
+                    } else {
+                        try encode(UInt32(0))
+                    }
+                } else {
+                    try (element as! XDREncodable).xdrEncode(to: self)
+                }
+            }
         case let binary as XDREncodable:
             try binary.xdrEncode(to: self)
             
         default:
-            throw Error.typeNotConformingToXDREncodable(type(of: encodable))
+            if isOptional(encodable) {
+                if let unwrapped = unwrap(any: encodable) {
+                    try encode(UInt32(1))
+                    try (unwrapped as! XDREncodable).xdrEncode(to: self)
+                } else {
+                    try encode(UInt32(0))
+                }
+            } else {
+                throw Error.typeNotConformingToXDREncodable(type(of: encodable))
+            }
         }
     }
     

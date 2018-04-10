@@ -20,17 +20,17 @@ public struct SetOptionsOperationXDR: XDRCodable {
     public var signer: SignerXDR?
     
     public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
+        //var container = try decoder.unkeyedContainer()
         
-        inflationDestination = try container.decode(Array<PublicKey>.self).first
-        clearFlags = try container.decode(Array<UInt32>.self).first
-        setFlags = try container.decode(Array<UInt32>.self).first
-        masterWeight = try container.decode(Array<UInt32>.self).first
-        lowThreshold = try container.decode(Array<UInt32>.self).first
-        medThreshold = try container.decode(Array<UInt32>.self).first
-        highThreshold = try container.decode(Array<UInt32>.self).first
-        homeDomain = try container.decode(Array<String>.self).first
-        signer = try container.decode(Array<SignerXDR>.self).first
+        inflationDestination = try decodeArray(type: PublicKey.self, dec: decoder).first
+        clearFlags = try decodeArray(type: UInt32.self, dec: decoder).first
+        setFlags = try decodeArray(type: UInt32.self, dec: decoder).first
+        masterWeight = try decodeArray(type: UInt32.self, dec: decoder).first
+        lowThreshold = try decodeArray(type: UInt32.self, dec: decoder).first
+        medThreshold = try decodeArray(type: UInt32.self, dec: decoder).first
+        highThreshold = try decodeArray(type: UInt32.self, dec: decoder).first
+        homeDomain = try decodeArray(type: String.self, dec: decoder).first
+        signer = try decodeArray(type: SignerXDR.self, dec: decoder).first
         
     }
     

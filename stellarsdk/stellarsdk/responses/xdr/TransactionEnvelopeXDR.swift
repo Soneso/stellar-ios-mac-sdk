@@ -27,7 +27,7 @@ public class TransactionEnvelopeXDR: NSObject, XDRCodable {
         var container = try decoder.unkeyedContainer()
         
         tx = try container.decode(TransactionXDR.self)
-        signatures = try container.decode(Array<DecoratedSignatureXDR>.self)
+        signatures = try decodeArray(type: DecoratedSignatureXDR.self, dec: decoder)
     }
     
     public func encode(to encoder: Encoder) throws {

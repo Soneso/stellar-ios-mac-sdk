@@ -10,7 +10,41 @@
 
 import Foundation
 
-extension Array: XDRCodable {
+func decodeArray<T: Codable>(type:T.Type, dec:Decoder) throws -> [T] {
+    guard let decoder = dec as? XDRDecoder else {
+        throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
+    }
+    
+    let count = try decoder.decode(UInt32.self)
+    var array = [T]()
+    for _ in 0 ..< count {
+        let decoded = try type.init(from: decoder)
+        array.append(decoded)
+    }
+    
+    return array
+}
+
+func isOptional(_ instance: Any) -> Bool {
+    let mirror = Mirror(reflecting: instance)
+    let style = mirror.displayStyle
+    return style == .optional
+}
+
+func unwrap(any:Any) -> Any? {
+    
+    let mi = Mirror(reflecting: any)
+    if mi.displayStyle != .optional {
+        return any
+    }
+    
+    if mi.children.count == 0 { return nil }
+    let (_, some) = mi.children.first!
+    return some
+    
+}
+
+extension Array: XDRCodable where Element: XDRCodable {
     public func xdrEncode(to encoder: XDREncoder) throws {
         try encoder.encode(UInt32(self.count))
         for element in self {
@@ -99,7 +133,7 @@ extension Data: XDRCodable {
     }
 }
 
-extension Optional: XDREncodable {
+extension Optional: XDREncodable where Wrapped: XDRCodable {
     public func xdrEncode(to encoder: XDREncoder) throws {
         guard let unwrapped = self else {
             try encoder.encode(UInt32(0))

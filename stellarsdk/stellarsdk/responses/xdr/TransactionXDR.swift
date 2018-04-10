@@ -36,9 +36,9 @@ public struct TransactionXDR: XDRCodable {
         sourceAccount = try container.decode(PublicKey.self)
         fee = try container.decode(UInt32.self)
         seqNum = try container.decode(UInt64.self)
-        timeBounds = try container.decode([TimeBoundsXDR].self).first
+        timeBounds = try decodeArray(type: TimeBoundsXDR.self, dec: decoder).first
         memo = try container.decode(MemoXDR.self)
-        operations = try container.decode(Array<OperationXDR>.self)
+        operations = try decodeArray(type: OperationXDR.self, dec: decoder)
         reserved = try container.decode(Int32.self)
     }
     

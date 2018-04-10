@@ -14,9 +14,19 @@ public enum ManageOfferEffect: Int32 {
     case deleted = 2
 }
 
-public enum ManageOfferSuccessResultOfferXDR {
+public enum ManageOfferSuccessResultOfferXDR: Encodable {
     case created(OfferEntryXDR)
     case updated
+    
+    public func encode(to encoder: Encoder) throws {
+        switch self {
+        case .created(let offer):
+            var container = encoder.unkeyedContainer()
+            try container.encode(offer)
+        default:
+            break
+        }
+    }
 }
 
 public struct ManageOfferSuccessResultXDR: XDRCodable {
@@ -30,7 +40,7 @@ public struct ManageOfferSuccessResultXDR: XDRCodable {
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        offersClaimed = try container.decode(Array<ClaimOfferAtomXDR>.self)
+        offersClaimed = try decodeArray(type: ClaimOfferAtomXDR.self, dec: decoder)
         let discriminant = try container.decode(Int32.self)
         let type = ManageOfferEffect(rawValue: discriminant)!
         switch type {

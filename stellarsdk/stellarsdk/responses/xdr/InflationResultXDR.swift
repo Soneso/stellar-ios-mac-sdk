@@ -26,7 +26,7 @@ public enum InflationResultXDR: XDRCodable {
         
         switch code {
             case .success:
-                let inflationPayouts = try container.decode(Array<InflationPayoutXDR>.self)
+                let inflationPayouts = try decodeArray(type: InflationPayoutXDR.self, dec: decoder)
                 self = .success(code.rawValue, inflationPayouts)
             default:
                 self = .empty(code.rawValue)

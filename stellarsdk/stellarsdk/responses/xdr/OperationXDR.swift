@@ -20,7 +20,7 @@ public struct OperationXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         
-        sourceAccount = try container.decode(Array<PublicKey>.self).first
+        sourceAccount = try decodeArray(type: PublicKey.self, dec: decoder).first
         body = try container.decode(OperationBodyXDR.self)
     }
     
