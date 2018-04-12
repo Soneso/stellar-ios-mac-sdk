@@ -99,7 +99,6 @@
 		744148FA202E0635006590BE /* TransactionXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744148F9202E0635006590BE /* TransactionXDR.swift */; };
 		7445EA06201B106500470E0A /* stellarsdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7445E9FC201B106500470E0A /* stellarsdk.framework */; };
 		7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7445EA0A201B106500470E0A /* stellarsdkTests.swift */; };
-		7445EA0D201B106500470E0A /* stellarsdk.h in Headers */ = {isa = PBXBuildFile; fileRef = 7445E9FF201B106500470E0A /* stellarsdk.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		744602E4203B22CC00D807C1 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744602E3203B22CC00D807C1 /* Network.swift */; };
 		744C4DB5202A24F200B46CDE /* OperationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DB4202A24F200B46CDE /* OperationsService.swift */; };
 		744C4DB7202A257400B46CDE /* OperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DB6202A257400B46CDE /* OperationResponse.swift */; };
@@ -392,7 +391,6 @@
 		745DF52E2052FFC3000D3660 /* PaymentPathsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0C20348AEA00C8BDBC /* PaymentPathsService.swift */; };
 		745DF52F2052FFC3000D3660 /* StellarSDKError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFCA2034742200C23CFE /* StellarSDKError.swift */; };
 		745DF5302052FFC3000D3660 /* HorizonRequestError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53A2023056F000A783E /* HorizonRequestError.swift */; };
-		745DF5312052FFC3000D3660 /* stellarsdk.h in Sources */ = {isa = PBXBuildFile; fileRef = 7445E9FF201B106500470E0A /* stellarsdk.h */; };
 		745DF5322052FFC3000D3660 /* Info.plist in Sources */ = {isa = PBXBuildFile; fileRef = 7445EA00201B106500470E0A /* Info.plist */; };
 		745DF5332052FFC3000D3660 /* StellarSDK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */; };
 		745DF55D2052FFF6000D3660 /* add_scalar.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5542020530900713DE7 /* add_scalar.c */; };
@@ -822,7 +820,6 @@
 		744148F7202E05AD006590BE /* DataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataTypes.swift; sourceTree = "<group>"; };
 		744148F9202E0635006590BE /* TransactionXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionXDR.swift; sourceTree = "<group>"; };
 		7445E9FC201B106500470E0A /* stellarsdk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = stellarsdk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		7445E9FF201B106500470E0A /* stellarsdk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stellarsdk.h; sourceTree = "<group>"; };
 		7445EA00201B106500470E0A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7445EA05201B106500470E0A /* stellarsdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = stellarsdkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7445EA0A201B106500470E0A /* stellarsdkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdkTests.swift; sourceTree = "<group>"; };
@@ -1486,7 +1483,6 @@
 				743DF53F201F6A7A00713DE7 /* utils */,
 				743DF53C201F495A00713DE7 /* service */,
 				743DF4FE201F389500713DE7 /* errors */,
-				7445E9FF201B106500470E0A /* stellarsdk.h */,
 				7445EA00201B106500470E0A /* Info.plist */,
 				743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */,
 			);
@@ -1983,7 +1979,6 @@
 			files = (
 				743DF5702020530A00713DE7 /* sc.h in Headers */,
 				743DF5752020530A00713DE7 /* precomp_data.h in Headers */,
-				7445EA0D201B106500470E0A /* stellarsdk.h in Headers */,
 				743DF5772020530A00713DE7 /* fixedint.h in Headers */,
 				743DF5662020530A00713DE7 /* fe.h in Headers */,
 				743DF56F2020530A00713DE7 /* sha512.h in Headers */,
@@ -2299,7 +2294,6 @@
 				745DF52E2052FFC3000D3660 /* PaymentPathsService.swift in Sources */,
 				745DF52F2052FFC3000D3660 /* StellarSDKError.swift in Sources */,
 				745DF5302052FFC3000D3660 /* HorizonRequestError.swift in Sources */,
-				745DF5312052FFC3000D3660 /* stellarsdk.h in Sources */,
 				745DF5322052FFC3000D3660 /* Info.plist in Sources */,
 				745DF5332052FFC3000D3660 /* StellarSDK.swift in Sources */,
 				745DF4222052FF9B000D3660 /* Account.swift in Sources */,

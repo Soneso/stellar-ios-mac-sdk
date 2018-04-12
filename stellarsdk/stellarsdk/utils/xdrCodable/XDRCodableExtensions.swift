@@ -48,21 +48,18 @@ extension Array: XDRCodable where Element: XDRCodable {
     public func xdrEncode(to encoder: XDREncoder) throws {
         try encoder.encode(UInt32(self.count))
         for element in self {
-            try (element as! Encodable).encode(to: encoder)
+            try element.encode(to: encoder)
         }
     }
     
     public init(fromBinary decoder: XDRDecoder) throws {
-        guard let binaryElement = Element.self as? Decodable.Type else {
-            throw XDRDecoder.Error.typeNotConformingToDecodable(Element.self)
-        }
-        
+        let binaryElement = Element.self
         let count = try decoder.decode(UInt32.self)
         self.init()
         self.reserveCapacity(Int(count))
         for _ in 0 ..< count {
             let decoded = try binaryElement.init(from: decoder)
-            self.append(decoded as! Element)
+            self.append(decoded)
         }
     }
 }
@@ -141,10 +138,7 @@ extension Optional: XDREncodable where Wrapped: XDRCodable {
         }
         
         try encoder.encode(UInt32(1))
-        guard let encodable = unwrapped as? XDREncodable else {
-            throw XDREncoder.Error.typeNotConformingToXDREncodable(type(of: unwrapped))
-        }
-        try encoder.encode(encodable)
+        try encoder.encode(unwrapped)
     }
 }
 

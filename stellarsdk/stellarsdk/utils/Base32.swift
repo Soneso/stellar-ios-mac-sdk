@@ -123,7 +123,7 @@ func Base32Encode(data: Data, alphabet: Array<String>) -> String {
 func Base32Decode(data: String, alphabet: Array<Int>, characters: Array<String>) -> Data? {
     var processingData = ""
     
-    for char in data.uppercased().characters {
+    for char in data.uppercased() {
         let str = String(char)
         
         if characters.contains(str) {

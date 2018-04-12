@@ -16,7 +16,6 @@ public struct LedgerEntryChangesXDR: XDRCodable {
     }
     
     public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
         ledgerEntryChanges = try decodeArray(type: LedgerEntryChangeXDR.self, dec: decoder)
     }
     
