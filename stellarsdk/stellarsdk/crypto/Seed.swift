@@ -59,7 +59,7 @@ public class Seed {
             payload.append(Data(bytes: bytes))
             let checksumedData = (payload as Data).crc16Data()
             
-            return checksumedData.base32EncodedString!
+            return checksumedData.base32EncodedString
         }
     }
 }

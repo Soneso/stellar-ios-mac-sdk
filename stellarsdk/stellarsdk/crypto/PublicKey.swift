@@ -22,7 +22,7 @@ public class PublicKey: XDRCodable {
             payload.append(Data(bytes: self.bytes))
             let checksumedData = (payload as Data).crc16Data()
             
-            return checksumedData.base32EncodedString!
+            return checksumedData.base32EncodedString
         }
     }
     
