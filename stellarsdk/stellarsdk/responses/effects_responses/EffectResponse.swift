@@ -42,6 +42,9 @@ public class EffectResponse: NSObject, Decodable {
     /// ID of the effect.
     public var id:String
     
+    /// Date of the effect.
+    public var createdAt:String
+    
     /// A paging token, specifying where the returned records start from.
     public var pagingToken:String
     
@@ -62,6 +65,7 @@ public class EffectResponse: NSObject, Decodable {
         case account
         case effectTypeString = "type"
         case effectType = "type_i"
+        case createdAt = "created_at"
     }
     
     /**
@@ -73,6 +77,7 @@ public class EffectResponse: NSObject, Decodable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         links = try values.decode(EffectLinksResponse.self, forKey: .links)
         id = try values.decode(String.self, forKey: .id)
+        createdAt = try values.decode(String.self, forKey: .createdAt)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         account = try values.decode(String.self, forKey: .account)
         effectTypeString = try values.decode(String.self, forKey: .effectTypeString)
