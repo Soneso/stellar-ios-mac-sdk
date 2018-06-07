@@ -17,6 +17,7 @@ public enum EffectType: Int {
     case accountThresholdsUpdated = 4
     case accountHomeDomainUpdated = 5
     case accountFlagsUpdated = 6
+    case accountInflationDestinationUpdated = 7
     case signerCreated = 10
     case signerRemoved = 11
     case signerUpdated = 12

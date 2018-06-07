@@ -677,6 +677,7 @@
 		EC34A15C205043AB000FB042 /* MnemonicGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15B205043AB000FB042 /* MnemonicGeneration.swift */; };
 		EC34A15E20504F92000FB042 /* MnemonicKeyPairGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15D20504F92000FB042 /* MnemonicKeyPairGeneration.swift */; };
 		EC34A1602050D24C000FB042 /* Data+Hash.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15F2050D24C000FB042 /* Data+Hash.swift */; };
+		EC4F660220C8DA8A0036293D /* AccountInflationDestinationUpdatedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4F660120C8DA8A0036293D /* AccountInflationDestinationUpdatedEffectResponse.swift */; };
 		F80CE5452084EFC400AB5FF0 /* UtilBase32.swift in Sources */ = {isa = PBXBuildFile; fileRef = F80CE5422084EFC400AB5FF0 /* UtilBase32.swift */; };
 		F80CE5462084EFC400AB5FF0 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F80CE5432084EFC400AB5FF0 /* StringExtension.swift */; };
 		F80CE5482084F03700AB5FF0 /* String+Base32.swift in Sources */ = {isa = PBXBuildFile; fileRef = F80CE5472084F03700AB5FF0 /* String+Base32.swift */; };
@@ -1073,6 +1074,7 @@
 		EC34A15B205043AB000FB042 /* MnemonicGeneration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MnemonicGeneration.swift; sourceTree = "<group>"; };
 		EC34A15D20504F92000FB042 /* MnemonicKeyPairGeneration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MnemonicKeyPairGeneration.swift; sourceTree = "<group>"; };
 		EC34A15F2050D24C000FB042 /* Data+Hash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hash.swift"; sourceTree = "<group>"; };
+		EC4F660120C8DA8A0036293D /* AccountInflationDestinationUpdatedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountInflationDestinationUpdatedEffectResponse.swift; sourceTree = "<group>"; };
 		F80CE5422084EFC400AB5FF0 /* UtilBase32.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilBase32.swift; sourceTree = "<group>"; };
 		F80CE5432084EFC400AB5FF0 /* StringExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
 		F80CE5472084F03700AB5FF0 /* String+Base32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Base32.swift"; sourceTree = "<group>"; };
@@ -1610,6 +1612,7 @@
 				836972112028EF8A00398A98 /* AccountThresholdsUpdatedEffectResponse.swift */,
 				836972132028F09E00398A98 /* AccountHomeDomainUpdatedEffectResponse.swift */,
 				836972152028F19000398A98 /* AccountFlagsUpdatedEffectResponse.swift */,
+				EC4F660120C8DA8A0036293D /* AccountInflationDestinationUpdatedEffectResponse.swift */,
 				8369721F2028F59D00398A98 /* SignerEffectResponse.swift */,
 				836972172028F2D100398A98 /* SignerCreatedEffectResponse.swift */,
 				836972192028F40E00398A98 /* SignerRemovedEffectResponse.swift */,
@@ -2700,6 +2703,7 @@
 				744D458F2038292800178D04 /* TransactionsStreamItem.swift in Sources */,
 				833152132040CAAF007F8F84 /* StellarSDKLog.swift in Sources */,
 				EC34A13F20503CC5000FB042 /* Utils.swift in Sources */,
+				EC4F660220C8DA8A0036293D /* AccountInflationDestinationUpdatedEffectResponse.swift in Sources */,
 				437D8A86202EF0770024D031 /* TradeAggregationResponse.swift in Sources */,
 				83DD2C7B202DF4B000713FEE /* StaleHistoryErrorResponse.swift in Sources */,
 				8369722C2028F79200398A98 /* OfferCreatedEffectResponse.swift in Sources */,
