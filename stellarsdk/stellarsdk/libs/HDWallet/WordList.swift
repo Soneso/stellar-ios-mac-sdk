@@ -19,22 +19,22 @@ public enum WordList {
     
     public var words: [String] {
         switch self {
-        	case .chinese_simplified:
-        		return chineseSimplifiedWords
-        	case .chinese_traditional:
-        		return chineseTraditionalWords
-        	case .english:
+          case .chinese_simplified:
+            return chineseSimplifiedWords
+          case .chinese_traditional:
+        	return chineseTraditionalWords
+          case .english:
             return englishWords
           case .french
-           	return frenchWords
+            return frenchWords
           case .italian
-          	return italianWords
+            return italianWords
           case .japanese
-          	return japaneseWords
+            return japaneseWords
           case .korean
-          	return koreanWords
+            return koreanWords
           case .spanish
-          	return spanishWords
+            return spanishWords
         }
     }
 }
