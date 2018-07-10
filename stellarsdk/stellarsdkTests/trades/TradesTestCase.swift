@@ -11,6 +11,7 @@ import stellarsdk
 
 class TradesTestCase: XCTestCase {
     let sdk = StellarSDK()
+    let testSuccessAccountId = "GCOFGNVWF7PFKZW7OILUOUPNZMKWU67JJQYAUBG5KZEHSBRTOQRBAO2O"
     
     override func setUp() {
         super.setUp()
@@ -77,6 +78,22 @@ class TradesTestCase: XCTestCase {
                         XCTAssert(false)
                     }
                 }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetTradesForAccount() {
+        let expectation = XCTestExpectation(description: "Get trades response for account")
+        sdk.trades.getTrades(forAccount: testSuccessAccountId, from: nil, order: nil, limit: nil) { (response) -> (Void) in
+            switch response {
+            case .success(let tradesResponse):
+                XCTAssertTrue(Response.records.count > 0)
+                XCTAssert(true)
             case .failure(let error):
                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
                 XCTAssert(false)
