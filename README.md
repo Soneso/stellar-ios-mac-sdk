@@ -44,7 +44,7 @@ $ brew install carthage
 To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 4.7
+github "soneso/stellar-ios-mac-sdk" ~> 1.1.4
 ```
 
 Run `carthage update` to build the framework and drag the built `stellar-ios-mac-sdk.framework` into your Xcode project.
