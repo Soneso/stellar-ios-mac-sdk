@@ -673,7 +673,6 @@ class EffectsLocalTestCase: XCTestCase {
             XCTAssertNotNil(effectResponse.links.precedes)
             XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2")
             XCTAssertNil(effectResponse.links.precedes.templated)
-            
         }
         
         wait(for: [expectation], timeout: 15.0)
