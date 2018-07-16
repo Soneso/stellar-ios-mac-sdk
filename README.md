@@ -30,6 +30,25 @@ $ pod repo update
 $ pod install
 ```
 
+### Carthage
+
+[Carthage](https://github.com/Carthage/Carthage) is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks.
+
+You can install Carthage with [Homebrew](https://brew.sh/) using the following command:
+
+```bash
+$ brew update
+$ brew install carthage
+```
+
+To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify it in your `Cartfile`:
+
+```ogdl
+github "soneso/stellar-ios-mac-sdk" ~> 1.1.4
+```
+
+Run `carthage update` to build the framework and drag the built `stellar-ios-mac-sdk.framework` into your Xcode project.
+
 ### Manual
 
 Add the SDK project as a subproject, and having the SDK as a target dependencies. Here is a step by step that we recommend:
