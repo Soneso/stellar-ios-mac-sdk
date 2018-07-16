@@ -180,6 +180,12 @@ class EffectsLocalTestCase: XCTestCase {
                         } else {
                             XCTAssert(false)
                         }
+                    case .accountInflationDestinationUpdated:
+                        if record is AccountInflationDestinationUpdatedEffectResponse {
+                            validateAccountInflationDestinationUpdatedEffectResponse(effectResponse: record as! AccountInflationDestinationUpdatedEffectResponse)
+                        } else {
+                            XCTAssert(false)
+                        }
                 }
             }
         }
@@ -652,6 +658,21 @@ class EffectsLocalTestCase: XCTestCase {
             XCTAssertEqual(effectResponse.boughtAssetType, AssetTypeAsString.CREDIT_ALPHANUM12)
             XCTAssertEqual(effectResponse.boughtAssetCode, "TESTTEST")
             XCTAssertEqual(effectResponse.boughtAssetIssuer, "GAHXPUDP3AK6F2QQM4FIRBGPNGKLRDDSTQCVKEXXKKRHJZUUQ23D5BU7")
+        }
+        
+        func validateAccountInflationDestinationUpdatedEffectResponse(effectResponse: AccountInflationDestinationUpdatedEffectResponse) {
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/33788507721730")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2")
+            XCTAssertNil(effectResponse.links.precedes.templated)
         }
         
         wait(for: [expectation], timeout: 15.0)
