@@ -299,6 +299,42 @@ try sdk.transactions.submitTransaction(transaction: transaction) { (response) ->
 }
 ```
 
+### 4. Using a federation server
+#### 4.1 Get federation server address for a domain
+
+Get the federation of your domain:
+
+```swift
+Federation.forDomain(domain: "https://YOUR_DOMAIN") { (response) -> (Void) in
+    switch response {
+    case .success(let federation):
+        //use the federation object to map your infos
+    case .failure(_):
+        //something went wrong
+    }
+}
+```
+
+#### 4.2 Resolve a federation address to an account id
+
+Resolve your addresses:
+
+```swift
+let federation = Federation(federationAddress: "https://YOUR_FEDERATION_SERVER")
+federation.resolve(address: "bob*YOUR_DOMAIN") { (response) -> (Void) in
+    switch response {
+    case .success(let federationResponse):
+        if let accountId = federationResponse.accountId {
+            // use the account id
+        } else {
+            // there is no account id corresponding to the given address
+        }
+    case .failure(_):
+        // something went wrong
+    }
+}
+```
+
 ## Documentation and Examples
 
 You can find documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.
