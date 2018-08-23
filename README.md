@@ -19,7 +19,7 @@ To integrate stellar SDK into your Xcode project using CocoaPods, specify it in 
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk', '~> 1.1.5'
+    pod 'stellar-ios-mac-sdk', '~> 1.2.0'
 end
 ```
 
