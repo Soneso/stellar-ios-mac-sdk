@@ -12,13 +12,10 @@ public enum TransactionMetaXDR: XDRCodable {
     case operations ([OperationMetaXDR])
     
     public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        let type = try container.decode(Int32.self)
-        
-        switch type {
-            default:
-                self = .operations(try decodeArray(type: OperationMetaXDR.self, dec: decoder))
-        }
+        // TODO: UMIT: Skips the txChanges field and continue with operations.
+        // TransactionMetaXDR should be a struct and represent txChanges also.
+        _ = try decodeArray(type: OperationMetaXDR.self, dec: decoder)
+        self = .operations(try decodeArray(type: OperationMetaXDR.self, dec: decoder))
     }
     
     private func type() -> Int32 {

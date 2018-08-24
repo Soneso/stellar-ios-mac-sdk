@@ -79,7 +79,7 @@ public class Operation {
         let multiplied = amount * 10000000
         let decimalNumber = NSDecimalNumber(decimal: multiplied)
         
-        return decimalNumber.int64Value
+        return Int64(decimalNumber.uint64Value)
     }
     
     static func fromXDRAmount(_ xdrAmount:Int64) -> Decimal {
