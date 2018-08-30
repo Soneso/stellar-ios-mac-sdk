@@ -95,6 +95,8 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertEqual(code, InflationResultCode.success.rawValue)
         case .manageData(let code, _):
             XCTAssertEqual(code, ManageDataResultCode.success.rawValue)
+        case .bumpSequence(let code, _):
+            XCTAssertEqual(code, BumpSequenceResultCode.success.rawValue)
         case .empty(let code):
             XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
         }
@@ -537,7 +539,7 @@ class OperationXDRTestCase: XCTestCase {
             let source = try KeyPair(secretSeed: "SCH27VUZZ6UAKB67BDNF6FA42YMBMQCBKXWGMFD5TZ6S5ZZCZFLRXKHS")
             let destination = try KeyPair(secretSeed: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR")
             
-            let sequenceNumber = UInt64(2908908335136768)
+            let sequenceNumber = Int64(2908908335136768)
             let account = Account(keyPair: source, sequenceNumber: sequenceNumber)
             let createAccountOperation = CreateAccountOperation(destination: destination, startBalance: 2000)
             let transaction = try Transaction(sourceAccount: account,
@@ -757,6 +759,27 @@ class OperationXDRTestCase: XCTestCase {
         }
         
         wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testBumpSequenceOperation() {
+        
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            let bumpTo:Int64 = 9999999
+            
+            let operation = BumpSequenceOperation(bumpTo: bumpTo, sourceAccount: source)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! BumpSequenceOperation
+            
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(bumpTo, parsedOperation.bumpTo)
+            
+            let base64 = try operation.toXDRBase64()
+            XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAsAAAAAAJiWfw==", base64)
+        } catch {
+            XCTAssert(false)
+        }
     }
 }
 

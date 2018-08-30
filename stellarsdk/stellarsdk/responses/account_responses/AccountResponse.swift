@@ -22,7 +22,7 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
     public var keyPair: KeyPair
     
     /// The current sequence number that can be used when submitting a transaction from this account.
-    public private (set) var sequenceNumber: UInt64
+    public private (set) var sequenceNumber: Int64
     
     /// The number of account subentries.
     public var subentryCount:UInt
@@ -78,7 +78,7 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
         accountId = try values.decode(String.self, forKey: .accountId)
         self.keyPair = try KeyPair(accountId: accountId)
         let sequenceNumberString = try values.decode(String.self, forKey: .sequenceNumber)
-        sequenceNumber = UInt64(sequenceNumberString)!
+        sequenceNumber = Int64(sequenceNumberString)!
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         subentryCount = try values.decode(UInt.self, forKey: .subentryCount)
         thresholds = try values.decode(AccountThresholdsResponse.self, forKey: .thresholds)
@@ -91,7 +91,7 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
     }
     
     ///  Returns sequence number incremented by one, but does not increment internal counter.
-    public func incrementedSequenceNumber() -> UInt64 {
+    public func incrementedSequenceNumber() -> Int64 {
         return sequenceNumber + 1
     }
     

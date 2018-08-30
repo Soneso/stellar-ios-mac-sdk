@@ -13,7 +13,7 @@ import Foundation
 public class TradeAggregationResponse: NSObject, Decodable {
     
     /// start time for this trade_aggregation. Represented as milliseconds since epoch.
-    public var timestamp:String
+    public var timestamp:Int64
     
     /// total number of trades aggregated.
     public var tradeCount:Int
@@ -60,7 +60,7 @@ public class TradeAggregationResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        timestamp = try values.decode(String.self, forKey: .timestamp)
+        timestamp = try values.decode(Int64.self, forKey: .timestamp)
         tradeCount = try values.decode(Int.self, forKey: .tradeCount)
         baseVolume = try values.decode(String.self, forKey: .baseVolume)
         counterVolume = try values.decode(String.self, forKey: .counterVolume)

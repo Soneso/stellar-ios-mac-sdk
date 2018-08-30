@@ -313,18 +313,24 @@ class AccountLocalTestCase: XCTestCase {
                     "limit": "5000.0000000",
                     "asset_type": "credit_alphanum4",
                     "asset_code": "BAR",
-                    "asset_issuer": "BARUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG"
+                    "asset_issuer": "BARUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG",
+                    "buying_liabilities": "0.0000",
+                    "selling_liabilities": "0.0000"
                 },
                 {
                     "balance": "294.0000000",
                     "limit": "922337203685.4775807",
                     "asset_type": "credit_alphanum12",
                     "asset_code": "FOXYMOXY",
-                    "asset_issuer": "FOXUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG"
+                    "asset_issuer": "FOXUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG",
+                    "buying_liabilities": "0.0000",
+                    "selling_liabilities": "0.0000"
                 },
                 {
                     "balance": "9999.9999900",
-                    "asset_type": "native"
+                    "asset_type": "native",
+                    "buying_liabilities": "0.0000",
+                    "selling_liabilities": "0.0000"
                 }
             ],
             "signers": [

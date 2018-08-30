@@ -74,6 +74,8 @@ class OperationsFactory: NSObject {
                 return try jsonDecoder.decode(InflationOperationResponse.self, from: data)
             case .manageData:
                 return try jsonDecoder.decode(ManageDataOperationResponse.self, from: data)
+            case .bumpSequence:
+                return try jsonDecoder.decode(BumpSequenceOperationResponse.self, from: data)
             }
         } else {
             throw HorizonRequestError.parsingResponseFailed(message: "Unknown operation type")

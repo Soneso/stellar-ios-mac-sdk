@@ -37,6 +37,8 @@ public struct EffectTypeAsString
     public static let OFFER_REMOVED = "offer_removed"
     public static let OFFER_UPDATED = "offer_updated"
     public static let TRADE = "trade"
+    public static let MANAGE_DATA = "manage_data"
+    public static let BUMP_SEQUENCE = "bump_sequence"
     
 }
 

@@ -131,6 +131,12 @@ class OperationsLocalTestCase: XCTestCase {
                     } else {
                         XCTAssert(false)
                     }
+                case .bumpSequence:
+                    if record is BumpSequenceOperationResponse {
+                        validateBumpSequenceOperationResponse(operationResponse: record as! BumpSequenceOperationResponse)
+                    } else {
+                        XCTAssert(false)
+                    }
                 }
             }
         }
@@ -557,6 +563,40 @@ class OperationsLocalTestCase: XCTestCase {
             XCTAssertEqual(operationResponse.value, "5b422945c99ec8bd8b29b")
         }
         
+        func validateBumpSequenceOperationResponse(operationResponse: BumpSequenceOperationResponse) {
+            XCTAssertNotNil(operationResponse.links)
+            XCTAssertNotNil(operationResponse.links.effects)
+            XCTAssertEqual(operationResponse.links.effects.href, "/operations/1743756726273/effects")
+            XCTAssertEqual(operationResponse.links.effects.templated, true)
+            
+            XCTAssertNotNil(operationResponse.links.succeeds)
+            XCTAssertEqual(operationResponse.links.succeeds.href, "/effects?order=desc&cursor=1743756726273")
+            XCTAssertNil(operationResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(operationResponse.links.precedes)
+            XCTAssertEqual(operationResponse.links.precedes.href, "/effects?order=asc&cursor=1743756726273")
+            XCTAssertNil(operationResponse.links.precedes.templated)
+            
+            XCTAssertNotNil(operationResponse.links.transaction)
+            XCTAssertEqual(operationResponse.links.transaction.href, "/transactions/328436a8dffaf6ca33c08a93279234c7d3eaf1c028804152614187dc76b7168d")
+            XCTAssertNil(operationResponse.links.transaction.templated)
+            
+            XCTAssertNotNil(operationResponse.links.selfLink)
+            XCTAssertEqual(operationResponse.links.selfLink.href, "/operations/1743756726273")
+            XCTAssertNil(operationResponse.links.selfLink.templated)
+            
+            XCTAssertEqual(operationResponse.id, "1743756726273")
+            XCTAssertEqual(operationResponse.pagingToken, "1743756726273")
+            XCTAssertEqual(operationResponse.sourceAccount, "GBHPJ3VMVT3X7Y6HIIAPK7YPTZCF3CWO4557BKGX2GVO4O7EZHIBELLH")
+            let createdAt = DateFormatter.iso8601.date(from:"2018-02-21T09:56:26Z")
+            XCTAssertEqual(operationResponse.createdAt, createdAt)
+            XCTAssertEqual(operationResponse.transactionHash, "328436a8dffaf6ca33c08a93279234c7d3eaf1c028804152614187dc76b7168d")
+            
+            XCTAssertEqual(operationResponse.operationTypeString, "bump_sequence")
+            XCTAssertEqual(operationResponse.operationType, OperationType.bumpSequence)
+            XCTAssertEqual(operationResponse.bumpTo, 1273737228)
+        }
+        
         wait(for: [expectation], timeout: 15.0)
     }
     
@@ -981,6 +1021,36 @@ class OperationsLocalTestCase: XCTestCase {
                 "transaction_hash": "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d",
                 "name": "ManageData",
                 "value": "5b422945c99ec8bd8b29b"
+            }
+    """
+    
+    let bumpSequenceOperation = """
+            {
+                "_links": {
+                    "self": {
+                        "href": "/operations/1743756726273"
+                    },
+                    "transaction": {
+                        "href": "/transactions/328436a8dffaf6ca33c08a93279234c7d3eaf1c028804152614187dc76b7168d"
+                    },
+                        "effects": {
+                        "href": "/operations/1743756726273/effects"
+                    },
+                        "succeeds": {
+                        "href": "/effects?order=desc&cursor=1743756726273"
+                    },
+                    "precedes": {
+                        "href": "/effects?order=asc&cursor=1743756726273"
+                    }
+                },
+                    "id": "1743756726273",
+                    "paging_token": "1743756726273",
+                    "source_account": "GBHPJ3VMVT3X7Y6HIIAPK7YPTZCF3CWO4557BKGX2GVO4O7EZHIBELLH",
+                    "created_at": "2018-02-21T09:56:26Z",
+                    "type": "bump_sequence",
+                    "type_i": 11,
+                    "transaction_hash": "328436a8dffaf6ca33c08a93279234c7d3eaf1c028804152614187dc76b7168d",
+                    "bump_to": "1273737228"
             }
     """
 }

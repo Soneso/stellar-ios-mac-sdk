@@ -17,6 +17,7 @@ public enum AccountMergeResultCode: Int32 {
     case noAccount = -2 // destination does not exist
     case immutableSet = -3 // source account has AUTH_IMMUTABLE set
     case hasSubEntries = -4 // account has trust lines/offers
+    case seqnumTooFar = -5 // sequence number is over max allowed
 }
 
 public enum AccountMergeResultXDR: XDRCodable {

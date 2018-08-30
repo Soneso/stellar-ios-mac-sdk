@@ -11,7 +11,7 @@ import Foundation
 public struct TransactionXDR: XDRCodable {
     public let sourceAccount: PublicKey
     public let fee: UInt32
-    public let seqNum: UInt64
+    public let seqNum: Int64
     public let timeBounds: TimeBoundsXDR?
     public let memo: MemoXDR
     public let operations: [OperationXDR]
@@ -19,7 +19,7 @@ public struct TransactionXDR: XDRCodable {
     
     private var signatures = [DecoratedSignatureXDR]()
     
-    public init(sourceAccount: PublicKey, seqNum: UInt64, timeBounds: TimeBoundsXDR?, memo: MemoXDR, operations: [OperationXDR]) {
+    public init(sourceAccount: PublicKey, seqNum: Int64, timeBounds: TimeBoundsXDR?, memo: MemoXDR, operations: [OperationXDR]) {
         self.sourceAccount = sourceAccount
         self.seqNum = seqNum
         self.timeBounds = timeBounds
@@ -35,7 +35,7 @@ public struct TransactionXDR: XDRCodable {
         
         sourceAccount = try container.decode(PublicKey.self)
         fee = try container.decode(UInt32.self)
-        seqNum = try container.decode(UInt64.self)
+        seqNum = try container.decode(Int64.self)
         timeBounds = try decodeArray(type: TimeBoundsXDR.self, dec: decoder).first
         memo = try container.decode(MemoXDR.self)
         operations = try decodeArray(type: OperationXDR.self, dec: decoder)

@@ -66,115 +66,115 @@ class EffectsLocalTestCase: XCTestCase {
 
             for record in effectsResponse.records {
                 switch record.effectType {
-                    case EffectType.accountCreated:
+                    case .accountCreated:
                         if record is AccountCreatedEffectResponse {
                             validateAccountCreatedEffectResponse(effectResponse: record as! AccountCreatedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.accountRemoved:
+                    case .accountRemoved:
                         if record is AccountRemovedEffectResponse {
                             validateAccountRemovedEffectResponse(effectResponse: record as! AccountRemovedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.accountCredited:
+                    case .accountCredited:
                         if record is AccountCreditedEffectResponse {
                             validateAccountCreditedEffectResponse(effectResponse: record as! AccountCreditedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.accountDebited:
+                    case .accountDebited:
                         if record is AccountDebitedEffectResponse {
                             validateAccountDebitedEffectResponse(effectResponse: record as! AccountDebitedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.accountThresholdsUpdated:
+                    case .accountThresholdsUpdated:
                         if record is AccountThresholdsUpdatedEffectResponse {
                             validateAccountThresholdsUpdatedEffectResponse(effectResponse: record as! AccountThresholdsUpdatedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.accountHomeDomainUpdated:
+                    case .accountHomeDomainUpdated:
                         if record is AccountHomeDomainUpdatedEffectResponse {
                             validateAccountHomeDomainUpdatedEffectResponse(effectResponse: record as! AccountHomeDomainUpdatedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.accountFlagsUpdated:
+                    case .accountFlagsUpdated:
                         if record is AccountFlagsUpdatedEffectResponse {
                             validateAccountFlagsUpdatedEffectResponse(effectResponse: record as! AccountFlagsUpdatedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.signerCreated:
+                    case .signerCreated:
                         if record is SignerCreatedEffectResponse {
                             validateSignerCreatedEffectResponse(effectResponse: record as! SignerCreatedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.signerRemoved:
+                    case .signerRemoved:
                         if record is SignerRemovedEffectResponse {
                             validateSignerRemovedEffectResponse(effectResponse: record as! SignerRemovedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.signerUpdated:
+                    case .signerUpdated:
                         if record is SignerUpdatedEffectResponse {
                             validateSignerUpdatedEffectResponse(effectResponse: record as! SignerUpdatedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.trustlineCreated:
+                    case .trustlineCreated:
                         if record is TrustlineCreatedEffectResponse {
                             validateTrustlineCreatedEffectResponse(effectResponse: record as! TrustlineCreatedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.trustlineRemoved:
+                    case .trustlineRemoved:
                         if record is TrustlineRemovedEffectResponse {
                             validateTrustlineRemovedEffectResponse(effectResponse: record as! TrustlineRemovedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.trustlineUpdated:
+                    case .trustlineUpdated:
                         if record is TrustlineUpdatedEffectResponse {
                             validateTrustlineUpdatedEffectResponse(effectResponse: record as! TrustlineUpdatedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.trustlineAuthorized:
+                    case .trustlineAuthorized:
                         if record is TrustlineAuthorizedEffectResponse {
                             validateTrustlineAuthorizedEffectResponse(effectResponse: record as! TrustlineAuthorizedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.trustlineDeauthorized:
+                    case .trustlineDeauthorized:
                         if record is TrustlineDeauthorizedEffectResponse {
                             validateTrustlineDeauthorizedEffectResponse(effectResponse: record as! TrustlineDeauthorizedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.offerCreated:
+                    case .offerCreated:
                         if record is OfferCreatedEffectResponse {
                             validateOfferCreatedEffectResponse(effectResponse: record as! OfferCreatedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.offerRemoved:
+                    case .offerRemoved:
                         if record is OfferRemovedEffectResponse {
                             validateOfferRemovedEffectResponse(effectResponse: record as! OfferRemovedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.offerUpdated:
+                    case .offerUpdated:
                         if record is OfferUpdatedEffectResponse {
                             validateOfferUpdatedEffectResponse(effectResponse: record as! OfferUpdatedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
-                    case EffectType.tradeEffect:
+                    case .tradeEffect:
                         if record is TradeEffectResponse {
                             validateTradeEffectResponse(effectResponse: record as! TradeEffectResponse)
                         } else {
@@ -183,6 +183,30 @@ class EffectsLocalTestCase: XCTestCase {
                     case .accountInflationDestinationUpdated:
                         if record is AccountInflationDestinationUpdatedEffectResponse {
                             validateAccountInflationDestinationUpdatedEffectResponse(effectResponse: record as! AccountInflationDestinationUpdatedEffectResponse)
+                        } else {
+                            XCTAssert(false)
+                        }
+                    case .dataCreatedEffect:
+                        if record is DataCreatedEffectResponse {
+                            validateDataCreatedEffectResponse(effectResponse: record as! DataCreatedEffectResponse)
+                        } else {
+                            XCTAssert(false)
+                        }
+                    case .dataRemovedEffect:
+                        if record is DataRemovedEffectResponse {
+                            validateDataRemovedEffectResponse(effectResponse: record as! DataRemovedEffectResponse)
+                        } else {
+                            XCTAssert(false)
+                        }
+                    case .dataUpdatedEffect:
+                        if record is DataUpdatedEffectResponse {
+                            validateDataUpdatedEffectResponse(effectResponse: record as! DataUpdatedEffectResponse)
+                        } else {
+                            XCTAssert(false)
+                        }
+                    case .sequenceBumpedEffect:
+                        if record is SequenceBumpedEffectResponse {
+                            validateBumpSequenceEffectResponse(effectResponse: record as! SequenceBumpedEffectResponse)
                         } else {
                             XCTAssert(false)
                         }
@@ -675,6 +699,94 @@ class EffectsLocalTestCase: XCTestCase {
             XCTAssertNil(effectResponse.links.precedes.templated)
         }
         
+        // validate account created effect response
+        func validateDataCreatedEffectResponse(effectResponse: DataCreatedEffectResponse) {
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/65571265847297")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=65571265847297-1")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=65571265847297-1")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000065571265847297-0000000001")
+            XCTAssertEqual(effectResponse.pagingToken, "65571265847297-1")
+            XCTAssertEqual(effectResponse.account, "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.MANAGE_DATA)
+            XCTAssertEqual(effectResponse.effectType, EffectType.dataCreatedEffect)
+        }
+        
+        // validate account created effect response
+        func validateDataRemovedEffectResponse(effectResponse: DataRemovedEffectResponse) {
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/65571265847297")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=65571265847297-1")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=65571265847297-1")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000065571265847297-0000000001")
+            XCTAssertEqual(effectResponse.pagingToken, "65571265847297-1")
+            XCTAssertEqual(effectResponse.account, "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.MANAGE_DATA)
+            XCTAssertEqual(effectResponse.effectType, EffectType.dataRemovedEffect)
+        }
+        
+        // validate account created effect response
+        func validateDataUpdatedEffectResponse(effectResponse: DataUpdatedEffectResponse) {
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/65571265847297")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=65571265847297-1")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=65571265847297-1")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000065571265847297-0000000001")
+            XCTAssertEqual(effectResponse.pagingToken, "65571265847297-1")
+            XCTAssertEqual(effectResponse.account, "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.MANAGE_DATA)
+            XCTAssertEqual(effectResponse.effectType, EffectType.dataUpdatedEffect)
+        }
+        
+        // validate account created effect response
+        func validateBumpSequenceEffectResponse(effectResponse: SequenceBumpedEffectResponse) {
+            XCTAssertNotNil(effectResponse.links)
+            XCTAssertNotNil(effectResponse.links.operation)
+            XCTAssertEqual(effectResponse.links.operation.href, "http://horizon-testnet.stellar.org/operations/65571265847297")
+            XCTAssertNil(effectResponse.links.operation.templated)
+            
+            XCTAssertNotNil(effectResponse.links.succeeds)
+            XCTAssertEqual(effectResponse.links.succeeds.href, "http://horizon-testnet.stellar.org/effects?order=desc&cursor=65571265847297-1")
+            XCTAssertNil(effectResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(effectResponse.links.precedes)
+            XCTAssertEqual(effectResponse.links.precedes.href, "http://horizon-testnet.stellar.org/effects?order=asc&cursor=65571265847297-1")
+            XCTAssertNil(effectResponse.links.precedes.templated)
+            
+            XCTAssertEqual(effectResponse.id, "0000065571265847297-0000000001")
+            XCTAssertEqual(effectResponse.pagingToken, "65571265847297-1")
+            XCTAssertEqual(effectResponse.account, "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ")
+            XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.BUMP_SEQUENCE)
+            XCTAssertEqual(effectResponse.effectType, EffectType.sequenceBumpedEffect)
+        }
+        
         wait(for: [expectation], timeout: 15.0)
     }
     
@@ -746,6 +858,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "32069356863102977-1",
                 "account": "GCCVAKZQOWB6GUW22A4EZHDROG5KHI2QF53K4ZFFURSDPZFKW6EBJAAY",
                 "type": "account_created",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 0,
                 "starting_balance": "10000.0000000"
             }
@@ -768,6 +881,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "65571265847297-1",
                 "account": "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ",
                 "type": "account_removed",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 1
             }
     """
@@ -789,6 +903,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "13563506724865-1",
                 "account": "GDLGTRIBFH24364GPWPUS45GUFC2GU4ARPGWTXVCPLGTUHX3IOS3ON47",
                 "type": "account_credited",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 2,
                 "asset_type": "native",
                 "amount": "1000.0"
@@ -811,6 +926,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "65571265843201-2",
                 "account": "GBRPYHIL2CI3FNQ4BXLFMNDLFJUNPU2HY3ZMFSHONUCEOASW7QC7OX2H",
                 "type": "account_debited",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 3,
                 "asset_type": "native",
                 "amount": "30.0"
@@ -833,6 +949,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "18970870550529-1",
                 "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
                 "type": "account_thresholds_updated",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 4,
                 "low_threshold": 2,
                 "med_threshold": 3,
@@ -856,6 +973,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "18970870550529-1",
                 "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
                 "type": "account_home_domain_updated",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 5,
                 "home_domain": "stellar.org"
             }
@@ -877,6 +995,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "18970870550529-1",
                 "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
                 "type": "account_flags_updated",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 6,
                 "auth_required": false,
                 "auth_revocable": true
@@ -899,6 +1018,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "65571265859585-3",
                 "account": "GB24LPGAHYTWRYOXIDKXLI55SBRWW42T3TZKDAAW3BOJX4ADVIATFTLU",
                 "type": "signer_created",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 10,
                 "weight": 1,
                 "public_key": "GB24LPGAHYTWRYOXIDKXLI55SBRWW42T3TZKDAAW3BOJX4ADVIATFTLU"
@@ -921,6 +1041,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "43658342567940-2",
                 "account": "GCFKT6BN2FEASCEVDNHEC4LLFT2KLUUPEMKM4OJPEJ65H2AEZ7IH4RV6",
                 "type": "signer_removed",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 11,
                 "weight": 0,
                 "public_key": "GCFKT6BN2FEASCEVDNHEC4LLFT2KLUUPEMKM4OJPEJ65H2AEZ7IH4RV6"
@@ -943,6 +1064,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "43658342567940-2",
                 "account": "GCFKT6BN2FEASCEVDNHEC4LLFT2KLUUPEMKM4OJPEJ65H2AEZ7IH4RV6",
                 "type": "signer_updated",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 12,
                 "weight": 2,
                 "public_key": "GCFKT6BN2FEASCEVDNHEC4LLFT2KLUUPEMKM4OJPEJ65H2AEZ7IH4RV6"
@@ -965,6 +1087,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "33788507721730-2",
                 "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
                 "type": "trustline_created",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 20,
                 "asset_type": "credit_alphanum4",
                 "asset_code": "EUR",
@@ -989,6 +1112,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "33788507721730-2",
                 "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
                 "type": "trustline_removed",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 21,
                 "asset_type": "credit_alphanum4",
                 "asset_code": "EUR",
@@ -1013,6 +1137,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "33788507721730-2",
                 "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
                 "type": "trustline_updated",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 22,
                 "asset_type": "credit_alphanum12",
                 "asset_code": "TESTTEST",
@@ -1037,6 +1162,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "33788507721730-2",
                 "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
                 "type": "trustline_authorized",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 23,
                 "asset_type": "credit_alphanum12",
                 "asset_code": "TESTTEST",
@@ -1061,6 +1187,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "33788507721730-2",
                 "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
                 "type": "trustline_deauthorized",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 24,
                 "asset_type": "credit_alphanum4",
                 "asset_code": "EUR",
@@ -1085,6 +1212,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "33788507721730-2",
                 "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
                 "type": "offer_created",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 30
             }
     """
@@ -1105,6 +1233,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "33788507721730-2",
                 "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
                 "type": "offer_removed",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 31
             }
     """
@@ -1125,6 +1254,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "33788507721730-2",
                 "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
                 "type": "offer_updated",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 32
             }
     """
@@ -1145,6 +1275,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "paging_token": "33788507721730-2",
                 "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
                 "type": "trade",
+                "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 33,
                 "seller": "GCVHDLN6EHZBYW2M3BQIY32C23E4GPIRZZDBNF2Q73DAZ5VJDRGSMYRB",
                 "offer_id": 1,
@@ -1158,5 +1289,88 @@ class EffectsLocalTestCase: XCTestCase {
                 "bought_asset_issuer": "GAHXPUDP3AK6F2QQM4FIRBGPNGKLRDDSTQCVKEXXKKRHJZUUQ23D5BU7"
             }
     """
-    
+    private let bumpSequenceEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/65571265847297"
+                    },
+                    "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=65571265847297-1"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=65571265847297-1"
+                    }
+                },
+                "id": "0000065571265847297-0000000001",
+                "paging_token": "65571265847297-1",
+                "account": "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ",
+                "type": "bump_sequence",
+                "created_at": "2017-03-20T19:50:52Z",
+                "type_i": 43
+            }
+    """
+    private let dataCreatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/65571265847297"
+                    },
+                    "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=65571265847297-1"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=65571265847297-1"
+                    }
+                },
+                "id": "0000065571265847297-0000000001",
+                "paging_token": "65571265847297-1",
+                "account": "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ",
+                "type": "manage_data",
+                "created_at": "2017-03-20T19:50:52Z",
+                "type_i": 40
+            }
+    """
+    private let dataRemovedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/65571265847297"
+                    },
+                    "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=65571265847297-1"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=65571265847297-1"
+                    }
+                },
+                "id": "0000065571265847297-0000000001",
+                "paging_token": "65571265847297-1",
+                "account": "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ",
+                "type": "manage_data",
+                "created_at": "2017-03-20T19:50:52Z",
+                "type_i": 41
+            }
+    """
+    private let dataUpdatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/65571265847297"
+                    },
+                    "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=65571265847297-1"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=65571265847297-1"
+                    }
+                },
+                "id": "0000065571265847297-0000000001",
+                "paging_token": "65571265847297-1",
+                "account": "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ",
+                "type": "manage_data",
+                "created_at": "2017-03-20T19:50:52Z",
+                "type_i": 42
+            }
+    """
 }

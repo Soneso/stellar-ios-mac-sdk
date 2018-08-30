@@ -61,6 +61,8 @@ public class Operation {
             return AccountMergeOperation(destinatioAccountPublicKey: publicKey, sourceAccount: source)
         case .manageData(let manageData):
             return ManageDataOperation(fromXDR: manageData, sourceAccount: source)
+        case .bumpSequence(let bumpSequenceData):
+            return BumpSequenceOperation(fromXDR: bumpSequenceData, sourceAccount: source)
         default:
             throw StellarSDKError.invalidArgument(message: "Unknown operation body \(operationXDR.body)")
         }

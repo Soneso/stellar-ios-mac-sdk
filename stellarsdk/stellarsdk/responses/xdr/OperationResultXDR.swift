@@ -12,6 +12,7 @@ public enum OperationResultCode: Int32 {
     case inner = 0 // inner object result is valid
     case badAuth = -1  // too few valid signatures / wrong network
     case noAccount = -2 // source account was not found
+    case notSupported = -3 // operation not supported at this time
 }
 
 public enum OperationResultXDR: XDRCodable {
@@ -26,6 +27,7 @@ public enum OperationResultXDR: XDRCodable {
     case accountMerge(Int32, AccountMergeResultXDR)
     case inflation(Int32, InflationResultXDR)
     case manageData(Int32, ManageDataResultXDR)
+    case bumpSequence(Int32, BumpSequenceResultXDR)
     case empty (Int32)
     
     public init(from decoder: Decoder) throws {
@@ -59,6 +61,8 @@ public enum OperationResultXDR: XDRCodable {
                     self = .inflation(code.rawValue, try container.decode(InflationResultXDR.self))
                 case .manageData:
                     self = .manageData(code.rawValue, try container.decode(ManageDataResultXDR.self))
+                case .bumpSequence:
+                    self = .bumpSequence(code.rawValue, try container.decode(BumpSequenceResultXDR.self))
             }
         default:
             self = .empty(code.rawValue)
@@ -101,6 +105,9 @@ public enum OperationResultXDR: XDRCodable {
                 try container.encode(code)
                 try container.encode(result)
             case .manageData(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .bumpSequence(let code, let result):
                 try container.encode(code)
                 try container.encode(result)
             case .empty (let code):

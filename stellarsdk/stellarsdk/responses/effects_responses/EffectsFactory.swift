@@ -108,6 +108,18 @@ class EffectsFactory: NSObject {
             case .tradeEffect:
                 let effect = try jsonDecoder.decode(TradeEffectResponse.self, from: data)
                 return effect
+            case .dataCreatedEffect:
+                let effect = try jsonDecoder.decode(DataCreatedEffectResponse.self, from: data)
+                return effect
+            case .dataRemovedEffect:
+                let effect = try jsonDecoder.decode(DataRemovedEffectResponse.self, from: data)
+                return effect
+            case .dataUpdatedEffect:
+                let effect = try jsonDecoder.decode(DataUpdatedEffectResponse.self, from: data)
+                return effect
+            case .sequenceBumpedEffect:
+                let effect = try jsonDecoder.decode(SequenceBumpedEffectResponse.self, from: data)
+                return effect
             }
         } else {
             throw HorizonRequestError.parsingResponseFailed(message: "Unknown effect type")

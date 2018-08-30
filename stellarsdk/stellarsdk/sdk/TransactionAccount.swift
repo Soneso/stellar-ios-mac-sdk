@@ -15,10 +15,10 @@ public protocol TransactionAccount {
     var keyPair: KeyPair { get }
     
     /// Returns current sequence number of this Account.
-    var sequenceNumber : UInt64 { get }
+    var sequenceNumber : Int64 { get }
     
     /// Returns sequence number incremented by one, but does not increment internal counter.
-    func incrementedSequenceNumber() -> UInt64
+    func incrementedSequenceNumber() -> Int64
     
     /// Increments sequence number in this object by one.
     func incrementSequenceNumber()

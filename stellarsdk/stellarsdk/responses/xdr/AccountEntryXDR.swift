@@ -11,17 +11,17 @@ import Foundation
 public struct AccountEntryXDR: XDRCodable {
     let accountID: PublicKey
     public let balance: Int64
-    public let sequenceNumber: UInt64
+    public let sequenceNumber: Int64
     public let numSubEntries:UInt32
     public var inflationDest: PublicKey?
     public let flags:UInt32
     public let homeDomain:String?
     public let thresholds:WrappedData4
     public let signers: [SignerXDR]
-    public let reserved: Int32 = 0
+    public let reserved: AccountEntryExtXDR
     
 
-    public init(accountID: PublicKey, balance:Int64, sequenceNumber:UInt64, numSubEntries:UInt32, inflationDest:PublicKey? = nil, flags:UInt32, homeDomain:String? = nil, thresholds: WrappedData4, signers: [SignerXDR]) {
+    public init(accountID: PublicKey, balance:Int64, sequenceNumber:Int64, numSubEntries:UInt32, inflationDest:PublicKey? = nil, flags:UInt32, homeDomain:String? = nil, thresholds: WrappedData4, signers: [SignerXDR]) {
         self.accountID = accountID
         self.balance = balance
         self.sequenceNumber = sequenceNumber
@@ -31,20 +31,21 @@ public struct AccountEntryXDR: XDRCodable {
         self.homeDomain = homeDomain
         self.thresholds = thresholds
         self.signers = signers
+        self.reserved = .void
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         accountID = try container.decode(PublicKey.self)
         balance = try container.decode(Int64.self)
-        sequenceNumber = try container.decode(UInt64.self)
+        sequenceNumber = try container.decode(Int64.self)
         numSubEntries = try container.decode(UInt32.self)
         inflationDest = try decodeArray(type: PublicKey.self, dec: decoder).first
         flags = try container.decode(UInt32.self)
         homeDomain = try container.decode(String.self)
         thresholds = try container.decode(WrappedData4.self)
         signers = try decodeArray(type: SignerXDR.self, dec: decoder)
-        _ = try container.decode(Int32.self)
+        reserved  = try container.decode(AccountEntryExtXDR.self)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -57,6 +58,69 @@ public struct AccountEntryXDR: XDRCodable {
         try container.encode(flags)
         try container.encode(thresholds)
         try container.encode(signers)
+        try container.encode(reserved)
+    }
+}
+
+public enum AccountEntryExtXDR: XDRCodable {
+    case void
+    case accountEntryV1 (AccountEntryV1)
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        let code = try container.decode(Int32.self)
+        
+        switch code {
+        case 0:
+            self = .void
+        case 1:
+            self = .accountEntryV1(try AccountEntryV1(from: decoder))
+        default:
+            self = .void
+        }
+    }
+    
+    private func type() -> Int32 {
+        switch self {
+        case .void: return 0
+        case .accountEntryV1: return 1
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(type())
+        
+        switch self {
+        case .void:
+            return
+        case .accountEntryV1(let accountEntryV1):
+            try container.encode(accountEntryV1)
+        }
+    }
+    
+}
+
+public struct AccountEntryV1: XDRCodable {
+    public let liabilities: LiabilitiesXDR
+    public var reserved: Int32 = 0
+    
+    public init(liabilities: LiabilitiesXDR) {
+        self.liabilities = liabilities
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        
+        liabilities = try container.decode(LiabilitiesXDR.self)
+        reserved = try container.decode(Int32.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(liabilities)
         try container.encode(reserved)
     }
 }

@@ -15,6 +15,12 @@ public class AccountBalanceResponse: NSObject, Decodable {
     /// Balance for the specified asset.
     public var balance:String
     
+    /// Buying Liabilities for the specified asset.
+    public var buyingLiabilities:String
+    
+    /// Selling Liabilities for the specified asset.
+    public var sellingLiabilities:String
+    
     /// Maximum number of asset amount this account can hold.
     public var limit:String!
     
@@ -31,6 +37,8 @@ public class AccountBalanceResponse: NSObject, Decodable {
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
         case balance
+        case buyingLiabilities = "buying_liabilities"
+        case sellingLiabilities = "selling_liabilities"
         case limit
         case assetType = "asset_type"
         case assetCode = "asset_code"
@@ -45,6 +53,8 @@ public class AccountBalanceResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         balance = try values.decode(String.self, forKey: .balance) as String
+        buyingLiabilities = try values.decode(String.self, forKey: .buyingLiabilities) as String
+        sellingLiabilities = try values.decode(String.self, forKey: .sellingLiabilities) as String
         limit = try values.decodeIfPresent(String.self, forKey: .limit)
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)

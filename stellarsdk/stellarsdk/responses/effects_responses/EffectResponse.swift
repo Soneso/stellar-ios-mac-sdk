@@ -30,6 +30,12 @@ public enum EffectType: Int {
     case offerRemoved = 31
     case offerUpdated = 32
     case tradeEffect = 33
+    // Data effects
+    case dataCreatedEffect = 40
+    case dataRemovedEffect = 41
+    case dataUpdatedEffect = 42
+    // Bump Sequence effects
+    case sequenceBumpedEffect = 43
 }
 
 /// Represents an account effect response. Superclass for all other effect response classes.
