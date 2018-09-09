@@ -12,6 +12,8 @@ import Foundation
 enum HTTPMethod {
     case get
     case post
+    case put
+    case delete
 }
 
 /// An enum to diferentiate between succesful and failed responses
@@ -61,10 +63,63 @@ class ServiceHelper: NSObject {
     open func POSTRequestWithPath(path: String, body:Data? = nil, completion: @escaping ResponseClosure) {
         requestFromUrl(url: baseURL + path, method:.post, body:body, completion:completion)
     }
+    
+    /// Performs a put request to the spcified path.
+    ///
+    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
+    /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
+    /// - parameter response:   The closure to be called upon response.
+    open func PUTMultipartRequestWithPath(path: String, parameters:[String:Data]? = nil, completion: @escaping ResponseClosure) {
+        let boundary = String(format: "------------------------%08X%08X", arc4random(), arc4random())
+        let contentType: String = {
+            guard let charset = CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(String.Encoding.utf8.rawValue)) else {
+                return ""
+            }
+            return "multipart/form-data; charset=\(charset); boundary=\(boundary)"
+        }()
+        let httpBody: Data = {
+            var body = Data()
+            
+            if let parameters = parameters {
+                for (rawName, rawValue) in parameters {
+                    if !body.isEmpty {
+                        body.append("\r\n".data(using: .utf8)!)
+                    }
+                    
+                    body.append("--\(boundary)\r\n".data(using: .utf8)!)
+                    
+                    guard rawName.canBeConverted(to: .utf8), let disposition = "Content-Disposition: form-data; name=\"\(rawName)\"\r\n".data(using: .utf8) else {
+                            continue
+                    }
+                    body.append(disposition)
+                    body.append("\r\n".data(using: .utf8)!)
+                    body.append(rawValue)
+                }
+            }
+            
+            body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+            
+            return body
+        }()
         
-    open func requestFromUrl(url: String, method: HTTPMethod, body:Data? = nil, completion: @escaping ResponseClosure) {
+        requestFromUrl(url: baseURL + path, method:.put, contentType: contentType, body:httpBody, completion:completion)
+    }
+    
+    /// Performs a delete request to the spcified path.
+    ///
+    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
+    /// - parameter response:   The closure to be called upon response.
+    open func DELETERequestWithPath(path: String, completion: @escaping ResponseClosure) {
+        requestFromUrl(url: baseURL + path, method:.delete, completion:completion)
+    }
+        
+    open func requestFromUrl(url: String, method: HTTPMethod, contentType:String? = nil, body:Data? = nil, completion: @escaping ResponseClosure) {
         let url = URL(string: url)!
         var urlRequest = URLRequest(url: url)
+        
+        if let contentType = contentType {
+            urlRequest.addValue(contentType, forHTTPHeaderField: "Content-Type")
+        }
         
         switch method {
         case .get:
@@ -72,6 +127,11 @@ class ServiceHelper: NSObject {
         case .post:
             urlRequest.httpMethod = "POST"
             urlRequest.httpBody = body
+        case .put:
+            urlRequest.httpMethod = "PUT"
+            urlRequest.httpBody = body
+        case .delete:
+            urlRequest.httpMethod = "DELETE"
         }
         
         let task = URLSession.shared.dataTask(with: urlRequest) { data, response, error in
@@ -92,7 +152,7 @@ class ServiceHelper: NSObject {
                 }
                 
                 switch httpResponse.statusCode {
-                case 200:
+                case 200, 202:
                     break
                 case 400: // Bad request
                     if let data = data {
@@ -103,6 +163,9 @@ class ServiceHelper: NSObject {
                         } catch {}
                     }
                     completion(.failure(error:.badRequest(message:message, horizonErrorResponse:nil)))
+                    return
+                case 401: // Unauthorized
+                    completion(.failure(error:.unauthorized(message: message)))
                     return
                 case 403: // Forbidden
                     if let data = data {

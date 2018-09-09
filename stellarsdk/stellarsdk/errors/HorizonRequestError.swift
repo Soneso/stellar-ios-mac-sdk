@@ -11,6 +11,7 @@ import Foundation
 public enum HorizonRequestError: Error {
     case requestFailed(message: String)
     case badRequest(message:String, horizonErrorResponse:BadRequestErrorResponse?) // HTTP Status Code 400
+    case unauthorized(message:String) // HTTP Status Code 401
     case forbidden(message:String, horizonErrorResponse:ForbiddenErrorResponse?) // HTTP Status Code 403
     case notFound(message: String, horizonErrorResponse:NotFoundErrorResponse?) //HTTP Status Code 404
     case notAcceptable(message: String, horizonErrorResponse:NotAcceptableErrorResponse?) /// HTTP Status code 406

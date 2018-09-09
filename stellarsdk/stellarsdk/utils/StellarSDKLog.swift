@@ -18,6 +18,8 @@ public final class StellarSDKLog {
         case .badRequest(let message, let errorResponse):
             print("\(tag): Horizon request error of type request failed with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
+        case .unauthorized(let message):
+            print("\(tag): Horizon request error of type request failed with message: \(message)")
         case .forbidden(let message, let errorResponse):
             print("\(tag): Horizon request error of type request failed with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)

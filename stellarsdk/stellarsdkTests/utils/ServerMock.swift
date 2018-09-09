@@ -121,6 +121,8 @@ class RequestMock {
                 return false
         }
         
+        reqComps.queryItems?.forEach { variables[$0.name] = $0.value }
+        
         if reqComps.host != host || request.httpMethod != httpMethod {
             return false
         }
