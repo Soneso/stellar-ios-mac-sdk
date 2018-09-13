@@ -343,6 +343,14 @@ You can find documentation and examples in the [docs](https://github.com/Soneso/
 
 Satraj from BlockEQ created an [open source iOS wallet](https://github.com/Block-Equity/stellar-ios-wallet) for Stellar, that uses our sdk. Thank you Satraj for your contribution to this project! 
 
+## Stellar Ecosystem Proposals (SEPs) implemented
+
+- [SEP-002](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)
+- [SEP-005](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)
+- [SEP-006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
+- [SEP-007](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md)
+
+
 ## How to contribute
 
 Please read our [Contribution Guide](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/CONTRIBUTING.md).
