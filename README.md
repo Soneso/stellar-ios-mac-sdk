@@ -397,14 +397,14 @@ let request = WithdrawRequest(type: "crypto", assetCode: "BTC", dest: "GAK7I2E6P
 Allows an anchor to communicate basic info about what their TRANSFER_SERVER supports to wallets and clients.
 
 ```swift
-	transferServerService.info { (response) -> (Void) in
-	    switch response {
-	    case .success(let info):
-	       // info returned successfully
-	    case .failure(_):
-	       // something went wrong
-	    }
+transferServerService.info { (response) -> (Void) in
+	switch response {
+	case .success(let info):
+		// info returned successfully
+	case .failure(_):
+		// something went wrong
 	}
+}
 ```
 
 #### 6.5 Using the transaction history endpoint
@@ -412,15 +412,15 @@ Allows an anchor to communicate basic info about what their TRANSFER_SERVER supp
 The transaction history endpoint helps anchors enable a better experience for users using an external wallet. With it, wallets can display the status of deposits and withdrawals while they process and a history of past transactions with the anchor. It's only for transactions that are deposits to or withdrawals from the anchor.
 
 ```swift
-	let request = AnchorTransactionsRequest(assetCode: "BTC", account: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q")
-	transferServerService.getTransactions(request: request) { (response) -> (Void) in
-	    switch response {
-	    case .success(let transactions):
-	       // the past transactions returned successfully
-	    case .failure(_):
-		   // something went wrong
-	    }
+let request = AnchorTransactionsRequest(assetCode: "BTC", account: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q")
+transferServerService.getTransactions(request: request) { (response) -> (Void) in
+	switch response {
+	case .success(let transactions):
+		// the past transactions returned successfully
+	case .failure(_):
+		// something went wrong
 	}
+}
 ```
 
 #### 6.7 Delete all KYC info about customer
@@ -428,17 +428,15 @@ The transaction history endpoint helps anchors enable a better experience for us
 Delete all personal information that the anchor has stored about a given customer. [account] is the Stellar account ID (G...) of the customer to delete. This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted.
 
 ```swift
-	transferServerService.deleteCustomerInfo(account: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q") { (response) -> (Void) in
-	    switch response {
-	    case .success:
+transferServerService.deleteCustomerInfo(account: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q") { (response) -> (Void) in
+	switch response {
+	case .success:
 	        // all information for the given account was deleted successfully
-	    case .failure(_):
+	case .failure(_):
 	        // something went wrong
-	    }
 	}
+}
 ```
-
-#### 6.6 Handle anchor KYC needs, including transmitting KYC information about the user to the anchor
 
 ## Documentation and Examples
 
