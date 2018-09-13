@@ -335,6 +335,111 @@ federation.resolve(address: "bob*YOUR_DOMAIN") { (response) -> (Void) in
 }
 ```
 
+### 6. Sep006 implementation
+This SEP defines the standard way for anchors and wallets to interact on behalf of users. This improves user experience by allowing wallets and other clients to interact with anchors directly without the user needing to leave the wallet to go to the anchor's site.
+This protocol requires anchors to implement endpoints on their TRANSFER_SERVER. An anchor must define the location of their transfer server in their stellar.toml. This is how a wallet knows where to find the anchor's server.
+Example:
+TRANSFER_SERVER="https://api.example.com"
+
+More information: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md
+
+#### 6.1 Get the TransferServerService for a domain
+
+Get the TransferServerService for your domain:
+
+```swift
+TransferServerService.forDomain(domain: "https://YOUR_DOMAIN") { (response) -> (Void) in
+    switch response {
+        case .success(let transferServerService):
+	        // use the transferServerService object to call other operations
+        case .failure(_):
+	        // something went wrong
+    }
+}
+```
+
+#### 6.2 Deposit external assets with an anchor
+
+A deposit is when a user sends an external token (BTC via Bitcoin, USD via bank transfer, etc...) to an address held by an anchor. In turn, the anchor sends an equal amount of tokens on the Stellar network (minus fees) to the user's Stellar account.
+The deposit endpoint allows a wallet to get deposit information from an anchor, so a user has all the information needed to initiate a deposit. It also lets the anchor specify additional information (if desired) that the user must submit via the /customer endpoint to be able to deposit.
+
+```swift
+let request = DepositRequest(assetCode: "BTC", account: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q")
+transferServerService.deposit(request: request) { (response) -> (Void) in
+    switch response {
+        case .success(let response):
+	       // deposit was sent with success
+        case .failure(_):
+	       // something went wrong
+    }
+}
+```
+
+#### 6.3 Withdraw assets from an anchor
+
+This operation allows a user to redeem an asset currently on the Stellar network for the real asset (BTC, USD, stock, etc...) via the anchor of the Stellar asset.
+The withdraw endpoint allows a wallet to get withdrawal information from an anchor, so a user has all the information needed to initiate a withdrawal. It also lets the anchor specify additional information (if desired) that the user must submit via the /customer endpoint to be able to withdraw.
+
+```swift
+let request = WithdrawRequest(type: "crypto", assetCode: "BTC", dest: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q")
+    transferServerService.withdraw(request: request) { (response) -> (Void) in
+	    switch response {
+	    case .success(let info):
+	        // the withdraw operation completed successfully
+	    case .failure(_):
+	        // something went wrong
+    }
+}
+```
+
+#### 6.4 Communicate deposit & withdrawal fee structure for an anchor to the user
+
+Allows an anchor to communicate basic info about what their TRANSFER_SERVER supports to wallets and clients.
+
+```swift
+	transferServerService.info { (response) -> (Void) in
+	    switch response {
+	    case .success(let info):
+	       // info returned successfully
+	    case .failure(_):
+	       // something went wrong
+	    }
+	}
+```
+
+#### 6.5 Using the transaction history endpoint
+
+The transaction history endpoint helps anchors enable a better experience for users using an external wallet. With it, wallets can display the status of deposits and withdrawals while they process and a history of past transactions with the anchor. It's only for transactions that are deposits to or withdrawals from the anchor.
+
+```swift
+	let request = AnchorTransactionsRequest(assetCode: "BTC", account: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q")
+	transferServerService.getTransactions(request: request) { (response) -> (Void) in
+	    switch response {
+	    case .success(let transactions):
+	       // the past transactions returned successfully
+	    case .failure(_):
+		   // something went wrong
+	    }
+	}
+```
+
+#### 6.7 Delete all KYC info about customer
+
+Delete all personal information that the anchor has stored about a given customer. [account] is the Stellar account ID (G...) of the customer to delete. This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted.
+
+```swift
+	transferServerService.deleteCustomerInfo(account: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q") { (response) -> (Void) in
+	    switch response {
+	    case .success:
+	        // all information for the given account was deleted successfully
+	    case .failure(_):
+	        // something went wrong
+	    }
+	}
+```
+
+#### 6.6 Handle anchor KYC needs, including transmitting KYC information about the user to the anchor
+
 ## Documentation and Examples
 
 You can find documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.
