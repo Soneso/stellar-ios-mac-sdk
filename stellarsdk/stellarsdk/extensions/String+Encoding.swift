@@ -15,4 +15,13 @@ public extension String {
         
         return self.addingPercentEncoding(withAllowedCharacters: allowedQueryParamAndKey)
     }
+    
+    var urlDecoded: String? {
+        return self.removingPercentEncoding
+    }
+    
+    var isFullyQualifiedDomainName: Bool {
+        let sRegex = "(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-).)+[a-zA-Z]{2,63}.?$)"
+        return NSPredicate(format: "SELF MATCHES[c] %@", sRegex).evaluate(with: self)
+    }
 }
