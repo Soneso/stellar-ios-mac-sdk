@@ -382,13 +382,13 @@ The withdraw endpoint allows a wallet to get withdrawal information from an anch
 
 ```swift
 let request = WithdrawRequest(type: "crypto", assetCode: "BTC", dest: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q")
-    transferServerService.withdraw(request: request) { (response) -> (Void) in
-	    switch response {
-	    case .success(let info):
-	        // the withdraw operation completed successfully
-	    case .failure(_):
+transferServerService.withdraw(request: request) { (response) -> (Void) in
+	switch response {
+	case .success(let info):
+		// the withdraw operation completed successfully
+	case .failure(_):
 	        // something went wrong
-    }
+	}
 }
 ```
 
@@ -435,6 +435,67 @@ transferServerService.deleteCustomerInfo(account: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJ
 	case .failure(_):
 	        // something went wrong
 	}
+}
+```
+
+### 7. Sep007 implementation
+This Stellar Ecosystem Proposal introduces a URI Scheme that can be used to generate a URI that will serve as a request to sign a transaction. The URI (request) will typically be signed by the user’s trusted wallet where she stores her secret key(s).
+More information: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
+
+#### 7.1 Generate a URI for sign transaction.
+
+Generate a URI that will serve as a request to sign a transaction. The URI (request) will typically be signed by the user’s trusted wallet where he stores his secret key(s).
+
+```swift
+sdk.accounts.getAccountDetails(accountId: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q") { (response) -> (Void) in
+    switch response {
+    case .success(let data):
+        // create the payment operation
+        let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
+                                                destination: destinationAccountKeyPair,
+                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                amount: 1.5)
+        
+        // create the transaction containing the payment operation
+        let transaction = try Transaction(sourceAccount: accountResponse,
+                                          operations: [paymentOperation],
+                                          memo: Memo.none,
+                                          timeBounds:nil)
+        // create the URIScheme object
+        let uriSchemeBuilder = URIScheme()
+        
+        // get the URI with your transactionXDR
+        let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction.transactionXDR)
+        
+    case .failure(let error):
+        //
+    }
+}
+```
+
+#### 7.2 Generate a URI for pay operation
+
+Generate a URI that will serve as a request to pay a specific address with a specific asset, regardless of the source asset used by the payer.
+
+```swift
+let uriSchemeBuilder = URIScheme()
+let uriScheme = uriSchemeBuilder.getPayOperationURI(accountID: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q", amount: 100, assetCode: "BTC")
+```
+
+#### 7.3 Sign a transaction from a giver URI
+
+Signs a transaction from a URI and sends it to the stellar network.
+
+```swift
+uriBuilder.signTransaction(forURL: uri, signerKeyPair: keyPair, transactionConfirmation: { (transaction) -> (Bool) in
+    // here the transaction from the uri can be checked and confirmed if the signing should continue
+    return true
+}) { (response) -> (Void) in
+    switch response {
+    case .success:
+    // the transaction was successfully signed
+    case .failure(error: let error):
+        // the transaction wasn't valid or it didn't pass the confirmation
 }
 ```
 
