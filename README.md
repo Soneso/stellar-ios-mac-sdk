@@ -299,8 +299,8 @@ try sdk.transactions.submitTransaction(transaction: transaction) { (response) ->
 }
 ```
 
-### 4. Using a federation server
-#### 4.1 Get federation server address for a domain
+### 5. Using a federation server
+#### 5.1 Get federation server address for a domain
 
 Get the federation of your domain:
 
@@ -315,7 +315,7 @@ Federation.forDomain(domain: "https://YOUR_DOMAIN") { (response) -> (Void) in
 }
 ```
 
-#### 4.2 Resolve a federation address to an account id
+#### 5.2 Resolve a federation address to an account id
 
 Resolve your addresses:
 
