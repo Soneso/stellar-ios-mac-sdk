@@ -79,8 +79,9 @@ print("Secret Seed: " + keyPair.secretSeed)
  
 ```
 
-#### 1.2 Deterministic generation
-See [Key Derivation Methods for Stellar Accounts](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)
+#### 1.2 Deterministic generation (SEP-005)
+
+The Stellar Ecosystem Proposal [SEP-005 Key Derivation Methods for Stellar Accounts](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md) describes methods for key derivation for Stellar. This improves key storage and moving keys between wallets and apps.
 
 Generate mnemonic
 ```swift
@@ -123,9 +124,11 @@ let keyPair1 = try! KeyPair.init(seed: Seed(bytes: account1.raw.bytes))
 ```      
 
 ### 2. Create an account
+
 After the key pair generation, you have already got the address, but it is not activated until someone transfers at least 1 lumen into it.
 
 #### 2.1 Testnet
+
 If you want to play in the Stellar test network, the sdk can ask Friendbot to create an account for you as shown below:
 
 ```swift
@@ -141,6 +144,7 @@ sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Vo
 ```
 
 #### 2.2 Public net
+
 On the other hand, if you would like to create an account in the public net, you should buy some Stellar Lumens from an exchange. When you withdraw the Lumens into your new account, the exchange will automatically create the account for you. However, if you want to create an account from another account of your own, you may run the following code:
 
 ```swift
@@ -172,6 +176,7 @@ try sdk.transactions.submitTransaction(transaction: transaction) { (response) ->
 
 ### 3. Check account
 #### 3.1 Basic info
+
 After creating the account, we may check the basic information of the account.
 
 ```swift
@@ -209,6 +214,7 @@ sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Vo
 ```
 
 #### 3.2 Check payments
+
 You can check the most recent payments by:
 
 ```swift
@@ -257,6 +263,7 @@ sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.
 }
 ```
 #### 3.3 Check others
+
 Just like payments, you you check `assets`, `transactions`, `effects`, `offers`, `operations`, `ledgers` etc.  by:
 
 ```swift
@@ -299,7 +306,18 @@ try sdk.transactions.submitTransaction(transaction: transaction) { (response) ->
 }
 ```
 
-### 5. Using a federation server
+### 5. Using a federation server (SEP-002)
+
+The Stellar federation protocol defined in [SEP-002](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md) maps Stellar addresses to more information about a given user. It’s a way for Stellar client software to resolve email-like addresses such as:
+
+name*yourdomain.com 
+
+into account IDs like: 
+
+GCCVPYFOHY7ZB7557JKENAX62LUAPLMGIWNZJAFV2MITK6T32V37KEJU 
+
+Stellar addresses provide an easy way for users to share payment details by using a syntax that interoperates across different domains and providers.
+
 #### 5.1 Get federation server address for a domain
 
 Get the federation of your domain:
@@ -335,13 +353,13 @@ federation.resolve(address: "bob*YOUR_DOMAIN") { (response) -> (Void) in
 }
 ```
 
-### 6. Sep006 implementation
-This SEP defines the standard way for anchors and wallets to interact on behalf of users. This improves user experience by allowing wallets and other clients to interact with anchors directly without the user needing to leave the wallet to go to the anchor's site.
-This protocol requires anchors to implement endpoints on their TRANSFER_SERVER. An anchor must define the location of their transfer server in their stellar.toml. This is how a wallet knows where to find the anchor's server.
-Example:
-TRANSFER_SERVER="https://api.example.com"
+### 6. Anchor/Client interoperability (SEP-006)
 
-More information: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md
+The Stellar Ecosystem Proposal [SEP-006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md) defines the standard way for anchors and wallets to interact on behalf of users. This improves user experience by allowing wallets and other clients to interact with anchors directly without the user needing to leave the wallet to go to the anchor's site.
+
+This protocol requires anchors to implement endpoints on their TRANSFER_SERVER. An anchor must define the location of their transfer server in their stellar.toml. This is how a wallet knows where to find the anchor's server.
+
+Example: TRANSFER_SERVER="https://api.example.com"
 
 #### 6.1 Get the TransferServerService for a domain
 
@@ -438,9 +456,9 @@ transferServerService.deleteCustomerInfo(account: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJ
 }
 ```
 
-### 7. Sep007 implementation
-This Stellar Ecosystem Proposal introduces a URI Scheme that can be used to generate a URI that will serve as a request to sign a transaction. The URI (request) will typically be signed by the user’s trusted wallet where she stores her secret key(s).
-More information: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
+### 7. URI Scheme to facilitate delegated signing (SEP-007)
+
+The Stellar Ecosystem Proposal [SEP-007](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md) introduces a URI Scheme that can be used to generate a URI that will serve as a request to sign a transaction. The URI (request) will typically be signed by the user’s trusted wallet where she stores her secret key(s).
 
 #### 7.1 Generate a URI for sign transaction.
 
@@ -501,7 +519,7 @@ uriBuilder.signTransaction(forURL: uri, signerKeyPair: keyPair, transactionConfi
 
 ## Documentation and Examples
 
-You can find documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.
+You can find more documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.
 
 ## Sample IOS app
 
@@ -509,10 +527,10 @@ Satraj from BlockEQ created an [open source iOS wallet](https://github.com/Block
 
 ## Stellar Ecosystem Proposals (SEPs) implemented
 
-- [SEP-002](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)
-- [SEP-005](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)
-- [SEP-006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
-- [SEP-007](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md)
+- [SEP-002](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md) - Federation protocol
+- [SEP-005](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md) - Key Derivation Methods for Stellar Accounts
+- [SEP-006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md) - Anchor/Client interoperability
+- [SEP-007](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md) - URI Scheme to facilitate delegated signing
 
 
 ## How to contribute
