@@ -79,7 +79,7 @@ print("Secret Seed: " + keyPair.secretSeed)
  
 ```
 
-#### 1.2 Deterministic generation (SEP-005)
+#### 1.2 Deterministic generation
 
 The Stellar Ecosystem Proposal [SEP-005 Key Derivation Methods for Stellar Accounts](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md) describes methods for key derivation for Stellar. This improves key storage and moving keys between wallets and apps.
 
@@ -306,7 +306,7 @@ try sdk.transactions.submitTransaction(transaction: transaction) { (response) ->
 }
 ```
 
-### 5. Using a federation server (SEP-002)
+### 5. Using a federation server
 
 The Stellar federation protocol defined in [SEP-002](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md) maps Stellar addresses to more information about a given user. It’s a way for Stellar client software to resolve email-like addresses such as:
 
@@ -353,7 +353,7 @@ federation.resolve(address: "bob*YOUR_DOMAIN") { (response) -> (Void) in
 }
 ```
 
-### 6. Anchor/Client interoperability (SEP-006)
+### 6. Anchor/Client interoperability
 
 The Stellar Ecosystem Proposal [SEP-006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md) defines the standard way for anchors and wallets to interact on behalf of users. This improves user experience by allowing wallets and other clients to interact with anchors directly without the user needing to leave the wallet to go to the anchor's site.
 
@@ -456,7 +456,7 @@ transferServerService.deleteCustomerInfo(account: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJ
 }
 ```
 
-### 7. URI Scheme to facilitate delegated signing (SEP-007)
+### 7. URI Scheme to facilitate delegated signing
 
 The Stellar Ecosystem Proposal [SEP-007](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md) introduces a URI Scheme that can be used to generate a URI that will serve as a request to sign a transaction. The URI (request) will typically be signed by the user’s trusted wallet where she stores her secret key(s).
 
