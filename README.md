@@ -353,7 +353,7 @@ federation.resolve(address: "bob*YOUR_DOMAIN") { (response) -> (Void) in
 }
 ```
 
-### 6. Anchor/Client interoperability
+### 6. Anchor-Client interoperability
 
 The Stellar Ecosystem Proposal [SEP-006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md) defines the standard way for anchors and wallets to interact on behalf of users. This improves user experience by allowing wallets and other clients to interact with anchors directly without the user needing to leave the wallet to go to the anchor's site.
 
