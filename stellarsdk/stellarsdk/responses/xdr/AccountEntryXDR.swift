@@ -18,7 +18,7 @@ public struct AccountEntryXDR: XDRCodable {
     public let homeDomain:String?
     public let thresholds:WrappedData4
     public let signers: [SignerXDR]
-    public let reserved: AccountEntryExtXDR
+    public let reserved: LedgerEntryExtXDR
     
 
     public init(accountID: PublicKey, balance:Int64, sequenceNumber:Int64, numSubEntries:UInt32, inflationDest:PublicKey? = nil, flags:UInt32, homeDomain:String? = nil, thresholds: WrappedData4, signers: [SignerXDR]) {
@@ -45,7 +45,7 @@ public struct AccountEntryXDR: XDRCodable {
         homeDomain = try container.decode(String.self)
         thresholds = try container.decode(WrappedData4.self)
         signers = try decodeArray(type: SignerXDR.self, dec: decoder)
-        reserved  = try container.decode(AccountEntryExtXDR.self)
+        reserved  = try container.decode(LedgerEntryExtXDR.self)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -62,9 +62,9 @@ public struct AccountEntryXDR: XDRCodable {
     }
 }
 
-public enum AccountEntryExtXDR: XDRCodable {
+public enum LedgerEntryExtXDR: XDRCodable {
     case void
-    case accountEntryV1 (AccountEntryV1)
+    case ledgerEntryV1 (LedgerEntryV1)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -74,7 +74,7 @@ public enum AccountEntryExtXDR: XDRCodable {
         case 0:
             self = .void
         case 1:
-            self = .accountEntryV1(try AccountEntryV1(from: decoder))
+            self = .ledgerEntryV1(try LedgerEntryV1(from: decoder))
         default:
             self = .void
         }
@@ -83,7 +83,7 @@ public enum AccountEntryExtXDR: XDRCodable {
     private func type() -> Int32 {
         switch self {
         case .void: return 0
-        case .accountEntryV1: return 1
+        case .ledgerEntryV1: return 1
         }
     }
     
@@ -95,14 +95,14 @@ public enum AccountEntryExtXDR: XDRCodable {
         switch self {
         case .void:
             return
-        case .accountEntryV1(let accountEntryV1):
+        case .ledgerEntryV1(let accountEntryV1):
             try container.encode(accountEntryV1)
         }
     }
     
 }
 
-public struct AccountEntryV1: XDRCodable {
+public struct LedgerEntryV1: XDRCodable {
     public let liabilities: LiabilitiesXDR
     public var reserved: Int32 = 0
     
