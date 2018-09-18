@@ -80,8 +80,10 @@ public class Operation {
     static func toXDRAmount(amount:Decimal) -> Int64 {
         let multiplied = amount * 10000000
         let decimalNumber = NSDecimalNumber(decimal: multiplied)
+        let handler = NSDecimalNumberHandler(roundingMode: NSDecimalNumber.RoundingMode.bankers, scale: 0, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
+        let rounded = decimalNumber.rounding(accordingToBehavior: handler)
         
-        return decimalNumber.int64Value
+        return rounded.int64Value
     }
     
     static func fromXDRAmount(_ xdrAmount:Int64) -> Decimal {
