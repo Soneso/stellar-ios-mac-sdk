@@ -449,7 +449,6 @@
 		745DF52E2052FFC3000D3660 /* PaymentPathsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0C20348AEA00C8BDBC /* PaymentPathsService.swift */; };
 		745DF52F2052FFC3000D3660 /* StellarSDKError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFCA2034742200C23CFE /* StellarSDKError.swift */; };
 		745DF5302052FFC3000D3660 /* HorizonRequestError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53A2023056F000A783E /* HorizonRequestError.swift */; };
-		745DF5322052FFC3000D3660 /* Info.plist in Sources */ = {isa = PBXBuildFile; fileRef = 7445EA00201B106500470E0A /* Info.plist */; };
 		745DF5332052FFC3000D3660 /* StellarSDK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */; };
 		745DF55D2052FFF6000D3660 /* add_scalar.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5542020530900713DE7 /* add_scalar.c */; };
 		745DF55E2052FFF6000D3660 /* fe.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5592020530A00713DE7 /* fe.c */; };
@@ -2645,7 +2644,6 @@
 				745DF52E2052FFC3000D3660 /* PaymentPathsService.swift in Sources */,
 				745DF52F2052FFC3000D3660 /* StellarSDKError.swift in Sources */,
 				745DF5302052FFC3000D3660 /* HorizonRequestError.swift in Sources */,
-				745DF5322052FFC3000D3660 /* Info.plist in Sources */,
 				744FC6E9212D3CCC00ADFC88 /* String.swift in Sources */,
 				743060CE213822E100E2E9F2 /* DataRemovedEffectResponse.swift in Sources */,
 				745DF5332052FFC3000D3660 /* StellarSDK.swift in Sources */,
@@ -3474,7 +3472,7 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/osx $(SRCROOT)/stellarsdk/libs/ed25519-C/**";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -3499,7 +3497,7 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellarsdk/osx";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -3770,7 +3768,7 @@
 				"SWIFT_INCLUDE_PATHS[sdk=iphoneos*]" = "$(SRCROOT)/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellarsdk/iphone";
 				"SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]" = "$(SRCROOT)/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellarsdk/simulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -3796,7 +3794,7 @@
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/libs/ed25519-C/**";
 				"SWIFT_INCLUDE_PATHS[sdk=iphoneos*]" = "$(SRCROOT)/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellarsdk/iphone";
 				"SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]" = "$(SRCROOT)/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellarsdk/simulator";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
