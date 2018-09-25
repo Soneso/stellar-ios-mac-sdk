@@ -6,8 +6,13 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-import Foundation
+#if XC9
 import CSwiftyCommonCrypto
+#else
+import CommonCrypto
+#endif
+
+import Foundation
 
 public extension String {
     var sha256Hash: Data {
