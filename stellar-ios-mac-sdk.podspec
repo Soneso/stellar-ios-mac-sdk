@@ -110,7 +110,7 @@ Pod::Spec.new do |s|
   # s.resources = "Resources/*.png"
 
   # s.preserve_paths = "FilesToSave", "MoreFilesToSave"
-  # s.preserve_paths = 'stellarsdk/stellarsdk/{iphone,simulator,osx}/*', 'stellarsdk/stellarsdk/libs/**/*.{modulemap}'
+   s.preserve_paths = 'stellarsdk/stellarsdk/libs/**/*.{modulemap}'
 
   # ――― Project Linking ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
   #
