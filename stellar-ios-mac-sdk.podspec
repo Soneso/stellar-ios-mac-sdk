@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "stellar-ios-mac-sdk"
-  s.version      = "1.4.3"
+  s.version      = "1.4.4"
   s.summary      = "Fully featured iOS and macOS SDK that provides APIs to build transactions and connect to Horizon server for the Stellar ecosystem."
   s.module_name  = 'stellarsdk'
 
@@ -110,7 +110,7 @@ Pod::Spec.new do |s|
   # s.resources = "Resources/*.png"
 
   # s.preserve_paths = "FilesToSave", "MoreFilesToSave"
-  s.preserve_paths = 'stellarsdk/stellarsdk/{iphone,simulator,osx}/*', 'stellarsdk/stellarsdk/libs/**/*.{modulemap}'
+  # s.preserve_paths = 'stellarsdk/stellarsdk/{iphone,simulator,osx}/*', 'stellarsdk/stellarsdk/libs/**/*.{modulemap}'
 
   # ――― Project Linking ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
   #

@@ -1,4 +1,0 @@
-module CSwiftyCommonCrypto [system] {
-  header "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/include/CommonCrypto/CommonHMAC.h"
-  export *
-}
