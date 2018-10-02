@@ -33,5 +33,12 @@ class PriceTestCase: XCTestCase {
             XCTAssert(false)
         }
     }
-    
+
+    func testPriceToXdrThrowsWhenConvertingLargeComponents() {
+        let largerThanInt32 = 1000000000000000
+        let bigNumerator = Price(numerator: largerThanInt32, denominator: 10)
+        let bigDenominator = Price(numerator: 10, denominator: largerThanInt32)
+        XCTAssertThrowsError(try bigNumerator.toXdr())
+        XCTAssertThrowsError(try bigDenominator.toXdr())
+    }
 }

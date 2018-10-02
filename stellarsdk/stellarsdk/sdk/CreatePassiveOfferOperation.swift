@@ -49,7 +49,7 @@ public class CreatePassiveOfferOperation:Operation {
         let sellingXDR = try selling.toXDR()
         let buyingXDR = try buying.toXDR()
         let amountXDR = Operation.toXDRAmount(amount: amount)
-        let priceXDR = price.toXdr()
+        let priceXDR = try price.toXdr()
         
         return OperationBodyXDR.createPassiveOffer(CreatePassiveOfferOperationXDR(selling: sellingXDR,
                                                                                   buying: buyingXDR,

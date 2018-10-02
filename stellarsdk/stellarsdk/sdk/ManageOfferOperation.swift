@@ -53,7 +53,7 @@ public class ManageOfferOperation:Operation {
         let sellingXDR = try selling.toXDR()
         let buyingXDR = try buying.toXDR()
         let amountXDR = Operation.toXDRAmount(amount: amount)
-        let priceXDR = price.toXdr()
+        let priceXDR = try price.toXdr()
         
         return OperationBodyXDR.manageOffer(ManageOfferOperationXDR(selling: sellingXDR,
                                                                     buying: buyingXDR,

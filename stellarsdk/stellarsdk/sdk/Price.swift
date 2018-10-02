@@ -64,7 +64,15 @@ public class Price {
     /// Generates a PriceXDR object from the current Price object.
     ///
     /// - Returns the generated PriceXDR object.
-    public func toXdr() -> PriceXDR {
+    public func toXdr() throws -> PriceXDR {
+        guard n <= Int32.max else {
+            throw StellarSDKError.xdrPriceNumeratorOverflow(message: "value must be below \(Int32.max)")
+        }
+
+        guard d <= Int32.max else {
+            throw StellarSDKError.xdrPriceDenominatorOverflow(message: "value must be below \(Int32.max)")
+        }
+
         return PriceXDR(n: Int32(n), d: Int32(d))
     }
 }
