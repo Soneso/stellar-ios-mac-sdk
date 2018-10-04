@@ -14,6 +14,4 @@ public enum StellarSDKError: Error {
     case xdrEncodingError(message: String)
     case encodingError(message: String)
     case decodingError(message: String)
-    case xdrPriceNumeratorOverflow(message: String)
-    case xdrPriceDenominatorOverflow(message: String)
 }
