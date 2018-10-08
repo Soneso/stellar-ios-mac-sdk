@@ -33,5 +33,4 @@ class PriceTestCase: XCTestCase {
             XCTAssert(false)
         }
     }
-    
 }

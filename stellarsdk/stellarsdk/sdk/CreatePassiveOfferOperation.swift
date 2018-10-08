@@ -41,7 +41,7 @@ public class CreatePassiveOfferOperation:Operation {
         self.selling = try! Asset.fromXDR(assetXDR: fromXDR.selling)
         self.buying = try! Asset.fromXDR(assetXDR: fromXDR.buying)
         self.amount = Operation.fromXDRAmount(fromXDR.amount)
-        self.price = Price(numerator: Int(fromXDR.price.n), denominator: Int(fromXDR.price.d))
+        self.price = Price(numerator: fromXDR.price.n, denominator: fromXDR.price.d)
         super.init(sourceAccount: sourceAccount)
     }
     

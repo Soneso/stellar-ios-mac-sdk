@@ -12,17 +12,17 @@ import Foundation
 public class Price {
     
     /// Numerator.
-    public final let n:Int
+    public final let n:Int32
     
     /// Denominator.
-    public final let d:Int
+    public final let d:Int32
     
     /// Create a new price. Price in Stellar is represented as a fraction. E.g. Price of 1 unit of selling in terms of buying. For example, if you wanted to sell 30 XLM and buy 5 BTC, the price would be {numerator, denominator} = {5,30}.
     ///
     /// - Parameter numerator: numerator
     /// - Parameter denominator: denominator
     ///
-    public init(numerator:Int, denominator:Int) {
+    public init(numerator:Int32, denominator:Int32) {
         self.n = numerator
         self.d = denominator
     }
@@ -57,7 +57,7 @@ public class Price {
         }
         let n = NSDecimalNumber(decimal:fractions.last?.first ?? 0)
         let d = NSDecimalNumber(decimal:fractions.last?.last ?? 0)
-        return Price(numerator: n.intValue, denominator: d.intValue)
+        return Price(numerator: n.int32Value, denominator: d.int32Value)
     }
     
     
@@ -65,7 +65,7 @@ public class Price {
     ///
     /// - Returns the generated PriceXDR object.
     public func toXdr() -> PriceXDR {
-        return PriceXDR(n: Int32(n), d: Int32(d))
+        return PriceXDR(n: n, d: d)
     }
 }
 
