@@ -36,4 +36,9 @@ public class OperationsStreamItem: NSObject {
             }
         }
     }
+    
+    public func closeStream() {
+        streamingHelper.close()
+    }
+    
 }

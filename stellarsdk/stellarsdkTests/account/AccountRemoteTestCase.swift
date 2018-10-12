@@ -13,7 +13,7 @@ import stellarsdk
 
 class AccountRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let testSuccessAccountId = "GBZ3VAAP2T2WMKF6226FTC6OSQN6KKGAGPVCCCMDDVLCHYQMXTMNHLB3"
+    let testSuccessAccountId = "GAPWMX5DAGHKOKXR35Q36XLVFYLDYJ37K7EDXRCW7AJJEMLMEEJT7B2T"
     // priv SASX3JBZNVS4HKL2TZJPOO3VIQRRZPIAOBZTFMT22LWGUMOHMFXU2ZZ4 // for testing
     
     override func setUp() {
@@ -36,7 +36,7 @@ class AccountRemoteTestCase: XCTestCase {
             case .success(let accountDetails):
                 XCTAssertEqual(self.testSuccessAccountId, accountDetails.accountId)
                 XCTAssertNotNil(accountDetails.sequenceNumber)
-                XCTAssertEqual(accountDetails.sequenceNumber, 30232549674450946)
+                XCTAssertEqual(accountDetails.sequenceNumber, 516375328063489)
                 XCTAssertNotNil(accountDetails.links)
                 XCTAssertNotNil(accountDetails.links.selflink)
                 XCTAssertNotNil(accountDetails.links.selflink.href)

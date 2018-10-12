@@ -48,4 +48,8 @@ public class TransactionsStreamItem: NSObject {
         }
     }
     
+    public func closeStream() {
+        streamingHelper.close()
+    }
+
 }

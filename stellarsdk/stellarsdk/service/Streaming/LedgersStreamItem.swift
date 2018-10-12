@@ -39,5 +39,9 @@ public class LedgersStreamItem: NSObject {
         }
     }
     
+    public func closeStream() {
+        streamingHelper.close()
+    }
+    
 }
 

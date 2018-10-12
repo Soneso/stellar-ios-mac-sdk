@@ -74,7 +74,7 @@ class MemoRemoteTestCase: XCTestCase {
             let sourceAccountKeyPair = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
             let destinationAccountKeyPair = try KeyPair(accountId: "GCKECJ5DYFZUX6DMTNJFHO2M4QKTUO5OS5JZ4EIIS7C3VTLIGXNGRTRC")
             
-            sdk.transactions.stream(for: .transactionsForAccount(account: destinationAccountKeyPair.accountId, cursor: "now")).onReceive { (response) -> (Void) in
+            sdk.transactions.stream(for: .transactionsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now")).onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
@@ -131,6 +131,6 @@ class MemoRemoteTestCase: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 15.0)
+        wait(for: [expectation], timeout: 30.0)
     }
 }

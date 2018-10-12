@@ -108,7 +108,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetTransactionDetails() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         
-        sdk.transactions.getTransactionDetails(transactionHash: "6a1e3ff103473d8edbdb05a7a4bd17c9e84c310ff4f52b80596441d9e814e180") { (response) -> (Void) in
+        sdk.transactions.getTransactionDetails(transactionHash: "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -156,7 +156,7 @@ class TransactionsRemoteTestCase: XCTestCase {
             let source = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
             let destination = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
             
-            sdk.transactions.stream(for: .transactionsForAccount(account: destination.accountId, cursor: "now")).onReceive { response in
+            sdk.transactions.stream(for: .transactionsForAccount(account: source.accountId, cursor: "now")).onReceive { response in
                 switch response {
                 case .open:
                     break
@@ -223,12 +223,12 @@ class TransactionsRemoteTestCase: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 15.0)
+        wait(for: [expectation], timeout: 30.0)
     }
     
     func testTransactionEnvelopePost() {
         let expectation = XCTestExpectation(description: "Get transaction details")
-        let xdrEnvelope = "AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAByE3sAAAAIAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAR+V72AAAABAAuiJ2+1FGpG7D+sS9qqZlk2/dsu8mdECuR1jiX9PaawJaJMETUP6u06cZgzrqopzmypJMOS/ob7BRvCQ3JkwDg=="
+        let xdrEnvelope = "AAAAAEoEH7ZQEw/9pvByb8zVNc778lBaE/CRqWCqLMqZfJEhAAAAZAAAAHgAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAEH3Rayw4M0iCLoEe96rPFNGYim8AVHJU0z4ebYZW4JwAA41+pMaAAAAAAAAAAAABmXyRIQAAAEACF+2/akS2P9UVrnj63h7riTipaWPzeirDFP7P97VkcpBk12utsSbMhCg+YV5osZIKf4n9QsS6rDq3hZbP3qgD"
         
         sdk.transactions.postTransaction(transactionEnvelope: xdrEnvelope, response: { (response) -> (Void) in
             switch response {

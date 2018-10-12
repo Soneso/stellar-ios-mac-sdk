@@ -13,7 +13,7 @@ import Foundation
 public class ChangeTrustOperation:Operation {
     
     public let asset:Asset
-    public let limit:Decimal
+    public let limit:Decimal?
     
     /// Creates a new ChangeTrustOperation object.
     ///
@@ -21,7 +21,7 @@ public class ChangeTrustOperation:Operation {
     /// - Parameter asset: The asset of the trustline. For example, if a user extends a trustline of up to 200 USD to an anchor, the line is USD:anchor.
     /// - Parameter limit: The limit of the trustline. In the previous example, the limit would be 200.
     ///
-    public init(sourceAccount:KeyPair? = nil, asset:Asset, limit:Decimal) {
+    public init(sourceAccount:KeyPair? = nil, asset:Asset, limit:Decimal? = nil) {
         self.asset = asset
         self.limit = limit
         super.init(sourceAccount:sourceAccount)
@@ -39,7 +39,12 @@ public class ChangeTrustOperation:Operation {
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let assetXDR = try asset.toXDR()
-        let limitXDR = Operation.toXDRAmount(amount: limit)
+        var limitXDR: Int64!
+        if let limit = limit {
+            limitXDR = Operation.toXDRAmount(amount: limit)
+        } else {
+            limitXDR = Int64.max
+        }
         
         return OperationBodyXDR.changeTrust(ChangeTrustOperationXDR(asset:assetXDR,
                                                                     limit:limitXDR))

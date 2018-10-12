@@ -37,4 +37,8 @@ public class EffectsStreamItem: NSObject {
         }
     }
     
+    public func closeStream() {
+        streamingHelper.close()
+    }
+    
 }

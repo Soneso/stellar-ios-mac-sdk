@@ -12,6 +12,8 @@ public class StreamingHelper: NSObject {
     var eventSource: EventSource!
     var baseURL: String
     
+    private var closed = false
+    
     init(baseURL:String) {
         self.baseURL = baseURL
     }
@@ -20,22 +22,31 @@ public class StreamingHelper: NSObject {
         let streamingURL = baseURL + path
         eventSource = EventSource(url: streamingURL, headers: ["Accept" : "text/event-stream"])
         eventSource.onOpen {
-            responseClosure(.open)
+            if !self.closed {
+                responseClosure(.open)
+            }
         }
         
         eventSource.onError { (error) in
-            responseClosure(.error(error: error))
+            if !self.closed {
+                responseClosure(.error(error: error))
+            }
         }
         
         eventSource.onMessage { (id, event, data) in
-            responseClosure(.response(id: id ?? "", data: data ?? ""))
+            if !self.closed {
+                responseClosure(.response(id: id ?? "", data: data ?? ""))
+            }
         }
         
     }
     
     func close() {
-        eventSource.close()
-        eventSource = nil
+        closed = true
+        if let eventSource = eventSource {
+            eventSource.close()
+            self.eventSource = nil
+        }
     }
     
 }

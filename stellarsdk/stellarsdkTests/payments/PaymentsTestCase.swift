@@ -125,9 +125,9 @@ class PaymentsTestCase: XCTestCase {
         let expectation = XCTestExpectation(description: "Native payment successfully sent and received")
         
         do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDXEJKRXYLTV344KWCRJ4PAGAJVXKGK3UGESRWBWLDEWYO4S5OQ6VQ6I")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
             //let sourceAccountKeyPair = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
-            let destinationAccountKeyPair = try KeyPair(accountId: "GCKECJ5DYFZUX6DMTNJFHO2M4QKTUO5OS5JZ4EIIS7C3VTLIGXNGRTRC")
+            let destinationAccountKeyPair = try KeyPair(secretSeed: "SDA6XCDPNHTT7ZAHMW4H5LJG4HN7SJC2DU3RZ6QXVR3QFIFNWJ5ZAFHT")
             // printAccountDetails(tag: "SRP Test - source", accountId: sourceAccountKeyPair.accountId)
             // printAccountDetails(tag: "SRP Test - dest", accountId: destinationAccountKeyPair.accountId)
             
@@ -198,11 +198,11 @@ class PaymentsTestCase: XCTestCase {
         
         do {
             let sourceAccountKeyPair = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
-            let destinationAccountKeyPair = try KeyPair(accountId: "GAWE7LGEFNRN3QZL5ILVLYKKKGGVYCXXDCIBUJ3RVOC2ZWW6WLGK76TJ")
+            let destinationAccountKeyPair = try KeyPair(secretSeed: "SDA6XCDPNHTT7ZAHMW4H5LJG4HN7SJC2DU3RZ6QXVR3QFIFNWJ5ZAFHT")
             printAccountDetails(tag: "SRNNP Test - source", accountId: sourceAccountKeyPair.accountId)
             printAccountDetails(tag: "SRNNP Test - dest", accountId: destinationAccountKeyPair.accountId)
             
-            let issuingAccountKeyPair = try KeyPair(accountId: "GCXIZK3YMSKES64ATQWMQN5CX73EWHRHUSEZXIMHP5GYHXL5LNGCOGXU")
+            let issuingAccountKeyPair = try KeyPair(secretSeed: "SCBN2PQEOQLJUXSOMGQEJKWAZ52BSTBD7DEGLW2BEWLA3W62KVNHGBPL")
             let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
             
             sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: "now")).onReceive { (response) -> (Void) in

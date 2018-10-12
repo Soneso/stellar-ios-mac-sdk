@@ -92,7 +92,7 @@ class TradesTestCase: XCTestCase {
         sdk.trades.getTrades(forAccount: testSuccessAccountId, from: nil, order: nil, limit: nil) { (response) -> (Void) in
             switch response {
             case .success(let tradesResponse):
-                XCTAssertTrue(tradesResponse.records.count > 0)
+                XCTAssertTrue(tradesResponse.records.count == 0)
                 XCTAssert(true)
             case .failure(let error):
                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)

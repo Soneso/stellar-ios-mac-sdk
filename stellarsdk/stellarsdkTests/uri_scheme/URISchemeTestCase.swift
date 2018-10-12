@@ -17,7 +17,7 @@ class URISchemeTestCase: XCTestCase {
     
     let signedURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAByE3sAAAAKAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAR%2BV72AAAABAGPf5AsmVy3q7o8mFkWjm4a3QsSoz%2FCzOK%2BduPy5AYlB7RG6hWNNjQPTohEZsPvIj1VBvaTsXGfSQ4oOSukarAA%3D%3D&signature=tSZqF%2FlrhGvuK3%2B65XQQ9qlSHz%2BeLT8SIQgg12nLtyPLB%2F2y%2B94l%2FUigBD9z3p3ZylihHcLDRfIdOGXB6fS8DA%3D%3D"
     
-    let validURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAByE3sAAAAKAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAR%2BV72AAAABAGPf5AsmVy3q7o8mFkWjm4a3QsSoz%2FCzOK%2BduPy5AYlB7RG6hWNNjQPTohEZsPvIj1VBvaTsXGfSQ4oOSukarAA%3D%3D&origin_domain=place.domain.com&signature=Axh8nQLXounJt1NfdLvjTinVMK8EVpMcNc50BxlbNcBVGoiSlHL2Ee%2Bc95gbDUnMvWPRkBa6awCFQ1ILs5LcAQ%3D%3D"
+    let validURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAABAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAiTqBtoWdmQGM4NgT/lTVswTMv7HPmP3lmt3CXnqXsoIAAAAAAAAAAAX14QAAAAAAAAAAAA==&origin_domain=place.domain.com&signature=Axh8nQLXounJt1NfdLvjTinVMK8EVpMcNc50BxlbNcBVGoiSlHL2Ee%2Bc95gbDUnMvWPRkBa6awCFQ1ILs5LcAQ%3D%3D"
     
     let uriValidator = URISchemeValidator()
     
@@ -153,8 +153,14 @@ class URISchemeTestCase: XCTestCase {
         uriBuilder.signTransaction(forURL: validURL, signerKeyPair: keyPair) { (response) -> (Void) in
             switch response {
             case .failure(error: let error):
-                print("Transaction signing failed! Error: \(error)")
-                XCTAssertEqual("\(error)", "requestFailed(\"Transaction\\'s source account is no match for signer\\'s public key!\")")
+                print("Transaction signing failed! Error: |\(error)|")
+               
+                switch error {
+                case .requestFailed(let message):
+                    XCTAssertEqual("\(message)", "Transaction\'s source account is no match for signer\'s public key!")
+                default:
+                    XCTAssert(false)
+                }
             default:
                 XCTAssert(false)
             }
@@ -174,7 +180,13 @@ class URISchemeTestCase: XCTestCase {
             switch response {
             case .failure(error: let error):
                 print("Transaction missing from url! Error: \(error)")
-                XCTAssertEqual("\(error)", "requestFailed(\"TransactionXDR missing from url!\")")
+                
+                switch error {
+                case .requestFailed(let message):
+                    XCTAssertEqual("\(message)", "TransactionXDR missing from url!")
+                default:
+                    XCTAssert(false)
+                }
             default:
                 XCTAssert(false)
             }
@@ -195,7 +207,13 @@ class URISchemeTestCase: XCTestCase {
             switch response {
             case .failure(error: let error):
                 print("Transaction was not confirmed! Error: \(error)")
-                XCTAssertEqual("\(error)", "requestFailed(\"Transaction was not confirmed!\")")
+            
+                switch error {
+                case .requestFailed(let message):
+                    XCTAssertEqual("\(message)", "Transaction was not confirmed!")
+                default:
+                    XCTAssert(false)
+                }
             default:
                 XCTAssert(false)
             }
@@ -205,5 +223,6 @@ class URISchemeTestCase: XCTestCase {
 
         wait(for: [expectation], timeout: 15)
     }
+    
 }
 
