@@ -79,4 +79,19 @@ class FederationTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
+    
+    func testResolveStellarAddress() {
+        let expectation = XCTestExpectation(description: "Resolve account id")
+        Federation.resolve(stellarAddress: "bob*demo.lumenshine.com") { (response) -> (Void) in
+            switch response {
+            case .success(_):
+                XCTAssert(false)
+            case .failure(_):
+                XCTAssert(true)
+            }
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
 }

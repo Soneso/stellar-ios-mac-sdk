@@ -37,6 +37,24 @@ public class Federation: NSObject {
         self.serviceHelper = ServiceHelper(baseURL: federationAddress)
     }
     
+    /// Resolves a given stellar address
+    public static func resolve(stellarAddress:String, secure:Bool = true, completion:@escaping ResolveClosure) {
+        let components = stellarAddress.components(separatedBy: "*")
+        guard components.count == 2 else {
+            completion(.failure(error: .invalidAddress))
+            return
+        }
+        let domain = "\(secure ? "https://" : "http://")\(components[1])"
+        Federation.forDomain(domain: domain) { (response) -> (Void) in
+            switch response {
+            case .success(let federation):
+                federation.resolve(address: stellarAddress, completion: completion)
+            case .failure(let error):
+                completion(.failure(error: error))
+            }
+        }
+    }
+    
     /// Creates a Federation instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
     public static func forDomain(domain:String, completion:@escaping FederationClosure) {
         let federationAddressKey = "FEDERATION_SERVER"
@@ -70,7 +88,7 @@ public class Federation: NSObject {
             return
         }
         
-        let requestPath = "/federation?q=\(address)&type=name"
+        let requestPath = "?q=\(address)&type=name"
         
         serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
@@ -97,7 +115,7 @@ public class Federation: NSObject {
             return
         }
         
-        let requestPath = "/federation?q=\(account_id)&type=id"
+        let requestPath = "?q=\(account_id)&type=id"
         
         serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
@@ -117,7 +135,7 @@ public class Federation: NSObject {
     
     /// Resolves the given transaction id to federation address if the user was found for a given Stellar address.
     public func resolve(transaction_id: String, completion:@escaping ResolveClosure) {
-        let requestPath = "/federation?q=\(transaction_id)&type=txid"
+        let requestPath = "?q=\(transaction_id)&type=txid"
         
         serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {

@@ -19,8 +19,8 @@ public class Signer {
         return SignerKeyXDR.hashX(data)
     }
     
-    public static func preAuthTx(transaction: Transaction) throws -> SignerKeyXDR {
-        let data = try transaction.getTransactionHashData(network: .testnet)
+    public static func preAuthTx(transaction: Transaction, network: Network) throws -> SignerKeyXDR {
+        let data = try transaction.getTransactionHashData(network: network)
         return SignerKeyXDR.preAuthTx(WrappedData32(data))
     }
 }
