@@ -1632,6 +1632,28 @@ fileprivate extension Array where Element == Limb
 	//
 	//
 
+    public func multiplyFullWidth(_ ab: UInt64, _ cd: UInt64) -> (hi: UInt64, lo: UInt64) {
+        let a: UInt32 = UInt32(ab >> 32)
+        let b: UInt32 = UInt32(ab & 0xFFFFFFFF)
+        let c: UInt32 = UInt32(cd >> 32)
+        let d: UInt32 = UInt32(cd & 0xFFFFFFFF)
+        let (ach, acl) = a.multipliedFullWidth(by: c)
+        let (adh, adl) = a.multipliedFullWidth(by: d)
+        let (bch, bcl) = b.multipliedFullWidth(by: c)
+        let (bdh, bdl) = b.multipliedFullWidth(by: d)
+        
+        var lo: UInt64 = UInt64(bdh) << 32 + UInt64(bdl)
+        var hi: UInt64 = UInt64(ach) << 32 + UInt64(acl) + UInt64(adh) + UInt64(bch)
+        
+        var overflow = false
+        (lo, overflow) = lo.addingReportingOverflow(UInt64(adl) << 32)
+        if overflow { hi += 1 }
+        (lo, overflow) = lo.addingReportingOverflow(UInt64(bcl) << 32)
+        if overflow { hi += 1 }
+        
+        return (hi, lo)
+    }
+    
 	mutating func addProductOf(
 		multiplier: Limbs,
 		multiplicand: Limbs
@@ -1653,7 +1675,13 @@ fileprivate extension Array where Element == Limb
 				r = multiplicand[j]
 				if r == 0 { continue }
 
-				(mulHi, mulLo) = l.multipliedFullWidth(by: r)
+                if (MemoryLayout<Int>.size == MemoryLayout<Int32>.size) {
+                    //print("32-bit architecture")
+                    (mulHi, mulLo) = multiplyFullWidth(l, r)
+                } else {
+                    //print("64-bit architecture")
+                    (mulHi, mulLo) = l.multipliedFullWidth(by: r)
+                }
 
 				if mulHi != 0 { self.addTwoLimb(mulLo, mulHi, padding: i + j) }
 				else          { self.addOneLimb(mulLo,        padding: i + j) }
@@ -1681,7 +1709,13 @@ fileprivate extension Array where Element == Limb
 			l = multiplier[i]
 			if l == 0 { continue }
 
-			(mulHi, mulLo) = l.multipliedFullWidth(by: multiplicand)
+            if (MemoryLayout<Int>.size == MemoryLayout<Int32>.size) {
+                //print("32-bit architecture")
+                (mulHi, mulLo) = multiplyFullWidth(l, multiplicand)
+            } else {
+                //print("64-bit architecture")
+                (mulHi, mulLo) = l.multipliedFullWidth(by: multiplicand)
+            }
 
 			if mulHi != 0 { self.addTwoLimb(mulLo, mulHi, padding: i) }
 			else {          self.addOneLimb(mulLo,        padding: i) }
@@ -1713,7 +1747,13 @@ fileprivate extension Array where Element == Limb
 				r = self[j]
 				if r == 0 { continue }
 
-				(mulHi, mulLo) = l.multipliedFullWidth(by: r)
+                if (MemoryLayout<Int>.size == MemoryLayout<Int32>.size) {
+                    //print("32-bit architecture")
+                    (mulHi, mulLo) = multiplyFullWidth(l, r)
+                } else {
+                    //print("64-bit architecture")
+                    (mulHi, mulLo) = l.multipliedFullWidth(by: r)
+                }
 
 				if mulHi != 0
 				{
