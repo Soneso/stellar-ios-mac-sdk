@@ -21,8 +21,14 @@ public struct ManageDataOperationXDR: XDRCodable {
         var container = try decoder.unkeyedContainer()
         
         dataName = try container.decode(String.self)
-        let data = try decodeArray(type:UInt8.self, dec: decoder)
-        dataValue = data.isEmpty ? nil : Data(bytes: data)
+        let dataValuePresent = try container.decode(UInt32.self)
+        if dataValuePresent != 0 {
+            let data = try decodeArray(type:UInt8.self, dec: decoder)
+            dataValue = Data(bytes: data)
+        } else {
+            dataValue = nil
+        }
+        
     }
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
