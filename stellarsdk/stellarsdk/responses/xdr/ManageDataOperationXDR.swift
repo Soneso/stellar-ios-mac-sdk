@@ -34,6 +34,14 @@ public struct ManageDataOperationXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         
         try container.encode(dataName)
-        try container.encode(dataValue)
+        if let dataValue = dataValue {
+            let flag: Int32 = 1
+            try container.encode(flag)
+            try container.encode(dataValue.bytes)
+        } else {
+            let flag: Int32 = 0
+            try container.encode(flag)
+        }
+        
     }
 }

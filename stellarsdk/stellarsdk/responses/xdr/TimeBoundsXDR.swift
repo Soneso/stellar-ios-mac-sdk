@@ -28,7 +28,7 @@ public struct TimeBoundsXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         
         try container.encode(minTime)
-        try container.encode(minTime)
+        try container.encode(maxTime)
     }
     
 }
