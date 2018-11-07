@@ -8,7 +8,7 @@
 
 // Based on https://github.com/kinfoundation/StellarKit
 
-import CoreFoundation
+import Foundation
 
 /// A protocol for types which can be encoded to binary.
 public protocol XDREncodable: Encodable {
@@ -21,6 +21,18 @@ public protocol XDREncodable: Encodable {
 public extension XDREncodable {
     func xdrEncode(to encoder: XDREncoder) throws {
         try self.encode(to: encoder)
+    }
+    
+    var xdrEncoded: String? {
+        get {
+            do {
+                let encoded = try XDREncoder.encode(self)
+                
+                return Data(bytes: encoded, count: encoded.count).base64EncodedString()
+            } catch {
+                return nil
+            }
+        }
     }
 }
 

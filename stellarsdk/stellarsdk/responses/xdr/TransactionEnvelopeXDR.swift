@@ -16,7 +16,7 @@ public enum EnvelopeType: Int32 {
 
 public class TransactionEnvelopeXDR: NSObject, XDRCodable {
     public let tx: TransactionXDR
-    public let signatures: [DecoratedSignatureXDR]
+    public var signatures: [DecoratedSignatureXDR]
     
     public init(tx: TransactionXDR, signatures: [DecoratedSignatureXDR]) {
         self.tx = tx

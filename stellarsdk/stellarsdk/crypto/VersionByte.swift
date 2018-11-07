@@ -18,10 +18,6 @@ enum VersionByte:UInt8 {
 extension VersionByte: RawRepresentable {
     typealias RawValue = UInt8
     
-    init?(rawValue: UInt8) {
-        return nil
-    }
-    
     var rawValue: UInt8 {
         switch self {
         case .accountId:

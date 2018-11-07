@@ -27,6 +27,11 @@ public extension XDRDecodable {
     public init(fromBinary decoder: XDRDecoder, count: Int) throws {
         try self.init(fromBinary: decoder)
     }
+    
+    public init(xdr:String) throws {
+        let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: xdr))
+        try self.init(fromBinary: xdrDecoder)
+    }
 }
 
 /// The actual binary decoder class.
