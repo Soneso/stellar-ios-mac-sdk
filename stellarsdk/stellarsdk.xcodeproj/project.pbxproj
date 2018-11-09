@@ -507,6 +507,18 @@
 		745F2BB6202C2E88008763F1 /* TransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BB5202C2E88008763F1 /* TransactionResponse.swift */; };
 		745F2BB8202C36AA008763F1 /* TransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BB7202C36AA008763F1 /* TransactionsService.swift */; };
 		745F2BC1202C4D24008763F1 /* TransactionsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BC0202C4D24008763F1 /* TransactionsRemoteTestCase.swift */; };
+		7464B7212194415F0029FDC8 /* StellarToml.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B7202194415F0029FDC8 /* StellarToml.swift */; };
+		7464B7222194415F0029FDC8 /* StellarToml.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B7202194415F0029FDC8 /* StellarToml.swift */; };
+		7464B725219442900029FDC8 /* AccountInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B724219442900029FDC8 /* AccountInformation.swift */; };
+		7464B726219442900029FDC8 /* AccountInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B724219442900029FDC8 /* AccountInformation.swift */; };
+		7464B728219442B80029FDC8 /* IssuerDocumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B727219442B80029FDC8 /* IssuerDocumentation.swift */; };
+		7464B729219442B80029FDC8 /* IssuerDocumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B727219442B80029FDC8 /* IssuerDocumentation.swift */; };
+		7464B72B219442E90029FDC8 /* PointOfContactDocumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B72A219442E90029FDC8 /* PointOfContactDocumentation.swift */; };
+		7464B72C219442E90029FDC8 /* PointOfContactDocumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B72A219442E90029FDC8 /* PointOfContactDocumentation.swift */; };
+		7464B72E219443210029FDC8 /* CurrencyDocumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B72D219443210029FDC8 /* CurrencyDocumentation.swift */; };
+		7464B72F219443210029FDC8 /* CurrencyDocumentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B72D219443210029FDC8 /* CurrencyDocumentation.swift */; };
+		7464B7312194435F0029FDC8 /* ValidatorInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B7302194435F0029FDC8 /* ValidatorInformation.swift */; };
+		7464B7322194435F0029FDC8 /* ValidatorInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B7302194435F0029FDC8 /* ValidatorInformation.swift */; };
 		7467C3F121424D9E00412FE1 /* TransferServerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C3F021424D9E00412FE1 /* TransferServerService.swift */; };
 		7467C3F221424D9E00412FE1 /* TransferServerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C3F021424D9E00412FE1 /* TransferServerService.swift */; };
 		7467C3F521424F0700412FE1 /* TransferServerError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C3F421424F0700412FE1 /* TransferServerError.swift */; };
@@ -553,6 +565,8 @@
 		746AD2CE20342D2500A9CF21 /* AccountMergeResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746AD2CD20342D2500A9CF21 /* AccountMergeResultXDR.swift */; };
 		746AD2D020342D3500A9CF21 /* InflationResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746AD2CF20342D3500A9CF21 /* InflationResultXDR.swift */; };
 		746AD2D220342D4600A9CF21 /* ManageDataResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746AD2D120342D4600A9CF21 /* ManageDataResultXDR.swift */; };
+		746D78FF2195A02C0008AA79 /* TomlTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746D78FE2195A02C0008AA79 /* TomlTestCase.swift */; };
+		746D79002195A02C0008AA79 /* TomlTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746D78FE2195A02C0008AA79 /* TomlTestCase.swift */; };
 		7478C3CF20343FD5001B6441 /* ClaimOfferAtomXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7478C3CE20343FD5001B6441 /* ClaimOfferAtomXDR.swift */; };
 		7478C3D120343FEC001B6441 /* SimplePaymentResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7478C3D020343FEC001B6441 /* SimplePaymentResultXDR.swift */; };
 		7481B53B2023056F000A783E /* HorizonRequestError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53A2023056F000A783E /* HorizonRequestError.swift */; };
@@ -990,6 +1004,12 @@
 		745F2BB5202C2E88008763F1 /* TransactionResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionResponse.swift; sourceTree = "<group>"; };
 		745F2BB7202C36AA008763F1 /* TransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsService.swift; sourceTree = "<group>"; };
 		745F2BC0202C4D24008763F1 /* TransactionsRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsRemoteTestCase.swift; sourceTree = "<group>"; };
+		7464B7202194415F0029FDC8 /* StellarToml.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StellarToml.swift; sourceTree = "<group>"; };
+		7464B724219442900029FDC8 /* AccountInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountInformation.swift; sourceTree = "<group>"; };
+		7464B727219442B80029FDC8 /* IssuerDocumentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssuerDocumentation.swift; sourceTree = "<group>"; };
+		7464B72A219442E90029FDC8 /* PointOfContactDocumentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfContactDocumentation.swift; sourceTree = "<group>"; };
+		7464B72D219443210029FDC8 /* CurrencyDocumentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyDocumentation.swift; sourceTree = "<group>"; };
+		7464B7302194435F0029FDC8 /* ValidatorInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidatorInformation.swift; sourceTree = "<group>"; };
 		7467C3F021424D9E00412FE1 /* TransferServerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferServerService.swift; sourceTree = "<group>"; };
 		7467C3F421424F0700412FE1 /* TransferServerError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferServerError.swift; sourceTree = "<group>"; };
 		7467C3F82142528700412FE1 /* DepositRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositRequest.swift; sourceTree = "<group>"; };
@@ -1019,6 +1039,7 @@
 		746AD2CD20342D2500A9CF21 /* AccountMergeResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountMergeResultXDR.swift; sourceTree = "<group>"; };
 		746AD2CF20342D3500A9CF21 /* InflationResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InflationResultXDR.swift; sourceTree = "<group>"; };
 		746AD2D120342D4600A9CF21 /* ManageDataResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageDataResultXDR.swift; sourceTree = "<group>"; };
+		746D78FE2195A02C0008AA79 /* TomlTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TomlTestCase.swift; sourceTree = "<group>"; };
 		7478C3CE20343FD5001B6441 /* ClaimOfferAtomXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimOfferAtomXDR.swift; sourceTree = "<group>"; };
 		7478C3D020343FEC001B6441 /* SimplePaymentResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimplePaymentResultXDR.swift; sourceTree = "<group>"; };
 		7481B53A2023056F000A783E /* HorizonRequestError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HorizonRequestError.swift; sourceTree = "<group>"; };
@@ -1652,6 +1673,7 @@
 		7445E9FE201B106500470E0A /* stellarsdk */ = {
 			isa = PBXGroup;
 			children = (
+				7464B723219441B40029FDC8 /* toml */,
 				C6744C1A214670F9005DE204 /* uri_scheme */,
 				7467C3EF21424D0B00412FE1 /* transfer_server_protocol */,
 				744FC6F2212D3EA100ADFC88 /* federation */,
@@ -1672,6 +1694,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				746D78FD21959FD90008AA79 /* toml */,
 				C6C8AAA52147D8F000B06E8A /* uri_scheme */,
 				7467C40221426FAB00412FE1 /* transfer_server_protocol */,
 				744FC6FE212E941F00ADFC88 /* federation */,
@@ -1835,6 +1858,19 @@
 			path = transactions;
 			sourceTree = "<group>";
 		};
+		7464B723219441B40029FDC8 /* toml */ = {
+			isa = PBXGroup;
+			children = (
+				7464B7202194415F0029FDC8 /* StellarToml.swift */,
+				7464B724219442900029FDC8 /* AccountInformation.swift */,
+				7464B727219442B80029FDC8 /* IssuerDocumentation.swift */,
+				7464B72A219442E90029FDC8 /* PointOfContactDocumentation.swift */,
+				7464B72D219443210029FDC8 /* CurrencyDocumentation.swift */,
+				7464B7302194435F0029FDC8 /* ValidatorInformation.swift */,
+			);
+			path = toml;
+			sourceTree = "<group>";
+		};
 		7467C3EF21424D0B00412FE1 /* transfer_server_protocol */ = {
 			isa = PBXGroup;
 			children = (
@@ -1891,6 +1927,14 @@
 				744A84D3214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift */,
 			);
 			path = transfer_server_protocol;
+			sourceTree = "<group>";
+		};
+		746D78FD21959FD90008AA79 /* toml */ = {
+			isa = PBXGroup;
+			children = (
+				746D78FE2195A02C0008AA79 /* TomlTestCase.swift */,
+			);
+			path = toml;
 			sourceTree = "<group>";
 		};
 		7481B53C20234AD6000A783E /* effects_responses */ = {
@@ -2673,6 +2717,7 @@
 				745DF42B2052FF9B000D3660 /* SetOptionsOperation.swift in Sources */,
 				745DF42C2052FF9B000D3660 /* ChangeTrustOperation.swift in Sources */,
 				745DF42D2052FF9B000D3660 /* AllowTrustOperation.swift in Sources */,
+				7464B7222194415F0029FDC8 /* StellarToml.swift in Sources */,
 				745DF42E2052FF9B000D3660 /* AccountMergeOperation.swift in Sources */,
 				745DF42F2052FF9B000D3660 /* ManageDataOperation.swift in Sources */,
 				745DF4302052FF9B000D3660 /* Transaction.swift in Sources */,
@@ -2736,6 +2781,7 @@
 				745DF45F2052FF9B000D3660 /* OperationResponse.swift in Sources */,
 				745DF4602052FF9B000D3660 /* AccountCreatedOperationResponse.swift in Sources */,
 				745DF4612052FF9B000D3660 /* PaymentOperationResponse.swift in Sources */,
+				7464B729219442B80029FDC8 /* IssuerDocumentation.swift in Sources */,
 				745DF4622052FF9B000D3660 /* PathPaymentOperationResponse.swift in Sources */,
 				745DF4632052FF9B000D3660 /* ManageOfferOperationResponse.swift in Sources */,
 				745DF4642052FF9B000D3660 /* CreatePassiveOfferOperationResponse.swift in Sources */,
@@ -2789,6 +2835,7 @@
 				745DF48C2052FF9C000D3660 /* LedgerKeyAccountXDR.swift in Sources */,
 				745DF48D2052FF9C000D3660 /* LedgerKeyTrustlineXDR.swift in Sources */,
 				745DF48E2052FF9C000D3660 /* LedgerKeyOfferXDR.swift in Sources */,
+				7464B72C219442E90029FDC8 /* PointOfContactDocumentation.swift in Sources */,
 				745DF48F2052FF9C000D3660 /* LedgerKeyDataXDR.swift in Sources */,
 				745DF4902052FF9C000D3660 /* AccountEntryXDR.swift in Sources */,
 				745DF4912052FF9C000D3660 /* SignerXDR.swift in Sources */,
@@ -2812,6 +2859,7 @@
 				745DF4A12052FF9C000D3660 /* ClaimOfferAtomXDR.swift in Sources */,
 				74DD3E162086621F0057775C /* UtilBase32.swift in Sources */,
 				745DF4A22052FF9C000D3660 /* SimplePaymentResultXDR.swift in Sources */,
+				7464B7322194435F0029FDC8 /* ValidatorInformation.swift in Sources */,
 				7467C4142142B62600412FE1 /* CustomerInformationNeededInteractive.swift in Sources */,
 				745DF4A32052FF9C000D3660 /* TransactionSignaturePayload.swift in Sources */,
 				745DF4A42052FF9C000D3660 /* ErrorResponse.swift in Sources */,
@@ -2879,6 +2927,7 @@
 				745DF4D92052FF9C000D3660 /* Rabbit+Foundation.swift in Sources */,
 				745DF4DA2052FF9C000D3660 /* UInt8+Extension.swift in Sources */,
 				745DF4DB2052FF9C000D3660 /* MD5.swift in Sources */,
+				7464B726219442900029FDC8 /* AccountInformation.swift in Sources */,
 				745DF4DC2052FF9C000D3660 /* BatchedCollection.swift in Sources */,
 				745DF4DD2052FF9C000D3660 /* SecureBytes.swift in Sources */,
 				745DF4DE2052FF9C000D3660 /* ZeroPadding.swift in Sources */,
@@ -2934,6 +2983,7 @@
 				745DF5062052FF9C000D3660 /* HDCrypto.swift in Sources */,
 				744FC6FD212D545C00ADFC88 /* ResolveAddressResponse.swift in Sources */,
 				745DF5072052FF9C000D3660 /* DataConvertable.swift in Sources */,
+				7464B72F219443210029FDC8 /* CurrencyDocumentation.swift in Sources */,
 				745DF5082052FF9C000D3660 /* RIPEMD160.swift in Sources */,
 				745DF5092052FF9C000D3660 /* Mnemonic.swift in Sources */,
 			);
@@ -2985,6 +3035,7 @@
 				745DF587205304AC000D3660 /* OperationsResponsesMock.swift in Sources */,
 				745DF588205304AC000D3660 /* PaymentsTestCase.swift in Sources */,
 				744A84B82143F02F0086B8FC /* WithdrawResponseMock.swift in Sources */,
+				746D79002195A02C0008AA79 /* TomlTestCase.swift in Sources */,
 				745DF589205304AC000D3660 /* PaymentsResponsesMock.swift in Sources */,
 				745DF58A205304AC000D3660 /* PaymentsLocalTestCase.swift in Sources */,
 				745DF58B205304AC000D3660 /* TradesTestCase.swift in Sources */,
@@ -3094,6 +3145,7 @@
 				EC34A12620503CC5000FB042 /* Blowfish+Foundation.swift in Sources */,
 				83697248202A7CD100398A98 /* SetOptionsOperationResponse.swift in Sources */,
 				7481B5462024C480000A783E /* AccountCreatedEffectResponse.swift in Sources */,
+				7464B7212194415F0029FDC8 /* StellarToml.swift in Sources */,
 				8369724C202A7FD400398A98 /* AllowTrustOperationResponse.swift in Sources */,
 				8369721E2028F4E400398A98 /* TrustlineCreatedEffectResponse.swift in Sources */,
 				743DF5912020C2CD00713DE7 /* AccountThresholdsResponse.swift in Sources */,
@@ -3157,6 +3209,7 @@
 				833CBFB4203354BE00C23CFE /* LedgerKeyTrustlineXDR.swift in Sources */,
 				430BE2EB2035B4D400E6AB97 /* TimeBounds.swift in Sources */,
 				EC34A13A20503CC5000FB042 /* Poly1305.swift in Sources */,
+				7464B728219442B80029FDC8 /* IssuerDocumentation.swift in Sources */,
 				437D8A83202EF0770024D031 /* TradeResponse.swift in Sources */,
 				EC34A15120503CC5000FB042 /* BlockMode.swift in Sources */,
 				830EFC772032511B00607C35 /* OfferEntryXDR.swift in Sources */,
@@ -3210,6 +3263,7 @@
 				744C4DB9202A27D000B46CDE /* OperationsFactory.swift in Sources */,
 				EC34A15520503CC5000FB042 /* Array+Extension.swift in Sources */,
 				833CBF8C2033514C00C23CFE /* OperationMetaXDR.swift in Sources */,
+				7464B72B219442E90029FDC8 /* PointOfContactDocumentation.swift in Sources */,
 				83DD2C98202F249800713FEE /* PaymentsService.swift in Sources */,
 				7467C3F121424D9E00412FE1 /* TransferServerService.swift in Sources */,
 				744FC6FC212D545C00ADFC88 /* ResolveAddressResponse.swift in Sources */,
@@ -3233,6 +3287,7 @@
 				743DF5682020530A00713DE7 /* seed.c in Sources */,
 				43AEB4CE203ADEC10078637D /* Data+Base16.swift in Sources */,
 				8369724E202A803E00398A98 /* AccountMergeOperationResponse.swift in Sources */,
+				7464B7312194435F0029FDC8 /* ValidatorInformation.swift in Sources */,
 				74824B212031760100CD0270 /* AssetXDR.swift in Sources */,
 				EC34A13420503CC5000FB042 /* Authenticator.swift in Sources */,
 				EC34A12E20503CC5000FB042 /* UInt8+Extension.swift in Sources */,
@@ -3300,6 +3355,7 @@
 				437D8A8D202F0B980024D031 /* TradesService.swift in Sources */,
 				743DF582202053B100713DE7 /* Seed.swift in Sources */,
 				8369722E2028F7A000398A98 /* OfferRemovedEffectResponse.swift in Sources */,
+				7464B725219442900029FDC8 /* AccountInformation.swift in Sources */,
 				830EFC7B203252B100607C35 /* TrustlineEntryXDR.swift in Sources */,
 				EC34A12C20503CC5000FB042 /* AES+Foundation.swift in Sources */,
 				83697252202A80D600398A98 /* ManageDataOperationResponse.swift in Sources */,
@@ -3355,6 +3411,7 @@
 				833CBF9C2033533100C23CFE /* ManageOfferOperationXDR.swift in Sources */,
 				743DF54C201F73FC00713DE7 /* VersionByte.swift in Sources */,
 				745C41532040388900E33006 /* OperationsStreamItem.swift in Sources */,
+				7464B72E219443210029FDC8 /* CurrencyDocumentation.swift in Sources */,
 				EC34A13720503CC5000FB042 /* RandomBytesSequence.swift in Sources */,
 				744FC6DC212D3CCC00ADFC88 /* Tokens.swift in Sources */,
 			);
@@ -3406,6 +3463,7 @@
 				8369723E202A708300398A98 /* AccountResponsesMock.swift in Sources */,
 				430BE2E92035A33D00E6AB97 /* PriceTestCase.swift in Sources */,
 				744A84B72143F02F0086B8FC /* WithdrawResponseMock.swift in Sources */,
+				746D78FF2195A02C0008AA79 /* TomlTestCase.swift in Sources */,
 				4300C1832032FBE500DC5E49 /* OffersRemoteTestCase.swift in Sources */,
 				8331520C203E2635007F8F84 /* TransactionsResponsesMock.swift in Sources */,
 				8357A91B203B6F6100A144A9 /* DataForAccountLocalTestCase.swift in Sources */,

@@ -329,6 +329,19 @@ public class Toml: CustomStringConvertible, SetValueProtocol {
         }
         return result
     }
+    
+    /**
+     To get all tables at the root level.
+     
+     - Returns: Array of tables
+     */
+    public func tables() -> [Toml] {
+        if let tables = data[Path([])] as? [Toml] {
+            return tables
+        }
+        
+        return []
+    }
 
     /**
         Get a dictionary of all tables 1-level down from the given key
