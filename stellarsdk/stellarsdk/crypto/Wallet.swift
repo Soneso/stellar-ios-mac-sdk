@@ -12,13 +12,13 @@ import Foundation
 public final class Wallet {
     
     /// Generates a 12 word Mnemonic.
-    public static func generate12WordMnemonic() -> String {
-        return Mnemonic.create(strength: .normal, language: .english)
+    public static func generate12WordMnemonic(language: WordList = .english) -> String {
+        return Mnemonic.create(strength: .normal, language: language)
     }
     
     /// Generates a 24 word Mnemonic.
-    public static func generate24WordMnemonic() -> String {
-        return Mnemonic.create(strength: .high, language: .english)
+    public static func generate24WordMnemonic(language: WordList = .english) -> String {
+        return Mnemonic.create(strength: .high, language: language)
     }
     
     /// Creates a new KeyPair from the given mnemonic and index.
