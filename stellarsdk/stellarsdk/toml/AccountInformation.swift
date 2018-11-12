@@ -24,6 +24,7 @@ public class AccountInformation {
         case desiredMaxTxPerLedger = "DESIRED_MAX_TX_PER_LEDGER"
         case knownPeers = "KNOWN_PEERS"
         case history = "HISTORY"
+        case uriRequestSigningKey = "URI_REQUEST_SIGNING_KEY"
     }
     
     /// uses https:
@@ -76,6 +77,9 @@ public class AccountInformation {
     /// List of history archives maintained by this domain
     public let history: [String]
     
+    /// URI request signing key
+    public let uriRequestSigningKey: String?
+    
     public init(fromToml toml:Toml) {
         federationServer = toml.string(Keys.federationServer.rawValue)
         authServer = toml.string(Keys.authServer.rawValue)
@@ -90,6 +94,7 @@ public class AccountInformation {
         desiredMaxTxPerLedger = toml.int(Keys.desiredMaxTxPerLedger.rawValue)
         knownPeers = toml.array(Keys.knownPeers.rawValue) ?? []
         history = toml.array(Keys.history.rawValue) ?? []
+        uriRequestSigningKey = toml.string(Keys.uriRequestSigningKey.rawValue)
     }
     
 }
