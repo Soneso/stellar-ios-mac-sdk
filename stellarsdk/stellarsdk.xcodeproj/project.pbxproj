@@ -567,6 +567,10 @@
 		746AD2D220342D4600A9CF21 /* ManageDataResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746AD2D120342D4600A9CF21 /* ManageDataResultXDR.swift */; };
 		746D78FF2195A02C0008AA79 /* TomlTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746D78FE2195A02C0008AA79 /* TomlTestCase.swift */; };
 		746D79002195A02C0008AA79 /* TomlTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746D78FE2195A02C0008AA79 /* TomlTestCase.swift */; };
+		746D7903219AE2AD0008AA79 /* URISchemeTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C8AAA62147D91000B06E8A /* URISchemeTestCase.swift */; };
+		746D7904219AE2BB0008AA79 /* TomlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62F97DB2199BB54000A835A /* TomlResponseMock.swift */; };
+		746D7905219AE2BE0008AA79 /* TomlResponseSignatureMismatchMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAA219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift */; };
+		746D7906219AE2C10008AA79 /* TomlResponseSignatureMissingMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAC219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift */; };
 		7478C3CF20343FD5001B6441 /* ClaimOfferAtomXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7478C3CE20343FD5001B6441 /* ClaimOfferAtomXDR.swift */; };
 		7478C3D120343FEC001B6441 /* SimplePaymentResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7478C3D020343FEC001B6441 /* SimplePaymentResultXDR.swift */; };
 		7481B53B2023056F000A783E /* HorizonRequestError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53A2023056F000A783E /* HorizonRequestError.swift */; };
@@ -718,16 +722,18 @@
 		83DD2C9D202F24CD00713FEE /* PaymentsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C9C202F24CD00713FEE /* PaymentsTestCase.swift */; };
 		83EA4763203C7F650031F13E /* LedgersLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */; };
 		83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */; };
+		C62F97DC2199BB54000A835A /* TomlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62F97DB2199BB54000A835A /* TomlResponseMock.swift */; };
+		C62F97E52199BE5B000A835A /* URISchemeTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C8AAA62147D91000B06E8A /* URISchemeTestCase.swift */; };
 		C6744C1C21467195005DE204 /* URIScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6744C1B21467195005DE204 /* URIScheme.swift */; };
 		C6744C1F2146A165005DE204 /* URISchemeErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6744C1E2146A165005DE204 /* URISchemeErrors.swift */; };
 		C67811B42148E30A001525D8 /* URISchemeErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6744C1E2146A165005DE204 /* URISchemeErrors.swift */; };
 		C67811B52148E30C001525D8 /* URISchemeEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = C694DABD21478E8100D6D63F /* URISchemeEnums.swift */; };
 		C67811B62148E30F001525D8 /* URIScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6744C1B21467195005DE204 /* URIScheme.swift */; };
 		C67811B72148E311001525D8 /* URISchemeValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C694DAC02147946F00D6D63F /* URISchemeValidator.swift */; };
-		C67811BB214950D1001525D8 /* URISchemeTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C8AAA62147D91000B06E8A /* URISchemeTestCase.swift */; };
 		C694DABE21478E8100D6D63F /* URISchemeEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = C694DABD21478E8100D6D63F /* URISchemeEnums.swift */; };
 		C694DAC12147946F00D6D63F /* URISchemeValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C694DAC02147946F00D6D63F /* URISchemeValidator.swift */; };
-		C6C8AAA72147D91000B06E8A /* URISchemeTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C8AAA62147D91000B06E8A /* URISchemeTestCase.swift */; };
+		C69B1CAB219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAA219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift */; };
+		C69B1CAD219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAC219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift */; };
 		EC34A0CA20503CAB000FB042 /* Base58Encode.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A0C120503CAB000FB042 /* Base58Encode.swift */; };
 		EC34A0CB20503CAB000FB042 /* WordList.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A0C220503CAB000FB042 /* WordList.swift */; };
 		EC34A0CC20503CAB000FB042 /* BigInt+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A0C420503CAB000FB042 /* BigInt+Extension.swift */; };
@@ -1183,10 +1189,13 @@
 		83DD2C9C202F24CD00713FEE /* PaymentsTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaymentsTestCase.swift; path = stellarsdkTests/payments/PaymentsTestCase.swift; sourceTree = SOURCE_ROOT; };
 		83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersLocalTestCase.swift; sourceTree = "<group>"; };
 		83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersResponsesMock.swift; sourceTree = "<group>"; };
+		C62F97DB2199BB54000A835A /* TomlResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TomlResponseMock.swift; sourceTree = "<group>"; };
 		C6744C1B21467195005DE204 /* URIScheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URIScheme.swift; sourceTree = "<group>"; };
 		C6744C1E2146A165005DE204 /* URISchemeErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URISchemeErrors.swift; sourceTree = "<group>"; };
 		C694DABD21478E8100D6D63F /* URISchemeEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URISchemeEnums.swift; sourceTree = "<group>"; };
 		C694DAC02147946F00D6D63F /* URISchemeValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URISchemeValidator.swift; sourceTree = "<group>"; };
+		C69B1CAA219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TomlResponseSignatureMismatchMock.swift; sourceTree = "<group>"; };
+		C69B1CAC219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TomlResponseSignatureMissingMock.swift; sourceTree = "<group>"; };
 		C6C8AAA62147D91000B06E8A /* URISchemeTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URISchemeTestCase.swift; sourceTree = "<group>"; };
 		EC34A0C120503CAB000FB042 /* Base58Encode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58Encode.swift; sourceTree = "<group>"; };
 		EC34A0C220503CAB000FB042 /* WordList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WordList.swift; sourceTree = "<group>"; };
@@ -2218,6 +2227,9 @@
 			isa = PBXGroup;
 			children = (
 				C6C8AAA62147D91000B06E8A /* URISchemeTestCase.swift */,
+				C62F97DB2199BB54000A835A /* TomlResponseMock.swift */,
+				C69B1CAA219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift */,
+				C69B1CAC219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift */,
 			);
 			path = uri_scheme;
 			sourceTree = "<group>";
@@ -3002,6 +3014,7 @@
 				745DF56B205304AC000D3660 /* AccountResponsesMock.swift in Sources */,
 				745DF56C205304AC000D3660 /* AccountRemoteTestCase.swift in Sources */,
 				745DF56D205304AC000D3660 /* DataForAccountLocalTestCase.swift in Sources */,
+				746D7905219AE2BE0008AA79 /* TomlResponseSignatureMismatchMock.swift in Sources */,
 				745DF56E205304AC000D3660 /* DataForAccountResponsesMock.swift in Sources */,
 				745DF56F205304AC000D3660 /* DataForAccountRemoteTestCase.swift in Sources */,
 				745DF570205304AC000D3660 /* AssetsLocalTestCase.swift in Sources */,
@@ -3026,7 +3039,9 @@
 				745DF57F205304AC000D3660 /* ServerMock.swift in Sources */,
 				745DF580205304AC000D3660 /* ResponseMock.swift in Sources */,
 				745DF581205304AC000D3660 /* TransactionsLocalTestCase.swift in Sources */,
+				746D7906219AE2C10008AA79 /* TomlResponseSignatureMissingMock.swift in Sources */,
 				7467C4082142740C00412FE1 /* DepositResponseMock.swift in Sources */,
+				746D7903219AE2AD0008AA79 /* URISchemeTestCase.swift in Sources */,
 				745DF582205304AC000D3660 /* TransactionsResponsesMock.swift in Sources */,
 				745DF583205304AC000D3660 /* TransactionsRemoteTestCase.swift in Sources */,
 				745DF584205304AC000D3660 /* OperationXDRTestCase.swift in Sources */,
@@ -3034,12 +3049,12 @@
 				745DF586205304AC000D3660 /* OperationsRemoteTestCase.swift in Sources */,
 				745DF587205304AC000D3660 /* OperationsResponsesMock.swift in Sources */,
 				745DF588205304AC000D3660 /* PaymentsTestCase.swift in Sources */,
+				746D7904219AE2BB0008AA79 /* TomlResponseMock.swift in Sources */,
 				744A84B82143F02F0086B8FC /* WithdrawResponseMock.swift in Sources */,
 				746D79002195A02C0008AA79 /* TomlTestCase.swift in Sources */,
 				745DF589205304AC000D3660 /* PaymentsResponsesMock.swift in Sources */,
 				745DF58A205304AC000D3660 /* PaymentsLocalTestCase.swift in Sources */,
 				745DF58B205304AC000D3660 /* TradesTestCase.swift in Sources */,
-				C67811BB214950D1001525D8 /* URISchemeTestCase.swift in Sources */,
 				745DF58C205304AC000D3660 /* TradesLocalTestCase.swift in Sources */,
 				745DF58D205304AC000D3660 /* TradesResponsesMock.swift in Sources */,
 				744A84D5214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,
@@ -3430,12 +3445,14 @@
 				4300C1882033044000DC5E49 /* OrderbooksTestCase.swift in Sources */,
 				744E75E42028DBD500170D57 /* EffectsRemoteTestCase.swift in Sources */,
 				437D8A92202F15DC0024D031 /* TradesTestCase.swift in Sources */,
+				C69B1CAB219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift in Sources */,
 				4367E5FE203ED15500C0AB4F /* OffersResponsesMock.swift in Sources */,
 				7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */,
 				8357A919203B0EEE00A144A9 /* AssetsResponsesMock.swift in Sources */,
 				4367E602203EE79700C0AB4F /* TradesLocalTestCase.swift in Sources */,
 				83DD2C9D202F24CD00713FEE /* PaymentsTestCase.swift in Sources */,
 				43464797203D56AF0082B96A /* OperationsResponsesMock.swift in Sources */,
+				C62F97E52199BE5B000A835A /* URISchemeTestCase.swift in Sources */,
 				EC34A15C205043AB000FB042 /* MnemonicGeneration.swift in Sources */,
 				744A84BD214403480086B8FC /* AnchorInfoResponseMock.swift in Sources */,
 				437D8A95202F16EB0024D031 /* TradeAggregationsTestCase.swift in Sources */,
@@ -3453,6 +3470,7 @@
 				4367E5FC203EA6ED00C0AB4F /* PaymentsLocalTestCase.swift in Sources */,
 				43464795203D553B0082B96A /* OperationsLocalTestCase.swift in Sources */,
 				8357A915203B097D00A144A9 /* AssetsLocalTestCase.swift in Sources */,
+				C69B1CAD219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift in Sources */,
 				4367E5FA203EA65300C0AB4F /* PaymentsResponsesMock.swift in Sources */,
 				7467C4072142740C00412FE1 /* DepositResponseMock.swift in Sources */,
 				8357A91D203B6F8500A144A9 /* DataForAccountResponsesMock.swift in Sources */,
@@ -3463,11 +3481,11 @@
 				8369723E202A708300398A98 /* AccountResponsesMock.swift in Sources */,
 				430BE2E92035A33D00E6AB97 /* PriceTestCase.swift in Sources */,
 				744A84B72143F02F0086B8FC /* WithdrawResponseMock.swift in Sources */,
+				C62F97DC2199BB54000A835A /* TomlResponseMock.swift in Sources */,
 				746D78FF2195A02C0008AA79 /* TomlTestCase.swift in Sources */,
 				4300C1832032FBE500DC5E49 /* OffersRemoteTestCase.swift in Sources */,
 				8331520C203E2635007F8F84 /* TransactionsResponsesMock.swift in Sources */,
 				8357A91B203B6F6100A144A9 /* DataForAccountLocalTestCase.swift in Sources */,
-				C6C8AAA72147D91000B06E8A /* URISchemeTestCase.swift in Sources */,
 				743DF503201F3B0800713DE7 /* AccountLocalTestCase.swift in Sources */,
 				EC34A15E20504F92000FB042 /* MnemonicKeyPairGeneration.swift in Sources */,
 				744A84D4214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,

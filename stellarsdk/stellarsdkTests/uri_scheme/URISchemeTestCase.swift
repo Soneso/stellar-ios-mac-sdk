@@ -13,21 +13,29 @@ class URISchemeTestCase: XCTestCase {
     let sdk = StellarSDK()
     let publicKey = Data(base64Encoded:"uHFsF4DaBlIsPUzFlMuBFkgEROGR9DlEBYCg3x+V72A=")!
     let privateKey = Data(base64Encoded: "KJJ6vrrDOe9XIDAj6iSftUzux0qWwSwf3er27YKUOU2ZbT/G/wqFm/tDeez3REW5YlD5mrf3iidmGjREBzOEjQ==")!
-    let unsignedURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAByE3sAAAAKAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAR%2BV72AAAABAGPf5AsmVy3q7o8mFkWjm4a3QsSoz%2FCzOK%2BduPy5AYlB7RG6hWNNjQPTohEZsPvIj1VBvaTsXGfSQ4oOSukarAA%3D%3D"
-    
-    let signedURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAByE3sAAAAKAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAR%2BV72AAAABAGPf5AsmVy3q7o8mFkWjm4a3QsSoz%2FCzOK%2BduPy5AYlB7RG6hWNNjQPTohEZsPvIj1VBvaTsXGfSQ4oOSukarAA%3D%3D&signature=tSZqF%2FlrhGvuK3%2B65XQQ9qlSHz%2BeLT8SIQgg12nLtyPLB%2F2y%2B94l%2FUigBD9z3p3ZylihHcLDRfIdOGXB6fS8DA%3D%3D"
-    
-    let validURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAABAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAiTqBtoWdmQGM4NgT/lTVswTMv7HPmP3lmt3CXnqXsoIAAAAAAAAAAAX14QAAAAAAAAAAAA==&origin_domain=place.domain.com&signature=Axh8nQLXounJt1NfdLvjTinVMK8EVpMcNc50BxlbNcBVGoiSlHL2Ee%2Bc95gbDUnMvWPRkBa6awCFQ1ILs5LcAQ%3D%3D"
+    let unsignedURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com"
+
+    let signedURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&signature=ZV%2BegOAcv%2FMTua5vOXA0JkXp3sKq1F4cNg7F0RIQQbThQ9%2FmuEzzU21GEb3qQ%2Fl95CuhLVP6IW8eU1aFob7MAA%3D%3D"
+
+    let validURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com&signature=ca5NoydAhPz10%2BFTGLN4gThguXfB%2FL2xO31wlcNu87ypmM2deNFdyXFWkgxwIirGOvQOtgRZvW%2BkwC%2Bucu4MBA%3D%3D"
     
     let uriValidator = URISchemeValidator()
     
+    var tomlResponseMock: TomlResponseMock!
+    var tomlResponseSignatureMismatchMock: TomlResponseSignatureMismatchMock!
+    var tomlResponseSignatureMissingMock: TomlResponseSignatureMissingMock!
+    
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        
+        URLProtocol.registerClass(ServerMock.self)
     }
     
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
+        tomlResponseMock = nil
+        tomlResponseSignatureMismatchMock = nil
+        tomlResponseSignatureMissingMock = nil
         super.tearDown()
     }
     
@@ -39,7 +47,7 @@ class URISchemeTestCase: XCTestCase {
             case .success(let data):
                 let operationBody = OperationBodyXDR.inflation
                 let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
-                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation])
+                let transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation])
                 let uriSchemeBuilder = URIScheme()
                 let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction)
                 print("URIScheme: \(uriScheme)")
@@ -64,36 +72,46 @@ class URISchemeTestCase: XCTestCase {
     }
     
     func testMissingSignatureFromURIScheme() {
-        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
         let expectation = XCTestExpectation(description: "Missing signature failure.")
-        let isValid = uriValidator.checkURISchemeIsValid(url: unsignedURL, signerKeyPair: keyPair)
-        
-        switch isValid {
-        case .failure(let error):
-            if error == URISchemeErrors.missingSignature {
-                XCTAssert(true)
+        tomlResponseMock = TomlResponseMock(address: "place.domain.com")
+        uriValidator.checkURISchemeIsValid(url: unsignedURL) { (response) -> (Void) in
+            switch response {
+            case .failure(let error):
+                if error == URISchemeErrors.missingSignature {
+                    XCTAssert(true)
+                } else {
+                    XCTAssert(false)
+                }
+            default:
+                XCTAssert(false)
             }
-        default:
-            XCTAssert(false)
+            
+            expectation.fulfill()
         }
         
-        expectation.fulfill()
+        wait(for: [expectation], timeout: 15)
     }
     
     func testMissingDomainFromURIScheme() {
-        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
         let expectation = XCTestExpectation(description: "Missing origin domain failure.")
-        let isValid = uriValidator.checkURISchemeIsValid(url: signedURL, signerKeyPair: keyPair)
-        switch isValid {
-        case .failure(let error):
-            if error == URISchemeErrors.missingOriginDomain{
-                XCTAssert(true)
+        
+        uriValidator.checkURISchemeIsValid(url: signedURL) { (response) -> (Void) in
+            switch response {
+            case .failure(let error):
+                if error == URISchemeErrors.missingOriginDomain{
+                    XCTAssert(true)
+                } else {
+                    XCTAssert(false)
+                }
+
+            default:
+                XCTAssert(false)
             }
-        default:
-            XCTAssert(false)
+            
+            expectation.fulfill()
         }
         
-        expectation.fulfill()
+        wait(for: [expectation], timeout: 15)
     }
     
     func testSigningURI() {
@@ -113,17 +131,20 @@ class URISchemeTestCase: XCTestCase {
     
     func testValidURIScheme() {
         let expectation = XCTestExpectation(description: "URL is valid.")
-        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
-        let isValid = uriValidator.checkURISchemeIsValid(url: validURL, signerKeyPair: keyPair)
-        switch isValid {
-        case .success():
-            XCTAssert(true)
-        case .failure(let error):
-            print("ValidURIScheme Error: \(error)")
-            XCTAssert(false)
+        tomlResponseMock = TomlResponseMock(address: "place.domain.com")
+        uriValidator.checkURISchemeIsValid(url: validURL) { (response) -> (Void) in
+            switch response {
+                case .success():
+                    XCTAssert(true)
+                case .failure(let error):
+                    print("ValidURIScheme Error: \(error)")
+                    XCTAssert(false)
+            }
+
+            expectation.fulfill()
         }
         
-        expectation.fulfill()
+        wait(for: [expectation], timeout: 15.0)
     }
     
     func testTransactionSigning() {
@@ -224,5 +245,48 @@ class URISchemeTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15)
     }
     
+    
+    func testTomlSignatureMismatch() {
+        tomlResponseSignatureMismatchMock = TomlResponseSignatureMismatchMock(address: "place.domain.com")
+        let expectation = XCTestExpectation(description: "The signature from the toml file is a mismatch with the one cached!")
+        
+        uriValidator.checkURISchemeIsValid(url: validURL, warningClosure: {
+            XCTAssert(true)
+            expectation.fulfill()
+        }) { (response) -> (Void) in
+            switch response {
+            case .success():
+                XCTAssert(true)
+            case .failure(_):
+                XCTAssert(false)
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testTomlSignatureMissing() {
+        let expectation = XCTestExpectation(description: "The signature field is missing from the toml file!")
+        tomlResponseSignatureMissingMock = TomlResponseSignatureMissingMock(address: "place.domain.com")
+        
+        uriValidator.checkURISchemeIsValid(url: validURL) { (response) -> (Void) in
+            switch response {
+            case .success():
+                XCTAssert(false)
+            case .failure(let error):
+                print("ValidURIScheme Error: \(error)")
+                if error == URISchemeErrors.tomlSignatureMissing {
+                    XCTAssert(true)
+                } else {
+                    XCTAssert(false)
+                }
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+
+    }
 }
 

@@ -59,8 +59,8 @@ public class StellarToml {
         
     }
     
-    public static func from(domain: String, completion:@escaping TomlFileClosure) throws {
-        guard let url = URL(string: "\(domain)/.well-known/stellar.toml") else {
+    public static func from(domain: String, secure: Bool = true, completion:@escaping TomlFileClosure) throws {
+        guard let url = URL(string: "\(secure ? "https://" : "http://")\(domain)/.well-known/stellar.toml") else {
             completion(.failure(error: .invalidDomain))
             return
         }
