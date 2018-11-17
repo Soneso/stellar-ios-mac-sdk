@@ -29,7 +29,7 @@ public final class KeyPair {
     }
     
     /// Generates a random Stellar keypair.
-    open static func generateRandomKeyPair() throws -> KeyPair {
+    public static func generateRandomKeyPair() throws -> KeyPair {
         let seed = try Seed()
         let keyPair = KeyPair(seed: seed)
         
