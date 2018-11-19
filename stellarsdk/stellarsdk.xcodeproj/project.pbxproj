@@ -571,6 +571,18 @@
 		746D7904219AE2BB0008AA79 /* TomlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62F97DB2199BB54000A835A /* TomlResponseMock.swift */; };
 		746D7905219AE2BE0008AA79 /* TomlResponseSignatureMismatchMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAA219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift */; };
 		746D7906219AE2C10008AA79 /* TomlResponseSignatureMissingMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAC219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift */; };
+		74723336219D983500343E25 /* WebAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723335219D983500343E25 /* WebAuthenticator.swift */; };
+		74723337219D983500343E25 /* WebAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723335219D983500343E25 /* WebAuthenticator.swift */; };
+		7472333A219EE40200343E25 /* WebAuthenticatorTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723339219EE40200343E25 /* WebAuthenticatorTestCase.swift */; };
+		7472333B219EE40200343E25 /* WebAuthenticatorTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723339219EE40200343E25 /* WebAuthenticatorTestCase.swift */; };
+		7472333D219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7472333C219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift */; };
+		7472333E219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7472333C219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift */; };
+		74723340219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7472333F219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift */; };
+		74723341219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7472333F219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift */; };
+		74723343219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723342219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift */; };
+		74723344219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723342219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift */; };
+		74723346219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723345219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift */; };
+		74723347219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723345219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift */; };
 		7478C3CF20343FD5001B6441 /* ClaimOfferAtomXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7478C3CE20343FD5001B6441 /* ClaimOfferAtomXDR.swift */; };
 		7478C3D120343FEC001B6441 /* SimplePaymentResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7478C3D020343FEC001B6441 /* SimplePaymentResultXDR.swift */; };
 		7481B53B2023056F000A783E /* HorizonRequestError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53A2023056F000A783E /* HorizonRequestError.swift */; };
@@ -1046,6 +1058,12 @@
 		746AD2CF20342D3500A9CF21 /* InflationResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InflationResultXDR.swift; sourceTree = "<group>"; };
 		746AD2D120342D4600A9CF21 /* ManageDataResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageDataResultXDR.swift; sourceTree = "<group>"; };
 		746D78FE2195A02C0008AA79 /* TomlTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TomlTestCase.swift; sourceTree = "<group>"; };
+		74723335219D983500343E25 /* WebAuthenticator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticator.swift; sourceTree = "<group>"; };
+		74723339219EE40200343E25 /* WebAuthenticatorTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticatorTestCase.swift; sourceTree = "<group>"; };
+		7472333C219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticatorTomlResponseMock.swift; sourceTree = "<group>"; };
+		7472333F219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticatorChallengeResponseMock.swift; sourceTree = "<group>"; };
+		74723342219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticatorTomlFailResponseMock.swift; sourceTree = "<group>"; };
+		74723345219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthenticatorSendChallengeResponseMock.swift; sourceTree = "<group>"; };
 		7478C3CE20343FD5001B6441 /* ClaimOfferAtomXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimOfferAtomXDR.swift; sourceTree = "<group>"; };
 		7478C3D020343FEC001B6441 /* SimplePaymentResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimplePaymentResultXDR.swift; sourceTree = "<group>"; };
 		7481B53A2023056F000A783E /* HorizonRequestError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HorizonRequestError.swift; sourceTree = "<group>"; };
@@ -1682,6 +1700,7 @@
 		7445E9FE201B106500470E0A /* stellarsdk */ = {
 			isa = PBXGroup;
 			children = (
+				74723334219D97EC00343E25 /* web_authentication */,
 				7464B723219441B40029FDC8 /* toml */,
 				C6744C1A214670F9005DE204 /* uri_scheme */,
 				7467C3EF21424D0B00412FE1 /* transfer_server_protocol */,
@@ -1703,6 +1722,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				74723338219EE3D500343E25 /* web_authenticator */,
 				746D78FD21959FD90008AA79 /* toml */,
 				C6C8AAA52147D8F000B06E8A /* uri_scheme */,
 				7467C40221426FAB00412FE1 /* transfer_server_protocol */,
@@ -1944,6 +1964,26 @@
 				746D78FE2195A02C0008AA79 /* TomlTestCase.swift */,
 			);
 			path = toml;
+			sourceTree = "<group>";
+		};
+		74723334219D97EC00343E25 /* web_authentication */ = {
+			isa = PBXGroup;
+			children = (
+				74723335219D983500343E25 /* WebAuthenticator.swift */,
+			);
+			path = web_authentication;
+			sourceTree = "<group>";
+		};
+		74723338219EE3D500343E25 /* web_authenticator */ = {
+			isa = PBXGroup;
+			children = (
+				74723339219EE40200343E25 /* WebAuthenticatorTestCase.swift */,
+				7472333C219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift */,
+				74723342219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift */,
+				7472333F219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift */,
+				74723345219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift */,
+			);
+			path = web_authenticator;
 			sourceTree = "<group>";
 		};
 		7481B53C20234AD6000A783E /* effects_responses */ = {
@@ -2945,6 +2985,7 @@
 				745DF4DE2052FF9C000D3660 /* ZeroPadding.swift in Sources */,
 				745DF4DF2052FF9C000D3660 /* String+Extension.swift in Sources */,
 				745DF4E02052FF9C000D3660 /* Authenticator.swift in Sources */,
+				74723337219D983500343E25 /* WebAuthenticator.swift in Sources */,
 				7468CDD42136DBB5002A538D /* BumpSequenceResultXDR.swift in Sources */,
 				C67811B52148E30C001525D8 /* URISchemeEnums.swift in Sources */,
 				745DF4E12052FF9C000D3660 /* SHA3.swift in Sources */,
@@ -3010,6 +3051,7 @@
 				744A84D221453AA70086B8FC /* PutCustomerInfoResponseMock.swift in Sources */,
 				745DF568205304AC000D3660 /* MnemonicKeyPairGeneration.swift in Sources */,
 				745DF569205304AC000D3660 /* MemoRemoteTestCase.swift in Sources */,
+				7472333E219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift in Sources */,
 				745DF56A205304AC000D3660 /* AccountLocalTestCase.swift in Sources */,
 				745DF56B205304AC000D3660 /* AccountResponsesMock.swift in Sources */,
 				745DF56C205304AC000D3660 /* AccountRemoteTestCase.swift in Sources */,
@@ -3019,14 +3061,18 @@
 				745DF56F205304AC000D3660 /* DataForAccountRemoteTestCase.swift in Sources */,
 				745DF570205304AC000D3660 /* AssetsLocalTestCase.swift in Sources */,
 				745DF571205304AC000D3660 /* AssetsResponsesMock.swift in Sources */,
+				74723347219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift in Sources */,
 				745DF572205304AC000D3660 /* AssetsRemoteTestCase.swift in Sources */,
 				745DF573205304AC000D3660 /* EffectsLocalTestCase.swift in Sources */,
 				745DF574205304AC000D3660 /* EffectsResponsesMock.swift in Sources */,
+				7472333B219EE40200343E25 /* WebAuthenticatorTestCase.swift in Sources */,
 				744A84BE214403480086B8FC /* AnchorInfoResponseMock.swift in Sources */,
 				745DF575205304AC000D3660 /* EffectsRemoteTestCase.swift in Sources */,
 				745DF576205304AC000D3660 /* LedgersLocalTestCase.swift in Sources */,
 				745DF577205304AC000D3660 /* LedgersResponsesMock.swift in Sources */,
+				74723344219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift in Sources */,
 				744A84C921441CC60086B8FC /* Date.swift in Sources */,
+				74723341219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift in Sources */,
 				7467C4052142700000412FE1 /* TransferServerTestCase.swift in Sources */,
 				745DF578205304AC000D3660 /* LedgersRemoteTestCase.swift in Sources */,
 				745DF579205304AC000D3660 /* PriceTestCase.swift in Sources */,
@@ -3376,6 +3422,7 @@
 				83697252202A80D600398A98 /* ManageDataOperationResponse.swift in Sources */,
 				EC34A0CE20503CAB000FB042 /* HDCrypto.swift in Sources */,
 				83DD2C7D202E10A700713FEE /* TransactionFailedErrorResponse.swift in Sources */,
+				74723336219D983500343E25 /* WebAuthenticator.swift in Sources */,
 				743DF5762020530A00713DE7 /* keypair.c in Sources */,
 				C694DABE21478E8100D6D63F /* URISchemeEnums.swift in Sources */,
 				EC34A0CF20503CAB000FB042 /* DataConvertable.swift in Sources */,
@@ -3441,6 +3488,7 @@
 				744A84D121453AA70086B8FC /* PutCustomerInfoResponseMock.swift in Sources */,
 				8369723C202A707600398A98 /* ServerMock.swift in Sources */,
 				8331520B203E2635007F8F84 /* TransactionsLocalTestCase.swift in Sources */,
+				7472333D219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift in Sources */,
 				744C4DC2202A328100B46CDE /* OperationsRemoteTestCase.swift in Sources */,
 				4300C1882033044000DC5E49 /* OrderbooksTestCase.swift in Sources */,
 				744E75E42028DBD500170D57 /* EffectsRemoteTestCase.swift in Sources */,
@@ -3450,14 +3498,18 @@
 				7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */,
 				8357A919203B0EEE00A144A9 /* AssetsResponsesMock.swift in Sources */,
 				4367E602203EE79700C0AB4F /* TradesLocalTestCase.swift in Sources */,
+				74723346219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift in Sources */,
 				83DD2C9D202F24CD00713FEE /* PaymentsTestCase.swift in Sources */,
 				43464797203D56AF0082B96A /* OperationsResponsesMock.swift in Sources */,
 				C62F97E52199BE5B000A835A /* URISchemeTestCase.swift in Sources */,
+				7472333A219EE40200343E25 /* WebAuthenticatorTestCase.swift in Sources */,
 				EC34A15C205043AB000FB042 /* MnemonicGeneration.swift in Sources */,
 				744A84BD214403480086B8FC /* AnchorInfoResponseMock.swift in Sources */,
 				437D8A95202F16EB0024D031 /* TradeAggregationsTestCase.swift in Sources */,
 				8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */,
+				74723343219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift in Sources */,
 				4367E604203EE7A800C0AB4F /* TradesResponsesMock.swift in Sources */,
+				74723340219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift in Sources */,
 				744A84C821441CC50086B8FC /* Date.swift in Sources */,
 				7467C40421426FF700412FE1 /* TransferServerTestCase.swift in Sources */,
 				4367E600203ED42D00C0AB4F /* OffersLocalTestCase.swift in Sources */,

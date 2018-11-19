@@ -9,6 +9,28 @@
 import Foundation
 import stellarsdk
 
+// Workaround for the issues described here: https://github.com/kylef/Mockingjay/issues/32
+extension InputStream {
+    func readfully() -> Data {
+        var result = Data()
+        var buffer = [UInt8](repeating: 0, count: 4096)
+        
+        open()
+        
+        var amount = 0
+        repeat {
+            amount = read(&buffer, maxLength: buffer.count)
+            if amount > 0 {
+                result.append(buffer, count: amount)
+            }
+        } while amount > 0
+        
+        close()
+        
+        return result
+    }
+}
+
 class ResponsesMock {
     
     init() {
