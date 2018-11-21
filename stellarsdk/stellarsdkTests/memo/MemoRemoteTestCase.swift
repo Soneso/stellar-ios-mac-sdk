@@ -133,4 +133,14 @@ class MemoRemoteTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 30.0)
     }
+
+    func testMaxLengthMemoText() {
+        let failingTestString = "https://gift-fakeurlspam.info"
+        let passingTestString1 = "https://gift-fakeurlspam.org"
+        let passingTestString2 = "https://gift-fakeurlspam.cc"
+
+        XCTAssertNoThrow(try Memo(text: passingTestString1))
+        XCTAssertNoThrow(try Memo(text: passingTestString2))
+        XCTAssertThrowsError(try Memo(text: failingTestString))
+    }
 }

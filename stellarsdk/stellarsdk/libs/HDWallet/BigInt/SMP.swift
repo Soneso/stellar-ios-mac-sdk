@@ -1632,7 +1632,7 @@ fileprivate extension Array where Element == Limb
 	//
 	//
 
-    public func multiplyFullWidth(_ ab: UInt64, _ cd: UInt64) -> (hi: UInt64, lo: UInt64) {
+    func multiplyFullWidth(_ ab: UInt64, _ cd: UInt64) -> (hi: UInt64, lo: UInt64) {
         let a: UInt32 = UInt32(ab >> 32)
         let b: UInt32 = UInt32(ab & 0xFFFFFFFF)
         let c: UInt32 = UInt32(cd >> 32)

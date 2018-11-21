@@ -45,7 +45,7 @@ extension Memo: MemoProtocol {
     /// - Throws an StellarSDKError.invalidArgument error if the given string is larger than 28 bytes.
     ///
     public init?(text:String) throws {
-        if text.utf8CString.count > 28 {
+        if text.count > 28 {
             throw StellarSDKError.invalidArgument(message: "text must be <= 28 bytes. length=\(text.count)" )
         }
         self = .text(text)
