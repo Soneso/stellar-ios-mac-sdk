@@ -32,6 +32,15 @@ final public class TimeBounds {
         self.maxTime = maxTime
     }
     
+    /// Creates a new TimeBounds object from a TimeboundsXDR.
+    ///
+    /// - Parameter timebounds: TimeboundsXDR instance used to init Timebounds
+    /// - Parameter maxTime 64bit Unix timestamp
+    public init(timebounds:TimeBoundsXDR) {
+        self.minTime = timebounds.minTime
+        self.maxTime = timebounds.maxTime
+    }
+    
     /// Creates a TimeBounds XDR object from the current TimeBounds object.
     ///
     /// - Returns the created TimeBoundsXDR object.

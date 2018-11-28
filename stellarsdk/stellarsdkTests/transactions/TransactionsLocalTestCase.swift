@@ -58,6 +58,17 @@ class TransactionsLocalTestCase: XCTestCase {
         }
     }
     
+    func testTransactionStringInit() {
+        let xdrString = "AAAAAJ/Ax+axve53/7sXfQY0fI6jzBeHEcPl0Vsg1C2tqyRbAAAAZAAAAAAAAAAAAAAAAQAAAABb2L/OAAAAAFvYwPoAAAAAAAAAAQAAAAEAAAAAo7FW8r8Nj+SMwPPeAoL4aUkLob7QU68+9Y8CAia5k78AAAAKAAAAN0NJcDhiSHdnU2hUR042ZDE3bjg1ZlFGRVBKdmNtNFhnSWhVVFBuUUF4cUtORVd4V3JYIGF1dGgAAAAAAQAAAEDh/7kQjZbcXypISjto5NtGLuaDGrfL/F08apZQYp38JNMNQ9p/e1Fy0z23WOg/Ic+e91+hgbdTude6+1+i0V41AAAAAA=="
+        do {
+            let envelope = try Transaction(xdr:xdrString)
+            let envelopeString = envelope.xdrEncoded
+            XCTAssertTrue(xdrString == envelopeString)
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
+    
     func testGetTransactions() {
         let expectation = XCTestExpectation(description: "Get transactions and parse their details successfully")
         

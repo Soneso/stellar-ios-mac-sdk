@@ -20,6 +20,12 @@ public class Transaction {
     public let timeBounds:TimeBounds?
     public private(set) var transactionXDR:TransactionXDR
     
+    public var xdrEncoded: String? {
+        get {
+            return transactionXDR.xdrEncoded
+        }
+    }
+    
     /// Creates a new Transaction object.
     ///
     /// - Parameter sourceAccount: Account that originates the transaction.
@@ -54,6 +60,31 @@ public class Transaction {
         self.sourceAccount.incrementSequenceNumber()
         
     }
+    
+    /// Creates a new Transaction object from an XDR string.
+    ///
+    /// - Parameter xdr: The XDR string to be parsed into a Transaction object.
+    ///
+    public convenience init(xdr:String) throws {
+        let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: xdr))
+        
+        let transactionXDR = try TransactionXDR(fromBinary: xdrDecoder)
+        let keypair = KeyPair(publicKey: transactionXDR.sourceAccount)
+        let transactionAccount = Account(keyPair: keypair, sequenceNumber: transactionXDR.seqNum - 1)
+        var operations = [Operation]()
+        for operationXDR in transactionXDR.operations {
+            let operation = try Operation.fromXDR(operationXDR: operationXDR)
+            operations.append(operation)
+        }
+        
+        var timebounds: TimeBounds?
+        if let timeboundsXDR = transactionXDR.timeBounds {
+            timebounds = TimeBounds(timebounds: timeboundsXDR)
+        }
+        
+        try self.init(sourceAccount: transactionAccount, operations: operations, memo: Memo(memoXDR:transactionXDR.memo), timeBounds: timebounds)
+    }
+    
     /// Each transaction needs to be signed before sending it to the stellar network.
     ///
     /// - Parameter keyPair: key pair to be used as a signer. Must containing the private key.

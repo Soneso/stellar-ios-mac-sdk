@@ -77,6 +77,24 @@ extension Memo: MemoProtocol {
         self = .returnHash(returnHash)
     }
     
+    /// Creates a memo from a MemoXDR instance
+    ///
+    /// - Parameter memoXDR: The MemoXDR instance.
+    public init?(memoXDR:MemoXDR) {
+        switch memoXDR {
+        case .none:
+            self = .none
+        case .text(let text):
+            self = .text(text)
+        case .id(let id):
+            self = .id(id)
+        case .hash(let hash):
+            self = .hash(hash.wrapped)
+        case .returnHash(let hash):
+            self = .returnHash(hash.wrapped)
+        }
+    }
+    
     public func type() -> String {
         switch self {
         case .none: return MemoTypeAsString.NONE
