@@ -19,7 +19,7 @@ To integrate stellar SDK into your Xcode project using CocoaPods, specify it in 
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk', '~> 1.5.1'
+    pod 'stellar-ios-mac-sdk', '~> 1.5.2'
 end
 ```
 
@@ -303,6 +303,32 @@ try sdk.transactions.submitTransaction(transaction: transaction) { (response) ->
       case .failure(_):
           // ...
     }
+}
+```
+
+Get a transaction envelope from an XDR string:
+
+```swift
+let xdrString = "AAAAAJ/Ax+axve53/7sXfQY0fI6jzBeHEcPl0Vsg1C2tqyRbAAAAZAAAAAAAAAAAAAAAAQAAAABb2L/OAAAAAFvYwPoAAAAAAAAAAQAAAAEAAAAAo7FW8r8Nj+SMwPPeAoL4aUkLob7QU68+9Y8CAia5k78AAAAKAAAAN0NJcDhiSHdnU2hUR042ZDE3bjg1ZlFGRVBKdmNtNFhnSWhVVFBuUUF4cUtORVd4V3JYIGF1dGgAAAAAAQAAAEDh/7kQjZbcXypISjto5NtGLuaDGrfL/F08apZQYp38JNMNQ9p/e1Fy0z23WOg/Ic+e91+hgbdTude6+1+i0V41AAAAAAAAAAGtqyRbAAAAQNeY1rEwPynWnVXaaE/XWeuRnOHS/479J+Eu7s5OplSlF41xB7E8u9WzEItaOs167xuOVcLZUKBCBF1fnfzMEQg="
+do {
+    let envelope = try TransactionEnvelopeXDR(xdr:xdrString)
+    let envelopeString = envelope.xdrEncoded
+} catch {
+    print("Invalid xdr string")
+}
+```
+
+Get a transaction object from an XDR string:
+
+```swift
+let xdrString = "AAAAAJ/Ax+axve53/7sXfQY0fI6jzBeHEcPl0Vsg1C2tqyRbAAAAZAAAAAAAAAAAAAAAAQAAAABb2L/OAAAAAFvYwPoAAAAAAAAAAQAAAAEAAAAAo7FW8r8Nj+SMwPPeAoL4aUkLob7QU68+9Y8CAia5k78AAAAKAAAAN0NJcDhiSHdnU2hUR042ZDE3bjg1ZlFGRVBKdmNtNFhnSWhVVFBuUUF4cUtORVd4V3JYIGF1dGgAAAAAAQAAAEDh/7kQjZbcXypISjto5NtGLuaDGrfL/F08apZQYp38JNMNQ9p/e1Fy0z23WOg/Ic+e91+hgbdTude6+1+i0V41AAAAAA=="
+do {
+    // Get the transaction object
+    let transaction = try Transaction(xdr:xdrString)
+    // Convert your transaction back to xdr
+    let transactionString = transaction.xdrEncoded
+} catch {
+    print("Invalid xdr string")
 }
 ```
 
