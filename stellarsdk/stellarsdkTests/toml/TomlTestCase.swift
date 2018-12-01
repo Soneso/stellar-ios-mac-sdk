@@ -11,14 +11,30 @@ import stellarsdk
 
 class TomlTestCase: XCTestCase {
 
-    override func setUp() {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    func testStellarTomlFromDomain() {
+        
+        let expectation = XCTestExpectation(description: "Load and resolve stellar toml file from domain")
+        do {
+            try StellarToml.from(domain: "lumenshine.com") { (result) -> (Void) in
+                switch result {
+                case .success(response: let stellarToml):
+                    if "https://api.lumenshine.com/federation" == stellarToml.accountInformation.federationServer {
+                        XCTAssert(true)
+                    } else {
+                        XCTAssert(false)
+                    }
+                case .failure(_):
+                    XCTAssert(false)
+                }
+                expectation.fulfill()
+            }
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 15.0)
     }
-
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
+    
     func testAccountInformationToml() {
         do {
             let toml = try StellarToml(fromString: tomlSample)
