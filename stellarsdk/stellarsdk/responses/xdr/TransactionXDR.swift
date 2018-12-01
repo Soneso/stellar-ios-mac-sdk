@@ -64,6 +64,10 @@ public struct TransactionXDR: XDRCodable {
         signatures.append(signature)
     }
     
+    public mutating func addSignature(signature: DecoratedSignatureXDR) {
+        signatures.append(signature)
+    }
+    
     private func signatureBase(network:Network) throws -> Data {
         let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .typeTX(self))
         

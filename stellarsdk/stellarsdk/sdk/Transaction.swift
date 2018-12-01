@@ -70,7 +70,7 @@ public class Transaction {
         
         let transactionXDR = try TransactionXDR(fromBinary: xdrDecoder)
         let keypair = KeyPair(publicKey: transactionXDR.sourceAccount)
-        let transactionAccount = Account(keyPair: keypair, sequenceNumber: transactionXDR.seqNum - 1)
+        let transactionSourceAccount = Account(keyPair: keypair, sequenceNumber: transactionXDR.seqNum - 1)
         var operations = [Operation]()
         for operationXDR in transactionXDR.operations {
             let operation = try Operation.fromXDR(operationXDR: operationXDR)
@@ -82,7 +82,35 @@ public class Transaction {
             timebounds = TimeBounds(timebounds: timeboundsXDR)
         }
         
-        try self.init(sourceAccount: transactionAccount, operations: operations, memo: Memo(memoXDR:transactionXDR.memo), timeBounds: timebounds)
+        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionXDR.memo), timeBounds: timebounds)
+    }
+    
+    /// Creates a new Transaction object from an Transaction Envelope XDR string.
+    ///
+    /// - Parameter envelopeXdr: The XDR string to be parsed into a Transaction object.
+    ///
+    public convenience init(envelopeXdr:String) throws {
+        let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: envelopeXdr))
+        
+        let transactionEnvelopeXDR = try TransactionEnvelopeXDR(fromBinary: xdrDecoder)
+        let keypair = KeyPair(publicKey: transactionEnvelopeXDR.tx.sourceAccount)
+        let transactionSourceAccount = Account(keyPair: keypair, sequenceNumber: transactionEnvelopeXDR.tx.seqNum - 1)
+        var operations = [Operation]()
+        for operationXDR in transactionEnvelopeXDR.tx.operations {
+            let operation = try Operation.fromXDR(operationXDR: operationXDR)
+            operations.append(operation)
+        }
+        
+        var timebounds: TimeBounds?
+        if let timeboundsXDR = transactionEnvelopeXDR.tx.timeBounds {
+            timebounds = TimeBounds(timebounds: timeboundsXDR)
+        }
+        
+        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionEnvelopeXDR.tx.memo), timeBounds: timebounds)
+        
+        for signature in transactionEnvelopeXDR.signatures {
+            self.transactionXDR.addSignature(signature: signature)
+        }
     }
     
     /// Each transaction needs to be signed before sending it to the stellar network.
