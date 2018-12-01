@@ -57,24 +57,27 @@ public class Federation: NSObject {
     
     /// Creates a Federation instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
     public static func forDomain(domain:String, completion:@escaping FederationClosure) {
-        let federationAddressKey = "FEDERATION_SERVER"
-        
-        guard let url = URL(string: "\(domain)/.well-known/stellar.toml") else {
-            completion(.failure(error: .invalidDomain))
-            return
-        }
-        
+    
         DispatchQueue.global().async {
             do {
-                let tomlString = try String(contentsOf: url, encoding: .utf8)
-                let toml = try Toml(withString: tomlString)
-                if let federationAddress = toml.string(federationAddressKey) {
-                    let federation = Federation(federationAddress: federationAddress)
-                    completion(.success(response: federation))
-                } else {
-                    completion(.failure(error: .noFederationSet))
+                try StellarToml.from(domain: domain) { (result) -> (Void) in
+                    switch result {
+                    case .success(response: let stellarToml):
+                        if let federationServer = stellarToml.accountInformation.federationServer {
+                            let federation = Federation(federationAddress: federationServer)
+                            completion(.success(response: federation))
+                        } else {
+                            completion(.failure(error: .noFederationSet))
+                        }
+                    case .failure(error: let stellarTomlError):
+                        switch stellarTomlError {
+                        case .invalidDomain:
+                            completion(.failure(error: .invalidTomlDomain))
+                        case .invalidToml:
+                            completion(.failure(error: .invalidToml))
+                        }
+                    }
                 }
-                
             } catch {
                 completion(.failure(error: .invalidToml))
             }

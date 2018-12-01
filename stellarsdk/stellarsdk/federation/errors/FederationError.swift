@@ -13,6 +13,7 @@ public enum FederationError: Error {
     case invalidAddress
     case invalidAccountId
     case invalidDomain
+    case invalidTomlDomain
     case invalidToml
     case noFederationSet
     case parsingResponseFailed(message:String)
