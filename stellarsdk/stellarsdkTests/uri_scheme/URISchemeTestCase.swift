@@ -47,7 +47,8 @@ class URISchemeTestCase: XCTestCase {
             case .success(let data):
                 let operationBody = OperationBodyXDR.inflation
                 let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
-                let transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation])
+                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation])
+                try! transaction.sign(keyPair: keyPair, network: .testnet)
                 let uriSchemeBuilder = URIScheme()
                 let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction)
                 print("URIScheme: \(uriScheme)")
@@ -66,7 +67,7 @@ class URISchemeTestCase: XCTestCase {
         let expectation = XCTestExpectation(description: "URL Returned.")
         let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
         let uriSchemeBuilder = URIScheme()
-        let uriScheme = uriSchemeBuilder.getPayOperationURI(accountID: keyPair.accountId)
+        let uriScheme = uriSchemeBuilder.getPayOperationURI(accountID: keyPair.accountId, amount: 123.21,assetCode: "ANA", assetIssuer: "GC4HC3AXQDNAMURMHVGMLFGLQELEQBCE4GI7IOKEAWAKBXY7SXXWBTLV")
         print("PayOperationURI: \(uriScheme)")
         expectation.fulfill()
     }
