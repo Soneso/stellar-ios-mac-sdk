@@ -180,7 +180,7 @@ public class URIScheme: NSObject {
     /// - Throws:
     ///     - A 'HorizonRequestError' error depending on the error case.
     ///
-    public func signTransaction(forURL url: String, signerKeyPair keyPair: KeyPair, transactionConfirmation: TransactionConfirmationClosure? = nil, completion: @escaping SubmitTransactionClosure) {
+    public func signTransaction(forURL url: String, signerKeyPair keyPair: KeyPair, network: Network = .public, transactionConfirmation: TransactionConfirmationClosure? = nil, completion: @escaping SubmitTransactionClosure) {
         if let transactionXDR = getTransactionXDR(fromURL: url) {
             if let isConfirmed = transactionConfirmation?(transactionXDR), !isConfirmed {
                 completion(.failure(error: HorizonRequestError.requestFailed(message: "Transaction was not confirmed!")))
@@ -191,7 +191,7 @@ public class URIScheme: NSObject {
                 switch response {
                 case .success(transactionXDR: var transaction):
                     if transaction?.sourceAccount.accountId == keyPair.accountId {
-                        try? transaction?.sign(keyPair: keyPair, network: .testnet)
+                        try? transaction?.sign(keyPair: keyPair, network: network)
                         self.submitTransaction(transactionXDR: transaction, keyPair: keyPair, completion: { (response) -> (Void) in
                             completion(response)
                         })
@@ -223,13 +223,13 @@ public class URIScheme: NSObject {
         }
     }
     
-    /// Sets the source account for the transaction.
-    private func setTransactionXDRSourceAccount(transactionXDR: TransactionXDR, signerKeyPair: KeyPair, completion: @escaping SetupTransactionXDRClosure) {
+    /// Sets the sequence number for the transaction.
+    private func setTransactionXDRSequenceNr(transactionXDR: TransactionXDR, signerKeyPair: KeyPair, completion: @escaping SetupTransactionXDRClosure) {
         sdk.accounts.getAccountDetails(accountId: transactionXDR.sourceAccount.accountId) { (response) -> (Void) in
             switch response {
             case .success(details: let accountDetails):
                 let reconfiguredTransactionXDR = TransactionXDR(sourceAccount: transactionXDR.sourceAccount,
-                                                            seqNum: accountDetails.sequenceNumber,
+                                                            seqNum: accountDetails.incrementedSequenceNumber(),
                                                             timeBounds: transactionXDR.timeBounds,
                                                             memo: transactionXDR.memo,
                                                             operations: transactionXDR.operations)
@@ -246,7 +246,7 @@ public class URIScheme: NSObject {
             switch response {
             case .success(details: let accountDetails):
                 let reconfiguredTransactionXDR = TransactionXDR(sourceAccount: accountDetails.keyPair.publicKey,
-                                                            seqNum: accountDetails.sequenceNumber,
+                                                            seqNum: accountDetails.incrementedSequenceNumber(),
                                                             timeBounds: transactionXDR.timeBounds,
                                                             memo: transactionXDR.memo,
                                                             operations: transactionXDR.operations)
@@ -273,7 +273,7 @@ public class URIScheme: NSObject {
             }
             
         } else if !sourceAccountIsEmpty && sequenceNumberIsEmpty {
-            setTransactionXDRSourceAccount(transactionXDR: transactionXDR, signerKeyPair: signerKeyPair) { (response) -> (Void) in
+            setTransactionXDRSequenceNr(transactionXDR: transactionXDR, signerKeyPair: signerKeyPair) { (response) -> (Void) in
                 switch response {
                 case .success(transactionXDR: let transaction):
                     completion(.success(transactionXDR: transaction))
