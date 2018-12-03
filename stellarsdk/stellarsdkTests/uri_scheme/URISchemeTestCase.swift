@@ -19,16 +19,21 @@ class URISchemeTestCase: XCTestCase {
 
     let validURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com&signature=ca5NoydAhPz10%2BFTGLN4gThguXfB%2FL2xO31wlcNu87ypmM2deNFdyXFWkgxwIirGOvQOtgRZvW%2BkwC%2Bucu4MBA%3D%3D"
     
+    let validURLCallback = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com&signature=ca5NoydAhPz10%2BFTGLN4gThguXfB%2FL2xO31wlcNu87ypmM2deNFdyXFWkgxwIirGOvQOtgRZvW%2BkwC%2Bucu4MBA%3D%3D&callback=url:https://examplePost.com"
+    
     let uriValidator = URISchemeValidator()
     
     var tomlResponseMock: TomlResponseMock!
     var tomlResponseSignatureMismatchMock: TomlResponseSignatureMismatchMock!
     var tomlResponseSignatureMissingMock: TomlResponseSignatureMissingMock!
+    var postCallbackMock: PostCallbackMock!
     
     override func setUp() {
         super.setUp()
         
         URLProtocol.registerClass(ServerMock.self)
+        
+        postCallbackMock = PostCallbackMock(address: "examplePost.com")
     }
     
     override func tearDown() {
@@ -153,6 +158,25 @@ class URISchemeTestCase: XCTestCase {
         let uriBuilder = URIScheme()
         let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
         uriBuilder.signTransaction(forURL: validURL, signerKeyPair: keyPair) { (response) -> (Void) in
+            switch response {
+            case .success:
+                XCTAssert(true)
+            case .failure(error: let error):
+                XCTAssert(false)
+                print("Transaction signing failed! Error: \(error)")
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15)
+    }
+    
+    func testTransactionSigningCallback() {
+        let expectation = XCTestExpectation(description: "The transaction is signed and sent to the callback")
+        let uriBuilder = URIScheme()
+        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
+        uriBuilder.signTransaction(forURL: validURLCallback, signerKeyPair: keyPair) { (response) -> (Void) in
             switch response {
             case .success:
                 XCTAssert(true)
