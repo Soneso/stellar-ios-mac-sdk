@@ -543,6 +543,30 @@ uriBuilder.signTransaction(forURL: uri, signerKeyPair: keyPair, transactionConfi
 }
 ```
 
+### 8. Stellar Web Authentication
+
+This SEP defines the standard way for clients such as wallets or exchanges to create authenticated web sessions on behalf of a user who holds a Stellar account. A wallet may want to authenticate with any web service which requires a Stellar account ownership verification, for example, to upload KYC information to an anchor in an authenticated way as described in SEP-6.
+
+#### 8.1 Get a JWT token.
+
+Authenticate with a server and get a JWT token.
+
+```swift
+// Hold a strong reference to this to avoid being deallocated
+let webAuthenticator = WebAuthenticator(authEndpoint: "http://your_api.stellar.org/auth", network: .testnet, serverSigningKey: "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP")
+    if let keyPair = try? KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX") {
+        webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            switch response {
+            case .success(let jwtToken):
+                // use the token to do your calls
+            case .failure(let error):
+                // handle the error
+            }
+        }
+    }
+}
+```
+
 ## Documentation and Examples
 
 You can find more documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.
