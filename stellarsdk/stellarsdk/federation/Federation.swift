@@ -45,7 +45,7 @@ public class Federation: NSObject {
             return
         }
         let domain = components[1]
-        Federation.forDomain(domain: domain) { (response) -> (Void) in
+        Federation.forDomain(domain:domain, secure:secure) { (response) -> (Void) in
             switch response {
             case .success(let federation):
                 federation.resolve(address: stellarAddress, completion: completion)
