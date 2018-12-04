@@ -44,7 +44,7 @@ public class Federation: NSObject {
             completion(.failure(error: .invalidAddress))
             return
         }
-        let domain = "\(secure ? "https://" : "http://")\(components[1])"
+        let domain = components[1]
         Federation.forDomain(domain: domain) { (response) -> (Void) in
             switch response {
             case .success(let federation):
@@ -56,11 +56,11 @@ public class Federation: NSObject {
     }
     
     /// Creates a Federation instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
-    public static func forDomain(domain:String, completion:@escaping FederationClosure) {
+    public static func forDomain(domain:String, secure:Bool = true, completion:@escaping FederationClosure) {
     
         DispatchQueue.global().async {
             do {
-                try StellarToml.from(domain: domain) { (result) -> (Void) in
+                try StellarToml.from(domain: domain, secure: secure) { (result) -> (Void) in
                     switch result {
                     case .success(response: let stellarToml):
                         if let federationServer = stellarToml.accountInformation.federationServer {
