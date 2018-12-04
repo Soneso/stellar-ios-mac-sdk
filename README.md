@@ -509,7 +509,8 @@ sdk.accounts.getAccountDetails(accountId: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH4
         let uriSchemeBuilder = URIScheme()
         
         // get the URI with your transactionXDR
-        let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction.transactionXDR)
+	// more params can be added to the url, check method definition
+        let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction.transactionXDR, callBack: "your_callback_api.com")
         
     case .failure(let error):
         //
@@ -523,12 +524,13 @@ Generate a URI that will serve as a request to pay a specific address with a spe
 
 ```swift
 let uriSchemeBuilder = URIScheme()
-let uriScheme = uriSchemeBuilder.getPayOperationURI(accountID: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q", amount: 100, assetCode: "BTC")
+// more params can be added to the url, check method definition
+let uriScheme = uriSchemeBuilder.getPayOperationURI(accountID: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q", amount: 100, assetCode: "BTC", callBack: "your_callback_api.com")
 ```
 
-#### 7.3 Sign a transaction from a giver URI
+#### 7.3 Sign a transaction from a given URI and send it to the network
 
-Signs a transaction from a URI and sends it to the stellar network.
+Signs a transaction from a URI and sends it to the callback url if present or to the stellar network otherwise.
 
 ```swift
 uriBuilder.signTransaction(forURL: uri, signerKeyPair: keyPair, transactionConfirmation: { (transaction) -> (Bool) in
