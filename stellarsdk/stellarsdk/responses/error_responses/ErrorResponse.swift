@@ -25,7 +25,7 @@ public class ErrorResponse: NSObject, Decodable {
     public var detail:String
     
     /// A token that uniquely identifies this request. Allows server administrators to correlate a client report with server log files.
-    public var instance:String
+    public var instance:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -47,6 +47,6 @@ public class ErrorResponse: NSObject, Decodable {
         title = try values.decode(String.self, forKey: .title)
         httpStatusCode = try values.decode(UInt.self, forKey: .httpStatusCode)
         detail = try values.decode(String.self, forKey: .detail)
-        instance = try values.decode(String.self, forKey: .instance)
+        instance = try values.decodeIfPresent(String.self, forKey: .instance)
     }
 }

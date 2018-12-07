@@ -59,7 +59,7 @@ public final class StellarSDKLog {
         print("\(tag): Horizon Error response tite: \(errorResponse!.title)")
         print("\(tag): Horizon Error response httpStatusCode: \(errorResponse!.httpStatusCode)")
         print("\(tag): Horizon Error response detail: \(errorResponse!.detail)")
-        print("\(tag): Horizon Error response instance: \(errorResponse!.instance)")
+        print("\(tag): Horizon Error response instance: \(errorResponse!.instance ?? "unspecified")")
         
         if let transactionFailedErrorResponse = errorResponse! as? TransactionFailedErrorResponse {
             print("\(tag): Horizon Error response envelope XDR: \(transactionFailedErrorResponse.envelopeXDR)")
