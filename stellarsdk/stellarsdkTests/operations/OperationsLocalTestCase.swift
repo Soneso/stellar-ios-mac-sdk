@@ -594,7 +594,7 @@ class OperationsLocalTestCase: XCTestCase {
             
             XCTAssertEqual(operationResponse.operationTypeString, "bump_sequence")
             XCTAssertEqual(operationResponse.operationType, OperationType.bumpSequence)
-            XCTAssertEqual(operationResponse.bumpTo, 1273737228)
+            XCTAssertEqual(operationResponse.bumpTo, "1273737228")
         }
         
         wait(for: [expectation], timeout: 15.0)

@@ -69,7 +69,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationsForAccount() {
         let expectation = XCTestExpectation(description: "Get operations for account")
         
-        sdk.operations.getOperations(forAccount: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX") { (response) -> (Void) in
+        sdk.operations.getOperations(forAccount: "GAP7U5YQWX776BXMMSK4JAZMNSRVBDJAFRHMTOFGJPIIVSNFJTZPW3BR", from: nil, order: Order.descending) { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
