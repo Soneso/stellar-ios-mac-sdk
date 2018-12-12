@@ -33,6 +33,17 @@ public enum AssetXDR: XDRCodable {
         }
     }
     
+    public var issuer: PublicKey? {
+        switch self {
+        case .native:
+            return nil
+        case .alphanum4(let a4):
+            return a4.issuer
+        case .alphanum12(let a12):
+            return a12.issuer
+        }
+    }
+    
     public init(assetCode: String, issuer: KeyPair) throws {
         if assetCode.count <= 4 {
             guard var codeData = assetCode.data(using: .utf8) else {
