@@ -182,6 +182,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
             DispatchQueue.main.asyncAfter(deadline: delayTime) {
                 self.connect()
             }
+            return
         }
         
         DispatchQueue.main.async {
