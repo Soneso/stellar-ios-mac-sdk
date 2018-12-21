@@ -136,6 +136,9 @@ class TomlTestCase: XCTestCase {
             XCTAssertTrue(thirdCurrency.image == "https://pbs.twimg.com/profile_images/666921221410439168/iriHah4f.jpg")
             XCTAssertTrue(thirdCurrency.fixedNumber == 10000)
             
+            let linkedCurrencyDocumentation = toml.currenciesDocumentation[3]
+            XCTAssertTrue(linkedCurrencyDocumentation.toml == "https://DOMAIN/.well-known/CURRENCY.toml")
+            
         } catch {
             XCTAssertTrue(false)
         }
@@ -250,6 +253,10 @@ class TomlTestCase: XCTestCase {
             conditions="There will only ever be 10,000 GOAT tokens in existence. We will distribute the revenue share annually on Jan. 15th"
             image="https://pbs.twimg.com/profile_images/666921221410439168/iriHah4f.jpg"
             fixed_number=10000
+            
+            # linked currency documentation
+            [[CURRENCIES]]
+            toml="https://DOMAIN/.well-known/CURRENCY.toml"
             
             #   Potential quorum set of this domain's validators.
             [QUORUM_SET]

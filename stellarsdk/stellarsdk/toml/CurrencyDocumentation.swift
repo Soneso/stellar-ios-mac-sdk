@@ -14,6 +14,7 @@ public class CurrencyDocumentation {
         case code = "code"
         case codeTemplate = "code_template"
         case issuer = "issuer"
+        case toml = "toml"
         case status = "status"
         case displayDecimals = "display_decimals"
         case name = "name"
@@ -46,6 +47,9 @@ public class CurrencyDocumentation {
     /// G... string
     /// Token issuer Stellar public key
     public let issuer: String?
+    
+    /// Alternately, stellar.toml can link out to a separate TOML file for each currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
+    public let toml: String?
     
     /// Status of token. One of live, dead, test, or private. Allows issuer to mark whether token is dead/for testing/for private use or is live and should be listed in live exchanges.
     public let status: String?
@@ -113,6 +117,7 @@ public class CurrencyDocumentation {
         code = toml.string(Keys.code.rawValue)
         codeTemplate = toml.string(Keys.codeTemplate.rawValue)
         issuer = toml.string(Keys.issuer.rawValue)
+        self.toml = toml.string(Keys.toml.rawValue)
         status = toml.string(Keys.status.rawValue)
         displayDecimals = toml.int(Keys.displayDecimals.rawValue)
         name = toml.string(Keys.name.rawValue)
