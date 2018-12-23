@@ -43,6 +43,20 @@ class AccountLocalTestCase: XCTestCase {
         XCTAssert(keyPair.privateKey!.bytes.count == 64, "Private key length is incorrect")
         XCTAssert(keyPair.seed!.bytes.count == 32, "Seed length is incorrect")
         XCTAssertNotNil(keyPair.secretSeed)
+        
+        do {
+            let _ = try KeyPair(secretSeed: "dssdd")
+            XCTAssert(false)
+        } catch {
+            XCTAssert(true)
+        }
+        
+        do {
+            let _ = try KeyPair(secretSeed: "SCTMMHMQONEFT4AW6O57UUIGESXW4TYAQIN6TGRGCF5XZIE6WSOTSL4S")
+            XCTAssert(true)
+        } catch {
+            XCTAssert(false)
+        }
     }
     
     func testKeyFromAccountIdCreation() {
