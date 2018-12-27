@@ -573,9 +573,11 @@ let webAuthenticator = WebAuthenticator(authEndpoint: "http://your_api.stellar.o
 
 You can find more documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.
 
-## Sample IOS app
+## Samples
 
-Satraj from BlockEQ created an [open source iOS wallet](https://github.com/Block-Equity/stellar-ios-wallet) for Stellar, that uses our sdk. Thank you Satraj for your contribution to this project! 
+The [Lumenshine](https://lumenshine.com) wallet for iOS is an [open source project](https://github.com/Soneso/lumenshine-iOS-wallet) developed and maintained by [Soneso](https://soneso.com), the creators and maintainers of this SDK. Lumenshine is currently available for [iOS](https://itunes.apple.com/us/app/lumenshine/id1441524975) and for [web](https://lumenshine.com).
+
+Another open source project that uses our SDK is the [BlockEQ iOS wallet](https://github.com/Block-Equity/stellar-ios-wallet) for Stellar.
 
 ## Stellar Ecosystem Proposals (SEPs) implemented
 
