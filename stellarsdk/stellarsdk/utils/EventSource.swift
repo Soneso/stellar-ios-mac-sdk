@@ -95,8 +95,9 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     open func close() {
         self.readyState = EventSourceState.closed
         self.urlSession?.invalidateAndCancel()
+        self.urlSession = nil
     }
-    
+
     fileprivate func receivedMessageToClose(_ httpResponse: HTTPURLResponse?) -> Bool {
         guard let response = httpResponse  else {
             return false
@@ -118,7 +119,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         self.onErrorCallback = onErrorCallback
         
         if let errorBeforeSet = self.errorBeforeSetErrorCallBack {
-            self.onErrorCallback!(errorBeforeSet)
+            self.onErrorCallback?(errorBeforeSet)
             self.errorBeforeSetErrorCallBack = nil
         }
     }
@@ -162,10 +163,8 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         }
         
         self.readyState = EventSourceState.open
-        if self.onOpenCallback != nil {
-            DispatchQueue.main.async {
-                self.onOpenCallback!(response as? HTTPURLResponse)
-            }
+        DispatchQueue.main.async { [weak self] in
+            self?.onOpenCallback?(response as? HTTPURLResponse)
         }
     }
     
@@ -179,17 +178,17 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         if error == nil || (error! as NSError).code != -999 {
             let nanoseconds = Double(self.retryTime) / 1000.0 * Double(NSEC_PER_SEC)
             let delayTime = DispatchTime.now() + Double(Int64(nanoseconds)) / Double(NSEC_PER_SEC)
-            DispatchQueue.main.asyncAfter(deadline: delayTime) {
-                self.connect()
+            DispatchQueue.main.asyncAfter(deadline: delayTime) { [weak self] in
+                self?.connect()
             }
             return
         }
         
-        DispatchQueue.main.async {
-            if let errorCallback = self.onErrorCallback {
+        DispatchQueue.main.async { [weak self] in
+            if let errorCallback = self?.onErrorCallback {
                 errorCallback(error as NSError?)
             } else {
-                self.errorBeforeSetErrorCallBack = error as NSError?
+                self?.errorBeforeSetErrorCallBack = error as NSError?
             }
         }
     }
@@ -264,15 +263,15 @@ open class EventSource: NSObject, URLSessionDataDelegate {
             
             if parsedEvent.event == nil {
                 if let data = parsedEvent.data, let onMessage = self.onMessageCallback {
-                    DispatchQueue.main.async {
-                        onMessage(self.lastEventID, "message", data)
+                    DispatchQueue.main.async { [weak self] in
+                        onMessage(self?.lastEventID, "message", data)
                     }
                 }
             }
             
             if let event = parsedEvent.event, let data = parsedEvent.data, let eventHandler = self.eventListeners[event] {
-                DispatchQueue.main.async {
-                    eventHandler(self.lastEventID, event, data)
+                DispatchQueue.main.async { [weak self] in
+                    eventHandler(self?.lastEventID, event, data)
                 }
             }
         }
