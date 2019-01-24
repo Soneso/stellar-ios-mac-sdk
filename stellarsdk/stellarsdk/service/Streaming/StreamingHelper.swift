@@ -21,8 +21,11 @@ public class StreamingHelper: NSObject {
     func streamFrom(path:String, responseClosure:@escaping StreamResponseEnum<String>.ResponseClosure) {
         let streamingURL = baseURL + path
         eventSource = EventSource(url: streamingURL, headers: ["Accept" : "text/event-stream"])
-        eventSource.onOpen {
-            if !self.closed {
+        eventSource.onOpen { httpResponse in
+            if httpResponse?.statusCode == 404 {
+                let error = HorizonRequestError.notFound(message: "Horizon object missing", horizonErrorResponse: nil)
+                responseClosure(.error(error: error))
+            } else if !self.closed {
                 responseClosure(.open)
             }
         }

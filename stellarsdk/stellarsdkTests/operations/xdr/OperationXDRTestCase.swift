@@ -722,7 +722,7 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertEqual(data, parsedOperation.data)
             
             let base64 = try operation.toXDRBase64()
-            XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAoAAAAEdGVzdAAAAAEAAAAFAAECAwQAAAA=", base64)
+            XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAoAAAAEdGVzdAAAAAEAAAAFAAECAwQ=", base64)
             
             expectation.fulfill()
         } catch {
