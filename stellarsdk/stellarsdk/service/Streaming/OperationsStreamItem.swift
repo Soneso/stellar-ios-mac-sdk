@@ -19,20 +19,21 @@ public class OperationsStreamItem: NSObject {
     }
     
     public func onReceive(response:@escaping StreamResponseEnum<OperationResponse>.ResponseClosure) {
-        streamingHelper.streamFrom(path:subpath) { (helperResponse) -> (Void) in
+        streamingHelper.streamFrom(path:subpath) { [weak self] (helperResponse) -> (Void) in
             switch helperResponse {
             case .open:
                 response(.open)
             case .response(let id, let data):
                 do {
                     let jsonData = data.data(using: .utf8)!
-                    let operation = try self.operationsFactory.operationFromData(data: jsonData)
+                    guard let operation = try self?.operationsFactory.operationFromData(data: jsonData) else { return }
                     response(.response(id: id, data: operation))
                 } catch {
                     response(.error(error: HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .error(let error):
-                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with path \(self.subpath): \(error?.localizedDescription ?? "nil")")))
+                let operationSubpath = self?.subpath ?? "unknown"
+                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with path \(operationSubpath): \(error?.localizedDescription ?? "nil")")))
             }
         }
     }
@@ -40,5 +41,4 @@ public class OperationsStreamItem: NSObject {
     public func closeStream() {
         streamingHelper.close()
     }
-    
 }
