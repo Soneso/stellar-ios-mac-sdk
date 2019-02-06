@@ -19,20 +19,21 @@ public class EffectsStreamItem: NSObject {
     }
     
     public func onReceive(response:@escaping StreamResponseEnum<EffectResponse>.ResponseClosure) {
-        streamingHelper.streamFrom(path:subpath) { (helperResponse) -> (Void) in
+        streamingHelper.streamFrom(path:subpath) { [weak self] (helperResponse) -> (Void) in
             switch helperResponse {
             case .open:
                 response(.open)
             case .response(let id, let data):
                 do {
                     let jsonData = data.data(using: .utf8)!
-                    let effects = try self.effectsFactory.effectFromData(data: jsonData)
+                    guard let effects = try self?.effectsFactory.effectFromData(data: jsonData) else { return }
                     response(.response(id: id, data: effects))
                 } catch {
                     response(.error(error: HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .error(let error):
-                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with path \(self.subpath): \(error?.localizedDescription ?? "nil")")))
+                let effectSubPath = self?.subpath ?? "unknown"
+                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with path \(effectSubPath): \(error?.localizedDescription ?? "nil")")))
             }
         }
     }
@@ -40,5 +41,4 @@ public class EffectsStreamItem: NSObject {
     public func closeStream() {
         streamingHelper.close()
     }
-    
 }
