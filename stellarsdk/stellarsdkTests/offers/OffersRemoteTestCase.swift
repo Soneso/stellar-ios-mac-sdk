@@ -25,7 +25,7 @@ class OffersRemoteTestCase: XCTestCase {
     func testLoadOffersForAccount() {
         let expectation = XCTestExpectation(description: "Get offers")
         
-        sdk.offers.getOffers(forAccount: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX") { (response) -> (Void) in
+        sdk.offers.getOffers(forAccount: "GDQZ4N3CMM3FL2HLYKZPF3JPZX3IRHI3SQKNSTEG6GMEA3OAW337EBA6") { (response) -> (Void) in
             switch response {
             case .success(let offersResponse):
                 // load next page

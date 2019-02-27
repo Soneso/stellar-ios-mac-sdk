@@ -11,8 +11,8 @@ import stellarsdk
 
 class DataForAccountRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let testSuccessPrivateKey = "SDLD2VYS6FCTD4GTUWQKMWBKPRSGT4JHOJVYUL5HEV5FURN2NU6DLIYI"
-    let testSuccessAccountId = "GBQUDX22EIIWJPCKCGOX3GCWQF24ZGPP5KKZLZNVWOIXCTVHYUTEIH54"
+    let testSuccessPrivateKey = "SDBLUM623VOIEQWXD5FN6K7HOU5GUKUGD6SGWTW2BB3PPD5GVFG7RZU5"
+    let testSuccessAccountId = "GBGZOWY7AVV4EPEB6OOWWLPHS6CP62W5AENP7CW52G6UTBJYEYJMHCIM"
     
     override func setUp() {
         super.setUp()

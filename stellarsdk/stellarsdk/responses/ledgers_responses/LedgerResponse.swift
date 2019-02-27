@@ -29,9 +29,15 @@ public class LedgerResponse: NSObject, Decodable {
     
     /// Sequence number of this ledger, suitable for use as the as the :id parameter for url templates that require a ledger number.
     public var sequenceNumber:Int64
-    
+
     /// The number of transactions in this ledger.
-    public var transactionCount:Int
+    public var transactionCount:Int?
+
+    /// The number of successful transactions in this ledger.
+    public var successfulTransactionCount:Int?
+
+    /// The number of failed transactions in this ledger.
+    public var failedTransactionCount:Int?
     
     /// The number of operations in this ledger.
     public var operationCount:Int
@@ -66,6 +72,8 @@ public class LedgerResponse: NSObject, Decodable {
         case previousHashXdr = "prev_hash"
         case sequenceNumber = "sequence"
         case transactionCount = "transaction_count"
+        case successfulTransactionCount = "successful_transaction_count"
+        case failedTransactionCount = "failed_transaction_count"
         case operationCount = "operation_count"
         case closedAt = "closed_at"
         case totalCoins = "total_coins"
@@ -91,7 +99,9 @@ public class LedgerResponse: NSObject, Decodable {
         hashXdr = try values.decode(String.self, forKey: .hashXdr)
         previousHashXdr = try values.decodeIfPresent(String.self, forKey: .previousHashXdr)
         sequenceNumber = try values.decode(Int64.self, forKey: .sequenceNumber)
-        transactionCount = try values.decode(Int.self, forKey: .transactionCount)
+        transactionCount = try values.decodeIfPresent(Int.self, forKey: .transactionCount) ?? 0
+        successfulTransactionCount = try values.decodeIfPresent(Int.self, forKey: .successfulTransactionCount)
+        failedTransactionCount = try values.decodeIfPresent(Int.self, forKey: .failedTransactionCount)
         operationCount = try values.decode(Int.self, forKey: .operationCount)
         closedAt = try values.decode(Date.self, forKey: .closedAt)
         totalCoins = try values.decode(String.self, forKey: .totalCoins)

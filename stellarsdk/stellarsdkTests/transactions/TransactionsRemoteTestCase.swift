@@ -72,7 +72,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetTransactionsForAccount() {
         let expectation = XCTestExpectation(description: "Get transactions for account")
         
-        sdk.transactions.getTransactions(forAccount: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX") { (response) -> (Void) in
+        sdk.transactions.getTransactions(forAccount: "GDQZ4N3CMM3FL2HLYKZPF3JPZX3IRHI3SQKNSTEG6GMEA3OAW337EBA6") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -264,7 +264,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testTransactionsForAccountStream() {
         let expectation = XCTestExpectation(description: "Get response from stream")
         
-        sdk.transactions.stream(for: .transactionsForAccount(account: "GD4FLXKATOO2Z4DME5BHLJDYF6UHUJS624CGA2FWTEVGUM4UZMXC7GVX", cursor: nil)).onReceive { (response) -> (Void) in
+        sdk.transactions.stream(for: .transactionsForAccount(account: "GDQZ4N3CMM3FL2HLYKZPF3JPZX3IRHI3SQKNSTEG6GMEA3OAW337EBA6", cursor: nil)).onReceive { (response) -> (Void) in
             switch response {
             case .open:
                 break
