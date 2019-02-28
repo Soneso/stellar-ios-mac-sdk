@@ -18,11 +18,15 @@ public class SignerEffectResponse: EffectResponse {
     
     /// Weight of the signers public key.
     public var weight:Int
-    
+
+    // The signer key.
+    public var key: String?
+
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
         case publicKey = "public_key"
         case weight
+        case key
     }
     
     /**
@@ -34,7 +38,8 @@ public class SignerEffectResponse: EffectResponse {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         publicKey = try values.decode(String.self, forKey: .publicKey)
         weight = try values.decode(Int.self, forKey: .weight)
-        
+        key = try values.decodeIfPresent(String.self, forKey: .key)
+
         try super.init(from: decoder)
     }
 }

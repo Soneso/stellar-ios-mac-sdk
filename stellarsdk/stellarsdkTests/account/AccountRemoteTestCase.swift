@@ -90,7 +90,6 @@ class AccountRemoteTestCase: XCTestCase {
                 XCTAssertNotNil(accountDetails.signers)
                 XCTAssertTrue(accountDetails.signers.count == 1)
                 let signer = accountDetails.signers.first!
-                XCTAssertEqual(signer.publicKey, accountDetails.accountId)
                 XCTAssertEqual(signer.weight, 1)
                 XCTAssertEqual(signer.key, accountDetails.accountId)
                 XCTAssertEqual(signer.type, "ed25519_public_key")

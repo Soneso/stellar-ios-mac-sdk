@@ -226,12 +226,10 @@ class AccountLocalTestCase: XCTestCase {
                 for signer in accountDetails.signers {
                     switch count {
                         case 0:
-                            XCTAssertEqual(signer.publicKey, accountDetails.accountId)
                             XCTAssertEqual(signer.weight, 1)
                             XCTAssertEqual(signer.key, accountDetails.accountId)
                             XCTAssertEqual(signer.type, "ed25519_public_key")
                         default:
-                            XCTAssertEqual(signer.publicKey, "FOXUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG")
                             XCTAssertEqual(signer.weight, 2)
                             XCTAssertEqual(signer.key, "BARUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG")
                             XCTAssertEqual(signer.type, "test")
