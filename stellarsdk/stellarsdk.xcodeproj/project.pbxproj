@@ -2545,6 +2545,7 @@
 			buildConfigurationList = 7445EA10201B106500470E0A /* Build configuration list for PBXNativeTarget "stellarsdk" */;
 			buildPhases = (
 				7445E9F7201B106500470E0A /* Sources */,
+				C5D13C1F224B103C00F0CD2E /* Verify Podspec Version Matches */,
 				7445E9F8201B106500470E0A /* Frameworks */,
 				7445E9F9201B106500470E0A /* Headers */,
 				7445E9FA201B106500470E0A /* Resources */,
@@ -2700,6 +2701,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C5D13C1F224B103C00F0CD2E /* Verify Podspec Version Matches */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Verify Podspec Version Matches";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "INFO_PLIST=\"${SRCROOT}/stellarsdk/Info\"\nSDK_VERSION=\"$(defaults read $INFO_PLIST CFBundleShortVersionString)\"\nPODSPEC_VERSION=`grep 's.version' ${SRCROOT}/../stellar-ios-mac-sdk.podspec | head -n1 | grep -o '\".*\"' | sed 's/\"//g'`\n\nif [ \"${PODSPEC_VERSION}\" != \"${SDK_VERSION}\" ] ; then\n    echo \"error: Podspec version does not match bundle version. Please update the Info.plist file with the correct version.\"\n    exit 1\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		743DF4E0201F130100713DE7 /* Sources */ = {
