@@ -27,6 +27,26 @@ typealias ResponseClosure = (_ response:Result) -> (Void)
 
 /// End class responsible with the HTTP connection to the Horizon server
 class ServiceHelper: NSObject {
+    static let HorizonClientVersionHeader = "X-Client-Version"
+    static let HorizonClientNameHeader = "X-Client-Name"
+    static let HorizonClientApplicationHeader = "X-Client-Application"
+
+    lazy var horizonRequestHeaders: [String: String] = {
+        var headers: [String: String] = [:]
+
+        let mainBundle = Bundle.main
+        let frameworkBundle = Bundle(for: ServiceHelper.self)
+        if let bundleVersion = frameworkBundle.infoDictionary?["CFBundleShortVersionString"] as? String,
+            let bundleIdentifier = frameworkBundle.infoDictionary?["CFBundleIdentifier"] as? String,
+            let applicationBundleID = mainBundle.infoDictionary?["CFBundleIdentifier"] as? String {
+            headers[ServiceHelper.HorizonClientNameHeader] = bundleIdentifier
+            headers[ServiceHelper.HorizonClientVersionHeader] = bundleVersion
+            headers[ServiceHelper.HorizonClientApplicationHeader] = applicationBundleID
+        }
+
+        return headers
+    }()
+
     /// The url of the Horizon server to connect to
     internal let baseURL: String
     let jsonDecoder = JSONDecoder()
@@ -116,11 +136,15 @@ class ServiceHelper: NSObject {
     open func requestFromUrl(url: String, method: HTTPMethod, contentType:String? = nil, body:Data? = nil, completion: @escaping ResponseClosure) {
         let url = URL(string: url)!
         var urlRequest = URLRequest(url: url)
-        
+
+        horizonRequestHeaders.forEach {
+            urlRequest.addValue($0.value, forHTTPHeaderField: $0.key)
+        }
+
         if let contentType = contentType {
             urlRequest.addValue(contentType, forHTTPHeaderField: "Content-Type")
         }
-        
+
         switch method {
         case .get:
             break
