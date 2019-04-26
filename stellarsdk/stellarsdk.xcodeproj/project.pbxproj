@@ -3646,7 +3646,6 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/osx $(SRCROOT)/stellarsdk/libs/ed25519-C/**";
-				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -3671,7 +3670,6 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellarsdk/osx";
-				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -3689,7 +3687,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -3707,7 +3704,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -3721,7 +3717,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -3736,7 +3731,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -3752,7 +3746,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
 			};
@@ -3769,7 +3762,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
 			};
@@ -3785,7 +3777,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = "stellarsdkTests-Host";
 			};
@@ -3801,7 +3792,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = "stellarsdkTests-Host";
 			};
@@ -3862,6 +3852,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -3914,6 +3905,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 5.0;
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -3942,7 +3934,6 @@
 				"SWIFT_INCLUDE_PATHS[sdk=iphoneos*]" = "$(SRCROOT)/stellarsdk/libs/ed25519-C/**";
 				"SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]" = "$(SRCROOT)/stellarsdk/libs/ed25519-C/**";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -3968,7 +3959,6 @@
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/libs/ed25519-C/**";
 				"SWIFT_INCLUDE_PATHS[sdk=iphoneos*]" = "$(SRCROOT)/stellarsdk/libs/ed25519-C/**";
 				"SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]" = "$(SRCROOT)/stellarsdk/libs/ed25519-C/**";
-				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -3984,7 +3974,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
 			};
@@ -4001,7 +3990,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
 			};
@@ -4062,6 +4050,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG XC9";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -4089,7 +4078,6 @@
 				"SWIFT_INCLUDE_PATHS[sdk=iphoneos*]" = "$(SRCROOT)/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellarsdk/iphone";
 				"SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]" = "$(SRCROOT)/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellarsdk/simulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = "Debug - Xcode 9";
@@ -4105,7 +4093,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
 			};
@@ -4132,7 +4119,6 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/osx $(SRCROOT)/stellarsdk/libs/ed25519-C/**";
-				SWIFT_VERSION = 4.2;
 			};
 			name = "Debug - Xcode 9";
 		};
@@ -4150,7 +4136,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				SWIFT_VERSION = 4.0;
 			};
 			name = "Debug - Xcode 9";
 		};
@@ -4164,7 +4149,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = "Debug - Xcode 9";
@@ -4180,7 +4164,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
 			};
@@ -4196,7 +4179,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = "stellarsdkTests-Host";
 			};
@@ -4250,6 +4232,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = XC9;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 5.0;
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -4277,7 +4260,6 @@
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/libs/ed25519-C/**";
 				"SWIFT_INCLUDE_PATHS[sdk=iphoneos*]" = "$(SRCROOT)/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellarsdk/iphone";
 				"SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]" = "$(SRCROOT)/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellarsdk/simulator";
-				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = "Release - Xcode 9";
@@ -4293,7 +4275,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
 			};
@@ -4320,7 +4301,6 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellarsdk/osx";
-				SWIFT_VERSION = 4.2;
 			};
 			name = "Release - Xcode 9";
 		};
@@ -4338,7 +4318,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				SWIFT_VERSION = 4.0;
 			};
 			name = "Release - Xcode 9";
 		};
@@ -4352,7 +4331,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = "Release - Xcode 9";
@@ -4368,7 +4346,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
 			};
@@ -4384,7 +4361,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = "stellarsdkTests-Host";
 			};

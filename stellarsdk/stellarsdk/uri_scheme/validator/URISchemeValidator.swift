@@ -16,7 +16,7 @@ public enum SignURLEnum {
 
 /// An enum used to diferentiate between successful and failed URIScheme validity.
 public enum URISchemeIsValidEnum {
-    case success()
+    case success
     case failure(URISchemeErrors)
 }
 
@@ -62,7 +62,7 @@ public class URISchemeValidator: NSObject {
                             if let signerPublicKey = try? PublicKey(accountId: uriRequestSigningKey) {
                                 if let signature = self.getSignatureField(forURL: url) {
                                     if self.verify(forURL: url, urlEncodedBase64Signature: signature, signerPublicKey: signerPublicKey) {
-                                        completion(.success())
+                                        completion(.success)
                                     } else {
                                         completion(.failure(.invalidSignature))
                                     }

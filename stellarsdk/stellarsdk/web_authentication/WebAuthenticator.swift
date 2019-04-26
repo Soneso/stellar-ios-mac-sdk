@@ -172,9 +172,9 @@ public class WebAuthenticator {
             switch result {
             case .success(let data):
                 if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let challenge = response?["transaction"] as? String {
+                    if let challenge = response["transaction"] as? String {
                         completion(.success(challenge: challenge))
-                    } else if let error = response?["error"] as? String {
+                    } else if let error = response["error"] as? String {
                         completion(.failure(error: .requestFailed(message: error)))
                     } else {
                         completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON")))
@@ -274,9 +274,9 @@ public class WebAuthenticator {
             switch result {
             case .success(let data):
                 if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let token = response?["token"] as? String {
+                    if let token = response["token"] as? String {
                         completion(.success(jwtToken: token))
-                    } else if let error = response?["error"] as? String {
+                    } else if let error = response["error"] as? String {
                         completion(.failure(error: .requestFailed(message: error)))
                     } else {
                         completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON")))

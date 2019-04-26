@@ -140,7 +140,7 @@ class URISchemeTestCase: XCTestCase {
         tomlResponseMock = TomlResponseMock(address: "place.domain.com")
         uriValidator.checkURISchemeIsValid(url: validURL) { (response) -> (Void) in
             switch response {
-                case .success():
+                case .success:
                     XCTAssert(true)
                 case .failure(let error):
                     print("ValidURIScheme Error: \(error)")
@@ -280,7 +280,7 @@ class URISchemeTestCase: XCTestCase {
             expectation.fulfill()
         }) { (response) -> (Void) in
             switch response {
-            case .success():
+            case .success:
                 XCTAssert(true)
             case .failure(_):
                 XCTAssert(false)
@@ -296,7 +296,7 @@ class URISchemeTestCase: XCTestCase {
         
         uriValidator.checkURISchemeIsValid(url: validURL) { (response) -> (Void) in
             switch response {
-            case .success():
+            case .success:
                 XCTAssert(false)
             case .failure(let error):
                 print("ValidURIScheme Error: \(error)")

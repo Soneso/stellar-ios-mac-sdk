@@ -210,7 +210,7 @@ public class URIScheme: NSObject {
     
     /// Sends the transaction to the network.
     private func submitTransaction(transactionXDR: TransactionXDR?, callback: String? = nil, keyPair: KeyPair, completion: @escaping SubmitTransactionClosure) {
-        if let transactionEncodedEnvelope = try? transactionXDR?.encodedEnvelope(), let transactionEnvelope = transactionEncodedEnvelope {
+        if let transactionEncodedEnvelope = try? transactionXDR?.encodedEnvelope() {
             if var callback = callback, callback.hasPrefix("uri:") {
                 callback = String(callback.dropLast(4))
                 let serviceHelper = ServiceHelper(baseURL: callback)
@@ -225,7 +225,7 @@ public class URIScheme: NSObject {
                     }
                 }
             } else {
-                self.sdk.transactions.postTransaction(transactionEnvelope: transactionEnvelope, response: { (response) -> (Void) in
+                self.sdk.transactions.postTransaction(transactionEnvelope: transactionEncodedEnvelope, response: { (response) -> (Void) in
                     switch response {
                     case .success(_):
                         completion(.success)
