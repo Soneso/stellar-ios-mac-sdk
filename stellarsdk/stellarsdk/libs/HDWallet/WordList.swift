@@ -40,7 +40,7 @@ public enum WordList {
 
 extension WordList {
     public var englishWords: [String] {
-        return ["abandon"]
+        return ["abandon", "ability", "able", "about", "above", "absent", "absorb", "abstract", "absurd", "abuse", "access", "accident", "account", "accuse", "achieve", "acid", "acoustic", "acquire", "across", "act", "action", "actor", "actress", "actual", "adapt", "add", "addict", "address", "adjust", "admit", "adult"]
     }
     
     public var chineseSimplifiedWords: [String] {
