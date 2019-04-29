@@ -11,15 +11,16 @@ import stellarsdk
 
 class URISchemeTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let publicKey = Data(base64Encoded:"uHFsF4DaBlIsPUzFlMuBFkgEROGR9DlEBYCg3x+V72A=")!
-    let privateKey = Data(base64Encoded: "KJJ6vrrDOe9XIDAj6iSftUzux0qWwSwf3er27YKUOU2ZbT/G/wqFm/tDeez3REW5YlD5mrf3iidmGjREBzOEjQ==")!
+    let accountID = "GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV"
+    let secretSeed = "SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF"
+    
     let unsignedURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com"
 
-    let signedURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&signature=ZV%2BegOAcv%2FMTua5vOXA0JkXp3sKq1F4cNg7F0RIQQbThQ9%2FmuEzzU21GEb3qQ%2Fl95CuhLVP6IW8eU1aFob7MAA%3D%3D"
+    let signedURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&signature=ggKDaF580XxQB77YgEsyu2HvkX4gpUY3m0WPhsR6wATD5%2BTDiiHMMp%2FpsQP%2FBlNCAz8GAiXnTymKHmAKvS4HAw%3D%3D"
 
-    let validURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com&signature=ca5NoydAhPz10%2BFTGLN4gThguXfB%2FL2xO31wlcNu87ypmM2deNFdyXFWkgxwIirGOvQOtgRZvW%2BkwC%2Bucu4MBA%3D%3D"
+    let validURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com&signature=ggKDaF580XxQB77YgEsyu2HvkX4gpUY3m0WPhsR6wATD5%2BTDiiHMMp%2FpsQP%2FBlNCAz8GAiXnTymKHmAKvS4HAw%3D%3D"
     
-    let validURLCallback = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com&signature=ca5NoydAhPz10%2BFTGLN4gThguXfB%2FL2xO31wlcNu87ypmM2deNFdyXFWkgxwIirGOvQOtgRZvW%2BkwC%2Bucu4MBA%3D%3D&callback=url:https://examplePost.com"
+    let validURLCallback = "web+stellar:tx?xdr=AAAAAM1C8kJqGxGKNEVcweDIZd1qv3lbJr040EWYUY5EFmRYAAAAZAAAfvoAAAAdAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com&signature=ca5NoydAhPz10%2BFTGLN4gThguXfB%2FL2xO31wlcNu87ypmM2deNFdyXFWkgxwIirGOvQOtgRZvW%2BkwC%2Bucu4MBA%3D%3D&callback=url:https://examplePost.com"
     
     let uriValidator = URISchemeValidator()
     
@@ -46,7 +47,7 @@ class URISchemeTestCase: XCTestCase {
     
     func testGetTransactionOperationURIScheme() {
         let expectation = XCTestExpectation(description: "URL Returned.")
-        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
         sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
             switch response {
             case .success(let data):
@@ -70,7 +71,7 @@ class URISchemeTestCase: XCTestCase {
     
     func testGetPaymentOperationURIScheme() {
         let expectation = XCTestExpectation(description: "URL Returned.")
-        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
         let uriSchemeBuilder = URIScheme()
         let uriScheme = uriSchemeBuilder.getPayOperationURI(accountID: keyPair.accountId, amount: 123.21,assetCode: "ANA", assetIssuer: "GC4HC3AXQDNAMURMHVGMLFGLQELEQBCE4GI7IOKEAWAKBXY7SXXWBTLV")
         print("PayOperationURI: \(uriScheme)")
@@ -122,7 +123,7 @@ class URISchemeTestCase: XCTestCase {
     
     func testSigningURI() {
         let expectation = XCTestExpectation(description: "Signed URL returned.")
-        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
         let result = uriValidator.signURI(url: unsignedURL, signerKeyPair: keyPair)
         switch result {
             case .success(signedURL: let signedURL):
@@ -156,7 +157,7 @@ class URISchemeTestCase: XCTestCase {
     func testTransactionSigning() {
         let expectation = XCTestExpectation(description: "The transaction is signed and sent to the stellar network")
         let uriBuilder = URIScheme()
-        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
         uriBuilder.signTransaction(forURL: validURL, signerKeyPair: keyPair) { (response) -> (Void) in
             switch response {
             case .success:
@@ -175,7 +176,7 @@ class URISchemeTestCase: XCTestCase {
     func testTransactionSigningCallback() {
         let expectation = XCTestExpectation(description: "The transaction is signed and sent to the callback")
         let uriBuilder = URIScheme()
-        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
         uriBuilder.signTransaction(forURL: validURLCallback, signerKeyPair: keyPair) { (response) -> (Void) in
             switch response {
             case .success:
@@ -220,7 +221,7 @@ class URISchemeTestCase: XCTestCase {
     func testTransactionXDRMissing() {
         let expectation = XCTestExpectation(description: "The transaction is missing from the url!")
         let uriBuilder = URIScheme()
-        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
         let url = "web+stellar:tx?xdr=asdasdsadsadsa"
         uriBuilder.signTransaction(forURL: url, signerKeyPair: keyPair) { (response) -> (Void) in
             switch response {
@@ -246,7 +247,7 @@ class URISchemeTestCase: XCTestCase {
     func testConfirmationTransaction() {
         let expectation = XCTestExpectation(description: "The transaction is going to be canceled by not confirming it!")
         let uriBuilder = URIScheme()
-        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
         uriBuilder.signTransaction(forURL: validURL, signerKeyPair: keyPair, transactionConfirmation: { (transaction) -> (Bool) in
             return false
         }) { (response) -> (Void) in

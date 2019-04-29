@@ -11,6 +11,8 @@ import stellarsdk
 
 class TransactionsRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
+    let seed = "SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF"
+    var streamItem:TransactionsStreamItem? = nil
     
     override func setUp() {
         super.setUp()
@@ -72,7 +74,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetTransactionsForAccount() {
         let expectation = XCTestExpectation(description: "Get transactions for account")
         
-        sdk.transactions.getTransactions(forAccount: "GDQZ4N3CMM3FL2HLYKZPF3JPZX3IRHI3SQKNSTEG6GMEA3OAW337EBA6") { (response) -> (Void) in
+        sdk.transactions.getTransactions(forAccount: "GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -108,7 +110,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetTransactionDetails() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         
-        sdk.transactions.getTransactionDetails(transactionHash: "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a") { (response) -> (Void) in
+        sdk.transactions.getTransactionDetails(transactionHash: "95d8f7dfcfb452cd89e047e5b4dba63083d6d6559673fc9f55ad0064b8c7eb10") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -124,9 +126,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     }
 
     func testTransactionSigning() {
-        let publicKey = Data(base64Encoded:"uHFsF4DaBlIsPUzFlMuBFkgEROGR9DlEBYCg3x+V72A=")!
-        let privateKey = Data(base64Encoded: "KJJ6vrrDOe9XIDAj6iSftUzux0qWwSwf3er27YKUOU2ZbT/G/wqFm/tDeez3REW5YlD5mrf3iidmGjREBzOEjQ==")!
-        let keyPair = try! KeyPair(publicKey: PublicKey([UInt8](publicKey)), privateKey: PrivateKey([UInt8](privateKey)))
+        let keyPair = try! KeyPair(secretSeed: seed)
         
         let expectation = XCTestExpectation(description: "Transaction successfully signed.")
         sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
@@ -153,10 +153,11 @@ class TransactionsRemoteTestCase: XCTestCase {
         let expectation = XCTestExpectation(description: "Transaction Multisignature")
         
         do {
-            let source = try KeyPair(secretSeed:"SA3QF6XW433CBDLUEY5ZAMHYJLJNH4GOPASLJLO4QKH75HRRXZ3UM2YJ")
-            let destination = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            let source = try KeyPair(secretSeed:seed)
+            let destination = try KeyPair(secretSeed: "SDA5U2P5SVQUZVETSUZANY5GP3TQLQTP7P7N7OW2T7X643EHFL5BH27N")
             
-            sdk.transactions.stream(for: .transactionsForAccount(account: source.accountId, cursor: "now")).onReceive { response in
+            streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: source.accountId, cursor: "now"))
+            streamItem?.onReceive { response in
                 switch response {
                 case .open:
                     break
@@ -223,22 +224,37 @@ class TransactionsRemoteTestCase: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 30.0)
+        wait(for: [expectation], timeout: 15.0)
     }
     
     func testTransactionEnvelopePost() {
-        let expectation = XCTestExpectation(description: "Get transaction details")
-        let xdrEnvelope = "AAAAAEoEH7ZQEw/9pvByb8zVNc778lBaE/CRqWCqLMqZfJEhAAAAZAAAAHgAAAABAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAEH3Rayw4M0iCLoEe96rPFNGYim8AVHJU0z4ebYZW4JwAA41+pMaAAAAAAAAAAAABmXyRIQAAAEACF+2/akS2P9UVrnj63h7riTipaWPzeirDFP7P97VkcpBk12utsSbMhCg+YV5osZIKf4n9QsS6rDq3hZbP3qgD"
+        let keyPair = try! KeyPair(secretSeed: seed)
         
-        sdk.transactions.postTransaction(transactionEnvelope: xdrEnvelope, response: { (response) -> (Void) in
+        let expectation = XCTestExpectation(description: "Transaction successfully signed.")
+        sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
             switch response {
-            case .success(_):
-                expectation.fulfill()
+            case .success(let data):
+                let operationBody = OperationBodyXDR.inflation
+                let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
+                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation])
+                
+                try! transaction.sign(keyPair: keyPair, network: .testnet)
+                let xdrEnvelope = try! transaction.encodedEnvelope()
+                print(xdrEnvelope)
+                self.sdk.transactions.postTransaction(transactionEnvelope: xdrEnvelope, response: { (response) -> (Void) in
+                    switch response {
+                    case .success(_):
+                        expectation.fulfill()
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"TEP Test", horizonRequestError:error)
+                        XCTAssert(false)
+                    }
+                })
             case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"TEP Test", horizonRequestError:error)
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"TS Test", horizonRequestError:error)
                 XCTAssert(false)
             }
-        })
+        }
         
         wait(for: [expectation], timeout: 25.0)
     }

@@ -35,6 +35,6 @@ class TomlResponseMock: ResponsesMock {
             FEDERATION_SERVER="https://api.domain.com/federation"
             AUTH_SERVER="https://api.domain.com/auth"
             TRANSFER_SERVER="https://api.domain.com"
-            URI_REQUEST_SIGNING_KEY="GC4HC3AXQDNAMURMHVGMLFGLQELEQBCE4GI7IOKEAWAKBXY7SXXWBTLV"
+            URI_REQUEST_SIGNING_KEY="GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV"
             """
 }

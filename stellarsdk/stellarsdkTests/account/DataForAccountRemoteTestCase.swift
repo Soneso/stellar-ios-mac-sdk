@@ -11,8 +11,8 @@ import stellarsdk
 
 class DataForAccountRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let testSuccessPrivateKey = "SDBLUM623VOIEQWXD5FN6K7HOU5GUKUGD6SGWTW2BB3PPD5GVFG7RZU5"
-    let testSuccessAccountId = "GBGZOWY7AVV4EPEB6OOWWLPHS6CP62W5AENP7CW52G6UTBJYEYJMHCIM"
+    let testSuccessPrivateKey = "SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF"
+    let testSuccessAccountId = "GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV"
     
     override func setUp() {
         super.setUp()
@@ -29,7 +29,7 @@ class DataForAccountRemoteTestCase: XCTestCase {
         sdk.accounts.getDataForAccount(accountId: testSuccessAccountId, key:"soneso") { (response) -> (Void) in
             switch response {
             case .success(let dataForAccount):
-                XCTAssertEqual(dataForAccount.value.base64Decoded(), "is fun")
+                XCTAssertEqual(dataForAccount.value.base64Decoded(), "is super")
             case .failure(let error):
                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"GDFA testcase", horizonRequestError: error)
                 XCTAssert(false)

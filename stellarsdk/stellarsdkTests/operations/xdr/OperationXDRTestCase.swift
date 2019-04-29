@@ -22,30 +22,6 @@ class OperationXDRTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testSubmitTransactionResultXdr() {
-        let expectation = XCTestExpectation(description: "Get transaction details")
-        let xdrEnvelope = "AAAAAPhHVuyAhuUidEpB/4KaPpihfXTs6ZiFKOFfxHZbuOTXAAAAZAACBCMAAAABAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAAAVu45NcAAABABGxmb9h3ok4+t9CTncpoCK1SJ8uucuDWPlDpkfSKlumXMjbTeg3w+dp/3A2uUcBiNH5cPrOzy7IlRpMsKVY9Bw=="
-        
-        sdk.transactions.postTransaction(transactionEnvelope: xdrEnvelope, response: { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                if let resultBody = response.transactionResult.resultBody {
-                    switch resultBody {
-                    case .success(let operations):
-                        self.validateOperation(operationXDR: operations.first!)
-                        expectation.fulfill()
-                    case .failed:
-                        XCTAssert(false)
-                    }
-                }
-            case .failure(_):
-                XCTAssert(false)
-            }
-        })
-        
-        wait(for: [expectation], timeout: 25.0)
-    }
-    
     func testGetTransactionXdr() {
         let expectation = XCTestExpectation(description: "Get transaction xdr")
         
