@@ -138,6 +138,8 @@ class PaymentsTestCase: XCTestCase {
                 case .response(let id, let operationResponse):
                     if let paymentResponse = operationResponse as? PaymentOperationResponse {
                         print("Payment of \(paymentResponse.amount) XLM from \(paymentResponse.sourceAccount) received -  id \(id)" )
+                        self.streamItem?.closeStream()
+                        self.streamItem = nil
                         XCTAssert(true)
                         expectation.fulfill()
                     }

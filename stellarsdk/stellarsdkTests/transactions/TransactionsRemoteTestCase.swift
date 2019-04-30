@@ -168,6 +168,8 @@ class TransactionsRemoteTestCase: XCTestCase {
                     if response.signatures.count == 2 {
                         XCTAssert(true)
                         expectation.fulfill()
+                        self.streamItem?.closeStream()
+                        self.streamItem = nil
                     }
                 case .error(let error):
                     if let horizonRequestError = error as? HorizonRequestError {

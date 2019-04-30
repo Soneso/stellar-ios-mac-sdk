@@ -83,6 +83,8 @@ class MemoRemoteTestCase: XCTestCase {
                 case .response(_, let response):
                     if response.memoType == memo.type(), response.memo == memo {
                         XCTAssert(true)
+                        self.streamItem?.closeStream()
+                        self.streamItem = nil
                         expectation.fulfill()
                     }
                 case .error(let error):

@@ -161,6 +161,8 @@ class OperationsRemoteTestCase: XCTestCase {
                     if let accountCreatedResponse = operationResponse as? AccountCreatedOperationResponse {
                         print("CA Test: Stream source account received response with effect-ID: \(id) - type: Account created - New account with accountId: \(accountCreatedResponse.account) now has a balance of : \(accountCreatedResponse.startingBalance) XLM" )
                         print("CA Test: Success")
+                        self.streamItem?.closeStream()
+                        self.streamItem = nil
                         XCTAssert(true)
                         expectation.fulfill()
                     }
@@ -236,6 +238,8 @@ class OperationsRemoteTestCase: XCTestCase {
                             print("UHD Test: Home domain updated to: \(responseHomeDomain)-" )
                             if homeDomain == responseHomeDomain {
                                 print("Success")
+                                self.streamItem?.closeStream()
+                                self.streamItem = nil
                                 expectation.fulfill()
                             }
                         }
@@ -314,6 +318,8 @@ class OperationsRemoteTestCase: XCTestCase {
                 case .response( _, let operationResponse):
                     if let setOptionsResponse = operationResponse as? SetOptionsOperationResponse {
                         if (setOptionsResponse.inflationDestination == destinationAccountId) {
+                            self.streamItem?.closeStream()
+                            self.streamItem = nil
                             XCTAssert(true)
                             expectation.fulfill()
                         }
@@ -390,6 +396,8 @@ class OperationsRemoteTestCase: XCTestCase {
                     if let changeTrustlineResponse = operationResponse as? ChangeTrustOperationResponse {
                         if let assetCode = changeTrustlineResponse.assetCode, let assetIssuer = changeTrustlineResponse.assetIssuer, let limit = changeTrustlineResponse.limit {
                             if assetCode == "IOM", assetIssuer ==  issuingAccountKeyPair.accountId, limit == "100000000.0000000" {
+                                self.streamItem?.closeStream()
+                                self.streamItem = nil
                                 XCTAssert(true)
                                 expectation.fulfill()
                             }
@@ -493,6 +501,8 @@ class OperationsRemoteTestCase: XCTestCase {
                 case .response( _, let operationResponse):
                     if let manageOfferResponse = operationResponse as? ManageOfferOperationResponse {
                         if manageOfferResponse.buyingAssetType == AssetTypeAsString.NATIVE, manageOfferResponse.offerId == 0 {
+                            self.streamItem?.closeStream()
+                            self.streamItem = nil
                             XCTAssert(true)
                             expectation.fulfill()
                         }
