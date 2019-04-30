@@ -243,8 +243,16 @@ You can use the parameters:`limit`, `order`, and `cursor` to customize the query
 
 Horizon has SSE support for push data. You can use it like this:
 
+first define your stream item somwhere to be able to hold the reference:
 ```swift
-sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
+var streamItem:OperationsStreamItem? = nil
+```
+
+then create, assign and use it:
+```swift
+streamItem = sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: nil))
+
+streamItem?.onReceive { (response) -> (Void) in
     switch response {
     case .open:
         break
@@ -262,6 +270,13 @@ sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.
     }
 }
 ```
+
+later you can close the stream item:
+
+```swift
+streamItem.close()
+```
+
 #### 3.3 Check others
 
 Just like payments, you you check `assets`, `transactions`, `effects`, `offers`, `operations`, `ledgers` etc.  by:
