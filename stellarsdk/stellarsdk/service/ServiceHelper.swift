@@ -29,19 +29,26 @@ typealias ResponseClosure = (_ response:Result) -> (Void)
 class ServiceHelper: NSObject {
     static let HorizonClientVersionHeader = "X-Client-Version"
     static let HorizonClientNameHeader = "X-Client-Name"
-    static let HorizonClientApplicationHeader = "X-Client-Application"
+    static let HorizonClientApplicationNameHeader = "X-App-Name"
+    static let HorizonClientApplicationVersionHeader = "X-App-Version"
 
     lazy var horizonRequestHeaders: [String: String] = {
         var headers: [String: String] = [:]
 
         let mainBundle = Bundle.main
         let frameworkBundle = Bundle(for: ServiceHelper.self)
-        if let bundleVersion = frameworkBundle.infoDictionary?["CFBundleShortVersionString"] as? String,
-            let bundleIdentifier = frameworkBundle.infoDictionary?["CFBundleIdentifier"] as? String,
-            let applicationBundleID = mainBundle.infoDictionary?["CFBundleIdentifier"] as? String {
+        
+        if let bundleIdentifier = frameworkBundle.infoDictionary?["CFBundleIdentifier"] as? String {
             headers[ServiceHelper.HorizonClientNameHeader] = bundleIdentifier
+        }
+        if let bundleVersion = frameworkBundle.infoDictionary?["CFBundleShortVersionString"] as? String {
             headers[ServiceHelper.HorizonClientVersionHeader] = bundleVersion
-            headers[ServiceHelper.HorizonClientApplicationHeader] = applicationBundleID
+        }
+        if let applicationBundleID = mainBundle.infoDictionary?["CFBundleIdentifier"] as? String {
+            headers[ServiceHelper.HorizonClientApplicationNameHeader] = applicationBundleID
+        }
+        if let applicationBundleVersion = mainBundle.infoDictionary?["CFBundleShortVersionString"] as? String {
+            headers[ServiceHelper.HorizonClientApplicationVersionHeader] = applicationBundleVersion
         }
 
         return headers
