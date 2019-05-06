@@ -191,7 +191,7 @@
 		745DF4272052FF9B000D3660 /* PaymentOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFD82036F19000C23CFE /* PaymentOperation.swift */; };
 		745DF4282052FF9B000D3660 /* PathPaymentOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFDA2036F1E400C23CFE /* PathPaymentOperation.swift */; };
 		745DF4292052FF9B000D3660 /* ManageOfferOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFDC2036F2B500C23CFE /* ManageOfferOperation.swift */; };
-		745DF42A2052FF9B000D3660 /* CreatePassiveSellOfferOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFDE2036F46100C23CFE /* CreatePassiveSellOfferOperation.swift */; };
+		745DF42A2052FF9B000D3660 /* CreatePassiveOfferOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFDE2036F46100C23CFE /* CreatePassiveOfferOperation.swift */; };
 		745DF42B2052FF9B000D3660 /* SetOptionsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFE02036F4CF00C23CFE /* SetOptionsOperation.swift */; };
 		745DF42C2052FF9B000D3660 /* ChangeTrustOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFE22036F6D500C23CFE /* ChangeTrustOperation.swift */; };
 		745DF42D2052FF9B000D3660 /* AllowTrustOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFE42036F73700C23CFE /* AllowTrustOperation.swift */; };
@@ -628,6 +628,8 @@
 		83379C2A2280BE2A00BD5F8E /* ManageSellOfferOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83379C222280AE2900BD5F8E /* ManageSellOfferOperationResponse.swift */; };
 		83379C2B2280BE2A00BD5F8E /* ManageBuyOfferOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83379C242280AE9C00BD5F8E /* ManageBuyOfferOperationResponse.swift */; };
 		83379C2C2280BE2A00BD5F8E /* CreatePassiveSellOfferOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83379C262280B64500BD5F8E /* CreatePassiveSellOfferOperationResponse.swift */; };
+		83379C2E2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83379C2D2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift */; };
+		83379C2F2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83379C2D2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift */; };
 		833CBF8A2033510D00C23CFE /* DecoratedSignatureXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBF892033510D00C23CFE /* DecoratedSignatureXDR.swift */; };
 		833CBF8C2033514C00C23CFE /* OperationMetaXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBF8B2033514C00C23CFE /* OperationMetaXDR.swift */; };
 		833CBF8E203351B200C23CFE /* TimeBoundsXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBF8D203351B200C23CFE /* TimeBoundsXDR.swift */; };
@@ -663,7 +665,7 @@
 		833CBFD92036F19000C23CFE /* PaymentOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFD82036F19000C23CFE /* PaymentOperation.swift */; };
 		833CBFDB2036F1E400C23CFE /* PathPaymentOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFDA2036F1E400C23CFE /* PathPaymentOperation.swift */; };
 		833CBFDD2036F2B500C23CFE /* ManageOfferOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFDC2036F2B500C23CFE /* ManageOfferOperation.swift */; };
-		833CBFDF2036F46100C23CFE /* CreatePassiveSellOfferOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFDE2036F46100C23CFE /* CreatePassiveSellOfferOperation.swift */; };
+		833CBFDF2036F46100C23CFE /* CreatePassiveOfferOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFDE2036F46100C23CFE /* CreatePassiveOfferOperation.swift */; };
 		833CBFE12036F4CF00C23CFE /* SetOptionsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFE02036F4CF00C23CFE /* SetOptionsOperation.swift */; };
 		833CBFE32036F6D500C23CFE /* ChangeTrustOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFE22036F6D500C23CFE /* ChangeTrustOperation.swift */; };
 		833CBFE52036F73700C23CFE /* AllowTrustOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBFE42036F73700C23CFE /* AllowTrustOperation.swift */; };
@@ -1107,6 +1109,7 @@
 		83379C222280AE2900BD5F8E /* ManageSellOfferOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageSellOfferOperationResponse.swift; sourceTree = "<group>"; };
 		83379C242280AE9C00BD5F8E /* ManageBuyOfferOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBuyOfferOperationResponse.swift; sourceTree = "<group>"; };
 		83379C262280B64500BD5F8E /* CreatePassiveSellOfferOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePassiveSellOfferOperationResponse.swift; sourceTree = "<group>"; };
+		83379C2D2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePassiveSellOfferOperation.swift; sourceTree = "<group>"; };
 		833CBF892033510D00C23CFE /* DecoratedSignatureXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecoratedSignatureXDR.swift; sourceTree = "<group>"; };
 		833CBF8B2033514C00C23CFE /* OperationMetaXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationMetaXDR.swift; sourceTree = "<group>"; };
 		833CBF8D203351B200C23CFE /* TimeBoundsXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeBoundsXDR.swift; sourceTree = "<group>"; };
@@ -1142,7 +1145,7 @@
 		833CBFD82036F19000C23CFE /* PaymentOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentOperation.swift; sourceTree = "<group>"; };
 		833CBFDA2036F1E400C23CFE /* PathPaymentOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathPaymentOperation.swift; sourceTree = "<group>"; };
 		833CBFDC2036F2B500C23CFE /* ManageOfferOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageOfferOperation.swift; sourceTree = "<group>"; };
-		833CBFDE2036F46100C23CFE /* CreatePassiveSellOfferOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePassiveSellOfferOperation.swift; sourceTree = "<group>"; };
+		833CBFDE2036F46100C23CFE /* CreatePassiveOfferOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePassiveOfferOperation.swift; sourceTree = "<group>"; };
 		833CBFE02036F4CF00C23CFE /* SetOptionsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetOptionsOperation.swift; sourceTree = "<group>"; };
 		833CBFE22036F6D500C23CFE /* ChangeTrustOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeTrustOperation.swift; sourceTree = "<group>"; };
 		833CBFE42036F73700C23CFE /* AllowTrustOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllowTrustOperation.swift; sourceTree = "<group>"; };
@@ -2119,7 +2122,8 @@
 				83379C1E2280AAF500BD5F8E /* ManageSellOfferOperation.swift */,
 				83379C202280ABA600BD5F8E /* ManageBuyOfferOperation.swift */,
 				833CBFDC2036F2B500C23CFE /* ManageOfferOperation.swift */,
-				833CBFDE2036F46100C23CFE /* CreatePassiveSellOfferOperation.swift */,
+				83379C2D2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift */,
+				833CBFDE2036F46100C23CFE /* CreatePassiveOfferOperation.swift */,
 				833CBFE02036F4CF00C23CFE /* SetOptionsOperation.swift */,
 				833CBFE22036F6D500C23CFE /* ChangeTrustOperation.swift */,
 				833CBFE42036F73700C23CFE /* AllowTrustOperation.swift */,
@@ -2816,7 +2820,7 @@
 				745DF4282052FF9B000D3660 /* PathPaymentOperation.swift in Sources */,
 				745DF4292052FF9B000D3660 /* ManageOfferOperation.swift in Sources */,
 				744FC6E7212D3CCC00ADFC88 /* Toml.swift in Sources */,
-				745DF42A2052FF9B000D3660 /* CreatePassiveSellOfferOperation.swift in Sources */,
+				745DF42A2052FF9B000D3660 /* CreatePassiveOfferOperation.swift in Sources */,
 				745DF42B2052FF9B000D3660 /* SetOptionsOperation.swift in Sources */,
 				745DF42C2052FF9B000D3660 /* ChangeTrustOperation.swift in Sources */,
 				745DF42D2052FF9B000D3660 /* AllowTrustOperation.swift in Sources */,
@@ -2898,6 +2902,7 @@
 				745DF46C2052FF9B000D3660 /* TradeResponse.swift in Sources */,
 				745DF46D2052FF9B000D3660 /* TransactionResponse.swift in Sources */,
 				744FC6EF212D3CCD00ADFC88 /* Serialize.swift in Sources */,
+				83379C2F2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift in Sources */,
 				7468CDCE2136C4F5002A538D /* BumpSequenceOperationResponse.swift in Sources */,
 				745DF46E2052FF9B000D3660 /* SubmitTransactionResponse.swift in Sources */,
 				745DF46F2052FF9B000D3660 /* TransactionResultXDR.swift in Sources */,
@@ -3341,6 +3346,7 @@
 				EC34A11920503CC5000FB042 /* Cryptors.swift in Sources */,
 				833CBF8E203351B200C23CFE /* TimeBoundsXDR.swift in Sources */,
 				7481B53E20248441000A783E /* EffectsService.swift in Sources */,
+				83379C2E2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift in Sources */,
 				7468CDD02136D8AC002A538D /* BumpSequenceOperationXDR.swift in Sources */,
 				744FC6EE212D3CCD00ADFC88 /* Serialize.swift in Sources */,
 				833CBFF120395FD000C23CFE /* SubmitTransactionResponse.swift in Sources */,
@@ -3459,7 +3465,7 @@
 				83DD2C73202DE92A00713FEE /* BadRequestErrorResponse.swift in Sources */,
 				EC34A0CD20503CAB000FB042 /* SMP.swift in Sources */,
 				833CBFCF2035CBF500C23CFE /* ManageOfferSuccessResult.swift in Sources */,
-				833CBFDF2036F46100C23CFE /* CreatePassiveSellOfferOperation.swift in Sources */,
+				833CBFDF2036F46100C23CFE /* CreatePassiveOfferOperation.swift in Sources */,
 				83DD2C69202DE17000713FEE /* InternalServerErrorResponse.swift in Sources */,
 				833CBF9A2033530F00C23CFE /* PathPaymentOperationXDR.swift in Sources */,
 				746AD2CC20342D1600A9CF21 /* AllowTrustResultXDR.swift in Sources */,

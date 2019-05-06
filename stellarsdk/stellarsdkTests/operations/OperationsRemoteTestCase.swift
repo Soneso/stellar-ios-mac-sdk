@@ -529,7 +529,7 @@ class OperationsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 30.0)
     }
     
-    func testCreatePassiveOffer() {
+    func testCreatePassiveSellOffer() {
         let expectation = XCTestExpectation(description: "Create a passive offer for IOM, the sdk token.")
         do {
             let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
