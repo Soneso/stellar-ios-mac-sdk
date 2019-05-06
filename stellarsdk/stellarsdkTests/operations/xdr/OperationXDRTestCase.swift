@@ -55,9 +55,11 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertEqual(code, PaymentResultCode.success.rawValue)
         case .pathPayment(let code, _):
             XCTAssertEqual(code, PathPaymentResultCode.success.rawValue)
-        case .manageOffer(let code, _):
+        case .manageSellOffer(let code, _):
             XCTAssertEqual(code, ManageOfferResultCode.success.rawValue)
-        case .createPassiveOffer(let code, _):
+        case .manageBuyOffer(let code, _):
+            XCTAssertEqual(code, ManageOfferResultCode.success.rawValue)
+        case .createPassiveSellOffer(let code, _):
             XCTAssertEqual(code, ManageOfferResultCode.success.rawValue)
         case .setOptions(let code, _):
             XCTAssertEqual(code, SetOptionsResultCode.success.rawValue)
@@ -570,14 +572,14 @@ class OperationXDRTestCase: XCTestCase {
             let amount = Decimal(0.00001)
             let priceStr = "0.85334384" // n=5333399 d=6250000
             let price = Price.fromString(price: priceStr)
-            let offerId = UInt64(1)
+            let offerId = Int64(1)
             
-            let operation = ManageOfferOperation(sourceAccount: source, selling: selling!, buying: buying!, amount: amount, price: price, offerId: offerId)
+            let operation = ManageSellOfferOperation(sourceAccount: source, selling: selling!, buying: buying!, amount: amount, price: price, offerId: offerId)
             let operationXdr = try operation.toXDR()
-            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ManageOfferOperation
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ManageSellOfferOperation
             
             switch operationXdr.body {
-            case .manageOffer(let manageOfferXdr):
+            case .manageSellOffer(let manageOfferXdr):
                 XCTAssertEqual(100, manageOfferXdr.amount)
             default:
                 break
@@ -620,13 +622,13 @@ class OperationXDRTestCase: XCTestCase {
             let priceStr = "2.93850088" // n=36731261 d=12500000
             let price = Price.fromString(price: priceStr)
             
-            let operation = CreatePassiveOfferOperation(sourceAccount: source, selling: selling!, buying: buying!, amount: amount, price: price)
+            let operation = CreatePassiveSellOfferOperation(sourceAccount: source, selling: selling!, buying: buying!, amount: amount, price: price)
             let operationXdr = try operation.toXDR()
-            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! CreatePassiveOfferOperation
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! CreatePassiveSellOfferOperation
             
             switch operationXdr.body {
-            case .manageOffer(let manageOfferXdr):
-                XCTAssertEqual(100, manageOfferXdr.amount)
+            case .createPassiveSellOffer(let offerXdr):
+                XCTAssertEqual(100, offerXdr.amount)
             default:
                 break
             }

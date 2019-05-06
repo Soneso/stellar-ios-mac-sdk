@@ -12,8 +12,8 @@ public enum OperationType: Int32 {
     case accountCreated = 0
     case payment = 1
     case pathPayment = 2
-    case manageOffer = 3
-    case createPassiveOffer = 4
+    case manageSellOffer = 3
+    case createPassiveSellOffer = 4
     case setOptions = 5
     case changeTrust = 6
     case allowTrust = 7
@@ -21,6 +21,7 @@ public enum OperationType: Int32 {
     case inflation = 9
     case manageData = 10
     case bumpSequence = 11
+    case manageBuyOffer = 12
 }
 
 /// Represents an operation response. Superclass for all other operation response classes.

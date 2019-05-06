@@ -1,5 +1,5 @@
 //
-//  CreatePassiveOfferOperation.swift
+//  CreatePassiveSellOfferOperation.swift
 //  stellarsdk
 //
 //  Created by Rogobete Christian on 16.02.18.
@@ -10,14 +10,14 @@ import Foundation
 
 /// Represents a create passive offer operation. A passive offer is an offer that does not act on and take a reverse offer of equal price. Instead, they only take offers of lesser price.
 /// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html#create-passive-offer, "Create Passive Offer Operations").
-public class CreatePassiveOfferOperation:Operation {
+public class CreatePassiveSellOfferOperation:Operation {
     
     public let selling:Asset
     public let buying:Asset
     public let amount:Decimal
     public let price:Price
     
-    /// Creates a new CreatePassiveOfferOperation object.
+    /// Creates a new CreatePassiveSellOfferOperation object.
     ///
     /// - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
     /// - Parameter selling: The asset you would like to sell.
@@ -33,9 +33,9 @@ public class CreatePassiveOfferOperation:Operation {
         super.init(sourceAccount:sourceAccount)
     }
     
-    /// Creates a new CreatePassiveOfferOperation object from the given CreatePassiveOfferOperationXDR object.
+    /// Creates a new CreatePassiveSellOfferOperation object from the given CreatePassiveOfferOperationXDR object.
     ///
-    /// - Parameter fromXDR: the CreatePassiveOfferOperationXDR object to be used to create a new CreatePassiveOfferOperation object.
+    /// - Parameter fromXDR: the CreatePassiveOfferOperationXDR object to be used to create a new CreatePassiveSellOfferOperation object.
     ///
     public init(fromXDR:CreatePassiveOfferOperationXDR, sourceAccount:KeyPair? = nil) {
         self.selling = try! Asset.fromXDR(assetXDR: fromXDR.selling)
@@ -51,7 +51,7 @@ public class CreatePassiveOfferOperation:Operation {
         let amountXDR = Operation.toXDRAmount(amount: amount)
         let priceXDR = price.toXdr()
         
-        return OperationBodyXDR.createPassiveOffer(CreatePassiveOfferOperationXDR(selling: sellingXDR,
+        return OperationBodyXDR.createPassiveSellOffer(CreatePassiveOfferOperationXDR(selling: sellingXDR,
                                                                                   buying: buyingXDR,
                                                                                   amount: amountXDR,
                                                                                   price: priceXDR))

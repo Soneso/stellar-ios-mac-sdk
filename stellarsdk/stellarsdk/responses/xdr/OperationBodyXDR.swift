@@ -12,8 +12,9 @@ public enum OperationBodyXDR: XDRCodable {
     case createAccount (CreateAccountOperationXDR)
     case payment (PaymentOperationXDR)
     case pathPayment (PathPaymentOperationXDR)
-    case manageOffer (ManageOfferOperationXDR)
-    case createPassiveOffer (CreatePassiveOfferOperationXDR)
+    case manageSellOffer (ManageOfferOperationXDR)
+    case manageBuyOffer (ManageOfferOperationXDR)
+    case createPassiveSellOffer (CreatePassiveOfferOperationXDR)
     case setOptions (SetOptionsOperationXDR)
     case allowTrust (AllowTrustOperationXDR)
     case changeTrust (ChangeTrustOperationXDR)
@@ -34,10 +35,12 @@ public enum OperationBodyXDR: XDRCodable {
                 self = .payment(try container.decode(PaymentOperationXDR.self))
             case OperationType.pathPayment.rawValue:
                 self = .pathPayment(try container.decode(PathPaymentOperationXDR.self))
-            case OperationType.manageOffer.rawValue:
-                self = .manageOffer(try container.decode(ManageOfferOperationXDR.self))
-            case OperationType.createPassiveOffer.rawValue:
-                self = .createPassiveOffer(try container.decode(CreatePassiveOfferOperationXDR.self))
+            case OperationType.manageSellOffer.rawValue:
+                self = .manageSellOffer(try container.decode(ManageOfferOperationXDR.self))
+            case OperationType.manageBuyOffer.rawValue:
+                self = .manageBuyOffer(try container.decode(ManageOfferOperationXDR.self))
+            case OperationType.createPassiveSellOffer.rawValue:
+                self = .createPassiveSellOffer(try container.decode(CreatePassiveOfferOperationXDR.self))
             case OperationType.setOptions.rawValue:
                 self = .setOptions(try container.decode(SetOptionsOperationXDR.self))
             case OperationType.allowTrust.rawValue:
@@ -62,8 +65,9 @@ public enum OperationBodyXDR: XDRCodable {
             case .createAccount: return OperationType.accountCreated.rawValue
             case .payment: return OperationType.payment.rawValue
             case .pathPayment: return OperationType.pathPayment.rawValue
-            case .manageOffer: return OperationType.manageOffer.rawValue
-            case .createPassiveOffer: return OperationType.createPassiveOffer.rawValue
+            case .manageSellOffer: return OperationType.manageSellOffer.rawValue
+            case .manageBuyOffer: return OperationType.manageBuyOffer.rawValue
+            case .createPassiveSellOffer: return OperationType.createPassiveSellOffer.rawValue
             case .setOptions: return OperationType.setOptions.rawValue
             case .allowTrust: return OperationType.allowTrust.rawValue
             case .changeTrust: return OperationType.changeTrust.rawValue
@@ -86,9 +90,11 @@ public enum OperationBodyXDR: XDRCodable {
             try container.encode(op)
         case .pathPayment (let op):
             try container.encode(op)
-        case .manageOffer (let op):
+        case .manageSellOffer (let op):
             try container.encode(op)
-        case .createPassiveOffer (let op):
+        case .manageBuyOffer (let op):
+            try container.encode(op)
+        case .createPassiveSellOffer (let op):
             try container.encode(op)
         case .setOptions (let op):
             try container.encode(op)

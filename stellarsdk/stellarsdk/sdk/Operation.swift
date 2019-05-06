@@ -47,10 +47,12 @@ public class Operation {
             return PaymentOperation(fromXDR: payment, sourceAccount: source)
         case .pathPayment(let pathPayment):
             return PathPaymentOperation(fromXDR: pathPayment, sourceAccount: source)
-        case .manageOffer(let manageOffer):
-            return ManageOfferOperation(fromXDR: manageOffer, sourceAccount: source)
-        case .createPassiveOffer(let passiveOffer):
-            return CreatePassiveOfferOperation(fromXDR: passiveOffer, sourceAccount: source)
+        case .manageSellOffer(let manageOffer):
+            return ManageSellOfferOperation(fromXDR: manageOffer, sourceAccount: source)
+        case .manageBuyOffer(let manageOffer):
+            return ManageBuyOfferOperation(fromXDR: manageOffer, sourceAccount: source)
+        case .createPassiveSellOffer(let passiveOffer):
+            return CreatePassiveSellOfferOperation(fromXDR: passiveOffer, sourceAccount: source)
         case .setOptions(let setOptions):
             return SetOptionsOperation(fromXDR: setOptions, sourceAccount: source)
         case .changeTrust(let changeTrust):

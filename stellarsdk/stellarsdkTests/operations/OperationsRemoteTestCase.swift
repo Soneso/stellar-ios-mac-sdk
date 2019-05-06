@@ -462,36 +462,6 @@ class OperationsRemoteTestCase: XCTestCase {
             let issuingAccountKeyPair = try KeyPair(accountId: IOMIssuingAccountId)
             let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
             let XLM = Asset(type: AssetType.ASSET_TYPE_NATIVE)
-        
-            /*var eventReceived = false
-            
-             // TODO: find out why this is not receiving events.
-            sdk.effects.stream(for: .effectsForAccount(account: sourceAccountKeyPair.accountId, cursor: nil)).onReceive { (response) -> (Void) in
-                switch response {
-                case .open:
-                    break
-                case .response( _, let effectResponse):
-                    if let updateOfferResponse = effectResponse as? OfferUpdatedEffectResponse {
-                        if updateOfferResponse.id == "113064" {
-                            print("Update offer id: \(updateOfferResponse.id)" )
-                            if eventReceived {
-                                XCTAssert(true)
-                                expectation.fulfill()
-                            } else {
-                                eventReceived = true
-                            }
-                        }
-                    }
-                case .error(let error):
-                    if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test - stream", horizonRequestError:horizonRequestError)
-                    } else {
-                        print("MOF Test: stream error \(error?.localizedDescription ?? "")")
-                    }
-                    break
-                }
-            }*/
-            
             
             streamItem = sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now"))
             streamItem?.onReceive { (response) -> (Void) in
@@ -499,7 +469,7 @@ class OperationsRemoteTestCase: XCTestCase {
                 case .open:
                     break
                 case .response( _, let operationResponse):
-                    if let manageOfferResponse = operationResponse as? ManageOfferOperationResponse {
+                    if let manageOfferResponse = operationResponse as? ManageSellOfferOperationResponse {
                         if manageOfferResponse.buyingAssetType == AssetTypeAsString.NATIVE, manageOfferResponse.offerId == 0 {
                             self.streamItem?.closeStream()
                             self.streamItem = nil
@@ -522,7 +492,7 @@ class OperationsRemoteTestCase: XCTestCase {
                 case .success(let accountResponse):
                     do {
                         let random = arc4random_uniform(21) + 10;
-                        let manageOfferOperation = ManageOfferOperation(selling:IOM!, buying:XLM!, amount:Decimal(random), price:Price(numerator:5, denominator:15), offerId:0)
+                        let manageOfferOperation = ManageSellOfferOperation(selling:IOM!, buying:XLM!, amount:Decimal(random), price:Price(numerator:5, denominator:15), offerId:0)
                         
                         let transaction = try Transaction(sourceAccount: accountResponse,
                                                           operations: [manageOfferOperation],
@@ -598,10 +568,10 @@ class OperationsRemoteTestCase: XCTestCase {
                     do {
                         let random = arc4random_uniform(81) + 10;
                         
-                        let createPassiveOfferOperation = CreatePassiveOfferOperation(selling:IOM!, buying:XLM!, amount:Decimal(random), price:Price(numerator:6, denominator:17))
+                        let createPassiveSellOfferOperation = CreatePassiveSellOfferOperation(selling:IOM!, buying:XLM!, amount:Decimal(random), price:Price(numerator:6, denominator:17))
                         
                         let transaction = try Transaction(sourceAccount: accountResponse,
-                                                          operations: [createPassiveOfferOperation],
+                                                          operations: [createPassiveSellOfferOperation],
                                                           memo: Memo.none,
                                                           timeBounds:nil)
                         try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
