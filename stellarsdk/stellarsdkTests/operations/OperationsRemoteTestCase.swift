@@ -546,7 +546,7 @@ class OperationsRemoteTestCase: XCTestCase {
                 case .open:
                     break
                 case .response( _, let operationResponse):
-                    if let createOfferResponse = operationResponse as? CreatePassiveOfferOperationResponse {
+                    if let createOfferResponse = operationResponse as? CreatePassiveSellOfferOperationResponse {
                         if createOfferResponse.buyingAssetType == AssetTypeAsString.NATIVE {
                             XCTAssert(true)
                             expectation.fulfill()

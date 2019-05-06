@@ -30,4 +30,17 @@ public class ManageBuyOfferOperation:ManageOfferOperation {
     public override init(fromXDR:ManageOfferOperationXDR, sourceAccount:KeyPair? = nil) {
         super.init(fromXDR: fromXDR, sourceAccount: sourceAccount)
     }
+    
+    override func getOperationBodyXDR() throws -> OperationBodyXDR {
+        let sellingXDR = try selling.toXDR()
+        let buyingXDR = try buying.toXDR()
+        let amountXDR = Operation.toXDRAmount(amount: amount)
+        let priceXDR = price.toXdr()
+        
+        return OperationBodyXDR.manageBuyOffer(ManageOfferOperationXDR(selling: sellingXDR,
+                                                                        buying: buyingXDR,
+                                                                        amount: amountXDR,
+                                                                        price: priceXDR,
+                                                                        offerID: offerId))
+    }
 }
