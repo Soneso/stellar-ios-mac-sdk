@@ -16,7 +16,7 @@ public class ManageOfferOperation:Operation {
     public let buying:Asset
     public let amount:Decimal
     public let price:Price
-    public let offerId:UInt64
+    public let offerId:Int64
     
     /// Creates a new ManageOfferOperation object.
     ///
@@ -27,7 +27,7 @@ public class ManageOfferOperation:Operation {
     /// - Parameter price: Price of 1 unit of selling in terms of buying. For example, if you wanted to sell 30 XLM and buy 5 BTC, the price would be {numerator, denominator} = {5,30}.
     /// - Parameter offerId: The ID of the offer. 0 for new offer. Set to existing offer ID to update or delete. If you want to update an existing offer set Offer ID to existing offer ID. If you want to delete an existing offer set Offer ID to existing offer ID and set Amount to 0.
     ///
-    public init(sourceAccount:KeyPair? = nil, selling:Asset, buying:Asset, amount:Decimal, price:Price, offerId:UInt64) {
+    public init(sourceAccount:KeyPair? = nil, selling:Asset, buying:Asset, amount:Decimal, price:Price, offerId:Int64) {
         self.selling = selling
         self.buying = buying
         self.amount = amount
@@ -55,7 +55,7 @@ public class ManageOfferOperation:Operation {
         let amountXDR = Operation.toXDRAmount(amount: amount)
         let priceXDR = price.toXdr()
         
-        return OperationBodyXDR.manageOffer(ManageOfferOperationXDR(selling: sellingXDR,
+        return OperationBodyXDR.manageSellOffer(ManageOfferOperationXDR(selling: sellingXDR,
                                                                     buying: buyingXDR,
                                                                     amount: amountXDR,
                                                                     price: priceXDR,

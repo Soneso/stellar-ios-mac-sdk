@@ -13,9 +13,9 @@ public struct ManageOfferOperationXDR: XDRCodable {
     public let buying: AssetXDR
     public let amount: Int64
     public let price: PriceXDR
-    public let offerID: UInt64
+    public let offerID: Int64
     
-    public init(selling: AssetXDR, buying: AssetXDR, amount:Int64, price:PriceXDR, offerID:UInt64) {
+    public init(selling: AssetXDR, buying: AssetXDR, amount:Int64, price:PriceXDR, offerID:Int64) {
         self.selling = selling
         self.buying = buying
         self.amount = amount
@@ -30,7 +30,7 @@ public struct ManageOfferOperationXDR: XDRCodable {
         buying = try container.decode(AssetXDR.self)
         amount = try container.decode(Int64.self)
         price = try container.decode(PriceXDR.self)
-        offerID = try container.decode(UInt64.self)
+        offerID = try container.decode(Int64.self)
         
     }
     public func encode(to encoder: Encoder) throws {

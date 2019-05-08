@@ -19,8 +19,8 @@ public enum OperationResultXDR: XDRCodable {
     case createAccount(Int32, CreateAccountResultXDR)
     case payment(Int32, PaymentResultXDR)
     case pathPayment(Int32, PathPaymentResultXDR)
-    case manageOffer(Int32, ManageOfferResultXDR)
-    case createPassiveOffer(Int32, ManageOfferResultXDR)
+    case manageSellOffer(Int32, ManageOfferResultXDR)
+    case createPassiveSellOffer(Int32, ManageOfferResultXDR)
     case setOptions(Int32, SetOptionsResultXDR)
     case changeTrust(Int32, ChangeTrustResultXDR)
     case allowTrust(Int32, AllowTrustResultXDR)
@@ -28,6 +28,7 @@ public enum OperationResultXDR: XDRCodable {
     case inflation(Int32, InflationResultXDR)
     case manageData(Int32, ManageDataResultXDR)
     case bumpSequence(Int32, BumpSequenceResultXDR)
+    case manageBuyOffer(Int32, ManageOfferResultXDR)
     case empty (Int32)
     
     public init(from decoder: Decoder) throws {
@@ -45,10 +46,12 @@ public enum OperationResultXDR: XDRCodable {
                     self = .payment(code.rawValue, try container.decode(PaymentResultXDR.self))
                 case .pathPayment:
                     self = .pathPayment(code.rawValue, try container.decode(PathPaymentResultXDR.self))
-                case .manageOffer:
-                    self = .manageOffer(code.rawValue, try container.decode(ManageOfferResultXDR.self))
-                case .createPassiveOffer:
-                    self = .createPassiveOffer(code.rawValue, try container.decode(ManageOfferResultXDR.self))
+                case .manageSellOffer:
+                    self = .manageSellOffer(code.rawValue, try container.decode(ManageOfferResultXDR.self))
+                case .manageBuyOffer:
+                    self = .manageBuyOffer(code.rawValue, try container.decode(ManageOfferResultXDR.self))
+                case .createPassiveSellOffer:
+                    self = .createPassiveSellOffer(code.rawValue, try container.decode(ManageOfferResultXDR.self))
                 case .setOptions:
                     self = .setOptions(code.rawValue, try container.decode(SetOptionsResultXDR.self))
                 case .changeTrust:
@@ -83,10 +86,13 @@ public enum OperationResultXDR: XDRCodable {
             case .pathPayment(let code, let result):
                 try container.encode(code)
                 try container.encode(result)
-            case .manageOffer(let code, let result):
+            case .manageSellOffer(let code, let result):
                 try container.encode(code)
                 try container.encode(result)
-            case .createPassiveOffer(let code, let result):
+            case .manageBuyOffer(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .createPassiveSellOffer(let code, let result):
                 try container.encode(code)
                 try container.encode(result)
             case .setOptions(let code, let result):

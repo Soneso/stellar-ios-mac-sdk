@@ -1,5 +1,5 @@
 //
-//  CreatePassiveOfferOperation.swift
+//  CreatePassiveSellOfferOperation.swift
 //  stellarsdk
 //
 //  Created by Rogobete Christian on 16.02.18.
@@ -33,9 +33,9 @@ public class CreatePassiveOfferOperation:Operation {
         super.init(sourceAccount:sourceAccount)
     }
     
-    /// Creates a new CreatePassiveOfferOperation object from the given CreatePassiveOfferOperationXDR object.
+    /// Creates a new CreatePassiveSellOfferOperation object from the given CreatePassiveOfferOperationXDR object.
     ///
-    /// - Parameter fromXDR: the CreatePassiveOfferOperationXDR object to be used to create a new CreatePassiveOfferOperation object.
+    /// - Parameter fromXDR: the CreatePassiveOfferOperationXDR object to be used to create a new CreatePassiveSellOfferOperation object.
     ///
     public init(fromXDR:CreatePassiveOfferOperationXDR, sourceAccount:KeyPair? = nil) {
         self.selling = try! Asset.fromXDR(assetXDR: fromXDR.selling)
@@ -51,7 +51,7 @@ public class CreatePassiveOfferOperation:Operation {
         let amountXDR = Operation.toXDRAmount(amount: amount)
         let priceXDR = price.toXdr()
         
-        return OperationBodyXDR.createPassiveOffer(CreatePassiveOfferOperationXDR(selling: sellingXDR,
+        return OperationBodyXDR.createPassiveSellOffer(CreatePassiveOfferOperationXDR(selling: sellingXDR,
                                                                                   buying: buyingXDR,
                                                                                   amount: amountXDR,
                                                                                   price: priceXDR))

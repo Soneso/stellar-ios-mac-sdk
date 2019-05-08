@@ -58,10 +58,12 @@ class OperationsFactory: NSObject {
                 return try jsonDecoder.decode(PaymentOperationResponse.self, from: data)
             case .pathPayment:
                 return try jsonDecoder.decode(PathPaymentOperationResponse.self, from: data)
-            case .manageOffer:
-                return try jsonDecoder.decode(ManageOfferOperationResponse.self, from: data)
-            case .createPassiveOffer:
-                return try jsonDecoder.decode(CreatePassiveOfferOperationResponse.self, from: data)
+            case .manageSellOffer:
+                return try jsonDecoder.decode(ManageSellOfferOperationResponse.self, from: data)
+            case .manageBuyOffer:
+                return try jsonDecoder.decode(ManageBuyOfferOperationResponse.self, from: data)
+            case .createPassiveSellOffer:
+                return try jsonDecoder.decode(CreatePassiveSellOfferOperationResponse.self, from: data)
             case .setOptions:
                 return try jsonDecoder.decode(SetOptionsOperationResponse.self, from: data)
             case .changeTrust:

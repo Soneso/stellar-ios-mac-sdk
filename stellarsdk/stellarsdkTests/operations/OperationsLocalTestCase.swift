@@ -61,7 +61,7 @@ class OperationsLocalTestCase: XCTestCase {
             XCTAssertEqual(operationsResponse.links.prev?.href, "https://horizon-testnet.stellar.org/operations?order=asc&limit=19&cursor=32069369748004865-2")
             XCTAssertNil(operationsResponse.links.prev?.templated)
             
-            XCTAssertEqual(operationsResponse.records.count, 11)
+            XCTAssertEqual(operationsResponse.records.count, 12)
             
             for record in operationsResponse.records {
                 switch record.operationType {
@@ -83,15 +83,21 @@ class OperationsLocalTestCase: XCTestCase {
                     } else {
                         XCTAssert(false)
                     }
-                case .manageOffer:
-                    if record is ManageOfferOperationResponse {
-                        validateManageOfferOperationResponse(operationResponse: record as! ManageOfferOperationResponse)
+                case .manageSellOffer:
+                    if record is ManageSellOfferOperationResponse {
+                        validateManageSellOfferOperationResponse(operationResponse: record as! ManageSellOfferOperationResponse)
                     } else {
                         XCTAssert(false)
                     }
-                case .createPassiveOffer:
-                    if record is CreatePassiveOfferOperationResponse {
-                        validateCreatePassiveOfferOperationResponse(operationResponse: record as! CreatePassiveOfferOperationResponse)
+                case .manageBuyOffer:
+                    if record is ManageBuyOfferOperationResponse {
+                        validateManageBuyOfferOperationResponse(operationResponse: record as! ManageBuyOfferOperationResponse)
+                    } else {
+                        XCTAssert(false)
+                    }
+                case .createPassiveSellOffer:
+                    if record is CreatePassiveSellOfferOperationResponse {
+                        validateCreatePassiveSellOfferOperationResponse(operationResponse: record as! CreatePassiveSellOfferOperationResponse)
                     } else {
                         XCTAssert(false)
                     }
@@ -259,7 +265,7 @@ class OperationsLocalTestCase: XCTestCase {
             XCTAssertEqual(operationResponse.sendAssetIssuer, "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA")
         }
         
-        func validateManageOfferOperationResponse(operationResponse: ManageOfferOperationResponse) {
+        func validateManageSellOfferOperationResponse(operationResponse: ManageSellOfferOperationResponse) {
             XCTAssertNotNil(operationResponse.links)
             XCTAssertNotNil(operationResponse.links.effects)
             XCTAssertEqual(operationResponse.links.effects.href, "https://horizon-testnet.stellar.org/operations/77309415424/effects/{?cursor,limit,order}")
@@ -288,8 +294,8 @@ class OperationsLocalTestCase: XCTestCase {
             XCTAssertEqual(operationResponse.createdAt, createdAt)
             XCTAssertEqual(operationResponse.transactionHash, "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d")
             
-            XCTAssertEqual(operationResponse.operationTypeString, "manage_offer")
-            XCTAssertEqual(operationResponse.operationType, OperationType.manageOffer)
+            XCTAssertEqual(operationResponse.operationTypeString, "manage_sell_offer")
+            XCTAssertEqual(operationResponse.operationType, OperationType.manageSellOffer)
             XCTAssertEqual(operationResponse.offerId, 77309415424)
             XCTAssertEqual(operationResponse.amount, "100.0")
             XCTAssertEqual(operationResponse.price, "50.0")
@@ -301,7 +307,7 @@ class OperationsLocalTestCase: XCTestCase {
             XCTAssertEqual(operationResponse.buyingAssetIssuer, "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA")
         }
         
-        func validateCreatePassiveOfferOperationResponse(operationResponse: CreatePassiveOfferOperationResponse) {
+        func validateManageBuyOfferOperationResponse(operationResponse: ManageBuyOfferOperationResponse) {
             XCTAssertNotNil(operationResponse.links)
             XCTAssertNotNil(operationResponse.links.effects)
             XCTAssertEqual(operationResponse.links.effects.href, "https://horizon-testnet.stellar.org/operations/77309415424/effects/{?cursor,limit,order}")
@@ -330,8 +336,50 @@ class OperationsLocalTestCase: XCTestCase {
             XCTAssertEqual(operationResponse.createdAt, createdAt)
             XCTAssertEqual(operationResponse.transactionHash, "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d")
             
-            XCTAssertEqual(operationResponse.operationTypeString, "create_passive_offer")
-            XCTAssertEqual(operationResponse.operationType, OperationType.createPassiveOffer)
+            XCTAssertEqual(operationResponse.operationTypeString, "manage_buy_offer")
+            XCTAssertEqual(operationResponse.operationType, OperationType.manageBuyOffer)
+            XCTAssertEqual(operationResponse.offerId, 77309415424)
+            XCTAssertEqual(operationResponse.amount, "100.0")
+            XCTAssertEqual(operationResponse.price, "50.0")
+            XCTAssertEqual(operationResponse.sellingAssetType, AssetTypeAsString.NATIVE)
+            XCTAssertNil(operationResponse.sellingAssetCode)
+            XCTAssertNil(operationResponse.sellingAssetIssuer)
+            XCTAssertEqual(operationResponse.buyingAssetType, AssetTypeAsString.CREDIT_ALPHANUM4)
+            XCTAssertEqual(operationResponse.buyingAssetCode, "EUR")
+            XCTAssertEqual(operationResponse.buyingAssetIssuer, "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA")
+        }
+        
+        func validateCreatePassiveSellOfferOperationResponse(operationResponse: CreatePassiveOfferOperationResponse) {
+            XCTAssertNotNil(operationResponse.links)
+            XCTAssertNotNil(operationResponse.links.effects)
+            XCTAssertEqual(operationResponse.links.effects.href, "https://horizon-testnet.stellar.org/operations/77309415424/effects/{?cursor,limit,order}")
+            XCTAssertEqual(operationResponse.links.effects.templated, true)
+            
+            XCTAssertNotNil(operationResponse.links.succeeds)
+            XCTAssertEqual(operationResponse.links.succeeds.href, "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=desc")
+            XCTAssertNil(operationResponse.links.succeeds.templated)
+            
+            XCTAssertNotNil(operationResponse.links.precedes)
+            XCTAssertEqual(operationResponse.links.precedes.href, "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=asc")
+            XCTAssertNil(operationResponse.links.precedes.templated)
+            
+            XCTAssertNotNil(operationResponse.links.transaction)
+            XCTAssertEqual(operationResponse.links.transaction.href, "https://horizon-testnet.stellar.org/transactions/77309415424")
+            XCTAssertNil(operationResponse.links.transaction.templated)
+            
+            XCTAssertNotNil(operationResponse.links.selfLink)
+            XCTAssertEqual(operationResponse.links.selfLink.href, "https://horizon-testnet.stellar.org/operations/77309415424")
+            XCTAssertNil(operationResponse.links.selfLink.templated)
+            
+            XCTAssertEqual(operationResponse.id, "77309415424")
+            XCTAssertEqual(operationResponse.pagingToken, "77309415424")
+            XCTAssertEqual(operationResponse.sourceAccount, "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY")
+            let createdAt = DateFormatter.iso8601.date(from:"2018-02-21T09:56:26Z")
+            XCTAssertEqual(operationResponse.createdAt, createdAt)
+            XCTAssertEqual(operationResponse.transactionHash, "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d")
+            
+            XCTAssertEqual(operationResponse.operationTypeString, "create_passive_sell_offer")
+            XCTAssertEqual(operationResponse.operationType, OperationType.createPassiveSellOffer)
             XCTAssertEqual(operationResponse.amount, "100.0")
             XCTAssertEqual(operationResponse.price, "50.0")
             XCTAssertEqual(operationResponse.sellingAssetType, AssetTypeAsString.NATIVE)
@@ -623,8 +671,9 @@ class OperationsLocalTestCase: XCTestCase {
         operationsResponseString.append(accountCreatedOperation)
         operationsResponseString.append("," + paymentOperation)
         operationsResponseString.append("," + pathPaymentOperation)
-        operationsResponseString.append("," + manageOfferOperation)
-        operationsResponseString.append("," + createPassiveOfferOperation)
+        operationsResponseString.append("," + manageSellOfferOperation)
+        operationsResponseString.append("," + manageBuyOfferOperation)
+        operationsResponseString.append("," + createPassiveSellOfferOperation)
         operationsResponseString.append("," + setOptionsOperation)
         operationsResponseString.append("," + changeTrustOperation)
         operationsResponseString.append("," + allowTrustOperation)
@@ -750,7 +799,7 @@ class OperationsLocalTestCase: XCTestCase {
             }
     """
     
-    let manageOfferOperation = """
+    let manageSellOfferOperation = """
             {
                 "_links": {
                     "effects": {
@@ -773,7 +822,7 @@ class OperationsLocalTestCase: XCTestCase {
                 "id": "77309415424",
                 "paging_token": "77309415424",
                 "type_i": 3,
-                "type": "manage_offer",
+                "type": "manage_sell_offer",
                 "source_account": "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY",
                 "created_at": "2018-02-21T09:56:26Z",
                 "transaction_hash": "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d",
@@ -787,7 +836,44 @@ class OperationsLocalTestCase: XCTestCase {
             }
     """
     
-    let createPassiveOfferOperation = """
+    let manageBuyOfferOperation = """
+            {
+                "_links": {
+                    "effects": {
+                        "href": "https://horizon-testnet.stellar.org/operations/77309415424/effects/{?cursor,limit,order}",
+                        "templated": true
+                    },
+                    "precedes": {
+                        "href": "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=asc"
+                    },
+                    "self": {
+                        "href": "https://horizon-testnet.stellar.org/operations/77309415424"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=desc"
+                    },
+                    "transaction": {
+                        "href": "https://horizon-testnet.stellar.org/transactions/77309415424"
+                    }
+                },
+                "id": "77309415424",
+                "paging_token": "77309415424",
+                "type_i": 12,
+                "type": "manage_buy_offer",
+                "source_account": "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY",
+                "created_at": "2018-02-21T09:56:26Z",
+                "transaction_hash": "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d",
+                "offer_id": 77309415424,
+                "amount": "100.0",
+                "price": "50.0",
+                "selling_asset_type": "native",
+                "buying_asset_type": "credit_alphanum4",
+                "buying_asset_code": "EUR",
+                "buying_asset_issuer": "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA"
+            }
+    """
+    
+    let createPassiveSellOfferOperation = """
             {
                 "_links": {
                     "effects": {
@@ -810,7 +896,7 @@ class OperationsLocalTestCase: XCTestCase {
                 "id": "77309415424",
                 "paging_token": "77309415424",
                 "type_i": 4,
-                "type": "create_passive_offer",
+                "type": "create_passive_sell_offer",
                 "source_account": "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY",
                 "created_at": "2018-02-21T09:56:26Z",
                 "transaction_hash": "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d",
