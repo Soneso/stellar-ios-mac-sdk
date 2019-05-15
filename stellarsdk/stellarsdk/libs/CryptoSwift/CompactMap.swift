@@ -1,7 +1,6 @@
+////  CryptoSwift
 //
-//  CryptoSwift
-//
-//  Copyright (C) 2014-2017 Marcin Krzyżanowski <marcin@krzyzanowskim.com>
+//  Copyright (C) 2014-2018 Marcin Krzyżanowski <marcin@krzyzanowskim.com>
 //  This software is provided 'as-is', without any express or implied warranty.
 //
 //  In no event will the authors be held liable for any damages arising from the use of this software.
@@ -13,12 +12,12 @@
 //  - This notice may not be removed or altered from any source or binary distribution.
 //
 
-/// Random access cryptor
-public protocol RandomAccessCryptor: Updatable {
-    /// Seek to position in file, if block mode allows random access.
-    ///
-    /// - parameter to: new value of counter
-    ///
-    /// - returns: true if seek succeed
-    @discardableResult mutating func seek(to: Int) -> Bool
-}
+#if swift(>=4.1)
+    // TODO: remove this file when Xcode 9.2 is no longer used
+#else
+    extension Sequence {
+        public func compactMap<ElementOfResult>(_ transform: (Element) throws -> ElementOfResult?) rethrows -> [ElementOfResult] {
+            return try flatMap(transform)
+        }
+    }
+#endif

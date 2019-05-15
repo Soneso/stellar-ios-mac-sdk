@@ -17,10 +17,10 @@
 //  http://keccak.noekeon.org/specs_summary.html
 //
 
-#if os(Linux) || os(Android) || os(FreeBSD)
-    import Glibc
+#if canImport(Darwin)
+import Darwin
 #else
-    import Darwin
+import Glibc
 #endif
 
 public final class SHA3: DigestType {
@@ -249,7 +249,6 @@ public final class SHA3: DigestType {
 }
 
 extension SHA3: Updatable {
-
     public func update(withBytes bytes: ArraySlice<UInt8>, isLast: Bool = false) throws -> Array<UInt8> {
         accumulated += bytes
 

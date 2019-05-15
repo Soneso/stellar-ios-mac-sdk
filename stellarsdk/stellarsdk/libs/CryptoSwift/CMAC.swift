@@ -13,6 +13,8 @@
 //  - This notice may not be removed or altered from any source or binary distribution.
 //
 
-protocol RandomAccessBlockModeWorker: BlockModeWorker {
-    var counter: UInt { set get }
+public final class CMAC: CBCMAC {
+    override func process(lastBlock: ArraySlice<UInt8>, with x: [UInt8]) -> [UInt8] {
+        return xor(lastBlock, x)
+    }
 }
