@@ -18,7 +18,6 @@
 //
 
 public final class Blowfish {
-
     public enum Error: Swift.Error {
         /// Data padding is required
         case dataPaddingRequired
@@ -26,13 +25,17 @@ public final class Blowfish {
         case invalidKeyOrInitializationVector
         /// Invalid IV
         case invalidInitializationVector
+        /// Invalid block mode
+        case invalidBlockMode
     }
 
     public static let blockSize: Int = 8 // 64 bit
-    fileprivate let blockMode: BlockMode
-    fileprivate let padding: Padding
-    private var decryptWorker: BlockModeWorker!
-    private var encryptWorker: BlockModeWorker!
+    public let keySize: Int
+
+    private let blockMode: BlockMode
+    private let padding: Padding
+    private var decryptWorker: CipherModeWorker!
+    private var encryptWorker: CipherModeWorker!
 
     private let N = 16 // rounds
     private var P: Array<UInt32>
@@ -311,11 +314,12 @@ public final class Blowfish {
         ],
     ]
 
-    public init(key: Array<UInt8>, blockMode: BlockMode = .CBC(iv: Array<UInt8>(repeating: 0, count: Blowfish.blockSize)), padding: Padding) throws {
+    public init(key: Array<UInt8>, blockMode: BlockMode = CBC(iv: Array<UInt8>(repeating: 0, count: Blowfish.blockSize)), padding: Padding) throws {
         precondition(key.count >= 5 && key.count <= 56)
 
         self.blockMode = blockMode
         self.padding = padding
+        keySize = key.count
 
         S = origS
         P = origP
@@ -327,10 +331,9 @@ public final class Blowfish {
     private func setupBlockModeWorkers() throws {
         encryptWorker = try blockMode.worker(blockSize: Blowfish.blockSize, cipherOperation: encrypt)
 
-        switch blockMode {
-        case .CFB, .OFB, .CTR:
+        if blockMode.options.contains(.useEncryptToDecrypt) {
             decryptWorker = try blockMode.worker(blockSize: Blowfish.blockSize, cipherOperation: encrypt)
-        default:
+        } else {
             decryptWorker = try blockMode.worker(blockSize: Blowfish.blockSize, cipherOperation: decrypt)
         }
     }
@@ -490,20 +493,18 @@ public final class Blowfish {
 }
 
 extension Blowfish: Cipher {
-
     /// Encrypt the 8-byte padded buffer, block by block. Note that for amounts of data larger than a block, it is not safe to just call encrypt() on successive blocks.
     ///
     /// - Parameter bytes: Plaintext data
     /// - Returns: Encrypted data
     public func encrypt<C: Collection>(_ bytes: C) throws -> Array<UInt8> where C.Element == UInt8, C.Index == Int {
-
         let bytes = padding.add(to: Array(bytes), blockSize: Blowfish.blockSize) // FIXME: Array(bytes) copies
 
         var out = Array<UInt8>()
         out.reserveCapacity(bytes.count)
 
         for chunk in bytes.batched(by: Blowfish.blockSize) {
-            out += encryptWorker.encrypt(chunk)
+            out += encryptWorker.encrypt(block: chunk)
         }
 
         if blockMode.options.contains(.paddingRequired) && (out.count % Blowfish.blockSize != 0) {
@@ -518,7 +519,6 @@ extension Blowfish: Cipher {
     /// - Parameter bytes: Ciphertext data
     /// - Returns: Plaintext data
     public func decrypt<C: Collection>(_ bytes: C) throws -> Array<UInt8> where C.Element == UInt8, C.Index == Int {
-
         if blockMode.options.contains(.paddingRequired) && (bytes.count % Blowfish.blockSize != 0) {
             throw Error.dataPaddingRequired
         }
@@ -527,7 +527,7 @@ extension Blowfish: Cipher {
         out.reserveCapacity(bytes.count)
 
         for chunk in Array(bytes).batched(by: Blowfish.blockSize) {
-            out += decryptWorker.decrypt(chunk) // FIXME: copying here is innefective
+            out += decryptWorker.decrypt(block: chunk) // FIXME: copying here is innefective
         }
 
         out = padding.remove(from: out, blockSize: Blowfish.blockSize)
