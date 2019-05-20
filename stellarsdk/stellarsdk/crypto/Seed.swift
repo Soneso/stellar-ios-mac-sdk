@@ -40,6 +40,11 @@ public class Seed {
     }
     
     public convenience init(secret: String) throws {
+        
+        if !secret.hasPrefix("S") {
+            throw Ed25519Error.invalidSeed
+        }
+        
         if let data = secret.base32DecodedData {
             if data.count - 3 <= 1 {
                 throw Ed25519Error.invalidSeed

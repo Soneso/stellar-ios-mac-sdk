@@ -515,7 +515,7 @@ class OperationXDRTestCase: XCTestCase {
         do {
             // GBPMKIRA2OQW2XZZQUCQILI5TMVZ6JNRKM423BSAISDM7ZFWQ6KWEBC4
             let source = try KeyPair(secretSeed: "SCH27VUZZ6UAKB67BDNF6FA42YMBMQCBKXWGMFD5TZ6S5ZZCZFLRXKHS")
-            let destination = try KeyPair(secretSeed: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR")
+            let destination = try KeyPair(accountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR")
             
             let sequenceNumber = Int64(2908908335136768)
             let account = Account(keyPair: source, sequenceNumber: sequenceNumber)

@@ -59,6 +59,11 @@ public class PublicKey: XDRCodable {
     /// - Throws Ed25519Error.invalidPublicKey if the accountId is invalid
     ///
     public convenience init(accountId: String) throws {
+        
+        if !accountId.hasPrefix("G") {
+            throw Ed25519Error.invalidPublicKey
+        }
+        
         if let data = accountId.base32DecodedData {
             try self.init(Array(([UInt8](data))[1...data.count - 3]))
         } else {

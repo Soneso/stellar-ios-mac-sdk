@@ -45,7 +45,14 @@ class AccountLocalTestCase: XCTestCase {
         XCTAssertNotNil(keyPair.secretSeed)
         
         do {
-            let _ = try KeyPair(secretSeed: "dssdd")
+            let _ = try KeyPair(secretSeed: "Sssdd")
+            XCTAssert(false)
+        } catch {
+            XCTAssert(true)
+        }
+        
+        do {
+            let _ = try KeyPair(secretSeed: "GCTMMHMQONEFT4AW6O57UUIGESXW4TYAQIN6TGRGCF5XZIE6WSOTSL4S")
             XCTAssert(false)
         } catch {
             XCTAssert(true)
@@ -63,6 +70,13 @@ class AccountLocalTestCase: XCTestCase {
         let keyPair = try! KeyPair(publicKey: PublicKey(accountId:"GC5EGTDV2RFIIHAEKF47KVCIOH6IK6WCO6I5ICT2YAWF6ZYZIHNHLEPR"), privateKey:nil)
         
         XCTAssert(keyPair.publicKey.bytes.count == 32, "Public key length is incorrect")
+        
+        do {
+            let _ = try KeyPair(accountId: "SC5EGTDV2RFIIHAEKF47KVCIOH6IK6WCO6I5ICT2YAWF6ZYZIHNHLEPR")
+            XCTAssert(false)
+        } catch {
+            XCTAssert(true)
+        }
     }
     
     func testKeyFromAccountSecretCreation() {
