@@ -28,7 +28,7 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
     public var subentryCount:UInt
     
     /// A paging token, specifying where the returned records start from.
-    public var pagingToken:String
+    public var pagingToken:String?
 
     /// Account designated to receive inflation if any.
     public var inflationDestination:String?
@@ -79,7 +79,7 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
         self.keyPair = try KeyPair(accountId: accountId)
         let sequenceNumberString = try values.decode(String.self, forKey: .sequenceNumber)
         sequenceNumber = Int64(sequenceNumberString)!
-        pagingToken = try values.decode(String.self, forKey: .pagingToken)
+        pagingToken = try values.decodeIfPresent(String.self, forKey: .pagingToken)
         subentryCount = try values.decode(UInt.self, forKey: .subentryCount)
         thresholds = try values.decode(AccountThresholdsResponse.self, forKey: .thresholds)
         flags = try values.decode(AccountFlagsResponse.self, forKey: .flags)
