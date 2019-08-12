@@ -28,7 +28,11 @@ public class StellarToml {
     public let issuerDocumentation: IssuerDocumentation
     public var pointsOfContact: [PointOfContactDocumentation]
     public var currenciesDocumentation: [CurrencyDocumentation]
+    
+    @available(*, deprecated)
     public let validatorInformation: ValidatorInformation
+    
+    public var validatorsInformation: [ValidatorInformation]
     
     public init(fromString string:String) throws {
         let toml = try Toml(withString: string)
@@ -37,7 +41,8 @@ public class StellarToml {
         if let documentation = toml.table("DOCUMENTATION"),
             let principals = toml.table("PRINCIPALS"),
             let currencies = toml.table("CURRENCIES"),
-            let validator = toml.table("QUORUM_SET") {
+            let quorum = toml.table("QUORUM_SET"),
+            let validators = toml.table("VALIDATORS") {
             
             issuerDocumentation = IssuerDocumentation(fromToml: documentation)
             pointsOfContact = []
@@ -51,7 +56,14 @@ public class StellarToml {
                 let currency = CurrencyDocumentation(fromToml: currencies)
                 currenciesDocumentation.append(currency)
             }
-            validatorInformation = ValidatorInformation(fromToml: validator)
+            
+            validatorInformation = ValidatorInformation(fromToml: quorum)
+            
+            validatorsInformation = []
+            for validatorToml in validators.tables() {
+                let validator = ValidatorInformation(fromToml: validatorToml)
+                validatorsInformation.append(validator)
+            }
             
         } else {
             throw TomlFileError.invalidToml
@@ -75,5 +87,4 @@ public class StellarToml {
             }
         }
     }
-    
 }

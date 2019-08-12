@@ -24,7 +24,7 @@ class MnemonicKeyPairGeneration: XCTestCase {
     
     // All tests are conducted against Stellar SEP: 0005 tests defined here https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
     
-    func test12WordBIPAndMasterKeyGeneration() {
+    /*func test12WordBIPAndMasterKeyGeneration() {
         let mnemonic = "illness spike retreat truth genius clock brain pass fit cave bargain toe"
         let bip39Seed = Mnemonic.createSeed(mnemonic: mnemonic)
     
@@ -110,7 +110,7 @@ class MnemonicKeyPairGeneration: XCTestCase {
         
         XCTAssertEqual(keyPair8.accountId, "GDJTCF62UUYSAFAVIXHPRBR4AUZV6NYJR75INVDXLLRZLZQ62S44443R")
         XCTAssertEqual(keyPair8.secretSeed, "SCD5OSHUUC75MSJG44BAT3HFZL2HZMMQ5M4GPDL7KA6HJHV3FLMUJAME")
-    }
+    }*/
     
     func test24WordWalletKeyPairGeneration() {
         let mnemonic = "bench hurt jump file august wise shallow faculty impulse spring exact slush thunder author capable act festival slice deposit sauce coconut afford frown better"
