@@ -52,6 +52,12 @@ public class OperationResponse: NSObject, Decodable {
     // Transaction hash of the operation.
     public var transactionHash:String
     
+    // Transaction successful
+    public var transactionSuccessful:Bool
+    
+    // optional transaction if requested by join parameter
+    public var transaction: TransactionResponse?
+    
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case links = "_links"
@@ -62,6 +68,8 @@ public class OperationResponse: NSObject, Decodable {
         case operationType = "type_i"
         case createdAt = "created_at"
         case transactionHash = "transaction_hash"
+        case transactionSuccessful = "transaction_successful"
+        case transaction = "transaction"
     }
     
     /**
@@ -80,5 +88,7 @@ public class OperationResponse: NSObject, Decodable {
         operationType = OperationType(rawValue: Int32(typeIInt))!
         createdAt = try values.decode(Date.self, forKey: .createdAt)
         transactionHash = try values.decode(String.self, forKey: .transactionHash)
+        transactionSuccessful = try values.decode(Bool.self, forKey: .transactionSuccessful)
+        transaction = try values.decodeIfPresent(TransactionResponse.self, forKey: .transaction)
     }
 }

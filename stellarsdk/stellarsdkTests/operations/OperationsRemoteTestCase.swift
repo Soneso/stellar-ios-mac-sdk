@@ -73,7 +73,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationsForAccount() {
         let expectation = XCTestExpectation(description: "Get operations for account")
         
-        sdk.operations.getOperations(forAccount: IOMIssuingAccountId, from: nil, order: Order.descending) { (response) -> (Void) in
+        sdk.operations.getOperations(forAccount: "GBCY6CERPPE6WLTZV5RWJXZ7RWY7UWKJNCCVYENSH4OQOBTFKKJDGTLN", from: nil, order: Order.descending, includeFailed: true, join: "transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -91,7 +91,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationsForLedger() {
         let expectation = XCTestExpectation(description: "Get operations for ledger")
         
-        sdk.operations.getOperations(forLedger: "1") { (response) -> (Void) in
+        sdk.operations.getOperations(forLedger: "194461", includeFailed:true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -109,7 +109,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationsForTransaction() {
         let expectation = XCTestExpectation(description: "Get operations for transaction")
         
-        sdk.operations.getOperations(forTransaction: "62ca378e9f68f8d50147b2a280cf53f5b2e82a60fc37526a7150adeb9118591b") { (response) -> (Void) in
+        sdk.operations.getOperations(forTransaction: "86f69af5e7ae94ddc93f7628302a37d6b31392280aa02e9466e87e6f41aded15", includeFailed:true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -127,7 +127,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationDetails() {
         let expectation = XCTestExpectation(description: "Get operation details")
         
-        sdk.operations.getOperationDetails(operationId: "760209215489") { (response) -> (Void) in
+        sdk.operations.getOperationDetails(operationId: "834714009083905", join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)

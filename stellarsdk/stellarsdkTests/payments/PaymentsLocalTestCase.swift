@@ -152,6 +152,7 @@ class PaymentsLocalTestCase: XCTestCase {
             },
             "id": "77309415424",
             "paging_token": "77309415424",
+            "transaction_successful":true,
             "type_i": 1,
             "type": "payment",
             "source_account": "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY",

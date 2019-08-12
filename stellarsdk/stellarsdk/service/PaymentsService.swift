@@ -34,10 +34,12 @@ public class PaymentsService: NSObject {
     /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
     /// - Parameter order: The order in which to return rows, “asc” or “desc”.
     /// - Parameter limit: Maximum number of records to return default 10
+    /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
+    /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
     ///
-    open func getPayments(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+    open func getPayments(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/payments"
-        getPayments(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
     }
     
     /// This function responds with a collection of payment operations where the given account was either the sender or receiver.
@@ -47,10 +49,12 @@ public class PaymentsService: NSObject {
     /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
     /// - Parameter order: The order in which to return rows, “asc” or “desc”.
     /// - Parameter limit: Maximum number of records to return default 10
+    /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
+    /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
     ///
-    open func getPayments(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+    open func getPayments(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/accounts/" + accountId + "/payments"
-        getPayments(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
     }
     
     /// This function responds with all payment operations that are part of a valid transactions in a given ledger.
@@ -60,10 +64,12 @@ public class PaymentsService: NSObject {
     /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
     /// - Parameter order: The order in which to return rows, “asc” or “desc”.
     /// - Parameter limit: Maximum number of records to return default 10
+    /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
+    /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
     ///
-    open func getPayments(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+    open func getPayments(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/ledgers/" + ledger + "/payments"
-        getPayments(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
     }
     
     /// This function responds with all payment operations that are part of a given transaction.
@@ -73,19 +79,23 @@ public class PaymentsService: NSObject {
     /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
     /// - Parameter order: The order in which to return rows, “asc” or “desc”.
     /// - Parameter limit: Maximum number of records to return default 10
+    /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
+    /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
     ///
-    open func getPayments(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+    open func getPayments(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/transactions/" + hash + "/payments"
-        getPayments(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
     }
     
-    private func getPayments(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+    private func getPayments(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         var requestPath = path
         
         var params = Dictionary<String,String>()
         params["cursor"] = cursor
         params["order"] = order?.rawValue
         if let limit = limit { params["limit"] = String(limit) }
+        if let isIncludeFailed = includeFailed, isIncludeFailed { params["include_failed"] = "true" }
+        if let join = join { params["join"] = join }
         
         if let pathParams = params.stringFromHttpParameters(),
             pathParams.count > 0 {

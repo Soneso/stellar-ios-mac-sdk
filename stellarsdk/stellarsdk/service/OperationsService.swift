@@ -34,28 +34,37 @@ public class OperationsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+    open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/operations"
-        getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
     }
     
-    open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+    open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/accounts/" + accountId + "/operations"
-        getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
     }
     
-    open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+    open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/ledgers/" + ledger + "/operations"
-        getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
     }
     
-    open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+    open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/transactions/" + hash + "/operations"
-        getOperations(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
     }
     
-    open func getOperationDetails(operationId:String, response:@escaping OperationDetailsResponseClosure) {
-        let requestPath = "/operations/" + operationId
+    open func getOperationDetails(operationId:String, includeFailed:Bool? = nil, join:String? = nil, response:@escaping OperationDetailsResponseClosure) {
+        var requestPath = "/operations/" + operationId
+        
+        var params = Dictionary<String,String>()
+        if let isIncludeFailed = includeFailed, isIncludeFailed { params["include_failed"] = "true" }
+        if let join = join { params["join"] = join }
+        
+        if let pathParams = params.stringFromHttpParameters(),
+            pathParams.count > 0 {
+            requestPath += "?\(pathParams)"
+        }
         
         serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
@@ -101,13 +110,15 @@ public class OperationsService: NSObject {
         return streamItem
     }
     
-    private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+    private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         var requestPath = path
         
         var params = Dictionary<String,String>()
         params["cursor"] = cursor
         params["order"] = order?.rawValue
         if let limit = limit { params["limit"] = String(limit) }
+        if let isIncludeFailed = includeFailed, isIncludeFailed { params["include_failed"] = "true" }
+        if let join = join { params["join"] = join }
         
         if let pathParams = params.stringFromHttpParameters(),
             pathParams.count > 0 {

@@ -71,7 +71,7 @@ class PaymentsTestCase: XCTestCase {
     func testGetPaymentsForAccount() {
         let expectation = XCTestExpectation(description: "Get payments for account")
         
-        sdk.payments.getPayments (forAccount: IOMIssuingAccountId) { (response) -> (Void) in
+        sdk.payments.getPayments (forAccount: "GBCY6CERPPE6WLTZV5RWJXZ7RWY7UWKJNCCVYENSH4OQOBTFKKJDGTLN", includeFailed:true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -89,7 +89,7 @@ class PaymentsTestCase: XCTestCase {
     func testGetPaymentsForLedger() {
         let expectation = XCTestExpectation(description: "Get payments for ledger")
         
-        sdk.payments.getPayments(forLedger: "1") { (response) -> (Void) in
+        sdk.payments.getPayments(forLedger: "194461", includeFailed:true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -107,7 +107,7 @@ class PaymentsTestCase: XCTestCase {
     func testGetPaymentsForTransaction() {
         let expectation = XCTestExpectation(description: "Get payments for transaction")
         
-        sdk.payments.getPayments(forTransaction: "4dd0cf1dffffd06e8ee78250ab7c3c9737632b75ffb6a911745b8deae88bee85") { (response) -> (Void) in
+        sdk.payments.getPayments(forTransaction: "9b0f8af4b9c7ef2c179a74676d9333dc86c627bb1ef8493a0a2c9c0105d94f4f", includeFailed: true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
