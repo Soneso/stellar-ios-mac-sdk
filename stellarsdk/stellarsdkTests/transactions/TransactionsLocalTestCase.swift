@@ -143,7 +143,9 @@ class TransactionsLocalTestCase: XCTestCase {
             XCTAssertEqual(firstTransaction?.createdAt,createdAt)
             XCTAssertEqual(firstTransaction?.sourceAccount,"GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN")
             XCTAssertEqual(firstTransaction?.sourceAccountSequence,"31398186618716187")
-            XCTAssertEqual(firstTransaction?.feePaid, 100)
+            XCTAssertEqual(firstTransaction?.feePaid, nil)
+            XCTAssertEqual(firstTransaction?.maxFee, 102)
+            XCTAssertEqual(firstTransaction?.feeCharged, 101)
             XCTAssertEqual(firstTransaction?.operationCount,1)
             // TODO xdrs
             XCTAssertEqual(firstTransaction?.memoType, "none")
@@ -187,6 +189,8 @@ class TransactionsLocalTestCase: XCTestCase {
                 XCTAssertEqual(secondTransaction?.sourceAccount,"GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN")
                 XCTAssertEqual(secondTransaction?.sourceAccountSequence,"31398186618716186")
                 XCTAssertEqual(secondTransaction?.feePaid, 100)
+                XCTAssertEqual(secondTransaction?.maxFee, 100)
+                XCTAssertEqual(secondTransaction?.feeCharged, 100)
                 XCTAssertEqual(secondTransaction?.operationCount,1)
                 // TODO xdrs
                 XCTAssertEqual(secondTransaction?.memoType, "hash")
@@ -263,7 +267,8 @@ class TransactionsLocalTestCase: XCTestCase {
                     "created_at": "2018-02-21T15:16:05Z",
                     "source_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
                     "source_account_sequence": "31398186618716187",
-                    "fee_paid": 100,
+                    "max_fee": 102,
+                    "fee_charged":101,
                     "operation_count": 1,
                     "envelope_xdr": "AAAAABLZTLZVFRuA7H2N4LOAFZqJd/Ln1QzmBoCZ4/LTZ+sKAAAAZABvjHwAAAAbAAAAAAAAAAAAAAABAAAAAAAAAAMAAAABRVVSAAAAAABWsKIm44ZManGkwOIyDdbzRjPLfb6ZrVXWOGIi9S2tRwAAAAJDVTEyMzQ1AAAAAAAAAAAAwjUbmH7LrvIY/NDZcKS9j6Dl/dg6KCJgC1GiKwWkdaMAAAAAL68IAAAAAAEAAAPoAAAAAAAAAAAAAAAAAAAAAdNn6woAAABAioDroKPUAZn2Pp4OTksPKmitQTZpsFSAN259vcI0E3YtCbOWUQkpOJV68myqgL62CPzK3YIsg+Kok4lQ6ys5Ag==",
                     "result_xdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAADAAAAAAAAAAEAAAAAURqP8nUKuuavLDttwWMCdPjCAiTp+vu5leob71ZdvIAAAAAAAAGcvwAAAAJDVTEyMzQ1AAAAAAAAAAAAwjUbmH7LrvIY/NDZcKS9j6Dl/dg6KCJgC1GiKwWkdaMAAAAAAAw1AAAAAAFFVVIAAAAAAFawoibjhkxqcaTA4jIN1vNGM8t9vpmtVdY4YiL1La1HAAAAAC+vCAAAAAACAAAAAA==",
@@ -312,6 +317,8 @@ class TransactionsLocalTestCase: XCTestCase {
                     "source_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
                     "source_account_sequence": "31398186618716186",
                     "fee_paid": 100,
+                    "max_fee": 100,
+                    "fee_charged":100,
                     "operation_count": 1,
                     "envelope_xdr": "AAAAABLZTLZVFRuA7H2N4LOAFZqJd/Ln1QzmBoCZ4/LTZ+sKAAAAZABvjHwAAAAaAAAAAAAAAAAAAAABAAAAAAAAAAYAAAACQ1UxMjM0NQAAAAAAAAAAAMI1G5h+y67yGPzQ2XCkvY+g5f3YOigiYAtRoisFpHWjAWNFeF2KAAAAAAAAAAAAAdNn6woAAABA9mofj/v3nFoJpHpImh/lmmV6C3zm0IISI62arI1MurcDkDzo43iR6pNBtPGxHlcYd1ZhOHWyaWGfFrYTsxarAA==",
                     "result_xdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAGAAAAAAAAAAA=",
