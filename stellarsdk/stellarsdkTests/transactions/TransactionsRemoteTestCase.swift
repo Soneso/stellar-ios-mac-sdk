@@ -232,7 +232,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     }
     
     func testTransactionEnvelopePost() {
-        let keyPair = try! KeyPair(secretSeed: seed)
+        let keyPair = try! KeyPair(secretSeed: "SBSRPDUWJ73OGOBDDNZ5IXWJYOUFWLMU5NGPVUPWL6PZIZ5KDJHLSII5")
         
         let expectation = XCTestExpectation(description: "Transaction successfully signed.")
         sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
@@ -240,7 +240,7 @@ class TransactionsRemoteTestCase: XCTestCase {
             case .success(let data):
                 let operationBody = OperationBodyXDR.inflation
                 let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
-                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation])
+                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation], maxOperationFee: 190)
                 
                 try! transaction.sign(keyPair: keyPair, network: .testnet)
                 let xdrEnvelope = try! transaction.encodedEnvelope()

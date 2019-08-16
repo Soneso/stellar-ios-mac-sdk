@@ -12,7 +12,6 @@ import Foundation
 /// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/transactions.html, "Transactions")
 public class Transaction {
     
-    public let baseFee = 100
     public let fee:UInt32
     public let sourceAccount:TransactionAccount
     public let operations:[Operation]
@@ -32,8 +31,9 @@ public class Transaction {
     /// - Parameter operations: Transactions contain an arbitrary list of operations inside them. Typically there is just one operation, but it’s possible to have multiple. Operations are executed in order as one ACID transaction, meaning that either all operations are applied or none are.
     /// - Parameter memo: Optional. The memo contains optional extra information. It is the responsibility of the client to interpret this value.
     /// - Parameter timeBounds: Optional. The UNIX timestamp, determined by ledger time, of a lower and upper bound of when this transaction will be valid. If a transaction is submitted too early or too late, it will fail to make it into the transaction set.
+    /// - Parameter maxOperationFee: Optional. The maximum fee in stoops you are willing to pay per operation. If not set, it will default to the network base fee which is currently set to 100 stroops (0.00001 lumens). Transaction fee is equal to operation fee times number of operations in this transaction.
     ///
-    public init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, timeBounds:TimeBounds?) throws {
+    public init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, timeBounds:TimeBounds?, maxOperationFee:UInt32 = 100) throws {
         
         if operations.count == 0 {
             throw StellarSDKError.invalidArgument(message: "At least one operation required")
@@ -42,7 +42,9 @@ public class Transaction {
         self.sourceAccount = sourceAccount
         self.operations = operations
         self.timeBounds = timeBounds
-        self.fee = UInt32(operations.count * baseFee)
+        
+        self.fee = maxOperationFee * UInt32(operations.count)
+        
         self.memo = memo ?? Memo.none
         
         var operationsXDR = [OperationXDR]()
@@ -55,7 +57,8 @@ public class Transaction {
                                              seqNum: self.sourceAccount.incrementedSequenceNumber(),
                                              timeBounds: self.timeBounds?.toXdr(),
                                              memo: self.memo.toXDR(),
-                                             operations: operationsXDR)
+                                             operations: operationsXDR,
+                                             maxOperationFee: maxOperationFee)
         
         self.sourceAccount.incrementSequenceNumber()
         
