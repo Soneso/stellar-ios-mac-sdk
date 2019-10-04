@@ -37,15 +37,19 @@ class TransactionsLocalTestCase: XCTestCase {
     }
     
     func testTransactionEnvelopeXDRStringInit() {
-        let xdrString = "AAAAAJ/Ax+axve53/7sXfQY0fI6jzBeHEcPl0Vsg1C2tqyRbAAAAZAAAAAAAAAAAAAAAAQAAAABb2L/OAAAAAFvYwPoAAAAAAAAAAQAAAAEAAAAAo7FW8r8Nj+SMwPPeAoL4aUkLob7QU68+9Y8CAia5k78AAAAKAAAAN0NJcDhiSHdnU2hUR042ZDE3bjg1ZlFGRVBKdmNtNFhnSWhVVFBuUUF4cUtORVd4V3JYIGF1dGgAAAAAAQAAAEDh/7kQjZbcXypISjto5NtGLuaDGrfL/F08apZQYp38JNMNQ9p/e1Fy0z23WOg/Ic+e91+hgbdTude6+1+i0V41AAAAAAAAAAGtqyRbAAAAQNeY1rEwPynWnVXaaE/XWeuRnOHS/479J+Eu7s5OplSlF41xB7E8u9WzEItaOs167xuOVcLZUKBCBF1fnfzMEQg="
+        let xdrString = "AAAAAGV+lDNEWJN2FhmJZgrrObjhhYYF80e+hc48z6KYhQxNAAAD6AAPsVkAAAAEAAAAAAAAAAAAAAABAAAAAQAAAABlfpQzRFiTdhYZiWYK6zm44YWGBfNHvoXOPM+imIUMTQAAAAEAAAAAHIfqDW5SWNoW2fFBEisLrHjuQunW8cRyaX5aF3NCNYoAAAAAAAAAAADk4cAAAAAAAAAAAZiFDE0AAABAxGFuP73x/OBT75+39J3k13/aos+h9yAvJErIlp9IoziNI02QsZAovmgVImdoGdo7FnslzirqzkZX3LVtych1Bw=="
         do {
             // method 1
             let transaction = try Transaction(envelopeXdr: xdrString)
+            let tFee = transaction.fee
+            XCTAssert(tFee == 1000)
             let encodedEnvelope = try transaction.encodedEnvelope()
             XCTAssertTrue(xdrString == encodedEnvelope)
             
             // method 2
             let envelope = try TransactionEnvelopeXDR(xdr:xdrString)
+            let fee = envelope.tx.fee
+            XCTAssert(fee == 1000)
             let envelopeString = envelope.xdrEncoded
             XCTAssertTrue(xdrString == envelopeString)
         } catch {
@@ -54,11 +58,14 @@ class TransactionsLocalTestCase: XCTestCase {
     }
     
     func testTransactionXDRStringInit() {
-        let xdrString = "AAAAAJ/Ax+axve53/7sXfQY0fI6jzBeHEcPl0Vsg1C2tqyRbAAAAZAAAAAAAAAAAAAAAAQAAAABb2L/OAAAAAFvYwPoAAAAAAAAAAQAAAAEAAAAAo7FW8r8Nj+SMwPPeAoL4aUkLob7QU68+9Y8CAia5k78AAAAKAAAAN0NJcDhiSHdnU2hUR042ZDE3bjg1ZlFGRVBKdmNtNFhnSWhVVFBuUUF4cUtORVd4V3JYIGF1dGgAAAAAAQAAAEDh/7kQjZbcXypISjto5NtGLuaDGrfL/F08apZQYp38JNMNQ9p/e1Fy0z23WOg/Ic+e91+hgbdTude6+1+i0V41AAAAAA=="
+        
+        let xdrString = "AAAAAGV+lDNEWJN2FhmJZgrrObjhhYYF80e+hc48z6KYhQxNAAAD6AAPsVkAAAAEAAAAAAAAAAAAAAABAAAAAQAAAABlfpQzRFiTdhYZiWYK6zm44YWGBfNHvoXOPM+imIUMTQAAAAEAAAAAHIfqDW5SWNoW2fFBEisLrHjuQunW8cRyaX5aF3NCNYoAAAAAAAAAAADk4cAAAAAA"
         do {
-            let envelope = try TransactionXDR(xdr:xdrString)
-            let envelopeString = envelope.xdrEncoded
-            XCTAssertTrue(xdrString == envelopeString)
+            let transaction = try TransactionXDR(xdr:xdrString)
+            let fee = transaction.fee
+            XCTAssert(fee == 1000)
+            let transactionXDRString = transaction.xdrEncoded
+            XCTAssertTrue(xdrString == transactionXDRString)
         } catch {
             XCTAssertTrue(false)
         }

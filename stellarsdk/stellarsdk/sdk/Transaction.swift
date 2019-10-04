@@ -85,7 +85,7 @@ public class Transaction {
             timebounds = TimeBounds(timebounds: timeboundsXDR)
         }
         
-        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionXDR.memo), timeBounds: timebounds)
+        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionXDR.memo), timeBounds: timebounds, maxOperationFee: transactionXDR.fee)
     }
     
     /// Creates a new Transaction object from an Transaction Envelope XDR string.
@@ -109,7 +109,7 @@ public class Transaction {
             timebounds = TimeBounds(timebounds: timeboundsXDR)
         }
         
-        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionEnvelopeXDR.tx.memo), timeBounds: timebounds)
+        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionEnvelopeXDR.tx.memo), timeBounds: timebounds, maxOperationFee: transactionEnvelopeXDR.tx.fee)
         
         for signature in transactionEnvelopeXDR.signatures {
             self.transactionXDR.addSignature(signature: signature)
