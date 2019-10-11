@@ -57,7 +57,7 @@ class OperationsFactory: NSObject {
             case .payment:
                 return try jsonDecoder.decode(PaymentOperationResponse.self, from: data)
             case .pathPayment:
-                return try jsonDecoder.decode(PathPaymentOperationResponse.self, from: data)
+                return try jsonDecoder.decode(PathPaymentStrictReceiveOperationResponse.self, from: data)
             case .manageSellOffer:
                 return try jsonDecoder.decode(ManageSellOfferOperationResponse.self, from: data)
             case .manageBuyOffer:
@@ -78,6 +78,8 @@ class OperationsFactory: NSObject {
                 return try jsonDecoder.decode(ManageDataOperationResponse.self, from: data)
             case .bumpSequence:
                 return try jsonDecoder.decode(BumpSequenceOperationResponse.self, from: data)
+            case .pathPaymentStrictSend:
+                return try jsonDecoder.decode(PathPaymentStrictSendOperationResponse.self, from: data)
             }
         } else {
             throw HorizonRequestError.parsingResponseFailed(message: "Unknown operation type")

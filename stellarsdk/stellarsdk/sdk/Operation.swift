@@ -45,8 +45,10 @@ public class Operation {
             return CreateAccountOperation(fromXDR: account, sourceAccount: source)
         case .payment(let payment):
             return PaymentOperation(fromXDR: payment, sourceAccount: source)
-        case .pathPayment(let pathPayment):
-            return PathPaymentOperation(fromXDR: pathPayment, sourceAccount: source)
+        case .pathPayment(let pathPaymentStrictReceive):
+            return PathPaymentStrictReceiveOperation(fromXDR: pathPaymentStrictReceive, sourceAccount: source)
+        case .pathPaymentStrictSend(let pathPaymentStrictSend):
+            return PathPaymentStrictSendOperation(fromXDR: pathPaymentStrictSend, sourceAccount: source)
         case .manageSellOffer(let manageOffer):
             return ManageSellOfferOperation(fromXDR: manageOffer, sourceAccount: source)
         case .manageBuyOffer(let manageOffer):

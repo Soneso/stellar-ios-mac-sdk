@@ -75,6 +75,8 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertEqual(code, ManageDataResultCode.success.rawValue)
         case .bumpSequence(let code, _):
             XCTAssertEqual(code, BumpSequenceResultCode.success.rawValue)
+        case .pathPaymentStrictSend(let code, _):
+            XCTAssertEqual(code, PathPaymentResultCode.success.rawValue)
         case .empty(let code):
             XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
         }

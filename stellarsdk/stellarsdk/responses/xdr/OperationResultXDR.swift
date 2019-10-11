@@ -29,6 +29,7 @@ public enum OperationResultXDR: XDRCodable {
     case manageData(Int32, ManageDataResultXDR)
     case bumpSequence(Int32, BumpSequenceResultXDR)
     case manageBuyOffer(Int32, ManageOfferResultXDR)
+    case pathPaymentStrictSend(Int32, PathPaymentResultXDR)
     case empty (Int32)
     
     public init(from decoder: Decoder) throws {
@@ -66,6 +67,8 @@ public enum OperationResultXDR: XDRCodable {
                     self = .manageData(code.rawValue, try container.decode(ManageDataResultXDR.self))
                 case .bumpSequence:
                     self = .bumpSequence(code.rawValue, try container.decode(BumpSequenceResultXDR.self))
+                case .pathPaymentStrictSend:
+                    self = .pathPaymentStrictSend(code.rawValue, try container.decode(PathPaymentResultXDR.self))
             }
         default:
             self = .empty(code.rawValue)
@@ -114,6 +117,9 @@ public enum OperationResultXDR: XDRCodable {
                 try container.encode(code)
                 try container.encode(result)
             case .bumpSequence(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .pathPaymentStrictSend(let code, let result):
                 try container.encode(code)
                 try container.encode(result)
             case .empty (let code):

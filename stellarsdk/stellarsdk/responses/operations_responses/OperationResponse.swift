@@ -22,6 +22,7 @@ public enum OperationType: Int32 {
     case manageData = 10
     case bumpSequence = 11
     case manageBuyOffer = 12
+    case pathPaymentStrictSend = 13
 }
 
 /// Represents an operation response. Superclass for all other operation response classes.

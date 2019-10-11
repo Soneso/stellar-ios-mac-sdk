@@ -22,6 +22,7 @@ public enum OperationBodyXDR: XDRCodable {
     case manageData (ManageDataOperationXDR)
     case accountMerge (PublicKey)
     case bumpSequence (BumpSequenceOperationXDR)
+    case pathPaymentStrictSend (PathPaymentOperationXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -55,6 +56,8 @@ public enum OperationBodyXDR: XDRCodable {
                 self = .accountMerge(try container.decode(PublicKey.self))
             case OperationType.bumpSequence.rawValue:
                 self = .bumpSequence(try container.decode(BumpSequenceOperationXDR.self))
+            case OperationType.pathPaymentStrictSend.rawValue:
+                self = .pathPaymentStrictSend(try container.decode(PathPaymentOperationXDR.self))
             default:
                 throw StellarSDKError.xdrDecodingError(message: "Could not decode operation")
         }
@@ -75,6 +78,7 @@ public enum OperationBodyXDR: XDRCodable {
             case .manageData: return OperationType.manageData.rawValue
             case .accountMerge: return OperationType.accountMerge.rawValue
             case .bumpSequence: return OperationType.bumpSequence.rawValue
+            case .pathPaymentStrictSend: return OperationType.pathPaymentStrictSend.rawValue
         }
     }
     
@@ -109,6 +113,8 @@ public enum OperationBodyXDR: XDRCodable {
         case .accountMerge (let op):
             try container.encode(op)
         case .bumpSequence (let op):
+            try container.encode(op)
+        case .pathPaymentStrictSend (let op):
             try container.encode(op)
         }
     }

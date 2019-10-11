@@ -78,8 +78,14 @@ class OperationsLocalTestCase: XCTestCase {
                         XCTAssert(false)
                     }
                 case .pathPayment:
-                    if record is PathPaymentOperationResponse {
-                        validatePathPaymentOperationResponse(operationResponse: record as! PathPaymentOperationResponse)
+                    if record is PathPaymentStrictReceiveOperationResponse {
+                        validatePathPaymentOperationResponse(operationResponse: record as! PathPaymentStrictReceiveOperationResponse)
+                    } else {
+                        XCTAssert(false)
+                    }
+                case .pathPaymentStrictSend:
+                    if record is PathPaymentStrictSendOperationResponse {
+                        validatePathPaymentOperationResponse(operationResponse: record as! PathPaymentStrictSendOperationResponse)
                     } else {
                         XCTAssert(false)
                     }
