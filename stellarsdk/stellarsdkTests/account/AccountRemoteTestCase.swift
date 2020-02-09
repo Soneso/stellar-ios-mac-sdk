@@ -121,4 +121,84 @@ class AccountRemoteTestCase: XCTestCase {
         }
         wait(for: [expectation], timeout: 15.0)
     }
+    
+    func testGetAccountsByAsset() {
+        let expectation = XCTestExpectation(description: "Get accounts and parse their details successfully")
+        
+        sdk.accounts.getAccounts(signer: nil, asset: "IOM:GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII", cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
+            switch response {
+            case .success(let accountsResponse):
+                // load next page
+                accountsResponse.getNextPage(){ (response) -> (Void) in
+                    switch response {
+                    case .success(let nextAccountsResponse):
+                        // load previous page, should contain the same accounts as the first page
+                        nextAccountsResponse.getPreviousPage(){ (response) -> (Void) in
+                            switch response {
+                            case .success(let prevAccountsResponse):
+                                let account1 = accountsResponse.records.first
+                                let account2 = prevAccountsResponse.records.last // because ordering is asc now.
+                                XCTAssertNotNil(account1);
+                                XCTAssertNotNil(account2);
+                                XCTAssertTrue(account1?.accountId == account2?.accountId)
+                                XCTAssert(true)
+                                expectation.fulfill()
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load accounts testcase", horizonRequestError: error)
+                                XCTAssert(false)
+                            }
+                        }
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load accounts testcase", horizonRequestError: error)
+                        XCTAssert(false)
+                    }
+                }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load accounts testcase", horizonRequestError: error)
+                XCTAssert(false)
+                expectation.fulfill()
+            }
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetAccountsBySigner() {
+        let expectation = XCTestExpectation(description: "Get accounts and parse their details successfully")
+        
+        sdk.accounts.getAccounts(signer: "GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII", asset:nil, cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
+            switch response {
+            case .success(let accountsResponse):
+                // load next page
+                accountsResponse.getNextPage(){ (response) -> (Void) in
+                    switch response {
+                    case .success(let nextAccountsResponse):
+                        // load previous page, should contain the same accounts as the first page
+                        nextAccountsResponse.getPreviousPage(){ (response) -> (Void) in
+                            switch response {
+                            case .success(let prevAccountsResponse):
+                                let account1 = accountsResponse.records.first
+                                let account2 = prevAccountsResponse.records.last // because ordering is asc now.
+                                XCTAssertNotNil(account1);
+                                XCTAssertNotNil(account2);
+                                XCTAssertTrue(account1?.accountId == account2?.accountId)
+                                XCTAssert(true)
+                                expectation.fulfill()
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load accounts testcase", horizonRequestError: error)
+                                XCTAssert(false)
+                            }
+                        }
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load accounts testcase", horizonRequestError: error)
+                        XCTAssert(false)
+                    }
+                }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load accounts testcase", horizonRequestError: error)
+                XCTAssert(false)
+                expectation.fulfill()
+            }
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }
 }

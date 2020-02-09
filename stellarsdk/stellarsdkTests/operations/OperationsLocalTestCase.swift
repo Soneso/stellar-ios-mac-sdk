@@ -257,7 +257,7 @@ class OperationsLocalTestCase: XCTestCase {
             XCTAssertEqual(operationResponse.createdAt, createdAt)
             XCTAssertEqual(operationResponse.transactionHash, "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d")
             
-            XCTAssertEqual(operationResponse.operationTypeString, "path_payment")
+            XCTAssertEqual(operationResponse.operationTypeString, "path_payment_strict_receive")
             XCTAssertEqual(operationResponse.operationType, OperationType.pathPayment)
             XCTAssertEqual(operationResponse.amount, "100.0")
             XCTAssertEqual(operationResponse.sourceAmount, "50.0")
@@ -793,7 +793,7 @@ class OperationsLocalTestCase: XCTestCase {
                 "paging_token": "77309415424",
                 "transaction_successful": true,
                 "type_i": 2,
-                "type": "path_payment",
+                "type": "path_payment_strict_receive",
                 "source_account": "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY",
                 "created_at": "2018-02-21T09:56:26Z",
                 "transaction_hash": "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d",

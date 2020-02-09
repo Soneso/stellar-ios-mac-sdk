@@ -140,4 +140,56 @@ open class AccountService: NSObject {
         
         task.resume()
     }
+    
+    /// This endpoint allows filtering accounts who have a given signer or have a trustline to an asset. The result is a list of accounts.
+    
+    /// To find all accounts who are trustees to an asset, pass the query parameter asset using the canonical representation for an issued assets which is Code:IssuerAccountID. Read more about canonical representation of assets in SEP-0011.
+    
+    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/accounts.html "Accounts")
+    
+    /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
+    ///
+    /// - Parameter signer: Optional. Account ID.
+    /// - Parameter asset: Optional. An issued asset represented as "Code:IssuerAccountID".
+    /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
+    /// - Parameter order: Optional. The order in which to return rows, “asc” or “desc”, ordered by assetCode then by assetIssuer.
+    /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
+    ///
+    open func getAccounts(signer:String? = nil, asset:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<AccountResponse>.ResponseClosure) {
+        var requestPath = "/accounts"
+        
+        var params = Dictionary<String,String>()
+        params["signer"] = signer
+        params["asset"] = asset
+        params["cursor"] = cursor
+        params["order"] = order?.rawValue
+        if let limit = limit { params["limit"] = String(limit) }
+        
+        if let pathParams = params.stringFromHttpParameters(),
+            pathParams.count > 0 {
+            requestPath += "?\(pathParams)"
+        }
+        
+        getAccountsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+    }
+    
+    /// Loads accounts for a given url if valid. E.g. for a "next" link from a PageResponse<AccountResponse> object.
+    ///
+    /// - Parameter url: The url to be used to load the accounts.
+    ///
+    open func getAccountsFromUrl(url:String, response:@escaping PageResponse<AccountResponse>.ResponseClosure) {
+        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                do {
+                    let accounts = try self.jsonDecoder.decode(PageResponse<AccountResponse>.self, from: data)
+                    response(.success(details: accounts))
+                } catch {
+                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+                }
+            case .failure(let error):
+                response(.failure(error:error))
+            }
+        }
+    }
 }

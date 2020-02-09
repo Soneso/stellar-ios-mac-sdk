@@ -113,6 +113,9 @@ public struct PageResponse<Element:Decodable>: Decodable {
             case is AssetResponse.Type:
                 let service = AssetsService(baseURL:"")
                 service.getAssetsFromUrl(url:url, response:response as! PageResponse<AssetResponse>.ResponseClosure)
+            case is AccountResponse.Type:
+                let service = AccountService(baseURL:"")
+                service.getAccountsFromUrl(url:url, response:response as! PageResponse<AccountResponse>.ResponseClosure)
             case is TradeResponse.Type:
                 let service = TradesService(baseURL:"")
                 service.getTradesFromUrl(url:url, response:response as! PageResponse<TradeResponse>.ResponseClosure)
