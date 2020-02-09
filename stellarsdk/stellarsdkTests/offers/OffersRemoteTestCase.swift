@@ -67,4 +67,79 @@ class OffersRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testLoadOffersForSeller() {
+        let expectation = XCTestExpectation(description: "Get offers")
+        
+        sdk.offers.getOffers(seller: "GDGNF4FLAPCTN2WQ4SM7RPB42QIEPM3FK5M4FAVREOBUALT7I6DVNHCX", sellingAssetType: "credit_alphanum4", sellingAssetCode: "IOM", sellingAssetIssuer: "GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII", buyingAssetType: "native") { (response) -> (Void) in
+            switch response {
+            case .success(let offersResponse):
+                let offer = offersResponse.records.first
+                XCTAssertNotNil(offer)
+                XCTAssert(true)
+                expectation.fulfill()
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load offers testcase", horizonRequestError: error)
+                XCTAssert(false)
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testLoadOffersForSellingAsset() {
+        let expectation = XCTestExpectation(description: "Get offers")
+        
+        sdk.offers.getOffers(seller:nil, sellingAssetType: "credit_alphanum4", sellingAssetCode: "IOM", sellingAssetIssuer: "GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII", buyingAssetType: "native") { (response) -> (Void) in
+            switch response {
+            case .success(let offersResponse):
+                let offer = offersResponse.records.first
+                XCTAssertNotNil(offer)
+                XCTAssert(true)
+                expectation.fulfill()
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load offers testcase", horizonRequestError: error)
+                XCTAssert(false)
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testLoadOffersForBuyingAsset() {
+        let expectation = XCTestExpectation(description: "Get offers")
+        
+        sdk.offers.getOffers(seller:nil, sellingAssetType: "native", buyingAssetType:"credit_alphanum4", buyingAssetCode: "IOM", buyingAssetIssuer: "GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII") { (response) -> (Void) in
+            switch response {
+            case .success(let offersResponse):
+                let offer = offersResponse.records.first
+                XCTAssertNotNil(offer)
+                XCTAssert(true)
+                expectation.fulfill()
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load offers testcase", horizonRequestError: error)
+                XCTAssert(false)
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testLoadOffersForBuyer() {
+        let expectation = XCTestExpectation(description: "Get offers")
+        
+        sdk.offers.getOffers(seller:"GAAH55HXH2YQRBGYWS52FBNUZUCCKDOOYYKCU7QYZMFW2474V6MNHJ7D", sellingAssetType: "native", buyingAssetType:"credit_alphanum4", buyingAssetCode: "IOM", buyingAssetIssuer: "GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII") { (response) -> (Void) in
+            switch response {
+            case .success(let offersResponse):
+                let offer = offersResponse.records.first
+                XCTAssertNotNil(offer)
+                XCTAssert(true)
+                expectation.fulfill()
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load offers testcase", horizonRequestError: error)
+                XCTAssert(false)
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
 }
