@@ -16,7 +16,7 @@ public class OfferResponse: NSObject, Decodable {
     public var links:OfferLinksResponse
     
     /// Unique identifier for this offer.
-    public var id:Int
+    public var id:String
     
     /// Paging token suitable for use as a cursor parameter.
     public var pagingToken:String
@@ -61,7 +61,7 @@ public class OfferResponse: NSObject, Decodable {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         links = try values.decode(OfferLinksResponse.self, forKey: .links)
-        id = try values.decode(Int.self, forKey: .id)
+        id = try values.decode(String.self, forKey: .id)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         seller = try values.decode(String.self, forKey: .seller)
         selling = try values.decode(OfferAssetResponse.self, forKey: .selling)

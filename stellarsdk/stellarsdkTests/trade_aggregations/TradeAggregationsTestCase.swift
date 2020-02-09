@@ -25,7 +25,7 @@ class TradeAggregationsTestCase: XCTestCase {
     func testGetTradeAggregations() {
         let expectation = XCTestExpectation(description: "Get trade aggregations response")
         
-        sdk.tradeAggregations.getTradeAggregations(resolution: 86400000, baseAssetType: AssetTypeAsString.NATIVE, counterAssetType: AssetTypeAsString.CREDIT_ALPHANUM4, counterAssetCode: "BTC", counterAssetIssuer: "GA77B6GK5K3FH2YJ6I5VJ7VPFZKPBQUX2IIC2MJYAERQTGJI4VOPKRYJ", order: Order.ascending, limit: 10) { (response) -> (Void) in
+        sdk.tradeAggregations.getTradeAggregations(resolution: 86400000, baseAssetType: AssetTypeAsString.NATIVE, counterAssetType: AssetTypeAsString.CREDIT_ALPHANUM4, counterAssetCode: "IOM", counterAssetIssuer: "GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII", order: Order.ascending, limit: 10) { (response) -> (Void) in
             switch response {
             case .success(let tradeAggregationsResponse):
                 

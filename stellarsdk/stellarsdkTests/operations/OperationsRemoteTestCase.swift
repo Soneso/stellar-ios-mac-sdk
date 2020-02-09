@@ -13,8 +13,8 @@ class OperationsRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
     var streamItem:OperationsStreamItem? = nil
     
-    let seed = "SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF"
-    let IOMIssuingAccountId = "GDKNTVRFEEQQUFQHT65J4IITT55GO22E23TBZBAF3LWNOT6U44QWHAQB"
+    let seed = "SDJBRZTMHY3WNHUMYV4PUWJAKJNRNOE5AUH6AC635GJKCU6YSKAG5OPM"
+    let IOMIssuingAccountId = "GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII"
     
     override func setUp() {
         super.setUp()
@@ -73,7 +73,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationsForAccount() {
         let expectation = XCTestExpectation(description: "Get operations for account")
         
-        sdk.operations.getOperations(forAccount: "GBCY6CERPPE6WLTZV5RWJXZ7RWY7UWKJNCCVYENSH4OQOBTFKKJDGTLN", from: nil, order: Order.descending, includeFailed: true, join: "transactions") { (response) -> (Void) in
+        sdk.operations.getOperations(forAccount: "GDGNF4FLAPCTN2WQ4SM7RPB42QIEPM3FK5M4FAVREOBUALT7I6DVNHCX", from: nil, order: Order.descending, includeFailed: true, join: "transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -91,7 +91,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationsForLedger() {
         let expectation = XCTestExpectation(description: "Get operations for ledger")
         
-        sdk.operations.getOperations(forLedger: "194461", includeFailed:true, join:"transactions") { (response) -> (Void) in
+        sdk.operations.getOperations(forLedger: "180983", includeFailed:true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -109,7 +109,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationsForTransaction() {
         let expectation = XCTestExpectation(description: "Get operations for transaction")
         
-        sdk.operations.getOperations(forTransaction: "86f69af5e7ae94ddc93f7628302a37d6b31392280aa02e9466e87e6f41aded15", includeFailed:true, join:"transactions") { (response) -> (Void) in
+        sdk.operations.getOperations(forTransaction: "d2c53b9cad4ea0de7a126968e22476b8510e5d19d87914f658c6eaf677a502be", includeFailed:true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -127,7 +127,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationDetails() {
         let expectation = XCTestExpectation(description: "Get operation details")
         
-        sdk.operations.getOperationDetails(operationId: "834714009083905", join:"transactions") { (response) -> (Void) in
+        sdk.operations.getOperationDetails(operationId: "777015418425345", join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -146,7 +146,7 @@ class OperationsRemoteTestCase: XCTestCase {
         let expectation = XCTestExpectation(description: "Create and fund a new account")
         do {
             
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDA5U2P5SVQUZVETSUZANY5GP3TQLQTP7P7N7OW2T7X643EHFL5BH27N")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDJBRZTMHY3WNHUMYV4PUWJAKJNRNOE5AUH6AC635GJKCU6YSKAG5OPM")
             let destinationKeyPair = try KeyPair.generateRandomKeyPair()
             print ("CA Test: Source account id: \(sourceAccountKeyPair.accountId)")
             print("CA Test: New destination keipair created with secret seed: \(destinationKeyPair.secretSeed!) and accountId: \(destinationKeyPair.accountId)")
@@ -470,7 +470,7 @@ class OperationsRemoteTestCase: XCTestCase {
                     break
                 case .response( _, let operationResponse):
                     if let manageOfferResponse = operationResponse as? ManageSellOfferOperationResponse {
-                        if manageOfferResponse.buyingAssetType == AssetTypeAsString.NATIVE, manageOfferResponse.offerId == 0 {
+                        if manageOfferResponse.buyingAssetType == AssetTypeAsString.NATIVE, manageOfferResponse.offerId == "0" {
                             self.streamItem?.closeStream()
                             self.streamItem = nil
                             XCTAssert(true)

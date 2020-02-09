@@ -673,7 +673,7 @@ class EffectsLocalTestCase: XCTestCase {
             XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.TRADE)
             XCTAssertEqual(effectResponse.effectType, EffectType.tradeEffect)
             XCTAssertEqual(effectResponse.seller, "GCVHDLN6EHZBYW2M3BQIY32C23E4GPIRZZDBNF2Q73DAZ5VJDRGSMYRB")
-            XCTAssertEqual(effectResponse.offerId, 1)
+            XCTAssertEqual(effectResponse.offerId, "1")
             XCTAssertEqual(effectResponse.soldAmount, "1000.0")
             XCTAssertEqual(effectResponse.soldAssetType, AssetTypeAsString.CREDIT_ALPHANUM4)
             XCTAssertEqual(effectResponse.soldAssetCode, "EUR")
@@ -1278,7 +1278,7 @@ class EffectsLocalTestCase: XCTestCase {
                 "created_at": "2017-03-20T19:50:52Z",
                 "type_i": 33,
                 "seller": "GCVHDLN6EHZBYW2M3BQIY32C23E4GPIRZZDBNF2Q73DAZ5VJDRGSMYRB",
-                "offer_id": 1,
+                "offer_id": "1",
                 "sold_amount": "1000.0",
                 "sold_asset_type": "credit_alphanum4",
                 "sold_asset_code": "EUR",
