@@ -14,6 +14,7 @@ public class StellarSDK: NSObject {
     
     public var accounts: AccountService
     public var assets: AssetsService
+    public var feeStats: FeeStatsService
     public var effects: EffectsService
     public var ledgers: LedgersService
     public var operations: OperationsService
@@ -30,6 +31,7 @@ public class StellarSDK: NSObject {
         
         accounts = AccountService(baseURL: horizonURL)
         assets = AssetsService(baseURL: horizonURL)
+        feeStats = FeeStatsService(baseURL: horizonURL)
         effects = EffectsService(baseURL: horizonURL)
         ledgers = LedgersService(baseURL: horizonURL)
         operations = OperationsService(baseURL: horizonURL)
@@ -47,6 +49,7 @@ public class StellarSDK: NSObject {
         
         accounts = AccountService(baseURL: horizonURL)
         assets = AssetsService(baseURL: horizonURL)
+        feeStats = FeeStatsService(baseURL: horizonURL)
         effects = EffectsService(baseURL: horizonURL)
         ledgers = LedgersService(baseURL: horizonURL)
         operations = OperationsService(baseURL: horizonURL)
