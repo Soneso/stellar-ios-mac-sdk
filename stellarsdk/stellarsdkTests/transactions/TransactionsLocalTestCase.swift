@@ -150,7 +150,6 @@ class TransactionsLocalTestCase: XCTestCase {
             XCTAssertEqual(firstTransaction?.createdAt,createdAt)
             XCTAssertEqual(firstTransaction?.sourceAccount,"GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN")
             XCTAssertEqual(firstTransaction?.sourceAccountSequence,"31398186618716187")
-            XCTAssertEqual(firstTransaction?.feePaid, nil)
             XCTAssertEqual(firstTransaction?.maxFee, 102)
             XCTAssertEqual(firstTransaction?.feeCharged, 101)
             XCTAssertEqual(firstTransaction?.operationCount,1)
@@ -195,7 +194,6 @@ class TransactionsLocalTestCase: XCTestCase {
                 XCTAssertEqual(secondTransaction?.createdAt,createdAt)
                 XCTAssertEqual(secondTransaction?.sourceAccount,"GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN")
                 XCTAssertEqual(secondTransaction?.sourceAccountSequence,"31398186618716186")
-                XCTAssertEqual(secondTransaction?.feePaid, 100)
                 XCTAssertEqual(secondTransaction?.maxFee, 100)
                 XCTAssertEqual(secondTransaction?.feeCharged, 100)
                 XCTAssertEqual(secondTransaction?.operationCount,1)
@@ -323,7 +321,6 @@ class TransactionsLocalTestCase: XCTestCase {
                     "created_at": "2018-02-21T15:16:00Z",
                     "source_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
                     "source_account_sequence": "31398186618716186",
-                    "fee_paid": 100,
                     "max_fee": 100,
                     "fee_charged":100,
                     "operation_count": 1,
