@@ -11,11 +11,13 @@ import Foundation
 public enum TransactionMetaType: Int32 {
     case operations = 0
     case transactionMetaV1 = 1
+    case transactionMetaV2 = 2
 }
 
 public enum TransactionMetaXDR: XDRCodable {
     case operations ([OperationMetaXDR])
     case transactionMetaV1 (TransactionMetaV1XDR)
+    case transactionMetaV2 (TransactionMetaV2XDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -25,6 +27,8 @@ public enum TransactionMetaXDR: XDRCodable {
                 self = .operations(try decodeArray(type: OperationMetaXDR.self, dec: decoder))
             case .transactionMetaV1:
                 self = .transactionMetaV1(try TransactionMetaV1XDR(from: decoder))
+            case .transactionMetaV2:
+                self = .transactionMetaV2(try TransactionMetaV2XDR(from: decoder))
             }
         } else {
             throw StellarSDKError.xdrDecodingError(message: "Invalid TransactionMetaType")
@@ -35,6 +39,7 @@ public enum TransactionMetaXDR: XDRCodable {
         switch self {
             case .operations: return TransactionMetaType.operations.rawValue
             case .transactionMetaV1: return TransactionMetaType.transactionMetaV1.rawValue
+            case .transactionMetaV2: return TransactionMetaType.transactionMetaV2.rawValue
         }
     }
     
@@ -48,6 +53,8 @@ public enum TransactionMetaXDR: XDRCodable {
             try container.encode(op)
         case .transactionMetaV1 (let metaV1):
             try container.encode(metaV1)
+        case .transactionMetaV2 (let metaV2):
+            try container.encode(metaV2)
         }
     }
 }

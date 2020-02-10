@@ -770,6 +770,8 @@
 		83FE810F23F0752700F4A13D /* MaxFeeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE810D23F0752700F4A13D /* MaxFeeResponse.swift */; };
 		83FE811223F0856600F4A13D /* FeeStatsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE811123F0856600F4A13D /* FeeStatsRemoteTestCase.swift */; };
 		83FE811323F0856600F4A13D /* FeeStatsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE811123F0856600F4A13D /* FeeStatsRemoteTestCase.swift */; };
+		83FE811823F1C5FC00F4A13D /* TransactionMetaV2XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE811723F1C5FC00F4A13D /* TransactionMetaV2XDR.swift */; };
+		83FE811923F1C5FC00F4A13D /* TransactionMetaV2XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE811723F1C5FC00F4A13D /* TransactionMetaV2XDR.swift */; };
 		C62F97DC2199BB54000A835A /* TomlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62F97DB2199BB54000A835A /* TomlResponseMock.swift */; };
 		C62F97E52199BE5B000A835A /* URISchemeTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C8AAA62147D91000B06E8A /* URISchemeTestCase.swift */; };
 		C6744C1C21467195005DE204 /* URIScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6744C1B21467195005DE204 /* URIScheme.swift */; };
@@ -1259,6 +1261,7 @@
 		83FE810A23F0750600F4A13D /* FeeChargedResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeChargedResponse.swift; sourceTree = "<group>"; };
 		83FE810D23F0752700F4A13D /* MaxFeeResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaxFeeResponse.swift; sourceTree = "<group>"; };
 		83FE811123F0856600F4A13D /* FeeStatsRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeStatsRemoteTestCase.swift; sourceTree = "<group>"; };
+		83FE811723F1C5FC00F4A13D /* TransactionMetaV2XDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMetaV2XDR.swift; sourceTree = "<group>"; };
 		C62F97DB2199BB54000A835A /* TomlResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TomlResponseMock.swift; sourceTree = "<group>"; };
 		C6744C1B21467195005DE204 /* URIScheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URIScheme.swift; sourceTree = "<group>"; };
 		C6744C1E2146A165005DE204 /* URISchemeErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URISchemeErrors.swift; sourceTree = "<group>"; };
@@ -2139,6 +2142,7 @@
 				7468CDCF2136D8AC002A538D /* BumpSequenceOperationXDR.swift */,
 				7468CDD22136DBB5002A538D /* BumpSequenceResultXDR.swift */,
 				7468CDD52136F72C002A538D /* TransactionMetaV1XDR.swift */,
+				83FE811723F1C5FC00F4A13D /* TransactionMetaV2XDR.swift */,
 				743060D221384AF600E2E9F2 /* LiabilitiesXDR.swift */,
 			);
 			path = xdr;
@@ -3037,6 +3041,7 @@
 				7467C40E2142AA3C00412FE1 /* WithdrawResponse.swift in Sources */,
 				745DF4A52052FF9C000D3660 /* BadRequestErrorResponse.swift in Sources */,
 				745DF4A62052FF9C000D3660 /* BeforeHistoryErrorResponse.swift in Sources */,
+				83FE811923F1C5FC00F4A13D /* TransactionMetaV2XDR.swift in Sources */,
 				745DF4A72052FF9C000D3660 /* ForbiddenErrorResponse.swift in Sources */,
 				745DF4A82052FF9C000D3660 /* NotAcceptableErrorResponse.swift in Sources */,
 				745DF4A92052FF9C000D3660 /* NotFoundErrorResponse.swift in Sources */,
@@ -3490,6 +3495,7 @@
 				EC34A14620503CC5000FB042 /* PKCS5.swift in Sources */,
 				EC34A12420503CC5000FB042 /* NoPadding.swift in Sources */,
 				833CBFC92034741300C23CFE /* Asset.swift in Sources */,
+				83FE811823F1C5FC00F4A13D /* TransactionMetaV2XDR.swift in Sources */,
 				830EFC752032508E00607C35 /* DataEntryXDR.swift in Sources */,
 				833CBFB02033548A00C23CFE /* LedgerKeyXDR.swift in Sources */,
 				EC34A13D20503CC5000FB042 /* Blowfish.swift in Sources */,
