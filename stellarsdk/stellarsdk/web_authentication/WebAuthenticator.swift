@@ -167,7 +167,7 @@ public class WebAuthenticator {
         }
     }
     
-    private func getChallenge(forAccount accountId:String, completion:@escaping ChallengeResponseClosure) {
+    public func getChallenge(forAccount accountId:String, completion:@escaping ChallengeResponseClosure) {
         serviceHelper.GETRequestWithPath(path: "?account=\(accountId)") { (result) -> (Void) in
             switch result {
             case .success(let data):
@@ -188,7 +188,7 @@ public class WebAuthenticator {
         }
     }
     
-    private func isValidChallenge(transactionEnvelopeXDR: TransactionEnvelopeXDR, userAccountId: String, serverSigningKey: String) -> ChallengeValidationResponseEnum {
+    public func isValidChallenge(transactionEnvelopeXDR: TransactionEnvelopeXDR, userAccountId: String, serverSigningKey: String) -> ChallengeValidationResponseEnum {
         do {
             let transactionXDR = transactionEnvelopeXDR.tx
             
@@ -245,7 +245,7 @@ public class WebAuthenticator {
         }
     }
     
-    private func signTransaction(transactionEnvelopeXDR: TransactionEnvelopeXDR, userKeyPair: KeyPair) -> String? {
+    public func signTransaction(transactionEnvelopeXDR: TransactionEnvelopeXDR, userKeyPair: KeyPair) -> String? {
         let envelopeXDR = transactionEnvelopeXDR
         do {
             let tx = envelopeXDR.tx
@@ -266,7 +266,7 @@ public class WebAuthenticator {
         }
     }
     
-    private func sendCompletedChallenge(base64EnvelopeXDR: String, completion:@escaping SendChallengeResponseClosure) {
+    public func sendCompletedChallenge(base64EnvelopeXDR: String, completion:@escaping SendChallengeResponseClosure) {
         let json = ["transaction": base64EnvelopeXDR]
         let jsonData = try? JSONSerialization.data(withJSONObject: json)
         
