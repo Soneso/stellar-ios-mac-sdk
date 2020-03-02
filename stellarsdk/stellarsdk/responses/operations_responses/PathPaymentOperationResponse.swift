@@ -34,13 +34,16 @@ public class PathPaymentOperationResponse: OperationResponse {
     public var assetIssuer:String?
     
     /// Source asset type (native / alphanum4 / alphanum12).
-    public var sendAssetType:String
+    public var sourceAssetType:String?
     
     /// Code of the source asset.
-    public var sendAssetCode:String?
+    public var sourceAssetCode:String?
     
     /// Source asset issuer.
-    public var sendAssetIssuer:String?
+    public var sourceAssetIssuer:String?
+    
+    /// Additional hops the operation went through to get to the destination asset.
+    public var path:[OfferAssetResponse]?
 
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -51,10 +54,10 @@ public class PathPaymentOperationResponse: OperationResponse {
         case assetType = "asset_type"
         case assetCode = "asset_code"
         case assetIssuer = "asset_issuer"
-        case sendAssetType = "send_asset_type"
-        case sendAssetCode = "send_asset_code"
-        case sendAssetIssuer = "send_asset_issuer"
-
+        case sourceAssetType = "source_asset_type"
+        case sourceAssetCode = "source_asset_code"
+        case sourceAssetIssuer = "source_asset_issuer"
+        case path = "path"
     }
     
     /**
@@ -71,9 +74,10 @@ public class PathPaymentOperationResponse: OperationResponse {
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
-        sendAssetType = try values.decode(String.self, forKey: .sendAssetType)
-        sendAssetCode = try values.decodeIfPresent(String.self, forKey: .sendAssetCode)
-        sendAssetIssuer = try values.decodeIfPresent(String.self, forKey: .sendAssetIssuer)
+        sourceAssetType = try values.decodeIfPresent(String.self, forKey: .sourceAssetType)
+        sourceAssetCode = try values.decodeIfPresent(String.self, forKey: .sourceAssetCode)
+        sourceAssetIssuer = try values.decodeIfPresent(String.self, forKey: .sourceAssetIssuer)
+        path = try values.decodeIfPresent([OfferAssetResponse].self, forKey: .path)
         
         try super.init(from: decoder)
     }

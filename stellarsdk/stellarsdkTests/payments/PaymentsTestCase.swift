@@ -71,7 +71,7 @@ class PaymentsTestCase: XCTestCase {
     func testGetPaymentsForAccount() {
         let expectation = XCTestExpectation(description: "Get payments for account")
         
-        sdk.payments.getPayments (forAccount: "GBCY6CERPPE6WLTZV5RWJXZ7RWY7UWKJNCCVYENSH4OQOBTFKKJDGTLN", includeFailed:true, join:"transactions") { (response) -> (Void) in
+        sdk.payments.getPayments (forAccount: "GCKZFMAONEZXIYINFMWEE3GA7RXK6ASUCIM7VYHRMMM2P25IRMWVFPSE", includeFailed:true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
