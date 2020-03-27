@@ -262,57 +262,19 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 25.0)
     }
 
- /*
-    func testTransactionsStream() {
-        let expectation = XCTestExpectation(description: "Get response from stream")
+    func testCoSignTransactionEnvelope() {
+        let keyPair = try! KeyPair(secretSeed: "SA33GXHR62NBMBH5OZK5JHXR3X7KAANKMVXPIP6VQQO6N5HGKFB66HWR")
         
-        sdk.transactions.stream(for: .allTransactions(cursor: nil)).onReceive { (response) -> (Void) in
-            switch response {
-            case .open:
-                break
-            case .response( _, _):
-                expectation.fulfill()
-            case .error( _):
-                break
-            }
-        }
+        let xdr = "AAAAALR6uVN4RmrfW6K8wdmNznPg6i3Q0dFJTu+fC/RccUZQAAABkAAN4SkAAAABAAAAAAAAAAAAAAAEAAAAAAAAAAYAAAABRFNRAAAAAABHB84JGCc/5+R3BOlxDMXPzkRrWjzfWQvocgCZlHVYu3//////////AAAAAAAAAAYAAAABVVNEAAAAAAABxhW5NR6QVXaxvG7fKS5GdaoNNuHlB1wIB+Sdra3GIn//////////AAAAAAAAAAUAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAEAAAACAAAAAQAAAAIAAAABAAAAAgAAAAAAAAABAAAAADcAko3Ije9aGOP0RkukFkQVJtdyFphVAsp/A/iOD8+7AAAAAQAAAAEAAAAAb0vB44BU2bPolZjPxTq49MypRuzHJ9s9aYwS1QoGvoAAAAABAAAAALR6uVN4RmrfW6K8wdmNznPg6i3Q0dFJTu+fC/RccUZQAAAAAURTUQAAAAAARwfOCRgnP+fkdwTpcQzFz85Ea1o831kL6HIAmZR1WLsAAAAAO5rKAAAAAAAAAAABCga+gAAAAEAceq3kjgzL9Hd0ad60WltzntByI1fdBUXp8nmR8V1d5QlEoDcrOHMo73SvpqvW4yfmksM4P4ixS5Pi4VUeboQL"
         
-        wait(for: [expectation], timeout: 15.0)
+        let transaction = try! Transaction(envelopeXdr: xdr)
+        
+        try! transaction.sign(keyPair: keyPair, network: .testnet)
+        
+        let xdrEnvelope = try! transaction.encodedEnvelope()
+        print(xdrEnvelope)
+        
+        XCTAssertTrue(transaction.fee == 400)
+        
     }
-
-    func testTransactionsForAccountStream() {
-        let expectation = XCTestExpectation(description: "Get response from stream")
-        
-        sdk.transactions.stream(for: .transactionsForAccount(account: "GDQZ4N3CMM3FL2HLYKZPF3JPZX3IRHI3SQKNSTEG6GMEA3OAW337EBA6", cursor: nil)).onReceive { (response) -> (Void) in
-            switch response {
-            case .open:
-                break
-            case .response( _, _):
-                expectation.fulfill()
-            case .error( _):
-                break
-            }
-        }
-        
-        wait(for: [expectation], timeout: 15.0)
-    }
-    
-    func testTransactionsForLedgerStream() {
-        let expectation = XCTestExpectation(description: "Get response from stream")
-        
-        sdk.transactions.stream(for: .transactionsForLedger(ledger: "2365", cursor: nil)).onReceive { (response) -> (Void) in
-            switch response {
-            case .open:
-                break
-            case .response( _, _):
-                expectation.fulfill()
-            case .error( _):
-                break
-            }
-        }
-        
-        wait(for: [expectation], timeout: 15.0)
-    }
- */
- 
 }
