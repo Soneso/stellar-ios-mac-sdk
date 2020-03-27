@@ -12,11 +12,11 @@ import Foundation
 /// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/transactions.html, "Transactions")
 public class Transaction {
     
-    public let fee:UInt32
     public let sourceAccount:TransactionAccount
     public let operations:[Operation]
     public let memo:Memo
     public let timeBounds:TimeBounds?
+    public private(set) var fee:UInt32
     public private(set) var transactionXDR:TransactionXDR
     
     public var xdrEncoded: String? {
@@ -85,7 +85,8 @@ public class Transaction {
             timebounds = TimeBounds(timebounds: timeboundsXDR)
         }
         
-        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionXDR.memo), timeBounds: timebounds, maxOperationFee: transactionXDR.fee)
+        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionXDR.memo), timeBounds: timebounds)
+        self.fee = transactionXDR.fee
     }
     
     /// Creates a new Transaction object from an Transaction Envelope XDR string.
@@ -109,8 +110,8 @@ public class Transaction {
             timebounds = TimeBounds(timebounds: timeboundsXDR)
         }
         
-        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionEnvelopeXDR.tx.memo), timeBounds: timebounds, maxOperationFee: transactionEnvelopeXDR.tx.fee)
-        
+        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionEnvelopeXDR.tx.memo), timeBounds: timebounds)
+        self.fee = transactionXDR.fee
         for signature in transactionEnvelopeXDR.signatures {
             self.transactionXDR.addSignature(signature: signature)
         }
