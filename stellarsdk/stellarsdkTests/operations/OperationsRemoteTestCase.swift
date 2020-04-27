@@ -192,6 +192,10 @@ class OperationsRemoteTestCase: XCTestCase {
                             switch response {
                             case .success(_):
                                 print("CA Test: Transaction successfully sent")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("CA Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
                             case .failure(let error):
                                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test send error", horizonRequestError: error)
                                 XCTAssert(false)
@@ -277,6 +281,10 @@ class OperationsRemoteTestCase: XCTestCase {
                             switch response {
                             case .success(_):
                                 print("UHD Test: Transaction successfully sent")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("UHD Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
                             case .failure(let error):
                                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"UHD Test - send error", horizonRequestError:error)
                                 XCTAssert(false)
@@ -351,6 +359,10 @@ class OperationsRemoteTestCase: XCTestCase {
                             switch response {
                             case .success(_):
                                 print("UID Test: Transaction successfully sent")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("UID Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
                             case .failure(let error):
                                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test - send error", horizonRequestError:error)
                                 XCTAssert(false)
@@ -430,6 +442,10 @@ class OperationsRemoteTestCase: XCTestCase {
                             switch response {
                             case .success(_):
                                 print("CTL Test: Transaction successfully sent")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("CLT Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
                             case .failure(let error):
                                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"CTL Test", horizonRequestError:error)
                                 XCTAssert(false)
@@ -504,6 +520,10 @@ class OperationsRemoteTestCase: XCTestCase {
                             switch response {
                             case .success(_):
                                 print("MOF Test: Transaction successfully sent")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("MDF Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
                             case .failure(let error):
                                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"MOF Test - send error", horizonRequestError:error)
                                 XCTAssert(false)
@@ -580,6 +600,10 @@ class OperationsRemoteTestCase: XCTestCase {
                             switch response {
                             case .success(_):
                                 print("CPO Test: Transaction successfully sent")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("CPO Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
                             case .failure(let error):
                                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"CPO Test - send error", horizonRequestError:error)
                                 XCTAssert(false)
@@ -652,6 +676,10 @@ class OperationsRemoteTestCase: XCTestCase {
                             switch response {
                             case .success(_):
                                 print("MAD Test: Transaction successfully sent")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("MAD Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
                             case .failure(let error):
                                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"MAD Test - send error", horizonRequestError:error)
                                 XCTAssert(false)

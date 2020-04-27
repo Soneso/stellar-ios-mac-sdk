@@ -162,6 +162,9 @@ class URISchemeTestCase: XCTestCase {
             switch response {
             case .success:
                 XCTAssert(true)
+            case .destinationRequiresMemo(let destinationAccountId):
+                print("Destination requires memo \(destinationAccountId)")
+                XCTAssert(false)
             case .failure(error: let error):
                 XCTAssert(false)
                 print("Transaction signing failed! Error: \(error)")
@@ -181,6 +184,9 @@ class URISchemeTestCase: XCTestCase {
             switch response {
             case .success:
                 XCTAssert(true)
+            case .destinationRequiresMemo(let destinationAccountId):
+                print("Destination requires memo \(destinationAccountId)")
+                XCTAssert(false)
             case .failure(error: let error):
                 XCTAssert(false)
                 print("Transaction signing failed! Error: \(error)")

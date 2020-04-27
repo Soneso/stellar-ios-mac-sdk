@@ -11,7 +11,7 @@ import stellarsdk
 
 class TransactionsRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let seed = "SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF"
+    let seed = "SBXLWK6BPACX6SHXYQ7NTM4D3LCPM46O3MWTNEZH7L4TA4VWZ4EHSFYS"
     var streamItem:TransactionsStreamItem? = nil
     
     override func setUp() {
@@ -155,7 +155,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         do {
             let source = try KeyPair(secretSeed:seed)
-            let destination = try KeyPair(secretSeed: "SDA5U2P5SVQUZVETSUZANY5GP3TQLQTP7P7N7OW2T7X643EHFL5BH27N")
+            let destination = try KeyPair(secretSeed: "SD3KVAWTPP2FHMRUSRAKMBRKIEDWWTMTPIG2ZITUWNKFKVJXA2WXV6OG")
             
             streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: source.accountId, cursor: "now"))
             streamItem?.onReceive { response in
@@ -206,6 +206,10 @@ class TransactionsRemoteTestCase: XCTestCase {
                             switch response {
                             case .success(_):
                                 print("SRP Test: Transaction successfully sent")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("SRP Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
                             case .failure(let error):
                                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
                                 XCTAssert(false)
@@ -231,13 +235,13 @@ class TransactionsRemoteTestCase: XCTestCase {
     }
     
     func testTransactionEnvelopePost() {
-        let keyPair = try! KeyPair(secretSeed: "SBSRPDUWJ73OGOBDDNZ5IXWJYOUFWLMU5NGPVUPWL6PZIZ5KDJHLSII5")
+        let keyPair = try! KeyPair(secretSeed: "SBXLWK6BPACX6SHXYQ7NTM4D3LCPM46O3MWTNEZH7L4TA4VWZ4EHSFYS")
         
         let expectation = XCTestExpectation(description: "Transaction successfully signed.")
         sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
             switch response {
             case .success(let data):
-                let operationBody = OperationBodyXDR.inflation
+                let operationBody = OperationBodyXDR.bumpSequence(BumpSequenceOperationXDR(bumpTo: data.sequenceNumber + 10))
                 let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
                 var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation], maxOperationFee: 190)
                 
@@ -248,13 +252,17 @@ class TransactionsRemoteTestCase: XCTestCase {
                     switch response {
                     case .success(_):
                         expectation.fulfill()
+                    case .destinationRequiresMemo(let destinationAccountId):
+                        print("TEP Test: Destination requires memo \(destinationAccountId)")
+                        XCTAssert(false)
+                        expectation.fulfill()
                     case .failure(let error):
                         StellarSDKLog.printHorizonRequestErrorMessage(tag:"TEP Test", horizonRequestError:error)
                         XCTAssert(false)
                     }
                 })
             case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"TS Test", horizonRequestError:error)
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"TEP Test", horizonRequestError:error)
                 XCTAssert(false)
             }
         }

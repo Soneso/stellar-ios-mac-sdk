@@ -122,13 +122,74 @@ class PaymentsTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testDestinationRequiresMemo() {
+        
+        let expectation = XCTestExpectation(description: "Native payment scan not be sent because destination requires memo")
+        
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SBXLWK6BPACX6SHXYQ7NTM4D3LCPM46O3MWTNEZH7L4TA4VWZ4EHSFYS")
+            let destinationOneAccountKeyPair = try KeyPair(accountId: "GDVBXZRTW5DD7KZJQJ2MASO5DBERKBGLZJK6AMOD3PMD5KW6XKDUIWPQ")
+            let destinationTwoAccountKeyPair = try KeyPair(accountId: "GDC3CJZ5GQU3UKSA45JFYHOWCH5H43QIRUJ752CK7LBXYPJM4SIGCJYW")
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let paymentOperationOne = PaymentOperation(sourceAccount: sourceAccountKeyPair,
+                                                                destination: destinationOneAccountKeyPair,
+                                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                                amount: 1.5)
+                        let paymentOperationTwo = PaymentOperation(sourceAccount: sourceAccountKeyPair,
+                                                                   destination: destinationTwoAccountKeyPair,
+                                                                   asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                                   amount: 1.5)
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [paymentOperationOne, paymentOperationTwo],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(_):
+                                print("DRM Test: Transaction successfully sent")
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("DRM Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(true)
+                                expectation.fulfill()
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"DRM Test", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"DRM Test", horizonRequestError:error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
     func testSendAndReceiveNativePayment() {
         
         let expectation = XCTestExpectation(description: "Native payment successfully sent and received")
         
         do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDA5U2P5SVQUZVETSUZANY5GP3TQLQTP7P7N7OW2T7X643EHFL5BH27N")
-            let destinationAccountKeyPair = try KeyPair(accountId: "GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SBXLWK6BPACX6SHXYQ7NTM4D3LCPM46O3MWTNEZH7L4TA4VWZ4EHSFYS")
+            let destinationAccountKeyPair = try KeyPair(accountId: "GD3ZHPYG2MEOHRMQB7NZVTOWMTZMEYLVHFMH25VSK5S3VZFIZXEJE5CW")
             
             streamItem = sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: "now"))
             streamItem?.onReceive { (response) -> (Void) in
@@ -170,6 +231,10 @@ class PaymentsTestCase: XCTestCase {
                             switch response {
                             case .success(_):
                                 print("SRP Test: Transaction successfully sent")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("SRP Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
                             case .failure(let error):
                                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
                                 XCTAssert(false)
@@ -247,6 +312,10 @@ class PaymentsTestCase: XCTestCase {
                             switch response {
                             case .success(_):
                                 print("SRNNP Test: Transaction successfully sent")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("SRNNP Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
                             case .failure(let error):
                                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRNNP Test", horizonRequestError:error)
                                 XCTAssert(false)

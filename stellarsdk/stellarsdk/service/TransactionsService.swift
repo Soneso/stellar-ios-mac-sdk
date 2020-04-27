@@ -15,6 +15,13 @@ public enum TransactionDetailsResponseEnum {
 
 public enum TransactionPostResponseEnum {
     case success(details: SubmitTransactionResponse)
+    case destinationRequiresMemo(destinationAccountId: String)
+    case failure(error: HorizonRequestError)
+}
+
+public enum CheckMemoRequiredResponseEnum {
+    case noMemoRequired
+    case memoRequired(destination: String)
     case failure(error: HorizonRequestError)
 }
 
@@ -26,11 +33,13 @@ public enum TransactionsChange {
 
 public typealias TransactionDetailsResponseClosure = (_ response:TransactionDetailsResponseEnum) -> (Void)
 public typealias TransactionPostResponseClosure = (_ response:TransactionPostResponseEnum) -> (Void)
+public typealias CheckMemoRequiredResponseClosure = (_ response:CheckMemoRequiredResponseEnum) -> (Void)
 
 public class TransactionsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
-
+    //let sdk = StellarSDK()
+    
     private override init() {
         serviceHelper = ServiceHelper(baseURL: "")
     }
@@ -73,16 +82,154 @@ public class TransactionsService: NSObject {
         }
     }
     
-    open func submitTransaction(transaction:Transaction, response:@escaping TransactionPostResponseClosure) throws {
+    open func submitTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostResponseClosure) throws {
         let envelope = try transaction.encodedEnvelope()
-        postTransaction(transactionEnvelope:envelope, response: response)
+        postTransaction(transactionEnvelope:envelope, skipMemoRequiredCheck: skipMemoRequiredCheck, response: response)
     }
     
-    open func postTransaction(transactionEnvelope:String, response:@escaping TransactionPostResponseClosure) {
+    open func postTransaction(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostResponseClosure) {
+        
+        if !skipMemoRequiredCheck, let transaction = try? Transaction(envelopeXdr: transactionEnvelope) {
+            checkMemoRequired(transaction: transaction, response: { (result) -> (Void) in
+                switch result {
+                case .noMemoRequired:
+                    self.postTransactionCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
+                        switch result {
+                        case .success(let transaction):
+                            response(.success(details: transaction))
+                        case .failure(let error):
+                            response(.failure(error: error))
+                        case .destinationRequiresMemo(let destinationAccountId):
+                            response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
+                        }
+                    })
+                case .memoRequired(let accountId):
+                    response(.destinationRequiresMemo(destinationAccountId: accountId))
+                case .failure(let error):
+                    response(.failure(error: error))
+                }
+            })
+        } else {
+            postTransactionCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
+                switch result {
+                case .success(let transaction):
+                    response(.success(details: transaction))
+                case .failure(let error):
+                    response(.failure(error: error))
+                case .destinationRequiresMemo(let destinationAccountId):
+                    response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
+                }
+            })
+        }
+    }
+    
+    
+    private func checkMemoRequired(transaction: Transaction, response:@escaping CheckMemoRequiredResponseClosure) {
+        if transaction.memo != Memo.none {
+            response(.noMemoRequired)
+            return
+        }
+        
+        var destinations = [String]()
+        for operation in transaction.operations {
+            
+            var destination = ""
+            if let paymentOp = operation as? PaymentOperation {
+                destination = paymentOp.destination.accountId
+            } else if let paymentOp = operation as? PathPaymentOperation {
+                destination = paymentOp.destination.accountId
+            } else if let accountMergeOp = operation as? AccountMergeOperation {
+                destination = accountMergeOp.destination.accountId
+            }
+            
+            if destination.isEmpty || destinations.contains(destination) {
+                continue
+            }
+            
+            destinations.append(destination)
+        }
+        
+        if (destinations.count == 0) {
+            response(.noMemoRequired)
+            return
+        }
+        
+        checkMemoRequiredForDestinations(destinations: destinations, response: { (result) -> (Void) in
+            switch result {
+            case .noMemoRequired:
+                response(.noMemoRequired)
+            case .memoRequired(let accountId):
+                response(.memoRequired(destination: accountId))
+            case .failure(let error):
+                response(.failure(error: error))
+            }
+        })
+    }
+    
+    open func getAccountDetails(accountId: String, response: @escaping AccountResponseClosure) {
+        let requestPath = "/accounts/\(accountId)"
+        
+        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                do {
+                    let responseMessage = try self.jsonDecoder.decode(AccountResponse.self, from: data)
+                    response(.success(details:responseMessage))
+                } catch {
+                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+                }
+                
+            case .failure(let error):
+                response(.failure(error:error))
+            }
+        }
+    }
+    
+    private func checkMemoRequiredForDestinations(destinations: [String], response:@escaping CheckMemoRequiredResponseClosure) {
+        
+        var remainingDestinations = destinations
+        if let firstDestination = remainingDestinations.first {
+            let requestPath = "/accounts/\(firstDestination)"
+            
+            serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
+                switch result {
+                case .success(let data):
+                    do {
+                        let accountDetails = try self.jsonDecoder.decode(AccountResponse.self, from: data)
+                        // "MQ==" is the base64 encoding of "1".
+                        if let value = accountDetails.data["config.memo_required"], value == "MQ==" {
+                            response(.memoRequired(destination: accountDetails.accountId))
+                        } else {
+                            remainingDestinations.removeFirst()
+                            self.checkMemoRequiredForDestinations(destinations: remainingDestinations, response: { (nextResult) -> (Void) in
+                                switch nextResult {
+                                case .noMemoRequired:
+                                    response(.noMemoRequired)
+                                case .memoRequired(let accountId):
+                                    response(.memoRequired(destination: accountId))
+                                case .failure(let error):
+                                    response(.failure(error: error))
+                                }
+                            })
+                        }
+                    } catch {
+                        response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+                    }
+                    
+                case .failure(let error):
+                    response(.failure(error:error))
+                }
+            }
+        } else {
+            response(.noMemoRequired)
+        }
+    }
+    private func postTransactionCore(transactionEnvelope:String, response:@escaping TransactionPostResponseClosure) {
+        
         let requestPath = "/transactions"
         if let encoded = transactionEnvelope.urlEncoded {
             let data = ("tx=" + encoded).data(using: .utf8)
-        
+            
             serviceHelper.POSTRequestWithPath(path: requestPath, body: data) { (result) -> (Void) in
                 switch result {
                 case .success(let data):
