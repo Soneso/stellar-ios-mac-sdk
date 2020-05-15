@@ -37,8 +37,13 @@ public class Operation {
     ///
     public static func fromXDR(operationXDR:OperationXDR) throws -> Operation {
         var source: KeyPair?
-        if let publicKey = operationXDR.sourceAccount {
-            source = KeyPair(publicKey: publicKey)
+        if let sourceMux = operationXDR.sourceAccount {
+            switch sourceMux {
+            case .ed25519(let bytes):
+                source = KeyPair(publicKey:PublicKey(unchecked: bytes))
+            case .med25519(_, let bytes):
+                source = KeyPair(publicKey:PublicKey(unchecked: bytes))
+            }
         }
         switch operationXDR.body {
         case .createAccount(let account):
@@ -61,8 +66,15 @@ public class Operation {
             return ChangeTrustOperation(fromXDR: changeTrust, sourceAccount: source)
         case .allowTrust(let allowTrust):
             return AllowTrustOperation(fromXDR: allowTrust, sourceAccount: source)
-        case .accountMerge(let publicKey):
-            return AccountMergeOperation(destinatioAccountPublicKey: publicKey, sourceAccount: source)
+        case .accountMerge(let destination):
+            var pk:PublicKey
+            switch destination {
+            case .ed25519(let bytes):
+                pk = PublicKey(unchecked: bytes)
+            case .med25519(_, let bytes):
+                pk = PublicKey(unchecked: bytes)
+            }
+            return AccountMergeOperation(destinatioAccountPublicKey: pk, sourceAccount: source)
         case .manageData(let manageData):
             return ManageDataOperation(fromXDR: manageData, sourceAccount: source)
         case .bumpSequence(let bumpSequenceData):

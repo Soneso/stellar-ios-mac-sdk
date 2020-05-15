@@ -34,6 +34,7 @@ public class AccountMergeOperation:Operation {
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
-        return OperationBodyXDR.accountMerge(destination.publicKey)
+        let mux = MuxedAccountXDR.ed25519(destination.publicKey.bytes)
+        return OperationBodyXDR.accountMerge(mux)
     }
 }

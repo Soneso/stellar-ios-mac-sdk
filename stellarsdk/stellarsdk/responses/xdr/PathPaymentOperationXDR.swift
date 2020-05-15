@@ -11,15 +11,20 @@ import Foundation
 public struct PathPaymentOperationXDR: XDRCodable {
     public let sendAsset: AssetXDR
     public let sendMax: Int64
-    public let destinationID: PublicKey
+    public let destination: MuxedAccountXDR
     public let destinationAsset: AssetXDR
     public let destinationAmount: Int64
     public let path: [AssetXDR]
     
-    init(sendAsset: AssetXDR, sendMax: Int64, destinationID: PublicKey, destinationAsset: AssetXDR, destinationAmount:Int64, path:[AssetXDR]) {
+    init(sendAsset: AssetXDR, sendMax: Int64, destination: PublicKey, destinationAsset: AssetXDR, destinationAmount:Int64, path:[AssetXDR]) {
+        let mux = MuxedAccountXDR.ed25519(destination.bytes)
+        self.init(sendAsset: sendAsset, sendMax: sendMax, destination: mux, destinationAsset: destinationAsset, destinationAmount: destinationAmount, path: path)
+    }
+    
+    init(sendAsset: AssetXDR, sendMax: Int64, destination: MuxedAccountXDR, destinationAsset: AssetXDR, destinationAmount:Int64, path:[AssetXDR]) {
         self.sendAsset = sendAsset
         self.sendMax = sendMax
-        self.destinationID = destinationID
+        self.destination = destination
         self.destinationAsset = destinationAsset
         self.destinationAmount = destinationAmount
         self.path = path
@@ -30,7 +35,7 @@ public struct PathPaymentOperationXDR: XDRCodable {
         
         sendAsset = try container.decode(AssetXDR.self)
         sendMax = try container.decode(Int64.self)
-        destinationID = try container.decode(PublicKey.self)
+        destination = try container.decode(MuxedAccountXDR.self)
         destinationAsset = try container.decode(AssetXDR.self)
         destinationAmount = try container.decode(Int64.self)
         self.path = try decodeArray(type: AssetXDR.self, dec: decoder)
@@ -42,7 +47,7 @@ public struct PathPaymentOperationXDR: XDRCodable {
         
         try container.encode(sendAsset)
         try container.encode(sendMax)
-        try container.encode(destinationID)
+        try container.encode(destination)
         try container.encode(destinationAsset)
         try container.encode(destinationAmount)
         try container.encode(path)

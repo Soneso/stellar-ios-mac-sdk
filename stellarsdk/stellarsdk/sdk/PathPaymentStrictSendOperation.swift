@@ -36,7 +36,7 @@ public class PathPaymentStrictSendOperation:PathPaymentOperation
         
         return OperationBodyXDR.pathPaymentStrictSend(PathPaymentOperationXDR(sendAsset: sendAssetXDR,
                                                                                  sendMax:sendMaxXDR,
-                                                                                 destinationID: destination.publicKey,
+                                                                                 destination: destination.publicKey,
                                                                                  destinationAsset: destAssetXDR,
                                                                                  destinationAmount:destAmountXDR,
                                                                                  path: pathXDR))

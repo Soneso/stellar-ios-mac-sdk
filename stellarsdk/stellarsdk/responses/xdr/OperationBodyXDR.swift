@@ -20,7 +20,7 @@ public enum OperationBodyXDR: XDRCodable {
     case changeTrust (ChangeTrustOperationXDR)
     case inflation
     case manageData (ManageDataOperationXDR)
-    case accountMerge (PublicKey)
+    case accountMerge (MuxedAccountXDR)
     case bumpSequence (BumpSequenceOperationXDR)
     case pathPaymentStrictSend (PathPaymentOperationXDR)
     
@@ -53,7 +53,7 @@ public enum OperationBodyXDR: XDRCodable {
             case OperationType.manageData.rawValue:
                 self = .manageData(try container.decode(ManageDataOperationXDR.self))
             case OperationType.accountMerge.rawValue:
-                self = .accountMerge(try container.decode(PublicKey.self))
+                self = .accountMerge(try container.decode(MuxedAccountXDR.self))
             case OperationType.bumpSequence.rawValue:
                 self = .bumpSequence(try container.decode(BumpSequenceOperationXDR.self))
             case OperationType.pathPaymentStrictSend.rawValue:
