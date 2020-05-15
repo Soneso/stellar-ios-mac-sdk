@@ -14,16 +14,31 @@ public class AllowTrustOperation:Operation {
     
     public let trustor:KeyPair
     public let assetCode:String
-    public let authorize:Bool
+    public let authorize:UInt32 // 0, or any bitwise combination of TrustLineFlags
     
     /// Creates a new PaymentOperation object.
     ///
     /// - Parameter trustor: The account of the recipient of the trustline.
     /// - Parameter assetCode: The asset code of the trustline. E.g. BTC
-    /// - Parameter authorize: Flag indicating whether the trustline is authorized.
+    /// - Parameter authorize: Flag indicating whether the trustline is authorized, true = TrustLineFlags.AUTHORIZED_FLAG
     /// - Throws StellarSDKError.invalidArgument if the asset code is empty or has more then 12 characters.
     ///
-    public init(sourceAccount:KeyPair? = nil, trustor:KeyPair, assetCode:String, authorize:Bool) throws {
+    public convenience init(sourceAccount:KeyPair? = nil, trustor:KeyPair, assetCode:String, authorize:Bool) throws {
+        var flags:UInt32 = 0
+        if(authorize) {
+            flags = TrustLineFlags.AUTHORIZED_FLAG
+        }
+        try self.init(sourceAccount: sourceAccount, trustor: trustor, assetCode: assetCode, authorize: flags)
+    }
+    
+    /// Creates a new PaymentOperation object.
+    ///
+    /// - Parameter trustor: The account of the recipient of the trustline.
+    /// - Parameter assetCode: The asset code of the trustline. E.g. BTC
+    /// - Parameter authorize: Flag indicating whether the trustline is authorized, 0, or any bitwise combination of TrustLineFlags
+    /// - Throws StellarSDKError.invalidArgument if the asset code is empty or has more then 12 characters.
+    ///
+    public init(sourceAccount:KeyPair? = nil, trustor:KeyPair, assetCode:String, authorize:UInt32) throws {
         
         if assetCode.count == 0 {
             throw StellarSDKError.invalidArgument(message: "Asset code can not be empty.")

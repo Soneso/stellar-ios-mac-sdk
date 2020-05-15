@@ -8,12 +8,21 @@
 
 import Foundation
 
+public struct TrustLineFlags {
+    // issuer has authorized account to perform transactions with its credit
+    public static let AUTHORIZED_FLAG: UInt32 = 1
+    // issuer has authorized account to maintain and reduce liabilities for its
+    // credit
+    public static let AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG: UInt32 = 2
+}
+
+
 public struct TrustlineEntryXDR: XDRCodable {
     public let accountID: PublicKey
     public let asset: AssetXDR
     public let balance: Int64
     public let limit: Int64
-    public let flags: UInt32
+    public let flags: UInt32 // see TrustLineFlags
     public let reserved: LedgerEntryExtXDR
     
     

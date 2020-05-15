@@ -96,6 +96,9 @@ class EffectsFactory: NSObject {
             case .trustlineDeauthorized:
                 let effect = try jsonDecoder.decode(TrustlineDeauthorizedEffectResponse.self, from: data)
                 return effect
+            case .trustlineAuthorizedToMaintainLiabilities:
+                let effect = try jsonDecoder.decode(TrustlineAuthorizedToMaintainLiabilitiesEffecResponse.self, from: data)
+                return effect
             case .offerCreated:
                 let effect = try jsonDecoder.decode(OfferCreatedEffectResponse.self, from: data)
                 return effect

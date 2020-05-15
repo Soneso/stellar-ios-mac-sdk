@@ -26,6 +26,7 @@ public enum EffectType: Int {
     case trustlineUpdated = 22
     case trustlineAuthorized = 23
     case trustlineDeauthorized = 24
+    case trustlineAuthorizedToMaintainLiabilities = 25
     case offerCreated = 30
     case offerRemoved = 31
     case offerUpdated = 32

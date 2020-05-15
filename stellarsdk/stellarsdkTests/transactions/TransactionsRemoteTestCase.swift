@@ -47,6 +47,7 @@ class TransactionsRemoteTestCase: XCTestCase {
                                 XCTAssertTrue(transaction1?.sourceAccount == transaction2?.sourceAccount)
                                 XCTAssertTrue(transaction1?.sourceAccountSequence == transaction2?.sourceAccountSequence)
                                 XCTAssertTrue(transaction1?.maxFee == transaction2?.maxFee)
+                                XCTAssertTrue(transaction1?.feeAccount == transaction2?.feeAccount)
                                 XCTAssertTrue(transaction1?.feeCharged == transaction2?.feeCharged)
                                 XCTAssertTrue(transaction1?.operationCount == transaction2?.operationCount)
                                 XCTAssertTrue(transaction1?.memoType == transaction2?.memoType)

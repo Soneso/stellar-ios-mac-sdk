@@ -23,12 +23,15 @@ public class TrustlineEffectResponse: EffectResponse {
     /// The issuer of the asset used by the trustline. Nil if asset type is "native"
     public var assetIssuer:String?
     
+    public var trustor:String?
+    
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case limit
         case assetType = "asset_type"
         case assetCode = "asset_code"
         case assetIssuer = "asset_issuer"
+        case trustor
     }
     
     /**
@@ -42,6 +45,7 @@ public class TrustlineEffectResponse: EffectResponse {
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
+        trustor = try values.decodeIfPresent(String.self, forKey: .trustor)
         
         try super.init(from: decoder)
     }

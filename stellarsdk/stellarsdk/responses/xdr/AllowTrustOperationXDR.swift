@@ -11,9 +11,9 @@ import Foundation
 public struct AllowTrustOperationXDR: XDRCodable {
     public var trustor: PublicKey
     public var asset: AllowTrustOpAssetXDR
-    public var authorize:Bool
+    public var authorize:UInt32
     
-    public init(trustor: PublicKey, asset:AllowTrustOpAssetXDR, authorize:Bool) {
+    public init(trustor: PublicKey, asset:AllowTrustOpAssetXDR, authorize:UInt32) {
         self.trustor = trustor
         self.asset = asset
         self.authorize = authorize
@@ -24,7 +24,7 @@ public struct AllowTrustOperationXDR: XDRCodable {
         
         trustor = try container.decode(PublicKey.self)
         asset = try container.decode(AllowTrustOpAssetXDR.self)
-        authorize = try container.decode(Bool.self)
+        authorize = try container.decode(UInt32.self)
     }
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()

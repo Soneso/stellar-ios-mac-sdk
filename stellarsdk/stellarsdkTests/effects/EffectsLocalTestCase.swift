@@ -156,6 +156,12 @@ class EffectsLocalTestCase: XCTestCase {
                         } else {
                             XCTAssert(false)
                         }
+                case .trustlineAuthorizedToMaintainLiabilities:
+                        if record is TrustlineAuthorizedToMaintainLiabilitiesEffecResponse {
+                            XCTAssert(true)
+                        } else {
+                            XCTAssert(false)
+                        }
                     case .offerCreated:
                         if record is OfferCreatedEffectResponse {
                             validateOfferCreatedEffectResponse(effectResponse: record as! OfferCreatedEffectResponse)

@@ -30,6 +30,8 @@ public class AllowTrustOperationResponse: OperationResponse {
     /// true when allowing trust, false when revoking trust.
     public var authorize:Bool
     
+    public var authorizeToMaintainLiabilities:Bool?
+    
     /// The limit for the asset.
     private enum CodingKeys: String, CodingKey {
         case trustor
@@ -38,6 +40,7 @@ public class AllowTrustOperationResponse: OperationResponse {
         case assetCode = "asset_code"
         case assetIssuer = "asset_issuer"
         case authorize
+        case authorizeToMaintainLiabilities = "authorize_to_maintain_liabilities"
     }
     
     /**
@@ -53,6 +56,7 @@ public class AllowTrustOperationResponse: OperationResponse {
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
         authorize = try values.decode(Bool.self, forKey: .authorize)
+        authorizeToMaintainLiabilities = try values.decodeIfPresent(Bool.self, forKey: .authorizeToMaintainLiabilities)
         
         try super.init(from: decoder)
     }

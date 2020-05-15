@@ -333,6 +333,7 @@ class OperationXDRTestCase: XCTestCase {
             
             let assetCode = "USDA"
             let authorize = true
+            //let authorize = TrustLineFlags.AUTHORIZED_FLAG
             
             let operation = try AllowTrustOperation(sourceAccount: source, trustor: trustor, assetCode: assetCode, authorize: authorize)
             let operationXdr = try operation.toXDR()
@@ -340,14 +341,14 @@ class OperationXDRTestCase: XCTestCase {
             
             switch operationXdr.body {
             case .allowTrust(let allowTrustXdr):
-                XCTAssertTrue(allowTrustXdr.authorize)
+                XCTAssertEqual(allowTrustXdr.authorize, TrustLineFlags.AUTHORIZED_FLAG)
             default:
                 break
             }
             XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
             XCTAssertEqual(trustor.accountId, parsedOperation.trustor.accountId)
             XCTAssertEqual(assetCode, parsedOperation.assetCode)
-            XCTAssertEqual(authorize, parsedOperation.authorize)
+            XCTAssertEqual(TrustLineFlags.AUTHORIZED_FLAG, parsedOperation.authorize)
             
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAcAAAAA7eBSYbzcL5UKo7oXO24y1ckX+XuCtkDsyNHOp1n1bxAAAAABVVNEQQAAAAE=", base64)
