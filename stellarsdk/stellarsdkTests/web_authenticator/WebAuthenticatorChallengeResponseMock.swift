@@ -187,7 +187,8 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         
         let transaction = TransactionXDR(sourceAccount: transactionAccount.keyPair.publicKey, seqNum: transactionAccount.sequenceNumber, timeBounds: timeBounds.toXdr(), memo: .none, operations: [try! operation.toXDR()])
         
-        let envelope = TransactionEnvelopeXDR(tx: transaction, signatures: [])
+        let envelopeV1 = TransactionV1EnvelopeXDR(tx: transaction, signatures: [])
+        let envelope = TransactionEnvelopeXDR.v1(envelopeV1)
         var encodedEnvelope = try! XDREncoder.encode(envelope)
         
         return "{ \"transaction\": \"\(Data(bytes: &encodedEnvelope, count: encodedEnvelope.count).base64EncodedString())\" }"

@@ -11,11 +11,13 @@ struct TransactionSignaturePayload: XDREncodable {
     let taggedTransaction: TaggedTransaction
     
     enum TaggedTransaction: XDREncodable {
+        case typeTXV0 (TransactionV0XDR)
         case typeTX (TransactionXDR)
         
         private func discriminant() -> Int32 {
             switch self {
-            case .typeTX: return EnvelopeType.typeTX.rawValue
+            case .typeTXV0: return EnvelopeType.ENVELOPE_TYPE_TX
+            case .typeTX: return EnvelopeType.ENVELOPE_TYPE_TX
             }
         }
         
@@ -25,6 +27,7 @@ struct TransactionSignaturePayload: XDREncodable {
             try container.encode(discriminant())
             
             switch self {
+            case .typeTXV0 (let tx): try container.encode(tx)
             case .typeTX (let tx): try container.encode(tx)
             }
         }

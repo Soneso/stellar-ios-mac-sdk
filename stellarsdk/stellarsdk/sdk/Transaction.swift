@@ -53,7 +53,8 @@ public class Transaction {
             try operationsXDR.append(operation.toXDR())
         }
         
-        self.transactionXDR = TransactionXDR(sourceAccount: self.sourceAccount.keyPair.publicKey,
+        let muxedAccount = MuxedAccountXDR.ed25519(sourceAccount.keyPair.publicKey.bytes)
+        self.transactionXDR = TransactionXDR(sourceAccount: muxedAccount,
                                              seqNum: self.sourceAccount.incrementedSequenceNumber(),
                                              timeBounds: self.timeBounds?.toXdr(),
                                              memo: self.memo.toXDR(),
@@ -72,7 +73,8 @@ public class Transaction {
         let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: xdr))
         
         let transactionXDR = try TransactionXDR(fromBinary: xdrDecoder)
-        let keypair = KeyPair(publicKey: transactionXDR.sourceAccount)
+        let pubicKey = try PublicKey(accountId: transactionXDR.sourceAccount.accountId)
+        let keypair = KeyPair(publicKey: pubicKey)
         let transactionSourceAccount = Account(keyPair: keypair, sequenceNumber: transactionXDR.seqNum - 1)
         var operations = [Operation]()
         for operationXDR in transactionXDR.operations {
@@ -99,25 +101,26 @@ public class Transaction {
         let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: envelopeXdr))
         
         let transactionEnvelopeXDR = try TransactionEnvelopeXDR(fromBinary: xdrDecoder)
-        let keypair = KeyPair(publicKey: transactionEnvelopeXDR.tx.sourceAccount)
-        let transactionSourceAccount = Account(keyPair: keypair, sequenceNumber: transactionEnvelopeXDR.tx.seqNum - 1)
+        let tpk = try PublicKey(accountId: transactionEnvelopeXDR.txSourceAccountId)
+        let keypair = KeyPair(publicKey: tpk)
+        let transactionSourceAccount = Account(keyPair: keypair, sequenceNumber: transactionEnvelopeXDR.txSeqNum - 1)
         var operations = [Operation]()
-        for operationXDR in transactionEnvelopeXDR.tx.operations {
+        for operationXDR in transactionEnvelopeXDR.txOperations {
             let operation = try Operation.fromXDR(operationXDR: operationXDR)
             operations.append(operation)
         }
         
         var timebounds: TimeBounds?
-        if let timeboundsXDR = transactionEnvelopeXDR.tx.timeBounds {
+        if let timeboundsXDR = transactionEnvelopeXDR.txTimeBounds {
             timebounds = TimeBounds(timebounds: timeboundsXDR)
         }
         
-        let txFee = transactionEnvelopeXDR.tx.fee;
+        let txFee = transactionEnvelopeXDR.txFee;
         let maxOperationFee = operations.count > 1 ? txFee /  UInt32(operations.count) : txFee
         
-        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionEnvelopeXDR.tx.memo), timeBounds: timebounds, maxOperationFee: maxOperationFee)
+        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionEnvelopeXDR.txMemo), timeBounds: timebounds, maxOperationFee: maxOperationFee)
         
-        for signature in transactionEnvelopeXDR.signatures {
+        for signature in transactionEnvelopeXDR.txSignatures {
             self.transactionXDR.addSignature(signature: signature)
         }
     }

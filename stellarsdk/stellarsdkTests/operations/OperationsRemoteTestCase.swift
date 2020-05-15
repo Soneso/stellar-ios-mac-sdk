@@ -13,8 +13,8 @@ class OperationsRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
     var streamItem:OperationsStreamItem? = nil
     
-    let seed = "SDJBRZTMHY3WNHUMYV4PUWJAKJNRNOE5AUH6AC635GJKCU6YSKAG5OPM"
-    let IOMIssuingAccountId = "GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII"
+    let seed = "SD24I54ZUAYGZCKVQD6DZD6PQGLU7UQKVWDM37TKIACO3P47WG3BRW4C"
+    let IOMIssuingAccountId = "GAHVPXP7RPX5EGT6WFDS26AOM3SBZW2RKEDBZ5VO45J7NYDGJYKYE6UW"
     
     override func setUp() {
         super.setUp()
@@ -72,8 +72,8 @@ class OperationsRemoteTestCase: XCTestCase {
     
     func testGetOperationsForAccount() {
         let expectation = XCTestExpectation(description: "Get operations for account")
-        
-        sdk.operations.getOperations(forAccount: "GDGNF4FLAPCTN2WQ4SM7RPB42QIEPM3FK5M4FAVREOBUALT7I6DVNHCX", from: nil, order: Order.descending, includeFailed: true, join: "transactions") { (response) -> (Void) in
+        let accountID = try! KeyPair(secretSeed: seed).accountId
+        sdk.operations.getOperations(forAccount: accountID, from: nil, order: Order.descending, includeFailed: true, join: "transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -109,7 +109,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationsForTransaction() {
         let expectation = XCTestExpectation(description: "Get operations for transaction")
         
-        sdk.operations.getOperations(forTransaction: "d2c53b9cad4ea0de7a126968e22476b8510e5d19d87914f658c6eaf677a502be", includeFailed:true, join:"transactions") { (response) -> (Void) in
+        sdk.operations.getOperations(forTransaction: "a6f39f3cbe64bb45d909690f604d8cec7f5a88f7398d8d656f26c63143ae8e59", includeFailed:true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -146,7 +146,7 @@ class OperationsRemoteTestCase: XCTestCase {
         let expectation = XCTestExpectation(description: "Create and fund a new account")
         do {
             
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDJBRZTMHY3WNHUMYV4PUWJAKJNRNOE5AUH6AC635GJKCU6YSKAG5OPM")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
             let destinationKeyPair = try KeyPair.generateRandomKeyPair()
             print ("CA Test: Source account id: \(sourceAccountKeyPair.accountId)")
             print("CA Test: New destination keipair created with secret seed: \(destinationKeyPair.secretSeed!) and accountId: \(destinationKeyPair.accountId)")

@@ -23,12 +23,12 @@ class WebAuthenticatorSendChallengeResponseMock: ResponsesMock {
             if let data = request.httpBodyStream?.readfully(), let json = try! JSONSerialization.jsonObject(with: data, options : .allowFragments) as? [String:Any] {
                 if let key = json["transaction"] as? String {
                     let transactionEnvelope = try! TransactionEnvelopeXDR(xdr: key)
-                    let transactionXDR = transactionEnvelope.tx
-                    let transactionHash = try! [UInt8](transactionXDR.hash(network: .testnet))
+                    //let transactionXDR = transactionEnvelope.tx
+                    let transactionHash = try! [UInt8](transactionEnvelope.txHash(network: .testnet))
                     
                     // validate signature
                     var validSignature = false
-                    for signature in transactionEnvelope.signatures {
+                    for signature in transactionEnvelope.txSignatures {
                         let sign = signature.signature
                         let clientKeyPair = try! KeyPair(accountId: "GB4L7JUU5DENUXYH3ANTLVYQL66KQLDDJTN5SF7MWEDGWSGUA375V44V")
                         let signatureIsValid = try! clientKeyPair.verify(signature: [UInt8](sign), message: transactionHash)

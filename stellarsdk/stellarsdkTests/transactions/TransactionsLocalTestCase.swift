@@ -48,7 +48,7 @@ class TransactionsLocalTestCase: XCTestCase {
             
             // method 2
             let envelope = try TransactionEnvelopeXDR(xdr:xdrString)
-            let fee = envelope.tx.fee
+            let fee = envelope.txFee
             XCTAssert(fee == 1000)
             let envelopeString = envelope.xdrEncoded
             XCTAssertTrue(xdrString == envelopeString)

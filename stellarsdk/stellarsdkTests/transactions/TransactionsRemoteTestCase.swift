@@ -11,7 +11,7 @@ import stellarsdk
 
 class TransactionsRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let seed = "SBXLWK6BPACX6SHXYQ7NTM4D3LCPM46O3MWTNEZH7L4TA4VWZ4EHSFYS"
+    let seed = "SD24I54ZUAYGZCKVQD6DZD6PQGLU7UQKVWDM37TKIACO3P47WG3BRW4C"
     var streamItem:TransactionsStreamItem? = nil
     
     override func setUp() {
@@ -74,8 +74,8 @@ class TransactionsRemoteTestCase: XCTestCase {
     
     func testGetTransactionsForAccount() {
         let expectation = XCTestExpectation(description: "Get transactions for account")
-        
-        sdk.transactions.getTransactions(forAccount: "GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV") { (response) -> (Void) in
+        let pk = try! KeyPair(secretSeed: seed).publicKey
+        sdk.transactions.getTransactions(forAccount: pk.accountId) { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -136,8 +136,44 @@ class TransactionsRemoteTestCase: XCTestCase {
                 let operationBody = OperationBodyXDR.inflation
                 let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
                 var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation])
-                
                 try! transaction.sign(keyPair: keyPair, network: .testnet)
+                let encodedT = try! transaction.encodedV1Transaction()
+                print("\nTransaction V1:")
+                print(encodedT)
+                print("\nEnvelope V1:")
+                let xdrEnvelopeV0 = try! transaction.encodedV1Envelope()
+                print(xdrEnvelopeV0)
+                print("\nEnvelope P13:")
+                let xdrEnvelope = try! transaction.encodedEnvelope()
+                print(xdrEnvelope)
+                expectation.fulfill()
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"TS Test", horizonRequestError:error)
+                XCTAssert(false)
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testTransactionV0Signing() {
+        let keyPair = try! KeyPair(secretSeed: seed)
+        
+        let expectation = XCTestExpectation(description: "Transaction successfully signed.")
+        sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
+            switch response {
+            case .success(let data):
+                let operationBody = OperationBodyXDR.inflation
+                let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
+                var transaction = TransactionV0XDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation])
+                try! transaction.sign(keyPair: keyPair, network: .testnet)
+                let encodedT = try! transaction.encodedV0Transaction()
+                print("\nTransaction VO:")
+                print(encodedT)
+                print("\nEnvelope VO:")
+                let xdrEnvelopeV0 = try! transaction.encodedV0Envelope()
+                print(xdrEnvelopeV0)
+                print("\nEnvelope P13:")
                 let xdrEnvelope = try! transaction.encodedEnvelope()
                 print(xdrEnvelope)
                 expectation.fulfill()
@@ -155,7 +191,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         do {
             let source = try KeyPair(secretSeed:seed)
-            let destination = try KeyPair(secretSeed: "SD3KVAWTPP2FHMRUSRAKMBRKIEDWWTMTPIG2ZITUWNKFKVJXA2WXV6OG")
+            let destination = try KeyPair(secretSeed: "SBK3OW43UIX4HDWDJNO4FTOKL3ESZ4CBDPA57UAUE7SL3JMPNHWZEYGF")
             
             streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: source.accountId, cursor: "now"))
             streamItem?.onReceive { response in
@@ -235,7 +271,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     }
     
     func testTransactionEnvelopePost() {
-        let keyPair = try! KeyPair(secretSeed: "SBXLWK6BPACX6SHXYQ7NTM4D3LCPM46O3MWTNEZH7L4TA4VWZ4EHSFYS")
+        let keyPair = try! KeyPair(secretSeed: seed)
         
         let expectation = XCTestExpectation(description: "Transaction successfully signed.")
         sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in

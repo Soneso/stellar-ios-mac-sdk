@@ -7,6 +7,7 @@
 //
 
 public enum TransactionResultCode: Int32 {
+    case feeBumpInnerSuccess = 1
     case success = 0 // all operations succeeded
     case failed = -1 // one of the operations failed (none were applied)
     case tooEarly = -2 // ledger closeTime before minTime
@@ -19,6 +20,8 @@ public enum TransactionResultCode: Int32 {
     case insufficientFee = -9 // fee is too small
     case badAuthExtra = -10 // unused signatures attached to transaction
     case internalError = -11 // an unknown error occured
+    case notSupported = -12
+    case feeBumpInnerFailed = -13
 }
 
 public enum TransactionResultBodyXDR: Encodable {

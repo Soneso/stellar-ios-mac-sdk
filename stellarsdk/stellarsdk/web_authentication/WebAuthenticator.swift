@@ -26,6 +26,7 @@ public enum ChallengeValidationError: Error {
     case invalidSignature
     case signatureNotFound
     case validationFailure
+    case invalidTransactionType
 }
 
 /// Possible errors received from a JWT token response.
@@ -190,14 +191,19 @@ public class WebAuthenticator {
     
     public func isValidChallenge(transactionEnvelopeXDR: TransactionEnvelopeXDR, userAccountId: String, serverSigningKey: String) -> ChallengeValidationResponseEnum {
         do {
-            let transactionXDR = transactionEnvelopeXDR.tx
+            switch transactionEnvelopeXDR {
+            case .feeBump(_):
+                return .failure(error: .invalidTransactionType)
+            default:
+                break
+            }
             
-            if (transactionXDR.seqNum != 0) {
+            if (transactionEnvelopeXDR.txSeqNum != 0) {
                 return .failure(error: .sequenceNumberNot0)
             }
             
             // the transaction must contain one operation
-            if transactionXDR.operations.count == 1, let operationXDR = transactionXDR.operations.first {
+            if transactionEnvelopeXDR.txOperations.count == 1, let operationXDR = transactionEnvelopeXDR.txOperations.first {
                 // the source account of the operation must match
                 if let operationSourceAccount = operationXDR.sourceAccount {
                     if (operationSourceAccount.accountId != userAccountId) {
@@ -217,7 +223,7 @@ public class WebAuthenticator {
                 return .failure(error: .invalidOperationCount)
             }
             
-            if !ignoreTimebounds, let minTime = transactionXDR.timeBounds?.minTime, let maxTime = transactionXDR.timeBounds?.maxTime {
+            if !ignoreTimebounds, let minTime = transactionEnvelopeXDR.txTimeBounds?.minTime, let maxTime = transactionEnvelopeXDR.txTimeBounds?.maxTime {
                 let currentTimestamp = Date().timeIntervalSince1970
                 if (currentTimestamp < TimeInterval(minTime)) || (currentTimestamp > TimeInterval(maxTime)) {
                     return .failure(error: .invalidTimeBounds)
@@ -225,9 +231,9 @@ public class WebAuthenticator {
             }
             
             // the envelope must have one signature and it must be valid: transaction signed by the server
-            if transactionEnvelopeXDR.signatures.count == 1, let signature = transactionEnvelopeXDR.signatures.first?.signature {
+            if transactionEnvelopeXDR.txSignatures.count == 1, let signature = transactionEnvelopeXDR.txSignatures.first?.signature {
                 // transaction hash is the signed payload
-                let transactionHash = try [UInt8](transactionXDR.hash(network: network))
+                let transactionHash = try [UInt8](transactionEnvelopeXDR.txHash(network: network))
                 
                 // validate signature
                 let serverKeyPair = try KeyPair(accountId: serverSigningKey)
@@ -248,13 +254,18 @@ public class WebAuthenticator {
     public func signTransaction(transactionEnvelopeXDR: TransactionEnvelopeXDR, userKeyPair: KeyPair) -> String? {
         let envelopeXDR = transactionEnvelopeXDR
         do {
-            let tx = envelopeXDR.tx
+            switch envelopeXDR {
+            case .feeBump(_):
+                return nil
+            default:
+                break
+            }
             
             // user signature
-            let transactionHash = try [UInt8](tx.hash(network: network))
+            let transactionHash = try [UInt8](envelopeXDR.txHash(network: network))
             let userSignature = userKeyPair.signDecorated(transactionHash)
             
-            envelopeXDR.signatures.append(userSignature)
+            envelopeXDR.appendSignature(signature: userSignature)
             
             if let xdrEncodedEnvelope = envelopeXDR.xdrEncoded {
                 return xdrEncodedEnvelope
