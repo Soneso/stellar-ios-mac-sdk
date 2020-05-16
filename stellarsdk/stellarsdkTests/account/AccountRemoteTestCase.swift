@@ -13,7 +13,7 @@ import stellarsdk
 
 class AccountRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let testSuccessAccountId = "GBJRYVWMCM4IYZDEB7AUB7Q4IY64HLLWD5A3ZLONHDEDZ66YSU4IXS5N"
+    let testSuccessAccountId = "GA3IZ2KWEY3VNBWHOKY3VEGHGL2G4G2E2QK2RDQ76IK2PLJFITN6MYFF"
     // priv SASX3JBZNVS4HKL2TZJPOO3VIQRRZPIAOBZTFMT22LWGUMOHMFXU2ZZ4 // for testing
     
     override func setUp() {
@@ -125,7 +125,7 @@ class AccountRemoteTestCase: XCTestCase {
     func testGetAccountsByAsset() {
         let expectation = XCTestExpectation(description: "Get accounts and parse their details successfully")
         
-        sdk.accounts.getAccounts(signer: nil, asset: "IOM:GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII", cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
+        sdk.accounts.getAccounts(signer: nil, asset: "IOM:GAHVPXP7RPX5EGT6WFDS26AOM3SBZW2RKEDBZ5VO45J7NYDGJYKYE6UW", cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
             switch response {
             case .success(let accountsResponse):
                 // load next page
@@ -165,7 +165,7 @@ class AccountRemoteTestCase: XCTestCase {
     func testGetAccountsBySigner() {
         let expectation = XCTestExpectation(description: "Get accounts and parse their details successfully")
         
-        sdk.accounts.getAccounts(signer: "GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII", asset:nil, cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
+        sdk.accounts.getAccounts(signer: "GAHVPXP7RPX5EGT6WFDS26AOM3SBZW2RKEDBZ5VO45J7NYDGJYKYE6UW", asset:nil, cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
             switch response {
             case .success(let accountsResponse):
                 // load next page

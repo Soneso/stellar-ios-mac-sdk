@@ -20,21 +20,44 @@ public class ManageDataOperation:Operation {
     /// - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
     /// - Parameter name: String up to 64 bytes long. If this is a new Name it will add the given name/value pair to the account. If this Name is already present then the associated value will be modified.
     /// - Parameter value: (optional) If not present then the existing Name will be deleted. If present then this value will be set in the DataEntry. Up to 64 bytes long.
-    ///
+    @available(*, deprecated, message: "use init(sourceAccountId:String?, ...) instead")
     public init(sourceAccount:KeyPair? = nil, name:String, data:Data? = nil) {
         self.name = name
         self.data = data
         super.init(sourceAccount:sourceAccount)
     }
     
+    /// Creates a new PaymentOperation object.
+    ///
+    /// - Parameter sourceAccountId: (optional) source account Id. must start with "M" or "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter name: String up to 64 bytes long. If this is a new Name it will add the given name/value pair to the account. If this Name is already present then the associated value will be modified.
+    /// - Parameter value: (optional) If not present then the existing Name will be deleted. If present then this value will be set in the DataEntry. Up to 64 bytes long.
+    ///
+    public init(sourceAccountId:String?, name:String, data:Data? = nil) {
+        self.name = name
+        self.data = data
+        super.init(sourceAccountId:sourceAccountId)
+    }
+    
     /// Creates a new ManageDataOperation object from the given ManageDataOperationXDR object.
     ///
     /// - Parameter fromXDR: the ManageDataOperationXDR object to be used to create a new ManageDataOperation object.
-    ///
+    @available(*, deprecated, message: "use init(..., sourceAccountId:String?) instead")
     public init(fromXDR:ManageDataOperationXDR, sourceAccount:KeyPair? = nil) {
         self.name = fromXDR.dataName
         self.data = fromXDR.dataValue
         super.init(sourceAccount: sourceAccount)
+    }
+    
+    /// Creates a new ManageDataOperation object from the given ManageDataOperationXDR object.
+    ///
+    /// - Parameter fromXDR: the ManageDataOperationXDR object to be used to create a new ManageDataOperation object.
+    /// - Parameter sourceAccountId: (optional) source account Id. must start with "M" or "G" and must be valid, otherwise it will be ignored.
+    ///
+    public init(fromXDR:ManageDataOperationXDR, sourceAccountId:String?) {
+        self.name = fromXDR.dataName
+        self.data = fromXDR.dataValue
+        super.init(sourceAccountId: sourceAccountId)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {

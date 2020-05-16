@@ -12,6 +12,7 @@ public struct OperationXDR: XDRCodable {
     public var sourceAccount: MuxedAccountXDR?
     public let body: OperationBodyXDR
     
+    @available(*, deprecated, message: "use init(sourceAccount: MuxedAccountXDR?, body: OperationBodyXDR) instead")
     public init(sourceAccount: PublicKey?, body: OperationBodyXDR) {
         var mux:MuxedAccountXDR? = nil
         if let sa = sourceAccount {

@@ -12,19 +12,40 @@ import Foundation
 /// See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/operations.html, "Operations")
 /// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html, "List of Operations")
 public class Operation {
-    public let sourceAccount:KeyPair?
+    @available(*, deprecated, message: "use sourceAccountId instead")
+    public private (set) var sourceAccount:KeyPair?
+    public private (set) var sourceAccountId:String? //"G..." or "M..."
+    public private (set) var sourceAccountXdr: MuxedAccountXDR?
     
     /// Creates a new operation object.
     ///
-    /// - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
+    /// - Parameter sourceAccount: (optional) Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
     ///
+    @available(*, deprecated, message: "use init(sourceAccountId:String?) instead")
     public init(sourceAccount:KeyPair?) {
-        self.sourceAccount = sourceAccount
+        if let sa = sourceAccount, let mux = try? sa.accountId.decodeMuxedAccount() {
+            self.sourceAccount = sourceAccount
+            self.sourceAccountId = sa.accountId
+            self.sourceAccountXdr = mux
+        }
+    }
+    
+    /// Creates a new operation object.
+    ///
+    /// - Parameter sourceAccountId: (optional) source account Id. must start with "M" or "G" and must be valid, otherwise it will be ignored.
+    ///
+    public init(sourceAccountId:String?) {
+        
+        if let saId = sourceAccountId, let mux = try? saId.decodeMuxedAccount() {
+            self.sourceAccount = try? KeyPair(accountId: mux.ed25519AccountId)
+            self.sourceAccountId = sourceAccountId
+            self.sourceAccountXdr = mux
+        }
     }
     
     /// Generates Operation XDR object.
     public func toXDR() throws -> OperationXDR {
-        return try OperationXDR(sourceAccount: sourceAccount?.publicKey, body: getOperationBodyXDR())
+        return try OperationXDR(sourceAccount: self.sourceAccountXdr, body: getOperationBodyXDR())
     }
     
     /// Creates a new Operation object from the given OperationXDR object.
@@ -36,38 +57,37 @@ public class Operation {
     /// - Throws StellarSDKError.invalidArgument error if the given OperationXDR object has an unknown type.
     ///
     public static func fromXDR(operationXDR:OperationXDR) throws -> Operation {
-        var source: KeyPair?
-        if let sourceMux = operationXDR.sourceAccount {
-            source = try KeyPair(publicKey:PublicKey(accountId:sourceMux.ed25519AccountId))
+        var mSourceAccountId: String?
+        if let mux = operationXDR.sourceAccount {
+            mSourceAccountId = mux.accountId
         }
         switch operationXDR.body {
         case .createAccount(let account):
-            return CreateAccountOperation(fromXDR: account, sourceAccount: source)
+            return CreateAccountOperation(fromXDR: account, sourceAccountId: mSourceAccountId)
         case .payment(let payment):
-            return PaymentOperation(fromXDR: payment, sourceAccount: source)
+            return PaymentOperation(fromXDR: payment, sourceAccountId: mSourceAccountId)
         case .pathPayment(let pathPaymentStrictReceive):
-            return PathPaymentStrictReceiveOperation(fromXDR: pathPaymentStrictReceive, sourceAccount: source)
+            return PathPaymentStrictReceiveOperation(fromXDR: pathPaymentStrictReceive, sourceAccountId: mSourceAccountId)
         case .pathPaymentStrictSend(let pathPaymentStrictSend):
-            return PathPaymentStrictSendOperation(fromXDR: pathPaymentStrictSend, sourceAccount: source)
+            return PathPaymentStrictSendOperation(fromXDR: pathPaymentStrictSend, sourceAccountId: mSourceAccountId)
         case .manageSellOffer(let manageOffer):
-            return ManageSellOfferOperation(fromXDR: manageOffer, sourceAccount: source)
+            return ManageSellOfferOperation(fromXDR: manageOffer, sourceAccountId: mSourceAccountId)
         case .manageBuyOffer(let manageOffer):
-            return ManageBuyOfferOperation(fromXDR: manageOffer, sourceAccount: source)
+            return ManageBuyOfferOperation(fromXDR: manageOffer, sourceAccountId: mSourceAccountId)
         case .createPassiveSellOffer(let passiveOffer):
-            return CreatePassiveSellOfferOperation(fromXDR: passiveOffer, sourceAccount: source)
+            return CreatePassiveSellOfferOperation(fromXDR: passiveOffer, sourceAccountId: mSourceAccountId)
         case .setOptions(let setOptions):
-            return SetOptionsOperation(fromXDR: setOptions, sourceAccount: source)
+            return SetOptionsOperation(fromXDR: setOptions, sourceAccountId: mSourceAccountId)
         case .changeTrust(let changeTrust):
-            return ChangeTrustOperation(fromXDR: changeTrust, sourceAccount: source)
+            return ChangeTrustOperation(fromXDR: changeTrust, sourceAccountId: mSourceAccountId)
         case .allowTrust(let allowTrust):
-            return AllowTrustOperation(fromXDR: allowTrust, sourceAccount: source)
+            return AllowTrustOperation(fromXDR: allowTrust, sourceAccountId: mSourceAccountId)
         case .accountMerge(let destination):
-            let pk = try PublicKey(accountId: destination.ed25519AccountId)
-            return AccountMergeOperation(destinatioAccountPublicKey: pk, sourceAccount: source)
+            return try AccountMergeOperation(destinationAccountId: destination.accountId, sourceAccountId: mSourceAccountId)
         case .manageData(let manageData):
-            return ManageDataOperation(fromXDR: manageData, sourceAccount: source)
+            return ManageDataOperation(fromXDR: manageData, sourceAccountId: mSourceAccountId)
         case .bumpSequence(let bumpSequenceData):
-            return BumpSequenceOperation(fromXDR: bumpSequenceData, sourceAccount: source)
+            return BumpSequenceOperation(fromXDR: bumpSequenceData, sourceAccountId: mSourceAccountId)
         default:
             throw StellarSDKError.invalidArgument(message: "Unknown operation body \(operationXDR.body)")
         }

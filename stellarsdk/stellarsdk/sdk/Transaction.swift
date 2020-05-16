@@ -53,7 +53,13 @@ public class Transaction {
             try operationsXDR.append(operation.toXDR())
         }
         
-        let muxedAccount = MuxedAccountXDR.ed25519(sourceAccount.keyPair.publicKey.bytes)
+        let muxedAccount:MuxedAccountXDR
+        if let mux = sourceAccount as? MuxedAccount {
+            muxedAccount = mux.xdr
+        } else {
+            muxedAccount = MuxedAccountXDR.ed25519(sourceAccount.keyPair.publicKey.bytes)
+        }
+        
         self.transactionXDR = TransactionXDR(sourceAccount: muxedAccount,
                                              seqNum: self.sourceAccount.incrementedSequenceNumber(),
                                              timeBounds: self.timeBounds?.toXdr(),

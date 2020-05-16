@@ -20,21 +20,44 @@ public class ChangeTrustOperation:Operation {
     /// - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
     /// - Parameter asset: The asset of the trustline. For example, if a user extends a trustline of up to 200 USD to an anchor, the line is USD:anchor.
     /// - Parameter limit: The limit of the trustline. In the previous example, the limit would be 200.
-    ///
+    @available(*, deprecated, message: "use init(sourceAccountId:String?, ...) instead")
     public init(sourceAccount:KeyPair? = nil, asset:Asset, limit:Decimal? = nil) {
         self.asset = asset
         self.limit = limit
         super.init(sourceAccount:sourceAccount)
     }
     
+    /// Creates a new ChangeTrustOperation object.
+    ///
+    /// - Parameter sourceAccountId: (optional) source account Id. must start with "M" or "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter asset: The asset of the trustline. For example, if a user extends a trustline of up to 200 USD to an anchor, the line is USD:anchor.
+    /// - Parameter limit: The limit of the trustline. In the previous example, the limit would be 200.
+    ///
+    public init(sourceAccountId:String?, asset:Asset, limit:Decimal? = nil) {
+        self.asset = asset
+        self.limit = limit
+        super.init(sourceAccountId:sourceAccountId)
+    }
+    
     /// Creates a new ChangeTrustOperation object from the given ChangeTrustOperationXDR object.
     ///
     /// - Parameter fromXDR: the ChangeTrustOperationXDR object to be used to create a new ChangeTrustOperation object.
-    ///
+    @available(*, deprecated, message: "use init(..., sourceAccountId:String?) instead")
     public init(fromXDR:ChangeTrustOperationXDR, sourceAccount:KeyPair? = nil) {
         self.asset = try! Asset.fromXDR(assetXDR: fromXDR.asset)
         self.limit = Operation.fromXDRAmount(fromXDR.limit)
         super.init(sourceAccount: sourceAccount)
+    }
+    
+    /// Creates a new ChangeTrustOperation object from the given ChangeTrustOperationXDR object.
+    ///
+    /// - Parameter fromXDR: the ChangeTrustOperationXDR object to be used to create a new ChangeTrustOperation object.
+    /// - Parameter sourceAccountId: (optional) source account Id. must start with "M" or "G" and must be valid, otherwise it will be ignored.
+    ///
+    public init(fromXDR:ChangeTrustOperationXDR, sourceAccountId:String?) {
+        self.asset = try! Asset.fromXDR(assetXDR: fromXDR.asset)
+        self.limit = Operation.fromXDRAmount(fromXDR.limit)
+        super.init(sourceAccountId: sourceAccountId)
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
