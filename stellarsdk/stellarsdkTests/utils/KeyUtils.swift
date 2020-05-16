@@ -32,6 +32,36 @@ class KeyUtils: XCTestCase {
         }
     }
     
+    func testKeyUtilsMuxedAccountM() {
+        let accountId = "MCAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITKNOG"
+        
+        do {
+            let mux = try accountId.decodeMuxedAccount()
+            var muxEncoded = try XDREncoder.encode(mux)
+            let muxData = Data(bytes: &muxEncoded, count: muxEncoded.count)
+            let muxId = try muxData.encodeMuxedAccount()
+            
+            XCTAssertTrue(accountId == muxId)
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
+    
+    func testKeyUtilsMuxedAccountP() {
+        let accountId = "GBJRYVWMCM4IYZDEB7AUB7Q4IY64HLLWD5A3ZLONHDEDZ66YSU4IXS5N"
+        
+        do {
+            let mux = try accountId.decodeMuxedAccount()
+            var muxEncoded = try XDREncoder.encode(mux)
+            let muxData = Data(bytes: &muxEncoded, count: muxEncoded.count)
+            let muxId = try muxData.encodeMuxedAccount()
+            
+            XCTAssertTrue(accountId == muxId)
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
+    
     func testKeyUtilsPrivateKey() {
         let publicKey = "SBXLH5ZCTJR2VKCDFKUQWP2WI4B5HKWDRQQ4TUZLFE47MQ4LZEAHCBLU"
         

@@ -38,12 +38,7 @@ public class Operation {
     public static func fromXDR(operationXDR:OperationXDR) throws -> Operation {
         var source: KeyPair?
         if let sourceMux = operationXDR.sourceAccount {
-            switch sourceMux {
-            case .ed25519(let bytes):
-                source = KeyPair(publicKey:PublicKey(unchecked: bytes))
-            case .med25519(_, let bytes):
-                source = KeyPair(publicKey:PublicKey(unchecked: bytes))
-            }
+            source = try KeyPair(publicKey:PublicKey(accountId:sourceMux.ed25519AccountId))
         }
         switch operationXDR.body {
         case .createAccount(let account):
@@ -67,13 +62,7 @@ public class Operation {
         case .allowTrust(let allowTrust):
             return AllowTrustOperation(fromXDR: allowTrust, sourceAccount: source)
         case .accountMerge(let destination):
-            var pk:PublicKey
-            switch destination {
-            case .ed25519(let bytes):
-                pk = PublicKey(unchecked: bytes)
-            case .med25519(_, let bytes):
-                pk = PublicKey(unchecked: bytes)
-            }
+            let pk = try PublicKey(accountId: destination.ed25519AccountId)
             return AccountMergeOperation(destinatioAccountPublicKey: pk, sourceAccount: source)
         case .manageData(let manageData):
             return ManageDataOperation(fromXDR: manageData, sourceAccount: source)

@@ -14,6 +14,22 @@ extension Data {
         return try encodeCheck(versionByte: .accountId)
     }
     
+    public func encodeMuxedAccount() throws -> String {
+        let muxed = try XDRDecoder.decode(MuxedAccountXDR.self, data:self)
+        switch muxed {
+        case .ed25519(_):
+            return muxed.ed25519AccountId
+        case .med25519(let mux):
+            let data = try Data(bytes: XDREncoder.encode(mux))
+            let result = try data.encodeMEd25519AccountId()
+            return result.replacingOccurrences(of: "=", with: "")
+        }
+    }
+    
+    public func encodeMEd25519AccountId() throws -> String {
+        return try encodeCheck(versionByte: .muxedAccountId)
+    }
+    
     public func encodeEd25519SecretSeed() throws -> String {
         return try encodeCheck(versionByte: .seed)
     }

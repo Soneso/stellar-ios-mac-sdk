@@ -20,6 +20,22 @@ extension String {
         return try decodeCheck(versionByte: .accountId)
     }
     
+    public func decodeMuxedAccount() throws -> MuxedAccountXDR {
+        switch self.count {
+        case 56:
+            let pk = try PublicKey(accountId: self)
+            let mux = MuxedAccountXDR.ed25519(pk.bytes)
+            return mux
+        case 69:
+            let xdr = try decodeCheck(versionByte: .muxedAccountId)
+            let muxEd25519 = try XDRDecoder.decode(MuxedAccountMed25519XDR.self, data:xdr)
+            let mux = MuxedAccountXDR.med25519(muxEd25519)
+            return mux
+        default:
+            throw KeyUtilsError.invalidEncodedString
+        }
+    }
+    
     public func decodeEd25519SecretSeed() throws -> Data {
         return try decodeCheck(versionByte: .seed)
     }

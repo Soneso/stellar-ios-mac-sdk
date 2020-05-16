@@ -112,7 +112,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetTransactionDetails() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         
-        sdk.transactions.getTransactionDetails(transactionHash: "95d8f7dfcfb452cd89e047e5b4dba63083d6d6559673fc9f55ad0064b8c7eb10") { (response) -> (Void) in
+        sdk.transactions.getTransactionDetails(transactionHash: "ed1dc9a219d5e8292a29b1b5c580b98fba0066aeb96fcd45a290fb68ff0b70bb") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -335,6 +335,41 @@ class TransactionsRemoteTestCase: XCTestCase {
             let destinationAccountKeyPair = try KeyPair(accountId: destination)
             let payerKeyPair = try KeyPair(secretSeed: payerSeed)
             
+            streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: payerKeyPair.accountId, cursor: "now"))
+            streamItem?.onReceive { response in
+                switch response {
+                case .open:
+                    break
+                case .response(_, let response):
+                    
+                    if let fbr = response.feeBumpTransactionResponse, let itr = response.innerTransactionResponse {
+                        print("\nfee_bump-transaction: \(fbr.transactionHash)")
+                        for signature in fbr.signatures {
+                            print("signature: \(signature)")
+                        }
+                        print("\ninner_transaction: \(itr.transactionHash)")
+                        for signature in itr.signatures {
+                            print("signature: \(signature)")
+                        }
+                        print("max_fee: \(itr.maxFee)\n")
+                        XCTAssert(true)
+                    } else {
+                        XCTAssert(false)
+                    }
+                    expectation.fulfill()
+                    self.streamItem?.closeStream()
+                    self.streamItem = nil
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test - destination", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("Error \(error?.localizedDescription ?? "")")
+                    }
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+            
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
@@ -363,7 +398,6 @@ class TransactionsRemoteTestCase: XCTestCase {
                                         case .success(_):
                                             print("SFB Test: FeeBumpTransaction successfully sent")
                                             XCTAssert(true)
-                                            expectation.fulfill()
                                         case .destinationRequiresMemo(let destinationAccountId):
                                             print("SFB Test: Destination requires memo \(destinationAccountId)")
                                             XCTAssert(false)
@@ -399,5 +433,37 @@ class TransactionsRemoteTestCase: XCTestCase {
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 25.0)
+    }
+    
+    
+    func testGetFeeBumpTransactionDetails() {
+        let expectation = XCTestExpectation(description: "Get transaction details")
+        
+        sdk.transactions.getTransactionDetails(transactionHash: "5a270b978380f9ac264787bea669eeca523a32ef7b8e1f0f570a207776d33c7b") { (response) -> (Void) in
+            switch response {
+            case .success(let response):
+                if let fbr = response.feeBumpTransactionResponse, let itr = response.innerTransactionResponse {
+                    print("\nfee_bump-transaction: \(fbr.transactionHash)")
+                    for signature in fbr.signatures {
+                        print("signature: \(signature)")
+                    }
+                    print("\ninner_transaction: \(itr.transactionHash)")
+                    for signature in itr.signatures {
+                        print("signature: \(signature)")
+                    }
+                    print("max_fee: \(itr.maxFee)\n")
+                    XCTAssert(true)
+                } else {
+                    XCTAssert(false)
+                }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GTD Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
     }
 }

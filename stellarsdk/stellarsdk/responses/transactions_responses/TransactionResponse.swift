@@ -59,7 +59,8 @@ public class TransactionResponse: NSObject, Decodable {
     public var transactionResult: TransactionResultXDR
     public var transactionMeta: TransactionMetaXDR
     
-    
+    public var feeBumpTransactionResponse:FeeBumpTransactionResponse?
+    public var innerTransactionResponse:InnerTransactionResponse?
     
     private enum CodingKeys: String, CodingKey {
         case links = "_links"
@@ -80,6 +81,8 @@ public class TransactionResponse: NSObject, Decodable {
         case envelopeXDR = "envelope_xdr"
         case transactionResult = "result_xdr"
         case transactionMeta = "result_meta_xdr"
+        case feeBumpTransaction = "fee_bump_transaction"
+        case innerTransaction = "inner_transaction"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -142,5 +145,9 @@ public class TransactionResponse: NSObject, Decodable {
         let encodedMeta = try values.decode(String.self, forKey: .transactionMeta)
         let metaData = Data(base64Encoded: encodedMeta)!
         transactionMeta = try XDRDecoder.decode(TransactionMetaXDR.self, data:metaData)
+        
+        feeBumpTransactionResponse = try values.decodeIfPresent(FeeBumpTransactionResponse.self, forKey: .feeBumpTransaction)
+        innerTransactionResponse = try values.decodeIfPresent(InnerTransactionResponse.self, forKey: .innerTransaction)
+
     }
 }

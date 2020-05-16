@@ -17,7 +17,7 @@ public struct CryptoKeyType {
 
 public enum MuxedAccountXDR: XDRCodable {
     case ed25519([UInt8])
-    case med25519 (UInt64, [UInt8])
+    case med25519 (MuxedAccountMed25519XDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -26,12 +26,8 @@ public enum MuxedAccountXDR: XDRCodable {
         
         switch type {
         case CryptoKeyType.KEY_TYPE_MUXED_ED25519:
-            let id = try container.decode(UInt64.self)
-            let wrappedData = try container.decode(WrappedData32.self)
-            let sourceAccountEd25519 = wrappedData.wrapped.withUnsafeBytes {
-                [UInt8](UnsafeBufferPointer(start: $0, count: wrappedData.wrapped.count))
-            }
-            self = .med25519(id, sourceAccountEd25519)
+            let mm = try container.decode(MuxedAccountMed25519XDR.self)
+            self = .med25519(mm)
         default:
             let wrappedData = try container.decode(WrappedData32.self)
             let sourceAccountEd25519 = wrappedData.wrapped.withUnsafeBytes {
@@ -41,21 +37,33 @@ public enum MuxedAccountXDR: XDRCodable {
         }
     }
     
-    /// Human readable Stellar account ID.
+    /// Human readable Stellar ed25519 account ID.
+    public var ed25519AccountId: String {
+        get {
+            switch self {
+            case .ed25519(let bytes):
+                return PublicKey(unchecked: bytes).accountId
+            case .med25519(let m):
+                return PublicKey(unchecked: m.sourceAccountEd25519).accountId
+            }
+        }
+    }
+    
+    /// Human readable Stellar ed25519 or med25519 account ID.
     public var accountId: String {
         get {
-            var versionByte = VersionByte.accountId.rawValue
-            let versionByteData = Data(bytes: &versionByte, count: MemoryLayout.size(ofValue: versionByte))
-            let payload = NSMutableData(data: versionByteData)
-            
             switch self {
-            case .ed25519(let sourceAccountEd25519):
-                payload.append(Data(bytes: sourceAccountEd25519))
-            case .med25519(let id, let sourceAccountEd25519):
-                payload.append(Data(bytes: sourceAccountEd25519))
+            case .ed25519(let bytes):
+                return PublicKey(unchecked: bytes).accountId
+            case .med25519(_):
+                do {
+                    var muxEncoded = try XDREncoder.encode(self)
+                    let muxData = Data(bytes: &muxEncoded, count: muxEncoded.count)
+                    return try muxData.encodeMuxedAccount()
+                } catch {
+                    return ""
+                }
             }
-            let checksumedData = (payload as Data).crc16Data()
-            return checksumedData.base32EncodedString
         }
     }
     
@@ -75,11 +83,8 @@ public enum MuxedAccountXDR: XDRCodable {
             var bytesArray = sourceAccountEd25519
             let wrapped = WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))
             try container.encode(wrapped)
-        case .med25519(let id, let sourceAccountEd25519):
-            try container.encode(id)
-            var bytesArray = sourceAccountEd25519
-            let wrapped = WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))
-            try container.encode(wrapped)
+        case .med25519(let mux):
+            try container.encode(mux)
         }
     }
 }

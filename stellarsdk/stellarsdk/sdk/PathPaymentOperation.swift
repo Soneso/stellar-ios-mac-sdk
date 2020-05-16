@@ -53,13 +53,7 @@ public class PathPaymentOperation:Operation {
     public init(fromXDR:PathPaymentOperationXDR, sourceAccount:KeyPair? = nil) {
         self.sendAsset = try! Asset.fromXDR(assetXDR: fromXDR.sendAsset)
         self.sendMax = Operation.fromXDRAmount(fromXDR.sendMax)
-        let mux = fromXDR.destination
-        switch mux {
-        case .ed25519(let bytes):
-            self.destination = KeyPair(publicKey:PublicKey(unchecked: bytes))
-        case .med25519(_, let bytes):
-            self.destination = KeyPair(publicKey:PublicKey(unchecked: bytes))
-        }
+        self.destination = try! KeyPair(publicKey:PublicKey(accountId:fromXDR.destination.ed25519AccountId))
         self.destAsset = try! Asset.fromXDR(assetXDR: fromXDR.destinationAsset)
         self.destAmount = Operation.fromXDRAmount(fromXDR.destinationAmount)
         var path = [Asset]()

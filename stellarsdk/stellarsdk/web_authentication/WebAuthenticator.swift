@@ -206,7 +206,7 @@ public class WebAuthenticator {
             if transactionEnvelopeXDR.txOperations.count == 1, let operationXDR = transactionEnvelopeXDR.txOperations.first {
                 // the source account of the operation must match
                 if let operationSourceAccount = operationXDR.sourceAccount {
-                    if (operationSourceAccount.accountId != userAccountId) {
+                    if (operationSourceAccount.ed25519AccountId != userAccountId) {
                         return .failure(error: .invalidSourceAccount)
                     }
                 } else {

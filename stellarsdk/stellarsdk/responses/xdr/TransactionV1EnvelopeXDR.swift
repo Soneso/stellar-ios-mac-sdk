@@ -34,7 +34,7 @@ public class TransactionV1EnvelopeXDR: NSObject, XDRCodable {
     /// Human readable Stellar account ID of the transaction.
     public var txSourceAccountId: String {
         get {
-            return tx.sourceAccount.accountId
+            return tx.sourceAccount.ed25519AccountId
         }
     }
 }

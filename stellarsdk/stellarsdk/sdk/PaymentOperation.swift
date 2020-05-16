@@ -35,13 +35,7 @@ public class PaymentOperation:Operation {
     /// - Parameter fromXDR: the PaymentOperationXDR object to be used to create a new PaymentOperation object.
     ///
     public init(fromXDR:PaymentOperationXDR, sourceAccount:KeyPair? = nil) {
-        let mux = fromXDR.destination
-        switch mux {
-        case .ed25519(let bytes):
-            self.destination = KeyPair(publicKey:PublicKey(unchecked: bytes))
-        case .med25519(_, let bytes):
-            self.destination = KeyPair(publicKey:PublicKey(unchecked: bytes))
-        }
+        self.destination = try! KeyPair(publicKey:PublicKey(accountId:fromXDR.destination.ed25519AccountId))
         self.asset = try! Asset.fromXDR(assetXDR: fromXDR.asset)
         self.amount = Operation.fromXDRAmount(fromXDR.amount)
         super.init(sourceAccount: sourceAccount)
