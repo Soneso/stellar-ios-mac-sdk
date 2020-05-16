@@ -87,6 +87,21 @@ public class TransactionsService: NSObject {
         postTransaction(transactionEnvelope:envelope, skipMemoRequiredCheck: skipMemoRequiredCheck, response: response)
     }
     
+    open func submitFeeBumpTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostResponseClosure) throws {
+        let envelope = try transaction.encodedEnvelope()
+        //print(envelope)
+        postTransactionCore(transactionEnvelope: envelope, response: { (result) -> (Void) in
+            switch result {
+            case .success(let transaction):
+                response(.success(details: transaction))
+            case .failure(let error):
+                response(.failure(error: error))
+            case .destinationRequiresMemo(let destinationAccountId):
+                response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
+            }
+        })
+    }
+    
     open func postTransaction(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostResponseClosure) {
         
         if !skipMemoRequiredCheck, let transaction = try? Transaction(envelopeXdr: transactionEnvelope) {

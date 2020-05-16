@@ -12,9 +12,11 @@ import Foundation
 
 public struct FeeBumpTransactionXDR: XDRCodable {
     public let sourceAccount: MuxedAccountXDR
-    public let fee: UInt32
+    public let fee: UInt64
     public let innerTx:InnerTransactionXDR
     public let reserved: Int32
+    
+    private var signatures = [DecoratedSignatureXDR]()
     
     public enum InnerTransactionXDR: XDRCodable {
         case v1 (TransactionV1EnvelopeXDR)
@@ -49,7 +51,7 @@ public struct FeeBumpTransactionXDR: XDRCodable {
         }
     }
     
-    public init(sourceAccount: MuxedAccountXDR, innerTx:InnerTransactionXDR, fee:UInt32) {
+    public init(sourceAccount: MuxedAccountXDR, innerTx:InnerTransactionXDR, fee:UInt64) {
         self.sourceAccount = sourceAccount
         self.innerTx = innerTx
         self.fee = fee
@@ -60,7 +62,7 @@ public struct FeeBumpTransactionXDR: XDRCodable {
         var container = try decoder.unkeyedContainer()
         
         sourceAccount = try container.decode(MuxedAccountXDR.self)
-        fee = try container.decode(UInt32.self)
+        fee = try container.decode(UInt64.self)
         innerTx = try container.decode(InnerTransactionXDR.self)
         reserved = try container.decode(Int32.self)
     }
@@ -72,6 +74,46 @@ public struct FeeBumpTransactionXDR: XDRCodable {
         try container.encode(fee)
         try container.encode(innerTx)
         try container.encode(reserved)
+    }
+    
+    public mutating func sign(keyPair:KeyPair, network:Network) throws {
+        let transactionHash = try [UInt8](hash(network: network))
+        let signature = keyPair.signDecorated(transactionHash)
+        signatures.append(signature)
+    }
+    
+    public mutating func addSignature(signature: DecoratedSignatureXDR) {
+        signatures.append(signature)
+    }
+    
+    private func signatureBase(network:Network) throws -> Data {
+        let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .typeFeeBump(self))
+        
+        return try Data(bytes: XDREncoder.encode(payload))
+    }
+    
+    public func hash(network:Network) throws -> Data {
+        return try signatureBase(network: network).sha256()
+    }
+    
+    public func toEnvelopeXDR() throws -> TransactionEnvelopeXDR {
+        return try TransactionEnvelopeXDR.feeBump(toFBEnvelopeXDR())
+    }
+    
+    public func toFBEnvelopeXDR() throws -> FeeBumpTransactionEnvelopeXDR {
+        guard !signatures.isEmpty else {
+            throw StellarSDKError.invalidArgument(message: "Transaction must be signed by at least one signer. Use transaction.sign().")
+        }
+        
+        return FeeBumpTransactionEnvelopeXDR(tx: self, signatures: signatures)
+    }
+    
+    public func encodedEnvelope() throws -> String {
+        
+        let envelope = try toEnvelopeXDR()
+        var encodedEnvelope = try XDREncoder.encode(envelope)
+
+        return Data(bytes: &encodedEnvelope, count: encodedEnvelope.count).base64EncodedString()
     }
 }
 

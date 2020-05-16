@@ -322,4 +322,82 @@ class TransactionsRemoteTestCase: XCTestCase {
         XCTAssertTrue(transaction.fee == 400)
         
     }
+    
+    func testFeeBumpTransactionEnvelopePost() {
+        let sourceAccountKeyPair = try! KeyPair(secretSeed: seed)
+        
+        let expectation = XCTestExpectation(description: "FeeBumpTransaction successfully sent.")
+        let destination = "GAQC6DUD2OVIYV3DTBPOSLSSOJGE4YJZHEGQXOU4GV6T7RABWZXELCUT"
+        let payerSeed = "SD7F3RYMDHQ6SBMVKONRRQCG4OFCW7HSWPS7CBGH762ZHVA6LC6RR5LD"
+        
+        
+        do {
+            let destinationAccountKeyPair = try KeyPair(accountId: destination)
+            let payerKeyPair = try KeyPair(secretSeed: payerSeed)
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
+                                                                destination: destinationAccountKeyPair,
+                                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                                amount: 1.5)
+                        let innerTx = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [paymentOperation],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try innerTx.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+                        self.sdk.accounts.getAccountDetails(accountId: payerKeyPair.accountId) { (response) -> (Void) in
+                            switch response {
+                            case .success(let accountResponse):
+                                do {
+                                    
+                                    let fb = try FeeBumpTransaction(sourceAccount: accountResponse, fee: 200, innerTransaction: innerTx)
+                                    
+                                    try fb.sign(keyPair: payerKeyPair, network: Network.testnet)
+                                    
+                                    try self.sdk.transactions.submitFeeBumpTransaction(transaction: fb) { (response) -> (Void) in
+                                        switch response {
+                                        case .success(_):
+                                            print("SFB Test: FeeBumpTransaction successfully sent")
+                                            XCTAssert(true)
+                                            expectation.fulfill()
+                                        case .destinationRequiresMemo(let destinationAccountId):
+                                            print("SFB Test: Destination requires memo \(destinationAccountId)")
+                                            XCTAssert(false)
+                                            expectation.fulfill()
+                                        case .failure(let error):
+                                            StellarSDKLog.printHorizonRequestErrorMessage(tag:"FBT Test", horizonRequestError:error)
+                                            XCTAssert(false)
+                                            expectation.fulfill()
+                                        }
+                                    }
+                                } catch {
+                                    XCTAssert(false)
+                                    expectation.fulfill()
+                                }
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"FBT Test", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"FBT Test", horizonRequestError:error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 25.0)
+    }
 }
