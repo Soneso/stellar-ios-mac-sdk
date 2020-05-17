@@ -91,7 +91,6 @@ class PaymentPathsTestCase: XCTestCase {
         
         do {
             let sourceAccountKeyPair = try KeyPair(secretSeed:sourceSeed)
-            let destinationAccountKeyPair = try KeyPair(accountId:destination)
             let IOMIssuerKP = try KeyPair(accountId:IOMIssuer)
             let EURIssuerKP = try KeyPair(accountId:EURIssuer)
             
@@ -102,8 +101,15 @@ class PaymentPathsTestCase: XCTestCase {
                 switch response {
                 case .success(let accountResponse):
                     do {
-                        let paymentOperation = try PathPaymentStrictSendOperation(sourceAccount: sourceAccountKeyPair, sendAsset: IOM!, sendMax: 20, destination: destinationAccountKeyPair, destAsset: EUR!, destAmount: 18, path: [IOM!, EUR!])
-                        let transaction = try Transaction(sourceAccount: accountResponse,
+                    
+                        let muxDestination = try MuxedAccount(accountId:self.destination, id: 12345)
+                        print ("Muxed destination account id: \(muxDestination.accountId)")
+                        
+                        let muxSource = try MuxedAccount(accountId: accountResponse.accountId, sequenceNumber: accountResponse.sequenceNumber, id: 6789)
+                        print ("Muxed source account id: \(muxSource.accountId)")
+                        
+                        let paymentOperation = try PathPaymentStrictSendOperation(sourceAccountId: muxSource.accountId, sendAsset: IOM!, sendMax: 20, destinationAccountId: muxDestination.accountId, destAsset: EUR!, destAmount: 18, path: [IOM!, EUR!])
+                        let transaction = try Transaction(sourceAccount: muxSource,
                                                           operations: [paymentOperation],
                                                           memo: Memo.none,
                                                           timeBounds:nil)
@@ -111,8 +117,8 @@ class PaymentPathsTestCase: XCTestCase {
                         
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                             switch response {
-                            case .success(_):
-                                print("StrictSendPayment Test: Transaction successfully sent")
+                            case .success(let response):
+                                print("StrictSendPayment Test: Transaction successfully sent. Hash: \(response.transactionHash)")
                                 expectation.fulfill()
                             case .destinationRequiresMemo(let destinationAccountId):
                                 print("StrictSendPayment Test: Destination requires memo \(destinationAccountId)")
@@ -148,7 +154,6 @@ class PaymentPathsTestCase: XCTestCase {
         
         do {
             let sourceAccountKeyPair = try KeyPair(secretSeed:sourceSeed)
-            let destinationAccountKeyPair = try KeyPair(accountId:destination)
             
             let IOMIssuerKP = try KeyPair(accountId:IOMIssuer)
             let EURIssuerKP = try KeyPair(accountId:EURIssuer)
@@ -160,8 +165,15 @@ class PaymentPathsTestCase: XCTestCase {
                 switch response {
                 case .success(let accountResponse):
                     do {
-                        let paymentOperation = try PathPaymentStrictReceiveOperation(sourceAccount: sourceAccountKeyPair, sendAsset: IOM!, sendMax: 20, destination: destinationAccountKeyPair, destAsset: EUR!, destAmount: 18, path: [IOM!, EUR!])
-                        let transaction = try Transaction(sourceAccount: accountResponse,
+                        
+                        let muxDestination = try MuxedAccount(accountId:self.destination, id: 12345)
+                        print ("Muxed destination account id: \(muxDestination.accountId)")
+                        
+                        let muxSource = try MuxedAccount(accountId: accountResponse.accountId, sequenceNumber: accountResponse.sequenceNumber, id: 6789)
+                        print ("Muxed source account id: \(muxSource.accountId)")
+                        
+                        let paymentOperation = try PathPaymentStrictReceiveOperation(sourceAccountId: muxSource.accountId, sendAsset: IOM!, sendMax: 20, destinationAccountId: muxDestination.accountId, destAsset: EUR!, destAmount: 18, path: [IOM!, EUR!])
+                        let transaction = try Transaction(sourceAccount: muxSource,
                                                           operations: [paymentOperation],
                                                           memo: Memo.none,
                                                           timeBounds:nil)
@@ -169,8 +181,8 @@ class PaymentPathsTestCase: XCTestCase {
                         
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                             switch response {
-                            case .success(_):
-                                print("StrictReceivePayment Test: Transaction successfully sent")
+                            case .success(let response):
+                                print("StrictReceivePayment Test: Transaction successfully sent. Hash: \(response.transactionHash)")
                                 expectation.fulfill()
                             case .destinationRequiresMemo(let destinationAccountId):
                                 print("StrictReceivePayment Test: Destination requires memo \(destinationAccountId)")

@@ -107,9 +107,7 @@ public class Transaction {
         let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: envelopeXdr))
         
         let transactionEnvelopeXDR = try TransactionEnvelopeXDR(fromBinary: xdrDecoder)
-        let tpk = try PublicKey(accountId: transactionEnvelopeXDR.txSourceAccountId)
-        let keypair = KeyPair(publicKey: tpk)
-        let transactionSourceAccount = Account(keyPair: keypair, sequenceNumber: transactionEnvelopeXDR.txSeqNum - 1)
+        let transactionSourceAccount = try MuxedAccount(accountId:transactionEnvelopeXDR.txSourceAccountId, sequenceNumber: transactionEnvelopeXDR.txSeqNum - 1)
         var operations = [Operation]()
         for operationXDR in transactionEnvelopeXDR.txOperations {
             let operation = try Operation.fromXDR(operationXDR: operationXDR)

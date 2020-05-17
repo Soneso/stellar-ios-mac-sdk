@@ -149,12 +149,12 @@ public class TransactionsService: NSObject {
         for operation in transaction.operations {
             
             var destination = ""
-            if let paymentOp = operation as? PaymentOperation {
-                destination = paymentOp.destination.accountId
-            } else if let paymentOp = operation as? PathPaymentOperation {
-                destination = paymentOp.destination.accountId
-            } else if let accountMergeOp = operation as? AccountMergeOperation {
-                destination = accountMergeOp.destination.accountId
+            if let paymentOp = operation as? PaymentOperation, paymentOp.destinationAccountId.hasPrefix("G") {
+                destination = paymentOp.destinationAccountId
+            } else if let paymentOp = operation as? PathPaymentOperation, paymentOp.destinationAccountId.hasPrefix("G") {
+                destination = paymentOp.destinationAccountId
+            } else if let accountMergeOp = operation as? AccountMergeOperation, accountMergeOp.destinationAccountId.hasPrefix("G") {
+                destination = accountMergeOp.destinationAccountId
             }
             
             if destination.isEmpty || destinations.contains(destination) {
@@ -179,25 +179,6 @@ public class TransactionsService: NSObject {
                 response(.failure(error: error))
             }
         })
-    }
-    
-    open func getAccountDetails(accountId: String, response: @escaping AccountResponseClosure) {
-        let requestPath = "/accounts/\(accountId)"
-        
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let responseMessage = try self.jsonDecoder.decode(AccountResponse.self, from: data)
-                    response(.success(details:responseMessage))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                response(.failure(error:error))
-            }
-        }
     }
     
     private func checkMemoRequiredForDestinations(destinations: [String], response:@escaping CheckMemoRequiredResponseClosure) {

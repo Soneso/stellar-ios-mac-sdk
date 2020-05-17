@@ -125,11 +125,11 @@ class PaymentsTestCase: XCTestCase {
     
     func testDestinationRequiresMemo() {
         
-        let expectation = XCTestExpectation(description: "Native payment scan not be sent because destination requires memo")
+        let expectation = XCTestExpectation(description: "Native payment can not be sent because destination requires memo")
         
         do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SBXLWK6BPACX6SHXYQ7NTM4D3LCPM46O3MWTNEZH7L4TA4VWZ4EHSFYS")
-            let destinationOneAccountKeyPair = try KeyPair(accountId: "GDVBXZRTW5DD7KZJQJ2MASO5DBERKBGLZJK6AMOD3PMD5KW6XKDUIWPQ")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
+            let destinationOneAccountKeyPair = try KeyPair(accountId: "GAQC6DUD2OVIYV3DTBPOSLSSOJGE4YJZHEGQXOU4GV6T7RABWZXELCUT")
             let destinationTwoAccountKeyPair = try KeyPair(accountId: "GDC3CJZ5GQU3UKSA45JFYHOWCH5H43QIRUJ752CK7LBXYPJM4SIGCJYW")
             
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
@@ -218,11 +218,18 @@ class PaymentsTestCase: XCTestCase {
                 switch response {
                 case .success(let accountResponse):
                     do {
-                        let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
-                                                                destination: destinationAccountKeyPair,
+                        let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
+                        print ("Muxed source account id: \(muxSource.accountId)")
+                        
+                        let muxDest = try MuxedAccount(accountId: self.IOMIssuingAccountId, id:9919191919)
+                        
+                        print ("Muxed destination account id: \(muxDest.accountId)")
+                        
+                        let paymentOperation = try PaymentOperation(sourceAccountId: muxSource.accountId,
+                                                                destinationAccountId: muxDest.accountId,
                                                                 asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                                                 amount: 1.5)
-                        let transaction = try Transaction(sourceAccount: accountResponse,
+                        let transaction = try Transaction(sourceAccount: muxSource,
                                                           operations: [paymentOperation],
                                                           memo: Memo.none,
                                                           timeBounds:nil)
@@ -230,8 +237,8 @@ class PaymentsTestCase: XCTestCase {
                         
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                             switch response {
-                            case .success(_):
-                                print("SRP Test: Transaction successfully sent")
+                            case .success(let response):
+                                print("SRP Test: Transaction successfully sent. Hash \(response.transactionHash)")
                             case .destinationRequiresMemo(let destinationAccountId):
                                 print("SRP Test: Destination requires memo \(destinationAccountId)")
                                 XCTAssert(false)
@@ -299,11 +306,18 @@ class PaymentsTestCase: XCTestCase {
                 switch response {
                 case .success(let accountResponse):
                     do {
-                        let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
-                                                                destination: destinationAccountKeyPair,
+                        let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
+                        print ("Muxed source account id: \(muxSource.accountId)")
+                        
+                        let muxDest = try MuxedAccount(accountId: self.IOMIssuingAccountId, id:9919191919)
+                        
+                        print ("Muxed destination account id: \(muxDest.accountId)")
+                        
+                        let paymentOperation = try PaymentOperation(sourceAccountId: muxSource.accountId,
+                                                                destinationAccountId: muxDest.accountId,
                                                                 asset: IOM!,
                                                                 amount: 2.5)
-                        let transaction = try Transaction(sourceAccount: accountResponse,
+                        let transaction = try Transaction(sourceAccount: muxSource,
                                                           operations: [paymentOperation],
                                                           memo: Memo.none,
                                                           timeBounds:nil)
@@ -311,8 +325,8 @@ class PaymentsTestCase: XCTestCase {
                         
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                             switch response {
-                            case .success(_):
-                                print("SRNNP Test: Transaction successfully sent")
+                            case .success(let response):
+                                print("SRNNP Test: Transaction successfully sent. Hash:\(response.transactionHash)")
                             case .destinationRequiresMemo(let destinationAccountId):
                                 print("SRNNP Test: Destination requires memo \(destinationAccountId)")
                                 XCTAssert(false)

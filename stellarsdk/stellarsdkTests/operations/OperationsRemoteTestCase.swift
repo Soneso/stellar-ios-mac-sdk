@@ -311,6 +311,66 @@ class OperationsRemoteTestCase: XCTestCase {
         
     }
     
+    func testAccountMerge() {
+        let expectation = XCTestExpectation(description: "account merged")
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SBCRAX4ZQF3F5ZN64S4M44L2LR6V7EMKRBZBATUTICDDYQA5C4TMPYUY")
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        
+                        let muxDestination = try MuxedAccount(accountId: "MAAAAAAXJB3VU3CTDRLMYEZYRRSGID6BID7BYRR5YOWXMH2BXSW42OGIHT55RFJYRPJAG")
+                        //let muxDestination = try MuxedAccount(accountId: "GBJRYVWMCM4IYZDEB7AUB7Q4IY64HLLWD5A3ZLONHDEDZ66YSU4IXS5N",  id: 100000029292)
+                        
+                        print("dest:\(muxDestination.accountId)")
+                        
+                        let mergeAccountOperation = try AccountMergeOperation(destinationAccountId: muxDestination.accountId, sourceAccountId: accountResponse.accountId)
+                        
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [mergeAccountOperation],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(let response):
+                                print("AM Test: Transaction successfully sent. Hash: \(response.transactionHash)")
+                                XCTAssert(true)
+                                expectation.fulfill()
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("AM Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"AM Test - send error", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"AM Test", horizonRequestError: error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+            
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 20.0)
+        
+    }
+    
     func testUpdateInflationDestination() {
         let expectation = XCTestExpectation(description: "Set inflation destination")
         do {

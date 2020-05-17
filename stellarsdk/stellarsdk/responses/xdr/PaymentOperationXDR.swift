@@ -13,6 +13,7 @@ public struct PaymentOperationXDR: XDRCodable {
     public let asset: AssetXDR
     public let amount: Int64
     
+    @available(*, deprecated, message: "use init(destination: MuxedAccountXDR, asset: AssetXDR, amount: Int64) instead")
     init(destination: PublicKey, asset: AssetXDR, amount: Int64) {
         let mux = MuxedAccountXDR.ed25519(destination.bytes)
         self.init(destination: mux, asset: asset, amount: amount)

@@ -30,8 +30,12 @@ class AccountRemoteTestCase: XCTestCase {
         
         let expectation = XCTestExpectation(description: "Get account details and parse them successfully")
         
-        
-        sdk.accounts.getAccountDetails(accountId: testSuccessAccountId) { (response) -> (Void) in
+        let pk = try! PublicKey(accountId: testSuccessAccountId)
+        let muxi = MuxedAccountMed25519XDR(id: 12345, sourceAccountEd25519: pk.bytes)
+        let mux = MuxedAccountXDR.med25519(muxi)
+        var accountId = mux.ed25519AccountId
+        accountId = mux.accountId
+        sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
             switch response {
             case .success(let accountDetails):
                 XCTAssertEqual(self.testSuccessAccountId, accountDetails.accountId)

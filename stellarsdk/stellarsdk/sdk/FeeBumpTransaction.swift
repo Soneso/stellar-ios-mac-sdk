@@ -36,7 +36,7 @@ public class FeeBumpTransaction {
     /// - Parameter fee: A fee-bump transaction has an effective number of operations equal to one plus the number of operations in the inner transaction. Correspondingly, the minimum fee for the fee-bump transaction is one base fee more than the minimum fee for the inner transaction. Similarly, the fee rate (see CAP-0005) is normalized by one plus the number of operations in the inner transaction rather than the number of operations in the inner transaction alone.
     /// - Parameter innterTransaction: fee bump inner transaction
     ///
-    public init(sourceAccount:TransactionAccount, fee:UInt64, innerTransaction:Transaction) throws {
+    public init(sourceAccount:MuxedAccount, fee:UInt64, innerTransaction:Transaction) throws {
         
         if fee < FeeBumpTransaction.MIN_BASE_FEE {
             throw FeeBumpTransactionError.feeSmallerThanBaseFee(message: "fee cannot be smaller than the BASE_FEE :\(FeeBumpTransaction.MIN_BASE_FEE)")
@@ -56,8 +56,7 @@ public class FeeBumpTransaction {
         self.innerTransaction = innerTransaction
         self.innerTransactionXDR = try FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerTransaction.transactionXDR.toEnvelopeV1XDR())
         
-        let muxedAccount = MuxedAccountXDR.ed25519(sourceAccount.keyPair.publicKey.bytes)
-        self.feeBumpTransactionXDR = FeeBumpTransactionXDR(sourceAccount: muxedAccount, innerTx: self.innerTransactionXDR, fee: self.fee)
+        self.feeBumpTransactionXDR = FeeBumpTransactionXDR(sourceAccount: sourceAccount.xdr, innerTx: self.innerTransactionXDR, fee: self.fee)
         
         self.sourceAccount.incrementSequenceNumber()
         

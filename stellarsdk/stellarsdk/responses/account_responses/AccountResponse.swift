@@ -15,7 +15,7 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
     /// A list of Links related to this account.
     public var links:AccountLinksResponse
     
-    /// The account’s id / public key.
+    /// The account’s id 
     public var accountId:String
     
     /// Keypair of the account containing the public key.

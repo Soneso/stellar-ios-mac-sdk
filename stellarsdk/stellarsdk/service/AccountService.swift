@@ -57,7 +57,10 @@ open class AccountService: NSObject {
     ///     - other 'HorizonRequestError' errors depending on the error case.
     ///
     open func getAccountDetails(accountId: String, response: @escaping AccountResponseClosure) {
-        let requestPath = "/accounts/\(accountId)"
+        var requestPath = "/accounts/\(accountId)"
+        if accountId.hasPrefix("M"), let mux = try? accountId.decodeMuxedAccount() {
+            requestPath = "/accounts/\(mux.ed25519AccountId)"
+        }
         
         serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {

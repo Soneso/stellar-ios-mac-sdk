@@ -332,7 +332,6 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         
         do {
-            let destinationAccountKeyPair = try KeyPair(accountId: destination)
             let payerKeyPair = try KeyPair(secretSeed: payerSeed)
             
             streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: payerKeyPair.accountId, cursor: "now"))
@@ -374,8 +373,8 @@ class TransactionsRemoteTestCase: XCTestCase {
                 switch response {
                 case .success(let accountResponse):
                     do {
-                        let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
-                                                                destination: destinationAccountKeyPair,
+                        let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
+                                                                destinationAccountId: destination,
                                                                 asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                                                 amount: 1.5)
                         let innerTx = try Transaction(sourceAccount: accountResponse,
@@ -388,15 +387,15 @@ class TransactionsRemoteTestCase: XCTestCase {
                             switch response {
                             case .success(let accountResponse):
                                 do {
-                                    
-                                    let fb = try FeeBumpTransaction(sourceAccount: accountResponse, fee: 200, innerTransaction: innerTx)
+                                    let mux = try MuxedAccount(accountId: accountResponse.accountId, sequenceNumber: accountResponse.sequenceNumber, id: 929299292)
+                                    let fb = try FeeBumpTransaction(sourceAccount: mux, fee: 200, innerTransaction: innerTx)
                                     
                                     try fb.sign(keyPair: payerKeyPair, network: Network.testnet)
                                     
                                     try self.sdk.transactions.submitFeeBumpTransaction(transaction: fb) { (response) -> (Void) in
                                         switch response {
-                                        case .success(_):
-                                            print("SFB Test: FeeBumpTransaction successfully sent")
+                                        case .success(let response):
+                                            print("SFB Test: FeeBumpTransaction successfully sent. Hash \(response.transactionHash)")
                                             XCTAssert(true)
                                         case .destinationRequiresMemo(let destinationAccountId):
                                             print("SFB Test: Destination requires memo \(destinationAccountId)")
