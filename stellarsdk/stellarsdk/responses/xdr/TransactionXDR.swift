@@ -64,8 +64,8 @@ public struct TransactionXDR: XDRCodable {
         try container.encode(reserved)
     }
     
-    public mutating func sign(keyPair:KeyPair, network:Network) throws {
-        let transactionHash = try [UInt8](hash(network: network))
+    public mutating func sign(keyPair:KeyPair, network:Network, coreProtocolVersion:Int?=12) throws {
+        let transactionHash = try [UInt8](hash(network: network, coreProtocolVersion: coreProtocolVersion))
         let signature = keyPair.signDecorated(transactionHash)
         signatures.append(signature)
     }
@@ -74,27 +74,48 @@ public struct TransactionXDR: XDRCodable {
         signatures.append(signature)
     }
     
-    private func signatureBase(network:Network) throws -> Data {
-        let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .typeTX(self))
+    private func signatureBase(network:Network, coreProtocolVersion:Int?=12) throws -> Data {
         
+        var pCoreProtocolVersion:Int = 12
+        if let pcp = coreProtocolVersion {
+            pCoreProtocolVersion = pcp
+        }
+        
+        if (pCoreProtocolVersion < 13) {
+            let sourcePublicKey = try PublicKey(accountId: self.sourceAccount.ed25519AccountId)
+            let txV0Xdr = TransactionSigV0XDR(sourceAccount: sourcePublicKey, seqNum: self.seqNum, timeBounds: self.timeBounds, memo: self.memo, operations: self.operations)
+            let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .typeTXSigV0(txV0Xdr))
+            return try Data(bytes: XDREncoder.encode(payload))
+        }
+        
+        let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .typeTX(self))
         return try Data(bytes: XDREncoder.encode(payload))
     }
     
-    public func hash(network:Network) throws -> Data {
-        return try signatureBase(network: network).sha256()
+    public func hash(network:Network, coreProtocolVersion:Int?=12) throws -> Data {
+        return try signatureBase(network: network, coreProtocolVersion:coreProtocolVersion).sha256()
     }
     
-    public func toEnvelopeXDR() throws -> TransactionEnvelopeXDR {
+    public func toEnvelopeXDR(coreProtocolVersion:Int?=12) throws -> TransactionEnvelopeXDR {
         guard !signatures.isEmpty else {
             throw StellarSDKError.invalidArgument(message: "Transaction must be signed by at least one signer. Use transaction.sign().")
         }
-        
+        var pCoreProtocolVersion:Int = 12
+        if let pcp = coreProtocolVersion {
+            pCoreProtocolVersion = pcp
+        }
+        if (pCoreProtocolVersion < 13) {
+            let sourcePublicKey = try PublicKey(accountId: self.sourceAccount.ed25519AccountId)
+            let txV0Xdr = TransactionV0XDR(sourceAccount: sourcePublicKey, seqNum: self.seqNum, timeBounds: self.timeBounds, memo: self.memo, operations: self.operations)
+            let txV0Envelope = TransactionV0EnvelopeXDR(tx: txV0Xdr, signatures: signatures)
+            return TransactionEnvelopeXDR.v0(txV0Envelope)
+        }
         let envelopeV1 = TransactionV1EnvelopeXDR(tx: self, signatures: signatures)
         return TransactionEnvelopeXDR.v1(envelopeV1)
     }
     
-    public func encodedEnvelope() throws -> String {
-        let envelope = try toEnvelopeXDR()
+    public func encodedEnvelope(coreProtocolVersion:Int?=12) throws -> String {
+        let envelope = try toEnvelopeXDR(coreProtocolVersion:coreProtocolVersion)
         var encodedEnvelope = try XDREncoder.encode(envelope)
         
         return Data(bytes: &encodedEnvelope, count: encodedEnvelope.count).base64EncodedString()

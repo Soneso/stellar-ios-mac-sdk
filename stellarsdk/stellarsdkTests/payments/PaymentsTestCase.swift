@@ -233,9 +233,9 @@ class PaymentsTestCase: XCTestCase {
                                                           operations: [paymentOperation],
                                                           memo: Memo.none,
                                                           timeBounds:nil)
-                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet, coreProtocolVersion:13)
                         
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        try self.sdk.transactions.submitTransaction(transaction: transaction, coreProtocolVersion:13) { (response) -> (Void) in
                             switch response {
                             case .success(let response):
                                 print("SRP Test: Transaction successfully sent. Hash \(response.transactionHash)")
@@ -321,9 +321,9 @@ class PaymentsTestCase: XCTestCase {
                                                           operations: [paymentOperation],
                                                           memo: Memo.none,
                                                           timeBounds:nil)
-                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet, coreProtocolVersion:13)
                         
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        try self.sdk.transactions.submitTransaction(transaction: transaction, coreProtocolVersion:13) { (response) -> (Void) in
                             switch response {
                             case .success(let response):
                                 print("SRNNP Test: Transaction successfully sent. Hash:\(response.transactionHash)")

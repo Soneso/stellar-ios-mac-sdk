@@ -134,18 +134,18 @@ public class Transaction {
     /// - Parameter keyPair: key pair to be used as a signer. Must containing the private key.
     /// - Parameter network: Network to specify which Stellar network you want to use.
     ///
-    public func sign(keyPair:KeyPair, network:Network) throws {
+    public func sign(keyPair:KeyPair, network:Network, coreProtocolVersion:Int?=12) throws {
         
         if (keyPair.privateKey == nil) {
             throw StellarSDKError.invalidArgument(message: "KeyPair must contain the private key to be able to sign the transaction.")
         }
         
-        try self.transactionXDR.sign(keyPair: keyPair, network: network)
+        try self.transactionXDR.sign(keyPair: keyPair, network: network, coreProtocolVersion:coreProtocolVersion)
     }
     
     /// Returns the base64 encoded transaction envelope xdr to be used to post the transaction. Transaction need to have at least one signature before they can be sent to the stellar network.
-    public func encodedEnvelope() throws -> String {
-        return try transactionXDR.encodedEnvelope()
+    public func encodedEnvelope(coreProtocolVersion:Int?=12) throws -> String {
+        return try transactionXDR.encodedEnvelope(coreProtocolVersion:coreProtocolVersion)
     }
     
     public func getTransactionHash(network:Network) throws -> String {

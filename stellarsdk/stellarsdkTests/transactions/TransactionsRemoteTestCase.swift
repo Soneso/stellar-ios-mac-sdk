@@ -236,13 +236,13 @@ class TransactionsRemoteTestCase: XCTestCase {
                                                           memo: Memo.none,
                                                           timeBounds:nil)
                         
-                        try transaction.sign(keyPair: source, network: .testnet)
-                        try transaction.sign(keyPair: destination, network: .testnet)
+                        try transaction.sign(keyPair: source, network: .testnet, coreProtocolVersion: 13)
+                        try transaction.sign(keyPair: destination, network: .testnet, coreProtocolVersion: 13)
                         
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        try self.sdk.transactions.submitTransaction(transaction: transaction, coreProtocolVersion:13) { (response) -> (Void) in
                             switch response {
-                            case .success(_):
-                                print("SRP Test: Transaction successfully sent")
+                            case .success(let rep):
+                                print("SRP Test: Transaction successfully sent. Hash: \(rep.transactionHash)")
                             case .destinationRequiresMemo(let destinationAccountId):
                                 print("SRP Test: Destination requires memo \(destinationAccountId)")
                                 XCTAssert(false)
