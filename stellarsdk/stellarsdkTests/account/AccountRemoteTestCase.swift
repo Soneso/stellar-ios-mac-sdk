@@ -13,8 +13,7 @@ import stellarsdk
 
 class AccountRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let testSuccessAccountId = "GA3IZ2KWEY3VNBWHOKY3VEGHGL2G4G2E2QK2RDQ76IK2PLJFITN6MYFF"
-    // priv SASX3JBZNVS4HKL2TZJPOO3VIQRRZPIAOBZTFMT22LWGUMOHMFXU2ZZ4 // for testing
+    let accountId = "GCDP5EESKZQM7UWQTTNVNAYYBUPK2AGR6OVPLB3OICUZO5WQKYZ66DZD"
     
     override func setUp() {
         super.setUp()
@@ -30,95 +29,17 @@ class AccountRemoteTestCase: XCTestCase {
         
         let expectation = XCTestExpectation(description: "Get account details and parse them successfully")
         
-        let pk = try! PublicKey(accountId: testSuccessAccountId)
-        let muxi = MuxedAccountMed25519XDR(id: 12345, sourceAccountEd25519: pk.bytes)
-        let mux = MuxedAccountXDR.med25519(muxi)
-        var accountId = mux.ed25519AccountId
-        accountId = mux.accountId
         sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
             switch response {
             case .success(let accountDetails):
-                XCTAssertEqual(self.testSuccessAccountId, accountDetails.accountId)
-                XCTAssertNotNil(accountDetails.sequenceNumber)
-                //XCTAssertEqual(accountDetails.sequenceNumber, 516375328063489)
-                XCTAssertNotNil(accountDetails.links)
-                XCTAssertNotNil(accountDetails.links.selflink)
-                XCTAssertNotNil(accountDetails.links.selflink.href)
-                XCTAssertEqual(accountDetails.links.selflink.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.accountId)")
-                XCTAssertNil(accountDetails.links.selflink.templated)
-                XCTAssertNotNil(accountDetails.links.transactions)
-                XCTAssertNotNil(accountDetails.links.transactions.href)
-                XCTAssertEqual(accountDetails.links.transactions.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.accountId)/transactions{?cursor,limit,order}")
-                XCTAssertTrue(accountDetails.links.transactions.templated ?? false)
-                XCTAssertNotNil(accountDetails.links.operations)
-                XCTAssertNotNil(accountDetails.links.operations.href)
-                XCTAssertEqual(accountDetails.links.operations.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.accountId)/operations{?cursor,limit,order}")
-                XCTAssertTrue(accountDetails.links.operations.templated ?? false)
-                XCTAssertNotNil(accountDetails.links.payments)
-                XCTAssertNotNil(accountDetails.links.payments.href)
-                XCTAssertEqual(accountDetails.links.payments.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.accountId)/payments{?cursor,limit,order}")
-                XCTAssertTrue(accountDetails.links.payments.templated ?? false)
-                XCTAssertNotNil(accountDetails.links.effects)
-                XCTAssertNotNil(accountDetails.links.effects.href)
-                XCTAssertEqual(accountDetails.links.effects.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.accountId)/effects{?cursor,limit,order}")
-                XCTAssertTrue(accountDetails.links.effects.templated ?? false)
-                XCTAssertNotNil(accountDetails.links.offers)
-                XCTAssertNotNil(accountDetails.links.offers.href)
-                XCTAssertEqual(accountDetails.links.offers.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.accountId)/offers{?cursor,limit,order}")
-                XCTAssertTrue(accountDetails.links.offers.templated ?? false)
-                //XCTAssertEqual(accountDetails.pagingToken, "")
-                //XCTAssertEqual(accountDetails.subentryCount, 2)
-                XCTAssertNotNil(accountDetails.thresholds)
-                XCTAssertEqual(accountDetails.thresholds.highThreshold, 0)
-                XCTAssertEqual(accountDetails.thresholds.lowThreshold, 0)
-                XCTAssertEqual(accountDetails.thresholds.medThreshold, 0)
-                XCTAssertNotNil(accountDetails.flags)
-                XCTAssertNotNil(accountDetails.flags.authRequired)
-                XCTAssertEqual(accountDetails.flags.authRequired, false)
-                XCTAssertEqual(accountDetails.flags.authRevocable, false)
-                XCTAssertEqual(accountDetails.flags.authImmutable, false)
-                
-                XCTAssertNotNil(accountDetails.balances)
-                XCTAssertTrue(accountDetails.balances.count == 1)
-                let balance = accountDetails.balances.first!
-                XCTAssertNotNil(balance)
-                XCTAssertNotNil(balance.assetType)
-                if balance.assetType == AssetTypeAsString.NATIVE {
-                    XCTAssertNil(balance.assetCode)
-                    XCTAssertNil(balance.assetIssuer)
-                } else {
-                    XCTAssertNotNil(balance.assetCode)
-                    XCTAssertNotNil(balance.assetIssuer)
+                print("Account-ID: \(accountDetails.accountId)")
+                print("Sequence Nr: \(accountDetails.sequenceNumber)")
+                for balance in accountDetails.balances {
+                    print("Balance \(balance.balance)")
                 }
-                
-                XCTAssertNotNil(accountDetails.signers)
-                XCTAssertTrue(accountDetails.signers.count == 1)
-                let signer = accountDetails.signers.first!
-                XCTAssertEqual(signer.weight, 1)
-                XCTAssertEqual(signer.key, accountDetails.accountId)
-                XCTAssertEqual(signer.type, "ed25519_public_key")
-                
-                /*var key1found = false
-                var key2found = false
-                
-                for (key, value) in accountDetails.data {
-                    switch key {
-                    case "stellar":
-                        XCTAssertEqual(value.base64Decoded(), "is cool")
-                        key1found = true
-                    case "soneso":
-                        XCTAssertEqual(value.base64Decoded(), "is fun")
-                        key2found = true
-                    default:
-                        XCTAssertNotNil(key)
-                    }
-                }
-                XCTAssertTrue(key1found)
-                XCTAssertTrue(key2found)*/
-                
                 XCTAssert(true)
             case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GAD Test", horizonRequestError: error)
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Get account details test", horizonRequestError: error)
                 XCTAssert(false)
             }
             expectation.fulfill()

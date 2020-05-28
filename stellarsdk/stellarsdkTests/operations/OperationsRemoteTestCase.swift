@@ -314,15 +314,14 @@ class OperationsRemoteTestCase: XCTestCase {
     func testAccountMerge() {
         let expectation = XCTestExpectation(description: "account merged")
         do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SBCRAX4ZQF3F5ZN64S4M44L2LR6V7EMKRBZBATUTICDDYQA5C4TMPYUY")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SB5QDXDCLCIJJCEQSS72B7MXL6CPMKDNLUOLHXXOTZI7F43HRJJ33BCO")
             
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
                     do {
                         
-                        let muxDestination = try MuxedAccount(accountId: "MAAAAAAXJB3VU3CTDRLMYEZYRRSGID6BID7BYRR5YOWXMH2BXSW42OGIHT55RFJYRPJAG")
-                        //let muxDestination = try MuxedAccount(accountId: "GBJRYVWMCM4IYZDEB7AUB7Q4IY64HLLWD5A3ZLONHDEDZ66YSU4IXS5N",  id: 100000029292)
+                        let muxDestination = try MuxedAccount(accountId: "GBJRYVWMCM4IYZDEB7AUB7Q4IY64HLLWD5A3ZLONHDEDZ66YSU4IXS5N",  id: 100000029292)
                         
                         print("dest:\(muxDestination.accountId)")
                         

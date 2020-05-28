@@ -79,7 +79,7 @@ public class Transaction {
         let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: xdr))
         
         let transactionXDR = try TransactionXDR(fromBinary: xdrDecoder)
-        let pubicKey = try PublicKey(accountId: transactionXDR.sourceAccount.ed25519AccountId)
+        let pubicKey = try PublicKey(accountId: transactionXDR.sourceAccount.accountId)
         let keypair = KeyPair(publicKey: pubicKey)
         let transactionSourceAccount = Account(keyPair: keypair, sequenceNumber: transactionXDR.seqNum - 1)
         var operations = [Operation]()

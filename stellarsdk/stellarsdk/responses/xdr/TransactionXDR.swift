@@ -82,7 +82,7 @@ public struct TransactionXDR: XDRCodable {
         }
         
         if (pCoreProtocolVersion < 13) {
-            let sourcePublicKey = try PublicKey(accountId: self.sourceAccount.ed25519AccountId)
+            let sourcePublicKey = try PublicKey(accountId: self.sourceAccount.accountId)
             let txV0Xdr = TransactionSigV0XDR(sourceAccount: sourcePublicKey, seqNum: self.seqNum, timeBounds: self.timeBounds, memo: self.memo, operations: self.operations)
             let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .typeTXSigV0(txV0Xdr))
             return try Data(bytes: XDREncoder.encode(payload))
@@ -105,7 +105,7 @@ public struct TransactionXDR: XDRCodable {
             pCoreProtocolVersion = pcp
         }
         if (pCoreProtocolVersion < 13) {
-            let sourcePublicKey = try PublicKey(accountId: self.sourceAccount.ed25519AccountId)
+            let sourcePublicKey = try PublicKey(accountId: self.sourceAccount.accountId)
             let txV0Xdr = TransactionV0XDR(sourceAccount: sourcePublicKey, seqNum: self.seqNum, timeBounds: self.timeBounds, memo: self.memo, operations: self.operations)
             let txV0Envelope = TransactionV0EnvelopeXDR(tx: txV0Xdr, signatures: signatures)
             return TransactionEnvelopeXDR.v0(txV0Envelope)

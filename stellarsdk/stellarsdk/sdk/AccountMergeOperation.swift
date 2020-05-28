@@ -41,12 +41,11 @@ public class AccountMergeOperation:Operation {
     /// Creates a new AccountMergeOperation object.
     ///
     /// - Parameter destinationAccountId: The account that receives the remaining XLM balance of the source account.
-    /// - Parameter sourceAccountId: (optional) source account Id. Must start with "M" or "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id. Must start with "G" and must be valid, otherwise it will be ignored.
     ///
     public init(destinationAccountId:String, sourceAccountId:String?) throws {
-        let mux = try destinationAccountId.decodeMuxedAccount()
-        self.destinationAccountId = mux.accountId
-        self.destination = try KeyPair(accountId: mux.ed25519AccountId)
+        self.destinationAccountId = destinationAccountId
+        self.destination = try KeyPair(accountId: self.destinationAccountId)
         super.init(sourceAccountId:sourceAccountId)
     }
     
