@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "stellar-ios-mac-sdk"
-  s.version      = "1.8.0"
+  s.version      = "1.8.1"
   s.summary      = "Fully featured iOS and macOS SDK that provides APIs to build transactions and connect to Horizon server for the Stellar ecosystem."
   s.module_name  = 'stellarsdk'
   s.swift_version = '5.0'
