@@ -11,6 +11,7 @@ import stellarsdk
 
 class PaymentsTestCase: XCTestCase {
     let sdk = StellarSDK()
+    //let sdk = StellarSDK(withHorizonUrl: "https://horizon-testnet.stellar.org/?customParam=123&secondCustomParam=987")
     var streamItem:OperationsStreamItem? = nil
     let IOMIssuingAccountId = "GAHVPXP7RPX5EGT6WFDS26AOM3SBZW2RKEDBZ5VO45J7NYDGJYKYE6UW"
     let seed = "SD24I54ZUAYGZCKVQD6DZD6PQGLU7UQKVWDM37TKIACO3P47WG3BRW4C"

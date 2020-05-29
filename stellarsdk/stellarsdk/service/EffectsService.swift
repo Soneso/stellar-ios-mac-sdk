@@ -136,7 +136,7 @@ public class EffectsService: NSObject {
             }
         }
         
-        let streamItem = EffectsStreamItem(baseURL: serviceHelper.baseURL, subpath:subpath)
+        let streamItem = EffectsStreamItem(requestUrl: serviceHelper.requestUrlWithPath(path: subpath))
         return streamItem
     }
     
@@ -157,7 +157,7 @@ public class EffectsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getEffectsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getEffectsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
     open func getEffectsFromUrl(url:String, response:@escaping PageResponse<EffectResponse>.ResponseClosure) {

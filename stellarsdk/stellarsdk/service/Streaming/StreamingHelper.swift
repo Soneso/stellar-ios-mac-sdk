@@ -10,17 +10,10 @@ import Foundation
 
 public class StreamingHelper: NSObject {
     var eventSource: EventSource!
-    var baseURL: String
-    
     private var closed = false
     
-    init(baseURL:String) {
-        self.baseURL = baseURL
-    }
-    
-    func streamFrom(path:String, responseClosure:@escaping StreamResponseEnum<String>.ResponseClosure) {
-        let streamingURL = baseURL + path
-        eventSource = EventSource(url: streamingURL, headers: ["Accept" : "text/event-stream"])
+    func streamFrom(requestUrl:String, responseClosure:@escaping StreamResponseEnum<String>.ResponseClosure) {
+        eventSource = EventSource(url: requestUrl, headers: ["Accept" : "text/event-stream"])
         eventSource.onOpen { [weak self] httpResponse in
             if httpResponse?.statusCode == 404 {
                 let error = HorizonRequestError.notFound(message: "Horizon object missing", horizonErrorResponse: nil)

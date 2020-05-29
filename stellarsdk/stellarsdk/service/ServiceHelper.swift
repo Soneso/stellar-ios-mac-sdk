@@ -55,23 +55,55 @@ class ServiceHelper: NSObject {
     }()
 
     /// The url of the Horizon server to connect to
-    internal let baseURL: String
+    private let baseURL: String
+    private let baseUrlQueryItems: [URLQueryItem]?
     let jsonDecoder = JSONDecoder()
     
     private override init() {
         baseURL = ""
+        baseUrlQueryItems = nil
     }
     
     init(baseURL: String) {
-        self.baseURL = baseURL
+        if let url = URL(string: baseURL), let components = URLComponents(url: url, resolvingAgainstBaseURL: false), let queryItems = components.queryItems {
+            self.baseUrlQueryItems = queryItems.count > 0 ? queryItems : nil
+            var bComponents = components
+            bComponents.query = nil
+            if let bUrl = bComponents.url {
+                self.baseURL = bUrl.absoluteString.hasSuffix("/") ? String(bUrl.absoluteString.dropLast()) : bUrl.absoluteString
+            } else {
+                self.baseURL = ""
+            }
+        } else {
+            self.baseURL = baseURL
+            self.baseUrlQueryItems = nil
+        }
     }
     
+    open func requestUrlWithPath(path: String) -> String {
+        
+        if let url = URL(string: self.baseURL + path), let components = URLComponents(url: url, resolvingAgainstBaseURL: false), let bQueryItems = self.baseUrlQueryItems {
+            var rComponents = components
+            if let rQueryItems = rComponents.queryItems {
+                var tQueryItems = rQueryItems
+                tQueryItems.append(contentsOf: bQueryItems)
+                rComponents.queryItems = tQueryItems
+            } else {
+                rComponents.queryItems = bQueryItems
+            }
+            if let bUrl = rComponents.url {
+                return bUrl.absoluteString
+            }
+        }
+        return baseURL + path
+    }
     /// Performs a get request to the spcified path.
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter response:   The closure to be called upon response.
     open func GETRequestWithPath(path: String, completion: @escaping ResponseClosure) {
-        requestFromUrl(url: baseURL + path, method:.get, completion:completion)
+        let requestUrl = requestUrlWithPath(path: path)
+        requestFromUrl(url: requestUrl, method:.get, completion:completion)
     }
 
     /// Performs a get request to the spcified path.
@@ -88,7 +120,8 @@ class ServiceHelper: NSObject {
     /// - parameter body:  An optional parameter with the data that should be contained in the request body
     /// - parameter response:   The closure to be called upon response.
     open func POSTRequestWithPath(path: String, body:Data? = nil, completion: @escaping ResponseClosure) {
-        requestFromUrl(url: baseURL + path, method:.post, body:body, completion:completion)
+        let requestUrl = requestUrlWithPath(path: path)
+        requestFromUrl(url: requestUrl, method:.post, body:body, completion:completion)
     }
     
     /// Performs a put request to the spcified path.
@@ -128,8 +161,8 @@ class ServiceHelper: NSObject {
             
             return body
         }()
-        
-        requestFromUrl(url: baseURL + path, method:.put, contentType: contentType, body:httpBody, completion:completion)
+        let requestUrl = requestUrlWithPath(path: path)
+        requestFromUrl(url: requestUrl, method:.put, contentType: contentType, body:httpBody, completion:completion)
     }
     
     /// Performs a delete request to the spcified path.
@@ -137,7 +170,8 @@ class ServiceHelper: NSObject {
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter response:   The closure to be called upon response.
     open func DELETERequestWithPath(path: String, completion: @escaping ResponseClosure) {
-        requestFromUrl(url: baseURL + path, method:.delete, completion:completion)
+        let requestUrl = requestUrlWithPath(path: path)
+        requestFromUrl(url: requestUrl, method:.delete, completion:completion)
     }
         
     open func requestFromUrl(url: String, method: HTTPMethod, contentType:String? = nil, body:Data? = nil, completion: @escaping ResponseClosure) {

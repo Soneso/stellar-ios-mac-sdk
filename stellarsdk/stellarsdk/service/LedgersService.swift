@@ -64,7 +64,7 @@ public class LedgersService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getLedgersFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getLedgersFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
     open func getLedgersFromUrl(url:String, response:@escaping PageResponse<LedgerResponse>.ResponseClosure) {
@@ -94,7 +94,7 @@ public class LedgersService: NSObject {
             }
         }
         
-        let streamItem = LedgersStreamItem(baseURL: serviceHelper.baseURL, subpath:subpath)
+        let streamItem = LedgersStreamItem(requestUrl: serviceHelper.requestUrlWithPath(path: subpath))
         return streamItem
     }
     

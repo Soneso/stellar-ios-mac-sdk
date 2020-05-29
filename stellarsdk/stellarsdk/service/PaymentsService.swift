@@ -102,7 +102,7 @@ public class PaymentsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getPaymentsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getPaymentsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
     /// Loads payments for a given url if valid. E.g. for a "next" link from a PageResponse<OperationResponse> object where the operation response is of type payment.
@@ -153,7 +153,7 @@ public class PaymentsService: NSObject {
             }
         }
     
-        let streamItem = OperationsStreamItem(baseURL: serviceHelper.baseURL, subpath:subpath)
+        let streamItem = OperationsStreamItem(requestUrl: serviceHelper.requestUrlWithPath(path: subpath))
         return streamItem
     }
 }

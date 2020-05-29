@@ -10,16 +10,16 @@ import Foundation
 
 public class EffectsStreamItem: NSObject {
     private var streamingHelper: StreamingHelper
-    private var subpath: String
+    private var requestUrl: String
     let effectsFactory = EffectsFactory()
     
-    public init(baseURL:String, subpath:String) {
-        streamingHelper = StreamingHelper(baseURL: baseURL)
-        self.subpath = subpath
+    public init(requestUrl:String) {
+        streamingHelper = StreamingHelper()
+        self.requestUrl = requestUrl
     }
     
     public func onReceive(response:@escaping StreamResponseEnum<EffectResponse>.ResponseClosure) {
-        streamingHelper.streamFrom(path:subpath) { [weak self] (helperResponse) -> (Void) in
+        streamingHelper.streamFrom(requestUrl:requestUrl) { [weak self] (helperResponse) -> (Void) in
             switch helperResponse {
             case .open:
                 response(.open)
@@ -32,8 +32,8 @@ public class EffectsStreamItem: NSObject {
                     response(.error(error: HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .error(let error):
-                let effectSubPath = self?.subpath ?? "unknown"
-                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with path \(effectSubPath): \(error?.localizedDescription ?? "nil")")))
+                let effectUrl = self?.requestUrl ?? "unknown"
+                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with url \(effectUrl): \(error?.localizedDescription ?? "nil")")))
             }
         }
     }

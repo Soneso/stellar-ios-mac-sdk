@@ -170,7 +170,7 @@ open class AccountService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getAccountsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getAccountsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
     /// Loads accounts for a given url if valid. E.g. for a "next" link from a PageResponse<AccountResponse> object.

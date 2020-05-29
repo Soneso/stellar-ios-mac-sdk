@@ -41,7 +41,7 @@ public class TradeAggregationsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getTradeAggregationsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getTradeAggregationsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
     open func getTradeAggregationsFromUrl(url:String, response:@escaping PageResponse<TradeAggregationResponse>.ResponseClosure) {

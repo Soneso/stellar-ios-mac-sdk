@@ -33,7 +33,7 @@ public class OffersService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getOffersFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getOffersFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
     /// People on the Stellar network can make offers to buy or sell assets. This endpoint represents all the current offers, allowing filtering by seller, selling_asset or buying_asset.
@@ -73,7 +73,7 @@ public class OffersService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getOffersFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getOffersFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
     func getOffersFromUrl(url:String, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {

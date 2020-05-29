@@ -38,7 +38,6 @@ public typealias CheckMemoRequiredResponseClosure = (_ response:CheckMemoRequire
 public class TransactionsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
-    //let sdk = StellarSDK()
     
     private override init() {
         serviceHelper = ServiceHelper(baseURL: "")
@@ -265,7 +264,7 @@ public class TransactionsService: NSObject {
             }
         }
         
-        let streamItem = TransactionsStreamItem(baseURL: serviceHelper.baseURL, subpath:subpath)
+        let streamItem = TransactionsStreamItem(requestUrl: serviceHelper.requestUrlWithPath(path: subpath))
         return streamItem
     }
     
@@ -282,7 +281,7 @@ public class TransactionsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getTransactionsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getTransactionsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
     open func getTransactionsFromUrl(url:String, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {

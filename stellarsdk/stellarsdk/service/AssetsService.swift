@@ -46,7 +46,7 @@ public class AssetsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getAssetsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getAssetsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
     /// Loads assets for a given url if valid. E.g. for a "next" link from a PageResponse<AssetResponse> object.

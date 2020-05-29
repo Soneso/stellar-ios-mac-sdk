@@ -19,18 +19,18 @@ public enum StreamResponseEnum<Data:Decodable> {
 
 public class TransactionsStreamItem: NSObject {
     private var streamingHelper: StreamingHelper
-    private var subpath: String
+    private var requestUrl: String
     private let jsonDecoder = JSONDecoder()
     
-    public init(baseURL:String, subpath:String) {
-        streamingHelper = StreamingHelper(baseURL: baseURL)
-        self.subpath = subpath
+    public init(requestUrl:String) {
+        streamingHelper = StreamingHelper()
+        self.requestUrl = requestUrl
         
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
     public func onReceive(response:@escaping StreamResponseEnum<TransactionResponse>.ResponseClosure) {
-        streamingHelper.streamFrom(path:subpath) { [weak self] (helperResponse) -> (Void) in
+        streamingHelper.streamFrom(requestUrl:requestUrl) { [weak self] (helperResponse) -> (Void) in
             switch helperResponse {
             case .open:
                 response(.open)
@@ -43,8 +43,8 @@ public class TransactionsStreamItem: NSObject {
                     response(.error(error: HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .error(let error):
-                let transactionSubpath = self?.subpath ?? "unknown"
-                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with path \(transactionSubpath): \(error?.localizedDescription ?? "nil")")))
+                let transactionUrl = self?.requestUrl ?? "unknown"
+                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with url \(transactionUrl): \(error?.localizedDescription ?? "nil")")))
             }
         }
     }

@@ -10,18 +10,18 @@ import Foundation
 
 public class LedgersStreamItem: NSObject {
     private var streamingHelper: StreamingHelper
-    private var subpath: String
+    private var requestUrl: String
     private let jsonDecoder = JSONDecoder()
     
-    public init(baseURL:String, subpath:String) {
-        streamingHelper = StreamingHelper(baseURL: baseURL)
-        self.subpath = subpath
+    public init(requestUrl:String) {
+        streamingHelper = StreamingHelper()
+        self.requestUrl = requestUrl
         
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
     public func onReceive(response:@escaping StreamResponseEnum<LedgerResponse>.ResponseClosure) {
-        streamingHelper.streamFrom(path:subpath) { (helperResponse) -> (Void) in
+        streamingHelper.streamFrom(requestUrl:requestUrl) { (helperResponse) -> (Void) in
             switch helperResponse {
             case .open:
                 response(.open)
@@ -34,7 +34,7 @@ public class LedgersStreamItem: NSObject {
                     response(.error(error: HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .error(let error):
-                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with path \(self.subpath): \(error?.localizedDescription ?? "nil")")))
+                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with url \(self.requestUrl): \(error?.localizedDescription ?? "nil")")))
             }
         }
     }

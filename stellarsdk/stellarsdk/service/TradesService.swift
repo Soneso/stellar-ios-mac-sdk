@@ -42,7 +42,7 @@ public class TradesService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getTradesFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getTradesFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
     open func getTrades(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
@@ -58,7 +58,7 @@ public class TradesService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getTradesFromUrl(url: serviceHelper.baseURL + requestPath, response: response)
+        getTradesFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath), response: response)
     }
     
     func getTradesFromUrl(url:String, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {

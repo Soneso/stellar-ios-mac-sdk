@@ -45,7 +45,7 @@ public class OrderbookService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getOrderbookFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getOrderbookFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
     func getOrderbookFromUrl(url:String, response:@escaping OrderbookResponseClosure) {

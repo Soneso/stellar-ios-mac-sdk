@@ -106,7 +106,7 @@ public class OperationsService: NSObject {
             }
         }
         
-        let streamItem = OperationsStreamItem(baseURL: serviceHelper.baseURL, subpath:subpath)
+        let streamItem = OperationsStreamItem(requestUrl: serviceHelper.requestUrlWithPath(path: subpath))
         return streamItem
     }
     
@@ -125,7 +125,7 @@ public class OperationsService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getOperationsFromUrl(url:serviceHelper.baseURL + requestPath, response:response)
+        getOperationsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
     open func getOperationsFromUrl(url:String, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
