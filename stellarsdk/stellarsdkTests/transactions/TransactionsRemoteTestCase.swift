@@ -306,7 +306,42 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 25.0)
     }
+    
+    func testCoSignTransactionEnvelope2() {
+        
+        //let pk = "GDPU43WVN6BPAKCCGMRYEQNPZ2HLMBK6ZXKUF6O6OXI5HK7KPIFKO7CW"
+        let seed = "SA6QS22REFMONMF3O7MMUCUVCXQIS6EHC63VY4FIEIF4KGET4BR6UQAI"
+        let keyPair = try! KeyPair(secretSeed: seed)
+        
+        let transaction = "AAAAAAZHmUf2xSOqrDLf0wK1KnpKn9gLAyk3Djc7KHL5e2YuAAAAAf//////////AAAAAQAAAABe1CIaAAAAAF7UI0YAAAAAAAAAAQAAAAEAAAAA305u1W+C8ChCMyOCQa/OjrYFXs3VQvneddHTq+p6CqcAAAAKAAAAClZhdWx0IGF1dGgAAAAAAAEAAABANGQ5ZjQ5OWNmMWE5ZTJiM2RkZWUyMWNjZGNmZjQ3MTIzZjgwM2UzNjdmZDYxZmY5Mjc1NGZmMTJhMWNmOWE0ZAAAAAAAAAAB+XtmLgAAAEAidHX75sVl7ZdXrkOL+EX7qskl/9xVMKkXC4lr1zjQQbNZyeO9Sa49BC1ln54k9FFvabWG0RAf7IChg4E7QN8C"
+        
+        let transactionEnvelope = try! TransactionEnvelopeXDR(xdr: transaction)
+        let txHash = try! [UInt8](transactionEnvelope.txHash(network: .public))
+        transactionEnvelope.appendSignature(signature: keyPair.signDecorated(txHash))
 
+        var encodedEnvelope = try! XDREncoder.encode(transactionEnvelope)
+        
+        let result = Data(bytes: &encodedEnvelope, count: encodedEnvelope.count).base64EncodedString()
+        
+        print(result)
+        
+        XCTAssert(true)
+    }
+
+    func testCoSignTransactionEnvelope3() {
+        let keyPair = try! KeyPair(secretSeed: "SA6QS22REFMONMF3O7MMUCUVCXQIS6EHC63VY4FIEIF4KGET4BR6UQAI")
+        
+        let xdr = "AAAAAAZHmUf2xSOqrDLf0wK1KnpKn9gLAyk3Djc7KHL5e2YuAAAAAf//////////AAAAAQAAAABe1CIaAAAAAF7UI0YAAAAAAAAAAQAAAAEAAAAA305u1W+C8ChCMyOCQa/OjrYFXs3VQvneddHTq+p6CqcAAAAKAAAAClZhdWx0IGF1dGgAAAAAAAEAAABANGQ5ZjQ5OWNmMWE5ZTJiM2RkZWUyMWNjZGNmZjQ3MTIzZjgwM2UzNjdmZDYxZmY5Mjc1NGZmMTJhMWNmOWE0ZAAAAAAAAAAB+XtmLgAAAEAidHX75sVl7ZdXrkOL+EX7qskl/9xVMKkXC4lr1zjQQbNZyeO9Sa49BC1ln54k9FFvabWG0RAf7IChg4E7QN8C"
+        
+        let transaction = try! Transaction(envelopeXdr: xdr)
+        try! transaction.sign(keyPair: keyPair, network: .public, coreProtocolVersion: 13)
+        let xdrEnvelope = try! transaction.encodedEnvelope(coreProtocolVersion: 13)
+        print(xdrEnvelope)
+        
+        XCTAssert(true)
+        
+    }
+    
     func testCoSignTransactionEnvelope() {
         let keyPair = try! KeyPair(secretSeed: "SA33GXHR62NBMBH5OZK5JHXR3X7KAANKMVXPIP6VQQO6N5HGKFB66HWR")
         
@@ -314,9 +349,9 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         let transaction = try! Transaction(envelopeXdr: xdr)
         
-        try! transaction.sign(keyPair: keyPair, network: .testnet)
+        try! transaction.sign(keyPair: keyPair, network: .testnet, coreProtocolVersion: 13)
         
-        let xdrEnvelope = try! transaction.encodedEnvelope()
+        let xdrEnvelope = try! transaction.encodedEnvelope(coreProtocolVersion: 13)
         print(xdrEnvelope)
         
         XCTAssertTrue(transaction.fee == 400)
