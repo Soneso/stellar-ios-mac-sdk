@@ -14,14 +14,12 @@ struct TransactionSignaturePayload: XDREncodable {
         case typeTXV0 (TransactionV0XDR)
         case typeTX (TransactionXDR)
         case typeFeeBump (FeeBumpTransactionXDR)
-        case typeTXSigV0 (TransactionSigV0XDR)
         
         private func discriminant() -> Int32 {
             switch self {
             case .typeTXV0: return EnvelopeType.ENVELOPE_TYPE_TX
             case .typeTX: return EnvelopeType.ENVELOPE_TYPE_TX
             case .typeFeeBump: return EnvelopeType.ENVELOPE_TYPE_TX_FEE_BUMP
-            case .typeTXSigV0: return EnvelopeType.ENVELOPE_TYPE_TX
             }
         }
         
@@ -34,7 +32,6 @@ struct TransactionSignaturePayload: XDREncodable {
             case .typeTXV0 (let tx): try container.encode(tx)
             case .typeTX (let tx): try container.encode(tx)
             case .typeFeeBump (let tx): try container.encode(tx)
-            case .typeTXSigV0 (let tx): try container.encode(tx)
             }
         }
     }

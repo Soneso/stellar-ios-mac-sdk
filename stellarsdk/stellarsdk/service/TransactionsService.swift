@@ -81,8 +81,8 @@ public class TransactionsService: NSObject {
         }
     }
     
-    open func submitTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false, coreProtocolVersion:Int?=12, response:@escaping TransactionPostResponseClosure) throws {
-        let envelope = try transaction.encodedEnvelope(coreProtocolVersion:coreProtocolVersion)
+    open func submitTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostResponseClosure) throws {
+        let envelope = try transaction.encodedEnvelope()
         postTransaction(transactionEnvelope:envelope, skipMemoRequiredCheck: skipMemoRequiredCheck, response: response)
     }
     

@@ -76,7 +76,7 @@ public struct TransactionV0XDR: XDRCodable {
     public func hash(network:Network) throws -> Data {
         let sourcePublicKey = PublicKey(unchecked: self.sourceAccountEd25519)
         let txXdr = TransactionXDR(sourceAccount: sourcePublicKey, seqNum: self.seqNum, timeBounds: self.timeBounds, memo: self.memo, operations: self.operations,maxOperationFee: self.fee)
-        return try txXdr.hash(network: network, coreProtocolVersion: 13)
+        return try txXdr.hash(network: network)
     }
     
     public func toEnvelopeXDR() throws -> TransactionEnvelopeXDR {

@@ -43,37 +43,13 @@ class MemoRemoteTestCase: XCTestCase {
         memoWithPaymentTransaction(memo: Memo.id(12345678))
     }
     
-    /*func testMemoHash() {
-        do {
-            if let memo = try Memo(hash: Data(base64Encoded:"UQQWROg9ashoyElBi2OS3b6d9T8AAAAAAAAAAAAAAAA=")!) {
-                memoWithPaymentTransaction(memo: memo)
-            } else {
-                XCTAssert(false)
-            }
-        } catch {
-            XCTAssert(false)
-        }
-    }
-    
-    func testMemoReturnHash() {
-        do {
-            if let memo = try Memo(returnHash: Data(base64Encoded:"UQQWROg9ashoyElBi2OS3b6d9T8AAAAAAAAAAAAAAAA=")!) {
-                memoWithPaymentTransaction(memo: memo)
-            } else {
-                XCTAssert(false)
-            }
-        } catch {
-            XCTAssert(false)
-        }
-    }*/
-    
     func memoWithPaymentTransaction(memo: Memo) {
         
         let expectation = XCTestExpectation(description: "Memo with payment transaction sent and received")
         
         do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF")
-            let destinationAccountKeyPair = try KeyPair(accountId: "GDKNTVRFEEQQUFQHT65J4IITT55GO22E23TBZBAF3LWNOT6U44QWHAQB")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDHWYHZ74TBMKDCW3GDFWLEKPHYZWKOXXAANJOEMV7QS3TAA22AXNQGK")
+            let destinationAccountKeyPair = try KeyPair(accountId: "GCDP5EESKZQM7UWQTTNVNAYYBUPK2AGR6OVPLB3OICUZO5WQKYZ66DZD")
             
             streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now"))
             streamItem?.onReceive { (response) -> (Void) in
@@ -100,8 +76,8 @@ class MemoRemoteTestCase: XCTestCase {
                 switch response {
                 case .success(let accountResponse):
                     do {
-                        let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
-                                                                destination: destinationAccountKeyPair,
+                        let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
+                                                                destinationAccountId: destinationAccountKeyPair.accountId,
                                                                 asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                                                 amount: 1.5)
                         let transaction = try Transaction(sourceAccount: accountResponse,

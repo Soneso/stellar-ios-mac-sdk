@@ -37,21 +37,37 @@ class TransactionsLocalTestCase: XCTestCase {
     }
     
     func testTransactionEnvelopeXDRStringInit() {
-        let xdrString = "AAAAAGV+lDNEWJN2FhmJZgrrObjhhYYF80e+hc48z6KYhQxNAAAD6AAPsVkAAAAEAAAAAAAAAAAAAAABAAAAAQAAAABlfpQzRFiTdhYZiWYK6zm44YWGBfNHvoXOPM+imIUMTQAAAAEAAAAAHIfqDW5SWNoW2fFBEisLrHjuQunW8cRyaX5aF3NCNYoAAAAAAAAAAADk4cAAAAAAAAAAAZiFDE0AAABAxGFuP73x/OBT75+39J3k13/aos+h9yAvJErIlp9IoziNI02QsZAovmgVImdoGdo7FnslzirqzkZX3LVtych1Bw=="
+    
+        let xdrStringV1 = "AAAAAgAAAABlfpQzRFiTdhYZiWYK6zm44YWGBfNHvoXOPM+imIUMTQAAA+gAD7FZAAAABAAAAAAAAAAAAAAAAQAAAAEAAAAAZX6UM0RYk3YWGYlmCus5uOGFhgXzR76FzjzPopiFDE0AAAABAAAAAByH6g1uUljaFtnxQRIrC6x47kLp1vHEcml+WhdzQjWKAAAAAAAAAAAA5OHAAAAAAAAAAAGYhQxNAAAAQMRhbj+98fzgU++ft/Sd5Nd/2qLPofcgLyRKyJafSKM4jSNNkLGQKL5oFSJnaBnaOxZ7Jc4q6s5GV9y1bcnIdQc="
         do {
             // method 1
-            let transaction = try Transaction(envelopeXdr: xdrString)
-            let tFee = transaction.fee
+            var transaction = try Transaction(envelopeXdr: xdrStringV1)
+            var tFee = transaction.fee
             XCTAssert(tFee == 1000)
             let encodedEnvelope = try transaction.encodedEnvelope()
-            XCTAssertTrue(xdrString == encodedEnvelope)
+            XCTAssertTrue(xdrStringV1 == encodedEnvelope)
             
             // method 2
-            let envelope = try TransactionEnvelopeXDR(xdr:xdrString)
-            let fee = envelope.txFee
+            var envelope = try TransactionEnvelopeXDR(xdr:xdrStringV1)
+            var fee = envelope.txFee
             XCTAssert(fee == 1000)
             let envelopeString = envelope.xdrEncoded
-            XCTAssertTrue(xdrString == envelopeString)
+            XCTAssertTrue(xdrStringV1 == envelopeString)
+            
+            let xdrStringV0 = "AAAAAGV+lDNEWJN2FhmJZgrrObjhhYYF80e+hc48z6KYhQxNAAAD6AAPsVkAAAAEAAAAAAAAAAAAAAABAAAAAQAAAABlfpQzRFiTdhYZiWYK6zm44YWGBfNHvoXOPM+imIUMTQAAAAEAAAAAHIfqDW5SWNoW2fFBEisLrHjuQunW8cRyaX5aF3NCNYoAAAAAAAAAAADk4cAAAAAAAAAAAZiFDE0AAABAxGFuP73x/OBT75+39J3k13/aos+h9yAvJErIlp9IoziNI02QsZAovmgVImdoGdo7FnslzirqzkZX3LVtych1Bw==" //V0 Transaction
+            
+            // method 1
+            transaction = try Transaction(envelopeXdr: xdrStringV0)
+            tFee = transaction.fee
+            XCTAssert(tFee == 1000)
+            XCTAssert("GBSX5FBTIRMJG5QWDGEWMCXLHG4ODBMGAXZUPPUFZY6M7IUYQUGE3EYH" == transaction.sourceAccount.keyPair.accountId)
+            
+            // method 2
+            envelope = try TransactionEnvelopeXDR(xdr:xdrStringV1)
+            fee = envelope.txFee
+            XCTAssert(fee == 1000)
+            XCTAssert("GBSX5FBTIRMJG5QWDGEWMCXLHG4ODBMGAXZUPPUFZY6M7IUYQUGE3EYH" == envelope.txSourceAccountId)
+            
         } catch {
             XCTAssertTrue(false)
         }

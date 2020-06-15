@@ -686,8 +686,6 @@
 		8345BA7E2470296600B07A34 /* MuxedAccountMed25519XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8345BA7C2470296600B07A34 /* MuxedAccountMed25519XDR.swift */; };
 		8345BA8024706E4B00B07A34 /* MuxedAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8345BA7F24706E4B00B07A34 /* MuxedAccount.swift */; };
 		8345BA8124706E4B00B07A34 /* MuxedAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8345BA7F24706E4B00B07A34 /* MuxedAccount.swift */; };
-		8345BA8324717A7500B07A34 /* TransactionSigV0XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8345BA8224717A7500B07A34 /* TransactionSigV0XDR.swift */; };
-		8345BA8424717A7500B07A34 /* TransactionSigV0XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8345BA8224717A7500B07A34 /* TransactionSigV0XDR.swift */; };
 		8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */; };
 		8357A913203B004700A144A9 /* String+Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A912203B004700A144A9 /* String+Base64.swift */; };
 		8357A915203B097D00A144A9 /* AssetsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A914203B097D00A144A9 /* AssetsLocalTestCase.swift */; };
@@ -1210,7 +1208,6 @@
 		8345BA79246FFB9700B07A34 /* InnerTransactionResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InnerTransactionResponse.swift; sourceTree = "<group>"; };
 		8345BA7C2470296600B07A34 /* MuxedAccountMed25519XDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuxedAccountMed25519XDR.swift; sourceTree = "<group>"; };
 		8345BA7F24706E4B00B07A34 /* MuxedAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuxedAccount.swift; sourceTree = "<group>"; };
-		8345BA8224717A7500B07A34 /* TransactionSigV0XDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionSigV0XDR.swift; sourceTree = "<group>"; };
 		8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountRemoteTestCase.swift; sourceTree = "<group>"; };
 		8357A912203B004700A144A9 /* String+Base64.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Base64.swift"; sourceTree = "<group>"; };
 		8357A914203B097D00A144A9 /* AssetsLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsLocalTestCase.swift; sourceTree = "<group>"; };
@@ -2137,7 +2134,6 @@
 				744148F9202E0635006590BE /* TransactionXDR.swift */,
 				8395F94B246B44C500B04E11 /* FeeBumpTransactionXDR.swift */,
 				8395F945246B38CD00B04E11 /* TransactionV0XDR.swift */,
-				8345BA8224717A7500B07A34 /* TransactionSigV0XDR.swift */,
 				8395F947246B3CA100B04E11 /* MuxedAccountXDR.swift */,
 				8345BA7C2470296600B07A34 /* MuxedAccountMed25519XDR.swift */,
 				8395F943246B383C00B04E11 /* FeeBumpTransactionEnvelopeXDR.swift */,
@@ -3004,7 +3000,6 @@
 				745DF45A2052FF9B000D3660 /* OfferRemovedEffectResponse.swift in Sources */,
 				7467C3F221424D9E00412FE1 /* TransferServerService.swift in Sources */,
 				745DF45B2052FF9B000D3660 /* OfferUpdatedEffectResponse.swift in Sources */,
-				8345BA8424717A7500B07A34 /* TransactionSigV0XDR.swift in Sources */,
 				745DF45C2052FF9B000D3660 /* TradeEffectResponse.swift in Sources */,
 				745DF45D2052FF9B000D3660 /* LedgerResponse.swift in Sources */,
 				744FC6DD212D3CCC00ADFC88 /* Tokens.swift in Sources */,
@@ -3471,7 +3466,6 @@
 				833CBFB4203354BE00C23CFE /* LedgerKeyTrustlineXDR.swift in Sources */,
 				430BE2EB2035B4D400E6AB97 /* TimeBounds.swift in Sources */,
 				EC34A13A20503CC5000FB042 /* Poly1305.swift in Sources */,
-				8345BA8324717A7500B07A34 /* TransactionSigV0XDR.swift in Sources */,
 				7464B728219442B80029FDC8 /* IssuerDocumentation.swift in Sources */,
 				437D8A83202EF0770024D031 /* TradeResponse.swift in Sources */,
 				EC34A15120503CC5000FB042 /* BlockMode.swift in Sources */,
