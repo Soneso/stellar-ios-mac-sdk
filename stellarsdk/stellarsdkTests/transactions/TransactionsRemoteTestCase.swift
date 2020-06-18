@@ -307,13 +307,71 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 25.0)
     }
     
+    func testTransactionV1Sign() throws {
+        let keyPair = try! KeyPair(secretSeed: "SB2VUAO2O2GLVUQOY46ZDAF3SGWXOKTY27FYWGZCSV26S24VZ6TUKHGE")
+        // transaction envelope v1
+        let xdr = "AAAAAgAAAADUtWEQOb8u8wqHpML1OV4SV3E5EjliNElgRW2AmJDkaQAAJxAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAEAAAAA1LVhEDm/LvMKh6TC9TleEldxORI5YjRJYEVtgJiQ5GkAAAABAAAAANS1YRA5vy7zCoekwvU5XhJXcTkSOWI0SWBFbYCYkORpAAAAAAAAAAAAAAABAAAAAAAAAAA="
+
+        let envelopeXDR = try! TransactionEnvelopeXDR(xdr: xdr)
+        let txHash = try! [UInt8](envelopeXDR.txHash(network: .public))
+        envelopeXDR.appendSignature(signature: keyPair.signDecorated(txHash))
+
+        let userSignature = envelopeXDR.txSignatures.first!.signature.base64EncodedString()
+        let validUserSignature = "1iw8QognbB+8DmvUTAk0SQSxjpsYqa2pnP9/A7qJwyJ5IPVG+wl4w6M5mHel5CjzsnWKwurE/LCY26Jmz5KiBw=="
+          
+        print("XDR Envelope: \(envelopeXDR.xdrEncoded!)")
+        XCTAssertEqual(validUserSignature, userSignature)
+    }
+
+    func testTransactionV1Sign2() throws {
+        let keyPair = try! KeyPair(secretSeed: "SB2VUAO2O2GLVUQOY46ZDAF3SGWXOKTY27FYWGZCSV26S24VZ6TUKHGE")
+        // transaction envelope v1
+        let xdr = "AAAAAgAAAADUtWEQOb8u8wqHpML1OV4SV3E5EjliNElgRW2AmJDkaQAAJxAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAEAAAAA1LVhEDm/LvMKh6TC9TleEldxORI5YjRJYEVtgJiQ5GkAAAABAAAAANS1YRA5vy7zCoekwvU5XhJXcTkSOWI0SWBFbYCYkORpAAAAAAAAAAAAAAABAAAAAAAAAAA="
+
+        let transaction = try! Transaction(envelopeXdr: xdr)
+        try! transaction.sign(keyPair: keyPair, network: .public)
+        let envelopeXDR = try! TransactionEnvelopeXDR(xdr: transaction.encodedEnvelope())
+
+        let userSignature = envelopeXDR.txSignatures.first!.signature.base64EncodedString()
+        let validUserSignature = "1iw8QognbB+8DmvUTAk0SQSxjpsYqa2pnP9/A7qJwyJ5IPVG+wl4w6M5mHel5CjzsnWKwurE/LCY26Jmz5KiBw=="
+          
+        print("XDR Envelope: \(envelopeXDR.xdrEncoded!)")
+        XCTAssertEqual(validUserSignature, userSignature)
+    }
+    
+    func testTransactionV0SignWithTwoOperations() throws {
+        let keyPair = try! KeyPair(secretSeed: "SB2VUAO2O2GLVUQOY46ZDAF3SGWXOKTY27FYWGZCSV26S24VZ6TUKHGE")
+        // transaction envelope v0 with two payment operations
+        let xdr = "AAAAANS1YRA5vy7zCoekwvU5XhJXcTkSOWI0SWBFbYCYkORpAAAAyAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAABAAAAAE8LpHirFqhklgFS3bqZmOEvg53t/uQ8CFrefQom/uZVAAAAAAAAAAAF9eEAAAAAAAAAAAEAAAAATwukeKsWqGSWAVLdupmY4S+Dne3+5DwIWt59Cib+5lUAAAAAAAAAAAL68IAAAAAAAAAAAA=="
+        
+        var envelopeXDR = try! TransactionEnvelopeXDR(xdr: xdr)
+        switch envelopeXDR {
+        case .v0(let txEnvV0):
+            // if its a v0 transaction envelope, convert it to a v1 transaction envelope
+            let tV0Xdr = txEnvV0.tx
+            let pk = try PublicKey(tV0Xdr.sourceAccountEd25519)
+            let transactionXdr = TransactionXDR(sourceAccount: pk, seqNum: tV0Xdr.seqNum, timeBounds: tV0Xdr.timeBounds, memo: tV0Xdr.memo, operations: tV0Xdr.operations, maxOperationFee: tV0Xdr.fee / UInt32(tV0Xdr.operations.count) )
+            let txV1E = TransactionV1EnvelopeXDR(tx: transactionXdr, signatures: envelopeXDR.txSignatures)
+            envelopeXDR = TransactionEnvelopeXDR.v1(txV1E)
+        default:
+            break
+        }
+        let txHash = try! [UInt8](envelopeXDR.txHash(network: .public))
+        envelopeXDR.appendSignature(signature: keyPair.signDecorated(txHash))
+
+        let userSignature = envelopeXDR.txSignatures.first!.signature.base64EncodedString()
+        let validUserSignature = "/x+ipnunmfDID9kX09bmnZOLSG/3Cwld0zgHzpgN6vNAQ4ebrcnALv8hwvVlS5IFY6wKRacWBM0gA9eSd68/CQ=="
+          
+        print("XDR Envelope: \(envelopeXDR.xdrEncoded!)")
+        XCTAssertEqual(validUserSignature, userSignature)
+    }
+    
     func testCoSignTransactionEnvelope2() {
         
-        //let pk = "GDPU43WVN6BPAKCCGMRYEQNPZ2HLMBK6ZXKUF6O6OXI5HK7KPIFKO7CW"
-        let seed = "SA6QS22REFMONMF3O7MMUCUVCXQIS6EHC63VY4FIEIF4KGET4BR6UQAI"
+        let seed = "SB2VUAO2O2GLVUQOY46ZDAF3SGWXOKTY27FYWGZCSV26S24VZ6TUKHGE"
         let keyPair = try! KeyPair(secretSeed: seed)
         
-        let transaction = "AAAAAAZHmUf2xSOqrDLf0wK1KnpKn9gLAyk3Djc7KHL5e2YuAAAAAf//////////AAAAAQAAAABe1CIaAAAAAF7UI0YAAAAAAAAAAQAAAAEAAAAA305u1W+C8ChCMyOCQa/OjrYFXs3VQvneddHTq+p6CqcAAAAKAAAAClZhdWx0IGF1dGgAAAAAAAEAAABANGQ5ZjQ5OWNmMWE5ZTJiM2RkZWUyMWNjZGNmZjQ3MTIzZjgwM2UzNjdmZDYxZmY5Mjc1NGZmMTJhMWNmOWE0ZAAAAAAAAAAB+XtmLgAAAEAidHX75sVl7ZdXrkOL+EX7qskl/9xVMKkXC4lr1zjQQbNZyeO9Sa49BC1ln54k9FFvabWG0RAf7IChg4E7QN8C"
+        let transaction = "AAAAAgAAAADUtWEQOb8u8wqHpML1OV4SV3E5EjliNElgRW2AmJDkaQAAJxAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAEAAAAA1LVhEDm/LvMKh6TC9TleEldxORI5YjRJYEVtgJiQ5GkAAAABAAAAANS1YRA5vy7zCoekwvU5XhJXcTkSOWI0SWBFbYCYkORpAAAAAAAAAAAAAAABAAAAAAAAAAA="
         
         let transactionEnvelope = try! TransactionEnvelopeXDR(xdr: transaction)
         let txHash = try! [UInt8](transactionEnvelope.txHash(network: .public))
