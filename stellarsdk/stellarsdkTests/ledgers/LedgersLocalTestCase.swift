@@ -103,7 +103,6 @@ class LedgersLocalTestCase: XCTestCase {
             XCTAssertEqual(firstLedger?.hashXdr, "63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99")
             XCTAssertNil(firstLedger?.previousHashXdr)
             XCTAssertEqual(firstLedger?.sequenceNumber, 1)
-            XCTAssertEqual(firstLedger?.transactionCount, 0)
             XCTAssertNil(firstLedger?.successfulTransactionCount)
             XCTAssertNil(firstLedger?.failedTransactionCount)
             XCTAssertEqual(firstLedger?.operationCount, 0)
@@ -114,7 +113,8 @@ class LedgersLocalTestCase: XCTestCase {
             XCTAssertEqual(firstLedger?.baseReserveInStroops, 100000000)
             XCTAssertEqual(firstLedger?.maxTxSetSize, 100)
             XCTAssertEqual(firstLedger?.protocolVersion, 0)
-            
+            XCTAssertNil(firstLedger?.txSetOperationCount)
+            XCTAssertEqual(firstLedger?.headerXdr, "AAAAAdy3Lr5Tev4ZYxKMei6LWkNgcQaWhEQWlPvuxqAYEUSST/2WLmbNl35twoFs78799llnNyPHs8u5xPtPvzoq9KEAAAAAVg4WeQAAAAAAAAAA3z9hmASpL9tAVxktxD3XSOp3itxSvEmM6AUkwBS4ERkHVi1wPY+0ie6g6YCletq0h1OSHiaWAqDQKJxtKEtlSAAAWsAN4r8dMwM+/wAAABDxA9f6AAAAAwAAAAAAAAAAAAAAZAX14QAAAAH0B1YtcD2PtInuoOmApXratIdTkh4mlgKg0CicbShLZUibK4xTjWYpfADpjyadb48ZEs52+TAOiCYDUIxrs+NjEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
             if (limit == 2) {
                 let secondLedger = ledgersResponse.records.last
                 XCTAssertNotNil(secondLedger)
@@ -159,6 +159,8 @@ class LedgersLocalTestCase: XCTestCase {
                 XCTAssertEqual(secondLedger?.baseReserveInStroops, 130000000)
                 XCTAssertEqual(secondLedger?.maxTxSetSize, 50)
                 XCTAssertEqual(secondLedger?.protocolVersion, 4)
+                XCTAssertEqual(secondLedger?.txSetOperationCount, 22)
+                XCTAssertEqual(firstLedger?.headerXdr, "AAAAAdy3Lr5Tev4ZYxKMei6LWkNgcQaWhEQWlPvuxqAYEUSST/2WLmbNl35twoFs78799llnNyPHs8u5xPtPvzoq9KEAAAAAVg4WeQAAAAAAAAAA3z9hmASpL9tAVxktxD3XSOp3itxSvEmM6AUkwBS4ERkHVi1wPY+0ie6g6YCletq0h1OSHiaWAqDQKJxtKEtlSAAAWsAN4r8dMwM+/wAAABDxA9f6AAAAAwAAAAAAAAAAAAAAZAX14QAAAAH0B1YtcD2PtInuoOmApXratIdTkh4mlgKg0CicbShLZUibK4xTjWYpfADpjyadb48ZEs52+TAOiCYDUIxrs+NjEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
                 expectation.fulfill()
                 
             } else {
@@ -221,15 +223,16 @@ class LedgersLocalTestCase: XCTestCase {
                     "paging_token": "4294967296",
                     "hash": "63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99",
                     "sequence": 1,
-                    "transaction_count": 0,
                     "operation_count": 0,
+                    "tx_set_operation_count": null,
                     "closed_at": "1970-01-01T00:00:00Z",
                     "total_coins": "100000000000.0000000",
                     "fee_pool": "0.0000000",
                     "base_fee_in_stroops": 100,
                     "base_reserve_in_stroops": 100000000,
                     "max_tx_set_size": 100,
-                    "protocol_version": 0
+                    "protocol_version": 0,
+                    "header_xdr": "AAAAAdy3Lr5Tev4ZYxKMei6LWkNgcQaWhEQWlPvuxqAYEUSST/2WLmbNl35twoFs78799llnNyPHs8u5xPtPvzoq9KEAAAAAVg4WeQAAAAAAAAAA3z9hmASpL9tAVxktxD3XSOp3itxSvEmM6AUkwBS4ERkHVi1wPY+0ie6g6YCletq0h1OSHiaWAqDQKJxtKEtlSAAAWsAN4r8dMwM+/wAAABDxA9f6AAAAAwAAAAAAAAAAAAAAZAX14QAAAAH0B1YtcD2PtInuoOmApXratIdTkh4mlgKg0CicbShLZUibK4xTjWYpfADpjyadb48ZEs52+TAOiCYDUIxrs+NjEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                 }
         """
         if limit > 1 {
@@ -262,15 +265,18 @@ class LedgersLocalTestCase: XCTestCase {
                             "hash": "6827e2e9d0e276395b7e54b3f8377de0b4e65fab914efbd0b520e8e1044de738",
                             "prev_hash": "63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99",
                             "sequence": 2,
-                            "transaction_count": 20,
+                            "successful_transaction_count": null,
+                            "failed_transaction_count": null,
                             "operation_count": 30,
+                            "tx_set_operation_count": 22,
                             "closed_at": "2017-03-20T17:09:53Z",
                             "total_coins": "100000000000.0000000",
                             "fee_pool": "23.0000000",
                             "base_fee_in_stroops": 200,
                             "base_reserve_in_stroops": 130000000,
                             "max_tx_set_size": 50,
-                            "protocol_version": 4
+                            "protocol_version": 4,
+                            "header_xdr": "AAAAAdy3Lr5Tev4ZYxKMei6LWkNgcQaWhEQWlPvuxqAYEUSST/2WLmbNl35twoFs78799llnNyPHs8u5xPtPvzoq9KEAAAAAVg4WeQAAAAAAAAAA3z9hmASpL9tAVxktxD3XSOp3itxSvEmM6AUkwBS4ERkHVi1wPY+0ie6g6YCletq0h1OSHiaWAqDQKJxtKEtlSAAAWsAN4r8dMwM+/wAAABDxA9f6AAAAAwAAAAAAAAAAAAAAZAX14QAAAAH0B1YtcD2PtInuoOmApXratIdTkh4mlgKg0CicbShLZUibK4xTjWYpfADpjyadb48ZEs52+TAOiCYDUIxrs+NjEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
                         }
             """
             ledgersResponseString.append(record)

@@ -30,9 +30,6 @@ public class LedgerResponse: NSObject, Decodable {
     /// Sequence number of this ledger, suitable for use as the as the :id parameter for url templates that require a ledger number.
     public var sequenceNumber:Int64
 
-    /// The number of transactions in this ledger.
-    public var transactionCount:Int?
-
     /// The number of successful transactions in this ledger.
     public var successfulTransactionCount:Int?
 
@@ -41,6 +38,9 @@ public class LedgerResponse: NSObject, Decodable {
     
     /// The number of operations in this ledger.
     public var operationCount:Int
+    
+    /// The total number of operations in the transactions set.
+    public var txSetOperationCount:Int?
     
     /// An ISO 8601 formatted string of when this ledger was closed.
     public var closedAt:Date
@@ -63,6 +63,8 @@ public class LedgerResponse: NSObject, Decodable {
     /// The protocol version that the stellar network was running when this ledger was committed.
     public var protocolVersion:Decimal
     
+    public var headerXdr:String;
+    
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case links = "_links"
@@ -71,10 +73,10 @@ public class LedgerResponse: NSObject, Decodable {
         case hashXdr = "hash"
         case previousHashXdr = "prev_hash"
         case sequenceNumber = "sequence"
-        case transactionCount = "transaction_count"
         case successfulTransactionCount = "successful_transaction_count"
         case failedTransactionCount = "failed_transaction_count"
         case operationCount = "operation_count"
+        case txSetOperationCount = "tx_set_operation_count"
         case closedAt = "closed_at"
         case totalCoins = "total_coins"
         case feePool = "fee_pool"
@@ -82,6 +84,7 @@ public class LedgerResponse: NSObject, Decodable {
         case baseReserveInStroops = "base_reserve_in_stroops"
         case maxTxSetSize = "max_tx_set_size"
         case protocolVersion = "protocol_version"
+        case headerXdr = "header_xdr"
         
     }
     
@@ -99,10 +102,10 @@ public class LedgerResponse: NSObject, Decodable {
         hashXdr = try values.decode(String.self, forKey: .hashXdr)
         previousHashXdr = try values.decodeIfPresent(String.self, forKey: .previousHashXdr)
         sequenceNumber = try values.decode(Int64.self, forKey: .sequenceNumber)
-        transactionCount = try values.decodeIfPresent(Int.self, forKey: .transactionCount) ?? 0
         successfulTransactionCount = try values.decodeIfPresent(Int.self, forKey: .successfulTransactionCount)
         failedTransactionCount = try values.decodeIfPresent(Int.self, forKey: .failedTransactionCount)
         operationCount = try values.decode(Int.self, forKey: .operationCount)
+        txSetOperationCount = try values.decodeIfPresent(Int.self, forKey: .txSetOperationCount)
         closedAt = try values.decode(Date.self, forKey: .closedAt)
         totalCoins = try values.decode(String.self, forKey: .totalCoins)
         feePool = try values.decode(String.self, forKey: .feePool)
@@ -110,5 +113,6 @@ public class LedgerResponse: NSObject, Decodable {
         baseReserveInStroops = try values.decodeIfPresent(Int.self, forKey: .baseReserveInStroops)
         maxTxSetSize = try values.decode(Int.self, forKey: .maxTxSetSize)
         protocolVersion = try values.decode(Decimal.self, forKey: .protocolVersion)
+        headerXdr = try values.decode(String.self, forKey: .headerXdr)
     }
 }

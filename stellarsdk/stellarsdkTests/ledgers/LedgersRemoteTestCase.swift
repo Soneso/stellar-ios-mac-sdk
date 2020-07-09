@@ -54,6 +54,7 @@ class LedgersRemoteTestCase: XCTestCase {
                                 XCTAssertTrue(ledger1?.successfulTransactionCount == ledger2?.successfulTransactionCount)
                                 XCTAssertTrue(ledger1?.failedTransactionCount == ledger2?.failedTransactionCount)
                                 XCTAssertTrue(ledger1?.operationCount == ledger2?.operationCount)
+                                XCTAssertTrue(ledger1?.txSetOperationCount == ledger2?.txSetOperationCount)
                                 XCTAssertTrue(ledger1?.closedAt == ledger2?.closedAt)
                                 XCTAssertTrue(ledger1?.totalCoins == ledger2?.totalCoins)
                                 XCTAssertTrue(ledger1?.feePool == ledger2?.feePool)
@@ -61,6 +62,7 @@ class LedgersRemoteTestCase: XCTestCase {
                                 XCTAssertTrue(ledger1?.baseReserveInStroops == ledger2?.baseReserveInStroops)
                                 XCTAssertTrue(ledger1?.maxTxSetSize == ledger2?.maxTxSetSize)
                                 XCTAssertTrue(ledger1?.protocolVersion == ledger2?.protocolVersion)
+                                XCTAssertTrue(ledger1?.headerXdr == ledger2?.headerXdr)
                                 XCTAssert(true)
                                 expectation.fulfill()
                             case .failure(let error):
@@ -77,7 +79,6 @@ class LedgersRemoteTestCase: XCTestCase {
                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"GL Test", horizonRequestError: error)
                 XCTAssert(false)
             }
-            expectation.fulfill()
         }
         wait(for: [expectation], timeout: 15.0)
     }
