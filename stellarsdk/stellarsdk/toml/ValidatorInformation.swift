@@ -11,18 +11,12 @@ import Foundation
 public class ValidatorInformation {
 
     private enum Keys: String {
-        case validators = "VALIDATORS" // depricated
         case alias = "ALIAS"
         case displayName = "DISPLAY_NAME"
         case publicKey = "PUBLIC_KEY"
         case host = "HOST"
         case history = "HISTORY"
     }
-
-    /// list of G... strings
-    /// List of authoritative validators for organization. This can potentially be a quorum set. Names defined in NODE_NAMES can be used as well, prefixed with $.
-    @available(*, deprecated)
-    public let validators: [String]
     
     /// string
     /// A name for display in stellar-core configs that conforms to ^[a-z0-9-]{2,16}$
@@ -45,7 +39,6 @@ public class ValidatorInformation {
     public let history: String?
     
     public init(fromToml toml:Toml) {
-        validators = toml.array(Keys.validators.rawValue) ?? []
         alias = toml.string(Keys.alias.rawValue)
         displayName = toml.string(Keys.displayName.rawValue)
         publicKey = toml.string(Keys.publicKey.rawValue)
