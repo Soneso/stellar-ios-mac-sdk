@@ -86,7 +86,7 @@ public class Federation: NSObject {
     
     /// Resolves the given address to federation record if the user was found for a given Stellar address.
     public func resolve(address: String, completion:@escaping ResolveClosure) {
-        guard let _ = address.index(of: "*") else {
+        guard let _ = address.firstIndex(of: "*") else {
             completion(.failure(error: .invalidAddress))
             return
         }
@@ -139,7 +139,7 @@ public class Federation: NSObject {
     /// Resolves the given transaction id to federation address if the user was found for a given Stellar address.
     public func resolve(transaction_id: String, completion:@escaping ResolveClosure) {
         let requestPath = "?q=\(transaction_id)&type=txid"
-        
+
         serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
             case .success(let data):
@@ -156,4 +156,29 @@ public class Federation: NSObject {
         }
     }
     
+    /// Used for forwarding the payment on to a different network or different financial institution.
+    /// The forwardParams of the query will vary depending on what kind of institution is the ultimate destination of the payment and what they as the forwarding anchor support.
+    public func resolve(forwardParams: Dictionary<String,String>, completion:@escaping ResolveClosure) {
+        var requestPath = "?type=forward"
+        
+        if let pathParams = forwardParams.stringFromHttpParameters() {
+            requestPath += "&\(pathParams)"
+        }
+        
+        print(requestPath)
+        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                do {
+                    let response = try self.jsonDecoder.decode(ResolveAddressResponse.self, from: data)
+                    completion(.success(response:response))
+                } catch {
+                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+                }
+                
+            case .failure(let error):
+                completion(.failure(error:.horizonError(error: error)))
+            }
+        }
+    }
 }

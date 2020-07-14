@@ -22,67 +22,105 @@ class FederationTestCase: XCTestCase {
     func testResolveStellarAddress() {
         
         let expectation = XCTestExpectation(description: "Resolve stellar address")
-        Federation.resolve(stellarAddress: "stellar*lumenshine.com") { (response) -> (Void) in
+        Federation.resolve(stellarAddress: "bob*soneso.com") { (response) -> (Void) in
             switch response {
             case .success(let federationResponse):
-                if "GCM3C6QEQDEZLVDXJSCPOEWWU5LRBVOKQP4PIZLRAW444HKS67M2FFFR" == federationResponse.accountId {
-                    XCTAssert(true)
-                } else {
-                    XCTAssert(false)
-                }
+                XCTAssert("bob*soneso.com" == federationResponse.stellarAddress)
+                XCTAssert("GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI" == federationResponse.accountId)
+                XCTAssert("text" == federationResponse.memoType)
+                XCTAssert("hello memo text" == federationResponse.memo)
             case .failure(_):
                 XCTAssert(false)
             }
             expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 15.0)
-    }
-   
-    func testResolveAccountId() {
-   
-        let expectation = XCTestExpectation(description: "Resolve account id")
-        Federation.forDomain(domain: "lumenshine.com") { (response) -> (Void) in
-            switch response {
-            case .success(let federation):
-                federation.resolve(account_id: "GCM3C6QEQDEZLVDXJSCPOEWWU5LRBVOKQP4PIZLRAW444HKS67M2FFFR") { (response) -> (Void) in
-                    switch response {
-                    case .success(let federationResponse):
-                        if "stellar*lumenshine.com" == federationResponse.stellarAddress {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    case .failure(_):
-                        XCTAssert(false)
-                    }
-                    expectation.fulfill()
-                }
-            case .failure(_):
-                XCTAssert(false)
-                expectation.fulfill()
-            }
         }
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testFederationInitWithFederationAddress() {
+    func testResolveStellarAccountId2() {
         
-        let expectation = XCTestExpectation(description: "Init federation and resolve address")
+        let expectation = XCTestExpectation(description: "Resolve stellar account id")
+        let federation = Federation(federationAddress: "https://stellarid.io/federation/")
+        federation.resolve(address: "bob*soneso.com") { (response) -> (Void) in
+           switch response {
+           case .success(let federationResponse):
+               XCTAssert("bob*soneso.com" == federationResponse.stellarAddress)
+               XCTAssert("GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI" == federationResponse.accountId)
+               XCTAssert("text" == federationResponse.memoType)
+               XCTAssert("hello memo text" == federationResponse.memo)
+           case .failure(_):
+               XCTAssert(false)
+           }
+           expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    // unfortunately this (account_id) is not supported by stellarid.io.
+    // but one can test by debugging and checking the federation request url.
+    func testResolveStellarAccountId() {
         
-        let federation = Federation(federationAddress: "https://api.lumenshine.com/federation")
+        let expectation = XCTestExpectation(description: "Resolve stellar account id")
+        let federation = Federation(federationAddress: "https://stellarid.io/federation/")
+        federation.resolve(account_id: "GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI") { (response) -> (Void) in
+           switch response {
+           case .success(let federationResponse):
+               XCTAssert("bob*soneso.com" == federationResponse.stellarAddress)
+               XCTAssert("GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI" == federationResponse.accountId)
+               XCTAssert("text" == federationResponse.memoType)
+               XCTAssert("hello memo text" == federationResponse.memo)
+           case .failure(_):
+               XCTAssert(false)
+           }
+           expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    // unfortunately this (transaction_id) is not supported by stellarid.io.
+    // but one can test by debugging and checking the federation request url.
+    func testResolveTransactionId() {
         
-        federation.resolve(address: "stellar*lumenshine.com") { (response) -> (Void) in
-            switch response {
-            case .success(let federationResponse):
-                if "GCM3C6QEQDEZLVDXJSCPOEWWU5LRBVOKQP4PIZLRAW444HKS67M2FFFR" == federationResponse.accountId {
-                    XCTAssert(true)
-                } else {
-                    XCTAssert(false)
-                }
-            case .failure(_):
-                XCTAssert(false)
-            }
-            expectation.fulfill()
+        let expectation = XCTestExpectation(description: "Resolve transaction id")
+        let federation = Federation(federationAddress: "https://stellarid.io/federation/")
+        federation.resolve(transaction_id: "c1b368c00e9852351361e07cc58c54277e7a6366580044ab152b8db9cd8ec52a") { (response) -> (Void) in
+           switch response {
+           case .success(let federationResponse):
+               XCTAssert("bob*soneso.com" == federationResponse.stellarAddress)
+               XCTAssert("GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI" == federationResponse.accountId)
+               XCTAssert("text" == federationResponse.memoType)
+               XCTAssert("hello memo text" == federationResponse.memo)
+           case .failure(_):
+               XCTAssert(false)
+           }
+           expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    // unfortunately this (forward) is not supported by stellarid.io.
+    // but one can test by debugging and checking the federation request url.
+    func testResolveForward() {
+        
+        let expectation = XCTestExpectation(description: "Resolve forward")
+        let federation = Federation(federationAddress: "https://stellarid.io/federation/")
+        
+        var params = Dictionary<String,String>()
+        params["forward_type"] = "bank_account"
+        params["swift"] = "BOPBPHMM"
+        params["acct"] = "2382376"
+        
+        federation.resolve(forwardParams: params) { (response) -> (Void) in
+           switch response {
+           case .success(let federationResponse):
+               XCTAssert("bob*soneso.com" == federationResponse.stellarAddress)
+               XCTAssert("GBVPKXWMAB3FIUJB6T7LF66DABKKA2ZHRHDOQZ25GBAEFZVHTBPJNOJI" == federationResponse.accountId)
+               XCTAssert("text" == federationResponse.memoType)
+               XCTAssert("hello memo text" == federationResponse.memo)
+           case .failure(_):
+               XCTAssert(false)
+           }
+           expectation.fulfill()
         }
         wait(for: [expectation], timeout: 15.0)
     }
