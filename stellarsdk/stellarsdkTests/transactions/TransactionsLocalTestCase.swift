@@ -36,6 +36,27 @@ class TransactionsLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
+    func testTransactionToTxRep() {
+        let sourceAccountKeyPair = try! KeyPair(secretSeed: "SC6VJARW2SO3WQ4EQKPYWZ3CVIWKQCDAVTTQH7QUDRIPVBKVNYYRLCC4")
+        let accountBId = "GAQC6DUD2OVIYV3DTBPOSLSSOJGE4YJZHEGQXOU4GV6T7RABWZXELCUT"
+        let accountASeqNr = Int64(379748123410432)
+        let accountA = Account(keyPair:sourceAccountKeyPair, sequenceNumber: accountASeqNr)
+        do {
+            let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
+                                                destinationAccountId: accountBId,
+                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                amount: 1.5)
+            let transaction = try Transaction(sourceAccount: accountA,
+                                              operations: [paymentOperation],
+                                              memo: Memo.none,
+                                              timeBounds:nil)
+            try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+            print(try! TxRep.toTxRep(transactionEnvelope: transaction.encodedEnvelope()));
+            XCTAssert(true)
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
     func testTransactionEnvelopeXDRStringInit() {
     
         let xdrStringV1 = "AAAAAgAAAABlfpQzRFiTdhYZiWYK6zm44YWGBfNHvoXOPM+imIUMTQAAA+gAD7FZAAAABAAAAAAAAAAAAAAAAQAAAAEAAAAAZX6UM0RYk3YWGYlmCus5uOGFhgXzR76FzjzPopiFDE0AAAABAAAAAByH6g1uUljaFtnxQRIrC6x47kLp1vHEcml+WhdzQjWKAAAAAAAAAAAA5OHAAAAAAAAAAAGYhQxNAAAAQMRhbj+98fzgU++ft/Sd5Nd/2qLPofcgLyRKyJafSKM4jSNNkLGQKL5oFSJnaBnaOxZ7Jc4q6s5GV9y1bcnIdQc="

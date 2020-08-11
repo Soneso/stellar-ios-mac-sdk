@@ -75,6 +75,22 @@ public enum TransactionEnvelopeXDR: XDRCodable {
         }
     }
     
+    public var txMuxedSourceId: UInt64? {
+        get {
+            switch self {
+            case .v0(_):
+                return nil
+            case .v1(let tev1):
+                return tev1.tx.sourceAccount.id
+            case .feeBump(let tevf):
+                switch tevf.tx.innerTx {
+                case .v1(let tev1):
+                    return tev1.tx.sourceAccount.id
+                }
+            }
+        }
+    }
+    
     public var txSeqNum: Int64 {
         get {
             switch self {

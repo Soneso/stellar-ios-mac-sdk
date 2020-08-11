@@ -49,6 +49,17 @@ public enum MuxedAccountXDR: XDRCodable {
         }
     }
     
+    public var id: UInt64? {
+        get {
+            switch self {
+            case .ed25519(_):
+                return nil
+            case .med25519(let m):
+                return m.id
+            }
+        }
+    }
+    
     public func type() -> Int32 {
         switch self {
         case .ed25519: return CryptoKeyType.KEY_TYPE_ED25519

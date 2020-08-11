@@ -752,6 +752,8 @@
 		8395F952246B529000B04E11 /* MuxedAccountXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8395F947246B3CA100B04E11 /* MuxedAccountXDR.swift */; };
 		8395F953246B529000B04E11 /* FeeBumpTransactionEnvelopeXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8395F943246B383C00B04E11 /* FeeBumpTransactionEnvelopeXDR.swift */; };
 		8395F954246B529000B04E11 /* FeeBumpTransactionXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8395F94B246B44C500B04E11 /* FeeBumpTransactionXDR.swift */; };
+		8398C40924D8CAA100D6916C /* TxRep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8398C40824D8CAA100D6916C /* TxRep.swift */; };
+		8398C40A24D8CAA100D6916C /* TxRep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8398C40824D8CAA100D6916C /* TxRep.swift */; };
 		83AFD635234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD634234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift */; };
 		83AFD636234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD634234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift */; };
 		83AFD637234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD634234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift */; };
@@ -1268,6 +1270,7 @@
 		8395F945246B38CD00B04E11 /* TransactionV0XDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionV0XDR.swift; sourceTree = "<group>"; };
 		8395F947246B3CA100B04E11 /* MuxedAccountXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuxedAccountXDR.swift; sourceTree = "<group>"; };
 		8395F94B246B44C500B04E11 /* FeeBumpTransactionXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeBumpTransactionXDR.swift; sourceTree = "<group>"; };
+		8398C40824D8CAA100D6916C /* TxRep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxRep.swift; sourceTree = "<group>"; };
 		83AFD634234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathPaymentStrictReceiveOperation.swift; sourceTree = "<group>"; };
 		83AFD63C234FC60700A574D2 /* PathPaymentStrictSendOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathPaymentStrictSendOperation.swift; sourceTree = "<group>"; };
 		83AFD64C234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathPaymentStrictReceiveOperationResponse.swift; sourceTree = "<group>"; };
@@ -1792,6 +1795,7 @@
 		7445E9FE201B106500470E0A /* stellarsdk */ = {
 			isa = PBXGroup;
 			children = (
+				8398C40724D8CA6500D6916C /* txrep */,
 				74723334219D97EC00343E25 /* web_authentication */,
 				7464B723219441B40029FDC8 /* toml */,
 				C6744C1A214670F9005DE204 /* uri_scheme */,
@@ -2274,6 +2278,14 @@
 				74A504F32192D85B00A608A0 /* KeyUtils.swift */,
 			);
 			path = utils;
+			sourceTree = "<group>";
+		};
+		8398C40724D8CA6500D6916C /* txrep */ = {
+			isa = PBXGroup;
+			children = (
+				8398C40824D8CAA100D6916C /* TxRep.swift */,
+			);
+			path = txrep;
 			sourceTree = "<group>";
 		};
 		83DD2C5C202D04E100713FEE /* responses */ = {
@@ -3015,6 +3027,7 @@
 				745DF4652052FF9B000D3660 /* SetOptionsOperationResponse.swift in Sources */,
 				745DF4662052FF9B000D3660 /* ChangeTrustOperationResponse.swift in Sources */,
 				745DF4672052FF9B000D3660 /* AllowTrustOperationResponse.swift in Sources */,
+				8398C40A24D8CAA100D6916C /* TxRep.swift in Sources */,
 				745DF4682052FF9B000D3660 /* AccountMergeOperationResponse.swift in Sources */,
 				745DF4692052FF9B000D3660 /* InflationOperationResponse.swift in Sources */,
 				745DF46A2052FF9B000D3660 /* ManageDataOperationResponse.swift in Sources */,
@@ -3481,6 +3494,7 @@
 				C6744C1C21467195005DE204 /* URIScheme.swift in Sources */,
 				83697244202A7AF500398A98 /* ManageOfferOperationResponse.swift in Sources */,
 				833CBFBF20337D3300C23CFE /* Account.swift in Sources */,
+				8398C40924D8CAA100D6916C /* TxRep.swift in Sources */,
 				EC34A11920503CC5000FB042 /* Cryptors.swift in Sources */,
 				833CBF8E203351B200C23CFE /* TimeBoundsXDR.swift in Sources */,
 				7481B53E20248441000A783E /* EffectsService.swift in Sources */,

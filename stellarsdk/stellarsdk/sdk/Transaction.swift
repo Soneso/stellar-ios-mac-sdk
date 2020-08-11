@@ -77,11 +77,8 @@ public class Transaction {
     ///
     public convenience init(xdr:String) throws {
         let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: xdr))
-        
         let transactionXDR = try TransactionXDR(fromBinary: xdrDecoder)
-        let pubicKey = try PublicKey(accountId: transactionXDR.sourceAccount.accountId)
-        let keypair = KeyPair(publicKey: pubicKey)
-        let transactionSourceAccount = Account(keyPair: keypair, sequenceNumber: transactionXDR.seqNum - 1)
+        let transactionSourceAccount = try MuxedAccount(accountId: transactionXDR.sourceAccount.accountId, sequenceNumber: transactionXDR.seqNum - 1, id: transactionXDR.sourceAccount.id)
         var operations = [Operation]()
         for operationXDR in transactionXDR.operations {
             let operation = try Operation.fromXDR(operationXDR: operationXDR)
@@ -107,7 +104,7 @@ public class Transaction {
         let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: envelopeXdr))
         
         let transactionEnvelopeXDR = try TransactionEnvelopeXDR(fromBinary: xdrDecoder)
-        let transactionSourceAccount = try MuxedAccount(accountId:transactionEnvelopeXDR.txSourceAccountId, sequenceNumber: transactionEnvelopeXDR.txSeqNum - 1)
+        let transactionSourceAccount = try MuxedAccount(accountId:transactionEnvelopeXDR.txSourceAccountId, sequenceNumber: transactionEnvelopeXDR.txSeqNum - 1, id: transactionEnvelopeXDR.txMuxedSourceId)
         var operations = [Operation]()
         for operationXDR in transactionEnvelopeXDR.txOperations {
             let operation = try Operation.fromXDR(operationXDR: operationXDR)
