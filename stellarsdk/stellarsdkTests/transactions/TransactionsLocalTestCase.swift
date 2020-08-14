@@ -41,15 +41,21 @@ class TransactionsLocalTestCase: XCTestCase {
         let accountBId = "GAQC6DUD2OVIYV3DTBPOSLSSOJGE4YJZHEGQXOU4GV6T7RABWZXELCUT"
         let accountASeqNr = Int64(379748123410432)
         let accountA = Account(keyPair:sourceAccountKeyPair, sequenceNumber: accountASeqNr)
+        
         do {
+            
             let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
                                                 destinationAccountId: accountBId,
                                                 asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                                 amount: 1.5)
+            
+            let timeBounds = try TimeBounds(minTime: 1597351082, maxTime: 1597388888);
+            
             let transaction = try Transaction(sourceAccount: accountA,
                                               operations: [paymentOperation],
-                                              memo: Memo.none,
-                                              timeBounds:nil)
+                                              memo: Memo.text("Enjoy this transaction!"),
+                                              timeBounds:timeBounds)
+            
             try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
             print(try! TxRep.toTxRep(transactionEnvelope: transaction.encodedEnvelope()));
             XCTAssert(true)
