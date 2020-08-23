@@ -677,4 +677,46 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
+
+    func testCompareTransactionMemoHash() {
+        let expectation = XCTestExpectation(description: "Get right memo")
+        sdk.transactions.getTransactionDetails(transactionHash: "d50158208f1b0436d7bf99f8ecc2c15f1933e1bcd1c2a91479e29108c9cba61a") { (response) -> (Void) in
+            switch response {
+            case .success(let transactionsResponse):
+                let memo1 = transactionsResponse.memo!.toXDR().xdrEncoded!
+                let memo = try! Memo(hash: "000000000000000000000000000000002fbf727695e5431783cf6cbcef3864e1".data(using: .hexadecimal)!)
+                let memo2 = memo!.toXDR().xdrEncoded!
+                if memo1 == memo2 {
+                    XCTAssert(true)
+                } else {
+                    XCTAssert(false)
+                }
+                expectation.fulfill()
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"HMO Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testCompareTransactionMemoHash2() {
+        let expectation = XCTestExpectation(description: "Get right memo")
+        sdk.transactions.getTransactionDetails(transactionHash: "d50158208f1b0436d7bf99f8ecc2c15f1933e1bcd1c2a91479e29108c9cba61a") { (response) -> (Void) in
+            switch response {
+            case .success(let transactionsResponse):
+                let myHexMemo = "000000000000000000000000000000002fbf727695e5431783cf6cbcef3864e1";
+                if let txMemo = try? transactionsResponse.memo?.hexValue(), txMemo == myHexMemo {
+                    print ("BINGO!")
+                    XCTAssert(true)
+                } else {
+                   XCTAssert(false)
+                }
+                expectation.fulfill()
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"HMO2 Test", horizonRequestError: error)
+            }
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }
 }
