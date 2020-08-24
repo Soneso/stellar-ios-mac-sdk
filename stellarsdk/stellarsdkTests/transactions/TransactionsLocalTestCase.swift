@@ -49,10 +49,23 @@ class TransactionsLocalTestCase: XCTestCase {
                                                 asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                                 amount: 1.5)
             
+            let iomAsset:Asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: sourceAccountKeyPair)!
+            let ecoAsset:Asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "ECO", issuer: sourceAccountKeyPair)!
+            let astroAsset:Asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM12, code: "ASTRO", issuer: sourceAccountKeyPair)!
+            let moonAsset:Asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "MOON", issuer: sourceAccountKeyPair)!
+            let path:[Asset] = [ecoAsset, astroAsset]
+            
+            let pathPaymentStrictReceiveOperation = try PathPaymentStrictReceiveOperation(sourceAccountId: sourceAccountKeyPair.accountId, sendAsset: iomAsset, sendMax: 2, destinationAccountId: accountBId, destAsset:moonAsset, destAmount: 8, path:path)
+            
+            let pathPaymentStrictSendOperation = try PathPaymentStrictSendOperation(sourceAccountId: sourceAccountKeyPair.accountId, sendAsset: iomAsset, sendMax: 400, destinationAccountId: accountBId, destAsset:moonAsset, destAmount: 1200, path:path)
+            
+            
             let timeBounds = try TimeBounds(minTime: 1597351082, maxTime: 1597388888);
             
+            let operations = [paymentOperation, pathPaymentStrictReceiveOperation, pathPaymentStrictSendOperation]
+            
             let transaction = try Transaction(sourceAccount: accountA,
-                                              operations: [paymentOperation],
+                                              operations: operations,
                                               memo: Memo.text("Enjoy this transaction!"),
                                               timeBounds:timeBounds)
             

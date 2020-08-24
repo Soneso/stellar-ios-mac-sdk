@@ -66,38 +66,158 @@ public class TxRep: NSObject {
         case .createAccount(let createAccountOp):
             addLine(key: operationPrefix + "destination", value: createAccountOp.destination.accountId, lines: &lines) // TODO "M..."
             addLine(key: operationPrefix + "startingBalance", value: String(createAccountOp.startingBalance), lines: &lines)
+            break
         case .payment(let paymentOperation):
             addLine(key: operationPrefix + "destination", value: paymentOperation.destination.accountId, lines: &lines) // TODO "M..."
             addLine(key: operationPrefix + "asset", value: encodeAsset(asset: paymentOperation.asset), lines: &lines)
             addLine(key: operationPrefix + "amount", value: String(paymentOperation.amount), lines: &lines)
-        /*case .pathPayment(let pathPaymentStrictReceiveOp):
             break
-        case .manageSellOffer(let manageSellOfferOp):
-            break
-        case .createPassiveSellOffer(let createPassiveSellOfferOp):
-            break
-        case .setOptions(let setOptionOp):
-            break
-        case .changeTrust(let changeTrustOp):
-            break
-        case .allowTrust(let allowTrustOp):
-            break
-        case .accountMerge(let accountMergeOp):
-            break
-        case .manageData(let manageDataOp):
-            break
-        case .inflation:
-            break
-        case .bumpSequence(let bumpOp):
-            break
-        case .manageBuyOffer(let manageBuyOfferOp):
+        case .pathPayment(let pathPaymentStrictReceiveOp):
+            addLine(key: operationPrefix + "sendAsset", value: encodeAsset(asset: pathPaymentStrictReceiveOp.sendAsset), lines: &lines)
+            addLine(key: operationPrefix + "sendMax", value: String(pathPaymentStrictReceiveOp.sendMax), lines: &lines)
+            addLine(key: operationPrefix + "destination", value: pathPaymentStrictReceiveOp.destination.accountId, lines: &lines)
+            // TODO "M..."
+            addLine(key: operationPrefix + "destAsset", value: encodeAsset(asset: pathPaymentStrictReceiveOp.destinationAsset), lines: &lines)
+            addLine(key: operationPrefix + "destAmount", value: String(pathPaymentStrictReceiveOp.destinationAmount), lines: &lines)
+            addLine(key: operationPrefix + "path.len", value: String(pathPaymentStrictReceiveOp.path.count), lines: &lines)
+            var assetIndex = 0
+            for asset in pathPaymentStrictReceiveOp.path {
+                addLine(key: operationPrefix + "path[" + String(assetIndex) + "]", value: encodeAsset(asset: asset), lines: &lines)
+                assetIndex += 1
+            }
             break
         case .pathPaymentStrictSend(let pathPaymentStrictSendOp):
-            break*/
+            addLine(key: operationPrefix + "sendAsset", value: encodeAsset(asset: pathPaymentStrictSendOp.sendAsset), lines: &lines)
+            addLine(key: operationPrefix + "sendAmount", value: String(pathPaymentStrictSendOp.sendMax), lines: &lines)
+            addLine(key: operationPrefix + "destination", value: pathPaymentStrictSendOp.destination.accountId, lines: &lines)
+            // TODO "M..."
+            addLine(key: operationPrefix + "destAsset", value: encodeAsset(asset: pathPaymentStrictSendOp.destinationAsset), lines: &lines)
+            addLine(key: operationPrefix + "destMin", value: String(pathPaymentStrictSendOp.destinationAmount), lines: &lines)
+            addLine(key: operationPrefix + "path.len", value: String(pathPaymentStrictSendOp.path.count), lines: &lines)
+            var assetIndex = 0
+            for asset in pathPaymentStrictSendOp.path {
+                addLine(key: operationPrefix + "path[" + String(assetIndex) + "]", value: encodeAsset(asset: asset), lines: &lines)
+                assetIndex += 1
+            }
+            break
+        case .manageSellOffer(let manageSellOfferOp):
+            addLine(key: operationPrefix + "selling", value: encodeAsset(asset: manageSellOfferOp.selling), lines: &lines)
+            addLine(key: operationPrefix + "buying", value: encodeAsset(asset: manageSellOfferOp.buying), lines: &lines)
+            addLine(key: operationPrefix + "amount", value: String(manageSellOfferOp.amount), lines: &lines)
+            addLine(key: operationPrefix + "price.n", value: String(manageSellOfferOp.price.n), lines: &lines)
+            addLine(key: operationPrefix + "price.d", value: String(manageSellOfferOp.price.d), lines: &lines)
+            addLine(key: operationPrefix + "offerID", value: String(manageSellOfferOp.offerID), lines: &lines)
+            break
+        case .manageBuyOffer(let manageBuyOfferOp):
+            addLine(key: operationPrefix + "selling", value: encodeAsset(asset: manageBuyOfferOp.selling), lines: &lines)
+            addLine(key: operationPrefix + "buying", value: encodeAsset(asset: manageBuyOfferOp.buying), lines: &lines)
+            addLine(key: operationPrefix + "buyAmount", value: String(manageBuyOfferOp.amount), lines: &lines)
+            addLine(key: operationPrefix + "price.n", value: String(manageBuyOfferOp.price.n), lines: &lines)
+            addLine(key: operationPrefix + "price.d", value: String(manageBuyOfferOp.price.d), lines: &lines)
+            addLine(key: operationPrefix + "offerID", value: String(manageBuyOfferOp.offerID), lines: &lines)
+            break
+        case .createPassiveSellOffer(let createPassiveSellOfferOp):
+            addLine(key: operationPrefix + "selling", value: encodeAsset(asset: createPassiveSellOfferOp.selling), lines: &lines)
+            addLine(key: operationPrefix + "buying", value: encodeAsset(asset: createPassiveSellOfferOp.buying), lines: &lines)
+            addLine(key: operationPrefix + "amount", value: String(createPassiveSellOfferOp.amount), lines: &lines)
+            addLine(key: operationPrefix + "price.n", value: String(createPassiveSellOfferOp.price.n), lines: &lines)
+            addLine(key: operationPrefix + "price.d", value: String(createPassiveSellOfferOp.price.d), lines: &lines)
+            break
+        case .setOptions(let setOptionOp):
+            if let inflationDest = setOptionOp.inflationDestination {
+                addLine(key: operationPrefix + "inflationDest._present", value: "true", lines: &lines)
+                addLine(key: operationPrefix + "inflationDest", value: inflationDest.accountId, lines: &lines)
+            } else {
+                addLine(key: operationPrefix + "inflationDest._present", value: "false", lines: &lines)
+            }
+            if let clearFlags = setOptionOp.clearFlags {
+                addLine(key: operationPrefix + "clearFlags._present", value: "true", lines: &lines)
+                addLine(key: operationPrefix + "clearFlags", value: String(clearFlags), lines: &lines)
+            } else {
+                addLine(key: operationPrefix + "clearFlags._present", value: "false", lines: &lines)
+            }
+            if let setFlags = setOptionOp.setFlags {
+                addLine(key: operationPrefix + "setFlags._present", value: "true", lines: &lines)
+                addLine(key: operationPrefix + "setFlags", value: String(setFlags), lines: &lines)
+            } else {
+                addLine(key: operationPrefix + "setFlags._present", value: "false", lines: &lines)
+            }
+            if let masterWeight = setOptionOp.masterWeight {
+                addLine(key: operationPrefix + "masterWeight._present", value: "true", lines: &lines)
+                addLine(key: operationPrefix + "masterWeight", value: String(masterWeight), lines: &lines)
+            } else {
+                addLine(key: operationPrefix + "masterWeight._present", value: "false", lines: &lines)
+            }
+            if let lowThreshold = setOptionOp.lowThreshold {
+                addLine(key: operationPrefix + "lowThreshold._present", value: "true", lines: &lines)
+                addLine(key: operationPrefix + "lowThreshold", value: String(lowThreshold), lines: &lines)
+            } else {
+                addLine(key: operationPrefix + "lowThreshold._present", value: "false", lines: &lines)
+            }
+            if let medThreshold = setOptionOp.medThreshold {
+                addLine(key: operationPrefix + "medThreshold._present", value: "true", lines: &lines)
+                addLine(key: operationPrefix + "medThreshold", value: String(medThreshold), lines: &lines)
+            } else {
+                addLine(key: operationPrefix + "medThreshold._present", value: "false", lines: &lines)
+            }
+            if let highThreshold = setOptionOp.highThreshold {
+                addLine(key: operationPrefix + "highThreshold._present", value: "true", lines: &lines)
+                addLine(key: operationPrefix + "highThreshold", value: String(highThreshold), lines: &lines)
+            } else {
+                addLine(key: operationPrefix + "highThreshold._present", value: "false", lines: &lines)
+            }
+            if let homeDomain = setOptionOp.homeDomain {
+                addLine(key: operationPrefix + "homeDomain._present", value: "true", lines: &lines)
+                addLine(key: operationPrefix + "homeDomain", value: "\"" + homeDomain + "\"", lines: &lines) // TODO: encode homeDoamin
+            } else {
+                addLine(key: operationPrefix + "homeDomain._present", value: "false", lines: &lines)
+            }
+            if let signer = setOptionOp.signer {
+                addLine(key: operationPrefix + "signer._present", value: "true", lines: &lines)
+                switch signer.key {
+                case .ed25519(let data):
+                    addLine(key: operationPrefix + "signer.key", value: try! data.wrapped.encodeEd25519PublicKey(), lines: &lines)
+                    break
+                case .preAuthTx(let data):
+                    addLine(key: operationPrefix + "signer.key", value: try! data.wrapped.encodePreAuthTx(), lines: &lines)
+                    break
+                case .hashX(let data):
+                    addLine(key: operationPrefix + "signer.key", value: try! data.wrapped.encodeSha256Hash(), lines: &lines)
+                    break
+                }
+            } else {
+                addLine(key: operationPrefix + "signer._present", value: "false", lines: &lines)
+            }
+            break
+        case .changeTrust(let changeTrustOp):
+            addLine(key: operationPrefix + "line", value: encodeAsset(asset: changeTrustOp.asset), lines: &lines)
+            addLine(key: operationPrefix + "limit", value: String(changeTrustOp.limit), lines: &lines)
+            break
+        case .allowTrust(let allowTrustOp):
+            addLine(key: operationPrefix + "trustor", value: allowTrustOp.trustor.accountId, lines: &lines)
+            addLine(key: operationPrefix + "asset", value: allowTrustOp.asset.assetCode, lines: &lines)
+            addLine(key: operationPrefix + "authorize", value: String(allowTrustOp.authorize), lines: &lines)
+            break
+        case .accountMerge(let accountMergeOp):
+            // account merge does not include 'accountMergeOp' prefix
+            let amKey = prefix + "operations[" + String(index) + "].body.destination"
+            addLine(key: amKey, value: accountMergeOp.accountId, lines: &lines)
+            break
+        case .manageData(let manageDataOp):
+            addLine(key: operationPrefix + "dataName", value: manageDataOp.dataName, lines: &lines)
+            if let dataValue = manageDataOp.dataValue {
+                addLine(key: operationPrefix + "dataValue._present", value: "true", lines: &lines)
+                addLine(key: operationPrefix + "dataValue", value: dataValue.hexEncodedString(), lines: &lines)
+            } else {
+                addLine(key: operationPrefix + "dataValue._present", value: "false", lines: &lines)
+            }
+            break
+        case .bumpSequence(let bumpOp):
+            addLine(key: operationPrefix + "bumpTo", value: String(bumpOp.bumpTo), lines: &lines)
+            break
         default:
             break
         }
-        
     }
     
     private static func encodeAsset(asset: AssetXDR) -> String {
