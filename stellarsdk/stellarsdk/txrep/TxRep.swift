@@ -46,8 +46,37 @@ public class TxRep: NSObject {
         try addMemo(memo: transactionEnvelopeXDR.txMemo, prefix: prefix, lines: &lines)
         addOperations(operations: transactionEnvelopeXDR.txOperations, prefix: prefix, lines: &lines)
         addLine(key: prefix + "ext.v", value: "0", lines: &lines)
+        addSignatures(signatures: transactionEnvelopeXDR.txSignatures, prefix: isFeeBump ? "feeBump.tx.innerTx." : "", lines: &lines)
+        
+        if (isFeeBump) {
+            addLine(key: "feeBump.tx.ext.v", value: "0", lines: &lines)
+            addSignatures(signatures: feeBumpSignatures, prefix: "feeBump.", lines: &lines)
+        }
         
         return lines.joined(separator: "\n");
+    }
+    
+    private static func addSignatures(signatures:[DecoratedSignatureXDR], prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "signatures.len", value: String(signatures.count), lines: &lines)
+        var index = 0
+        for signature in signatures {
+            addSignature(signature: signature, index: index, prefix: prefix, lines: &lines)
+            index += 1
+        }
+    }
+    
+    private static func addSignature(signature:DecoratedSignatureXDR, index: Int, prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "signatures[" + String(index) + "].hint", value: signature.hint.wrapped.hexEncodedString(), lines: &lines)
+        addLine(key: prefix + "signatures[" + String(index) + "].signature", value: signature.signature.hexEncodedString() , lines: &lines)
+    }
+    
+    private static func addOperations(operations:[OperationXDR], prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "operations.len", value: String(operations.count), lines: &lines)
+        var index = 0
+        for operation in operations {
+            addOperation(operation: operation, index: index, prefix: prefix, lines: &lines)
+            index += 1
+        }
     }
     
     private static func addOperation(operation:OperationXDR, index: Int, prefix:String, lines: inout [String]) -> Void {
@@ -185,6 +214,7 @@ public class TxRep: NSObject {
                     addLine(key: operationPrefix + "signer.key", value: try! data.wrapped.encodeSha256Hash(), lines: &lines)
                     break
                 }
+                addLine(key: operationPrefix + "signer.weight", value: String(signer.weight), lines: &lines)
             } else {
                 addLine(key: operationPrefix + "signer._present", value: "false", lines: &lines)
             }
@@ -204,7 +234,7 @@ public class TxRep: NSObject {
             addLine(key: amKey, value: accountMergeOp.accountId, lines: &lines)
             break
         case .manageData(let manageDataOp):
-            addLine(key: operationPrefix + "dataName", value: manageDataOp.dataName, lines: &lines)
+            addLine(key: operationPrefix + "dataName", value: "\"" + manageDataOp.dataName + "\"", lines: &lines)
             if let dataValue = manageDataOp.dataValue {
                 addLine(key: operationPrefix + "dataValue._present", value: "true", lines: &lines)
                 addLine(key: operationPrefix + "dataValue", value: dataValue.hexEncodedString(), lines: &lines)
@@ -327,15 +357,6 @@ public class TxRep: NSObject {
             if let m = Memo(memoXDR: memo) {
                 addLine(key: prefix + "memo.retHash", value: try m.trimmedHexValue(), lines: &lines)
             }
-        }
-    }
-    
-    private static func addOperations(operations:[OperationXDR], prefix:String, lines: inout [String]) -> Void {
-        addLine(key: prefix + "operations.len", value: String(operations.count), lines: &lines)
-        var index = 0
-        for operation in operations {
-            addOperation(operation: operation, index: index, prefix: prefix, lines: &lines)
-            index += 1
         }
     }
 }
