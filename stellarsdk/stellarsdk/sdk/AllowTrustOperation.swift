@@ -33,7 +33,7 @@ public class AllowTrustOperation:Operation {
     
     /// Creates a new PaymentOperation object.
     ///
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id. must start with "M" or "G" and must be valid, otherwise it will be ignored.
     /// - Parameter trustor: The account of the recipient of the trustline.
     /// - Parameter assetCode: The asset code of the trustline. E.g. BTC
     /// - Parameter authorize: Flag indicating whether the trustline is authorized, true = TrustLineFlags.AUTHORIZED_FLAG
@@ -72,7 +72,7 @@ public class AllowTrustOperation:Operation {
     
     /// Creates a new PaymentOperation object.
     ///
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id. must start with "M" or "G" and must be valid, otherwise it will be ignored.
     /// - Parameter trustor: The account of the recipient of the trustline.
     /// - Parameter assetCode: The asset code of the trustline. E.g. BTC
     /// - Parameter authorize: Flag indicating whether the trustline is authorized, 0, or any bitwise combination of TrustLineFlags
@@ -109,7 +109,7 @@ public class AllowTrustOperation:Operation {
     /// Creates a new AllowTrustOperation object from the given AllowTrustOperationXDR object.
     ///
     /// - Parameter fromXDR: the AllowTrustOperationXDR object to be used to create a new AllowTrustOperation object.
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
     public init(fromXDR:AllowTrustOperationXDR, sourceAccountId:String?) {
         self.trustor = KeyPair(publicKey: fromXDR.trustor)

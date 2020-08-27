@@ -19,6 +19,7 @@ public class FeeBumpTransaction {
     
     public let fee:UInt64
     public let sourceAccount:TransactionAccount
+    public let sourceAccountId:String
     public let innerTransaction:Transaction
     public private(set) var feeBumpTransactionXDR:FeeBumpTransactionXDR
     public private(set) var innerTransactionXDR:FeeBumpTransactionXDR.InnerTransactionXDR
@@ -52,6 +53,7 @@ public class FeeBumpTransaction {
         
         
         self.sourceAccount = sourceAccount
+        self.sourceAccountId = sourceAccount.accountId
         self.fee = fee
         self.innerTransaction = innerTransaction
         self.innerTransactionXDR = try FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerTransaction.transactionXDR.toEnvelopeV1XDR())

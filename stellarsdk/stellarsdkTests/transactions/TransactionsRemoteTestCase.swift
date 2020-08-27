@@ -11,7 +11,7 @@ import stellarsdk
 
 class TransactionsRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let seed = "SD24I54ZUAYGZCKVQD6DZD6PQGLU7UQKVWDM37TKIACO3P47WG3BRW4C"
+    let seed = "SC5DJLUVRNNYR3M4IZUHJKYHKWLEYXTI6IZ2CZCGS45IIBNLVCFJFVW7"
     var streamItem:TransactionsStreamItem? = nil
     
     override func setUp() {
@@ -112,7 +112,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetTransactionDetails() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         
-        sdk.transactions.getTransactionDetails(transactionHash: "ed1dc9a219d5e8292a29b1b5c580b98fba0066aeb96fcd45a290fb68ff0b70bb") { (response) -> (Void) in
+        sdk.transactions.getTransactionDetails(transactionHash: "a5287f0dc3cb3ea088722f25927125aed4c78bf49051c530c4ca04a07a2103e8") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)

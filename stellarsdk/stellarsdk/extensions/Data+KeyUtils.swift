@@ -14,7 +14,7 @@ extension Data {
         return try encodeCheck(versionByte: .accountId)
     }
     
-    /*public func encodeMuxedAccount() throws -> String {
+    public func encodeMuxedAccount() throws -> String {
         let muxed = try XDRDecoder.decode(MuxedAccountXDR.self, data:self)
         switch muxed {
         case .ed25519(_):
@@ -24,7 +24,7 @@ extension Data {
             let result = try data.encodeMEd25519AccountId()
             return result.replacingOccurrences(of: "=", with: "")
         }
-    }*/
+    }
     
     public func encodeMEd25519AccountId() throws -> String {
         return try encodeCheck(versionByte: .muxedAccountId)

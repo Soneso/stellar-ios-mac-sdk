@@ -58,7 +58,9 @@ open class AccountService: NSObject {
     ///
     open func getAccountDetails(accountId: String, response: @escaping AccountResponseClosure) {
         var requestPath = "/accounts/\(accountId)"
-        
+        if accountId.hasPrefix("M"), let mux = try? accountId.decodeMuxedAccount() {
+            requestPath = "/accounts/\(mux.ed25519AccountId)"
+        }
         serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
             case .success(let data):

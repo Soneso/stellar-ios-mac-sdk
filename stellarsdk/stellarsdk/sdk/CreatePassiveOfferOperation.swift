@@ -35,7 +35,7 @@ public class CreatePassiveOfferOperation:Operation {
     
     /// Creates a new CreatePassiveOfferOperation object.
     ///
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     /// - Parameter selling: The asset you would like to sell.
     /// - Parameter buying: The asset you would like to buy.
     /// - Parameter amount: Amount of selling being sold..
@@ -64,7 +64,7 @@ public class CreatePassiveOfferOperation:Operation {
     /// Creates a new CreatePassiveSellOfferOperation object from the given CreatePassiveOfferOperationXDR object.
     ///
     /// - Parameter fromXDR: the CreatePassiveOfferOperationXDR object to be used to create a new CreatePassiveSellOfferOperation object.
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
     public init(fromXDR:CreatePassiveOfferOperationXDR, sourceAccountId:String?) {
         self.selling = try! Asset.fromXDR(assetXDR: fromXDR.selling)

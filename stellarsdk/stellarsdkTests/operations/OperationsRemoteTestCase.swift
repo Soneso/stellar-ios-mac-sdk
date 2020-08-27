@@ -13,8 +13,8 @@ class OperationsRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
     var streamItem:OperationsStreamItem? = nil
     
-    let seed = "SD24I54ZUAYGZCKVQD6DZD6PQGLU7UQKVWDM37TKIACO3P47WG3BRW4C"
-    let IOMIssuingAccountId = "GAHVPXP7RPX5EGT6WFDS26AOM3SBZW2RKEDBZ5VO45J7NYDGJYKYE6UW"
+    let seed = "SC5DJLUVRNNYR3M4IZUHJKYHKWLEYXTI6IZ2CZCGS45IIBNLVCFJFVW7"
+    let IOMIssuingAccountId = "GCP76QULG2X3SKYG4Z3OYY3DJJXWSQ7NTTJCH4E3EOLUQDAJU2AU6ZVI"
     
     override func setUp() {
         super.setUp()
@@ -109,7 +109,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationsForTransaction() {
         let expectation = XCTestExpectation(description: "Get operations for transaction")
         
-        sdk.operations.getOperations(forTransaction: "a6f39f3cbe64bb45d909690f604d8cec7f5a88f7398d8d656f26c63143ae8e59", includeFailed:true, join:"transactions") { (response) -> (Void) in
+        sdk.operations.getOperations(forTransaction: "a5287f0dc3cb3ea088722f25927125aed4c78bf49051c530c4ca04a07a2103e8", includeFailed:true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -314,14 +314,14 @@ class OperationsRemoteTestCase: XCTestCase {
     func testAccountMerge() {
         let expectation = XCTestExpectation(description: "account merged")
         do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SBWY3LDUMW2C3MNTBRY6JPZIQIF67KVDS4GBC2XWSEHKCCKWJDKYGLTO")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SA45WOS6WCPPHKHAIXTH6RK5ACXMVWQ2MEIDSG6VYAXX3O5GFXMEZ3JW")
             
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
                     do {
                         
-                        let muxDestination = try MuxedAccount(accountId: "GAHV2YLGDBSPNOMZZO2VKKEWXOCGEF4425KTHM6BH5IYQAUFCHNQNIIW",  id: 100000029292)
+                        let muxDestination = try MuxedAccount(accountId: "GALA3JYOCVM4ENFPXMMXQBFGTQZKWRIOAVZSHGGNUVC4KOGOB3A4EFGZ",  id: 100000029292)
                         
                         print("dest:\(muxDestination.accountId)")
                         

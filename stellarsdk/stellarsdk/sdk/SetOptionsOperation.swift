@@ -61,7 +61,7 @@ public class SetOptionsOperation:Operation {
     
     /// Creates a new SetOptionsOperation object.
     ///
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     /// - Parameter inflationDestination: Account of the inflation destination.
     /// - Parameter clearFlags: The asset you would like to buy. Indicates which flags to clear. For details about the flags, please refer to the accounts doc (https://www.stellar.org/developers/guides/concepts/accounts.html). The bit mask integer subtracts from the existing flags of the account. This allows for setting specific bits without knowledge of existing flags.
     /// - Parameter setFlags: Indicates which flags to set. For details about the flags, please refer to the accounts doc (https://www.stellar.org/developers/guides/concepts/accounts.html). The bit mask integer adds onto the existing flags of the account. This allows for setting specific bits without knowledge of existing flags.
@@ -124,7 +124,7 @@ public class SetOptionsOperation:Operation {
     /// Creates a new SetOptionsOperation object from the given SetOptionsOperationXDR object.
     ///
     /// - Parameter fromXDR: the SetOptionsOperationXDR object to be used to create a new SetOptionsOperation object.
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
     public init(fromXDR:SetOptionsOperationXDR, sourceAccountId:String?) {
         if let inflation = fromXDR.inflationDestination {

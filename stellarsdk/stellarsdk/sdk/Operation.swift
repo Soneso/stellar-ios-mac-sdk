@@ -32,12 +32,12 @@ public class Operation {
     
     /// Creates a new operation object.
     ///
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
     public init(sourceAccountId:String?) {
         
         if let saId = sourceAccountId, let mux = try? saId.decodeMuxedAccount() {
-            self.sourceAccount = try? KeyPair(accountId: saId)
+            self.sourceAccount = try? KeyPair(accountId: mux.ed25519AccountId)
             self.sourceAccountId = sourceAccountId
             self.sourceAccountXdr = mux
         }

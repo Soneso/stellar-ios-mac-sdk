@@ -29,7 +29,7 @@ public class CreateAccountOperation:Operation {
     
     /// Creates a new CreateAccountOperation object.
     ///
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     /// - Parameter destination: Account address that is created and funded.
     /// - Parameter startBalance: Amount of XLM to send to the newly created account. This XLM comes from the source account.
     ///
@@ -53,7 +53,7 @@ public class CreateAccountOperation:Operation {
     /// Creates a new CreateAccountOperation object from the given CreateAccountOperationXDR object.
     ///
     /// - Parameter fromXDR: the CreateAccountOperationXDR object to be used to create a new CreateAccountOperation object.
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
     public init(fromXDR:CreateAccountOperationXDR, sourceAccountId:String?) {
         self.destination = KeyPair(publicKey: fromXDR.destination)

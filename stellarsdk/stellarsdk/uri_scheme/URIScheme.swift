@@ -191,7 +191,7 @@ public class URIScheme: NSObject {
             setupTransactionXDR(transactionXDR: transactionXDR, signerKeyPair: keyPair, publicKey: getValue(forParam: SignTransactionParams.pubkey, fromURL: url)) { (response) -> (Void) in
                 switch response {
                 case .success(transactionXDR: var transaction):
-                    if transaction?.sourceAccount.accountId == keyPair.accountId {
+                    if transaction?.sourceAccount.ed25519AccountId == keyPair.accountId {
                         try? transaction?.sign(keyPair: keyPair, network: .testnet)
                         let callback = self.getValue(forParam: .callback, fromURL: url)
                         self.submitTransaction(transactionXDR: transaction, callback: callback, keyPair: keyPair, completion: { (response) -> (Void) in
@@ -244,7 +244,7 @@ public class URIScheme: NSObject {
     
     /// Sets the sequence number for the transaction.
     private func setTransactionXDRSequenceNr(transactionXDR: TransactionXDR, signerKeyPair: KeyPair, completion: @escaping SetupTransactionXDRClosure) {
-        sdk.accounts.getAccountDetails(accountId: transactionXDR.sourceAccount.accountId) { (response) -> (Void) in
+        sdk.accounts.getAccountDetails(accountId: transactionXDR.sourceAccount.ed25519AccountId) { (response) -> (Void) in
             switch response {
             case .success(details: let accountDetails):
                 let reconfiguredTransactionXDR = TransactionXDR(sourceAccount: transactionXDR.sourceAccount,
@@ -282,7 +282,7 @@ public class URIScheme: NSObject {
     
     /// Checks and sets the transaction's source account and sequence number if they're missing.
     private func setupTransactionXDR(transactionXDR: TransactionXDR, signerKeyPair: KeyPair, publicKey: String? = nil, completion: @escaping SetupTransactionXDRClosure) {
-        let sourceAccountIsEmpty = transactionXDR.sourceAccount.accountId.isEmpty
+        let sourceAccountIsEmpty = transactionXDR.sourceAccount.ed25519AccountId.isEmpty
         let sequenceNumberIsEmpty = transactionXDR.seqNum == 0
         let signerAccountID = publicKey ?? signerKeyPair.accountId
         if sourceAccountIsEmpty && sequenceNumberIsEmpty {

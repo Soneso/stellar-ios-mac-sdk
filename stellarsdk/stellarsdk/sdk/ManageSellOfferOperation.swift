@@ -25,7 +25,7 @@ public class ManageSellOfferOperation:ManageOfferOperation {
     
     /// Creates a new ManageOfferOperation object.
     ///
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     /// - Parameter selling: Asset the offer creator is selling.
     /// - Parameter buying: Asset the offer creator is buying.
     /// - Parameter amount: Amount of selling being sold. Set to 0 if you want to delete an existing offer.
@@ -47,7 +47,7 @@ public class ManageSellOfferOperation:ManageOfferOperation {
     /// Creates a new ManageSellOfferOperation object from the given ManageOfferOperationXDR object.
     ///
     /// - Parameter fromXDR: the ManageOfferOperationXDR object to be used to create a new ManageSellOfferOperation object.
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     public override init(fromXDR:ManageOfferOperationXDR, sourceAccountId:String?) {
         super.init(fromXDR: fromXDR, sourceAccountId: sourceAccountId)
     }

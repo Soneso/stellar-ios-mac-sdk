@@ -24,7 +24,7 @@ public class BumpSequenceOperation: Operation {
     /// Creates a new BumpSequenceOperation object.
     ///
     /// - Parameter bumpTo: Value to bump sequence.
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id. must start with "M" or "G" and must be valid, otherwise it will be ignored.
     ///
     public init(bumpTo:Int64, sourceAccountId:String?) {
         self.bumpTo = bumpTo
@@ -43,7 +43,7 @@ public class BumpSequenceOperation: Operation {
     /// Creates a new BumpSequenceOperation object from the given SetOptionsOperationXDR object.
     ///
     /// - Parameter fromXDR: the SetOptionsOperationXDR object to be used to create a new SetOptionsOperation object.
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
     public init(fromXDR:BumpSequenceOperationXDR, sourceAccountId:String?) {
         bumpTo = fromXDR.bumpTo

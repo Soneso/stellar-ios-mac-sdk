@@ -20,6 +20,13 @@ public class MuxedAccount: Account
             return xdr.accountId
         }
     }
+
+    /// Human readable Stellar ed25519 account ID.
+    public var ed25519AccountId: String {
+        get {
+            return xdr.ed25519AccountId
+        }
+    }
     
     /// Creates a new MuxedAccount object.
     ///
@@ -38,15 +45,25 @@ public class MuxedAccount: Account
         super.init(keyPair: keyPair, sequenceNumber: sequenceNumber)
     }
     
-    /// Creates a MuxedAccount from an accountId ("G..."), sequence number and memo id
+    /// Creates a MuxedAccount from an accountId ("G..." or "M...")
     /// If you do not provide a sequence nr, it will be set to 0
+    /// If you provide an accountId starting with "M" and an id by id parameter, then the id parameter will be ignored
     public convenience init(accountId:String, sequenceNumber:Int64? = nil, id:UInt64? = nil) throws {
         var seqNr:Int64 = 0
         if let pSqNr = sequenceNumber {
             seqNr = pSqNr
         }
-        let kp = try KeyPair(accountId: accountId)
-        self.init(keyPair:kp, sequenceNumber: seqNr, id:id)
+        let muxl = try accountId.decodeMuxedAccount()
+        let kp = try KeyPair(accountId: muxl.ed25519AccountId)
+        var pid:UInt64? = id
+        switch muxl {
+        case .med25519(let inner):
+            pid = inner.id
+        default:
+            break
+        }
+        
+        self.init(keyPair:kp, sequenceNumber: seqNr, id:pid)
     }
     
     /// Creates a MuxedAccount from a secretSeed "S..." and a sequence number
@@ -54,6 +71,29 @@ public class MuxedAccount: Account
     /// The account will be of type MUXED_ED25519 if you provide an id
     public convenience init(secretSeed:String, sequenceNumber: Int64, id:UInt64? = nil) throws {
         let keyPair = try KeyPair(secretSeed: secretSeed)
+        self.init(keyPair: keyPair, sequenceNumber: sequenceNumber, id:id)
+    }
+    
+    /// Creates a MuxedAccount from an account id wich can start with "M" or with "G" and a sequence number
+    /// Optionally you can also send the secret seed "S..."
+    /// The account will be of type MUXED_ED25519 if the account id starts with "M" (contains the id)
+    /// The account will be of type ED25519 if the account id starts with "G" (does not contain the id)
+    public convenience init(accountId:String, secretSeed:String? = nil, sequenceNumber: Int64) throws {
+        
+        let mux = try accountId.decodeMuxedAccount()
+        let keyPair:KeyPair
+        if let oseed = secretSeed {
+            keyPair = try KeyPair(secretSeed: oseed)
+        } else {
+            keyPair = try KeyPair(publicKey: PublicKey(accountId: mux.ed25519AccountId))
+        }
+        var id:UInt64? = nil
+        switch mux {
+        case .med25519(let med):
+            id = med.id
+        default:
+            break
+        }
         self.init(keyPair: keyPair, sequenceNumber: sequenceNumber, id:id)
     }
 }

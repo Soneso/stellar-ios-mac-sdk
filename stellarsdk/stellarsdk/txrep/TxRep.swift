@@ -35,11 +35,11 @@ public class TxRep: NSObject {
         let prefix = isFeeBump ? "feeBump.tx.innerTx.tx." : "tx.";
         addLine(key: "type", value: type, lines: &lines);
         if let feeBump = feeBumpTransaction {
-            addLine(key: "feeBump.tx.feeSource", value: feeBump.sourceAccount.keyPair.accountId, lines: &lines); //TODO: muxed
+            addLine(key: "feeBump.tx.feeSource", value: feeBump.sourceAccountId, lines: &lines);
             addLine(key: "feeBump.tx.fee", value: String(feeBump.fee), lines: &lines);
             addLine(key: "feeBump.tx.innerTx.type", value: "ENVELOPE_TYPE_TX",lines: &lines);
         }
-        addLine(key: prefix + "sourceAccount", value: transactionEnvelopeXDR.txSourceAccountId, lines: &lines) // TODO: muxed
+        addLine(key: prefix + "sourceAccount", value: transactionEnvelopeXDR.txSourceAccountId, lines: &lines)
         addLine(key: prefix + "fee", value: String(transactionEnvelopeXDR.txFee), lines: &lines)
         addLine(key: prefix + "seqNum", value: String(transactionEnvelopeXDR.txSeqNum), lines: &lines)
         addTimeBounds(timeBounds: transactionEnvelopeXDR.txTimeBounds, prefix: prefix, lines: &lines)

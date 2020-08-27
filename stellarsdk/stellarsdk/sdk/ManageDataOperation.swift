@@ -29,7 +29,7 @@ public class ManageDataOperation:Operation {
     
     /// Creates a new PaymentOperation object.
     ///
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     /// - Parameter name: String up to 64 bytes long. If this is a new Name it will add the given name/value pair to the account. If this Name is already present then the associated value will be modified.
     /// - Parameter value: (optional) If not present then the existing Name will be deleted. If present then this value will be set in the DataEntry. Up to 64 bytes long.
     ///
@@ -52,7 +52,7 @@ public class ManageDataOperation:Operation {
     /// Creates a new ManageDataOperation object from the given ManageDataOperationXDR object.
     ///
     /// - Parameter fromXDR: the ManageDataOperationXDR object to be used to create a new ManageDataOperation object.
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
     public init(fromXDR:ManageDataOperationXDR, sourceAccountId:String?) {
         self.name = fromXDR.dataName

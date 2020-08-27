@@ -51,10 +51,10 @@ public class PathPaymentOperation:Operation {
     
     /// Creates a new PathPaymentOperation object.
     ///
-    /// - Parameter sourceAccountId: (optional) source account Id. Must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     /// - Parameter sendAsset: The asset deducted from the sender’s account.
     /// - Parameter sendMax: The maximum amount of send asset to deduct (excluding fees).
-    /// - Parameter destinationAccountId: Account address that receives the payment. Must start with "G" and must be valid, otherwise this will throw an exception.
+    /// - Parameter destinationAccountId: Account address that receives the payment, must be valid, otherwise this will throw an exception.
     /// - Parameter destAsset: The asset the destination account receives.
     /// - Parameter destAmount: The amount of destination asset the destination account receives.
     /// - Parameter path: The assets (other than send asset and destination asset) involved in the offers the path takes. For example, if you can only find a path from USD to EUR through XLM and BTC, the path would be USD -> XLM -> BTC -> EUR and the path field would contain XLM and BTC. The maximum number of assets in the path is 5
@@ -69,8 +69,9 @@ public class PathPaymentOperation:Operation {
         
         self.sendAsset = sendAsset
         self.sendMax = sendMax
-        self.destinationAccountId = destinationAccountId
-        self.destination = try KeyPair(accountId: destinationAccountId)
+        let mux = try destinationAccountId.decodeMuxedAccount()
+        self.destinationAccountId = mux.accountId
+        self.destination = try KeyPair(accountId: mux.ed25519AccountId)
         self.destAsset = destAsset
         self.destAmount = destAmount
         self.path = path
@@ -87,7 +88,7 @@ public class PathPaymentOperation:Operation {
         self.sendAsset = try! Asset.fromXDR(assetXDR: fromXDR.sendAsset)
         self.sendMax = Operation.fromXDRAmount(fromXDR.sendMax)
         self.destinationAccountId = fromXDR.destination.accountId
-        self.destination = try! KeyPair(publicKey:PublicKey(accountId:self.destinationAccountId))
+        self.destination = try! KeyPair(publicKey:PublicKey(accountId:fromXDR.destination.ed25519AccountId))
         self.destAsset = try! Asset.fromXDR(assetXDR: fromXDR.destinationAsset)
         self.destAmount = Operation.fromXDRAmount(fromXDR.destinationAmount)
         var path = [Asset]()
@@ -101,13 +102,13 @@ public class PathPaymentOperation:Operation {
     /// Creates a new PathPaymentOperation object from the given PathPaymentOperationXDR object.
     ///
     /// - Parameter fromXDR: the PathPaymentOperationXDR object to be used to create a new PathPaymentOperation object.
-    /// - Parameter sourceAccountId: (optional) source account Id. Must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
     public init(fromXDR:PathPaymentOperationXDR, sourceAccountId:String?) {
         self.sendAsset = try! Asset.fromXDR(assetXDR: fromXDR.sendAsset)
         self.sendMax = Operation.fromXDRAmount(fromXDR.sendMax)
         self.destinationAccountId = fromXDR.destination.accountId
-        self.destination = try! KeyPair(publicKey:PublicKey(accountId:self.destinationAccountId))
+        self.destination = try! KeyPair(publicKey:PublicKey(accountId:fromXDR.destination.ed25519AccountId))
         self.destAsset = try! Asset.fromXDR(assetXDR: fromXDR.destinationAsset)
         self.destAmount = Operation.fromXDRAmount(fromXDR.destinationAmount)
         var path = [Asset]()

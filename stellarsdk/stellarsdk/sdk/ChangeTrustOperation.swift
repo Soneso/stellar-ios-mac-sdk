@@ -29,7 +29,7 @@ public class ChangeTrustOperation:Operation {
     
     /// Creates a new ChangeTrustOperation object.
     ///
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id. must start with "M" or "G" and must be valid, otherwise it will be ignored.
     /// - Parameter asset: The asset of the trustline. For example, if a user extends a trustline of up to 200 USD to an anchor, the line is USD:anchor.
     /// - Parameter limit: The limit of the trustline. In the previous example, the limit would be 200.
     ///
@@ -52,7 +52,7 @@ public class ChangeTrustOperation:Operation {
     /// Creates a new ChangeTrustOperation object from the given ChangeTrustOperationXDR object.
     ///
     /// - Parameter fromXDR: the ChangeTrustOperationXDR object to be used to create a new ChangeTrustOperation object.
-    /// - Parameter sourceAccountId: (optional) source account Id. must start with "G" and must be valid, otherwise it will be ignored.
+    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
     public init(fromXDR:ChangeTrustOperationXDR, sourceAccountId:String?) {
         self.asset = try! Asset.fromXDR(assetXDR: fromXDR.asset)
