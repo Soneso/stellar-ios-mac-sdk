@@ -56,6 +56,334 @@ public class TxRep: NSObject {
         return lines.joined(separator: "\n");
     }
     
+    /// This function parses txrep and returns the corresponding transaction envelope xdr (base64 encoded)
+    ///
+    /// - Parameter txRep: human-readable low-level representation of Stellar transaction to be parsed
+    /// - Returns: base64 encoded transaction envelope xdr
+    public static func fromTxRep(txRep:String) throws ->String  {
+        let lines = txRep.components(separatedBy: "\n")
+        var dic:Dictionary = [String: String]()
+        for line in lines {
+            let parts = line.components(separatedBy: ":")
+            if (parts.count > 1) {
+                let key = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
+                let values = parts[1...parts.count - 1]
+                let value = values.joined(separator: ":").trimmingCharacters(in: .whitespacesAndNewlines)
+                dic.updateValue(removeComment(val: value), forKey: key)
+            }
+        }
+        var prefix = ".tx"
+        let isFeeBump = dic["type"] == "ENVELOPE_TYPE_TX_FEE_BUMP";
+        let feeBumpFee:Int
+        let feeBumpSource = dic["feeBump.tx.feeSource"]
+        
+        if isFeeBump {
+            prefix = "feeBump.tx.innerTx.tx."
+            if let feeBumpFeeStr = dic["feeBump.tx.fee"] {
+                if let val = Int(feeBumpFeeStr) {
+                    feeBumpFee = val
+                } else {
+                   throw TxRepError.invalidValue(key: "feeBump.tx.fee")
+                }
+            } else {
+                throw TxRepError.missingValue(key: "feeBump.tx.fee")
+            }
+            if let fbs = feeBumpSource {
+                do {
+                    let _ = try MuxedAccount(accountId: fbs)
+                } catch {
+                    throw TxRepError.invalidValue(key: "feeBump.tx.feeSource")
+                }
+            } else {
+                throw TxRepError.missingValue(key: "feeBump.tx.feeSource")
+            }
+        }
+        
+        let fee:Int
+        var key = prefix + "fee"
+        if let feeStr = dic[key] {
+            if let val = Int(feeStr) {
+                fee = val
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        let seqNr:Int64
+        key = prefix + "seqNum"
+        if let seqNrStr = dic[key] {
+            if let val = Int64(seqNrStr) {
+                seqNr = val
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        let sourceAccount:MuxedAccount
+        key = prefix + "sourceAccount"
+        if let sourceAccountId = dic[key] {
+            do {
+                sourceAccount = try MuxedAccount(accountId:sourceAccountId, sequenceNumber:seqNr, id:nil)
+            } catch {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        let timeBounds:TimeBounds? = try getTimeBounds(dic: dic, prefix: prefix)
+        let memo:Memo? = try getMemo(dic:dic, prefix:prefix)
+        let operations:[Operation] = try getOperations(dic:dic, prefix:prefix)
+        
+        return ""
+    }
+    
+    private static func getOperations(dic:Dictionary<String,String>, prefix:String) throws -> [Operation] {
+        var operations:[Operation] = [Operation]()
+        let key = prefix + "operations.len"
+        if let opLengthStr = dic[key] {
+            if let opCount = Int(opLengthStr) {
+                if opCount > 100 {
+                    throw TxRepError.invalidValue(key: key + " > 100")
+                }
+                for i in 0..<opCount{
+                    if let nextOperation = try getOperation(dic: dic, txPrefix: prefix, index: i) {
+                        operations.append(nextOperation)
+                    }
+                }
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        return operations
+    }
+    
+    private static func getOperation(dic:Dictionary<String,String>, txPrefix:String, index:Int) throws -> Operation? {
+        let prefix = txPrefix + "operations[" + String(index) + "].body."
+        var key = txPrefix + "operations[" + String(index) + "].sourceAccount._present"
+        var sourceAccount:MuxedAccount? = nil
+        if let present = dic[key], present == "true" {
+            key = txPrefix + "operations[" + String(index) + "].sourceAccount"
+            if let sourceAccountId = dic[key] {
+                do {
+                    sourceAccount = try MuxedAccount(accountId:sourceAccountId)
+                } catch {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        }
+        key = prefix + "type"
+        if let type = dic[key] {
+            switch type {
+            case "CREATE_ACCOUNT":
+                let opPrefix = prefix + "createAccountOp."
+                return try getCreateAccountOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "PAYMENT":
+                let opPrefix = prefix + "paymentOp."
+                return try getPaymentOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "PATH_PAYMENT_STRICT_RECEIVE":
+                let opPrefix = prefix + "pathPaymentStrictReceiveOp."
+                return try getPaymentStrictReceiveOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "PATH_PAYMENT_STRICT_SEND":
+                let opPrefix = prefix + "pathPaymentStrictSendOp."
+                return try getPaymentStrictSendOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "MANAGE_SELL_OFFER":
+                let opPrefix = prefix + "manageSellOfferOp."
+                return try getManageSellOfferOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "CREATE_PASSIVE_SELL_OFFER":
+                let opPrefix = prefix + "createPassiveSellOfferOp."
+                return try getCreatePassiveSellOfferOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "SET_OPTIONS":
+                let opPrefix = prefix + "setOptionsOp."
+                return try getSetOptionsOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "CHANGE_TRUST":
+                let opPrefix = prefix + "changeTrustOp."
+                return try getChangeTrustOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "ALLOW_TRUST":
+                let opPrefix = prefix + "allowTrustOp."
+                return try getAllowTrustOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "ACCOUNT_MERGE":
+                // account merge does not include 'accountMergeOp' prefix
+                return try getAccountMergeOperation(dic: dic, txPrefix: txPrefix, index:index, sourceAccount: sourceAccount)
+            case "MANAGE_DATA":
+                let opPrefix = prefix + "manageDataOp."
+                return try getManageDataOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "BUMP_SEQUENCE":
+                let opPrefix = prefix + "bumpSequenceOp."
+                return try getBumpSequenceOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "MANAGE_BUY_OFFER":
+                let opPrefix = prefix + "manageBuyOfferOp."
+                return try getManageBuyOfferOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            default:
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getCreateAccountOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> CreateAccountOperation? {
+       return nil
+    }
+    
+    private static func getPaymentOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> PaymentOperation? {
+       return nil
+    }
+    
+    private static func getPaymentStrictReceiveOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> PathPaymentStrictReceiveOperation? {
+       return nil
+    }
+    
+    private static func getPaymentStrictSendOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> PathPaymentStrictSendOperation? {
+       return nil
+    }
+    
+    private static func getManageSellOfferOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ManageSellOfferOperation? {
+       return nil
+    }
+    
+    private static func getManageBuyOfferOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ManageBuyOfferOperation? {
+       return nil
+    }
+    
+    private static func getCreatePassiveSellOfferOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> CreatePassiveOfferOperation? {
+       return nil
+    }
+    
+    private static func getSetOptionsOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> SetOptionsOperation? {
+       return nil
+    }
+    
+    private static func getChangeTrustOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ChangeTrustOperation? {
+       return nil
+    }
+    
+    private static func getAllowTrustOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> AllowTrustOperation? {
+       return nil
+    }
+    
+    private static func getAccountMergeOperation(dic:Dictionary<String,String>, txPrefix:String, index:Int, sourceAccount:MuxedAccount?) throws -> AccountMergeOperation? {
+       return nil
+    }
+    
+    private static func getManageDataOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ManageDataOperation? {
+       return nil
+    }
+    
+    private static func getBumpSequenceOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> BumpSequenceOperation? {
+       return nil
+    }
+    
+    private static func getTimeBounds(dic:Dictionary<String,String>, prefix:String) throws -> TimeBounds? {
+        var timeBounds:TimeBounds? = nil
+        let key = prefix + "timeBounds._present"
+        if let present = dic[key], present == "true" {
+            if let min = dic[prefix + "timeBounds.minTime"], let max = dic[prefix + "timeBounds.maxTime"],
+                let minTime = UInt64(min), let maxTime = UInt64(max) {
+                do {
+                    timeBounds = try TimeBounds(minTime: minTime, maxTime: maxTime)
+                } catch {
+                    throw TxRepError.invalidValue(key: prefix + "timeBounds")
+                }
+            } else {
+                throw TxRepError.invalidValue(key: prefix + "timeBounds")
+            }
+        }
+        return timeBounds
+    }
+    
+    private static func getMemo(dic:Dictionary<String,String>, prefix:String) throws -> Memo? {
+        var memo:Memo? = nil
+        var key = prefix + "memo.type"
+        if let type = dic[key] {
+            switch type {
+            case "MEMO_TEXT":
+                key = prefix + "memo.text"
+                if let text = dic[key] {
+                    do {
+                        let jsonDecoder = JSONDecoder()
+                        if let textData = text.data(using: .utf8) {
+                            let decodedText = try jsonDecoder.decode(String.self, from:textData)
+                            memo = try Memo.init(text: decodedText)
+                        } else {
+                            memo = try Memo.init(text: text.replacingOccurrences(of: "\"", with: ""))
+                        }
+                    } catch {
+                        throw TxRepError.invalidValue(key: key)
+                    }
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+                break
+            case "MEMO_ID":
+                key = prefix + "memo.id"
+                if let id = dic[key] {
+                    if let uI64Id = UInt64(id) {
+                        memo = Memo.id(uI64Id)
+                    } else {
+                       throw TxRepError.invalidValue(key: key)
+                    }
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+                break
+            case "MEMO_HASH":
+                key = prefix + "memo.hash"
+                if let hashStr = dic[key] {
+                    if let data = hashStr.data(using: .hexadecimal) {
+                        do {
+                            memo = try Memo(hash:data)
+                        } catch {
+                            throw TxRepError.invalidValue(key: key)
+                        }
+                    } else {
+                        throw TxRepError.invalidValue(key: key)
+                    }
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+                break
+            case "MEMO_RETURN":
+                key = prefix + "memo.return"
+                if let hashStr = dic[key] {
+                    if let data = hashStr.data(using: .hexadecimal) {
+                        do {
+                            memo = try Memo(returnHash:data)
+                        } catch {
+                            throw TxRepError.invalidValue(key: key)
+                        }
+                    } else {
+                        throw TxRepError.invalidValue(key: key)
+                    }
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+                break
+            default:
+                break
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        return memo
+    }
+    
+    private static func removeComment(val:String) -> String {
+        if let range = val.range(of: "(") {
+          return val[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return val
+    }
+        
     private static func addSignatures(signatures:[DecoratedSignatureXDR], prefix:String, lines: inout [String]) -> Void {
         addLine(key: prefix + "signatures.len", value: String(signatures.count), lines: &lines)
         var index = 0
@@ -119,7 +447,6 @@ public class TxRep: NSObject {
             addLine(key: operationPrefix + "sendAsset", value: encodeAsset(asset: pathPaymentStrictSendOp.sendAsset), lines: &lines)
             addLine(key: operationPrefix + "sendAmount", value: String(pathPaymentStrictSendOp.sendMax), lines: &lines)
             addLine(key: operationPrefix + "destination", value: pathPaymentStrictSendOp.destination.accountId, lines: &lines)
-            // TODO "M..."
             addLine(key: operationPrefix + "destAsset", value: encodeAsset(asset: pathPaymentStrictSendOp.destinationAsset), lines: &lines)
             addLine(key: operationPrefix + "destMin", value: String(pathPaymentStrictSendOp.destinationAmount), lines: &lines)
             addLine(key: operationPrefix + "path.len", value: String(pathPaymentStrictSendOp.path.count), lines: &lines)
@@ -197,7 +524,12 @@ public class TxRep: NSObject {
             }
             if let homeDomain = setOptionOp.homeDomain {
                 addLine(key: operationPrefix + "homeDomain._present", value: "true", lines: &lines)
-                addLine(key: operationPrefix + "homeDomain", value: "\"" + homeDomain + "\"", lines: &lines) // TODO: encode homeDoamin
+                let jsonEncoder = JSONEncoder()
+                if let textData = try? jsonEncoder.encode(homeDomain), let textVal = String(data:textData, encoding: .utf8) {
+                    addLine(key: operationPrefix + "homeDomain", value: textVal, lines: &lines)
+                } else {
+                    addLine(key: operationPrefix + "homeDomain", value: "\"" + homeDomain + "\"", lines: &lines)
+                }
             } else {
                 addLine(key: operationPrefix + "homeDomain._present", value: "false", lines: &lines)
             }
@@ -234,7 +566,12 @@ public class TxRep: NSObject {
             addLine(key: amKey, value: accountMergeOp.accountId, lines: &lines)
             break
         case .manageData(let manageDataOp):
-            addLine(key: operationPrefix + "dataName", value: "\"" + manageDataOp.dataName + "\"", lines: &lines)
+            let jsonEncoder = JSONEncoder()
+            if let textData = try? jsonEncoder.encode(manageDataOp.dataName), let textVal = String(data:textData, encoding: .utf8) {
+                addLine(key: operationPrefix + "dataName", value: textVal, lines: &lines)
+            } else {
+                addLine(key: operationPrefix + "dataName", value: "\"" + manageDataOp.dataName + "\"", lines: &lines)
+            }
             if let dataValue = manageDataOp.dataValue {
                 addLine(key: operationPrefix + "dataValue._present", value: "true", lines: &lines)
                 addLine(key: operationPrefix + "dataValue", value: dataValue.hexEncodedString(), lines: &lines)
@@ -343,7 +680,12 @@ public class TxRep: NSObject {
             addLine(key: prefix + "memo.type", value: "MEMO_NONE", lines: &lines)
         case .text (let text):
             addLine(key: prefix + "memo.type", value: "MEMO_TEXT", lines: &lines)
-            addLine(key: prefix + "memo.text", value: "\"" + text + "\"", lines: &lines) // TODO json encoder
+            let jsonEncoder = JSONEncoder()
+            if let textData = try? jsonEncoder.encode(text), let textVal = String(data:textData, encoding: .utf8) {
+                addLine(key: prefix + "memo.text", value: textVal , lines: &lines)
+            } else {
+                addLine(key: prefix + "memo.text", value: "\"" + text + "\"" , lines: &lines)
+            }
         case .id (let id):
             addLine(key: prefix + "memo.type", value: "MEMO_ID", lines: &lines)
             addLine(key: prefix + "memo.id", value: String(id), lines: &lines)
