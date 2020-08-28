@@ -602,7 +602,160 @@ public class TxRep: NSObject {
     }
     
     private static func getSetOptionsOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> SetOptionsOperation? {
-       return nil
+        var key = opPrefix + "inflationDest._present"
+        var inflationDest:KeyPair? = nil
+        if let present = dic[key], present == "true" {
+            key = opPrefix + "inflationDest"
+            if let destination =  dic[key] {
+                do {
+                    inflationDest = try KeyPair(accountId: destination)
+                } catch {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        }
+        key = opPrefix + "clearFlags._present"
+        var clearFlags:UInt32? = nil
+        if let present = dic[key], present == "true" {
+            key = opPrefix + "clearFlags"
+            if let flagsStr = dic[key] {
+                if let flags = UInt32(flagsStr){
+                    clearFlags = flags
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        }
+        key = opPrefix + "setFlags._present"
+        var setFlags:UInt32? = nil
+        if let present = dic[key], present == "true" {
+            key = opPrefix + "setFlags"
+            if let flagsStr = dic[key] {
+                if let flags = UInt32(flagsStr){
+                    setFlags = flags
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        }
+        key = opPrefix + "masterWeight._present"
+        var masterKeyWeight:UInt32? = nil
+        if let present = dic[key], present == "true" {
+            key = opPrefix + "masterWeight"
+            if let weightStr = dic[key] {
+                if let weight = UInt32(weightStr){
+                    masterKeyWeight = weight
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        }
+        key = opPrefix + "lowThreshold._present"
+        var lowThreshold:UInt32? = nil
+        if let present = dic[key], present == "true" {
+            key = opPrefix + "lowThreshold"
+            if let tStr = dic[key] {
+                if let t = UInt32(tStr){
+                    lowThreshold = t
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        }
+        key = opPrefix + "medThreshold._present"
+        var medThreshold:UInt32? = nil
+        if let present = dic[key], present == "true" {
+            key = opPrefix + "medThreshold"
+            if let tStr = dic[key] {
+                if let t = UInt32(tStr){
+                    medThreshold = t
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        }
+        key = opPrefix + "highThreshold._present"
+        var highThreshold:UInt32? = nil
+        if let present = dic[key], present == "true" {
+            key = opPrefix + "highThreshold"
+            if let tStr = dic[key] {
+                if let t = UInt32(tStr){
+                    highThreshold = t
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        }
+        
+        key = opPrefix + "homeDomain._present"
+        var homeDomain:String?
+        if let present = dic[key], present == "true" {
+            key = opPrefix + "homeDomain"
+            if let text = dic[key] {
+                do {
+                    let jsonDecoder = JSONDecoder()
+                    if let textData = text.data(using: .utf8) {
+                        homeDomain = try jsonDecoder.decode(String.self, from:textData)
+                    } else {
+                        homeDomain = text.replacingOccurrences(of: "\"", with: "")
+                    }
+                } catch {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        }
+    
+        key = opPrefix + "signer._present"
+        var signer:SignerKeyXDR?
+        var signerWeight:UInt32?
+        if let present = dic[key], present == "true" {
+            key = opPrefix + "signer.weight"
+            if let tStr = dic[key] {
+                if let t = UInt32(tStr){
+                    signerWeight = t
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+            key = opPrefix + "signer.key"
+            if let sKeyStr = dic[key] {
+                do {
+                    if sKeyStr.hasPrefix("G") {
+                        signer = SignerKeyXDR.ed25519(WrappedData32(try sKeyStr.decodeEd25519PublicKey()))
+                    } else if sKeyStr.hasPrefix("X") {
+                        signer = SignerKeyXDR.preAuthTx(WrappedData32(try sKeyStr.decodePreAuthTx()))
+                    } else if sKeyStr.hasPrefix("T") {
+                        signer = SignerKeyXDR.hashX(WrappedData32(try sKeyStr.decodeSha256Hash()))
+                    } else {
+                       throw TxRepError.invalidValue(key: key)
+                    }
+                } catch {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        }
+        
+        return try SetOptionsOperation(sourceAccountId: sourceAccount?.accountId, inflationDestination: inflationDest, clearFlags: clearFlags, setFlags: setFlags, masterKeyWeight: masterKeyWeight, lowThreshold: lowThreshold, mediumThreshold: medThreshold, highThreshold: highThreshold, homeDomain: homeDomain, signer: signer, signerWeight: signerWeight)
     }
     
     private static func getChangeTrustOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ChangeTrustOperation? {
@@ -662,11 +815,46 @@ public class TxRep: NSObject {
     }
     
     private static func getAccountMergeOperation(dic:Dictionary<String,String>, txPrefix:String, index:Int, sourceAccount:MuxedAccount?) throws -> AccountMergeOperation? {
-       return nil
+        let key = txPrefix + "operations[" + String(index) + "].body.destination"
+        let destinationId:String
+        if let destination = dic[key] {
+            do {
+                _ = try MuxedAccount(accountId:destination)
+                destinationId = destination
+            } catch {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        return try AccountMergeOperation(destinationAccountId: destinationId, sourceAccountId: sourceAccount?.accountId)
     }
     
     private static func getManageDataOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ManageDataOperation? {
-       return nil
+        let jsonDecoder = JSONDecoder()
+        var key = opPrefix + "dataName"
+        var dataName:String
+        if let text = dic[key] {
+          do {
+              if let textData = text.data(using: .utf8) {
+                  dataName = try jsonDecoder.decode(String.self, from:textData)
+              } else {
+                  dataName = text.replacingOccurrences(of: "\"", with: "")
+              }
+          } catch {
+              throw TxRepError.invalidValue(key: key)
+          }
+        } else {
+          throw TxRepError.missingValue(key: key)
+        }
+    
+        key = opPrefix + "dataValue"
+        var dataValue:Data?
+        if let text = dic[key], let value = text.data(using: .hexadecimal) {
+          dataValue = value
+        }
+        
+        return ManageDataOperation(sourceAccountId: sourceAccount?.accountId, name: dataName, data: dataValue)
     }
     
     private static func getBumpSequenceOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> BumpSequenceOperation? {
