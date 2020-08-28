@@ -231,31 +231,374 @@ public class TxRep: NSObject {
     }
     
     private static func getCreateAccountOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> CreateAccountOperation? {
-       return nil
+        var key = opPrefix + "destination"
+        let destinationKeyPair:KeyPair
+        if let destination = dic[key] {
+            do {
+                destinationKeyPair = try KeyPair(accountId:destination)
+            } catch {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "startingBalance"
+        if let strStartingBalance = dic[key], let startingBalance = Int64(strStartingBalance) {
+            return CreateAccountOperation(sourceAccountId: sourceAccount?.accountId, destination: destinationKeyPair, startBalance: fromAmount(startingBalance))
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
     }
     
     private static func getPaymentOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> PaymentOperation? {
-       return nil
+        var key = opPrefix + "destination"
+        let destinationId:String
+        if let destination = dic[key] {
+            do {
+                _ = try MuxedAccount(accountId:destination)
+                destinationId = destination
+            } catch {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "asset"
+        let asset:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                asset = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        key = opPrefix + "amount"
+        if let amountStr = dic[key], let amount = Int64(amountStr) {
+            return try PaymentOperation(sourceAccountId: sourceAccount?.accountId, destinationAccountId: destinationId, asset: asset, amount: fromAmount(amount))
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
     }
     
     private static func getPaymentStrictReceiveOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> PathPaymentStrictReceiveOperation? {
-       return nil
+        var key = opPrefix + "sendAsset"
+        let sendAsset:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                sendAsset = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "sendMax"
+        let sendMax:Decimal
+        if let amountStr = dic[key], let amount = Int64(amountStr) {
+            sendMax = fromAmount(amount)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "destination"
+        let destinationId:String
+        if let destination = dic[key] {
+            do {
+                _ = try MuxedAccount(accountId:destination)
+                destinationId = destination
+            } catch {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "destAsset"
+        let destAsset:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                destAsset = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "destAmount"
+        let destAmount:Decimal
+        if let amountStr = dic[key], let amount = Int64(amountStr) {
+            destAmount = fromAmount(amount)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "path.len"
+        var pathAssets:[Asset] = [Asset]()
+        if let pathLen = dic[key] {
+            if let count = Int(pathLen) {
+                if count > 5 {
+                    throw TxRepError.invalidValue(key: key)
+                }
+                for i in 0..<count{
+                    let kkey = opPrefix + "path[" + String(i) + "]"
+                    if let nextAssetStr = dic[kkey] {
+                        if let nextAsset = decodeAsset(asset: nextAssetStr) {
+                            pathAssets.append(nextAsset)
+                        } else {
+                            throw TxRepError.invalidValue(key: kkey)
+                        }
+                    } else {
+                        throw TxRepError.missingValue(key: kkey)
+                    }
+                }
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        }
+        return try PathPaymentStrictReceiveOperation(sourceAccountId: sourceAccount?.accountId, sendAsset: sendAsset, sendMax: sendMax, destinationAccountId: destinationId, destAsset: destAsset, destAmount: destAmount, path: pathAssets)
     }
     
     private static func getPaymentStrictSendOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> PathPaymentStrictSendOperation? {
-       return nil
+        var key = opPrefix + "sendAsset"
+        let sendAsset:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                sendAsset = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "sendAmount"
+        let sendAmount:Decimal
+        if let amountStr = dic[key], let amount = Int64(amountStr) {
+            sendAmount = fromAmount(amount)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "destination"
+        let destinationId:String
+        if let destination = dic[key] {
+            do {
+                _ = try MuxedAccount(accountId:destination)
+                destinationId = destination
+            } catch {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "destAsset"
+        let destAsset:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                destAsset = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "destMin"
+        let destMin:Decimal
+        if let amountStr = dic[key], let amount = Int64(amountStr) {
+            destMin = fromAmount(amount)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "path.len"
+        var pathAssets:[Asset] = [Asset]()
+        if let pathLen = dic[key] {
+            if let count = Int(pathLen) {
+                if count > 5 {
+                    throw TxRepError.invalidValue(key: key)
+                }
+                for i in 0..<count{
+                    let kkey = opPrefix + "path[" + String(i) + "]"
+                    if let nextAssetStr = dic[kkey] {
+                        if let nextAsset = decodeAsset(asset: nextAssetStr) {
+                            pathAssets.append(nextAsset)
+                        } else {
+                            throw TxRepError.invalidValue(key: kkey)
+                        }
+                    } else {
+                        throw TxRepError.missingValue(key: kkey)
+                    }
+                }
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        }
+        return try PathPaymentStrictSendOperation(sourceAccountId: sourceAccount?.accountId, sendAsset: sendAsset, sendMax: sendAmount, destinationAccountId: destinationId, destAsset: destAsset, destAmount: destMin, path: pathAssets)
     }
     
     private static func getManageSellOfferOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ManageSellOfferOperation? {
-       return nil
+        var key = opPrefix + "selling"
+        let selling:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                selling = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "buying"
+        let buying:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                buying = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "amount"
+        let amount:Decimal
+        if let amountStr = dic[key], let damount = Int64(amountStr) {
+            amount = fromAmount(damount)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "price.n"
+        let priceN:Int32
+        if let pricetStr = dic[key], let price = Int32(pricetStr) {
+            priceN = price
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "price.d"
+        let priceD:Int32
+        if let pricetStr = dic[key], let price = Int32(pricetStr) {
+            priceD = price
+            if priceD == 0 {
+                throw TxRepError.invalidValue(key: key + " price.d can not be 0")
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "offerID"
+        var offerId:Int64 = 0
+        if let offerIdStr = dic[key] {
+            if let offerIdi = Int64(offerIdStr) {
+                offerId = offerIdi
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        }
+        return ManageSellOfferOperation(sourceAccountId: sourceAccount?.accountId, selling: selling, buying: buying, amount: amount, price: Price(numerator: priceN, denominator: priceD), offerId: offerId)
     }
     
     private static func getManageBuyOfferOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ManageBuyOfferOperation? {
-       return nil
+        var key = opPrefix + "selling"
+        let selling:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                selling = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "buying"
+        let buying:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                buying = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "buyAmount"
+        let amount:Decimal
+        if let amountStr = dic[key], let damount = Int64(amountStr) {
+            amount = fromAmount(damount)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "price.n"
+        let priceN:Int32
+        if let pricetStr = dic[key], let price = Int32(pricetStr) {
+            priceN = price
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "price.d"
+        let priceD:Int32
+        if let pricetStr = dic[key], let price = Int32(pricetStr) {
+            priceD = price
+            if priceD == 0 {
+                throw TxRepError.invalidValue(key: key + " price.d can not be 0")
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "offerID"
+        var offerId:Int64 = 0
+        if let offerIdStr = dic[key] {
+            if let offerIdi = Int64(offerIdStr) {
+                offerId = offerIdi
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        }
+        return ManageBuyOfferOperation(sourceAccountId: sourceAccount?.accountId, selling: selling, buying: buying, amount: amount, price: Price(numerator: priceN, denominator: priceD), offerId: offerId)
     }
     
     private static func getCreatePassiveSellOfferOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> CreatePassiveOfferOperation? {
-       return nil
+        var key = opPrefix + "selling"
+        let selling:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                selling = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "buying"
+        let buying:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                buying = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "amount"
+        let amount:Decimal
+        if let amountStr = dic[key], let damount = Int64(amountStr) {
+            amount = fromAmount(damount)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "price.n"
+        let priceN:Int32
+        if let pricetStr = dic[key], let price = Int32(pricetStr) {
+            priceN = price
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "price.d"
+        let priceD:Int32
+        if let pricetStr = dic[key], let price = Int32(pricetStr) {
+            priceD = price
+            if priceD == 0 {
+                throw TxRepError.invalidValue(key: key + " price.d can not be 0")
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        return CreatePassiveSellOfferOperation(sourceAccountId: sourceAccount?.accountId, selling: selling, buying: buying, amount: amount, price: Price(numerator: priceN, denominator: priceD))
     }
     
     private static func getSetOptionsOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> SetOptionsOperation? {
@@ -263,11 +606,59 @@ public class TxRep: NSObject {
     }
     
     private static func getChangeTrustOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ChangeTrustOperation? {
-       return nil
+        var key = opPrefix + "line"
+        let asset:Asset
+        if let assetStr = dic[key] {
+           if let asseta = decodeAsset(asset: assetStr) {
+               asset = asseta
+           } else {
+              throw TxRepError.invalidValue(key: key)
+           }
+        } else {
+           throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "limit"
+        var limit:Decimal? = nil
+        if let amountStr = dic[key] {
+            if let damount = Int64(amountStr) {
+                limit = fromAmount(damount)
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        }
+        return ChangeTrustOperation(sourceAccountId: sourceAccount?.accountId, asset: asset, limit: limit)
     }
     
     private static func getAllowTrustOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> AllowTrustOperation? {
-       return nil
+        var key = opPrefix + "trustor"
+        let trustorKeyPair:KeyPair
+        if let trustor = dic[key] {
+            do {
+                trustorKeyPair = try KeyPair(accountId:trustor)
+            } catch {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "asset"
+        let asset:String
+        if let assetStr = dic[key] {
+           asset = assetStr
+        } else {
+           throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "authorize"
+        let authorize:UInt32
+        if let authStr = dic[key], let auth = UInt32(authStr) {
+            authorize = auth
+            if authorize < 0 || authorize > 2 {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        return try AllowTrustOperation(sourceAccountId: sourceAccount?.accountId, trustor: trustorKeyPair, assetCode: asset, authorize: authorize)
     }
     
     private static func getAccountMergeOperation(dic:Dictionary<String,String>, txPrefix:String, index:Int, sourceAccount:MuxedAccount?) throws -> AccountMergeOperation? {
@@ -279,7 +670,18 @@ public class TxRep: NSObject {
     }
     
     private static func getBumpSequenceOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> BumpSequenceOperation? {
-       return nil
+        let key = opPrefix + "bumpTo"
+        let bumpTo:Int64
+        if let bumpToStr = dic[key] {
+            if let b2 = Int64(bumpToStr) {
+                bumpTo = b2
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+           throw TxRepError.missingValue(key: key)
+        }
+        return BumpSequenceOperation(bumpTo: bumpTo, sourceAccountId: sourceAccount?.accountId)
     }
     
     private static func getTimeBounds(dic:Dictionary<String,String>, prefix:String) throws -> TimeBounds? {
@@ -596,6 +998,25 @@ public class TxRep: NSObject {
         }
     }
     
+    private static func decodeAsset(asset: String) -> Asset? {
+        if asset == "XLM" {
+            return Asset(type: AssetType.ASSET_TYPE_NATIVE)!
+        }
+        let components = asset.components(separatedBy: ":")
+        if components.count != 2 {
+            return nil
+        }
+        let code = components[0].trimmingCharacters(in: .whitespaces)
+        let issuer = components[1].trimmingCharacters(in: .whitespaces)
+        let type = code.count < 5 ? AssetType.ASSET_TYPE_CREDIT_ALPHANUM4 : AssetType.ASSET_TYPE_CREDIT_ALPHANUM12
+        do {
+            let kp = try KeyPair(accountId: issuer)
+            return Asset(type: type, code: code, issuer: kp)
+        } catch {
+            return nil
+        }
+    }
+    
     private static func txRepOpType(operation: OperationXDR) -> String {
         switch operation.body {
         case .createAccount(_):
@@ -700,5 +1121,11 @@ public class TxRep: NSObject {
                 addLine(key: prefix + "memo.retHash", value: try m.trimmedHexValue(), lines: &lines)
             }
         }
+    }
+    
+    static func fromAmount(_ amount:Int64) -> Decimal {
+        var decimal = Decimal(amount)
+        decimal = decimal / 10000000
+        return decimal
     }
 }
