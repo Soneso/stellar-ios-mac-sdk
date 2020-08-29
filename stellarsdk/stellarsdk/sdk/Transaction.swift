@@ -140,6 +140,10 @@ public class Transaction {
         try self.transactionXDR.sign(keyPair: keyPair, network: network)
     }
     
+    public func addSignature(signature:DecoratedSignatureXDR) -> Void {
+        self.transactionXDR.addSignature(signature: signature)
+    }
+    
     /// Returns the base64 encoded transaction envelope xdr to be used to post the transaction. Transaction need to have at least one signature before they can be sent to the stellar network.
     public func encodedEnvelope() throws -> String {
         return try transactionXDR.encodedEnvelope()

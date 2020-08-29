@@ -19,7 +19,7 @@ To integrate stellar SDK into your Xcode project using CocoaPods, specify it in 
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk', '~> 1.6.4'
+    pod 'stellar-ios-mac-sdk', '~> 1.8.5'
 end
 ```
 
@@ -584,15 +584,19 @@ let webAuthenticator = WebAuthenticator(authEndpoint: "http://your_api.stellar.o
 }
 ```
 
+### 9.  Txrep: human-readable low-level representation of Stellar transactions
+Txrep: human-readable low-level representation of Stellar transactions is described in [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md).
+
+For more details have a look to our [Txrep examples](docs/SEP-0011.md)
+
+
 ## Documentation and Examples
 
 You can find more documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.
 
-## Samples
+## Sample
 
-The [Lumenshine](https://lumenshine.com) wallet for iOS is an [open source project](https://github.com/Soneso/lumenshine-iOS-wallet) developed and maintained by [Soneso](https://soneso.com), the creators and maintainers of this SDK. Lumenshine is currently available for [iOS](https://itunes.apple.com/us/app/lumenshine/id1441524975) and for [web](https://lumenshine.com).
-
-Another open source project that uses our SDK is the [BlockEQ iOS wallet](https://github.com/Block-Equity/stellar-ios-wallet) for Stellar.
+An open source project that uses our SDK is the [BlockEQ iOS wallet](https://github.com/Block-Equity/stellar-ios-wallet) for Stellar.
 
 ## Stellar Ecosystem Proposals (SEPs) implemented
 
@@ -603,6 +607,7 @@ Another open source project that uses our SDK is the [BlockEQ iOS wallet](https:
 - [SEP-0007](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md) - URI Scheme to facilitate delegated signing
 - [SEP-0009](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md) - Standard KYC / AML fields
 - [SEP-0010](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md) - Stellar Web Authentication
+- [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md) - Txrep
 - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md) - Anchor/Client customer info transfer
 
 ## How to contribute

@@ -72,15 +72,15 @@ public class TxRep: NSObject {
                 dic.updateValue(removeComment(val: value), forKey: key)
             }
         }
-        var prefix = ".tx"
+        var prefix = "tx."
         let isFeeBump = dic["type"] == "ENVELOPE_TYPE_TX_FEE_BUMP";
-        let feeBumpFee:Int
+        var feeBumpFee:UInt64? = nil
         let feeBumpSource = dic["feeBump.tx.feeSource"]
         
         if isFeeBump {
             prefix = "feeBump.tx.innerTx.tx."
             if let feeBumpFeeStr = dic["feeBump.tx.fee"] {
-                if let val = Int(feeBumpFeeStr) {
+                if let val = UInt64(feeBumpFeeStr) {
                     feeBumpFee = val
                 } else {
                    throw TxRepError.invalidValue(key: "feeBump.tx.fee")
@@ -99,10 +99,10 @@ public class TxRep: NSObject {
             }
         }
         
-        let fee:Int
+        let fee:UInt32
         var key = prefix + "fee"
         if let feeStr = dic[key] {
-            if let val = Int(feeStr) {
+            if let val = UInt32(feeStr) {
                 fee = val
             } else {
                throw TxRepError.invalidValue(key: key)
@@ -115,7 +115,7 @@ public class TxRep: NSObject {
         key = prefix + "seqNum"
         if let seqNrStr = dic[key] {
             if let val = Int64(seqNrStr) {
-                seqNr = val
+                seqNr = val - 1
             } else {
                throw TxRepError.invalidValue(key: key)
             }
@@ -138,8 +138,48 @@ public class TxRep: NSObject {
         let timeBounds:TimeBounds? = try getTimeBounds(dic: dic, prefix: prefix)
         let memo:Memo? = try getMemo(dic:dic, prefix:prefix)
         let operations:[Operation] = try getOperations(dic:dic, prefix:prefix)
+        let maxOperationFee = operations.count > 1 ? fee /  UInt32(operations.count) : fee
+        let transaction = try Transaction(sourceAccount: sourceAccount, operations: operations, memo: memo, timeBounds: timeBounds, maxOperationFee: maxOperationFee)
         
-        return ""
+        prefix = isFeeBump ? "feeBump.tx.innerTx." : "";
+        let signatures:[DecoratedSignatureXDR] = try getSignatures(dic: dic, prefix: prefix)
+        for sig in signatures {
+            transaction.addSignature(signature: sig)
+        }
+        
+        if isFeeBump, let fbf = feeBumpFee, let src = feeBumpSource {
+            //let baseFee =  fbf / UInt64(operations.count + 1)
+            let feeBumpSourceAcc = try MuxedAccount(accountId: src)
+            let feeBumpTransaction = try FeeBumpTransaction(sourceAccount: feeBumpSourceAcc, fee: fbf
+                , innerTransaction: transaction)
+            let fSignatures = try getSignatures(dic: dic, prefix: "feeBump.")
+            for sig in fSignatures {
+                feeBumpTransaction.addSignature(signature: sig)
+            }
+            return try feeBumpTransaction.encodedEnvelope()
+        }
+        return try transaction.encodedEnvelope()
+    }
+    private static func getSignatures(dic:Dictionary<String,String>, prefix:String) throws -> [DecoratedSignatureXDR] {
+        var signatures:[DecoratedSignatureXDR] = [DecoratedSignatureXDR]()
+        let key = prefix + "signatures.len"
+        if let sigLengthStr = dic[key] {
+            if let sigCount = Int(sigLengthStr) {
+                if sigCount > 20 {
+                    throw TxRepError.invalidValue(key: key + " > 20")
+                }
+                for i in 0..<sigCount{
+                    if let nextSignature = try getSignature(dic: dic, prefix: prefix, index: i) {
+                        signatures.append(nextSignature)
+                    }
+                }
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        return signatures
     }
     
     private static func getOperations(dic:Dictionary<String,String>, prefix:String) throws -> [Operation] {
@@ -162,6 +202,35 @@ public class TxRep: NSObject {
             throw TxRepError.missingValue(key: key)
         }
         return operations
+    }
+    
+    private static func getSignature(dic:Dictionary<String,String>, prefix:String, index:Int) throws -> DecoratedSignatureXDR? {
+        let sigPrefix = prefix + "signatures[" + String(index) + "]."
+        var key = sigPrefix + "hint"
+        let hint:Data
+        if let hintu = dic[key] {
+            if let data = hintu.data(using: .hexadecimal) {
+                hint = data
+            }
+            else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+           throw TxRepError.missingValue(key: key)
+        }
+        key = sigPrefix + "signature"
+        let signature:Data
+        if let sig = dic[key] {
+            if let data = sig.data(using: .hexadecimal) {
+                signature = data
+            }
+            else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+           throw TxRepError.missingValue(key: key)
+        }
+        return DecoratedSignatureXDR(hint: WrappedData4(hint), signature: signature)
     }
     
     private static func getOperation(dic:Dictionary<String,String>, txPrefix:String, index:Int) throws -> Operation? {
