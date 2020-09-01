@@ -36,6 +36,9 @@ class WebAuthenticatorTestCase: XCTestCase {
     let invalidOperationCountClientPublicKey = "GDTJSQ4KGWKKYDIAR5WKMKDQVNKK2BUR6KY43VWZ464T6FWJHHIG7ZI4"
     let invalidOperationCountClientPrivateKey = "SATMX7DQZVWXB5RZMPYD7G2E3OBFWIDGUTAL5WWGS3AFILWFFLAOGVXH"
     
+    let invalidHomeDomainClientPublicKey = "GCN2YSJLDRFN2VZKDVQU4ARHHTRS6X7QD4Q6IO4D3DIVVARVPRK5CPKU"
+    let invalidHomeDomainClientPrivateKey = "SDAIVVH6QK47Z3EMMQEUQLVYRTJCJJ5IVQYFCOF2FXKM4EBOL7J4SPRI"
+    
     let invalidTimeboundsClientPublicKey = "GBLIKSJM67PCYH7CNFLQETPPOWATL2PVH2SY7WGWDQEOK47FANF3PIIX"
     let invalidTimeboundsClientPrivateKey = "SDQXB7ELE6BHRUCLOTNPCGAJ6YSI3G5GPWTESG72QOQXHNUBRCPK7HMT"
     
@@ -114,7 +117,7 @@ class WebAuthenticatorTestCase: XCTestCase {
     func testGetChallengeFailure() {
         let expectation = XCTestExpectation(description: "A request error is received.")
         
-        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey)
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: challengeFailClientPrivateKey) {
             webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
@@ -139,7 +142,7 @@ class WebAuthenticatorTestCase: XCTestCase {
     func testGetChallengeInvalidSequenceNumber() {
         let expectation = XCTestExpectation(description: "A validation error is received.")
         
-        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey)
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidSeqClientPrivateKey) {
             webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
@@ -168,7 +171,7 @@ class WebAuthenticatorTestCase: XCTestCase {
     func testGetChallengeInvalidSourceAccount() {
         let expectation = XCTestExpectation(description: "A validation error is received.")
         
-        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey)
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidSourceAccClientPrivateKey) {
             webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
@@ -197,7 +200,7 @@ class WebAuthenticatorTestCase: XCTestCase {
     func testGetChallengeInvalidOperationType() {
         let expectation = XCTestExpectation(description: "A validation error is received.")
         
-        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey)
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidOperationClientPrivateKey) {
             webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
@@ -226,7 +229,7 @@ class WebAuthenticatorTestCase: XCTestCase {
     func testGetChallengeInvalidOperationCount() {
         let expectation = XCTestExpectation(description: "A validation error is received.")
         
-        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey)
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidOperationCountClientPrivateKey) {
             webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
@@ -252,10 +255,39 @@ class WebAuthenticatorTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testGetChallengeInvalidHomeDomain() {
+        let expectation = XCTestExpectation(description: "A validation error is received.")
+        
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        if let keyPair = try? KeyPair(secretSeed: invalidHomeDomainClientPrivateKey) {
+            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(false)
+                case .failure(let error):
+                    switch error {
+                    case .validationErrorError(let error):
+                        if error == .invalidHomeDomain {
+                            XCTAssert(true)
+                        } else {
+                            XCTAssert(false)
+                        }
+                    default:
+                        XCTAssert(false)
+                    }
+                    
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
     func testGetChallengeInvalidTimebounds() {
         let expectation = XCTestExpectation(description: "A validation error is received.")
         
-        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey)
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidTimeboundsClientPrivateKey) {
             webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
@@ -284,7 +316,7 @@ class WebAuthenticatorTestCase: XCTestCase {
     func testGetChallengeInvalidSignature() {
         let expectation = XCTestExpectation(description: "A validation error is received.")
         
-        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey)
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidSignatureClientPrivateKey) {
             webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
@@ -313,7 +345,7 @@ class WebAuthenticatorTestCase: XCTestCase {
     func testGetChallengeSignatureNotFound() {
         let expectation = XCTestExpectation(description: "A validation error is received.")
         
-        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey)
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: notFoundSignatureClientPrivateKey) {
             webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
@@ -342,7 +374,7 @@ class WebAuthenticatorTestCase: XCTestCase {
     func testSendChallengeInvalidSignature() {
         let expectation = XCTestExpectation(description: "A server error for invalid signature.")
         
-        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey)
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidClientSignatureClientPrivateKey) {
             webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
                 switch response {

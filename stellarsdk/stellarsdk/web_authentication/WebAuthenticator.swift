@@ -22,6 +22,7 @@ public enum ChallengeValidationError: Error {
     case sourceAccountNotFound
     case invalidOperationType
     case invalidOperationCount
+    case invalidHomeDomain
     case invalidTimeBounds
     case invalidSignature
     case signatureNotFound
@@ -85,6 +86,7 @@ public class WebAuthenticator {
     private let serverSigningKey: String
     private let serviceHelper: ServiceHelper
     private let network: Network
+    private let serverHomeDomain: String
     
     /// This can be used to ignore the timebounds values of the transaction. Its useful when the server time and client time are out of sync
     public var ignoreTimebounds = false
@@ -103,7 +105,7 @@ public class WebAuthenticator {
             switch result {
             case .success(let toml):
                 if let authEndpoint = toml.accountInformation.webAuthEndpoint, let serverSigningKey = toml.accountInformation.signingKey {
-                    completion(.success(response: WebAuthenticator(authEndpoint: authEndpoint, network: network, serverSigningKey: serverSigningKey)))
+                    completion(.success(response: WebAuthenticator(authEndpoint: authEndpoint, network: network, serverSigningKey: serverSigningKey, serverHomeDomain: domain)))
                 } else {
                     completion(.failure(error: .noAuthEndpoint))
                 }
@@ -122,21 +124,23 @@ public class WebAuthenticator {
     ///
     /// - Parameter authEndpoint: Endpoint to be used for the authentication procedure. Usually taken from stellar.toml.
     /// - Parameter network: The network used.
-    /// - Parameter serverSigningKey: The server public key. Usually taken from stellar.toml.
+    /// - Parameter serverSigningKey: The server public key, taken from stellar.toml.
+    /// - Parameter serverHomeDomain: The server home domain of the server where the stellar.toml was loaded from
     ///
-    public init(authEndpoint:String, network:Network, serverSigningKey:String) {
+    public init(authEndpoint:String, network:Network, serverSigningKey:String, serverHomeDomain:String) {
         self.authEndpoint = authEndpoint
         self.serverSigningKey = serverSigningKey
         serviceHelper = ServiceHelper(baseURL: authEndpoint)
         self.network = network
+        self.serverHomeDomain = serverHomeDomain
     }
     
     /// Get JWT token for wallet
     ///
     /// - Parameter keyPair: The keypair of the wallet to get the JWT token for.
     ///
-    public func jwtToken(forKeyPair keyPair:KeyPair, completion:@escaping GetJWTTokenResponseClosure) {
-        getChallenge(forAccount: keyPair.accountId) { (response) -> (Void) in
+    public func jwtToken(forKeyPair keyPair:KeyPair, homeDomain:String? = nil, completion:@escaping GetJWTTokenResponseClosure) {
+        getChallenge(forAccount: keyPair.accountId, homeDomain: homeDomain) { (response) -> (Void) in
             switch response {
             case .success(let challenge):
                 do {
@@ -168,8 +172,11 @@ public class WebAuthenticator {
         }
     }
     
-    public func getChallenge(forAccount accountId:String, completion:@escaping ChallengeResponseClosure) {
-        serviceHelper.GETRequestWithPath(path: "?account=\(accountId)") { (result) -> (Void) in
+    public func getChallenge(forAccount accountId:String, homeDomain:String? = nil, completion:@escaping ChallengeResponseClosure) {
+        
+        let path = (homeDomain != nil) ? "?account=\(accountId)&home_domain=\(homeDomain!)" : "?account=\(accountId)"
+        
+        serviceHelper.GETRequestWithPath(path: path) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
@@ -215,7 +222,13 @@ public class WebAuthenticator {
                 
                 //operation must be manage data operation
                 let operationBodyXDR = operationXDR.body
-                if (operationBodyXDR.type() != OperationType.manageData.rawValue) {
+                switch operationBodyXDR {
+                case .manageData(let manageDataOperation):
+                    if (manageDataOperation.dataName != (self.serverHomeDomain + " auth")) {
+                        return .failure(error: .invalidHomeDomain)
+                    }
+                    break
+                default:
                     return .failure(error: .invalidOperationType)
                 }
                 
