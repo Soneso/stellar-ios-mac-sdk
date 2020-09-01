@@ -98,7 +98,7 @@ class WebAuthenticatorTestCase: XCTestCase {
     func testGetJWTSuccess() {
         let expectation = XCTestExpectation(description: "JWT is received with success.")
         
-        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey)
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: clientPrivateKey) {
             webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
