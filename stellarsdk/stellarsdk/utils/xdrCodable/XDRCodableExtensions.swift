@@ -25,6 +25,22 @@ func decodeArray<T: Codable>(type:T.Type, dec:Decoder) throws -> [T] {
     return array
 }
 
+func decodeArrayOpt<T: Codable>(type:T.Type, dec:Decoder) throws -> [T] {
+    guard let decoder = dec as? XDRDecoder else {
+        throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
+    }
+    
+    let count = try decoder.decode(UInt32.self)
+    var array = [T]()
+    for _ in 0 ..< count {
+        if let decoded =  try decodeArray(type: type, dec: decoder).first {// try type.init(from: decoder)
+            array.append(decoded)
+        }
+    }
+    
+    return array
+}
+
 func isOptional(_ instance: Any) -> Bool {
     let mirror = Mirror(reflecting: instance)
     let style = mirror.displayStyle

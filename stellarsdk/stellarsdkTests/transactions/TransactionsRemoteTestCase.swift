@@ -94,7 +94,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetTransactionsForLedger() {
         let expectation = XCTestExpectation(description: "Get transactions for ledger")
         
-        sdk.transactions.getTransactions(forLedger: "1") { (response) -> (Void) in
+        sdk.transactions.getTransactions(forLedger: "19") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -112,7 +112,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetTransactionDetails() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         
-        sdk.transactions.getTransactionDetails(transactionHash: "a5287f0dc3cb3ea088722f25927125aed4c78bf49051c530c4ca04a07a2103e8") { (response) -> (Void) in
+        sdk.transactions.getTransactionDetails(transactionHash: "ed371e9079494a36b320e8ac35b03417846a20c38179c16700df04b99c884cc1") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)

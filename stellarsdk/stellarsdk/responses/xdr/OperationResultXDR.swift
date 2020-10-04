@@ -30,6 +30,11 @@ public enum OperationResultXDR: XDRCodable {
     case bumpSequence(Int32, BumpSequenceResultXDR)
     case manageBuyOffer(Int32, ManageOfferResultXDR)
     case pathPaymentStrictSend(Int32, PathPaymentResultXDR)
+    case createClaimableBalance(Int32, CreateClaimableBalanceResultXDR)
+    case claimClaimableBalance(Int32, ClaimClaimableBalanceResultXDR)
+    case beginSponsoringFutureReserves(Int32, BeginSponsoringFutureReservesResultXDR)
+    case endSponsoringFutureReserves(Int32, EndSponsoringFutureReservesResultXDR)
+    case revokeSponsorship(Int32, RevokeSponsorshipResultXDR)
     case empty (Int32)
     
     public init(from decoder: Decoder) throws {
@@ -69,6 +74,16 @@ public enum OperationResultXDR: XDRCodable {
                     self = .bumpSequence(code.rawValue, try container.decode(BumpSequenceResultXDR.self))
                 case .pathPaymentStrictSend:
                     self = .pathPaymentStrictSend(code.rawValue, try container.decode(PathPaymentResultXDR.self))
+                case .createClaimableBalance:
+                    self = .createClaimableBalance(code.rawValue, try container.decode(CreateClaimableBalanceResultXDR.self))
+                case .claimClaimableBalance:
+                    self = .claimClaimableBalance(code.rawValue, try container.decode(ClaimClaimableBalanceResultXDR.self))
+                case .beginSponsoringFutureReserves:
+                    self = .beginSponsoringFutureReserves(code.rawValue, try container.decode(BeginSponsoringFutureReservesResultXDR.self))
+                case .endSponsoringFutureReserves:
+                    self = .endSponsoringFutureReserves(code.rawValue, try container.decode(EndSponsoringFutureReservesResultXDR.self))
+                case .revokeSponsorship:
+                    self = .revokeSponsorship(code.rawValue, try container.decode(RevokeSponsorshipResultXDR.self))
             }
         default:
             self = .empty(code.rawValue)
@@ -120,6 +135,21 @@ public enum OperationResultXDR: XDRCodable {
                 try container.encode(code)
                 try container.encode(result)
             case .pathPaymentStrictSend(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .createClaimableBalance(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .claimClaimableBalance(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .beginSponsoringFutureReserves(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .endSponsoringFutureReserves(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .revokeSponsorship(let code, let result):
                 try container.encode(code)
                 try container.encode(result)
             case .empty (let code):

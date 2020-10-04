@@ -21,7 +21,8 @@ public enum TransactionResultCode: Int32 {
     case badAuthExtra = -10 // unused signatures attached to transaction
     case internalError = -11 // an unknown error occured
     case notSupported = -12
-    case feeBumpInnerFailed = -13
+    case feeBumpInnerFailed = -13 // fee bump inner transaction failed
+    case basSponsorship = -14 // sponsorship not ended
 }
 
 public enum TransactionResultBodyXDR: Encodable {

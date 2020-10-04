@@ -15,6 +15,7 @@ public struct EnvelopeType {
     static let ENVELOPE_TYPE_AUTH: Int32 = 3
     static let ENVELOPE_TYPE_SCPVALUE: Int32 = 4
     static let ENVELOPE_TYPE_TX_FEE_BUMP: Int32 = 5
+    static let ENVELOPE_TYPE_OP_ID: Int32 = 6
 }
 
 public enum TransactionEnvelopeXDR: XDRCodable {

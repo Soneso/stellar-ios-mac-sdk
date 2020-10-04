@@ -25,7 +25,7 @@ class OffersRemoteTestCase: XCTestCase {
     func testLoadOffersForAccount() {
         let expectation = XCTestExpectation(description: "Get offers")
         
-        sdk.offers.getOffers(forAccount: "GCGBBRSKBPIQHGOPA5T637SQYHVGTKTIF6DUYZS34NLOUZNHI7JYBUNA") { (response) -> (Void) in
+        sdk.offers.getOffers(forAccount: "GDCI2BM4JQHOLAUD7U3XRBIJDFWAHRVEB764HNGGWBWFXVDTYSYS624M") { (response) -> (Void) in
             switch response {
             case .success(let offersResponse):
                 // load next page
@@ -71,6 +71,25 @@ class OffersRemoteTestCase: XCTestCase {
         let expectation = XCTestExpectation(description: "Get offers")
         
         sdk.offers.getOffers(seller: "GDGNF4FLAPCTN2WQ4SM7RPB42QIEPM3FK5M4FAVREOBUALT7I6DVNHCX", sellingAssetType: "credit_alphanum4", sellingAssetCode: "IOM", sellingAssetIssuer: "GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII", buyingAssetType: "native") { (response) -> (Void) in
+            switch response {
+            case .success(let offersResponse):
+                let offer = offersResponse.records.first
+                XCTAssertNotNil(offer)
+                XCTAssert(true)
+                expectation.fulfill()
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load offers testcase", horizonRequestError: error)
+                XCTAssert(false)
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testLoadOffersForSponsor() {
+        let expectation = XCTestExpectation(description: "Get offers")
+        
+        sdk.offers.getOffers(seller: "GDGNF4FLAPCTN2WQ4SM7RPB42QIEPM3FK5M4FAVREOBUALT7I6DVNHCX", sellingAssetType: "credit_alphanum4", sellingAssetCode: "IOM", sellingAssetIssuer: "GDLDBAEQ2HNCIGYUSOZGWOLVUFF6HCVPEAEN3NH54GD37LFJXGWBRPII", buyingAssetType: "native", sponsor: "GCSODO5SLOZIAMJWUFZWKL4AIQRYCS6VZ55MQ5TF2SUO5QKVJW6TG2P5") { (response) -> (Void) in
             switch response {
             case .success(let offersResponse):
                 let offer = offersResponse.records.first

@@ -11,7 +11,7 @@ import Foundation
 public struct TransactionMetaV2XDR: XDRCodable {
     
     public var txChangesBefore:LedgerEntryChangesXDR
-    private var operations:[OperationMetaXDR]
+    public var operations:[OperationMetaXDR]
     public var txChangesAfter:LedgerEntryChangesXDR
     
     public init(from decoder: Decoder) throws {

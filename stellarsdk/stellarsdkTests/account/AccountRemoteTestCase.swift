@@ -13,7 +13,7 @@ import stellarsdk
 
 class AccountRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let accountId = "GCDP5EESKZQM7UWQTTNVNAYYBUPK2AGR6OVPLB3OICUZO5WQKYZ66DZD"
+    let accountId = "GDQ7DUQ2KA5SZH5ZSBO7GNSG2XOGM5NVT5AWJQZRB2HCYGOTQ5VQ4QOH"
     
     override func setUp() {
         super.setUp()
@@ -50,7 +50,7 @@ class AccountRemoteTestCase: XCTestCase {
     func testGetAccountsByAsset() {
         let expectation = XCTestExpectation(description: "Get accounts and parse their details successfully")
         
-        sdk.accounts.getAccounts(signer: nil, asset: "IOM:GAHVPXP7RPX5EGT6WFDS26AOM3SBZW2RKEDBZ5VO45J7NYDGJYKYE6UW", cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
+        sdk.accounts.getAccounts(signer: nil, asset: "RICH:GALA3JYOCVM4ENFPXMMXQBFGTQZKWRIOAVZSHGGNUVC4KOGOB3A4EFGZ", cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
             switch response {
             case .success(let accountsResponse):
                 // load next page
@@ -90,7 +90,7 @@ class AccountRemoteTestCase: XCTestCase {
     func testGetAccountsBySigner() {
         let expectation = XCTestExpectation(description: "Get accounts and parse their details successfully")
         
-        sdk.accounts.getAccounts(signer: "GAHVPXP7RPX5EGT6WFDS26AOM3SBZW2RKEDBZ5VO45J7NYDGJYKYE6UW", asset:nil, cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
+        sdk.accounts.getAccounts(signer: "GALA3JYOCVM4ENFPXMMXQBFGTQZKWRIOAVZSHGGNUVC4KOGOB3A4EFGZ", asset:nil, cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
             switch response {
             case .success(let accountsResponse):
                 // load next page
@@ -118,6 +118,23 @@ class AccountRemoteTestCase: XCTestCase {
                         XCTAssert(false)
                     }
                 }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load accounts testcase", horizonRequestError: error)
+                XCTAssert(false)
+                expectation.fulfill()
+            }
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetAccountsBySponsor() {
+        let expectation = XCTestExpectation(description: "Get accounts and parse their details successfully")
+        
+        sdk.accounts.getAccounts(sponsor: "GALA3JYOCVM4ENFPXMMXQBFGTQZKWRIOAVZSHGGNUVC4KOGOB3A4EFGZ", cursor: nil, order: Order.descending, limit: 5) { (response) -> (Void) in
+            switch response {
+            case .success(let accountsResponse):
+                print("sponsored accounts:\(accountsResponse.records.count)")
+                expectation.fulfill()
             case .failure(let error):
                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load accounts testcase", horizonRequestError: error)
                 XCTAssert(false)

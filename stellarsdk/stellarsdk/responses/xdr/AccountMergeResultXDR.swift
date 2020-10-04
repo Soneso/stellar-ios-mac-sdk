@@ -18,6 +18,8 @@ public enum AccountMergeResultCode: Int32 {
     case immutableSet = -3 // source account has AUTH_IMMUTABLE set
     case hasSubEntries = -4 // account has trust lines/offers
     case seqnumTooFar = -5 // sequence number is over max allowed
+    case destinationFull = -6 // can't add source balance to destination balance
+    case isSponsor = -7 // can't merge account that is a sponsor
 }
 
 public enum AccountMergeResultXDR: XDRCodable {

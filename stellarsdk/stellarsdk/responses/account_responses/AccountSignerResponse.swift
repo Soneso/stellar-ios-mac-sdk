@@ -23,11 +23,14 @@ public class AccountSignerResponse: NSObject, Decodable {
     /// Type of the key e.g. ed25519_public_key
     public var type:String?
     
+    public var sponsor:String?
+    
      // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
         case weight
         case key
         case type
+        case sponsor
     }
     
     /**
@@ -40,5 +43,6 @@ public class AccountSignerResponse: NSObject, Decodable {
         weight = try values.decode(Int.self, forKey: .weight)
         key = try values.decodeIfPresent(String.self, forKey: .key)
         type = try values.decodeIfPresent(String.self, forKey: .type)
+        sponsor = try values.decodeIfPresent(String.self, forKey: .sponsor)
     }
 }

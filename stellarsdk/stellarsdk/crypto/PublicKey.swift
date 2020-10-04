@@ -99,6 +99,10 @@ public class PublicKey: XDRCodable {
         return Data(bytes: &bytes, count: bytes.count).base32EncodedString!
     }*/
     
+    public func wrappedData32() -> WrappedData32 {
+        var bytesArray = bytes
+        return WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))
+    }
     /// Encodes the public key to the given XDR Encoder
     ///
     /// - Parameter encoder: the xdr encoder

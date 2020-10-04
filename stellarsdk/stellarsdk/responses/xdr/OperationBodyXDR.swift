@@ -23,6 +23,11 @@ public enum OperationBodyXDR: XDRCodable {
     case accountMerge (MuxedAccountXDR)
     case bumpSequence (BumpSequenceOperationXDR)
     case pathPaymentStrictSend (PathPaymentOperationXDR)
+    case createClaimableBalance (CreateClaimableBalanceOpXDR)
+    case claimClaimableBalance (ClaimClaimableBalanceOpXDR)
+    case beginSponsoringFutureReserves (BeginSponsoringFutureReservesOpXDR)
+    case endSponsoringFutureReserves
+    case revokeSponsorship (RevokeSponsorshipOpXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -58,6 +63,16 @@ public enum OperationBodyXDR: XDRCodable {
                 self = .bumpSequence(try container.decode(BumpSequenceOperationXDR.self))
             case OperationType.pathPaymentStrictSend.rawValue:
                 self = .pathPaymentStrictSend(try container.decode(PathPaymentOperationXDR.self))
+            case OperationType.createClaimableBalance.rawValue:
+                self = .createClaimableBalance(try container.decode(CreateClaimableBalanceOpXDR.self))
+            case OperationType.claimClaimableBalance.rawValue:
+                self = .claimClaimableBalance(try container.decode(ClaimClaimableBalanceOpXDR.self))
+            case OperationType.beginSponsoringFutureReserves.rawValue:
+                self = .beginSponsoringFutureReserves(try container.decode(BeginSponsoringFutureReservesOpXDR.self))
+            case OperationType.endSponsoringFutureReserves.rawValue:
+                self = .endSponsoringFutureReserves
+            case OperationType.revokeSponsorship.rawValue:
+                self = .revokeSponsorship(try container.decode(RevokeSponsorshipOpXDR.self))
             default:
                 throw StellarSDKError.xdrDecodingError(message: "Could not decode operation")
         }
@@ -79,6 +94,11 @@ public enum OperationBodyXDR: XDRCodable {
             case .accountMerge: return OperationType.accountMerge.rawValue
             case .bumpSequence: return OperationType.bumpSequence.rawValue
             case .pathPaymentStrictSend: return OperationType.pathPaymentStrictSend.rawValue
+            case .createClaimableBalance: return OperationType.createClaimableBalance.rawValue
+            case .claimClaimableBalance: return OperationType.claimClaimableBalance.rawValue
+            case .beginSponsoringFutureReserves: return OperationType.beginSponsoringFutureReserves.rawValue
+            case .endSponsoringFutureReserves: return OperationType.endSponsoringFutureReserves.rawValue
+            case .revokeSponsorship: return OperationType.revokeSponsorship.rawValue
         }
     }
     
@@ -115,6 +135,16 @@ public enum OperationBodyXDR: XDRCodable {
         case .bumpSequence (let op):
             try container.encode(op)
         case .pathPaymentStrictSend (let op):
+            try container.encode(op)
+        case .createClaimableBalance (let op):
+            try container.encode(op)
+        case .claimClaimableBalance (let op):
+            try container.encode(op)
+        case .beginSponsoringFutureReserves (let op):
+            try container.encode(op)
+        case .endSponsoringFutureReserves:
+            break
+        case .revokeSponsorship (let op):
             try container.encode(op)
         }
     }

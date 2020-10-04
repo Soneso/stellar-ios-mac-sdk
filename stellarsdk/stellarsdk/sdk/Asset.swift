@@ -42,8 +42,37 @@ public class Asset
         }
     }
     
+    public convenience init?(canonicalForm: String) {
+        if canonicalForm == "native" || canonicalForm == "XLM" {
+            self.init(type: AssetType.ASSET_TYPE_NATIVE)!
+            return
+        }
+        let components = canonicalForm.components(separatedBy: ":")
+        if components.count != 2 {
+            return nil
+        }
+        let code = components[0].trimmingCharacters(in: .whitespaces)
+        let issuer = components[1].trimmingCharacters(in: .whitespaces)
+        let type = code.count < 5 ? AssetType.ASSET_TYPE_CREDIT_ALPHANUM4 : AssetType.ASSET_TYPE_CREDIT_ALPHANUM12
+        do {
+            let kp = try KeyPair(accountId: issuer)
+            self.init(type: type, code: code, issuer: kp)
+        } catch {
+            return nil
+        }
+    }
+    
+    public func toCanonicalForm() -> String {
+        switch self.type {
+            case AssetType.ASSET_TYPE_NATIVE:
+                return "native"
+            default:
+                return self.code! + ":" + self.issuer!.accountId
+        }
+    }
+    
     /// Generates XDR object from the Asset object.
-    /// Throws StellarSDKError.xdrDecodingError if the XDR Object could not be created.
+    /// Throws StellarSDKError.xdrEncodingError if the XDR Object could not be created.
     public func toXDR() throws -> AssetXDR {
         
         do {
@@ -54,7 +83,7 @@ public class Asset
                     return try AssetXDR(assetCode:code!, issuer:issuer!)
             }
         } catch {
-            throw StellarSDKError.xdrDecodingError(message: "Error decoding asset: " + error.localizedDescription)
+            throw StellarSDKError.xdrEncodingError(message: "Error encoding asset: " + error.localizedDescription)
         }
     }
     
@@ -62,7 +91,7 @@ public class Asset
     ///
     /// - Parameter assetXDR: the AssetXDR object to be used create the Asset object.
     ///
-    /// - Throws StellarSDKError.xdrEncodingError if the Asset object could not be created from the given.
+    /// - Throws StellarSDKError.xdrDecodingError if the Asset object could not be created from the given.
     ///
     /// - Returns the generated Asset object.
     ///
@@ -82,7 +111,7 @@ public class Asset
                 result = Asset(type:AssetType.ASSET_TYPE_CREDIT_ALPHANUM12, code:assetXDR.assetCode, issuer:issuerKeyPair)
         }
         guard let asset = result else {
-            throw StellarSDKError.xdrDecodingError(message: "Error encoding asset: invalid data in xdr")
+            throw StellarSDKError.xdrDecodingError(message: "Error decoding asset: invalid data in xdr")
         }
         return asset
     }

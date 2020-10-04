@@ -77,6 +77,16 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertEqual(code, BumpSequenceResultCode.success.rawValue)
         case .pathPaymentStrictSend(let code, _):
             XCTAssertEqual(code, PathPaymentResultCode.success.rawValue)
+        case .createClaimableBalance(let code, _):
+            XCTAssertEqual(code, CreateClaimableBalanceResultCode.success.rawValue)
+        case .claimClaimableBalance(let code, _):
+            XCTAssertEqual(code, ClaimClaimableBalanceResultCode.success.rawValue)
+        case .beginSponsoringFutureReserves(let code, _):
+            XCTAssertEqual(code, BeginSponsoringFutureReservesResultCode.success.rawValue)
+        case .endSponsoringFutureReserves(let code, _):
+            XCTAssertEqual(code, EndSponsoringFutureReservesResultCode.success.rawValue)
+        case .revokeSponsorship(let code, _):
+            XCTAssertEqual(code, RevokeSponsorshipResultCode.success.rawValue)
         case .empty(let code):
             XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
         }

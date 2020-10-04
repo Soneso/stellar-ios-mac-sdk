@@ -26,6 +26,7 @@ public class OperationsStreamItem: NSObject {
             case .response(let id, let data):
                 do {
                     let jsonData = data.data(using: .utf8)!
+                    //print("Response: " + String(data: jsonData, encoding: .utf8)!)
                     guard let operation = try self?.operationsFactory.operationFromData(data: jsonData) else { return }
                     response(.response(id: id, data: operation))
                 } catch {

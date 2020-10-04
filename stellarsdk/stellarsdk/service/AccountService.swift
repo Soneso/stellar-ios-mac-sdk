@@ -152,17 +152,19 @@ open class AccountService: NSObject {
     /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
     /// - Parameter signer: Optional. Account ID.
-    /// - Parameter asset: Optional. An issued asset represented as "Code:IssuerAccountID".
+    /// - Parameter asset: Optional. An issued asset represented in coanolical form ("native" or "Code:IssuerAccountID").
+    /// - Parameter sponsor: Optional. Account ID.
     /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
     /// - Parameter order: Optional. The order in which to return rows, “asc” or “desc”, ordered by assetCode then by assetIssuer.
     /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
     ///
-    open func getAccounts(signer:String? = nil, asset:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<AccountResponse>.ResponseClosure) {
+    open func getAccounts(signer:String? = nil, asset:String? = nil, sponsor:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<AccountResponse>.ResponseClosure) {
         var requestPath = "/accounts"
         
         var params = Dictionary<String,String>()
         params["signer"] = signer
         params["asset"] = asset
+        params["sponsor"] = sponsor
         params["cursor"] = cursor
         params["order"] = order?.rawValue
         if let limit = limit { params["limit"] = String(limit) }

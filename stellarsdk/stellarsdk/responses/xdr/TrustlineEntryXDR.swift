@@ -23,7 +23,7 @@ public struct TrustlineEntryXDR: XDRCodable {
     public let balance: Int64
     public let limit: Int64
     public let flags: UInt32 // see TrustLineFlags
-    public let reserved: LedgerEntryExtXDR
+    public let reserved: AccountEntryExtXDR
     
     
     public init(accountID: PublicKey, asset:AssetXDR, balance:Int64, limit:Int64, flags:UInt32) {
@@ -42,7 +42,7 @@ public struct TrustlineEntryXDR: XDRCodable {
         balance = try container.decode(Int64.self)
         limit = try container.decode(Int64.self)
         flags = try container.decode(UInt32.self)
-        reserved = try container.decode(LedgerEntryExtXDR.self)
+        reserved = try container.decode(AccountEntryExtXDR.self)
     }
     
     public func encode(to encoder: Encoder) throws {

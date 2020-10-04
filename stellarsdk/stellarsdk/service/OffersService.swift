@@ -49,11 +49,12 @@ public class OffersService: NSObject {
     /// - Parameter buyingAssetType: Required. Type of the Asset being bought e.g."native" or "credit_alphanum4" or "credit_alphanum12"
     /// - Parameter buyingAssetCode: Required if buying_asset_type is not "native".
     /// - Parameter buyingAssetIssuer: Required if buying_asset_type is not "native".
+    /// - Parameter sponsor: Optional. Account ID of the sponsor.
     /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
     /// - Parameter order: Optional. The order in which to return rows, “asc” or “desc”, ordered by assetCode then by assetIssuer.
     /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
     ///
-    open func getOffers(seller:String?, sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {
+    open func getOffers(seller:String?, sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, sponsor:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {
         var requestPath = "/offers"
         
         var params = Dictionary<String,String>()

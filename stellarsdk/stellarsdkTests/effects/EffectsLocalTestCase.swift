@@ -216,6 +216,42 @@ class EffectsLocalTestCase: XCTestCase {
                         } else {
                             XCTAssert(false)
                         }
+                    case .claimableBalanceCreatedEffect:
+                        XCTAssert(false)
+                    case .claimableBalanceClaimantCreatedEffect:
+                        XCTAssert(false)
+                    case .claimableBalanceClaimedEffect:
+                        XCTAssert(false)
+                    case .accountSponsorshipCreated:
+                        XCTAssert(false)
+                    case .accountSponsorshipUpdated:
+                        XCTAssert(false)
+                    case .accountSponsorshipRemoved:
+                        XCTAssert(false)
+                    case .trustlineSponsorshipCreated:
+                        XCTAssert(false)
+                    case .trustlineSponsorshipUpdated:
+                        XCTAssert(false)
+                    case .trustlineSponsorshipRemoved:
+                        XCTAssert(false)
+                    case .dataSponsorshipCreated:
+                        XCTAssert(false)
+                    case .dataSponsorshipUpdated:
+                        XCTAssert(false)
+                    case .dataSponsorshipRemoved:
+                        XCTAssert(false)
+                    case .claimableBalanceSponsorshipCreated:
+                        XCTAssert(false)
+                    case .claimableBalanceSponsorshipUpdated:
+                        XCTAssert(false)
+                    case .claimableBalanceSponsorshipRemoved:
+                        XCTAssert(false)
+                    case .signerBalanceSponsorshipCreated:
+                        XCTAssert(false)
+                    case .signerBalanceSponsorshipUpdated:
+                        XCTAssert(false)
+                    case .signerBalanceSponsorshipRemoved:
+                        XCTAssert(false)
                 }
             }
         }

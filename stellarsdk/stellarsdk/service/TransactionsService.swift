@@ -229,6 +229,7 @@ public class TransactionsService: NSObject {
                 switch result {
                 case .success(let data):
                     do {
+                        //print("SUCCESS: " + String(data: data, encoding: .utf8)!)
                         self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
                         let transaction = try self.jsonDecoder.decode(SubmitTransactionResponse.self, from: data)
                         response(.success(details: transaction))

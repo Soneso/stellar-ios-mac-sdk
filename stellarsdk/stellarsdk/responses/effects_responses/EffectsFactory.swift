@@ -123,6 +123,60 @@ class EffectsFactory: NSObject {
             case .sequenceBumpedEffect:
                 let effect = try jsonDecoder.decode(SequenceBumpedEffectResponse.self, from: data)
                 return effect
+            case .claimableBalanceCreatedEffect:
+                let effect = try jsonDecoder.decode(ClaimableBalanceCreatedEffectResponse.self, from: data)
+                return effect
+            case .claimableBalanceClaimantCreatedEffect:
+                let effect = try jsonDecoder.decode(ClaimableBalanceClaimantCreatedEffectResponse.self, from: data)
+                return effect
+            case .claimableBalanceClaimedEffect:
+                let effect = try jsonDecoder.decode(ClaimableBalanceClaimedEffectResponse.self, from: data)
+                return effect
+            case .accountSponsorshipCreated:
+                let effect = try jsonDecoder.decode(AccountSponsorshipCreatedEffectResponse.self, from: data)
+                return effect
+            case .accountSponsorshipUpdated:
+                let effect = try jsonDecoder.decode(AccountSponsorshipUpdatedEffectResponse.self, from: data)
+                return effect
+            case .accountSponsorshipRemoved:
+                let effect = try jsonDecoder.decode(AccountSponsorshipRemovedEffectResponse.self, from: data)
+                return effect
+            case .trustlineSponsorshipCreated:
+                let effect = try jsonDecoder.decode(TrustlineSponsorshipCreatedEffectResponse.self, from: data)
+                return effect
+            case .trustlineSponsorshipUpdated:
+                let effect = try jsonDecoder.decode(TrustlineSponsorshipUpdatedEffectResponse.self, from: data)
+                return effect
+            case .trustlineSponsorshipRemoved:
+                let effect = try jsonDecoder.decode(TrustlineSponsorshipRemovedEffectResponse.self, from: data)
+                return effect
+            case .dataSponsorshipCreated:
+                let effect = try jsonDecoder.decode(DataSponsorshipCreatedEffectResponse.self, from: data)
+                return effect
+            case .dataSponsorshipUpdated:
+                let effect = try jsonDecoder.decode(DataSponsorshipUpdatedEffectResponse.self, from: data)
+                return effect
+            case .dataSponsorshipRemoved:
+                let effect = try jsonDecoder.decode(DataSponsorshipRemovedEffectResponse.self, from: data)
+                return effect
+            case .claimableBalanceSponsorshipCreated:
+                let effect = try jsonDecoder.decode(ClaimableBalanceSponsorshipCreatedEffectResponse.self, from: data)
+                return effect
+            case .claimableBalanceSponsorshipUpdated:
+                let effect = try jsonDecoder.decode(ClaimableBalanceSponsorshipUpdatedEffectResponse.self, from: data)
+                return effect
+            case .claimableBalanceSponsorshipRemoved:
+                let effect = try jsonDecoder.decode(ClaimableBalanceSponsorshipRemovedEffectResponse.self, from: data)
+                return effect
+            case .signerBalanceSponsorshipCreated:
+                let effect = try jsonDecoder.decode(SignerSponsorshipCreatedEffectResponse.self, from: data)
+                return effect
+            case .signerBalanceSponsorshipUpdated:
+                let effect = try jsonDecoder.decode(SignerSponsorshipUpdatedEffectResponse.self, from: data)
+                return effect
+            case .signerBalanceSponsorshipRemoved:
+                let effect = try jsonDecoder.decode(SignerSponsorshipRemovedEffectResponse.self, from: data)
+                return effect
             }
         } else {
             throw HorizonRequestError.parsingResponseFailed(message: "Unknown effect type")

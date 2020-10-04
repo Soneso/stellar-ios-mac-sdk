@@ -49,6 +49,7 @@ class OperationsFactory: NSObject {
     func operationFromData(data: Data) throws -> OperationResponse {
         
         // The class to be used depends on the effect type coded in its json reresentation.
+        //print(String(data: data, encoding: .utf8)!)
         let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
         if let type = OperationType(rawValue: Int32(json["type_i"] as! Int)) {
             switch type {
@@ -80,6 +81,16 @@ class OperationsFactory: NSObject {
                 return try jsonDecoder.decode(BumpSequenceOperationResponse.self, from: data)
             case .pathPaymentStrictSend:
                 return try jsonDecoder.decode(PathPaymentStrictSendOperationResponse.self, from: data)
+            case .createClaimableBalance:
+                return try jsonDecoder.decode(CreateClaimableBalanceOperationResponse.self, from: data)
+            case .claimClaimableBalance:
+                return try jsonDecoder.decode(ClaimClaimableBalanceOperationResponse.self, from: data)
+            case .beginSponsoringFutureReserves:
+                return try jsonDecoder.decode(BeginSponsoringFutureReservesOperationResponse.self, from: data)
+            case .endSponsoringFutureReserves:
+                return try jsonDecoder.decode(EndSponsoringFutureReservesOperationResponse.self, from: data)
+            case .revokeSponsorship:
+                return try jsonDecoder.decode(RevokeSponsorshipOperationResponse.self, from: data)
             }
         } else {
             throw HorizonRequestError.parsingResponseFailed(message: "Unknown operation type")

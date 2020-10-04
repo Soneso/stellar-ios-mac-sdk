@@ -13,6 +13,7 @@ public enum LedgerEntryDataXDR: XDRCodable {
     case trustline (TrustlineEntryXDR)
     case offer (OfferEntryXDR)
     case data (DataEntryXDR)
+    case claimableBalance (ClaimableBalanceEntryXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -28,6 +29,8 @@ public enum LedgerEntryDataXDR: XDRCodable {
                 self = .offer(try container.decode(OfferEntryXDR.self))
             case LedgerEntryType.data.rawValue:
                 self = .data(try container.decode(DataEntryXDR.self))
+            case LedgerEntryType.claimableBalance.rawValue:
+                self = .claimableBalance(try container.decode(ClaimableBalanceEntryXDR.self))
             default:
                 self = .account(try container.decode(AccountEntryXDR.self))
         }
@@ -40,6 +43,7 @@ public enum LedgerEntryDataXDR: XDRCodable {
             case .trustline: return LedgerEntryType.trustline.rawValue
             case .offer: return LedgerEntryType.offer.rawValue
             case .data: return LedgerEntryType.data.rawValue
+            case .claimableBalance: return LedgerEntryType.claimableBalance.rawValue
         }
     }
     
@@ -59,6 +63,9 @@ public enum LedgerEntryDataXDR: XDRCodable {
             try container.encode(op)
             
         case .data (let op):
+            try container.encode(op)
+            
+        case .claimableBalance (let op):
             try container.encode(op)
         }
     }

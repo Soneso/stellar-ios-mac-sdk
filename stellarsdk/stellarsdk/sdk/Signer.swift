@@ -11,7 +11,12 @@ import Foundation
 public class Signer {
     
     public static func ed25519PublicKey(keyPair:KeyPair) -> SignerKeyXDR {
-        return KeyPair.fromXDRSignerKey(keyPair.publicKey)
+        return SignerKeyXDR.ed25519(keyPair.publicKey.wrappedData32())
+    }
+    
+    public static func ed25519PublicKey(accountId:String) throws -> SignerKeyXDR {
+        let pk = try PublicKey(accountId: accountId)
+        return SignerKeyXDR.ed25519(pk.wrappedData32())
     }
     
     public static func sha256Hash(hash:Data) -> SignerKeyXDR {

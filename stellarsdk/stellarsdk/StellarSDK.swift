@@ -25,6 +25,7 @@ public class StellarSDK: NSObject {
     public var offers: OffersService
     public var orderbooks: OrderbookService
     public var paymentPaths: PaymentPathsService
+    public var claimableBalances: ClaimableBalancesService
     
     public override init() {
         horizonURL = "https://horizon-testnet.stellar.org"
@@ -42,6 +43,7 @@ public class StellarSDK: NSObject {
         offers = OffersService(baseURL: horizonURL)
         orderbooks = OrderbookService(baseURL: horizonURL)
         paymentPaths = PaymentPathsService(baseURL: horizonURL)
+        claimableBalances = ClaimableBalancesService(baseURL: horizonURL)
     }
     
     public init(withHorizonUrl horizonURL:String) {
@@ -60,5 +62,6 @@ public class StellarSDK: NSObject {
         offers = OffersService(baseURL: horizonURL)
         orderbooks = OrderbookService(baseURL: horizonURL)
         paymentPaths = PaymentPathsService(baseURL: horizonURL)
+        claimableBalances = ClaimableBalancesService(baseURL: horizonURL)
     }
 }

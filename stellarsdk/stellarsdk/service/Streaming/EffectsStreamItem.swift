@@ -26,6 +26,7 @@ public class EffectsStreamItem: NSObject {
             case .response(let id, let data):
                 do {
                     let jsonData = data.data(using: .utf8)!
+                    //print(String(data: jsonData, encoding: .utf8)!)
                     guard let effects = try self?.effectsFactory.effectFromData(data: jsonData) else { return }
                     response(.response(id: id, data: effects))
                 } catch {

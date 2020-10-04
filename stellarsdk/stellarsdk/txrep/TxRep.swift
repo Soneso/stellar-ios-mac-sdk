@@ -1070,7 +1070,7 @@ public class TxRep: NSObject {
         var operationPrefix = prefix + "operations[" + String(index) + "]."
         if let sourceAccount = operation.sourceAccount {
             addLine(key: operationPrefix + "sourceAccount._present", value: "true", lines: &lines)
-            addLine(key: operationPrefix + "sourceAccount", value: sourceAccount.accountId, lines: &lines) // TODO change to M-StrKey
+            addLine(key: operationPrefix + "sourceAccount", value: sourceAccount.accountId, lines: &lines)
         } else {
             addLine(key: operationPrefix + "sourceAccount._present", value: "false", lines: &lines)
         }
@@ -1080,11 +1080,11 @@ public class TxRep: NSObject {
         
         switch operation.body {
         case .createAccount(let createAccountOp):
-            addLine(key: operationPrefix + "destination", value: createAccountOp.destination.accountId, lines: &lines) // TODO "M..."
+            addLine(key: operationPrefix + "destination", value: createAccountOp.destination.accountId, lines: &lines)
             addLine(key: operationPrefix + "startingBalance", value: String(createAccountOp.startingBalance), lines: &lines)
             break
         case .payment(let paymentOperation):
-            addLine(key: operationPrefix + "destination", value: paymentOperation.destination.accountId, lines: &lines) // TODO "M..."
+            addLine(key: operationPrefix + "destination", value: paymentOperation.destination.accountId, lines: &lines)
             addLine(key: operationPrefix + "asset", value: encodeAsset(asset: paymentOperation.asset), lines: &lines)
             addLine(key: operationPrefix + "amount", value: String(paymentOperation.amount), lines: &lines)
             break
@@ -1304,6 +1304,16 @@ public class TxRep: NSObject {
             return "manageBuyOfferOp"
         case .pathPaymentStrictSend(_):
             return "pathPaymentStrictSendOp"
+        case .createClaimableBalance(_):
+            return "createClaimableBalanceOp"
+        case .claimClaimableBalance(_):
+            return "claimClaimableBalanceOp"
+        case .beginSponsoringFutureReserves(_):
+            return "beginSponsoringFutureReservesOp"
+        case .endSponsoringFutureReserves:
+            return "endSponsoringFutureReservesOp"
+        case .revokeSponsorship(_):
+            return "revokeSponsorshipOp"
         }
     }
     private static func txRepOpTypeUpperCase(operation: OperationXDR) -> String {
@@ -1336,6 +1346,16 @@ public class TxRep: NSObject {
             return "MANAGE_BUY_OFFER"
         case .pathPaymentStrictSend(_):
             return "PATH_PAYMENT_STRICT_SEND"
+        case .createClaimableBalance(_):
+            return "CREATE_CLAIMABLE_BALANCE"
+        case .claimClaimableBalance(_):
+            return "CLAIM_CLAIMABLE_BALANCE"
+        case .beginSponsoringFutureReserves(_):
+            return "BEGIN_SPONSORING_FUTURE_RESERVES"
+        case .endSponsoringFutureReserves:
+            return "END_SPONSORING_FUTURE_RESERVES"
+        case .revokeSponsorship(_):
+            return "REVOKE_SPONSORSHIP"
         }
     }
     private static func addLine(key:String, value:String, lines: inout [String]) -> Void {

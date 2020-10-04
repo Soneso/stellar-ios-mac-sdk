@@ -34,7 +34,10 @@ public class AccountBalanceResponse: NSObject, Decodable {
     /// The account id of the account that created the asset.
     public var assetIssuer:String?
     
+    public var sponsor:String?
+    
     public var isAuthorized:Bool?
+    
     public var isAuthorizedToMaintainLiabilities:Bool?
     
     // Properties to encode and decode.
@@ -46,8 +49,10 @@ public class AccountBalanceResponse: NSObject, Decodable {
         case assetType = "asset_type"
         case assetCode = "asset_code"
         case assetIssuer = "asset_issuer"
+        case sponsor
         case isAuthorized = "is_authorized"
         case isAuthorizedToMaintainLiabilities = "is_authorized_to_maintain_liabilities"
+        
     }
     
     /**
@@ -64,6 +69,7 @@ public class AccountBalanceResponse: NSObject, Decodable {
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
+        sponsor = try values.decodeIfPresent(String.self, forKey: .sponsor)
         isAuthorized = try values.decodeIfPresent(Bool.self, forKey: .isAuthorized)
         isAuthorizedToMaintainLiabilities = try values.decodeIfPresent(Bool.self, forKey: .isAuthorizedToMaintainLiabilities)
     }

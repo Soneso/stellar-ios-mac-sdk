@@ -37,6 +37,26 @@ public enum EffectType: Int {
     case dataUpdatedEffect = 42
     // Bump Sequence effects
     case sequenceBumpedEffect = 43
+    // Claimable Balance Effects
+    case claimableBalanceCreatedEffect = 50
+    case claimableBalanceClaimantCreatedEffect = 51
+    case claimableBalanceClaimedEffect = 52
+    // Sponsorship
+    case accountSponsorshipCreated = 60
+    case accountSponsorshipUpdated = 61
+    case accountSponsorshipRemoved = 62
+    case trustlineSponsorshipCreated = 63
+    case trustlineSponsorshipUpdated = 64
+    case trustlineSponsorshipRemoved = 65
+    case dataSponsorshipCreated = 66
+    case dataSponsorshipUpdated = 67
+    case dataSponsorshipRemoved = 68
+    case claimableBalanceSponsorshipCreated = 69
+    case claimableBalanceSponsorshipUpdated = 70
+    case claimableBalanceSponsorshipRemoved = 71
+    case signerBalanceSponsorshipCreated = 72
+    case signerBalanceSponsorshipUpdated = 73
+    case signerBalanceSponsorshipRemoved = 74
 }
 
 /// Represents an account effect response. Superclass for all other effect response classes.

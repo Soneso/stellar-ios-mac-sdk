@@ -39,6 +39,8 @@ public class OfferResponse: NSObject, Decodable {
     /// How many units of buying it takes to get 1 unit of selling. A number representing the decimal form of priceR.
     public var price:String
     
+    public var sponsor:String?
+    
     private enum CodingKeys: String, CodingKey {
         
         case links = "_links"
@@ -50,6 +52,7 @@ public class OfferResponse: NSObject, Decodable {
         case amount
         case priceR = "price_r"
         case price
+        case sponsor
     }
     
     /**
@@ -69,6 +72,6 @@ public class OfferResponse: NSObject, Decodable {
         amount = try values.decode(String.self, forKey: .amount)
         priceR = try values.decode(OfferPriceResponse.self, forKey: .priceR)
         price = try values.decode(String.self, forKey: .price)
-        
+        sponsor = try values.decodeIfPresent(String.self, forKey: .sponsor)
     }
 }

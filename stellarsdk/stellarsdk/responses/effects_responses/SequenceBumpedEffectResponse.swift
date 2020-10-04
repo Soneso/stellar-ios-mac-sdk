@@ -11,7 +11,7 @@ import Foundation
 public class SequenceBumpedEffectResponse: EffectResponse {
 
     // The new sequence
-    public var newSequence:Int64
+    public var newSequence:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -25,7 +25,7 @@ public class SequenceBumpedEffectResponse: EffectResponse {
      */
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        newSequence = try values.decode(Int64.self, forKey: .newSequence)
+        newSequence = try values.decode(String.self, forKey: .newSequence)
         
         try super.init(from: decoder)
     }

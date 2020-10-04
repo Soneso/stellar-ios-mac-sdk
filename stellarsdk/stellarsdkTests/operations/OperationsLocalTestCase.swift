@@ -149,6 +149,16 @@ class OperationsLocalTestCase: XCTestCase {
                     } else {
                         XCTAssert(false)
                     }
+                case .createClaimableBalance:
+                    XCTAssert(false)
+                case .claimClaimableBalance:
+                    XCTAssert(false)
+                case .beginSponsoringFutureReserves:
+                    XCTAssert(false)
+                case .endSponsoringFutureReserves:
+                    XCTAssert(false)
+                case .revokeSponsorship:
+                    XCTAssert(false)
                 }
             }
         }

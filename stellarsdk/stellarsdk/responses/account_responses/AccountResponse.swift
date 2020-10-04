@@ -50,6 +50,10 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
     
     /// An array of account data fields. The values are base64 encoded.
     public var data:[String:String]
+    
+    public var sponsor:String?
+    public var numSponsoring:Int
+    public var numSponsored:Int
 
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
@@ -65,6 +69,9 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
         case balances
         case signers
         case data
+        case sponsor
+        case numSponsoring = "num_sponsoring"
+        case numSponsored = "num_sponsored"
     }
     
     /**
@@ -88,6 +95,17 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
         data = try values.decode([String:String].self, forKey: .data)
         homeDomain = try values.decodeIfPresent(String.self, forKey: .homeDomain)
         inflationDestination = try values.decodeIfPresent(String.self, forKey: .inflationDestination)
+        sponsor = try values.decodeIfPresent(String.self, forKey: .sponsor)
+        if let ns = try values.decodeIfPresent(Int.self, forKey: .numSponsoring) {
+            numSponsoring = ns
+        } else {
+            numSponsoring = 0
+        }
+        if let ns = try values.decodeIfPresent(Int.self, forKey: .numSponsored) {
+            numSponsored = ns
+        } else {
+            numSponsored = 0
+        }
     }
     
     ///  Returns sequence number incremented by one, but does not increment internal counter.
