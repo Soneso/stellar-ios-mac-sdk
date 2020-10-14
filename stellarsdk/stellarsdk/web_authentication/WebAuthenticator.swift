@@ -22,7 +22,7 @@ public enum ChallengeValidationError: Error {
     case sourceAccountNotFound
     case invalidOperationType
     case invalidOperationCount
-    case invalidHomeDomain
+    // case invalidHomeDomain // SEE: SEP-10 2.1.0 Changes - Clients are no longer required to validate the home_domain value in a SEP-10 challenge's first Manage Data operation
     case invalidTimeBounds
     case invalidSignature
     case signatureNotFound
@@ -209,8 +209,8 @@ public class WebAuthenticator {
                 return .failure(error: .sequenceNumberNot0)
             }
             
-            // the transaction must contain one operation
-            if transactionEnvelopeXDR.txOperations.count == 1, let operationXDR = transactionEnvelopeXDR.txOperations.first {
+            // the transaction must contain minimum one operation
+            if transactionEnvelopeXDR.txOperations.count >= 1, let operationXDR = transactionEnvelopeXDR.txOperations.first {
                 // the source account of the operation must match
                 if let operationSourceAccount = operationXDR.sourceAccount {
                     if (operationSourceAccount.accountId != userAccountId) {
@@ -223,10 +223,10 @@ public class WebAuthenticator {
                 //operation must be manage data operation
                 let operationBodyXDR = operationXDR.body
                 switch operationBodyXDR {
-                case .manageData(let manageDataOperation):
-                    if (manageDataOperation.dataName != (self.serverHomeDomain + " auth")) {
+                case .manageData(_):
+                    /*if (manageDataOperation.dataName != (self.serverHomeDomain + " auth")) {
                         return .failure(error: .invalidHomeDomain)
-                    }
+                    }*/ // SEE: SEP-10 2.1.0 Changes - Clients are no longer required to validate the home_domain value in a SEP-10 challenge's first Manage Data operation
                     break
                 default:
                     return .failure(error: .invalidOperationType)

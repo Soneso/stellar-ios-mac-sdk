@@ -14,10 +14,12 @@ public class DataForAccountResponse: NSObject, Decodable {
     
     /// The base64-encoded value for the requested key.
     public var value:String
+    public var sponsor:String?
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
         case value
+        case sponsor
     }
     
     /**
@@ -28,5 +30,6 @@ public class DataForAccountResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         value = try values.decode(String.self, forKey: .value)
+        sponsor = try values.decodeIfPresent(String.self, forKey: .sponsor)
     }
 }

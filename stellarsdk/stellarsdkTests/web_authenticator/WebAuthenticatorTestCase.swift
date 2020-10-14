@@ -255,7 +255,8 @@ class WebAuthenticatorTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidHomeDomain() {
+    // SEE: SEP-10 2.1.0 Changes - Clients are no longer required to validate the home_domain value in a SEP-10 challenge's first Manage Data operation
+    /*func testGetChallengeInvalidHomeDomain() {
         let expectation = XCTestExpectation(description: "A validation error is received.")
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
@@ -282,7 +283,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         }
         
         wait(for: [expectation], timeout: 15.0)
-    }
+    }*/
     
     func testGetChallengeInvalidTimebounds() {
         let expectation = XCTestExpectation(description: "A validation error is received.")
