@@ -30,10 +30,16 @@ class WebAuthenticatorSendChallengeResponseMock: ResponsesMock {
                     var validSignature = false
                     for signature in transactionEnvelope.txSignatures {
                         let sign = signature.signature
-                        let clientKeyPair = try! KeyPair(accountId: "GB4L7JUU5DENUXYH3ANTLVYQL66KQLDDJTN5SF7MWEDGWSGUA375V44V")
-                        let signatureIsValid = try! clientKeyPair.verify(signature: [UInt8](sign), message: transactionHash)
+                        var clientKeyPair = try! KeyPair(accountId: "GB4L7JUU5DENUXYH3ANTLVYQL66KQLDDJTN5SF7MWEDGWSGUA375V44V")
+                        var signatureIsValid = try! clientKeyPair.verify(signature: [UInt8](sign), message: transactionHash)
                         if signatureIsValid {
                             validSignature = true
+                        } else {
+                            clientKeyPair = try! KeyPair(accountId: "GDTQAJVJMEDWCSSSBZ54KFURMUJ4RKSCBBPGTNXVWOK6LZDN5TL6F3EA")
+                            signatureIsValid = try! clientKeyPair.verify(signature: [UInt8](sign), message: transactionHash)
+                            if signatureIsValid {
+                                validSignature = true
+                            }
                         }
                     }
                     

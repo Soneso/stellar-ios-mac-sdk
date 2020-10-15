@@ -26,6 +26,13 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
                 if key == "GB4L7JUU5DENUXYH3ANTLVYQL66KQLDDJTN5SF7MWEDGWSGUA375V44V" {
                     mock.statusCode = 200
                     return self?.requestSuccess(account: key)
+                }
+                else if key == "GDTQAJVJMEDWCSSSBZ54KFURMUJ4RKSCBBPGTNXVWOK6LZDN5TL6F3EA" {
+                    mock.statusCode = 200
+                    return self?.requestValidSecondOperation(account: "GDTQAJVJMEDWCSSSBZ54KFURMUJ4RKSCBBPGTNXVWOK6LZDN5TL6F3EA")
+                } else if key == "GA3BS4KS3XR4KEYG5QD6RSELGTCYQDETRISIVLWCMHI243NFYCLR7NSE" {
+                    mock.statusCode = 200
+                    return self?.requestInvalidSecondOperation(account: "GA3BS4KS3XR4KEYG5QD6RSELGTCYQDETRISIVLWCMHI243NFYCLR7NSE")
                 } else if key == "GAUQO2IDU23EJGLTUTOLSL2VBSWCS3YCVUBP3FET6VQJAUULNZ5CCW3Y" {
                     mock.statusCode = 200
                     return self?.requestInvalidSeq(account: "GAUQO2IDU23EJGLTUTOLSL2VBSWCS3YCVUBP3FET6VQJAUULNZ5CCW3Y")
@@ -84,9 +91,49 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         
         let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
         
-        let operation = ManageDataOperation(sourceAccount: clientKeyPair, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        let operation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
         
         let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation], memo: nil, timeBounds: timeBounds)
+        try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
+        
+        return """
+                {
+                "transaction": "\(try! transaction.encodedEnvelope())"
+                }
+                """
+    }
+    
+    func requestValidSecondOperation(account: String) -> String {
+        let clientKeyPair = try! KeyPair(accountId: account)
+        let transactionAccount = Account(keyPair: serverKeyPair, sequenceNumber: -1)
+        
+        let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
+        
+        let operation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        
+        let nextOperation = ManageDataOperation(sourceAccountId: serverKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        
+        let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation, nextOperation], memo: nil, timeBounds: timeBounds)
+        try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
+        
+        return """
+                {
+                "transaction": "\(try! transaction.encodedEnvelope())"
+                }
+                """
+    }
+    
+    func requestInvalidSecondOperation(account: String) -> String {
+        let clientKeyPair = try! KeyPair(accountId: account)
+        let transactionAccount = Account(keyPair: serverKeyPair, sequenceNumber: -1)
+        
+        let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
+        
+        let operation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        
+        let nextOperation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        
+        let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation, nextOperation], memo: nil, timeBounds: timeBounds)
         try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
         
         return """
@@ -102,7 +149,7 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         
         let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
         
-        let operation = ManageDataOperation(sourceAccount: clientKeyPair, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        let operation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
         
         let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation], memo: nil, timeBounds: timeBounds)
         try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
@@ -121,8 +168,8 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         
         let sourceAccountKeyPair = try! KeyPair(secretSeed:"SBCUVXRTONIII2HOZLCXQUSNMBKFLZBSN3BEZKTP7ACPBG5DZQEV62F5")
         let destinationAccountKeyPair = try! KeyPair(secretSeed: "SDA6XCDPNHTT7ZAHMW4H5LJG4HN7SJC2DU3RZ6QXVR3QFIFNWJ5ZAFHT")
-        let operation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
-                                         destination: destinationAccountKeyPair,
+        let operation = try! PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
+                                         destinationAccountId: destinationAccountKeyPair.accountId,
                                          asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                          amount: 1.5)
         
@@ -157,7 +204,8 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         
         let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
         
-        let operation = ManageDataOperation(sourceAccount: clientKeyPair, name: "fail.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        let operation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId
+                                            , name: "fail.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
         
         let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation], memo: nil, timeBounds: timeBounds)
         try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
@@ -175,7 +223,8 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         
         let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970) + 800, maxTime: UInt64(Date().timeIntervalSince1970 + 1200))
         
-        let operation = ManageDataOperation(sourceAccount: clientKeyPair, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        let operation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId
+                                            , name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
         
         let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation], memo: nil, timeBounds: timeBounds)
         try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
@@ -189,7 +238,7 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         
         let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
         
-        let operation = ManageDataOperation(sourceAccount: clientKeyPair, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        let operation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
         
         let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation], memo: nil, timeBounds: timeBounds)
         let keyPair = try! KeyPair(secretSeed: "SCNNPRMRJSIEZ2M64YP5TKM3P2XPJJDEQ2YS33RA5Y4GS7AOJHKLXVP4")
@@ -204,7 +253,7 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         
         let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
         
-        let operation = ManageDataOperation(sourceAccount: clientKeyPair, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        let operation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
         
         let transaction = TransactionXDR(sourceAccount: transactionAccount.keyPair.publicKey, seqNum: transactionAccount.sequenceNumber, timeBounds: timeBounds.toXdr(), memo: .none, operations: [try! operation.toXDR()])
         

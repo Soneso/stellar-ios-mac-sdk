@@ -33,6 +33,12 @@ class WebAuthenticatorTestCase: XCTestCase {
     let invalidOperationClientPublicKey = "GDRNSOWWZWLVFMBY4ZUUFVJXWYRVVGCC7ALXNEWZU7X2TODIRHAZANNA"
     let invalidOperationClientPrivateKey = "SBCUVXRTONIII2HOZLCXQUSNMBKFLZBSN3BEZKTP7ACPBG5DZQEV62F5"
     
+    let validSecondOperationClientPublicKey = "GDTQAJVJMEDWCSSSBZ54KFURMUJ4RKSCBBPGTNXVWOK6LZDN5TL6F3EA"
+    let validSecondOperationClientPrivateKey = "SAYFONLAHNWZACB6QM2SUKTCVN3NAHGD74VZSBBUD3SWBFKXKDN7QN2R"
+    
+    let invalidSecondOperationClientPublicKey = "GA3BS4KS3XR4KEYG5QD6RSELGTCYQDETRISIVLWCMHI243NFYCLR7NSE"
+    let invalidSecondOperationClientPrivateKey = "SBMU3KPO7J2JGMAQ5GIX4A7OAWKGWIY6XSLMVLUV2TAZOB5QE3EDLDAW"
+    
     let invalidOperationCountClientPublicKey = "GDTJSQ4KGWKKYDIAR5WKMKDQVNKK2BUR6KY43VWZ464T6FWJHHIG7ZI4"
     let invalidOperationCountClientPrivateKey = "SATMX7DQZVWXB5RZMPYD7G2E3OBFWIDGUTAL5WWGS3AFILWFFLAOGVXH"
     
@@ -173,6 +179,83 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidSourceAccClientPrivateKey) {
+            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(false)
+                case .failure(let error):
+                    switch error {
+                    case .validationErrorError(let error):
+                        if error == .invalidSourceAccount {
+                            XCTAssert(true)
+                        } else {
+                            XCTAssert(false)
+                        }
+                    default:
+                        XCTAssert(false)
+                    }
+                    
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetChallengeValidSecondOperation() {
+        let expectation = XCTestExpectation(description: "JWT is received with success.")
+        
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        if let keyPair = try? KeyPair(secretSeed: validSecondOperationClientPrivateKey) {
+            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(true)
+                case .failure(_):
+                    XCTAssert(false)
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetChallengeInvalidSecondOperation() {
+        let expectation = XCTestExpectation(description: "A validation error is received.")
+        
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        if let keyPair = try? KeyPair(secretSeed: invalidSecondOperationClientPrivateKey) {
+            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(false)
+                case .failure(let error):
+                    switch error {
+                    case .validationErrorError(let error):
+                        if error == .invalidSourceAccount {
+                            XCTAssert(true)
+                        } else {
+                            XCTAssert(false)
+                        }
+                    default:
+                        XCTAssert(false)
+                    }
+                    
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetChallengeInvalidSecondSourceAccount() {
+        let expectation = XCTestExpectation(description: "A validation error is received.")
+        
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        if let keyPair = try? KeyPair(secretSeed: invalidSecondOperationClientPrivateKey) {
             webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
                 case .success(_):

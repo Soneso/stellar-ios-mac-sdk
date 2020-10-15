@@ -209,30 +209,32 @@ public class WebAuthenticator {
                 return .failure(error: .sequenceNumberNot0)
             }
             
-            // the transaction must contain minimum one operation
-            if transactionEnvelopeXDR.txOperations.count >= 1, let operationXDR = transactionEnvelopeXDR.txOperations.first {
-                // the source account of the operation must match
+            var index = 0
+            for operationXDR in transactionEnvelopeXDR.txOperations {
                 if let operationSourceAccount = operationXDR.sourceAccount {
-                    if (operationSourceAccount.accountId != userAccountId) {
+                    if (index == 0 && operationSourceAccount.accountId != userAccountId) {
+                        return .failure(error: .invalidSourceAccount)
+                    }
+                    // the source account of additional operations must be the SEP-10 server's SIGNING_KEY
+                    if (index > 0 && operationSourceAccount.accountId != serverSigningKey) {
                         return .failure(error: .invalidSourceAccount)
                     }
                 } else {
                     return .failure(error: .sourceAccountNotFound)
                 }
+                index += 1
                 
-                //operation must be manage data operation
+                //all operations must be manage data operations
                 let operationBodyXDR = operationXDR.body
                 switch operationBodyXDR {
                 case .manageData(_):
-                    /*if (manageDataOperation.dataName != (self.serverHomeDomain + " auth")) {
-                        return .failure(error: .invalidHomeDomain)
-                    }*/ // SEE: SEP-10 2.1.0 Changes - Clients are no longer required to validate the home_domain value in a SEP-10 challenge's first Manage Data operation
                     break
                 default:
                     return .failure(error: .invalidOperationType)
                 }
-                
-            } else {
+            }
+            
+            if index == 0 {
                 return .failure(error: .invalidOperationCount)
             }
             
