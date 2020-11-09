@@ -22,7 +22,7 @@ public enum ChallengeValidationError: Error {
     case sourceAccountNotFound
     case invalidOperationType
     case invalidOperationCount
-    // case invalidHomeDomain // SEE: SEP-10 2.1.0 Changes - Clients are no longer required to validate the home_domain value in a SEP-10 challenge's first Manage Data operation
+    case invalidHomeDomain
     case invalidTimeBounds
     case invalidSignature
     case signatureNotFound
@@ -222,16 +222,19 @@ public class WebAuthenticator {
                 } else {
                     return .failure(error: .sourceAccountNotFound)
                 }
-                index += 1
                 
                 //all operations must be manage data operations
                 let operationBodyXDR = operationXDR.body
                 switch operationBodyXDR {
-                case .manageData(_):
+                case .manageData(let manageDataOperation):
+                    if (index == 0 && manageDataOperation.dataName != (self.serverHomeDomain + " auth")) {
+                        return .failure(error: .invalidHomeDomain)
+                    }
                     break
                 default:
                     return .failure(error: .invalidOperationType)
                 }
+                index += 1
             }
             
             if index == 0 {
