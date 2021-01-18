@@ -45,6 +45,9 @@ class WebAuthenticatorTestCase: XCTestCase {
     let invalidHomeDomainClientPublicKey = "GCN2YSJLDRFN2VZKDVQU4ARHHTRS6X7QD4Q6IO4D3DIVVARVPRK5CPKU"
     let invalidHomeDomainClientPrivateKey = "SDAIVVH6QK47Z3EMMQEUQLVYRTJCJJ5IVQYFCOF2FXKM4EBOL7J4SPRI"
     
+    let invalidWebAuthDomainClientPublicKey = "GBCWD4VLRY42JMWNPETGDPY6HSVHQ7YPOM73KALIWEJXIK4OIN5SSY3S"
+    let invalidWebAuthDomainClientPrivateKey = "SDTBVY7LW6AJVEXOO3SEY3T7UN34KQYS7P5T4HIR6UXRGSZ6EVYYA4ND"
+    
     let invalidTimeboundsClientPublicKey = "GBLIKSJM67PCYH7CNFLQETPPOWATL2PVH2SY7WGWDQEOK47FANF3PIIX"
     let invalidTimeboundsClientPrivateKey = "SDQXB7ELE6BHRUCLOTNPCGAJ6YSI3G5GPWTESG72QOQXHNUBRCPK7HMT"
     
@@ -351,6 +354,35 @@ class WebAuthenticatorTestCase: XCTestCase {
                     switch error {
                     case .validationErrorError(let error):
                         if error == .invalidHomeDomain {
+                            XCTAssert(true)
+                        } else {
+                            XCTAssert(false)
+                        }
+                    default:
+                        XCTAssert(false)
+                    }
+                    
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetChallengeInvalidWebAuthDomain() {
+        let expectation = XCTestExpectation(description: "A validation error is received.")
+        
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        if let keyPair = try? KeyPair(secretSeed: invalidWebAuthDomainClientPrivateKey) {
+            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(false)
+                case .failure(let error):
+                    switch error {
+                    case .validationErrorError(let error):
+                        if error == .invalidWebAuthDomain {
                             XCTAssert(true)
                         } else {
                             XCTAssert(false)

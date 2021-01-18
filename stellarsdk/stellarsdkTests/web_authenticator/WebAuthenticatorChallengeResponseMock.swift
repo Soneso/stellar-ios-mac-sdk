@@ -54,6 +54,9 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
                 } else if key == "GCN2YSJLDRFN2VZKDVQU4ARHHTRS6X7QD4Q6IO4D3DIVVARVPRK5CPKU" {
                     mock.statusCode = 200
                     return self?.requestInvalidHomeDomain(account: key)
+                } else if key == "GBCWD4VLRY42JMWNPETGDPY6HSVHQ7YPOM73KALIWEJXIK4OIN5SSY3S" {
+                    mock.statusCode = 200
+                    return self?.requestInvalidWebAuthDomain(account: key)
                 } else if key == "GBPFFS63LXKHUL5SFJAI4737JJ2UHEQJXKJRQ3BFBN2PQC4RQ2OLMPSY" {
                     mock.statusCode = 200
                     return self?.requestInvalidSignature(account: key)
@@ -91,9 +94,10 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         
         let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
         
-        let operation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        let operation1 = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        let operation2 = ManageDataOperation(sourceAccountId: serverKeyPair.accountId, name: "web_auth_domain", data: "api.stellar.org".data(using: .utf8))
         
-        let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation], memo: nil, timeBounds: timeBounds)
+        let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation1,operation2], memo: nil, timeBounds: timeBounds)
         try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
         
         return """
@@ -208,6 +212,27 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
                                             , name: "fail.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
         
         let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation], memo: nil, timeBounds: timeBounds)
+        try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
+        
+        return """
+                {
+                "transaction": "\(try! transaction.encodedEnvelope())"
+                }
+                """
+    }
+    
+    func requestInvalidWebAuthDomain(account: String) -> String {
+        let clientKeyPair = try! KeyPair(accountId: account)
+        let transactionAccount = Account(keyPair: serverKeyPair, sequenceNumber: -1)
+        
+        let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
+        
+        let operation1 = ManageDataOperation(sourceAccountId: clientKeyPair.accountId
+                                            , name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        let operation2 = ManageDataOperation(sourceAccountId: serverKeyPair.accountId
+                                            , name: "web_auth_domain", data: "blubber".data(using: .utf8))
+        
+        let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation1, operation2], memo: nil, timeBounds: timeBounds)
         try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
         
         return """

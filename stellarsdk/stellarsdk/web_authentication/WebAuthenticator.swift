@@ -28,6 +28,7 @@ public enum ChallengeValidationError: Error {
     case signatureNotFound
     case validationFailure
     case invalidTransactionType
+    case invalidWebAuthDomain
 }
 
 /// Possible errors received from a JWT token response.
@@ -229,6 +230,20 @@ public class WebAuthenticator {
                 case .manageData(let manageDataOperation):
                     if (index == 0 && manageDataOperation.dataName != (self.serverHomeDomain + " auth")) {
                         return .failure(error: .invalidHomeDomain)
+                    } else if (manageDataOperation.dataName == "web_auth_domain") {
+                        if let dataValue = manageDataOperation.dataValue,
+                           let url = URL(string: self.authEndpoint),
+                           let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                           let host = components.host {
+                            
+                            let webAuthDomain = String(decoding: dataValue, as: UTF8.self)
+                            if webAuthDomain != host {
+                                return .failure(error: .invalidWebAuthDomain)
+                            }
+                            
+                        } else {
+                            return .failure(error: .invalidWebAuthDomain)
+                        }
                     }
                     break
                 default:
