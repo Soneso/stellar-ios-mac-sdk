@@ -15,7 +15,7 @@ class OperationsRemoteTestCase: XCTestCase {
     var streamItem:OperationsStreamItem? = nil
     var effectsStreamItem:EffectsStreamItem? = nil
     
-    let seed = "SC5DJLUVRNNYR3M4IZUHJKYHKWLEYXTI6IZ2CZCGS45IIBNLVCFJFVW7"
+    let seed = "SBE4RATOMHZHAVR56PF5L7LFLLD6TYE7QSU64TJPVPEBCZFGAVYICVTX"
     let IOMIssuingAccountId = "GCP76QULG2X3SKYG4Z3OYY3DJJXWSQ7NTTJCH4E3EOLUQDAJU2AU6ZVI"
     
     override func setUp() {

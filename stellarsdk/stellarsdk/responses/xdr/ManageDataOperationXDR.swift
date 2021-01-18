@@ -23,12 +23,11 @@ public struct ManageDataOperationXDR: XDRCodable {
         dataName = try container.decode(String.self)
         let dataValuePresent = try container.decode(UInt32.self)
         if dataValuePresent != 0 {
-            let data = try decodeArray(type:UInt8.self, dec: decoder)
+            let data = try container.decode(Data.self)
             dataValue = Data(bytes: data)
         } else {
             dataValue = nil
         }
-        
     }
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
@@ -37,7 +36,7 @@ public struct ManageDataOperationXDR: XDRCodable {
         if let dataValue = dataValue {
             let flag: Int32 = 1
             try container.encode(flag)
-            try container.encode(dataValue.bytes)
+            try container.encode(dataValue)
         } else {
             let flag: Int32 = 0
             try container.encode(flag)

@@ -10,8 +10,9 @@ import XCTest
 import stellarsdk
 
 class TransactionsRemoteTestCase: XCTestCase {
+    //let sdk = StellarSDK(withHorizonUrl: "https://horizon.stellar.org")
     let sdk = StellarSDK()
-    let seed = "SC5DJLUVRNNYR3M4IZUHJKYHKWLEYXTI6IZ2CZCGS45IIBNLVCFJFVW7"
+    let seed = "SBE4RATOMHZHAVR56PF5L7LFLLD6TYE7QSU64TJPVPEBCZFGAVYICVTX"
     var streamItem:TransactionsStreamItem? = nil
     
     override func setUp() {
@@ -112,7 +113,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetTransactionDetails() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         
-        sdk.transactions.getTransactionDetails(transactionHash: "ed371e9079494a36b320e8ac35b03417846a20c38179c16700df04b99c884cc1") { (response) -> (Void) in
+        sdk.transactions.getTransactionDetails(transactionHash: "0345402a59f832ceb12489e20847edad34571bc4683298007b95276a59330015") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -278,16 +279,19 @@ class TransactionsRemoteTestCase: XCTestCase {
         sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
             switch response {
             case .success(let data):
+                let operationBody0 = OperationBodyXDR.manageData(ManageDataOperationXDR(dataName: "kop", dataValue: "api.stellar.org".data(using: .utf8)))
+                let operation0 = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody0)
                 let operationBody = OperationBodyXDR.bumpSequence(BumpSequenceOperationXDR(bumpTo: data.sequenceNumber + 10))
                 let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
-                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation], maxOperationFee: 190)
+                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation0, operation], maxOperationFee: 190)
                 
                 try! transaction.sign(keyPair: keyPair, network: .testnet)
                 let xdrEnvelope = try! transaction.encodedEnvelope()
                 print(xdrEnvelope)
                 self.sdk.transactions.postTransaction(transactionEnvelope: xdrEnvelope, response: { (response) -> (Void) in
                     switch response {
-                    case .success(_):
+                    case .success(let transaction):
+                        print(transaction.transactionHash)
                         expectation.fulfill()
                     case .destinationRequiresMemo(let destinationAccountId):
                         print("TEP Test: Destination requires memo \(destinationAccountId)")
