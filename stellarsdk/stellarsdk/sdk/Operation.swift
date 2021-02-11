@@ -88,6 +88,22 @@ public class Operation {
             return ManageDataOperation(fromXDR: manageData, sourceAccountId: mSourceAccountId)
         case .bumpSequence(let bumpSequenceData):
             return BumpSequenceOperation(fromXDR: bumpSequenceData, sourceAccountId: mSourceAccountId)
+        case .createClaimableBalance(let data):
+            return try CreateClaimableBalanceOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
+        case .claimClaimableBalance(let data):
+            return try ClaimClaimableBalanceOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
+        case .beginSponsoringFutureReserves(let data):
+            if let sponsoringAccountId = mSourceAccountId {
+                return try BeginSponsoringFutureReservesOperation(fromXDR: data, sponsoringAccountId: sponsoringAccountId)
+            } else {
+                throw StellarSDKError.invalidArgument(message: "Missing source account id for BeginSponsoringFutureReservesOperation")
+            }
+        case .endSponsoringFutureReserves:
+            if let sponsoringAccountId = mSourceAccountId {
+                return EndSponsoringFutureReservesOperation(sponsoredAccountId: sponsoringAccountId)
+            } else {
+                throw StellarSDKError.invalidArgument(message: "Missing source account id for EndSponsoringFutureReservesOperation")
+            }
         default:
             throw StellarSDKError.invalidArgument(message: "Unknown operation body \(operationXDR.body)")
         }

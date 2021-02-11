@@ -343,6 +343,16 @@ class TransactionsRemoteTestCase: XCTestCase {
         XCTAssertEqual(validUserSignature, userSignature)
     }
     
+    func testTransactionSponsoringXDR() throws {
+        
+        let xdr = "AAAAAgAAAAA0jCzxfXQz6m2qbnLP+65jGoAlFe4iq6PDscyjMQFpaQAtxsAB6r3KAAAB3AAAAAEAAAAAAAAAAAAAAABgJQcCAAAAAAAAAAMAAAABAAAAAB4iR3Mb6J8v89M2SdB9HqBrRdxzyIS66zoSEI3YmXjBAAAAEAAAAACHq6ZMhPkTrMxCxpHMRzP0+x9RiQrWytu63h+8FZ9paAAAAAEAAAAAh6umTIT5E6zMQsaRzEcz9PsfUYkK1srbut4fvBWfaWgAAAAGAAAAAVVTREMAAAAAO5kROA7+mIugqJAOsc/kTzZvfb6Ua+0HckD39iTfFcV//////////wAAAAEAAAAAh6umTIT5E6zMQsaRzEcz9PsfUYkK1srbut4fvBWfaWgAAAARAAAAAAAAAAHYmXjBAAAAQFiyng7KylEQ2YEAL+mmEmPx4V0WipbQy6kuc/RDVjGVsjW45L1FQbGU7eja7gAIsaU0m83xW1eGQn/m1A5RTww="
+
+        let transaction = try Transaction(envelopeXdr: xdr)
+        let envelopeXDR = try transaction.encodedEnvelope()
+        
+        XCTAssertEqual(xdr, envelopeXDR)
+    }
+    
     func testTransactionV0SignWithTwoOperations() throws {
         let keyPair = try! KeyPair(secretSeed: "SB2VUAO2O2GLVUQOY46ZDAF3SGWXOKTY27FYWGZCSV26S24VZ6TUKHGE")
         // transaction envelope v0 with two payment operations
