@@ -12,6 +12,13 @@ public enum ClaimableBalanceIDType: Int32 {
     case claimableBalanceIDTypeV0 = 0
 }
 
+public struct ClaimableBalanceFlags {
+    
+    // If set, the issuer account of the asset held by the claimable balance may
+    // clawback the claimable balance
+    public static let CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG: UInt32 = 1
+}
+
 public enum ClaimableBalanceIDXDR: XDRCodable {
     case claimableBalanceIDTypeV0(WrappedData32)
     
@@ -53,7 +60,7 @@ public struct ClaimableBalanceEntryXDR: XDRCodable {
     public let claimants:[ClaimantXDR]
     public let asset:AssetXDR
     public let amount:Int64
-    public let ext: Int32 = 0
+    public let ext: ClaimableBalanceEntryExtXDR
     
     
     public init(from decoder: Decoder) throws {
@@ -62,7 +69,7 @@ public struct ClaimableBalanceEntryXDR: XDRCodable {
         self.claimants =  try decodeArray(type: ClaimantXDR.self, dec: decoder)
         asset = try container.decode(AssetXDR.self)
         amount = try container.decode(Int64.self)
-        _ = try container.decode(Int32.self)
+        ext  = try container.decode(ClaimableBalanceEntryExtXDR.self)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -72,5 +79,65 @@ public struct ClaimableBalanceEntryXDR: XDRCodable {
         try container.encode(asset)
         try container.encode(amount)
         try container.encode(ext)
+    }
+}
+
+public enum ClaimableBalanceEntryExtXDR: XDRCodable {
+    case void
+    case claimableBalanceEntryExtensionV1 (ClaimableBalanceEntryExtensionV1)
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        let code = try container.decode(Int32.self)
+        
+        switch code {
+        case 0:
+            self = .void
+        case 1:
+            self = .claimableBalanceEntryExtensionV1(try ClaimableBalanceEntryExtensionV1(from: decoder))
+        default:
+            self = .void
+        }
+    }
+    
+    private func type() -> Int32 {
+        switch self {
+        case .void: return 0
+        case .claimableBalanceEntryExtensionV1: return 1
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(type())
+        
+        switch self {
+        case .void:
+            return
+        case .claimableBalanceEntryExtensionV1(let claimableBalnceEntryExtV1):
+            try container.encode(claimableBalnceEntryExtV1)
+        }
+    }
+}
+
+public struct ClaimableBalanceEntryExtensionV1: XDRCodable {
+    public var reserved: Int32 = 0
+    public let flags:UInt32 // see ClaimableBalanceFlags
+    
+    public init(flags: UInt32) {
+        self.flags = flags
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        reserved = try container.decode(Int32.self)
+        flags = try container.decode(UInt32.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(reserved)
+        try container.encode(flags)
     }
 }

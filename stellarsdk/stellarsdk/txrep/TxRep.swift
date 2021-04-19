@@ -1314,6 +1314,12 @@ public class TxRep: NSObject {
             return "endSponsoringFutureReservesOp"
         case .revokeSponsorship(_):
             return "revokeSponsorshipOp"
+        case .clawback(_):
+            return "clawbackOp"
+        case .clawbackClaimableBalance(_):
+            return "clawbackClaimableBalanceOp"
+        case .setTrustLineFlags(_):
+            return "setTrustLineFlagsOp"
         }
     }
     private static func txRepOpTypeUpperCase(operation: OperationXDR) -> String {
@@ -1356,6 +1362,12 @@ public class TxRep: NSObject {
             return "END_SPONSORING_FUTURE_RESERVES"
         case .revokeSponsorship(_):
             return "REVOKE_SPONSORSHIP"
+        case .clawback(_):
+            return "CLAWBACK"
+        case .clawbackClaimableBalance(_):
+            return "CLAWBACK_CLAIMABLE_BALANCE"
+        case .setTrustLineFlags(_):
+            return "SET_TRUST_LINE_FLAGS"
         }
     }
     private static func addLine(key:String, value:String, lines: inout [String]) -> Void {

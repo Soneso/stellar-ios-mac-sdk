@@ -8,13 +8,29 @@
 
 import Foundation
 
+public struct AccountFlags {
+    // Flags set on issuer accounts
+    // trust lines are created with authorized set to "false" requiring
+    // the issuer to set it for each trust line
+    public static let AUTH_REQUIRED_FLAG: UInt32 = 1
+    // If set, the authorized flag in trust lines can be cleared
+    // otherwise, authorization cannot be revoked
+    public static let AUTH_REVOCABLE_FLAG: UInt32 = 2
+    // Once set, causes all AUTH_* flags to be read-only
+    public static let AUTH_IMMUTABLE_FLAG: UInt32 = 4
+    // trust lines are created with clawback enabled set to "true",
+    // and claimable balances created from those trustlines are created
+    // with clawback enabled set to "true"
+    public static let AUTH_CLAWBACK_ENABLED_FLAG: UInt32 = 8
+}
+
 public struct AccountEntryXDR: XDRCodable {
     let accountID: PublicKey
     public let balance: Int64
     public let sequenceNumber: Int64
     public let numSubEntries:UInt32
     public var inflationDest: PublicKey?
-    public let flags:UInt32
+    public let flags:UInt32 // see AccountFlags
     public let homeDomain:String?
     public let thresholds:WrappedData4
     public let signers: [SignerXDR]

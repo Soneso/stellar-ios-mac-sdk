@@ -104,6 +104,12 @@ public class Operation {
             } else {
                 throw StellarSDKError.invalidArgument(message: "Missing source account id for EndSponsoringFutureReservesOperation")
             }
+        case .clawback(let data):
+            return ClawbackOeration(fromXDR: data, sourceAccountId: mSourceAccountId)
+        case .clawbackClaimableBalance(let data):
+            return try ClawbackClaimableBalanceOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
+        case .setTrustLineFlags(let data):
+            return SetTrustlineFlagsOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         default:
             throw StellarSDKError.invalidArgument(message: "Unknown operation body \(operationXDR.body)")
         }

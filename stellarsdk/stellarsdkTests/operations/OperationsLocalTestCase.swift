@@ -159,6 +159,12 @@ class OperationsLocalTestCase: XCTestCase {
                     XCTAssert(false)
                 case .revokeSponsorship:
                     XCTAssert(false)
+                case .clawback:
+                    XCTAssert(false)
+                case .clawbackClaimableBalance:
+                    XCTAssert(false)
+                case .setTrustLineFlags:
+                    XCTAssert(false)
                 }
             }
         }

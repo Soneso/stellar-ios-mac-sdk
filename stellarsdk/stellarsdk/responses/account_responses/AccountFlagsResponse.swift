@@ -23,11 +23,15 @@ public class AccountFlagsResponse: NSObject, Decodable {
     /// If this is set then none of the authorization flags can be set and the account can never be deleted.
     public let authImmutable:Bool
     
+    public let authClawbackEnabled:Bool
+    
+    
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
         case authRequired = "auth_required"
         case authRevocable = "auth_revocable"
         case authImmutable = "auth_immutable"
+        case authClawbackEnabled = "auth_clawback_enabled"
     }
     
     /**
@@ -55,6 +59,12 @@ public class AccountFlagsResponse: NSObject, Decodable {
             authImmutable = aimmu
         } else {
             authImmutable = false
+        }
+        
+        if let ace = try values.decodeIfPresent(Bool.self, forKey: .authClawbackEnabled) {
+            authClawbackEnabled = ace
+        } else {
+            authClawbackEnabled = false
         }
     }
 }

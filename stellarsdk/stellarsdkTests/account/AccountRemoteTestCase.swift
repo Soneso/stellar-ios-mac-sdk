@@ -13,7 +13,7 @@ import stellarsdk
 
 class AccountRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let accountId = "GDQ7DUQ2KA5SZH5ZSBO7GNSG2XOGM5NVT5AWJQZRB2HCYGOTQ5VQ4QOH"
+    let accountId = "GCRIOIWOKDDNZCYUOL72PFQWHIPY5H6WXTV2LLFVCJG5RH4G63PQPO36"
     
     override func setUp() {
         super.setUp()
@@ -50,7 +50,7 @@ class AccountRemoteTestCase: XCTestCase {
     func testGetAccountsByAsset() {
         let expectation = XCTestExpectation(description: "Get accounts and parse their details successfully")
         
-        sdk.accounts.getAccounts(signer: nil, asset: "RICH:GALA3JYOCVM4ENFPXMMXQBFGTQZKWRIOAVZSHGGNUVC4KOGOB3A4EFGZ", cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
+        sdk.accounts.getAccounts(signer: nil, asset: "RICH:GCRIOIWOKDDNZCYUOL72PFQWHIPY5H6WXTV2LLFVCJG5RH4G63PQPO36", cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
             switch response {
             case .success(let accountsResponse):
                 // load next page
@@ -90,7 +90,7 @@ class AccountRemoteTestCase: XCTestCase {
     func testGetAccountsBySigner() {
         let expectation = XCTestExpectation(description: "Get accounts and parse their details successfully")
         
-        sdk.accounts.getAccounts(signer: "GALA3JYOCVM4ENFPXMMXQBFGTQZKWRIOAVZSHGGNUVC4KOGOB3A4EFGZ", asset:nil, cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
+        sdk.accounts.getAccounts(signer: accountId, asset:nil, cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
             switch response {
             case .success(let accountsResponse):
                 // load next page
@@ -130,7 +130,7 @@ class AccountRemoteTestCase: XCTestCase {
     func testGetAccountsBySponsor() {
         let expectation = XCTestExpectation(description: "Get accounts and parse their details successfully")
         
-        sdk.accounts.getAccounts(sponsor: "GALA3JYOCVM4ENFPXMMXQBFGTQZKWRIOAVZSHGGNUVC4KOGOB3A4EFGZ", cursor: nil, order: Order.descending, limit: 5) { (response) -> (Void) in
+        sdk.accounts.getAccounts(sponsor: accountId, cursor: nil, order: Order.descending, limit: 5) { (response) -> (Void) in
             switch response {
             case .success(let accountsResponse):
                 print("sponsored accounts:\(accountsResponse.records.count)")

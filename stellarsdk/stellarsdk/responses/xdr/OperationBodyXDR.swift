@@ -28,6 +28,9 @@ public enum OperationBodyXDR: XDRCodable {
     case beginSponsoringFutureReserves (BeginSponsoringFutureReservesOpXDR)
     case endSponsoringFutureReserves
     case revokeSponsorship (RevokeSponsorshipOpXDR)
+    case clawback(ClawbackOpXDR)
+    case clawbackClaimableBalance(ClawbackClaimableBalanceOpXDR)
+    case setTrustLineFlags(SetTrustLineFlagsOpXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -73,6 +76,12 @@ public enum OperationBodyXDR: XDRCodable {
                 self = .endSponsoringFutureReserves
             case OperationType.revokeSponsorship.rawValue:
                 self = .revokeSponsorship(try container.decode(RevokeSponsorshipOpXDR.self))
+            case OperationType.clawback.rawValue:
+                self = .clawback(try container.decode(ClawbackOpXDR.self))
+            case OperationType.clawbackClaimableBalance.rawValue:
+                self = .clawbackClaimableBalance(try container.decode(ClawbackClaimableBalanceOpXDR.self))
+            case OperationType.setTrustLineFlags.rawValue:
+                self = .setTrustLineFlags(try container.decode(SetTrustLineFlagsOpXDR.self))
             default:
                 throw StellarSDKError.xdrDecodingError(message: "Could not decode operation")
         }
@@ -99,6 +108,9 @@ public enum OperationBodyXDR: XDRCodable {
             case .beginSponsoringFutureReserves: return OperationType.beginSponsoringFutureReserves.rawValue
             case .endSponsoringFutureReserves: return OperationType.endSponsoringFutureReserves.rawValue
             case .revokeSponsorship: return OperationType.revokeSponsorship.rawValue
+            case .clawback: return OperationType.clawback.rawValue
+            case .clawbackClaimableBalance: return OperationType.clawbackClaimableBalance.rawValue
+            case .setTrustLineFlags: return OperationType.setTrustLineFlags.rawValue
         }
     }
     
@@ -145,6 +157,12 @@ public enum OperationBodyXDR: XDRCodable {
         case .endSponsoringFutureReserves:
             break
         case .revokeSponsorship (let op):
+            try container.encode(op)
+        case .clawback (let op):
+            try container.encode(op)
+        case .clawbackClaimableBalance (let op):
+            try container.encode(op)
+        case .setTrustLineFlags (let op):
             try container.encode(op)
         }
     }

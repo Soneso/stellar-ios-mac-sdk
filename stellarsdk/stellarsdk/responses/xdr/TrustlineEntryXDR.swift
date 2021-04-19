@@ -14,6 +14,9 @@ public struct TrustLineFlags {
     // issuer has authorized account to maintain and reduce liabilities for its
     // credit
     public static let AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG: UInt32 = 2
+    // issuer has specified that it may clawback its credit, and that claimable
+    // balances created with its credit may also be clawed back
+    public static let TRUSTLINE_CLAWBACK_ENABLED_FLAG: UInt32 = 4
 }
 
 

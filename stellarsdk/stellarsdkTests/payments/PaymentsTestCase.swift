@@ -13,9 +13,9 @@ class PaymentsTestCase: XCTestCase {
     let sdk = StellarSDK()
     //let sdk = StellarSDK(withHorizonUrl: "https://horizon-testnet.stellar.org/?customParam=123&secondCustomParam=987")
     var streamItem:OperationsStreamItem? = nil
-    let IOMIssuingAccountId = "GCP76QULG2X3SKYG4Z3OYY3DJJXWSQ7NTTJCH4E3EOLUQDAJU2AU6ZVI"
+    let IOMIssuingAccountId = "GBXRK7G4CEWLZWBJDIUABRXVSGH6VCR5ZHYA45VX4XZE4L4IL6PK4KZF"
     // SDAEGUFZGWUF24FR7IUKOLY3KRTDCI4W5YUJ3WEFXHOJEVELMMG7N7SB
-    let seed = "SC5DJLUVRNNYR3M4IZUHJKYHKWLEYXTI6IZ2CZCGS45IIBNLVCFJFVW7"
+    let seed = "SBFLTUTTPH36XNVCUAHYNUSVFLWDQFJ2ZH5YP3VNJJYQAJ2JZ2RZRGF7"
     // GALA3JYOCVM4ENFPXMMXQBFGTQZKWRIOAVZSHGGNUVC4KOGOB3A4EFGZ
     
     override func setUp() {
@@ -111,7 +111,7 @@ class PaymentsTestCase: XCTestCase {
     func testGetPaymentsForTransaction() {
         let expectation = XCTestExpectation(description: "Get payments for transaction")
         
-        sdk.payments.getPayments(forTransaction: "50b76312829a9c6077678a00b4fee2f12cbe531900b83f72ef4145fc0763c409", includeFailed: true, join:"transactions") { (response) -> (Void) in
+        sdk.payments.getPayments(forTransaction: "542fbd10071ea9f39217fa262336ac725f443bb6e35c0cab1c01ac16c21f226e", includeFailed: true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)

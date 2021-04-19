@@ -87,6 +87,12 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertEqual(code, EndSponsoringFutureReservesResultCode.success.rawValue)
         case .revokeSponsorship(let code, _):
             XCTAssertEqual(code, RevokeSponsorshipResultCode.success.rawValue)
+        case .clawback(let code, _):
+            XCTAssertEqual(code, ClawbackResultCode.success.rawValue)
+        case .clawbackClaimableBalance(let code, _):
+            XCTAssertEqual(code, ClawbackClaimableBalanceResultCode.success.rawValue)
+        case .setTrustLineFlags(let code, _):
+            XCTAssertEqual(code, SetTrustLineFlagsResultCode.success.rawValue)
         case .empty(let code):
             XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
         }

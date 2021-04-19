@@ -15,8 +15,8 @@ class OperationsRemoteTestCase: XCTestCase {
     var streamItem:OperationsStreamItem? = nil
     var effectsStreamItem:EffectsStreamItem? = nil
     
-    let seed = "SBE4RATOMHZHAVR56PF5L7LFLLD6TYE7QSU64TJPVPEBCZFGAVYICVTX"
-    let IOMIssuingAccountId = "GCP76QULG2X3SKYG4Z3OYY3DJJXWSQ7NTTJCH4E3EOLUQDAJU2AU6ZVI"
+    let seed = "SBFLTUTTPH36XNVCUAHYNUSVFLWDQFJ2ZH5YP3VNJJYQAJ2JZ2RZRGF7"
+    let IOMIssuingAccountId = "GBXRK7G4CEWLZWBJDIUABRXVSGH6VCR5ZHYA45VX4XZE4L4IL6PK4KZF"
     
     override func setUp() {
         super.setUp()
@@ -111,7 +111,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationsForTransaction() {
         let expectation = XCTestExpectation(description: "Get operations for transaction")
         
-        sdk.operations.getOperations(forTransaction: "a5287f0dc3cb3ea088722f25927125aed4c78bf49051c530c4ca04a07a2103e8", includeFailed:true, join:"transactions") { (response) -> (Void) in
+        sdk.operations.getOperations(forTransaction: "0063bdc7742ee3020741f2a5649b6d0d9827ad95c4ee0abc25ea87010d268886", includeFailed:true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -129,7 +129,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationDetails() {
         let expectation = XCTestExpectation(description: "Get operation details")
         
-        sdk.operations.getOperationDetails(operationId: "777015418425345", join:"transactions") { (response) -> (Void) in
+        sdk.operations.getOperationDetails(operationId: "2334838711390209", join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -316,14 +316,14 @@ class OperationsRemoteTestCase: XCTestCase {
     func testAccountMerge() {
         let expectation = XCTestExpectation(description: "account merged")
         do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SA45WOS6WCPPHKHAIXTH6RK5ACXMVWQ2MEIDSG6VYAXX3O5GFXMEZ3JW")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SAZ6P7T6NXUMVIP7TTFWCKZCI6EYDYSSIXRGQ4BHOBXME2W7GRAVN3EL")
             
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
                     do {
                         
-                        let muxDestination = try MuxedAccount(accountId: "GALA3JYOCVM4ENFPXMMXQBFGTQZKWRIOAVZSHGGNUVC4KOGOB3A4EFGZ",  id: 100000029292)
+                        let muxDestination = try MuxedAccount(accountId: "GCBNSYZLI5YWKYTV5JZ4C6EMAPH2OEGRX3H2KQ6DT5O3XVP5CRKA6CKZ",  id: 100000029292)
                         
                         print("dest:\(muxDestination.accountId)")
                         
@@ -842,16 +842,16 @@ class OperationsRemoteTestCase: XCTestCase {
                 case .success(let accountResponse):
                     do {
                         let XLM = Asset(type: AssetType.ASSET_TYPE_NATIVE)
-                        let moonIssuerKeypair = try KeyPair(accountId: "GCSODO5SLOZIAMJWUFZWKL4AIQRYCS6VZ55MQ5TF2SUO5QKVJW6TG2P5")
+                        let moonIssuerKeypair = try KeyPair(accountId: "GCKZE4CKNCNTY34QEYSRKCXIRWQRE4QURA7URCA6QSQDGVDHYBZUW4W6")
                         let MOON = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "MOON", issuer: moonIssuerKeypair)!
-                        let firstClaimant = Claimant(destination:"GDQ7DUQ2KA5SZH5ZSBO7GNSG2XOGM5NVT5AWJQZRB2HCYGOTQ5VQ4QOH")
+                        let firstClaimant = Claimant(destination:"GDSHZPWSL5QBQKKDQNECFPI2PF7JQUACNWG65PMFOK6G5V4QBH4CX2KH")
                         let predicateA = Claimant.predicateBeforeRelativeTime(seconds: 100)
                         let predicateB = Claimant.predicateBeforeAbsoluteTime(unixEpoch: 1634000400)
                         let predicateC = Claimant.predicateNot(predicate: predicateA)
                         let predicateD = Claimant.predicateAnd(left: predicateC, right: predicateB)
                         let predicateE = Claimant.predicateBeforeAbsoluteTime(unixEpoch: 1601671345)
                         let predicateF = Claimant.predicateOr(left: predicateD, right: predicateE)
-                        let secondClaimant = Claimant(destination:"GCAVRAJT3OL7XUTGB54RSJKPASB5KNB66PB6HDOPVFBDKKY7XMPYSUIH",predicate: predicateF)
+                        let secondClaimant = Claimant(destination:"GAHHMAYMOTYPHQQEIPZNHPOXMSIBYR6LSU2BDW4GAFQH6HKA56U7EDE6",predicate: predicateF)
                         
                         let claimants = [ firstClaimant, secondClaimant]
                         let createClaimableBalance = CreateClaimableBalanceOperation(asset: MOON, amount: 2.00, claimants: claimants)
@@ -977,7 +977,7 @@ class OperationsRemoteTestCase: XCTestCase {
     
     func testGetClaimableBalancesForClaimant() {
         let expectation = XCTestExpectation(description: "can get claimable balances for claimant")
-        let claimantAccountId = "GDQ7DUQ2KA5SZH5ZSBO7GNSG2XOGM5NVT5AWJQZRB2HCYGOTQ5VQ4QOH"
+        let claimantAccountId = "GDSHZPWSL5QBQKKDQNECFPI2PF7JQUACNWG65PMFOK6G5V4QBH4CX2KH"
         print("claimant account id: " + claimantAccountId)
         
         sdk.claimableBalances.getClaimableBalances(claimantAccountId: claimantAccountId, order:Order.descending) { (response) -> (Void) in
@@ -1042,8 +1042,8 @@ class OperationsRemoteTestCase: XCTestCase {
     func testClaimClaimableBalance() {
         let expectation = XCTestExpectation(description: "can claim claimable balance")
         do {
-            let balanceId = "0000000059f2fc357ce5e28d0de875e3c7e96dfa10c3624198f033a833447e709985a494"
-            let claimantAccountKeyPair = try KeyPair(secretSeed:"SDDJMSYAUF5QBS2T6IIPUNBAHCNQ6LJ3GWK2KWYW5INSRUK5AEYPAZWK")
+            let balanceId = "00000000592c4377beaca24f99c7e56b60a4a0a71c5910829c340daabba380ad848e43e3"
+            let claimantAccountKeyPair = try KeyPair(secretSeed:"SCYBAXTTHKQI3NFNAZZJJK7IZEQHBB3RCAWLUJXK7PFTHTQLBHONALX7")
             let claimantAccountId = claimantAccountKeyPair.accountId
             print("claimant: " + claimantAccountId) //GDQ7DUQ2KA5SZH5ZSBO7GNSG2XOGM5NVT5AWJQZRB2HCYGOTQ5VQ4QOH
             

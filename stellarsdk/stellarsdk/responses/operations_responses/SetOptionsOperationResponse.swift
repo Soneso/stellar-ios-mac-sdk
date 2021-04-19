@@ -36,11 +36,10 @@ public class SetOptionsOperationResponse: OperationResponse {
     /// The weight of the master key (1-255).
     public var masterKeyWeight:Int?
     
-    /// The array of numeric values of flags that has been cleared in this operation
-    public var clearFlags:AccountFlagsResponse?
-    
-    /// The array of numeric values of flags that has been set in this operation
-    public var setFlags:AccountFlagsResponse?
+    public var setFlags:[Int]?
+    public var setFlagsS:[String]?
+    public var clearFlags:[Int]?
+    public var clearFlagsS:[String]?
     
     
     // Properties to encode and decode
@@ -53,8 +52,10 @@ public class SetOptionsOperationResponse: OperationResponse {
         case signerKey = "signer_key"
         case signerWeight = "signer_weight"
         case masterKeyWeight = "master_key_weight"
-        case clearFlags = "clear_flags_s"
-        case setFlags = "set_flags_s"
+        case setFlags = "set_flags"
+        case setFlagsS = "set_flags_s"
+        case clearFlags = "clear_flags"
+        case clearFlagsS = "clear_flags_s"
         
     }
     
@@ -73,8 +74,10 @@ public class SetOptionsOperationResponse: OperationResponse {
         signerKey = try values.decodeIfPresent(String.self, forKey: .signerKey)
         signerWeight = try values.decodeIfPresent(Int.self, forKey: .signerWeight)
         masterKeyWeight = try values.decodeIfPresent(Int.self, forKey: .masterKeyWeight)
-        clearFlags = try values.decodeIfPresent(AccountFlagsResponse.self, forKey: .clearFlags)
-        setFlags = try values.decodeIfPresent(AccountFlagsResponse.self, forKey: .setFlags)
+        setFlags = try values.decodeIfPresent(Array.self, forKey: .setFlags)
+        setFlagsS = try values.decodeIfPresent(Array.self, forKey: .setFlagsS)
+        clearFlags = try values.decodeIfPresent(Array.self, forKey: .clearFlags)
+        clearFlagsS = try values.decodeIfPresent(Array.self, forKey: .clearFlagsS)
         
         try super.init(from: decoder)
     }

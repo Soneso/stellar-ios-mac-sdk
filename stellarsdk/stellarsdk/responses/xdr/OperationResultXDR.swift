@@ -35,6 +35,9 @@ public enum OperationResultXDR: XDRCodable {
     case beginSponsoringFutureReserves(Int32, BeginSponsoringFutureReservesResultXDR)
     case endSponsoringFutureReserves(Int32, EndSponsoringFutureReservesResultXDR)
     case revokeSponsorship(Int32, RevokeSponsorshipResultXDR)
+    case clawback(Int32, ClawbackResultXDR)
+    case clawbackClaimableBalance(Int32, ClawbackClaimableBalanceResultXDR)
+    case setTrustLineFlags(Int32, SetTrustLineFlagsResultXDR)
     case empty (Int32)
     
     public init(from decoder: Decoder) throws {
@@ -84,6 +87,12 @@ public enum OperationResultXDR: XDRCodable {
                     self = .endSponsoringFutureReserves(code.rawValue, try container.decode(EndSponsoringFutureReservesResultXDR.self))
                 case .revokeSponsorship:
                     self = .revokeSponsorship(code.rawValue, try container.decode(RevokeSponsorshipResultXDR.self))
+                case .clawback:
+                    self = .clawback(code.rawValue, try container.decode(ClawbackResultXDR.self))
+                case .clawbackClaimableBalance:
+                    self = .clawbackClaimableBalance(code.rawValue, try container.decode(ClawbackClaimableBalanceResultXDR.self))
+                case .setTrustLineFlags:
+                    self = .setTrustLineFlags(code.rawValue, try container.decode(SetTrustLineFlagsResultXDR.self))
             }
         default:
             self = .empty(code.rawValue)
@@ -150,6 +159,15 @@ public enum OperationResultXDR: XDRCodable {
                 try container.encode(code)
                 try container.encode(result)
             case .revokeSponsorship(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .clawback(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .clawbackClaimableBalance(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .setTrustLineFlags(let code, let result):
                 try container.encode(code)
                 try container.encode(result)
             case .empty (let code):
