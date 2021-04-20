@@ -1,5 +1,5 @@
 //
-//  ClawbackOeration.swift
+//  ClawbackOperation.swift
 //  stellarsdk
 //
 //  Created by Christian Rogobete on 18.04.21.
@@ -8,14 +8,14 @@
 
 import Foundation
 
-public class ClawbackOeration:Operation {
+public class ClawbackOperation:Operation {
     
     public let asset:Asset
     public let fromAccountId:String
     public let amount:Decimal
     
     
-    /// Creates a new ClawbackOeration object.
+    /// Creates a new ClawbackOperation object.
     ///
     /// - Parameter sourceAccountId: (optional) source account Id. must start with "M" or "G" and must be valid, otherwise it will be ignored.
     /// - Parameter asset: The asset to be clawed back
@@ -29,9 +29,9 @@ public class ClawbackOeration:Operation {
         super.init(sourceAccountId:sourceAccountId)
     }
     
-    /// Creates a new ClawbackOeration object from the given ClawbackOpXDR object.
+    /// Creates a new ClawbackOperation object from the given ClawbackOpXDR object.
     ///
-    /// - Parameter fromXDR: the ClawbackOpXDR object to be used to create a new ClawbackOeration object.
+    /// - Parameter fromXDR: the ClawbackOpXDR object to be used to create a new ClawbackOperation object.
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
     public init(fromXDR:ClawbackOpXDR, sourceAccountId:String?) {
