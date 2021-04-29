@@ -18,7 +18,7 @@ public class BeginSponsoringFutureReservesOperation:Operation {
     ///
     /// - Parameter sponsoredId: Account that will have it’s reserves sponsored.
     /// - Parameter sponsoringAccountId: Account that will sponsor.
-    public init(sponsoredAccountId:String, sponsoringAccountId:String) {
+    public init(sponsoredAccountId:String, sponsoringAccountId:String? = nil) {
         self.sponsoredId = sponsoredAccountId
         super.init(sourceAccountId:sponsoringAccountId)
     }
@@ -27,7 +27,7 @@ public class BeginSponsoringFutureReservesOperation:Operation {
     ///
     /// - Parameter fromXDR: the BeginSponsoringFutureReservesOpXDR object to be used to create a new BeginSponsoringFutureReservesOperation object.
     /// - Parameter sponsoringAccountId: Account that will sponsor (source account of the operation)
-    public init(fromXDR:BeginSponsoringFutureReservesOpXDR, sponsoringAccountId:String) throws {
+    public init(fromXDR:BeginSponsoringFutureReservesOpXDR, sponsoringAccountId:String? = nil) throws {
         sponsoredId = fromXDR.sponsoredId.accountId
         super.init(sourceAccountId: sponsoringAccountId)
     }

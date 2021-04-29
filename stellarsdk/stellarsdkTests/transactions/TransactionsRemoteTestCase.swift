@@ -353,6 +353,29 @@ class TransactionsRemoteTestCase: XCTestCase {
         XCTAssertEqual(xdr, envelopeXDR)
     }
     
+    func testTransactionSponsoringXDR2() throws {
+        
+        let xdr = "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"
+
+        let transaction = try Transaction(envelopeXdr: xdr)
+        let operations = transaction.operations
+        for op in operations {
+            if let rsop = op as? RevokeSponsorshipOperation {
+                if let ledgerkey = rsop.ledgerKey {
+                    switch ledgerkey {
+                    case .account(let acc):
+                        print(acc.accountID.accountId)
+                    default:
+                        break
+                    }
+                }
+            }
+        }
+        let envelopeXDR = try transaction.encodedEnvelope()
+        
+        XCTAssertEqual(xdr, envelopeXDR)
+    }
+    
     func testTransactionV0SignWithTwoOperations() throws {
         let keyPair = try! KeyPair(secretSeed: "SB2VUAO2O2GLVUQOY46ZDAF3SGWXOKTY27FYWGZCSV26S24VZ6TUKHGE")
         // transaction envelope v0 with two payment operations

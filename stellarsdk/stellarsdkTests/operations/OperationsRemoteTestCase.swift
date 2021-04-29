@@ -1201,7 +1201,7 @@ class OperationsRemoteTestCase: XCTestCase {
                 switch response {
                 case .success(let accountResponse):
                     do {
-                        let begingSponsorshipOp = BeginSponsoringFutureReservesOperation(sponsoredAccountId: accountAId, sponsoringAccountId: masterAccountId)
+                        let begingSponsorshipOp = BeginSponsoringFutureReservesOperation(sponsoredAccountId: accountAId)
                         
                         let createAccountOp = CreateAccountOperation(sourceAccountId: masterAccountId, destination: accountAKeyPair, startBalance: 10.0)
                         let name = "soneso"

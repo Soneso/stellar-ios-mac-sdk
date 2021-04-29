@@ -93,17 +93,15 @@ public class Operation {
         case .claimClaimableBalance(let data):
             return try ClaimClaimableBalanceOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         case .beginSponsoringFutureReserves(let data):
-            if let sponsoringAccountId = mSourceAccountId {
-                return try BeginSponsoringFutureReservesOperation(fromXDR: data, sponsoringAccountId: sponsoringAccountId)
-            } else {
-                throw StellarSDKError.invalidArgument(message: "Missing source account id for BeginSponsoringFutureReservesOperation")
-            }
+            return try BeginSponsoringFutureReservesOperation(fromXDR: data, sponsoringAccountId: mSourceAccountId)
         case .endSponsoringFutureReserves:
             if let sponsoringAccountId = mSourceAccountId {
                 return EndSponsoringFutureReservesOperation(sponsoredAccountId: sponsoringAccountId)
             } else {
                 throw StellarSDKError.invalidArgument(message: "Missing source account id for EndSponsoringFutureReservesOperation")
             }
+        case .revokeSponsorship(let data):
+            return try RevokeSponsorshipOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         case .clawback(let data):
             return ClawbackOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         case .clawbackClaimableBalance(let data):
