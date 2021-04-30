@@ -27,6 +27,7 @@ public enum EffectType: Int {
     case trustlineAuthorized = 23
     case trustlineDeauthorized = 24
     case trustlineAuthorizedToMaintainLiabilities = 25
+    case trustlineFlagsUpdated = 26
     case offerCreated = 30
     case offerRemoved = 31
     case offerUpdated = 32
@@ -57,6 +58,7 @@ public enum EffectType: Int {
     case signerBalanceSponsorshipCreated = 72
     case signerBalanceSponsorshipUpdated = 73
     case signerBalanceSponsorshipRemoved = 74
+    case claimablaBalanceClawedBack = 80
 }
 
 /// Represents an account effect response. Superclass for all other effect response classes.

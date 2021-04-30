@@ -177,6 +177,12 @@ class EffectsFactory: NSObject {
             case .signerBalanceSponsorshipRemoved:
                 let effect = try jsonDecoder.decode(SignerSponsorshipRemovedEffectResponse.self, from: data)
                 return effect
+            case .claimablaBalanceClawedBack:
+                let effect = try jsonDecoder.decode(ClaimableBalanceClawedBackEffectResponse.self, from: data)
+                return effect
+            case .trustlineFlagsUpdated:
+                let effect = try jsonDecoder.decode(TrustLineFlagsUpdatedEffectResponse.self, from: data)
+                return effect
             }
         } else {
             throw HorizonRequestError.parsingResponseFailed(message: "Unknown effect type")

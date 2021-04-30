@@ -252,6 +252,10 @@ class EffectsLocalTestCase: XCTestCase {
                         XCTAssert(false)
                     case .signerBalanceSponsorshipRemoved:
                         XCTAssert(false)
+                    case .claimablaBalanceClawedBack:
+                        XCTAssert(false)
+                    case .trustlineFlagsUpdated:
+                        XCTAssert(false)
                 }
             }
         }
