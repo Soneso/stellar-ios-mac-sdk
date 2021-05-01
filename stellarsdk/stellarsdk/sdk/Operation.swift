@@ -95,11 +95,7 @@ public class Operation {
         case .beginSponsoringFutureReserves(let data):
             return try BeginSponsoringFutureReservesOperation(fromXDR: data, sponsoringAccountId: mSourceAccountId)
         case .endSponsoringFutureReserves:
-            if let sponsoringAccountId = mSourceAccountId {
-                return EndSponsoringFutureReservesOperation(sponsoredAccountId: sponsoringAccountId)
-            } else {
-                throw StellarSDKError.invalidArgument(message: "Missing source account id for EndSponsoringFutureReservesOperation")
-            }
+            return EndSponsoringFutureReservesOperation(sponsoredAccountId: mSourceAccountId)
         case .revokeSponsorship(let data):
             return try RevokeSponsorshipOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         case .clawback(let data):

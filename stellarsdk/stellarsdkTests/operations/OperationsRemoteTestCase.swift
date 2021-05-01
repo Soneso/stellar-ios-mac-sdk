@@ -1277,4 +1277,69 @@ class OperationsRemoteTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 20.0)
     }
+    
+    func testSponsorship2() {
+        let expectation = XCTestExpectation(description: "can begin and end sponsorship")
+        do {
+            
+            let masterAccountKeyPair = try KeyPair(secretSeed:seed)
+            let masterAccountId = masterAccountKeyPair.accountId
+            let accountAKeyPair = try KeyPair.generateRandomKeyPair()
+            let accountAId = accountAKeyPair.accountId
+            let issuerKeyPair = try KeyPair.generateRandomKeyPair()
+            let issuerAccountId = issuerKeyPair.accountId
+            
+            sdk.accounts.getAccountDetails(accountId: masterAccountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let begingSponsorshipOp = BeginSponsoringFutureReservesOperation(sponsoredAccountId: accountAId,sponsoringAccountId: masterAccountId)
+                    
+                        let skyAsset = Asset(canonicalForm: "SKY:" + issuerAccountId)!
+                        let changeTrustOp = ChangeTrustOperation(sourceAccountId: nil, asset: skyAsset, limit: 10000.00)
+                        
+                        let endSponsoringOp = EndSponsoringFutureReservesOperation()
+                        
+                        
+                        let transaction = try Transaction(sourceAccount: accountResponse,
+                                                          operations: [begingSponsorshipOp, changeTrustOp, endSponsoringOp],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: masterAccountKeyPair, network: Network.testnet)
+                        try transaction.sign(keyPair: accountAKeyPair, network: Network.testnet)
+                        
+                        print(try transaction.transactionXDR.encodedEnvelope())
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(let submitTransactionResponse):
+                                print("CB Test: Transaction successfully sent:" + submitTransactionResponse.transactionHash)
+                                expectation.fulfill()
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("CB Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - send error", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test", horizonRequestError: error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+        }
+        catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 20.0)
+    }
 }

@@ -40,6 +40,8 @@ public class AccountBalanceResponse: NSObject, Decodable {
     
     public var isAuthorizedToMaintainLiabilities:Bool?
     
+    public var isClawbackEnabled:Bool?
+    
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
         case balance
@@ -52,6 +54,7 @@ public class AccountBalanceResponse: NSObject, Decodable {
         case sponsor
         case isAuthorized = "is_authorized"
         case isAuthorizedToMaintainLiabilities = "is_authorized_to_maintain_liabilities"
+        case isClawbackEnabled = "is_clawback_enabled"
         
     }
     
@@ -72,5 +75,6 @@ public class AccountBalanceResponse: NSObject, Decodable {
         sponsor = try values.decodeIfPresent(String.self, forKey: .sponsor)
         isAuthorized = try values.decodeIfPresent(Bool.self, forKey: .isAuthorized)
         isAuthorizedToMaintainLiabilities = try values.decodeIfPresent(Bool.self, forKey: .isAuthorizedToMaintainLiabilities)
+        isClawbackEnabled = try values.decodeIfPresent(Bool.self, forKey: .isClawbackEnabled)
     }
 }
