@@ -934,6 +934,8 @@
 		C694DAC12147946F00D6D63F /* URISchemeValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C694DAC02147946F00D6D63F /* URISchemeValidator.swift */; };
 		C69B1CAB219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAA219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift */; };
 		C69B1CAD219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAC219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift */; };
+		DDE2DCD42664EA5E00F238F4 /* TradesStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE2DCD32664EA5E00F238F4 /* TradesStreamItem.swift */; };
+		DDE2DCD52664EAD700F238F4 /* TradesStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE2DCD32664EA5E00F238F4 /* TradesStreamItem.swift */; };
 		EC34A0CA20503CAB000FB042 /* Base58Encode.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A0C120503CAB000FB042 /* Base58Encode.swift */; };
 		EC34A0CB20503CAB000FB042 /* WordList.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A0C220503CAB000FB042 /* WordList.swift */; };
 		EC34A0CC20503CAB000FB042 /* BigInt+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A0C420503CAB000FB042 /* BigInt+Extension.swift */; };
@@ -1495,6 +1497,7 @@
 		C69B1CAA219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TomlResponseSignatureMismatchMock.swift; sourceTree = "<group>"; };
 		C69B1CAC219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TomlResponseSignatureMissingMock.swift; sourceTree = "<group>"; };
 		C6C8AAA62147D91000B06E8A /* URISchemeTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URISchemeTestCase.swift; sourceTree = "<group>"; };
+		DDE2DCD32664EA5E00F238F4 /* TradesStreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradesStreamItem.swift; sourceTree = "<group>"; };
 		EC34A0C120503CAB000FB042 /* Base58Encode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58Encode.swift; sourceTree = "<group>"; };
 		EC34A0C220503CAB000FB042 /* WordList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WordList.swift; sourceTree = "<group>"; };
 		EC34A0C420503CAB000FB042 /* BigInt+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BigInt+Extension.swift"; sourceTree = "<group>"; };
@@ -2086,6 +2089,7 @@
 				745C41522040388900E33006 /* OperationsStreamItem.swift */,
 				745C415420403B4600E33006 /* EffectsStreamItem.swift */,
 				745C415620403CDF00E33006 /* LedgersStreamItem.swift */,
+				DDE2DCD32664EA5E00F238F4 /* TradesStreamItem.swift */,
 			);
 			path = Streaming;
 			sourceTree = "<group>";
@@ -3135,6 +3139,7 @@
 				8395F952246B529000B04E11 /* MuxedAccountXDR.swift in Sources */,
 				832ADEE3262B96C600571D46 /* SetTrustLineFlagsOpXDR.swift in Sources */,
 				8395F953246B529000B04E11 /* FeeBumpTransactionEnvelopeXDR.swift in Sources */,
+				DDE2DCD52664EAD700F238F4 /* TradesStreamItem.swift in Sources */,
 				8395F954246B529000B04E11 /* FeeBumpTransactionXDR.swift in Sources */,
 				83379C282280BE2A00BD5F8E /* ManageSellOfferOperation.swift in Sources */,
 				83379C292280BE2A00BD5F8E /* ManageBuyOfferOperation.swift in Sources */,
@@ -3664,6 +3669,7 @@
 				7467C4162142B69800412FE1 /* CustomerInformationStatus.swift in Sources */,
 				832ADEE2262B96C600571D46 /* SetTrustLineFlagsOpXDR.swift in Sources */,
 				745F2BB6202C2E88008763F1 /* TransactionResponse.swift in Sources */,
+				DDE2DCD42664EA5E00F238F4 /* TradesStreamItem.swift in Sources */,
 				744A84C021440CD40086B8FC /* AnchorTransactionsRequest.swift in Sources */,
 				833CBFB8203354FB00C23CFE /* LedgerKeyDataXDR.swift in Sources */,
 				7467C4132142B62600412FE1 /* CustomerInformationNeededInteractive.swift in Sources */,

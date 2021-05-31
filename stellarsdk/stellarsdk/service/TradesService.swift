@@ -8,6 +8,18 @@
 
 import Foundation
 
+public enum TradesChange {
+    case allTrades(baseAssetType:String?,
+                   baseAssetCode:String?,
+                   baseAssetIssuer:String?,
+                   counterAssetType:String?,
+                   counterAssetCode:String?,
+                   counterAssetIssuer:String?,
+                   cursor:String?,
+                   order:Order?)
+    case tradesForAccount(account:String, cursor:String?)
+}
+
 public class TradesService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
@@ -75,5 +87,48 @@ public class TradesService: NSObject {
                 response(.failure(error:error))
             }
         }
+    }
+    
+    /// Allows to stream SSE events from horizon.
+    /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events. This mode will keep the connection to horizon open and horizon will continue to return responses as ledgers close.
+    ///
+    open func stream(for tradesType:TradesChange) -> TradesStreamItem {
+        var subpath:String!
+        switch tradesType {
+        case .allTrades(let baseAssetType,
+                        let baseAssetCode,
+                        let baseAssetIssuer,
+                        let counterAssetType,
+                        let counterAssetCode,
+                        let counterAssetIssuer,
+                        let cursor,
+                        let order):
+            
+            var params = Dictionary<String,String>()
+            params["base_asset_type"] = baseAssetType
+            params["base_asset_code"] = baseAssetCode
+            params["base_asset_issuer"] = baseAssetIssuer
+            params["counter_asset_type"] = counterAssetType
+            params["counter_asset_code"] = counterAssetCode
+            params["counter_asset_issuer"] = counterAssetIssuer
+            params["cursor"] = cursor
+            params["order"] = order?.rawValue
+        
+            subpath = "/trades"
+            
+            if let pathParams = params.stringFromHttpParameters(),
+                pathParams.count > 0 {
+                subpath += "?\(pathParams)"
+            }
+            
+        case .tradesForAccount(let accountId, let cursor):
+            subpath = "/accounts/" + accountId + "/trades"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        }
+    
+        let streamItem = TradesStreamItem(requestUrl: serviceHelper.requestUrlWithPath(path: subpath))
+        return streamItem
     }
 }
