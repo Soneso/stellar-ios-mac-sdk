@@ -608,7 +608,9 @@ You can find more documentation and examples in the [docs](https://github.com/So
 
 ## Sample
 
-An open source project that uses our SDK is the [BlockEQ iOS wallet](https://github.com/Block-Equity/stellar-ios-wallet) for Stellar.
+Our SDK is used by the open source [LOBSTR Vault](https://vault.lobstr.co). You can find the LOBSTR Vault source code [here](https://github.com/Lobstrco/Vault-iOS).
+
+Our SDK is also used by the [LOBSTR Wallet](https://lobstr.co).
 
 ## Stellar Ecosystem Proposals (SEPs) implemented
 
