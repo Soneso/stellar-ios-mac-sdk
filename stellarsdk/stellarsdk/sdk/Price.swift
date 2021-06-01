@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents Price. Price in Stellar is represented as a fraction.
-public class Price {
+public class Price: Decodable {
     
     /// Numerator.
     public final let n:Int32
@@ -66,6 +66,23 @@ public class Price {
     /// - Returns the generated PriceXDR object.
     public func toXdr() -> PriceXDR {
         return PriceXDR(n: n, d: d)
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case n
+        case d
+    }
+    
+    /**
+     Initializer - creates a new instance by decoding from the given decoder.
+     
+     - Parameter decoder: The decoder containing the data
+     */
+    public required init(from decoder: Decoder) throws {
+        
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        n = try values.decode(Int32.self, forKey: .n)
+        d = try values.decode(Int32.self, forKey: .d)
     }
 }
 

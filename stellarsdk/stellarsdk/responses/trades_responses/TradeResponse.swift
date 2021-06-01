@@ -54,6 +54,9 @@ public class TradeResponse: NSObject, Decodable {
     /// issuer of counter asset
     public var counterAssetIssuer:String?
     
+    /// An object of a number numerator and number denominator that represents the original offer price. To derive the price, divide n by d.
+    public var price:Price
+    
     /// indicates which party of the trade made the sell offer
     public var baseIsSeller:Bool
     
@@ -73,6 +76,7 @@ public class TradeResponse: NSObject, Decodable {
         case counterAssetType = "counter_asset_type"
         case counterAssetCode = "counter_asset_code"
         case counterAssetIssuer = "counter_asset_issuer"
+        case price
         case baseIsSeller = "base_is_seller"
     }
     
@@ -98,6 +102,7 @@ public class TradeResponse: NSObject, Decodable {
         counterAssetType = try values.decode(String.self, forKey: .counterAssetType)
         counterAssetCode = try values.decodeIfPresent(String.self, forKey: .counterAssetCode)
         counterAssetIssuer = try values.decodeIfPresent(String.self, forKey: .counterAssetIssuer)
+        price = try values.decode(Price.self, forKey: .price)
         baseIsSeller = try values.decode(Bool.self, forKey: .baseIsSeller)
     }
 }
