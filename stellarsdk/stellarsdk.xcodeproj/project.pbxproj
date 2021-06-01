@@ -936,6 +936,8 @@
 		C69B1CAD219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAC219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift */; };
 		DDE2DCD42664EA5E00F238F4 /* TradesStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE2DCD32664EA5E00F238F4 /* TradesStreamItem.swift */; };
 		DDE2DCD52664EAD700F238F4 /* TradesStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE2DCD32664EA5E00F238F4 /* TradesStreamItem.swift */; };
+		DDE2DCD726662C9700F238F4 /* OrderbookStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE2DCD626662C9700F238F4 /* OrderbookStreamItem.swift */; };
+		DDE2DCD82666329200F238F4 /* OrderbookStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE2DCD626662C9700F238F4 /* OrderbookStreamItem.swift */; };
 		EC34A0CA20503CAB000FB042 /* Base58Encode.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A0C120503CAB000FB042 /* Base58Encode.swift */; };
 		EC34A0CB20503CAB000FB042 /* WordList.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A0C220503CAB000FB042 /* WordList.swift */; };
 		EC34A0CC20503CAB000FB042 /* BigInt+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A0C420503CAB000FB042 /* BigInt+Extension.swift */; };
@@ -1498,6 +1500,7 @@
 		C69B1CAC219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TomlResponseSignatureMissingMock.swift; sourceTree = "<group>"; };
 		C6C8AAA62147D91000B06E8A /* URISchemeTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URISchemeTestCase.swift; sourceTree = "<group>"; };
 		DDE2DCD32664EA5E00F238F4 /* TradesStreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradesStreamItem.swift; sourceTree = "<group>"; };
+		DDE2DCD626662C9700F238F4 /* OrderbookStreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderbookStreamItem.swift; sourceTree = "<group>"; };
 		EC34A0C120503CAB000FB042 /* Base58Encode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Base58Encode.swift; sourceTree = "<group>"; };
 		EC34A0C220503CAB000FB042 /* WordList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WordList.swift; sourceTree = "<group>"; };
 		EC34A0C420503CAB000FB042 /* BigInt+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "BigInt+Extension.swift"; sourceTree = "<group>"; };
@@ -2090,6 +2093,7 @@
 				745C415420403B4600E33006 /* EffectsStreamItem.swift */,
 				745C415620403CDF00E33006 /* LedgersStreamItem.swift */,
 				DDE2DCD32664EA5E00F238F4 /* TradesStreamItem.swift */,
+				DDE2DCD626662C9700F238F4 /* OrderbookStreamItem.swift */,
 			);
 			path = Streaming;
 			sourceTree = "<group>";
@@ -3334,6 +3338,7 @@
 				745DF46E2052FF9B000D3660 /* SubmitTransactionResponse.swift in Sources */,
 				745DF46F2052FF9B000D3660 /* TransactionResultXDR.swift in Sources */,
 				7467C3FE2142546C00412FE1 /* DepositResponse.swift in Sources */,
+				DDE2DCD82666329200F238F4 /* OrderbookStreamItem.swift in Sources */,
 				745DF4702052FF9B000D3660 /* PaymentResultXDR.swift in Sources */,
 				83B4CB552527308500EEE55E /* ClaimClaimableBalanceOperation.swift in Sources */,
 				745DF4712052FF9B000D3660 /* OperationResultXDR.swift in Sources */,
@@ -3864,6 +3869,7 @@
 				C694DAC12147946F00D6D63F /* URISchemeValidator.swift in Sources */,
 				745C415520403B4600E33006 /* EffectsStreamItem.swift in Sources */,
 				4390830920372BAF00254042 /* Memo.swift in Sources */,
+				DDE2DCD726662C9700F238F4 /* OrderbookStreamItem.swift in Sources */,
 				EC34A12B20503CC5000FB042 /* Array+Foundation.swift in Sources */,
 				83B4CB542527308500EEE55E /* ClaimClaimableBalanceOperation.swift in Sources */,
 				83DD2C6B202DE3DF00713FEE /* ErrorResponse.swift in Sources */,
