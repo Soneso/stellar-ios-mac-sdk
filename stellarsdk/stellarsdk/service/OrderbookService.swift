@@ -77,9 +77,9 @@ public class OrderbookService: NSObject {
     /// Allows to stream SSE events from horizon.
     /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events. This mode will keep the connection to horizon open and horizon will continue to return responses as ledgers close.
     ///
-    open func stream(for tradesType:OrderbookChange) -> OrderbookStreamItem {
+    open func stream(for orderbookType:OrderbookChange) -> OrderbookStreamItem {
         var subpath:String!
-        switch tradesType {
+        switch orderbookType {
         case .orderbook(let sellingAssetType,
                         let sellingAssetCode,
                         let sellingAssetIssuer,
