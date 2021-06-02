@@ -3139,7 +3139,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "INFO_PLIST=\"${SRCROOT}/stellarsdk/Info\"\nSDK_VERSION=\"$(defaults read $INFO_PLIST CFBundleShortVersionString)\"\nPODSPEC_VERSION=`grep 's.version' ${SRCROOT}/../stellar-ios-mac-sdk.podspec | head -n1 | grep -o '\".*\"' | sed 's/\"//g'`\n\nif [ \"${PODSPEC_VERSION}\" != \"${SDK_VERSION}\" ] ; then\n    echo \"error: Podspec version does not match bundle version. Please update the Info.plist file with the correct version.\"\n    exit 1\nfi\n";
+			shellScript = "INFO_PLIST=\"${SRCROOT}/stellarsdk/Info.plist\"\nSDK_VERSION=\"$(plutil -extract CFBundleShortVersionString xml1 -o - $INFO_PLIST | sed -n \"s/.*<string>\\(.*\\)<\\/string>.*/\\1/p\")\"\nPODSPEC_VERSION=`grep 's.version' ${SRCROOT}/../stellar-ios-mac-sdk.podspec | head -n1 | grep -o '\".*\"' | sed 's/\"//g'`\n\nif [ \"${PODSPEC_VERSION}\" != \"${SDK_VERSION}\" ] ; then\n    echo \"error: Podspec version does not match bundle version. Please update the Info.plist file with the correct version.\"\n    exit 1\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
