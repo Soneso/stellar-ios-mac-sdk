@@ -54,7 +54,13 @@ class DepositResponseMock: ResponsesMock {
     let depositSuccess = """
     {
         "how" : "1Nh7uHdvY6fNwtQtM1G5EZAFPLC33B59rB",
-        "fee_fixed" : 0.0002
+        "id": "9421871e-0623-4356-b7b5-5996da122f3e",
+        "eta": 60,
+        "fee_fixed" : 0.0002,
+        "fee_percent" : 0.1,
+          "extra_info": {
+            "message": "You must include the tag. If the amount is more than 1000 XRP, deposit will take 24h to complete."
+          }
     }
     """
     

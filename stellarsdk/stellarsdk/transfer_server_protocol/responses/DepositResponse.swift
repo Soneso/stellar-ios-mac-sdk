@@ -13,6 +13,9 @@ public struct DepositResponse: Decodable {
     /// Instructions for how to deposit the asset. In the case of cryptocurrency it is just an address to which the deposit should be sent.
     public var how:String
     
+    /// (optional) The anchor's ID for this deposit. The wallet will use this ID to query the /transaction endpoint to check status of the request.
+    public var id:String?
+    
     /// (optional) Estimate of how long the deposit will take to credit in seconds.
     public var eta:Int?
     
@@ -34,6 +37,7 @@ public struct DepositResponse: Decodable {
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case how = "how"
+        case id = "id"
         case eta = "eta"
         case minAmount = "min_amount"
         case maxAmount = "max_amount"
@@ -50,6 +54,7 @@ public struct DepositResponse: Decodable {
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         how = try values.decode(String.self, forKey: .how)
+        id = try values.decodeIfPresent(String.self, forKey: .id)
         eta = try values.decodeIfPresent(Int.self, forKey: .eta)
         minAmount = try values.decodeIfPresent(Double.self, forKey: .minAmount)
         maxAmount = try values.decodeIfPresent(Double.self, forKey: .maxAmount)

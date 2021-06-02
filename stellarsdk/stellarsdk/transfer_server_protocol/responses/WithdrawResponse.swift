@@ -19,6 +19,9 @@ public struct WithdrawResponse: Decodable {
     /// (optional) value of memo to attach to transaction, for hash this should be base64-encoded.
     public var memo:String?
     
+    /// (optional) The anchor's ID for this withdrawal. The wallet will use this ID to query the /transaction endpoint to check status of the request.
+    public var id:String?
+    
     /// (optional) Estimate of how long the withdrawal will take to credit in seconds.
     public var eta:Int?
     
@@ -42,6 +45,7 @@ public struct WithdrawResponse: Decodable {
         case accountId = "account_id"
         case memoType = "memo_type"
         case memo = "memo"
+        case id = "id"
         case eta = "eta"
         case minAmount = "min_amount"
         case maxAmount = "max_amount"
@@ -60,6 +64,7 @@ public struct WithdrawResponse: Decodable {
         accountId = try values.decode(String.self, forKey: .accountId)
         memoType = try values.decodeIfPresent(String.self, forKey: .memoType)
         memo = try values.decodeIfPresent(String.self, forKey: .memo)
+        id = try values.decodeIfPresent(String.self, forKey: .id)
         eta = try values.decodeIfPresent(Int.self, forKey: .eta)
         minAmount = try values.decodeIfPresent(Double.self, forKey: .minAmount)
         maxAmount = try values.decodeIfPresent(Double.self, forKey: .maxAmount)

@@ -76,9 +76,17 @@ class AnchorInfoResponseMock: ResponsesMock {
           "enabled": false
         }
       },
-      "transactions": {
-        "enabled": true
-      }
+      "fee": {
+          "enabled": false
+        },
+        "transactions": {
+          "enabled": true,
+          "authentication_required": true
+        },
+        "transaction": {
+          "enabled": false,
+          "authentication_required": true
+        }
     }
     """
     

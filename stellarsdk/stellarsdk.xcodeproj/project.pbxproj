@@ -842,6 +842,10 @@
 		83697252202A80D600398A98 /* ManageDataOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697251202A80D600398A98 /* ManageDataOperationResponse.swift */; };
 		83697255202BC5B900398A98 /* AccountLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697254202BC5B800398A98 /* AccountLinksResponse.swift */; };
 		83697259202CB88300398A98 /* EffectLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697258202CB88300398A98 /* EffectLinksResponse.swift */; };
+		83852AB226678E020013EA2A /* FeeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83852AB126678E020013EA2A /* FeeRequest.swift */; };
+		83852AB326678E020013EA2A /* FeeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83852AB126678E020013EA2A /* FeeRequest.swift */; };
+		83852ABC266790580013EA2A /* AnchorFeeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83852ABB266790580013EA2A /* AnchorFeeResponse.swift */; };
+		83852ABD266790580013EA2A /* AnchorFeeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83852ABB266790580013EA2A /* AnchorFeeResponse.swift */; };
 		8395F940246B380500B04E11 /* TransactionV0EnvelopeXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8395F93F246B380500B04E11 /* TransactionV0EnvelopeXDR.swift */; };
 		8395F942246B382000B04E11 /* TransactionV1EnvelopeXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8395F941246B382000B04E11 /* TransactionV1EnvelopeXDR.swift */; };
 		8395F944246B383C00B04E11 /* FeeBumpTransactionEnvelopeXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8395F943246B383C00B04E11 /* FeeBumpTransactionEnvelopeXDR.swift */; };
@@ -1445,6 +1449,8 @@
 		83697251202A80D600398A98 /* ManageDataOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageDataOperationResponse.swift; sourceTree = "<group>"; };
 		83697254202BC5B800398A98 /* AccountLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountLinksResponse.swift; sourceTree = "<group>"; };
 		83697258202CB88300398A98 /* EffectLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectLinksResponse.swift; sourceTree = "<group>"; };
+		83852AB126678E020013EA2A /* FeeRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeRequest.swift; sourceTree = "<group>"; };
+		83852ABB266790580013EA2A /* AnchorFeeResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorFeeResponse.swift; sourceTree = "<group>"; };
 		8395F93F246B380500B04E11 /* TransactionV0EnvelopeXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionV0EnvelopeXDR.swift; sourceTree = "<group>"; };
 		8395F941246B382000B04E11 /* TransactionV1EnvelopeXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionV1EnvelopeXDR.swift; sourceTree = "<group>"; };
 		8395F943246B383C00B04E11 /* FeeBumpTransactionEnvelopeXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeBumpTransactionEnvelopeXDR.swift; sourceTree = "<group>"; };
@@ -2237,6 +2243,7 @@
 				7467C4092142A81D00412FE1 /* WithdrawRequest.swift */,
 				744A84BF21440CD40086B8FC /* AnchorTransactionsRequest.swift */,
 				744A84CD214523910086B8FC /* PutCustomerInfoRequest.swift */,
+				83852AB126678E020013EA2A /* FeeRequest.swift */,
 			);
 			path = requests;
 			sourceTree = "<group>";
@@ -2251,6 +2258,7 @@
 				7467C4152142B69800412FE1 /* CustomerInformationStatus.swift */,
 				744A84B92143F6DA0086B8FC /* AnchorInfoResponse.swift */,
 				744A84C221440E560086B8FC /* AnchorTransactionsResponse.swift */,
+				83852ABB266790580013EA2A /* AnchorFeeResponse.swift */,
 			);
 			path = responses;
 			sourceTree = "<group>";
@@ -3190,6 +3198,7 @@
 				745DF5182052FFC3000D3660 /* Order.swift in Sources */,
 				745DF5192052FFC3000D3660 /* Constants.swift in Sources */,
 				745DF51A2052FFC3000D3660 /* DataTypes.swift in Sources */,
+				83852AB326678E020013EA2A /* FeeRequest.swift in Sources */,
 				745DF51B2052FFC3000D3660 /* EventSource.swift in Sources */,
 				745DF51C2052FFC3000D3660 /* StellarSDKLog.swift in Sources */,
 				745DF51D2052FFC3000D3660 /* TransactionsStreamItem.swift in Sources */,
@@ -3331,6 +3340,7 @@
 				745DF4672052FF9B000D3660 /* AllowTrustOperationResponse.swift in Sources */,
 				8398C40A24D8CAA100D6916C /* TxRep.swift in Sources */,
 				745DF4682052FF9B000D3660 /* AccountMergeOperationResponse.swift in Sources */,
+				83852ABD266790580013EA2A /* AnchorFeeResponse.swift in Sources */,
 				745DF4692052FF9B000D3660 /* InflationOperationResponse.swift in Sources */,
 				745DF46A2052FF9B000D3660 /* ManageDataOperationResponse.swift in Sources */,
 				745DF46B2052FF9B000D3660 /* TradeAggregationResponse.swift in Sources */,
@@ -3722,6 +3732,7 @@
 				744148F6202E0519006590BE /* TransactionEnvelopeXDR.swift in Sources */,
 				EC34A1602050D24C000FB042 /* Data+Hash.swift in Sources */,
 				43E34B612031CF09003104A9 /* OfferResponse.swift in Sources */,
+				83852AB226678E020013EA2A /* FeeRequest.swift in Sources */,
 				836972122028EF8A00398A98 /* AccountThresholdsUpdatedEffectResponse.swift in Sources */,
 				836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */,
 				EC34A13020503CC5000FB042 /* BatchedCollection.swift in Sources */,
@@ -3863,6 +3874,7 @@
 				833CBFBF20337D3300C23CFE /* Account.swift in Sources */,
 				8398C40924D8CAA100D6916C /* TxRep.swift in Sources */,
 				EC34A11920503CC5000FB042 /* Cryptors.swift in Sources */,
+				83852ABC266790580013EA2A /* AnchorFeeResponse.swift in Sources */,
 				833CBF8E203351B200C23CFE /* TimeBoundsXDR.swift in Sources */,
 				7481B53E20248441000A783E /* EffectsService.swift in Sources */,
 				83379C2E2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift in Sources */,

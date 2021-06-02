@@ -13,12 +13,16 @@ public struct AnchorInfoResponse: Decodable {
     public var deposit: [String:DepositAsset]
     public var withdraw: [String:WithdrawAsset]
     public var transactions: AnchorTransactionsInfo
+    public var transaction: AnchorTransactionInfo?
+    public var fee: AnchorFeeInfo?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case deposit = "deposit"
         case withdraw = "withdraw"
         case transactions = "transactions"
+        case transaction = "transaction"
+        case fee = "fee"
     }
     
     /**
@@ -31,6 +35,8 @@ public struct AnchorInfoResponse: Decodable {
         deposit = try values.decode([String:DepositAsset].self, forKey: .deposit)
         withdraw = try values.decode([String:WithdrawAsset].self, forKey: .withdraw)
         transactions = try values.decode(AnchorTransactionsInfo.self, forKey: .transactions)
+        transaction = try values.decodeIfPresent(AnchorTransactionInfo.self, forKey: .transaction)
+        fee = try values.decodeIfPresent(AnchorFeeInfo.self, forKey: .fee)
     }
     
 }
@@ -132,17 +138,19 @@ public struct WithdrawType: Decodable {
      */
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        fields = try values.decode([String:AnchorField].self, forKey: .fields)
+        fields = try values.decodeIfPresent([String:AnchorField].self, forKey: .fields)
     }
 }
 
 public struct AnchorTransactionsInfo: Decodable {
     
     public var enabled: Bool
+    public var authenticationRequired:Bool?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
-        case enabled = "enabled"
+        case enabled
+        case authenticationRequired = "authentication_required"
     }
     
     /**
@@ -153,5 +161,52 @@ public struct AnchorTransactionsInfo: Decodable {
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         enabled = try values.decode(Bool.self, forKey: .enabled)
+        authenticationRequired = try values.decodeIfPresent(Bool.self, forKey: .authenticationRequired)
+    }
+}
+
+public struct AnchorTransactionInfo: Decodable {
+    
+    public var enabled: Bool
+    public var authenticationRequired:Bool?
+    
+    /// Properties to encode and decode
+    private enum CodingKeys: String, CodingKey {
+        case enabled
+        case authenticationRequired = "authentication_required"
+    }
+    
+    /**
+     Initializer - creates a new instance by decoding from the given decoder.
+     
+     - Parameter decoder: The decoder containing the data
+     */
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        enabled = try values.decode(Bool.self, forKey: .enabled)
+        authenticationRequired = try values.decodeIfPresent(Bool.self, forKey: .authenticationRequired)
+    }
+}
+
+public struct AnchorFeeInfo: Decodable {
+    
+    public var enabled: Bool
+    public var authenticationRequired:Bool?
+    
+    /// Properties to encode and decode
+    private enum CodingKeys: String, CodingKey {
+        case enabled
+        case authenticationRequired = "authentication_required"
+    }
+    
+    /**
+     Initializer - creates a new instance by decoding from the given decoder.
+     
+     - Parameter decoder: The decoder containing the data
+     */
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        enabled = try values.decode(Bool.self, forKey: .enabled)
+        authenticationRequired = try values.decodeIfPresent(Bool.self, forKey: .authenticationRequired)
     }
 }

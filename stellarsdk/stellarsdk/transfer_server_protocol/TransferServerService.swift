@@ -38,6 +38,18 @@ public enum AnchorTransactionsResponseEnum {
     case failure(error: TransferServerError)
 }
 
+/// An enum used to diferentiate between successful and failed anchor transaction responses.
+public enum AnchorTransactionResponseEnum {
+    case success(response: AnchorTransaction)
+    case failure(error: TransferServerError)
+}
+
+/// An enum used to diferentiate between successful and failed anchor fee responses.
+public enum AnchorFeeResponseEnum {
+    case success(response: AnchorFeeResponse)
+    case failure(error: TransferServerError)
+}
+
 /// An enum used to diferentiate between successful and failed anchor put customer info responses.
 public enum AnchorCustomerInfoPutResponseEnum {
     case success
@@ -58,6 +70,12 @@ public typealias AnchorInfoResponseClosure = (_ response:AnchorInfoResponseEnum)
 
 /// A closure to be called with the response from a transactions request.
 public typealias AnchorTransactionsResponseClosure = (_ response:AnchorTransactionsResponseEnum) -> (Void)
+
+/// A closure to be called with the response from a transaction request.
+public typealias AnchorTransactionResponseClosure = (_ response:AnchorTransactionResponseEnum) -> (Void)
+
+/// A closure to be called with the response from a fee request.
+public typealias AnchorFeeResponseClosure = (_ response:AnchorFeeResponseEnum) -> (Void)
 
 /// A closure to be called with the response from a put info request.
 public typealias AnchorCustomerInfoPutResponseClosure = (_ response:AnchorCustomerInfoPutResponseEnum) -> (Void)
@@ -116,8 +134,32 @@ public class TransferServerService: NSObject {
         if let emailAddress = request.emailAddress {
             requestPath += "&email_address=\(emailAddress)"
         }
+        if let type = request.type {
+            requestPath += "&type=\(type)"
+        }
+        if let walletName = request.walletName {
+            requestPath += "&wallet_name=\(walletName)"
+        }
+        if let walletUrl = request.walletUrl {
+            requestPath += "&wallet_url=\(walletUrl)"
+        }
+        if let lang = request.lang {
+            requestPath += "&lang=\(lang)"
+        }
+        if let onChangeCallback = request.onChangeCallback {
+            requestPath += "&on_change_callback=\(onChangeCallback)"
+        }
+        if let amount = request.amount {
+            requestPath += "&amount=\(amount)"
+        }
+        if let countryCode = request.countryCode {
+            requestPath += "&country_code=\(countryCode)"
+        }
+        if let claimableBalanceSupported = request.claimableBalanceSupported {
+            requestPath += "&claimable_balance_supported=\(claimableBalanceSupported)"
+        }
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
+        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
@@ -152,8 +194,26 @@ public class TransferServerService: NSObject {
         if let memoType = request.memoType {
             requestPath += "&memo_type=\(memoType)"
         }
+        if let walletName = request.walletName {
+            requestPath += "&wallet_name=\(walletName)"
+        }
+        if let walletUrl = request.walletUrl {
+            requestPath += "&wallet_url=\(walletUrl)"
+        }
+        if let lang = request.lang {
+            requestPath += "&lang=\(lang)"
+        }
+        if let onChangeCallback = request.onChangeCallback {
+            requestPath += "&on_change_callback=\(onChangeCallback)"
+        }
+        if let amount = request.amount {
+            requestPath += "&amount=\(amount)"
+        }
+        if let countryCode = request.countryCode {
+            requestPath += "&country_code=\(countryCode)"
+        }
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
+        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
@@ -185,6 +245,32 @@ public class TransferServerService: NSObject {
             case .success(let data):
                 do {
                     let response = try self.jsonDecoder.decode(AnchorInfoResponse.self, from: data)
+                    completion(.success(response:response))
+                } catch {
+                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+                }
+                
+            case .failure(let error):
+                completion(.failure(error: self.errorFor(horizonError: error)))
+            }
+        }
+    }
+    
+    /**
+     The fee endpoint allows an anchor to report the fee that would be charged for a given deposit or withdraw operation. This is important to allow an anchor to accurately report fees to a user even when the fee schedule is complex. If a fee can be fully expressed with the fee_fixed and fee_percent fields in the /info response, then an anchor must not implement this endpoint.
+     */
+    public func fee(request: FeeRequest,  completion:@escaping AnchorFeeResponseClosure) {
+        var requestPath = "/fee?operation=\(request.operation)&asset_code=\(request.assetCode)&amount=\(request.amount)"
+        
+        if let type = request.type {
+            requestPath += "&type=\(type)"
+        }
+        
+        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                do {
+                    let response = try self.jsonDecoder.decode(AnchorFeeResponse.self, from: data)
                     completion(.success(response:response))
                 } catch {
                     completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
@@ -229,12 +315,82 @@ public class TransferServerService: NSObject {
     }
     
     /**
+     The transaction endpoint enables clients to query/validate a specific transaction at an anchor.
+     */
+    public func getTransaction(request: AnchorTransactionRequest,  completion:@escaping AnchorTransactionResponseClosure) {
+        var requestPath = "/transaction?"
+        
+        var first = false
+        if let id = request.id {
+            requestPath += "id=\(id)"
+            first = false
+        }
+        if let stellarTransactionId = request.stellarTransactionId {
+            if !first {
+                requestPath += "&"
+            }
+            requestPath += "stellar_transaction_id=\(stellarTransactionId)"
+            first = false
+        }
+        if let externalTransactionId = request.externalTransactionId {
+            if !first {
+                requestPath += "&"
+            }
+            requestPath += "external_transaction_id=\(externalTransactionId)"
+        }
+        
+        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                do {
+                    let response = try self.jsonDecoder.decode(AnchorTransaction.self, from: data)
+                    completion(.success(response:response))
+                } catch {
+                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+                }
+                
+            case .failure(let error):
+                completion(.failure(error: self.errorFor(horizonError: error)))
+            }
+        }
+    }
+    
+    /**
+     This endpoint should only be used when the anchor requests more info via the pending_transaction_info_update status. The required_info_updates transaction field should contain the fields required for the update. If the sender tries to update at a time when no info is requested the receiver should fail with an error response.
+     @See https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#update
+     
+     - Parameter id: id of the transaction
+     - Parameter jwt: token received via SEP-10 authentication
+     - Parameter contentType:represents  the content type of the request
+     - Parameter body:body of the request as described in the stellar doc
+     
+     */
+    public func patchTransaction(id:String, jwt:String?, contentType:String, body:Data, completion:@escaping AnchorTransactionResponseClosure) {
+        let requestPath = "/transaction/\(id)"
+    
+        serviceHelper.PATCHRequestWithPath(path: requestPath, jwtToken: jwt, contentType:contentType, body:body) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                do {
+                    let response = try self.jsonDecoder.decode(AnchorTransaction.self, from: data)
+                    completion(.success(response:response))
+                } catch {
+                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+                }
+                
+            case .failure(let error):
+                completion(.failure(error: self.errorFor(horizonError: error)))
+            }
+        }
+    }
+    
+    /**
      This anchor endpoint allows a wallet or exchange to upload information about the customer (chiefly KYC information) on the customer's behalf. It is often used following a /deposit or /withdraw request that responds with non_interactive_customer_info_needed. The endpoint accommodates KYC data that is large or binary formatted (image of driver's license, photo of bill for proof of address, etc...). A wallet may make multiple requests to /customer to upload data, and the endpoint is idempotent. All calls to /customer must include a JWT token retrieved using the SEP-10 authentication flow. This ensures that the client uploading the KYC data is the owner of the account.
      */
     public func putCustomerInfo(request: PutCustomerInfoRequest,  completion:@escaping AnchorCustomerInfoPutResponseClosure) {
         let requestPath = "/customer"
         
-        serviceHelper.PUTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters()) { (result) -> (Void) in
+        serviceHelper.PUTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters(), jwtToken: request.jwt) { (result) -> (Void) in
             switch result {
             case .success(_):
                 completion(.success)
@@ -247,10 +403,10 @@ public class TransferServerService: NSObject {
     /**
      Delete all personal information that the anchor has stored about a given customer. [account] is the Stellar account ID (G...) of the customer to delete. This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted.
      */
-    public func deleteCustomerInfo(account: String,  completion:@escaping AnchorCustomerInfoPutResponseClosure) {
+    public func deleteCustomerInfo(account: String, jwt:String?, completion:@escaping AnchorCustomerInfoPutResponseClosure) {
         let requestPath = "/customer/\(account)"
         
-        serviceHelper.DELETERequestWithPath(path: requestPath) { (result) -> (Void) in
+        serviceHelper.DELETERequestWithPath(path: requestPath, jwtToken: jwt) { (result) -> (Void) in
             switch result {
             case .success(_):
                 completion(.success)
@@ -275,6 +431,8 @@ public class TransferServerService: NSObject {
                         } else if type == "customer_info_status" {
                             let response = try self.jsonDecoder.decode(CustomerInformationStatus.self, from: data)
                             return.informationNeeded(response: .status(info: response))
+                        } else if type == "authentication_required" {
+                            return.authenticationRequired
                         } else {
                             return .parsingResponseFailed(message: horizonError.localizedDescription)
                         }

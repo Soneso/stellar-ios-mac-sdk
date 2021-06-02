@@ -14,6 +14,7 @@ enum HTTPMethod {
     case post
     case put
     case delete
+    case patch
 }
 
 /// An enum to diferentiate between succesful and failed responses
@@ -100,36 +101,73 @@ class ServiceHelper: NSObject {
     /// Performs a get request to the spcified path.
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
+    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
     /// - parameter response:   The closure to be called upon response.
-    open func GETRequestWithPath(path: String, completion: @escaping ResponseClosure) {
+    open func GETRequestWithPath(path: String, jwtToken:String? = nil, completion: @escaping ResponseClosure) {
         let requestUrl = requestUrlWithPath(path: path)
-        requestFromUrl(url: requestUrl, method:.get, completion:completion)
+        requestFromUrl(url: requestUrl, method:.get, jwtToken:jwtToken, completion:completion)
     }
 
     /// Performs a get request to the spcified path.
     ///
     /// - parameter path:  A URL for the request. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
+    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
     /// - parameter response:   The closure to be called upon response.
-    open func GETRequestFromUrl(url: String, completion: @escaping ResponseClosure) {
-        requestFromUrl(url: url, method:.get, completion:completion)
+    open func GETRequestFromUrl(url: String, jwtToken:String? = nil, completion: @escaping ResponseClosure) {
+        requestFromUrl(url: url, method:.get, jwtToken:jwtToken, completion:completion)
     }
     
     /// Performs a post request to the spcified path.
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
+    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
     /// - parameter body:  An optional parameter with the data that should be contained in the request body
     /// - parameter response:   The closure to be called upon response.
-    open func POSTRequestWithPath(path: String, body:Data? = nil, completion: @escaping ResponseClosure) {
+    open func POSTRequestWithPath(path: String, jwtToken:String? = nil, body:Data? = nil, completion: @escaping ResponseClosure) {
         let requestUrl = requestUrlWithPath(path: path)
-        requestFromUrl(url: requestUrl, method:.post, body:body, completion:completion)
+        requestFromUrl(url: requestUrl, method:.post, jwtToken:jwtToken, body:body, completion:completion)
+    }
+    
+    /// Performs a patch request to the spcified path.
+    ///
+    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
+    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
+    /// - parameter contentType:  An optional parameter representing the content type of the request
+    /// - parameter body:  An optional parameter with the data that should be contained in the request body
+    /// - parameter response:   The closure to be called upon response.
+    open func PATCHRequestWithPath(path: String, jwtToken:String? = nil, contentType:String? = nil, body:Data? = nil, completion: @escaping ResponseClosure) {
+        let requestUrl = requestUrlWithPath(path: path)
+        requestFromUrl(url: requestUrl, method:.patch, jwtToken:jwtToken, body:body, completion:completion)
+    }
+    
+    /// Performs a post request to the spcified path.
+    ///
+    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
+    /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
+    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
+    /// - parameter response:   The closure to be called upon response.
+    open func POSTMultipartRequestWithPath(path: String, parameters:[String:Data]? = nil, jwtToken:String? = nil, completion: @escaping ResponseClosure) {
+        multipartRequestWithPath(path: path, parameters: parameters, method:.post, jwtToken:jwtToken, completion: completion)
     }
     
     /// Performs a put request to the spcified path.
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
+    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
     /// - parameter response:   The closure to be called upon response.
-    open func PUTMultipartRequestWithPath(path: String, parameters:[String:Data]? = nil, completion: @escaping ResponseClosure) {
+    open func PUTMultipartRequestWithPath(path: String, parameters:[String:Data]? = nil, jwtToken:String? = nil, completion: @escaping ResponseClosure) {
+        multipartRequestWithPath(path: path, parameters: parameters, method:.put, jwtToken:jwtToken, completion: completion)
+    }
+    
+    /// Performs a multipart request to the spcified path using the passed http method
+    ///
+    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
+    /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
+    /// - parameter method:  the http method to be used, e.g. .put, .post
+    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
+    /// - parameter response:   The closure to be called upon response.
+    open func multipartRequestWithPath(path: String, parameters:[String:Data]? = nil, method: HTTPMethod, jwtToken:String? = nil, completion: @escaping ResponseClosure) {
         let boundary = String(format: "------------------------%08X%08X", arc4random(), arc4random())
         let contentType: String = {
             guard let charset = CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(String.Encoding.utf8.rawValue)) else {
@@ -162,19 +200,20 @@ class ServiceHelper: NSObject {
             return body
         }()
         let requestUrl = requestUrlWithPath(path: path)
-        requestFromUrl(url: requestUrl, method:.put, contentType: contentType, body:httpBody, completion:completion)
+        requestFromUrl(url: requestUrl, method:method, contentType: contentType, jwtToken: jwtToken, body:httpBody, completion:completion)
     }
     
     /// Performs a delete request to the spcified path.
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
+    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
     /// - parameter response:   The closure to be called upon response.
-    open func DELETERequestWithPath(path: String, completion: @escaping ResponseClosure) {
+    open func DELETERequestWithPath(path: String, jwtToken:String? = nil, completion: @escaping ResponseClosure) {
         let requestUrl = requestUrlWithPath(path: path)
-        requestFromUrl(url: requestUrl, method:.delete, completion:completion)
+        requestFromUrl(url: requestUrl, method:.delete, jwtToken: jwtToken, completion:completion)
     }
         
-    open func requestFromUrl(url: String, method: HTTPMethod, contentType:String? = nil, body:Data? = nil, completion: @escaping ResponseClosure) {
+    open func requestFromUrl(url: String, method: HTTPMethod, contentType:String? = nil, jwtToken:String? = nil, body:Data? = nil, completion: @escaping ResponseClosure) {
         let url = URL(string: url)!
         var urlRequest = URLRequest(url: url)
 
@@ -184,6 +223,10 @@ class ServiceHelper: NSObject {
 
         if let contentType = contentType {
             urlRequest.addValue(contentType, forHTTPHeaderField: "Content-Type")
+        }
+        
+        if let token = jwtToken {
+            urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
 
         switch method {
@@ -197,6 +240,9 @@ class ServiceHelper: NSObject {
             urlRequest.httpBody = body
         case .delete:
             urlRequest.httpMethod = "DELETE"
+        case .patch:
+            urlRequest.httpMethod = "PATCH"
+            urlRequest.httpBody = body
         }
         
         let task = URLSession.shared.dataTask(with: urlRequest) { data, response, error in

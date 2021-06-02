@@ -25,18 +25,54 @@ public struct DepositRequest {
     /// (optional) Email address of depositor. If desired, an anchor can use this to send email updates to the user about the deposit.
     public var emailAddress:String?
     
+    /// (optional) Type of deposit. If the anchor supports multiple deposit methods (e.g. SEPA or SWIFT), the wallet should specify type. This field may be necessary for the anchor to determine which KYC fields to collect.
+    public var type:String?
+    
+    /// (optional) In communications / pages about the deposit, anchor should display the wallet name to the user to explain where funds are going.
+    public var walletName:String?
+    
+    /// (optional) Anchor should link to this when notifying the user that the transaction has completed.
+    public var walletUrl:String?
+    
+    /// (optional) Defaults to en. Language code specified using ISO 639-1. error fields in the response should be in this language.
+    public var lang:String?
+    
+    /// (optional) A URL that the anchor should POST a JSON message to when the status property of the transaction created as a result of this request changes. The JSON message should be identical to the response format for the /transaction endpoint.
+    public var onChangeCallback:String?
+    
+    /// (optional) The amount of the asset the user would like to deposit with the anchor. This field may be necessary for the anchor to determine what KYC information is necessary to collect.
+    public var amount:String?
+    
+    /// (optional) The ISO 3166-1 alpha-3 code of the user's current address. This field may be necessary for the anchor to determine what KYC information is necessary to collect.
+    public var countryCode:String?
+    
+    /// (optional) true if the client supports receiving deposit transactions as a claimable balance, false otherwise.
+    public var claimableBalanceSupported:String?
+    
+    /// jwt previously received from the anchor via the SEP-10 authentication flow
+    public var jwt:String?
+    
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case assetCode = "asset_code"
-        case account = "account"
+        case account
         case memoType = "memo_type"
-        case memo = "memo"
+        case memo
         case emailAddress = "email_address"
+        case type
+        case walletName = "wallet_name"
+        case walletUrl = "wallet_url"
+        case lang
+        case onChangeCallback = "on_change_callback"
+        case amount
+        case countryCode = "country_code"
+        case claimableBalanceSupported = "claimable_balance_supported"
     }
     
-    public init(assetCode:String, account:String) {
+    public init(assetCode:String, account:String, jwt:String? = nil) {
         self.assetCode = assetCode
         self.account = account
+        self.jwt = jwt
     }
     
 }

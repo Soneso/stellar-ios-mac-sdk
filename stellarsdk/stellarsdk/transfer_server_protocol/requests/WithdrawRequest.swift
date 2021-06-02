@@ -31,10 +31,32 @@ public struct WithdrawRequest {
     /// (optional) type of memo. One of text, id or hash
     public var memoType:String?
     
-    public init(type:String, assetCode:String, dest:String) {
+    /// (optional) In communications / pages about the withdrawal, anchor should display the wallet name to the user to explain where funds are coming from.
+    public var walletName:String?
+    
+    /// (optional) Anchor can show this to the user when referencing the wallet involved in the withdrawal (ex. in the anchor's transaction history).
+    public var walletUrl:String?
+    
+    /// (optional) Defaults to en. Language code specified using ISO 639-1. error fields in the response should be in this language.
+    public var lang:String?
+    
+    /// (optional) A URL that the anchor should POST a JSON message to when the status property of the transaction created as a result of this request changes. The JSON message should be identical to the response format for the /transaction endpoint.
+    public var onChangeCallback:String?
+    
+    /// (optional) The amount of the asset the user would like to withdraw. This field may be necessary for the anchor to determine what KYC information is necessary to collect.
+    public var amount:String?
+    
+    /// (optional) The ISO 3166-1 alpha-3 code of the user's current address. This field may be necessary for the anchor to determine what KYC information is necessary to collect.
+    public var countryCode:String?
+    
+    /// jwt previously received from the anchor via the SEP-10 authentication flow
+    public var jwt:String?
+    
+    public init(type:String, assetCode:String, dest:String, jwt:String? = nil) {
         self.type = type
         self.assetCode = assetCode
         self.dest = dest
+        self.jwt = jwt
     }
     
 }

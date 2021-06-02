@@ -22,5 +22,6 @@ public enum TransferServerError: Error {
     case parsingResponseFailed(message:String)
     case anchorError(message:String)
     case informationNeeded(response:InformationNeededEnum)
+    case authenticationRequired
     case horizonError(error: HorizonRequestError)
 }
