@@ -17,6 +17,8 @@ public class AllowTrustOperationResponse: OperationResponse {
     
     /// Trustee account.
     public var trustee:String
+    public var trusteeMuxed:String?
+    public var trusteeMuxedId:Int?
     
     /// Asset type (native / alphanum4 / alphanum12)
     public var assetType:String
@@ -36,6 +38,8 @@ public class AllowTrustOperationResponse: OperationResponse {
     private enum CodingKeys: String, CodingKey {
         case trustor
         case trustee
+        case trusteeMuxed = "trustee_muxed"
+        case trusteeMuxedId = "trustee_muxed_id"
         case assetType = "asset_type"
         case assetCode = "asset_code"
         case assetIssuer = "asset_issuer"
@@ -52,6 +56,8 @@ public class AllowTrustOperationResponse: OperationResponse {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         trustor = try values.decode(String.self, forKey: .trustor)
         trustee = try values.decode(String.self, forKey: .trustee)
+        trusteeMuxed = try values.decodeIfPresent(String.self, forKey: .trusteeMuxed)
+        trusteeMuxedId = try values.decodeIfPresent(Int.self, forKey: .trusteeMuxedId)
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)

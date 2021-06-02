@@ -17,6 +17,8 @@ public class AccountCreatedOperationResponse: OperationResponse {
     
     /// Account that funded a new account.
     public var funder:String
+    public var funderMuxed:String?
+    public var funderMuxedId:Int?
     
     /// A new account that was funded.
     public var account:String
@@ -25,6 +27,8 @@ public class AccountCreatedOperationResponse: OperationResponse {
     private enum CodingKeys: String, CodingKey {
         case startingBalance = "starting_balance"
         case funder
+        case funderMuxed = "funder_muxed"
+        case funderMuxedId = "funder_muxed_id"
         case account
     }
     
@@ -38,6 +42,8 @@ public class AccountCreatedOperationResponse: OperationResponse {
         let balanceString = try values.decode(String.self, forKey: .startingBalance)
         startingBalance = Decimal(string: balanceString)!
         funder = try values.decode(String.self, forKey: .funder)
+        funderMuxed = try values.decodeIfPresent(String.self, forKey: .funderMuxed)
+        funderMuxedId = try values.decodeIfPresent(Int.self, forKey: .funderMuxedId)
         account = try values.decode(String.self, forKey: .account)
         
         try super.init(from: decoder)

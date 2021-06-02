@@ -26,9 +26,13 @@ public class PaymentOperationResponse: OperationResponse {
     
     /// Sender of a payment.
     public var from:String
+    public var fromMuxed:String?
+    public var fromMuxedId:Int?
     
     /// Destination of a payment.
     public var to:String
+    public var toMuxed:String?
+    public var toMuxedId:Int?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -37,7 +41,11 @@ public class PaymentOperationResponse: OperationResponse {
         case assetCode = "asset_code"
         case assetIssuer = "asset_issuer"
         case from
+        case fromMuxed = "from_muxed"
+        case fromMuxedId = "from_muxed_id"
         case to
+        case toMuxed = "to_muxed"
+        case toMuxedId = "to_muxed_id"
     }
     
     /**
@@ -52,7 +60,11 @@ public class PaymentOperationResponse: OperationResponse {
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
         from = try values.decode(String.self, forKey: .from)
+        fromMuxed = try values.decodeIfPresent(String.self, forKey: .fromMuxed)
+        fromMuxedId = try values.decodeIfPresent(Int.self, forKey: .fromMuxedId)
         to = try values.decode(String.self, forKey: .to)
+        toMuxed = try values.decodeIfPresent(String.self, forKey: .toMuxed)
+        toMuxedId = try values.decodeIfPresent(Int.self, forKey: .toMuxedId)
         
         try super.init(from: decoder)
     }

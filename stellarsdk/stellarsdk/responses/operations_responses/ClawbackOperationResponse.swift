@@ -12,6 +12,8 @@ public class ClawbackOperationResponse: OperationResponse {
     
     public var amount:String
     public var from:String
+    public var fromMuxed:String?
+    public var fromMuxedId:Int?
     public var assetType:String
     public var assetCode:String?
     public var assetIssuer:String?
@@ -21,6 +23,8 @@ public class ClawbackOperationResponse: OperationResponse {
     private enum CodingKeys: String, CodingKey {
         case amount
         case from
+        case fromMuxed = "from_muxed"
+        case fromMuxedId = "from_muxed_id"
         case assetType = "asset_type"
         case assetCode = "asset_code"
         case assetIssuer = "asset_issuer"
@@ -35,6 +39,8 @@ public class ClawbackOperationResponse: OperationResponse {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         amount = try values.decode(String.self, forKey: .amount)
         from = try values.decode(String.self, forKey: .from)
+        fromMuxed = try values.decodeIfPresent(String.self, forKey: .fromMuxed)
+        fromMuxedId = try values.decodeIfPresent(Int.self, forKey: .fromMuxedId)
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)

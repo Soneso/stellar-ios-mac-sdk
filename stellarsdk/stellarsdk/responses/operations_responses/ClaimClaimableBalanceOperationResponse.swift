@@ -12,17 +12,23 @@ public class ClaimClaimableBalanceOperationResponse: OperationResponse {
     
     public var balanceId:String
     public var claimantAccountId:String
+    public var claimantMuxed:String?
+    public var claimantMuxedId:Int?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case balanceId = "balance_id"
         case claimantAccountId = "claimant"
+        case claimantMuxed = "claimant_muxed"
+        case claimantMuxedId = "claimant_muxed_id"
     }
     
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         balanceId = try values.decode(String.self, forKey: .balanceId)
         claimantAccountId = try values.decode(String.self, forKey: .claimantAccountId)
+        claimantMuxed = try values.decodeIfPresent(String.self, forKey: .claimantMuxed)
+        claimantMuxedId = try values.decodeIfPresent(Int.self, forKey: .claimantMuxedId)
         try super.init(from: decoder)
     }
 }

@@ -32,6 +32,8 @@ public class TransactionResponse: NSObject, Decodable {
     
     /// The account that originates the transaction.
     public var sourceAccount:String
+    public var sourceAccountMuxed:String?
+    public var sourceAccountMuxedId:Int?
     
     /// The current transaction sequence number of the source account.
     public var sourceAccountSequence:String
@@ -44,6 +46,8 @@ public class TransactionResponse: NSObject, Decodable {
     
     /// The account which paid the transaction fee
     public var feeAccount:String
+    public var feeAccountMuxed:String?
+    public var feeAccountMuxedId:Int?
     
     /// The number of operations that are contained within this transaction.
     public var operationCount:Int
@@ -70,10 +74,14 @@ public class TransactionResponse: NSObject, Decodable {
         case ledger
         case createdAt = "created_at"
         case sourceAccount = "source_account"
+        case sourceAccountMuxed = "source_account_muxed"
+        case sourceAccountMuxedId = "source_account_muxed_id"
         case sourceAccountSequence = "source_account_sequence"
         case maxFee = "max_fee"
         case feeCharged = "fee_charged"
         case feeAccount = "fee_account"
+        case feeAccountMuxed = "fee_account_muxed"
+        case feeAccountMuxedId = "fee_account_muxed_id"
         case operationCount = "operation_count"
         case memoType = "memo_type"
         case memo = "memo"
@@ -94,8 +102,12 @@ public class TransactionResponse: NSObject, Decodable {
         ledger = try values.decode(Int.self, forKey: .ledger)
         createdAt = try values.decode(Date.self, forKey: .createdAt)
         sourceAccount = try values.decode(String.self, forKey: .sourceAccount)
+        sourceAccountMuxed = try values.decodeIfPresent(String.self, forKey: .sourceAccountMuxed)
+        sourceAccountMuxedId = try values.decodeIfPresent(Int.self, forKey: .sourceAccountMuxedId)
         sourceAccountSequence = try values.decode(String.self, forKey: .sourceAccountSequence)
         feeAccount = try values.decode(String.self, forKey: .feeAccount)
+        feeAccountMuxed = try values.decodeIfPresent(String.self, forKey: .feeAccountMuxed)
+        feeAccountMuxedId = try values.decodeIfPresent(Int.self, forKey: .feeAccountMuxedId)
         if let makeFeeStr = try? values.decodeIfPresent(String.self, forKey: .maxFee) {
             maxFee = makeFeeStr
         } else if let makeFeeInt = try? values.decodeIfPresent(Int.self, forKey: .maxFee) {

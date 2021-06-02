@@ -48,6 +48,8 @@ public class OperationResponse: NSObject, Decodable {
     
     /// Account ID/Public Key of the account the operation belongs to.
     public var sourceAccount:String
+    public var sourceAccountMuxed:String?
+    public var sourceAccountMuxedId:Int?
     
     /// Type of the operation as a human readable string.
     public var operationTypeString:String
@@ -73,6 +75,8 @@ public class OperationResponse: NSObject, Decodable {
         case id
         case pagingToken = "paging_token"
         case sourceAccount = "source_account"
+        case sourceAccountMuxed = "source_account_muxed"
+        case sourceAccountMuxedId = "source_account_muxed_id"
         case operationTypeString = "type"
         case operationType = "type_i"
         case createdAt = "created_at"
@@ -92,6 +96,8 @@ public class OperationResponse: NSObject, Decodable {
         id = try values.decode(String.self, forKey: .id)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         sourceAccount = try values.decode(String.self, forKey: .sourceAccount)
+        sourceAccountMuxed = try values.decodeIfPresent(String.self, forKey: .sourceAccountMuxed)
+        sourceAccountMuxedId = try values.decodeIfPresent(Int.self, forKey: .sourceAccountMuxedId)
         operationTypeString = try values.decode(String.self, forKey: .operationTypeString)
         let typeIInt = try values.decode(Int.self, forKey: .operationType) as Int
         operationType = OperationType(rawValue: Int32(typeIInt))!

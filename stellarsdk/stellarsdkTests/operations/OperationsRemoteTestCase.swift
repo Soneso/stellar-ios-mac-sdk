@@ -111,7 +111,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationsForTransaction() {
         let expectation = XCTestExpectation(description: "Get operations for transaction")
         
-        sdk.operations.getOperations(forTransaction: "0063bdc7742ee3020741f2a5649b6d0d9827ad95c4ee0abc25ea87010d268886", includeFailed:true, join:"transactions") { (response) -> (Void) in
+        sdk.operations.getOperations(forTransaction: "542fbd10071ea9f39217fa262336ac725f443bb6e35c0cab1c01ac16c21f226e", includeFailed:true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)

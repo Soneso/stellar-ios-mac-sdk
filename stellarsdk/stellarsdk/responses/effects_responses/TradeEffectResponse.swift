@@ -12,6 +12,8 @@ public class TradeEffectResponse: EffectResponse {
     
     /// The seller in the trade effect.
     public var seller:String
+    public var sellerMuxed:String?
+    public var sellerMuxedId:Int?
     
     /// The id of the offer that has been traded.
     public var offerId:String
@@ -43,6 +45,8 @@ public class TradeEffectResponse: EffectResponse {
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case seller
+        case sellerMuxed = "seller_muxed"
+        case sellerMuxedId = "seller_muxed_id"
         case offerId = "offer_id"
         case soldAmount = "sold_amount"
         case soldAssetType = "sold_asset_type"
@@ -62,6 +66,8 @@ public class TradeEffectResponse: EffectResponse {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         seller = try values.decode(String.self, forKey: .seller)
+        sellerMuxed = try values.decodeIfPresent(String.self, forKey: .sellerMuxed)
+        sellerMuxedId = try values.decodeIfPresent(Int.self, forKey: .sellerMuxedId)
         offerId = try values.decode(String.self, forKey: .offerId)
         soldAmount = try values.decode(String.self, forKey: .soldAmount)
         soldAssetType = try values.decode(String.self, forKey: .soldAssetType)

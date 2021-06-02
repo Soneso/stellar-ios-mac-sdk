@@ -20,9 +20,13 @@ public class PathPaymentOperationResponse: OperationResponse {
     
     /// Sender of a payment.
     public var from:String
+    public var fromMuxed:String?
+    public var fromMuxedId:Int?
     
     /// Destination of a payment.
     public var to:String
+    public var toMuxed:String?
+    public var toMuxedId:Int?
     
     /// Destination asset type (native / alphanum4 / alphanum12)
     public var assetType:String
@@ -50,7 +54,11 @@ public class PathPaymentOperationResponse: OperationResponse {
         case amount
         case sourceAmount = "source_amount"
         case from
+        case fromMuxed = "from_muxed"
+        case fromMuxedId = "from_muxed_id"
         case to
+        case toMuxed = "to_muxed"
+        case toMuxedId = "to_muxed_id"
         case assetType = "asset_type"
         case assetCode = "asset_code"
         case assetIssuer = "asset_issuer"
@@ -70,7 +78,11 @@ public class PathPaymentOperationResponse: OperationResponse {
         amount = try values.decode(String.self, forKey: .amount)
         sourceAmount = try values.decode(String.self, forKey: .sourceAmount)
         from = try values.decode(String.self, forKey: .from)
+        fromMuxed = try values.decodeIfPresent(String.self, forKey: .fromMuxed)
+        fromMuxedId = try values.decodeIfPresent(Int.self, forKey: .fromMuxedId)
         to = try values.decode(String.self, forKey: .to)
+        toMuxed = try values.decodeIfPresent(String.self, forKey: .toMuxed)
+        toMuxedId = try values.decodeIfPresent(Int.self, forKey: .toMuxedId)
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
