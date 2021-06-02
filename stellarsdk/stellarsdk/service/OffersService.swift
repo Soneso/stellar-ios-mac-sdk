@@ -8,6 +8,21 @@
 
 import Foundation
 
+public enum OffersChange {
+    case allOffers(seller:String?,
+                   sellingAssetType:String,
+                   sellingAssetCode:String?,
+                   sellingAssetIssuer:String?,
+                   buyingAssetType:String,
+                   buyingAssetCode:String?,
+                   buyingAssetIssuer:String?,
+                   sponsor:String?,
+                   cursor:String?,
+                   order:Order?)
+    case offersForAccount(account:String,
+                          cursor:String?)
+}
+
 public class OffersService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
@@ -64,6 +79,7 @@ public class OffersService: NSObject {
         params["selling_asset_issuer"] = sellingAssetIssuer
         params["buying_asset_type"] = buyingAssetType
         params["buying_asset_code"] = buyingAssetCode
+        params["sponsor"] = sponsor
         params["buying_asset_issuer"] = buyingAssetIssuer
         params["cursor"] = cursor
         params["order"] = order?.rawValue
@@ -91,5 +107,53 @@ public class OffersService: NSObject {
                 response(.failure(error:error))
             }
         }
+    }
+    
+    /// Allows to stream SSE events from horizon.
+    /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events. This mode will keep the connection to horizon open and horizon will continue to return responses as ledgers close.
+    ///
+    open func stream(for offersType:OffersChange) -> OffersStreamItem {
+        var subpath:String!
+        switch offersType {
+        case .allOffers(let seller,
+                        let sellingAssetType,
+                        let sellingAssetCode,
+                        let sellingAssetIssuer,
+                        let buyingAssetType,
+                        let buyingAssetCode,
+                        let buyingAssetIssuer,
+                        let sponsor,
+                        let cursor,
+                        let order):
+            
+            var params = Dictionary<String,String>()
+            params["seller"] = seller
+            params["selling_asset_type"] = sellingAssetType
+            params["selling_asset_code"] = sellingAssetCode
+            params["selling_asset_issuer"] = sellingAssetIssuer
+            params["buying_asset_type"] = buyingAssetType
+            params["buying_asset_code"] = buyingAssetCode
+            params["buying_asset_issuer"] = buyingAssetIssuer
+            params["sponsor"] = sponsor
+            params["cursor"] = cursor
+            params["order"] = order?.rawValue
+            
+            subpath = "/offers"
+            
+            if let pathParams = params.stringFromHttpParameters(),
+                pathParams.count > 0 {
+                subpath += "?\(pathParams)"
+            }
+
+        case .offersForAccount(let accountId,
+                               let cursor):
+            subpath = "/accounts/" + accountId + "/offers"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        }
+    
+        let streamItem = OffersStreamItem(requestUrl: serviceHelper.requestUrlWithPath(path: subpath))
+        return streamItem
     }
 }
