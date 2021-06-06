@@ -16,6 +16,7 @@ public enum OperationDetailsResponseEnum {
 public enum OperationsChange {
     case allOperations(cursor:String?)
     case operationsForAccount(account:String, cursor:String?)
+    case operationsForClaimableBalance(claimableBalanceId:String, cursor:String?)
     case operationsForLedger(ledger:String, cursor:String?)
     case operationsForTransaction(transaction:String, cursor:String?)
 }
@@ -41,6 +42,11 @@ public class OperationsService: NSObject {
     
     open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/accounts/" + accountId + "/operations"
+        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+    }
+    
+    open func getOperations(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        let path = "/claimable_balances/" + claimableBalanceId + "/operations"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
     }
     
@@ -91,6 +97,11 @@ public class OperationsService: NSObject {
             }
         case .operationsForAccount(let accountId, let cursor):
             subpath = "/accounts/" + accountId + "/operations"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        case .operationsForClaimableBalance(let claimableBalanceId, let cursor):
+            subpath = "/claimable_balances/" + claimableBalanceId + "/operations"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor
             }

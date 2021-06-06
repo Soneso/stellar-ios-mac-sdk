@@ -90,6 +90,29 @@ class OperationsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testGetOperationsForClaimableBalance() {
+        let expectation = XCTestExpectation(description: "Get operations for claimable balance")
+        let claimableBalanceId = "00000000cca8fa61d9c3e2274943f24fbda525cdf836aee7267f0db2905571ad0eb8760c"
+        sdk.operations.getOperations(forClaimableBalance: claimableBalanceId, from: nil, order: Order.descending, includeFailed: true, join: "transactions") { (response) -> (Void) in
+            switch response {
+            case .success(let ops):
+                if let operation = ops.records.first {
+                    XCTAssert(operation.transactionSuccessful)
+                } else {
+                    XCTAssert(false)
+                }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOFA Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    
     func testGetOperationsForLedger() {
         let expectation = XCTestExpectation(description: "Get operations for ledger")
         
