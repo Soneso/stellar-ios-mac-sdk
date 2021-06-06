@@ -92,6 +92,28 @@ class TransactionsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
+    func testGetTransactionsForClaimableBalance() {
+        let expectation = XCTestExpectation(description: "Get transactions for account")
+        let claimableBalanceId = "00000000cca8fa61d9c3e2274943f24fbda525cdf836aee7267f0db2905571ad0eb8760c"
+        sdk.transactions.getTransactions(forClaimableBalance: claimableBalanceId) { (response) -> (Void) in
+            switch response {
+            case .success(let transactions):
+                if let _ = transactions.records.first {
+                    XCTAssert(true)
+                } else {
+                    XCTAssert(false)
+                }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GTFA Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
     func testGetTransactionsForLedger() {
         let expectation = XCTestExpectation(description: "Get transactions for ledger")
         

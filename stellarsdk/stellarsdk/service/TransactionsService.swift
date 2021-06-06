@@ -28,6 +28,7 @@ public enum CheckMemoRequiredResponseEnum {
 public enum TransactionsChange {
     case allTransactions(cursor:String?)
     case transactionsForAccount(account:String, cursor:String?)
+    case transactionsForClaimableBalance(claimableBalanceId:String, cursor:String?)
     case transactionsForLedger(ledger:String, cursor:String?)
 }
 
@@ -54,6 +55,11 @@ public class TransactionsService: NSObject {
     
     open func getTransactions(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
         let path = "/accounts/" + accountId + "/transactions"
+        getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
+    }
+    
+    open func getTransactions(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
+        let path = "/claimable_balances/" + claimableBalanceId + "/transactions"
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
@@ -255,6 +261,11 @@ public class TransactionsService: NSObject {
             }
         case .transactionsForAccount(let accountId, let cursor):
             subpath = "/accounts/" + accountId + "/transactions"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        case .transactionsForClaimableBalance(let claimableBalanceId, let cursor):
+            subpath = "/_balances/" + claimableBalanceId + "/transactions"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor
             }
