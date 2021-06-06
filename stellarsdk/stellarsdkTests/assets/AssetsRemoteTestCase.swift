@@ -64,4 +64,32 @@ class AssetsRemoteTestCase: XCTestCase {
         }
         wait(for: [expectation], timeout: 15.0)
     }
+    
+    func testGetAssetAccountsAndBalances() {
+        let expectation = XCTestExpectation(description: "Get asset details successfully")
+        
+        sdk.assets.getAssets(for: "LUMP") { (response) -> (Void) in
+            switch response {
+            case .success(let assetsResponse):
+                if let asset = assetsResponse.records.first {
+                    let accounts = asset.accounts
+                    XCTAssert(accounts.authorized == 1)
+                    let numClaimableBalances = asset.numClaimableBalances
+                    XCTAssert(numClaimableBalances == 1)
+                    let balances = asset.balances
+                    XCTAssert(balances.authorized == 0.0)
+                    let claimableBalancesAmount = asset.claimableBalancesAmount
+                    XCTAssert(claimableBalancesAmount == 200.0)
+                } else {
+                    XCTAssert(false)
+                }
+                expectation.fulfill()
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load assets testcase", horizonRequestError: error)
+                XCTAssert(false)
+                expectation.fulfill()
+            }
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }
 }
