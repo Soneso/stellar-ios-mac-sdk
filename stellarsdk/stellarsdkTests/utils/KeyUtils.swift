@@ -33,7 +33,7 @@ class KeyUtils: XCTestCase {
     }
     
     func testKeyUtilsMuxedAccountM() {
-        let accountId = "MCAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGSSKF6YNPIB7Y77ITKNOG"
+        let accountId = "MAQAA5L65LSYH7CQ3VTJ7F3HHLGCL3DSLAR2Y47263D56MNNGHSQSAAAAAAAAAAE2LP26"
         
         do {
             let mux = try accountId.decodeMuxedAccount()

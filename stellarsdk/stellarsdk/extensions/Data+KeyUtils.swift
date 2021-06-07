@@ -20,7 +20,8 @@ extension Data {
         case .ed25519(_):
             return muxed.ed25519AccountId
         case .med25519(let mux):
-            let data = try Data(bytes: XDREncoder.encode(mux))
+            let muxInverted = mux.toMuxedAccountMed25519XDRInverted()
+            let data = try Data(bytes: XDREncoder.encode(muxInverted))
             let result = try data.encodeMEd25519AccountId()
             return result.replacingOccurrences(of: "=", with: "")
         }

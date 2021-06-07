@@ -339,7 +339,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testAccountMerge() {
         let expectation = XCTestExpectation(description: "account merged")
         do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SAZ6P7T6NXUMVIP7TTFWCKZCI6EYDYSSIXRGQ4BHOBXME2W7GRAVN3EL")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SBYOYWBPHLZHNCYGRRX56GCTP2M7TDYNRVMY6X3BIPH5AE2UBFRRE4LK")
             
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {

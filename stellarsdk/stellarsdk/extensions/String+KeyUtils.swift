@@ -28,8 +28,8 @@ extension String {
             return mux
         case 69:
             let xdr = try decodeCheck(versionByte: .muxedAccountId)
-            let muxEd25519 = try XDRDecoder.decode(MuxedAccountMed25519XDR.self, data:xdr)
-            let mux = MuxedAccountXDR.med25519(muxEd25519)
+            let muxEd25519 = try XDRDecoder.decode(MuxedAccountMed25519XDRInverted.self, data:xdr)
+            let mux = MuxedAccountXDR.med25519(muxEd25519.toMuxedAccountMed25519XDR())
             return mux
         default:
             throw KeyUtilsError.invalidEncodedString
