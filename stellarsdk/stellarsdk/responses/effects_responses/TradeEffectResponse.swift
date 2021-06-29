@@ -13,7 +13,7 @@ public class TradeEffectResponse: EffectResponse {
     /// The seller in the trade effect.
     public var seller:String
     public var sellerMuxed:String?
-    public var sellerMuxedId:Int?
+    public var sellerMuxedId:String?
     
     /// The id of the offer that has been traded.
     public var offerId:String
@@ -67,7 +67,7 @@ public class TradeEffectResponse: EffectResponse {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         seller = try values.decode(String.self, forKey: .seller)
         sellerMuxed = try values.decodeIfPresent(String.self, forKey: .sellerMuxed)
-        sellerMuxedId = try values.decodeIfPresent(Int.self, forKey: .sellerMuxedId)
+        sellerMuxedId = try values.decodeIfPresent(String.self, forKey: .sellerMuxedId)
         offerId = try values.decode(String.self, forKey: .offerId)
         soldAmount = try values.decode(String.self, forKey: .soldAmount)
         soldAssetType = try values.decode(String.self, forKey: .soldAssetType)

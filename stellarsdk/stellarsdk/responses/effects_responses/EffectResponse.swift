@@ -80,7 +80,7 @@ public class EffectResponse: NSObject, Decodable {
     /// Account ID/Public Key of the account the effect belongs to.
     public var account:String
     public var accountMuxed:String?
-    public var accountMuxedId:Int?
+    public var accountMuxedId:String?
     
     /// Type of the effect as a human readable string.
     public var effectTypeString:String
@@ -114,7 +114,7 @@ public class EffectResponse: NSObject, Decodable {
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         account = try values.decode(String.self, forKey: .account)
         accountMuxed = try values.decodeIfPresent(String.self, forKey: .accountMuxed)
-        accountMuxedId = try values.decodeIfPresent(Int.self, forKey: .accountMuxedId)
+        accountMuxedId = try values.decodeIfPresent(String.self, forKey: .accountMuxedId)
         effectTypeString = try values.decode(String.self, forKey: .effectTypeString)
         let typeIInt = try values.decode(Int.self, forKey: .effectType) as Int
         effectType = EffectType(rawValue: typeIInt)!

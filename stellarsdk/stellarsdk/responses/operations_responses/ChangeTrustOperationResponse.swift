@@ -15,7 +15,7 @@ public class ChangeTrustOperationResponse: OperationResponse {
     /// Trustor account.
     public var trustor:String
     public var trustorMuxed:String?
-    public var trustorMuxedId:Int?
+    public var trustorMuxedId:String?
     
     /// Trustee account.
     public var trustee:String
@@ -53,7 +53,7 @@ public class ChangeTrustOperationResponse: OperationResponse {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         trustor = try values.decode(String.self, forKey: .trustor)
         trustorMuxed = try values.decodeIfPresent(String.self, forKey: .trustorMuxed)
-        trustorMuxedId = try values.decodeIfPresent(Int.self, forKey: .trustorMuxedId)
+        trustorMuxedId = try values.decodeIfPresent(String.self, forKey: .trustorMuxedId)
         trustee = try values.decode(String.self, forKey: .trustee)
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)

@@ -33,7 +33,7 @@ public class TransactionResponse: NSObject, Decodable {
     /// The account that originates the transaction.
     public var sourceAccount:String
     public var sourceAccountMuxed:String?
-    public var sourceAccountMuxedId:Int?
+    public var sourceAccountMuxedId:String?
     
     /// The current transaction sequence number of the source account.
     public var sourceAccountSequence:String
@@ -47,7 +47,7 @@ public class TransactionResponse: NSObject, Decodable {
     /// The account which paid the transaction fee
     public var feeAccount:String
     public var feeAccountMuxed:String?
-    public var feeAccountMuxedId:Int?
+    public var feeAccountMuxedId:String?
     
     /// The number of operations that are contained within this transaction.
     public var operationCount:Int
@@ -103,11 +103,11 @@ public class TransactionResponse: NSObject, Decodable {
         createdAt = try values.decode(Date.self, forKey: .createdAt)
         sourceAccount = try values.decode(String.self, forKey: .sourceAccount)
         sourceAccountMuxed = try values.decodeIfPresent(String.self, forKey: .sourceAccountMuxed)
-        sourceAccountMuxedId = try values.decodeIfPresent(Int.self, forKey: .sourceAccountMuxedId)
+        sourceAccountMuxedId = try values.decodeIfPresent(String.self, forKey: .sourceAccountMuxedId)
         sourceAccountSequence = try values.decode(String.self, forKey: .sourceAccountSequence)
         feeAccount = try values.decode(String.self, forKey: .feeAccount)
         feeAccountMuxed = try values.decodeIfPresent(String.self, forKey: .feeAccountMuxed)
-        feeAccountMuxedId = try values.decodeIfPresent(Int.self, forKey: .feeAccountMuxedId)
+        feeAccountMuxedId = try values.decodeIfPresent(String.self, forKey: .feeAccountMuxedId)
         if let makeFeeStr = try? values.decodeIfPresent(String.self, forKey: .maxFee) {
             maxFee = makeFeeStr
         } else if let makeFeeInt = try? values.decodeIfPresent(Int.self, forKey: .maxFee) {

@@ -13,7 +13,7 @@ public class ClawbackOperationResponse: OperationResponse {
     public var amount:String
     public var from:String
     public var fromMuxed:String?
-    public var fromMuxedId:Int?
+    public var fromMuxedId:String?
     public var assetType:String
     public var assetCode:String?
     public var assetIssuer:String?
@@ -40,7 +40,7 @@ public class ClawbackOperationResponse: OperationResponse {
         amount = try values.decode(String.self, forKey: .amount)
         from = try values.decode(String.self, forKey: .from)
         fromMuxed = try values.decodeIfPresent(String.self, forKey: .fromMuxed)
-        fromMuxedId = try values.decodeIfPresent(Int.self, forKey: .fromMuxedId)
+        fromMuxedId = try values.decodeIfPresent(String.self, forKey: .fromMuxedId)
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)

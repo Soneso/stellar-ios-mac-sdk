@@ -15,8 +15,8 @@ class OperationsRemoteTestCase: XCTestCase {
     var streamItem:OperationsStreamItem? = nil
     var effectsStreamItem:EffectsStreamItem? = nil
     
-    let seed = "SBFLTUTTPH36XNVCUAHYNUSVFLWDQFJ2ZH5YP3VNJJYQAJ2JZ2RZRGF7"
-    let IOMIssuingAccountId = "GBXRK7G4CEWLZWBJDIUABRXVSGH6VCR5ZHYA45VX4XZE4L4IL6PK4KZF"
+    let seed = "SC3FVGWBQDEWH7XER6L23ZR7RRHOVMMVQVZ64RULNCK56SPZH4Q2LAKZ"
+    let IOMIssuingAccountId = "GAZ2MUQVDMYGTBTDYPZN5Y37DXHENQ6RADKHJE6PCCHRRWO55TQAKLVT"
     
     override func setUp() {
         super.setUp()
@@ -134,7 +134,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationsForTransaction() {
         let expectation = XCTestExpectation(description: "Get operations for transaction")
         
-        sdk.operations.getOperations(forTransaction: "542fbd10071ea9f39217fa262336ac725f443bb6e35c0cab1c01ac16c21f226e", includeFailed:true, join:"transactions") { (response) -> (Void) in
+        sdk.operations.getOperations(forTransaction: "c29bbf2190ca2cd19833320d2ce7024cbbad43cfdbcbfde9668bffed220f842f", includeFailed:true, join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -152,7 +152,7 @@ class OperationsRemoteTestCase: XCTestCase {
     func testGetOperationDetails() {
         let expectation = XCTestExpectation(description: "Get operation details")
         
-        sdk.operations.getOperationDetails(operationId: "2334838711390209", join:"transactions") { (response) -> (Void) in
+        sdk.operations.getOperationDetails(operationId: "929512527241217", join:"transactions") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -339,14 +339,14 @@ class OperationsRemoteTestCase: XCTestCase {
     func testAccountMerge() {
         let expectation = XCTestExpectation(description: "account merged")
         do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SBYOYWBPHLZHNCYGRRX56GCTP2M7TDYNRVMY6X3BIPH5AE2UBFRRE4LK")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SCXAOJMFMMK23LNHMLMECV7YQETZUD2VKROPMXVPS6AFKFH2ISYZCNDE")
             
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
                     do {
                         
-                        let muxDestination = try MuxedAccount(accountId: "GCBNSYZLI5YWKYTV5JZ4C6EMAPH2OEGRX3H2KQ6DT5O3XVP5CRKA6CKZ",  id: 100000029292)
+                        let muxDestination = try MuxedAccount(accountId: "GAJGDV45S5A2BSATUE2PWQ5QHWTAW775ZHODVAHRUD7TAMOPMDUXXFXR",  id: 100000029292)
                         
                         print("dest:\(muxDestination.accountId)")
                         

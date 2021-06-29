@@ -15,12 +15,12 @@ public class AccountMergeOperationResponse: OperationResponse {
     /// Account ID of the account that has been deleted.
     public var account:String
     public var accountMuxed:String?
-    public var accountMuxedId:Int?
+    public var accountMuxedId:String?
     
     /// Account ID where funds of deleted account were transferred.
     public var into:String
     public var intoMuxed:String?
-    public var intoMuxedId:Int?
+    public var intoMuxedId:String?
     
      // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -41,10 +41,10 @@ public class AccountMergeOperationResponse: OperationResponse {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         account = try values.decode(String.self, forKey: .account)
         accountMuxed = try values.decodeIfPresent(String.self, forKey: .accountMuxed)
-        accountMuxedId = try values.decodeIfPresent(Int.self, forKey: .accountMuxedId)
+        accountMuxedId = try values.decodeIfPresent(String.self, forKey: .accountMuxedId)
         into = try values.decode(String.self, forKey: .into)
         intoMuxed = try values.decodeIfPresent(String.self, forKey: .intoMuxed)
-        intoMuxedId = try values.decodeIfPresent(Int.self, forKey: .intoMuxedId)
+        intoMuxedId = try values.decodeIfPresent(String.self, forKey: .intoMuxedId)
         
         try super.init(from: decoder)
     }

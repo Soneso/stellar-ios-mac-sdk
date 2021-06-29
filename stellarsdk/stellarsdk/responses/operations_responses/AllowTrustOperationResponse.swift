@@ -18,7 +18,7 @@ public class AllowTrustOperationResponse: OperationResponse {
     /// Trustee account.
     public var trustee:String
     public var trusteeMuxed:String?
-    public var trusteeMuxedId:Int?
+    public var trusteeMuxedId:String?
     
     /// Asset type (native / alphanum4 / alphanum12)
     public var assetType:String
@@ -57,7 +57,7 @@ public class AllowTrustOperationResponse: OperationResponse {
         trustor = try values.decode(String.self, forKey: .trustor)
         trustee = try values.decode(String.self, forKey: .trustee)
         trusteeMuxed = try values.decodeIfPresent(String.self, forKey: .trusteeMuxed)
-        trusteeMuxedId = try values.decodeIfPresent(Int.self, forKey: .trusteeMuxedId)
+        trusteeMuxedId = try values.decodeIfPresent(String.self, forKey: .trusteeMuxedId)
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)

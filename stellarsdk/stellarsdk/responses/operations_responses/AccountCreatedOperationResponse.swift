@@ -18,7 +18,7 @@ public class AccountCreatedOperationResponse: OperationResponse {
     /// Account that funded a new account.
     public var funder:String
     public var funderMuxed:String?
-    public var funderMuxedId:Int?
+    public var funderMuxedId:String?
     
     /// A new account that was funded.
     public var account:String
@@ -43,7 +43,7 @@ public class AccountCreatedOperationResponse: OperationResponse {
         startingBalance = Decimal(string: balanceString)!
         funder = try values.decode(String.self, forKey: .funder)
         funderMuxed = try values.decodeIfPresent(String.self, forKey: .funderMuxed)
-        funderMuxedId = try values.decodeIfPresent(Int.self, forKey: .funderMuxedId)
+        funderMuxedId = try values.decodeIfPresent(String.self, forKey: .funderMuxedId)
         account = try values.decode(String.self, forKey: .account)
         
         try super.init(from: decoder)

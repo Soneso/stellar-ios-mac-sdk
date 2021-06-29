@@ -12,7 +12,7 @@ public class EndSponsoringFutureReservesOperationResponse: OperationResponse {
     
     public var beginSponsor:String
     public var beginSponsorMuxed:String?
-    public var beginSponsorMuxedId:Int?
+    public var beginSponsorMuxedId:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -25,7 +25,7 @@ public class EndSponsoringFutureReservesOperationResponse: OperationResponse {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         beginSponsor = try values.decode(String.self, forKey: .beginSponsor)
         beginSponsorMuxed = try values.decodeIfPresent(String.self, forKey: .beginSponsorMuxed)
-        beginSponsorMuxedId = try values.decodeIfPresent(Int.self, forKey: .beginSponsorMuxedId)
+        beginSponsorMuxedId = try values.decodeIfPresent(String.self, forKey: .beginSponsorMuxedId)
         try super.init(from: decoder)
     }
 }
