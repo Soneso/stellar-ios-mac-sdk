@@ -44,15 +44,21 @@ public struct AnchorInfoResponse: Decodable {
 public struct DepositAsset: Decodable {
     
     public var enabled: Bool
-    public var feeFixed: Double
-    public var feePercent: Double
+    public var authenticationRequired: Bool?
+    public var feeFixed: Double?
+    public var feePercent: Double?
+    public var minAmount:Double?
+    public var maxAmount:Double?
     public var fields: [String:AnchorField]?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case enabled = "enabled"
+        case authenticationRequired = "authentication_required"
         case feeFixed = "fee_fixed"
         case feePercent = "fee_percent"
+        case minAmount = "min_amount"
+        case maxAmount = "max_amount"
         case fields = "fields"
     }
     
@@ -64,8 +70,11 @@ public struct DepositAsset: Decodable {
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         enabled = try values.decode(Bool.self, forKey: .enabled)
-        feeFixed = try values.decode(Double.self, forKey: .feeFixed)
-        feePercent = try values.decode(Double.self, forKey: .feePercent)
+        authenticationRequired = try values.decodeIfPresent(Bool.self, forKey: .authenticationRequired)
+        feeFixed = try values.decodeIfPresent(Double.self, forKey: .feeFixed)
+        feePercent = try values.decodeIfPresent(Double.self, forKey: .feePercent)
+        minAmount = try values.decodeIfPresent(Double.self, forKey: .minAmount)
+        maxAmount = try values.decodeIfPresent(Double.self, forKey: .maxAmount)
         fields = try values.decodeIfPresent([String:AnchorField].self, forKey: .fields)
     }
 }
@@ -73,15 +82,21 @@ public struct DepositAsset: Decodable {
 public struct WithdrawAsset: Decodable {
     
     public var enabled: Bool
+    public var authenticationRequired: Bool?
     public var feeFixed: Double?
     public var feePercent: Double?
+    public var minAmount:Double?
+    public var maxAmount:Double?
     public var types: [String:WithdrawType]?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case enabled = "enabled"
+        case authenticationRequired = "authentication_required"
         case feeFixed = "fee_fixed"
         case feePercent = "fee_percent"
+        case minAmount = "min_amount"
+        case maxAmount = "max_amount"
         case types = "types"
     }
     
@@ -93,8 +108,11 @@ public struct WithdrawAsset: Decodable {
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         enabled = try values.decode(Bool.self, forKey: .enabled)
+        authenticationRequired = try values.decodeIfPresent(Bool.self, forKey: .authenticationRequired)
         feeFixed = try values.decodeIfPresent(Double.self, forKey: .feeFixed)
         feePercent = try values.decodeIfPresent(Double.self, forKey: .feePercent)
+        minAmount = try values.decodeIfPresent(Double.self, forKey: .minAmount)
+        maxAmount = try values.decodeIfPresent(Double.self, forKey: .maxAmount)
         types = try values.decodeIfPresent([String:WithdrawType].self, forKey: .types)
     }
 }
@@ -103,11 +121,13 @@ public struct AnchorField: Decodable {
     
     public var description: String
     public var optional: Bool?
+    public var choices: [String]?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case description = "description"
         case optional = "optional"
+        case choices = "choices"
     }
     
     /**
@@ -119,6 +139,7 @@ public struct AnchorField: Decodable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         description = try values.decode(String.self, forKey: .description)
         optional = try values.decodeIfPresent(Bool.self, forKey: .optional)
+        choices = try values.decodeIfPresent([String].self, forKey: .choices)
     }
 }
 

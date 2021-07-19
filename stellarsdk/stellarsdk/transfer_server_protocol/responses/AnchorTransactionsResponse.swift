@@ -77,6 +77,9 @@ public struct AnchorTransaction: Decodable {
     /// (optional) Estimated number of seconds until a status change is expected
     public var statusEta:Int?
     
+    /// (optional) A URL the user can visit if they want more information about their account / status.
+    public var moreInfoUrl:String?
+    
     /// (optional) Amount received by anchor at start of transaction as a string with up to 7 decimals. Excludes any fees charged before the anchor received the funds.
     public var amountIn:String?
     
@@ -129,7 +132,7 @@ public struct AnchorTransaction: Decodable {
     public var message:String?
     
     /// (optional) Should be true if the transaction was refunded. Not including this field means the transaction was not refunded.
-    public var refunded:String?
+    public var refunded:Bool?
     
     /// (optional) A human-readable message indicating any errors that require updated information from the user.
     public var requiredInfoMessage:String?
@@ -146,6 +149,7 @@ public struct AnchorTransaction: Decodable {
         case kind
         case status
         case statusEta = "status_eta"
+        case moreInfoUrl = "more_info_url"
         case amountIn = "amount_in"
         case amountOut = "amount_out"
         case amountFee = "amount_fee"
@@ -180,6 +184,7 @@ public struct AnchorTransaction: Decodable {
         kind = AnchorTransactionKind(rawValue:try values.decode(String.self, forKey: .kind))!
         status = AnchorTransactionStatus(rawValue: try values.decode(String.self, forKey: .status))!
         statusEta = try values.decodeIfPresent(Int.self, forKey: .statusEta)
+        moreInfoUrl = try values.decodeIfPresent(String.self, forKey: .moreInfoUrl)
         amountIn = try values.decodeIfPresent(String.self, forKey: .amountIn)
         amountOut = try values.decodeIfPresent(String.self, forKey: .amountOut)
         amountFee = try values.decodeIfPresent(String.self, forKey: .amountFee)
@@ -197,7 +202,7 @@ public struct AnchorTransaction: Decodable {
         stellarTransactionId = try values.decodeIfPresent(String.self, forKey: .stellarTransactionId)
         externalTransactionId = try values.decodeIfPresent(String.self, forKey: .externalTransactionId)
         message = try values.decodeIfPresent(String.self, forKey: .message)
-        refunded = try values.decodeIfPresent(String.self, forKey: .refunded)
+        refunded = try values.decodeIfPresent(Bool.self, forKey: .refunded)
         requiredInfoMessage = try values.decodeIfPresent(String.self, forKey: .requiredInfoMessage)
         requiredInfoUpdates = try values.decodeIfPresent([String:AnchorField].self, forKey: .requiredInfoUpdates)
         claimableBalanceId = try values.decodeIfPresent(String.self, forKey: .claimableBalanceId)
