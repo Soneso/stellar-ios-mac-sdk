@@ -69,6 +69,12 @@ public enum KYCAMLFieldsEnum {
     case photoIdBack(Data)
     /// Image of notary's approval of photo ID or passport
     case notaryApprovalOfPhotoId(Data)
+    /// IP address of customer's computer
+    case ipAddress(String)
+    /// Image of a utility bill, bank statement or similar with the user's name and address
+    case photoProofResidence(Data)
+    /// "male", "female", or "other"
+    case sex(String)
     
     var parameter:(String, Data) {
         get {
@@ -133,10 +139,89 @@ public enum KYCAMLFieldsEnum {
                 return ("photo_id_back", value)
             case .notaryApprovalOfPhotoId(let value):
                 return ("notary_approval_of_photo_id", value)
+            case .ipAddress(let value):
+                return ("ip_address", value.data(using: .utf8)!)
+            case .photoProofResidence(let value):
+                return ("photo_proof_residence", value)
+            case .sex(let value):
+                return ("sex", value.data(using: .utf8)!)
             }
         }
     }
+}
+
+public enum KYCAMLOrganizationFieldsEnum {
+    /// Full organiation name as on the incorporation papers
+    case name(String)
+    /// Organization VAT number
+    case VATNumber(String)
+    /// Organization registration number
+    case registrationNumber(String)
+    /// Organization registered address
+    case registeredAddress(String)
+    /// Organization shareholder number
+    case numberOfShareholders(Int)
+    /// Can be an organization or a person and should be queried recursively up to the ultimate beneficial owners (with KYC information for natural persons such as above)
+    case shareholderName(String)
+    /// Image of incorporation documents
+    case photoIncorporationDoc(Data)
+    /// Image of a utility bill, bank statement with the organization's name and address
+    case photoProofAddress(Data)
+    /// country code for current address
+    case addressCountryCode(String)
+    /// name of state/province/region/prefecture
+    case stateOrProvice(String)
+    /// name of city/town
+    case city(String)
+    /// Postal or other code identifying organization's locale
+    case postalCode(String)
+    /// Organization registered managing director (the rest of the information should be queried as an individual using the fields above)
+    case directorName(String)
+    /// Organization website
+    case website(String)
+    /// Organization contact email
+    case email(String)
+    /// Organization contact phone
+    case phone(String)
     
+    var parameter:(String, Data) {
+        get {
+            switch self {
+            case .name(let value):
+                return ("organization.name", value.data(using: .utf8)!)
+            case .VATNumber(let value):
+                return ("organization.VAT_number", value.data(using: .utf8)!)
+            case .registrationNumber(let value):
+                return ("organization.registration_number", value.data(using: .utf8)!)
+            case .registeredAddress(let value):
+                return ("organization.registered_address", value.data(using: .utf8)!)
+            case .numberOfShareholders(var value):
+                return ("organization.number_of_shareholders", Data(bytes: &value, count: MemoryLayout.size(ofValue: value)))
+            case .shareholderName(let value):
+                return ("organization.shareholder_name", value.data(using: .utf8)!)
+            case .photoIncorporationDoc(let value):
+                return ("organization.photo_incorporation_doc", value)
+            case .photoProofAddress(let value):
+                return ("organization.photo_proof_address", value)
+            case .addressCountryCode(let value):
+                return ("organization.address_country_code", value.data(using: .utf8)!)
+            case .stateOrProvice(let value):
+                return ("organization.state_or_province", value.data(using: .utf8)!)
+            case .city(let value):
+                return ("organization.city", value.data(using: .utf8)!)
+            case .postalCode(let value):
+                return ("organization.postal_code", value.data(using: .utf8)!)
+            case .directorName(let value):
+                return ("organization.director_name", value.data(using: .utf8)!)
+            case .website(let value):
+                return ("organization.website", value.data(using: .utf8)!)
+            case .email(let value):
+                return ("organization.email", value.data(using: .utf8)!)
+            case .phone(let value):
+                return ("organization.phone", value.data(using: .utf8)!)
+            }
+        }
+    }
 }
 
 public struct PutCustomerInfoRequest {
@@ -156,6 +241,9 @@ public struct PutCustomerInfoRequest {
     /// one or more of the fields listed in SEP-9
     public var fields:[KYCAMLFieldsEnum]?
     
+    /// one or more of the fields listed in SEP-9
+    public var organizationFields:[KYCAMLOrganizationFieldsEnum]?
+    
     public init(account:String, jwt:String) {
         self.account = account
         self.jwt = jwt
@@ -172,6 +260,11 @@ public struct PutCustomerInfoRequest {
             parameters["memo_type"] = memoType.data(using: .utf8)
         }
         if let fields = fields {
+            for field in fields {
+                parameters[field.parameter.0] = field.parameter.1
+            }
+        }
+        if let fields = organizationFields {
             for field in fields {
                 parameters[field.parameter.0] = field.parameter.1
             }
