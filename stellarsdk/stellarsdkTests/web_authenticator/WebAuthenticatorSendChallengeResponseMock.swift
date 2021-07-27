@@ -31,15 +31,15 @@ class WebAuthenticatorSendChallengeResponseMock: ResponsesMock {
                     for signature in transactionEnvelope.txSignatures {
                         let sign = signature.signature
                         var clientKeyPair = try! KeyPair(accountId: "GB4L7JUU5DENUXYH3ANTLVYQL66KQLDDJTN5SF7MWEDGWSGUA375V44V")
-                        var signatureIsValid = try! clientKeyPair.verify(signature: [UInt8](sign), message: transactionHash)
-                        if signatureIsValid {
-                            validSignature = true
-                        } else {
+                        validSignature = try! clientKeyPair.verify(signature: [UInt8](sign), message: transactionHash)
+                        
+                        if !validSignature {
                             clientKeyPair = try! KeyPair(accountId: "GDTQAJVJMEDWCSSSBZ54KFURMUJ4RKSCBBPGTNXVWOK6LZDN5TL6F3EA")
-                            signatureIsValid = try! clientKeyPair.verify(signature: [UInt8](sign), message: transactionHash)
-                            if signatureIsValid {
-                                validSignature = true
-                            }
+                            validSignature = try! clientKeyPair.verify(signature: [UInt8](sign), message: transactionHash)
+                        }
+                        if !validSignature {
+                            clientKeyPair = try! KeyPair(accountId: "GBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBABJBF")
+                            validSignature = try! clientKeyPair.verify(signature: [UInt8](sign), message: transactionHash)
                         }
                     }
                     

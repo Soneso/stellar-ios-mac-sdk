@@ -60,6 +60,12 @@ class WebAuthenticatorTestCase: XCTestCase {
     let invalidClientSignatureClientPublicKey = "GA5YLRKU57II42AXED2LA3IO2AL4URSVO3WXI7CIE4KJDPJSSRUSDJU7"
     let invalidClientSignatureClientPrivateKey = "SDVWGHMSMSCGXYFQ5ROYPQLXC3ULIM6IDPS5ERSY4DELIXP3U7NWP36P"
     
+    let invalidCliendDomainOpSourceAccountClientPublicKey = "GCK2PNGZBGBZCULG6QHYQUPIM2DXNXCJKLFMC2SPDX2B5A54IR4Q5KE3"
+    let invalidCliendDomainOpSourceAccountClientPrivateKey = "SCNXWUEAO3RHFFERXGDYJLLJ6UPZZGIA6B3NJ32UNOYTI4KD7OXHXLMK"
+    
+    let validCliendDomainOpSourceAccountClientPublicKey = "GDBEDW4SYL3NJY2ILKUE2MX7CU6BQKSK6UXZUHVOLZL2R3BKRLBEJRXC"
+    let validCliendDomainOpSourceAccountClientPrivateKey = "SCNIS3DPXJ4PN27YGG7OGFTKAM73KAGL6PT6QA4CDIIKDDDPMUHCGCS4"
+    
     var tomlServerMock: WebAuthenticatorTomlResponseMock!
     var tomlFailServerMock: WebAuthenticatorTomlFailResponseMock!
     var challengeServerMock: WebAuthenticatorChallengeResponseMock!
@@ -109,7 +115,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: clientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(true)
@@ -128,7 +136,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: challengeFailClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -153,7 +163,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidSeqClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -182,7 +194,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidSourceAccClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -211,7 +225,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: validSecondOperationClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(true)
@@ -230,7 +246,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidSecondOperationClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -259,7 +277,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidSecondOperationClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -288,7 +308,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidOperationClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -317,7 +339,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidOperationCountClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -346,7 +370,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidHomeDomainClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -375,7 +401,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidWebAuthDomainClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -404,7 +432,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidTimeboundsClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -433,7 +463,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidSignatureClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -462,7 +494,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: notFoundSignatureClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -491,7 +525,9 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
         if let keyPair = try? KeyPair(secretSeed: invalidClientSignatureClientPrivateKey) {
-            webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -514,6 +550,65 @@ class WebAuthenticatorTestCase: XCTestCase {
         }
         
         wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetChallengeInvalidClientDomainOpSourceAccount() {
+        let expectation = XCTestExpectation(description: "A validation error is received.")
+        
+        
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        if let keyPair = try? KeyPair(secretSeed: invalidCliendDomainOpSourceAccountClientPrivateKey) {
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            let clientDomain = "domain.client.com"
+            let clientDomainAccountKey = try! KeyPair.generateRandomKeyPair()
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers, clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKey) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(false)
+                case .failure(let error):
+                    switch error {
+                    case .validationErrorError(let error):
+                        if error == .invalidSourceAccount {
+                            XCTAssert(true)
+                        } else {
+                            XCTAssert(false)
+                        }
+                    default:
+                        XCTAssert(false)
+                    }
+                    
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetChallengeValidClientDomainOpSourceAccount() {
+        let expectation = XCTestExpectation(description: "A validation error is received.")
+        
+        
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        if let keyPair = try? KeyPair(secretSeed: validCliendDomainOpSourceAccountClientPrivateKey) {
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            let clientDomain = "domain.client.com"
+            let clientDomainAccountKey = try! KeyPair(secretSeed: "SBE64KCQLJXJPMYLF22YCUSTH7WXJ7VZSCTPHXY3VDSIF3QUHJDBE6R6")
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers, clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKey) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(true)
+                case .failure(let error):
+                    print(error)
+                    XCTAssert(false)
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 65.0)
     }
     
 }

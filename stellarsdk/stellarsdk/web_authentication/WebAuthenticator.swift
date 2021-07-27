@@ -138,18 +138,30 @@ public class WebAuthenticator {
     
     /// Get JWT token for wallet
     ///
-    /// - Parameter keyPair: The keypair of the wallet to get the JWT token for.
-    ///
-    public func jwtToken(forKeyPair keyPair:KeyPair, homeDomain:String? = nil, completion:@escaping GetJWTTokenResponseClosure) {
-        getChallenge(forAccount: keyPair.accountId, homeDomain: homeDomain) { (response) -> (Void) in
+    /// - Parameter forClientAccount: account id of the client/user
+    /// - Parameter signers: list of signers (keypairs including secret seed) of the client account
+    /// - Parameter homeDomain: domain of the server hosting it's stellar.toml
+    /// - Parameter clientDomain: domain of the client hosting it's stellar.toml
+    /// - Parameter clientDomainAccountKeyPair: Keypair of the client domain account including the seed (used for signing the transaction if client domain is provided)
+    public func jwtToken(forClientAccount accountId:String, signers:[KeyPair], homeDomain:String? = nil, clientDomain:String? = nil, clientDomainAccountKeyPair:KeyPair? = nil, completion:@escaping GetJWTTokenResponseClosure) {
+        getChallenge(forAccount: accountId, homeDomain: homeDomain, clientDomain: clientDomain) { (response) -> (Void) in
             switch response {
             case .success(let challenge):
                 do {
                     let transactionEnvelope = try TransactionEnvelopeXDR(xdr: challenge)
-                    let challengeValid = self.isValidChallenge(transactionEnvelopeXDR: transactionEnvelope, userAccountId: keyPair.accountId, serverSigningKey: self.serverSigningKey)
+                    var clientDomainAccount:String?
+                    if let cdakp = clientDomainAccountKeyPair {
+                        clientDomainAccount = cdakp.accountId
+                    }
+                    let challengeValid = self.isValidChallenge(transactionEnvelopeXDR: transactionEnvelope, userAccountId: accountId, serverSigningKey: self.serverSigningKey, clientDomainAccount: clientDomainAccount)
                     switch challengeValid {
                     case .success:
-                        if let signedTransaction = self.signTransaction(transactionEnvelopeXDR: transactionEnvelope, userKeyPair: keyPair) {
+                        var keyPairs:[KeyPair] = [KeyPair]()
+                        keyPairs.append(contentsOf: signers)
+                        if let cdakp = clientDomainAccountKeyPair {
+                            keyPairs.append(cdakp)
+                        }
+                        if let signedTransaction = self.signTransaction(transactionEnvelopeXDR: transactionEnvelope, keyPairs: keyPairs) {
                             self.sendCompletedChallenge(base64EnvelopeXDR: signedTransaction, completion: { (response) -> (Void) in
                                 switch response {
                                 case .success(let jwtToken):
@@ -173,9 +185,13 @@ public class WebAuthenticator {
         }
     }
     
-    public func getChallenge(forAccount accountId:String, homeDomain:String? = nil, completion:@escaping ChallengeResponseClosure) {
+    public func getChallenge(forAccount accountId:String, homeDomain:String? = nil, clientDomain:String? = nil, completion:@escaping ChallengeResponseClosure) {
         
-        let path = (homeDomain != nil) ? "?account=\(accountId)&home_domain=\(homeDomain!)" : "?account=\(accountId)"
+        var path = (homeDomain != nil) ? "?account=\(accountId)&home_domain=\(homeDomain!)" : "?account=\(accountId)"
+        
+        if let cd = clientDomain {
+            path.append("&client_domain=\(cd)");
+        }
         
         serviceHelper.GETRequestWithPath(path: path) { (result) -> (Void) in
             switch result {
@@ -197,7 +213,7 @@ public class WebAuthenticator {
         }
     }
     
-    public func isValidChallenge(transactionEnvelopeXDR: TransactionEnvelopeXDR, userAccountId: String, serverSigningKey: String) -> ChallengeValidationResponseEnum {
+    public func isValidChallenge(transactionEnvelopeXDR: TransactionEnvelopeXDR, userAccountId: String, serverSigningKey: String, clientDomainAccount:String? = nil) -> ChallengeValidationResponseEnum {
         do {
             switch transactionEnvelopeXDR {
             case .feeBump(_):
@@ -217,8 +233,20 @@ public class WebAuthenticator {
                         return .failure(error: .invalidSourceAccount)
                     }
                     // the source account of additional operations must be the SEP-10 server's SIGNING_KEY
+                    // except data name is "client_domain"
                     if (index > 0 && operationSourceAccount.accountId != serverSigningKey) {
-                        return .failure(error: .invalidSourceAccount)
+                        let operationBodyXDR = operationXDR.body
+                        switch operationBodyXDR {
+                        case .manageData(let manageDataOperation):
+                            if (manageDataOperation.dataName != "client_domain") {
+                                return .failure(error: .invalidSourceAccount)
+                            } else if (operationSourceAccount.accountId != clientDomainAccount) {
+                                return .failure(error: .invalidSourceAccount)
+                            }
+                            break
+                        default:
+                            return .failure(error: .invalidOperationType)
+                        }
                     }
                 } else {
                     return .failure(error: .sourceAccountNotFound)
@@ -284,7 +312,7 @@ public class WebAuthenticator {
         }
     }
     
-    public func signTransaction(transactionEnvelopeXDR: TransactionEnvelopeXDR, userKeyPair: KeyPair) -> String? {
+    public func signTransaction(transactionEnvelopeXDR: TransactionEnvelopeXDR, keyPairs:[KeyPair]) -> String? {
         let envelopeXDR = transactionEnvelopeXDR
         do {
             switch envelopeXDR {
@@ -296,9 +324,10 @@ public class WebAuthenticator {
             
             // user signature
             let transactionHash = try [UInt8](envelopeXDR.txHash(network: network))
-            let userSignature = userKeyPair.signDecorated(transactionHash)
-            
-            envelopeXDR.appendSignature(signature: userSignature)
+            for kp in keyPairs {
+                let userSignature = kp.signDecorated(transactionHash)
+                envelopeXDR.appendSignature(signature: userSignature)
+            }
             
             if let xdrEncodedEnvelope = envelopeXDR.xdrEncoded {
                 return xdrEncodedEnvelope

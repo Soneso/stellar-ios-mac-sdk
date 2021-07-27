@@ -66,6 +66,12 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
                 } else if key == "GA5YLRKU57II42AXED2LA3IO2AL4URSVO3WXI7CIE4KJDPJSSRUSDJU7" {
                     mock.statusCode = 200
                     return self?.requestSuccess(account: key)
+                } else if key == "GCK2PNGZBGBZCULG6QHYQUPIM2DXNXCJKLFMC2SPDX2B5A54IR4Q5KE3" {
+                    mock.statusCode = 200
+                    return self?.requestInvalidClientDomainOperation(account: "GA3BS4KS3XR4KEYG5QD6RSELGTCYQDETRISIVLWCMHI243NFYCLR7NSE")
+                } else if key == "GDBEDW4SYL3NJY2ILKUE2MX7CU6BQKSK6UXZUHVOLZL2R3BKRLBEJRXC" {
+                    mock.statusCode = 200
+                    return self?.requestValidClientDomainOperation(userAccount: "GDBEDW4SYL3NJY2ILKUE2MX7CU6BQKSK6UXZUHVOLZL2R3BKRLBEJRXC", clientDomainAccount: "GBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBABJBF")
                 }
             }
             
@@ -146,6 +152,51 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
                 }
                 """
     }
+    
+    func requestInvalidClientDomainOperation(account: String) -> String {
+        let clientKeyPair = try! KeyPair(accountId: account)
+        let transactionAccount = Account(keyPair: serverKeyPair, sequenceNumber: -1)
+        
+        let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
+        
+        let operation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        
+        let nextOperation = ManageDataOperation(sourceAccountId: serverKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        
+        let lastOperation = ManageDataOperation(sourceAccountId: serverKeyPair.accountId, name: "client_domain", data: "domain.client.com".data(using: .utf8))
+        
+        let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation, nextOperation, lastOperation], memo: nil, timeBounds: timeBounds)
+        try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
+        
+        return """
+                {
+                "transaction": "\(try! transaction.encodedEnvelope())"
+                }
+                """
+    }
+    
+    func requestValidClientDomainOperation(userAccount: String, clientDomainAccount:String) -> String {
+        let clientKeyPair = try! KeyPair(accountId: userAccount)
+        let transactionAccount = Account(keyPair: serverKeyPair, sequenceNumber: -1)
+        
+        let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
+        
+        let operation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        
+        let nextOperation = ManageDataOperation(sourceAccountId: serverKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        
+        let lastOperation = ManageDataOperation(sourceAccountId: clientDomainAccount, name: "client_domain", data: "domain.client.com".data(using: .utf8))
+        
+        let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation, nextOperation, lastOperation], memo: nil, timeBounds: timeBounds)
+        try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
+        
+        return """
+                {
+                "transaction": "\(try! transaction.encodedEnvelope())"
+                }
+                """
+    }
+    
     
     func requestInvalidSeq(account: String) -> String {
         let clientKeyPair = try! KeyPair(accountId: account)
