@@ -25,6 +25,9 @@ let package = Package(
         .target(
             name: "ed25519C",
             path: "stellarsdk/stellarsdk/libs/ed25519-C",
+            exclude: [
+                "license.txt"
+            ],
             publicHeadersPath: "include"
         )
     ]
