@@ -49,6 +49,12 @@ github "soneso/stellar-ios-mac-sdk" ~> 2.0.0
 
 Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.
 
+### Swift Package Manager
+
+```swift
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "2.0.0"),
+```
+
 ### Manual
 
 Add the SDK project as a subproject, and having the SDK as a target dependencies. Here is a step by step that we recommend:
