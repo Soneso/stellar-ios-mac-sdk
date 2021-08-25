@@ -2,16 +2,16 @@
 import PackageDescription
 
 let package = Package(
-    name: "StellarSDK",
+    name: "stellarsdk",
     products: [
         .library(
-            name: "StellarSDK", 
-            targets: ["StellarSDK"]
+            name: "stellarsdk", 
+            targets: ["stellarsdk"]
         )
     ],
     targets: [
         .target(
-            name: "StellarSDK",
+            name: "stellarsdk",
             dependencies: [
                 .target(name: "ed25519C")
             ],
