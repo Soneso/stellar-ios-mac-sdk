@@ -6,7 +6,7 @@ let package = Package(
     products: [
         .library(
             name: "stellarsdk", 
-            targets: ["stellarsdk"]
+            targets: ["stellarsdk", "ed25519C"]
         )
     ],
     targets: [
