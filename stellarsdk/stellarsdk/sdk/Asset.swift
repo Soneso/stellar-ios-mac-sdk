@@ -87,6 +87,20 @@ public class Asset
         }
     }
     
+    public func toTrustlineAssetXDR() throws -> TrustlineAssetXDR {
+        
+        do {
+            switch self.type {
+                case AssetType.ASSET_TYPE_NATIVE:
+                    return TrustlineAssetXDR.native
+                default:
+                    return try TrustlineAssetXDR(assetCode:code!, issuer:issuer!)
+            }
+        } catch {
+            throw StellarSDKError.xdrEncodingError(message: "Error encoding asset: " + error.localizedDescription)
+        }
+    }
+    
     /// Generates Asset object from a given XDR object.
     ///
     /// - Parameter assetXDR: the AssetXDR object to be used create the Asset object.

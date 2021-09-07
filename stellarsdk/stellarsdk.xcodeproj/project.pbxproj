@@ -788,6 +788,8 @@
 		8345D417251E2CD600E3F6DA /* ClaimClaimableBalanceOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8345D415251E2CD600E3F6DA /* ClaimClaimableBalanceOpXDR.swift */; };
 		8345D419251E323500E3F6DA /* OperationIDXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8345D418251E323500E3F6DA /* OperationIDXDR.swift */; };
 		8345D41A251E323500E3F6DA /* OperationIDXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8345D418251E323500E3F6DA /* OperationIDXDR.swift */; };
+		8346DD8626E7D898002D609B /* LiquidityPoolEntryXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8346DD8526E7D898002D609B /* LiquidityPoolEntryXDR.swift */; };
+		8346DD8726E7D898002D609B /* LiquidityPoolEntryXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8346DD8526E7D898002D609B /* LiquidityPoolEntryXDR.swift */; };
 		8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */; };
 		8357A913203B004700A144A9 /* String+Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A912203B004700A144A9 /* String+Base64.swift */; };
 		8357A915203B097D00A144A9 /* AssetsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A914203B097D00A144A9 /* AssetsLocalTestCase.swift */; };
@@ -1395,6 +1397,7 @@
 		8345D412251E2CC300E3F6DA /* CreateClaimableBalanceOpXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateClaimableBalanceOpXDR.swift; sourceTree = "<group>"; };
 		8345D415251E2CD600E3F6DA /* ClaimClaimableBalanceOpXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimClaimableBalanceOpXDR.swift; sourceTree = "<group>"; };
 		8345D418251E323500E3F6DA /* OperationIDXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationIDXDR.swift; sourceTree = "<group>"; };
+		8346DD8526E7D898002D609B /* LiquidityPoolEntryXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolEntryXDR.swift; sourceTree = "<group>"; };
 		8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountRemoteTestCase.swift; sourceTree = "<group>"; };
 		8357A912203B004700A144A9 /* String+Base64.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Base64.swift"; sourceTree = "<group>"; };
 		8357A914203B097D00A144A9 /* AssetsLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsLocalTestCase.swift; sourceTree = "<group>"; };
@@ -2424,6 +2427,7 @@
 				833CBFB5203354D800C23CFE /* LedgerKeyOfferXDR.swift */,
 				833CBFB7203354FB00C23CFE /* LedgerKeyDataXDR.swift */,
 				830EFC622032437000607C35 /* LedgerEntryXDR.swift */,
+				8346DD8526E7D898002D609B /* LiquidityPoolEntryXDR.swift */,
 				830EFC662032464600607C35 /* AccountEntryXDR.swift */,
 				830EFC682032489F00607C35 /* SignerXDR.swift */,
 				833CBFB92033552600C23CFE /* SignerKeyXDR.swift */,
@@ -3305,6 +3309,7 @@
 				745DF4532052FF9B000D3660 /* TrustlineEffectResponse.swift in Sources */,
 				744FC6DB212D3CCC00ADFC88 /* Grammar.swift in Sources */,
 				830E7DDA2529E2D70059A4B4 /* ClaimableBalanceSponsorshipUpdatedEffectResponse.swift in Sources */,
+				8346DD8726E7D898002D609B /* LiquidityPoolEntryXDR.swift in Sources */,
 				830E7E162529E9CE0059A4B4 /* DataSponsorshipUpdatedEffectResponse.swift in Sources */,
 				83FE810C23F0750600F4A13D /* FeeChargedResponse.swift in Sources */,
 				745DF4542052FF9B000D3660 /* TrustlineCreatedEffectResponse.swift in Sources */,
@@ -3839,6 +3844,7 @@
 				833CBFA22033539300C23CFE /* AllowTrustOpAssetXDR.swift in Sources */,
 				83FE810423F0713E00F4A13D /* FeeStatsService.swift in Sources */,
 				830E7DD92529E2D70059A4B4 /* ClaimableBalanceSponsorshipUpdatedEffectResponse.swift in Sources */,
+				8346DD8626E7D898002D609B /* LiquidityPoolEntryXDR.swift in Sources */,
 				830E7E152529E9CE0059A4B4 /* DataSponsorshipUpdatedEffectResponse.swift in Sources */,
 				833CBFE12036F4CF00C23CFE /* SetOptionsOperation.swift in Sources */,
 				EC34A0CC20503CAB000FB042 /* BigInt+Extension.swift in Sources */,

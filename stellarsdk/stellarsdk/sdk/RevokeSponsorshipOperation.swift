@@ -50,7 +50,7 @@ public class RevokeSponsorshipOperation:Operation {
     
     public static func revokeTrustlineSponsorshipLedgerKey(accountId:String, asset:Asset) throws -> LedgerKeyXDR {
         let pk = try PublicKey(accountId: accountId)
-        let value = LedgerKeyTrustLineXDR(accountID: pk, asset: try asset.toXDR())
+        let value = LedgerKeyTrustLineXDR(accountID: pk, asset: try asset.toTrustlineAssetXDR())
         return LedgerKeyXDR.trustline(value)
     }
     
