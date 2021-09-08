@@ -18,6 +18,7 @@ public enum AllowTrustResultCode: Int32 {
     case trustNotRequired = -3 // source account does not require trust
     case cantRevoke = -4  // source account can't revoke trust
     case selfNotAllowed = -5 // trusting self is not allowed
+    case lowReserve = -6 // claimable balances can't be created on revoke due to low reserves
 }
 
 public enum AllowTrustResultXDR: XDRCodable {

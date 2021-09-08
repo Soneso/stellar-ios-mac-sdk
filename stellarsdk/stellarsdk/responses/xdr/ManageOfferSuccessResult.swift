@@ -30,17 +30,17 @@ public enum ManageOfferSuccessResultOfferXDR: Encodable {
 }
 
 public struct ManageOfferSuccessResultXDR: XDRCodable {
-    public var offersClaimed:[ClaimOfferAtomXDR]
+    public var offersClaimed:[ClaimAtomXDR]
     public var offer:ManageOfferSuccessResultOfferXDR?
     
-    public init(offersClaimed: [ClaimOfferAtomXDR], offer:ManageOfferSuccessResultOfferXDR?) {
+    public init(offersClaimed: [ClaimAtomXDR], offer:ManageOfferSuccessResultOfferXDR?) {
         self.offersClaimed = offersClaimed
         self.offer = offer
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        offersClaimed = try decodeArray(type: ClaimOfferAtomXDR.self, dec: decoder)
+        offersClaimed = try decodeArray(type: ClaimAtomXDR.self, dec: decoder)
         let discriminant = try container.decode(Int32.self)
         let type = ManageOfferEffect(rawValue: discriminant)!
         switch type {

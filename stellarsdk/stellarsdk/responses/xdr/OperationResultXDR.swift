@@ -38,6 +38,8 @@ public enum OperationResultXDR: XDRCodable {
     case clawback(Int32, ClawbackResultXDR)
     case clawbackClaimableBalance(Int32, ClawbackClaimableBalanceResultXDR)
     case setTrustLineFlags(Int32, SetTrustLineFlagsResultXDR)
+    case liquidityPoolDeposit(Int32, LiquidityPoolDepositResultXDR)
+    case liquidityPoolWithdraw(Int32, LiquidityPoolWithdrawResultXDR)
     case empty (Int32)
     
     public init(from decoder: Decoder) throws {
@@ -93,6 +95,10 @@ public enum OperationResultXDR: XDRCodable {
                     self = .clawbackClaimableBalance(code.rawValue, try container.decode(ClawbackClaimableBalanceResultXDR.self))
                 case .setTrustLineFlags:
                     self = .setTrustLineFlags(code.rawValue, try container.decode(SetTrustLineFlagsResultXDR.self))
+                case .liquidityPoolDeposit:
+                    self = .liquidityPoolDeposit(code.rawValue, try container.decode(LiquidityPoolDepositResultXDR.self))
+                case .liquidityPoolWithdraw:
+                    self = .liquidityPoolWithdraw(code.rawValue, try container.decode(LiquidityPoolWithdrawResultXDR.self))
             }
         default:
             self = .empty(code.rawValue)
@@ -168,6 +174,12 @@ public enum OperationResultXDR: XDRCodable {
                 try container.encode(code)
                 try container.encode(result)
             case .setTrustLineFlags(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .liquidityPoolDeposit(let code, let result):
+                try container.encode(code)
+                try container.encode(result)
+            case .liquidityPoolWithdraw(let code, let result):
                 try container.encode(code)
                 try container.encode(result)
             case .empty (let code):

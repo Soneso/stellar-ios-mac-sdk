@@ -31,6 +31,8 @@ public enum OperationBodyXDR: XDRCodable {
     case clawback(ClawbackOpXDR)
     case clawbackClaimableBalance(ClawbackClaimableBalanceOpXDR)
     case setTrustLineFlags(SetTrustLineFlagsOpXDR)
+    case liquidityPoolDeposit(LiquidityPoolDepositOpXDR)
+    case liquidityPoolWithdraw(LiquidityPoolWithdrawOpXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -82,6 +84,10 @@ public enum OperationBodyXDR: XDRCodable {
                 self = .clawbackClaimableBalance(try container.decode(ClawbackClaimableBalanceOpXDR.self))
             case OperationType.setTrustLineFlags.rawValue:
                 self = .setTrustLineFlags(try container.decode(SetTrustLineFlagsOpXDR.self))
+            case OperationType.liquidityPoolDeposit.rawValue:
+                self = .liquidityPoolDeposit(try container.decode(LiquidityPoolDepositOpXDR.self))
+            case OperationType.liquidityPoolWithdraw.rawValue:
+                self = .liquidityPoolWithdraw(try container.decode(LiquidityPoolWithdrawOpXDR.self))
             default:
                 throw StellarSDKError.xdrDecodingError(message: "Could not decode operation")
         }
@@ -111,6 +117,8 @@ public enum OperationBodyXDR: XDRCodable {
             case .clawback: return OperationType.clawback.rawValue
             case .clawbackClaimableBalance: return OperationType.clawbackClaimableBalance.rawValue
             case .setTrustLineFlags: return OperationType.setTrustLineFlags.rawValue
+            case .liquidityPoolDeposit: return OperationType.liquidityPoolDeposit.rawValue
+            case .liquidityPoolWithdraw: return OperationType.liquidityPoolWithdraw.rawValue
         }
     }
     
@@ -163,6 +171,10 @@ public enum OperationBodyXDR: XDRCodable {
         case .clawbackClaimableBalance (let op):
             try container.encode(op)
         case .setTrustLineFlags (let op):
+            try container.encode(op)
+        case .liquidityPoolDeposit (let op):
+            try container.encode(op)
+        case .liquidityPoolWithdraw (let op):
             try container.encode(op)
         }
     }

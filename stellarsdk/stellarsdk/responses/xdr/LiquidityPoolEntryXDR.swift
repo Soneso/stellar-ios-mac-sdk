@@ -97,7 +97,13 @@ public struct LiquidityPoolConstantProductParametersXDR: XDRCodable {
     public let assetA: AssetXDR
     public let assetB: AssetXDR
     public let fee: Int32
+    public static let LIQUIDITY_POOL_FEE_V18:Int32 = 30
     
+    public init(assetA:AssetXDR, assetB:AssetXDR, fee:Int32) {
+        self.assetA = assetA
+        self.assetB = assetB
+        self.fee = fee
+    }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
