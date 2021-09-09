@@ -9,8 +9,8 @@
 import Foundation
 
 public struct LedgerKeyDataXDR: XDRCodable {
-    let accountId: PublicKey
-    let dataName: String
+    public let accountId: PublicKey
+    public let dataName: String
     
     init(accountId: PublicKey, dataName: String) {
         self.accountId = accountId

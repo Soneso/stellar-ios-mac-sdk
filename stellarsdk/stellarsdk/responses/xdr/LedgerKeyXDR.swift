@@ -34,7 +34,7 @@ public enum LedgerKeyXDR: XDRCodable {
         case LedgerEntryType.data.rawValue:
             let datamu = try container.decode(LedgerKeyDataXDR.self)
             self = .data (datamu)
-        case LedgerEntryType.data.rawValue:
+        case LedgerEntryType.claimableBalance.rawValue:
             let value = try container.decode(ClaimableBalanceIDXDR.self)
             self = .claimableBalance (value)
         default:

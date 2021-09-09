@@ -9,8 +9,8 @@
 import Foundation
 
 public struct LedgerKeyOfferXDR: XDRCodable {
-    let sellerId: PublicKey
-    let offerId: UInt64
+    public let sellerId: PublicKey
+    public let offerId: UInt64
     
     init(sellerId: PublicKey, offerId: UInt64) {
         self.sellerId = sellerId
