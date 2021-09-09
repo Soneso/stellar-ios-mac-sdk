@@ -165,7 +165,7 @@ public class Federation: NSObject {
             requestPath += "&\(pathParams)"
         }
         
-        print(requestPath)
+        //print(requestPath)
         serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
             case .success(let data):
