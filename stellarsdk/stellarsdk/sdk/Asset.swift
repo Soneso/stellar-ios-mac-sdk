@@ -37,6 +37,8 @@ public class Asset
                 self.issuer = issuer
             case AssetType.ASSET_TYPE_NATIVE:
                 break
+            case AssetType.ASSET_TYPE_POOL_SHARE:
+                break
             default:
                 return nil
         }
