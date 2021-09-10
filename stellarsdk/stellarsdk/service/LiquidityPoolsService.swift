@@ -1,21 +1,21 @@
 //
-//  ClaimableBalancesService.swift
+//  LiquidityPoolsService.swift
 //  stellarsdk
 //
-//  Created by Christian Rogobete on 03.10.20.
-//  Copyright © 2020 Soneso. All rights reserved.
+//  Created by Christian Rogobete on 10.09.21.
+//  Copyright © 2021 Soneso. All rights reserved.
 //
 
 import Foundation
 
-public enum ClaimableBalanceDetailsResponseEnum {
-    case success(details: ClaimableBalanceResponse)
+public enum LiquidityPoolDetailsResponseEnum {
+    case success(details: LiquidityPoolResponse)
     case failure(error: HorizonRequestError)
 }
 
-public typealias ClaimableBalanceDetailsResponseClosure = (_ response:ClaimableBalanceDetailsResponseEnum) -> (Void)
+public typealias LiquidityPoolDetailsResponseClosure = (_ response:LiquidityPoolDetailsResponseEnum) -> (Void)
 
-public class ClaimableBalancesService: NSObject {
+public class LiquidityPoolsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
@@ -29,14 +29,13 @@ public class ClaimableBalancesService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
-    open func getClaimableBalance(balanceId:String, response:@escaping ClaimableBalanceDetailsResponseClosure) {
-        let requestPath = "/claimable_balances/" + balanceId
+    open func getClaimableBalance(poolId:String, response:@escaping LiquidityPoolDetailsResponseClosure) {
+        let requestPath = "/liquidity_pools/" + poolId
         serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
-                    self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
-                    let value = try self.jsonDecoder.decode(ClaimableBalanceResponse.self, from: data)
+                    let value = try self.jsonDecoder.decode(LiquidityPoolResponse.self, from: data)
                     response(.success(details: value))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
@@ -47,11 +46,10 @@ public class ClaimableBalancesService: NSObject {
         }
     }
     
-    open func getClaimableBalances(asset:Asset, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<ClaimableBalanceResponse>.ResponseClosure) {
-        var requestPath = "/claimable_balances"
+    open func getLiquidityPools(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
+        var requestPath = "/liquidity_pools"
         
         var params = Dictionary<String,String>()
-        params["asset"] = asset.toCanonicalForm()
         params["cursor"] = cursor
         params["order"] = order?.rawValue
         if let limit = limit { params["limit"] = String(limit) }
@@ -61,11 +59,11 @@ public class ClaimableBalancesService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getClaimableBalancesFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        getLiquidityPoolsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
-    open func getClaimableBalances(claimantAccountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<ClaimableBalanceResponse>.ResponseClosure) {
-        var requestPath = "/claimable_balances"
+    open func getLiquidityPools(claimantAccountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
+        var requestPath = "/liquidity_pools"
         
         var params = Dictionary<String,String>()
         params["claimant"] = claimantAccountId
@@ -78,14 +76,14 @@ public class ClaimableBalancesService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getClaimableBalancesFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        getLiquidityPoolsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
-    open func getClaimableBalances(sponsorAccountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<ClaimableBalanceResponse>.ResponseClosure) {
+    open func getClaimableBalances(reserveAssetA:Asset, reserveAssetB:Asset, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
         var requestPath = "/claimable_balances"
         
         var params = Dictionary<String,String>()
-        params["sponsor"] = sponsorAccountId
+        params["reserves"] = reserveAssetA.toCanonicalForm() + "," + reserveAssetB.toCanonicalForm()
         params["cursor"] = cursor
         params["order"] = order?.rawValue
         if let limit = limit { params["limit"] = String(limit) }
@@ -95,17 +93,16 @@ public class ClaimableBalancesService: NSObject {
             requestPath += "?\(pathParams)"
         }
         
-        getClaimableBalancesFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        getLiquidityPoolsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
-    open func getClaimableBalancesFromUrl(url:String, response:@escaping PageResponse<ClaimableBalanceResponse>.ResponseClosure) {
+    open func getLiquidityPoolsFromUrl(url:String, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
         serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 do {
-                    self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
                     //print(String(data: data, encoding: .utf8)!)
-                    let values = try self.jsonDecoder.decode(PageResponse<ClaimableBalanceResponse>.self, from: data)
+                    let values = try self.jsonDecoder.decode(PageResponse<LiquidityPoolResponse>.self, from: data)
                     response(.success(details: values))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))

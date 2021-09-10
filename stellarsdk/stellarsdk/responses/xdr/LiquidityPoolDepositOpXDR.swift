@@ -15,6 +15,14 @@ public struct LiquidityPoolDepositOpXDR: XDRCodable {
     public let maxAmountB: Int64
     public let minPrice: PriceXDR
     public let maxPrice: PriceXDR
+    
+    public init(liquidityPoolID:WrappedData32, maxAmountA: Int64, maxAmountB: Int64, minPrice: PriceXDR, maxPrice: PriceXDR) {
+        self.liquidityPoolID = liquidityPoolID
+        self.maxAmountA = maxAmountA
+        self.maxAmountB = maxAmountB
+        self.minPrice = minPrice
+        self.maxPrice = maxPrice
+    }
 
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()

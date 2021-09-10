@@ -14,6 +14,14 @@ public struct LiquidityPoolWithdrawOpXDR: XDRCodable {
     public let minAmountA: Int64
     public let minAmountB: Int64
 
+    public init(liquidityPoolID:WrappedData32, amount: Int64, minAmountA: Int64, minAmountB: Int64) {
+        self.liquidityPoolID = liquidityPoolID
+        self.amount = amount
+        self.minAmountA = minAmountA
+        self.minAmountB = minAmountB
+    }
+
+    
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         liquidityPoolID = try container.decode(WrappedData32.self)

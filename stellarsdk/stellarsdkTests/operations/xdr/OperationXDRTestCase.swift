@@ -93,6 +93,10 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertEqual(code, ClawbackClaimableBalanceResultCode.success.rawValue)
         case .setTrustLineFlags(let code, _):
             XCTAssertEqual(code, SetTrustLineFlagsResultCode.success.rawValue)
+        case .liquidityPoolDeposit(let code, _):
+            XCTAssertEqual(code, LiquidityPoolDepositResulCode.success.rawValue)
+        case .liquidityPoolWithdraw(let code, _):
+            XCTAssertEqual(code, LiquidityPoolWithdrawResulCode.success.rawValue)
         case .empty(let code):
             XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
         }
@@ -285,10 +289,10 @@ class OperationXDRTestCase: XCTestCase {
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
             
             let issuingAccountKeyPair = try KeyPair(accountId: "GCXIZK3YMSKES64ATQWMQN5CX73EWHRHUSEZXIMHP5GYHXL5LNGCOGXU")
-            let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
+            let IOM = ChangeTrustAsset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
             let limit = Decimal(100000.55)
             
-            var changeTrustOperation = ChangeTrustOperation(sourceAccount: source, asset: IOM!, limit: limit)
+            var changeTrustOperation = ChangeTrustOperation(sourceAccountId: source.accountId, asset: IOM!, limit: limit)
             var operationXdr = try changeTrustOperation.toXDR()
             var parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ChangeTrustOperation
        
@@ -307,9 +311,9 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertTrue(parsedOperation.asset.code == "IOM")
             XCTAssertTrue(parsedOperation.asset.issuer?.accountId == issuingAccountKeyPair.accountId)
             
-            let IOMIOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM12, code: "IOMIOM", issuer: issuingAccountKeyPair)
+            let IOMIOM = ChangeTrustAsset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM12, code: "IOMIOM", issuer: issuingAccountKeyPair)
             
-            changeTrustOperation = ChangeTrustOperation(sourceAccount: source, asset: IOMIOM!, limit: limit)
+            changeTrustOperation = ChangeTrustOperation(sourceAccountId: source.accountId, asset: IOMIOM!, limit: limit)
             operationXdr = try changeTrustOperation.toXDR()
             parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ChangeTrustOperation
             

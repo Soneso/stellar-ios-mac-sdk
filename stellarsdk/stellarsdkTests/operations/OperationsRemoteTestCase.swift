@@ -478,7 +478,7 @@ class OperationsRemoteTestCase: XCTestCase {
         do {
             
             let issuingAccountKeyPair = try KeyPair(accountId: IOMIssuingAccountId)
-            let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
+            let IOM = ChangeTrustAsset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
             let trustingAccountKeyPair = try KeyPair(secretSeed: seed)
             
             printAccountDetails(tag: "CTL Test - trusting account", accountId: trustingAccountKeyPair.accountId)
@@ -513,7 +513,7 @@ class OperationsRemoteTestCase: XCTestCase {
                 switch response {
                 case .success(let accountResponse):
                     do {
-                        let changeTrustOp = ChangeTrustOperation(asset:IOM!, limit: 100000000)
+                        let changeTrustOp = ChangeTrustOperation(sourceAccountId:accountResponse.accountId, asset:IOM!, limit: 100000000)
                         
                         let transaction = try Transaction(sourceAccount: accountResponse,
                                                           operations: [changeTrustOp],
@@ -1230,7 +1230,7 @@ class OperationsRemoteTestCase: XCTestCase {
                         let name = "soneso"
                         let value = "is super"
                         let manageDataOp = ManageDataOperation(sourceAccountId: accountAId, name: name, data: value.data(using: .utf8))
-                        let richAsset = Asset(canonicalForm: "RICH:" + masterAccountId)!
+                        let richAsset = ChangeTrustAsset(canonicalForm: "RICH:" + masterAccountId)!
                         let nativeAsset = Asset(canonicalForm: "native")!
                         let changeTrustOp = ChangeTrustOperation(sourceAccountId: accountAId, asset: richAsset, limit: 10000.00)
                         let payRichOp = try PaymentOperation(sourceAccountId:masterAccountId, destinationAccountId: accountAId, asset: richAsset, amount: 100)
@@ -1318,7 +1318,7 @@ class OperationsRemoteTestCase: XCTestCase {
                     do {
                         let begingSponsorshipOp = BeginSponsoringFutureReservesOperation(sponsoredAccountId: accountAId,sponsoringAccountId: masterAccountId)
                     
-                        let skyAsset = Asset(canonicalForm: "SKY:" + issuerAccountId)!
+                        let skyAsset = ChangeTrustAsset(canonicalForm: "SKY:" + issuerAccountId)!
                         let changeTrustOp = ChangeTrustOperation(sourceAccountId: nil, asset: skyAsset, limit: 10000.00)
                         
                         let endSponsoringOp = EndSponsoringFutureReservesOperation()

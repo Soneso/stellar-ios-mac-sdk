@@ -204,7 +204,7 @@ class ClawbackTestCase: XCTestCase {
         do {
             
             let issuingAccountKeyPair = try KeyPair(secretSeed: SKYIssuingAccountSeed)
-            let SKY = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "SKY", issuer: issuingAccountKeyPair)
+            let SKY = ChangeTrustAsset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "SKY", issuer: issuingAccountKeyPair)
             let trustingAccountKeyPair = try KeyPair(secretSeed: destinationSeed)
             // let trustingAccountKeyPair = try KeyPair(secretSeed: donorSeed)
             // let trustingAccountKeyPair = try KeyPair(secretSeed: claimantSeed)
