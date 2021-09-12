@@ -9,6 +9,7 @@
 import Foundation
 
 /// Currently available effect types.
+// https://github.com/stellar/go/blob/master/protocols/horizon/effects/main.go
 public enum EffectType: Int {
     case accountCreated = 0
     case accountRemoved = 1
@@ -59,6 +60,12 @@ public enum EffectType: Int {
     case signerBalanceSponsorshipUpdated = 73
     case signerBalanceSponsorshipRemoved = 74
     case claimablaBalanceClawedBack = 80
+    case liquidityPoolDeposited = 81
+    case liquidityPoolWithdrew = 82
+    case liquidityPoolTrade = 83
+    case liquidityPoolCreated = 84
+    case liquidityPoolRemoved = 85
+    case liquidityPoolRevoked = 86
 }
 
 /// Represents an account effect response. Superclass for all other effect response classes.

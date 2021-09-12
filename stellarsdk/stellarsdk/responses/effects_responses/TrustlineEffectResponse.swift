@@ -25,6 +25,9 @@ public class TrustlineEffectResponse: EffectResponse {
     
     public var trustor:String?
     
+    /// Liquidity Pool ID if asste type is liquidity_pool_shares
+    public var liquidityPoolId:String?
+    
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case limit
@@ -32,6 +35,7 @@ public class TrustlineEffectResponse: EffectResponse {
         case assetCode = "asset_code"
         case assetIssuer = "asset_issuer"
         case trustor
+        case liquidityPoolId = "liquidity_pool_id"
     }
     
     /**
@@ -46,6 +50,7 @@ public class TrustlineEffectResponse: EffectResponse {
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
         trustor = try values.decodeIfPresent(String.self, forKey: .trustor)
+        liquidityPoolId = try values.decodeIfPresent(String.self, forKey: .liquidityPoolId)
         
         try super.init(from: decoder)
     }

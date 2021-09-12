@@ -63,6 +63,11 @@ public class TransactionsService: NSObject {
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
+    open func getTransactions(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
+        let path = "/liquidity_pools/" + liquidityPoolId + "/transactions"
+        getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
+    }
+    
     open func getTransactions(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
         let path = "/ledgers/" + ledger + "/transactions"
         getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)

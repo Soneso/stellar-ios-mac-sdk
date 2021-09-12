@@ -183,6 +183,24 @@ class EffectsFactory: NSObject {
             case .trustlineFlagsUpdated:
                 let effect = try jsonDecoder.decode(TrustLineFlagsUpdatedEffectResponse.self, from: data)
                 return effect
+            case .liquidityPoolDeposited:
+                let effect = try jsonDecoder.decode(LiquidityPoolDepositedEffectResponse.self, from: data)
+                return effect
+            case .liquidityPoolWithdrew:
+                let effect = try jsonDecoder.decode(LiquidityPoolWithdrewEffectResponse.self, from: data)
+                return effect
+            case .liquidityPoolTrade:
+                let effect = try jsonDecoder.decode(LiquidityPoolTradeEffectResponse.self, from: data)
+                return effect
+            case .liquidityPoolCreated:
+                let effect = try jsonDecoder.decode(LiquidityPoolCreatedEffectResponse.self, from: data)
+                return effect
+            case .liquidityPoolRemoved:
+                let effect = try jsonDecoder.decode(LiquidityPoolRemovedEffectResponse.self, from: data)
+                return effect
+            case .liquidityPoolRevoked:
+                let effect = try jsonDecoder.decode(LiquidityPoolRevokedEffectResponse.self, from: data)
+                return effect
             }
         } else {
             throw HorizonRequestError.parsingResponseFailed(message: "Unknown effect type")

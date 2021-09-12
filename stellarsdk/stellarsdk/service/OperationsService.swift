@@ -60,6 +60,11 @@ public class OperationsService: NSObject {
         getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
     }
     
+    open func getOperations(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        let path = "/liquidity_pools/" + liquidityPoolId + "/operations"
+        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+    }
+    
     open func getOperationDetails(operationId:String, includeFailed:Bool? = nil, join:String? = nil, response:@escaping OperationDetailsResponseClosure) {
         var requestPath = "/operations/" + operationId
         
