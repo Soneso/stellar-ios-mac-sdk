@@ -954,6 +954,8 @@
 		83DF819726EDF60600AF72CD /* LiquidityPoolRemovedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF819526EDF60600AF72CD /* LiquidityPoolRemovedEffectResponse.swift */; };
 		83DF819926EDF62C00AF72CD /* LiquidityPoolRevokedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF819826EDF62C00AF72CD /* LiquidityPoolRevokedEffectResponse.swift */; };
 		83DF819A26EDF62C00AF72CD /* LiquidityPoolRevokedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF819826EDF62C00AF72CD /* LiquidityPoolRevokedEffectResponse.swift */; };
+		83DF819F26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF819E26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift */; };
+		83DF81A026EF684F00AF72CD /* LiquidityPoolEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF819E26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift */; };
 		83EA4763203C7F650031F13E /* LedgersLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */; };
 		83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */; };
 		83FE810423F0713E00F4A13D /* FeeStatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE810323F0713E00F4A13D /* FeeStatsService.swift */; };
@@ -1554,6 +1556,7 @@
 		83DF819226EDF5E700AF72CD /* LiquidityPoolCreatedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolCreatedEffectResponse.swift; sourceTree = "<group>"; };
 		83DF819526EDF60600AF72CD /* LiquidityPoolRemovedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolRemovedEffectResponse.swift; sourceTree = "<group>"; };
 		83DF819826EDF62C00AF72CD /* LiquidityPoolRevokedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolRevokedEffectResponse.swift; sourceTree = "<group>"; };
+		83DF819E26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolEffectResponse.swift; sourceTree = "<group>"; };
 		83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersLocalTestCase.swift; sourceTree = "<group>"; };
 		83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersResponsesMock.swift; sourceTree = "<group>"; };
 		83FE810323F0713E00F4A13D /* FeeStatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeStatsService.swift; sourceTree = "<group>"; };
@@ -2430,6 +2433,7 @@
 				83DF819226EDF5E700AF72CD /* LiquidityPoolCreatedEffectResponse.swift */,
 				83DF819526EDF60600AF72CD /* LiquidityPoolRemovedEffectResponse.swift */,
 				83DF819826EDF62C00AF72CD /* LiquidityPoolRevokedEffectResponse.swift */,
+				83DF819E26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift */,
 			);
 			path = effects_responses;
 			sourceTree = "<group>";
@@ -3372,6 +3376,7 @@
 				745DF4352052FF9B000D3660 /* Network.swift in Sources */,
 				743060D12138231200E2E9F2 /* DataUpdatedEffectResponse.swift in Sources */,
 				745DF4362052FF9B000D3660 /* Signer.swift in Sources */,
+				83DF81A026EF684F00AF72CD /* LiquidityPoolEffectResponse.swift in Sources */,
 				745DF4372052FF9B000D3660 /* FindPaymentPathsResponse.swift in Sources */,
 				745DF4382052FF9B000D3660 /* PaymentPathResponse.swift in Sources */,
 				745DF4392052FF9B000D3660 /* PageResponse.swift in Sources */,
@@ -3927,6 +3932,7 @@
 				83DD2C81202E192A00713FEE /* TransactionMalformedErrorResponse.swift in Sources */,
 				43D35B0B2034845E00C8BDBC /* PaymentPathResponse.swift in Sources */,
 				745F2BB8202C36AA008763F1 /* TransactionsService.swift in Sources */,
+				83DF819F26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift in Sources */,
 				EC34A13820503CC5000FB042 /* Rabbit.swift in Sources */,
 				83DD2C79202DF41F00713FEE /* NotAcceptableErrorResponse.swift in Sources */,
 				744D458F2038292800178D04 /* TransactionsStreamItem.swift in Sources */,

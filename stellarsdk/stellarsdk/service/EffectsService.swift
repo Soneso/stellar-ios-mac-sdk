@@ -14,6 +14,7 @@ public enum EffectsChange {
     case effectsForLedger(ledger:String, cursor:String?)
     case effectsForOperation(operation:String, cursor:String?)
     case effectsForTransaction(transaction:String, cursor:String?)
+    case effectsForLiquidityPool(liquidityPool:String, cursor:String?)
 }
 
 /// Builds requests connected to effects.
@@ -103,6 +104,18 @@ public class EffectsService: NSObject {
         getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
     }
     
+    /// This function calls the endpoint represents all effects that changed a given liquidity pool.
+    ///
+    /// - Parameter liquidityPoolId: Liquidity Pool ID
+    /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
+    /// - Parameter order: Optional. The order in which to return rows, “asc” or “desc”.
+    /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
+    ///
+    open func getEffects(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<EffectResponse>.ResponseClosure) {
+        let path = "/liquidity_pools/" + liquidityPoolId + "/effects"
+        getEffects(onPath: path, from:cursor, order:order, limit:limit, response:response)
+    }
+    
     /// Allows to stream SSE events from horizon.
     /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events. This mode will keep the connection to horizon open and horizon will continue to return responses as ledgers close.
     ///
@@ -134,8 +147,12 @@ public class EffectsService: NSObject {
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor
             }
+        case .effectsForLiquidityPool(let liquidityPool, let cursor):
+            subpath = "/liquidity_pools/" + liquidityPool + "/effects"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
         }
-        
         let streamItem = EffectsStreamItem(requestUrl: serviceHelper.requestUrlWithPath(path: subpath))
         return streamItem
     }

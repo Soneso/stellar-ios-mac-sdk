@@ -60,12 +60,12 @@ public enum EffectType: Int {
     case signerBalanceSponsorshipUpdated = 73
     case signerBalanceSponsorshipRemoved = 74
     case claimablaBalanceClawedBack = 80
-    case liquidityPoolDeposited = 81
-    case liquidityPoolWithdrew = 82
-    case liquidityPoolTrade = 83
-    case liquidityPoolCreated = 84
-    case liquidityPoolRemoved = 85
-    case liquidityPoolRevoked = 86
+    case liquidityPoolDeposited = 90
+    case liquidityPoolWithdrew = 91
+    case liquidityPoolTrade = 92
+    case liquidityPoolCreated = 93
+    case liquidityPoolRemoved = 94
+    case liquidityPoolRevoked = 95
 }
 
 /// Represents an account effect response. Superclass for all other effect response classes.

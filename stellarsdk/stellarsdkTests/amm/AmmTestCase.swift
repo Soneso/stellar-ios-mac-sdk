@@ -11,9 +11,9 @@ import stellarsdk
 
 class AmmTestCase: XCTestCase {
 
-    let sdk = StellarSDK(withHorizonUrl:"...")
-    let network = Network.custom(networkId: "...")
-    let seed = "..."
+    let sdk = StellarSDK(withHorizonUrl:"https://horizon-protocol18.stellar.org")
+    let network = Network.custom(networkId: "Standalone protocol 18 Devnet; September 2021")
+    let seed = "SAHSE34PEZCT3WAWBCR5TMVXUZES62OAJPNUV4Q5TZVAM72J6O2CW4W3"
     let assetAIssuingAccount = "GDQ4273UBKSHIE73RJB5KLBBM7W3ESHWA74YG7ZBXKZLKT5KZGPKKB7E"
     let assetBIssuingAccount = "GC2262FQJAHVJSYWI6XEVQEH5CLPYCVSOLQHCDHNSKVWHTKYEZNAQS25"
     
@@ -45,7 +45,7 @@ class AmmTestCase: XCTestCase {
                         let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
                         print ("Muxed source account id: \(muxSource.accountId)")
                         
-                        let changeTrustAsset = ChangeTrustAsset(assetA:assetA!, assetB:assetB!);
+                        let changeTrustAsset = try ChangeTrustAsset(assetA:assetA!, assetB:assetB!);
                         let changeTrustOperation = ChangeTrustOperation(sourceAccountId: muxSource.accountId, asset:changeTrustAsset!)
                         let transaction = try Transaction(sourceAccount: muxSource,
                                                           operations: [changeTrustOperation],
@@ -188,6 +188,24 @@ class AmmTestCase: XCTestCase {
             }
         } catch {
             XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetEffectsForLiquidityPool() {
+        let expectation = XCTestExpectation(description: "Get effects for liquidity and parse their details successfuly")
+        
+        sdk.effects.getEffects(forLiquidityPool: "4f7f29db33ead1a38c2edf17aa0416c369c207ca081de5c686c050c1ad320385", order:Order.descending) { (response) -> (Void) in
+            switch response {
+            case .success(_):
+                XCTAssert(true)
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"EFF Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            
             expectation.fulfill()
         }
         

@@ -137,9 +137,37 @@ public class ChangeTrustAsset : Asset {
     public private(set) var assetA:Asset?
     public private(set) var assetB:Asset?
     
-    public init?(assetA: Asset, assetB:Asset) {
+    public init?(assetA:Asset, assetB:Asset) throws {
+        
+        // validate asset type
+        if AssetType.ASSET_TYPE_POOL_SHARE == assetA.type || AssetType.ASSET_TYPE_POOL_SHARE == assetB.type {
+            throw StellarSDKError.invalidArgument(message: "Asset can not be of type AssetType.ASSET_TYPE_POOL_SHARE")
+        }
+        if assetA.type == assetB.type && assetA.type == AssetType.ASSET_TYPE_NATIVE {
+            throw StellarSDKError.invalidArgument(message: "Assets can not be both of type AssetType.ASSET_TYPE_NATIVE")
+        }
+        
+        // validate asset order
+        // Native < AlphaNum4 < AlphaNum12, then by Code, then by Issuer, using lexicographic ordering.
+        var sortError = false
+        if assetA.type > assetB.type {
+            sortError = true
+        } else if assetA.type == assetB.type {
+            if assetA.code!.caseInsensitiveCompare(assetB.code!) == .orderedDescending {
+                sortError = true
+            } else if assetA.code!.caseInsensitiveCompare(assetB.code!) == .orderedSame {
+                if assetA.issuer!.accountId.caseInsensitiveCompare(assetB.issuer!.accountId) == .orderedDescending {
+                    sortError = true
+                }
+            }
+        }
+        if sortError {
+            throw StellarSDKError.invalidArgument(message: "Assets are in wrong order. Sort by: Native < AlphaNum4 < AlphaNum12, then by Code, then by Issuer, using lexicographic ordering.")
+        }
+        
         self.assetA = assetA
         self.assetB = assetB
+    
         super.init(type: AssetType.ASSET_TYPE_POOL_SHARE)
     }
     
@@ -191,7 +219,7 @@ public class ChangeTrustAsset : Asset {
                 case .constantProduct(let cp):
                     let assetA = try Asset.fromXDR(assetXDR: cp.assetA)
                     let assetB = try Asset.fromXDR(assetXDR: cp.assetB)
-                    result = ChangeTrustAsset(assetA: assetA, assetB: assetB)
+                    result = try ChangeTrustAsset(assetA: assetA, assetB: assetB)
                 }
         }
         guard let asset = result else {
