@@ -10,7 +10,7 @@ import Foundation
 
 public class LiquidityPoolResponse: NSObject, Decodable {
     
-    public var links:LinkResponse
+    public var links:LiquidityPoolLinksResponse
     public var poolId:String
     public var fee:Int64
     public var type:String
@@ -39,7 +39,7 @@ public class LiquidityPoolResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        links = try values.decode(LinkResponse.self, forKey: .links)
+        links = try values.decode(LiquidityPoolLinksResponse.self, forKey: .links)
         poolId = try values.decode(String.self, forKey: .poolId)
         fee = try values.decode(Int64.self, forKey: .fee)
         type = try values.decode(String.self, forKey: .type)

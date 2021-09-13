@@ -11,12 +11,13 @@ import stellarsdk
 
 class AmmTestCase: XCTestCase {
 
-    let sdk = StellarSDK(withHorizonUrl:"....")
-    let network = Network.custom(networkId: "....")
+    let sdk = StellarSDK(withHorizonUrl:"...")
+    let network = Network.custom(networkId: "...")
     let seed = "SAHSE34PEZCT3WAWBCR5TMVXUZES62OAJPNUV4Q5TZVAM72J6O2CW4W3"
     let assetAIssuingAccount = "GDQ4273UBKSHIE73RJB5KLBBM7W3ESHWA74YG7ZBXKZLKT5KZGPKKB7E"
     let assetBIssuingAccount = "GC2262FQJAHVJSYWI6XEVQEH5CLPYCVSOLQHCDHNSKVWHTKYEZNAQS25"
     var effectsStreamItem:EffectsStreamItem? = nil
+    var operationsStreamItem:OperationsStreamItem? = nil
     let liquidityPoolId = "4f7f29db33ead1a38c2edf17aa0416c369c207ca081de5c686c050c1ad320385"
     
     override func setUpWithError() throws {
@@ -172,16 +173,16 @@ class AmmTestCase: XCTestCase {
         do {
             let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
             
-            effectsStreamItem = sdk.effects.stream(for: .effectsForLiquidityPool(liquidityPool: liquidityPoolId, cursor: "now"))
-            effectsStreamItem?.onReceive { (response) -> (Void) in
+            operationsStreamItem = sdk.operations.stream(for: .operationsForLiquidityPool(liquidityPoolId: liquidityPoolId, cursor: "now"))
+            operationsStreamItem?.onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
-                case .response(_, let effectResponse):
-                    if let effect = effectResponse as? LiquidityPoolWithdrewEffectResponse {
-                        print("liquidity pool id: " + effect.liquidityPool.poolId)
-                        print("shares redeemed: " + effect.sharesRedeemed)
-                        if (effect.reservesReceived.first?.asset.code == "COOL") {
+                case .response(_, let operationResponse):
+                    if let operation = operationResponse as? LiquidityPoolWithdrawOperationResponse {
+                        print("liquidity pool id: " + operation.liquidityPoolId)
+                        print("shares: " + operation.shares)
+                        if (operation.reservesReceived.first?.asset.code == "COOL") {
                             expectation.fulfill()
                         }
                     }
@@ -271,6 +272,81 @@ class AmmTestCase: XCTestCase {
                 }
             case .failure(let error):
                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetOperationsForLiquidityPool Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    
+    func testGetLiquidityPools() {
+        let expectation = XCTestExpectation(description: "Get liquidity pools and parse their details successfuly")
+        sdk.liquidityPools.getLiquidityPools() { (response) -> (Void) in
+            switch response {
+            case .success(let pools):
+                var found = false
+                for pool in pools.records {
+                    if pool.poolId == self.liquidityPoolId {
+                        found = true
+                    }
+                }
+                XCTAssert(found)
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetLiquidityPools Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetLiquidityPool() {
+        let expectation = XCTestExpectation(description: "Get liquidity pool and parse details successfuly")
+        sdk.liquidityPools.getLiquidityPool(poolId:self.liquidityPoolId) { (response) -> (Void) in
+            switch response {
+            case .success(let pool):
+                if pool.poolId == self.liquidityPoolId {
+                    XCTAssert(true)
+                } else {
+                    XCTAssert(false)
+                }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetLiquidityPools Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetLiquidityPoolsByReserves() {
+        let expectation = XCTestExpectation(description: "Get liquidity pools by reserves and parse their details successfuly")
+        
+        let issuingAccountAKeyPair = try! KeyPair(accountId: assetAIssuingAccount)
+        let assetA = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "COOL", issuer: issuingAccountAKeyPair)
+        
+        let issuingAccountBKeyPair = try! KeyPair(accountId: assetBIssuingAccount)
+        let assetB = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM12, code: "SONESO", issuer: issuingAccountBKeyPair)
+        
+        sdk.liquidityPools.getLiquidityPools(reserveAssetA:assetA!, reserveAssetB:assetB!) { (response) -> (Void) in
+            switch response {
+            case .success(let pools):
+                var found = false
+                for pool in pools.records {
+                    if pool.poolId == self.liquidityPoolId {
+                        found = true
+                    }
+                }
+                XCTAssert(found)
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetLiquidityPools Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             

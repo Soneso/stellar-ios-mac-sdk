@@ -29,7 +29,7 @@ public class LiquidityPoolsService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
-    open func getClaimableBalance(poolId:String, response:@escaping LiquidityPoolDetailsResponseClosure) {
+    open func getLiquidityPool(poolId:String, response:@escaping LiquidityPoolDetailsResponseClosure) {
         let requestPath = "/liquidity_pools/" + poolId
         serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
             switch result {
@@ -62,25 +62,8 @@ public class LiquidityPoolsService: NSObject {
         getLiquidityPoolsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
     }
     
-    open func getLiquidityPools(claimantAccountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
+    open func getLiquidityPools(reserveAssetA:Asset, reserveAssetB:Asset, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
         var requestPath = "/liquidity_pools"
-        
-        var params = Dictionary<String,String>()
-        params["claimant"] = claimantAccountId
-        params["cursor"] = cursor
-        params["order"] = order?.rawValue
-        if let limit = limit { params["limit"] = String(limit) }
-        
-        if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
-            requestPath += "?\(pathParams)"
-        }
-        
-        getLiquidityPoolsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
-    }
-    
-    open func getClaimableBalances(reserveAssetA:Asset, reserveAssetB:Asset, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
-        var requestPath = "/claimable_balances"
         
         var params = Dictionary<String,String>()
         params["reserves"] = reserveAssetA.toCanonicalForm() + "," + reserveAssetB.toCanonicalForm()
@@ -101,7 +84,7 @@ public class LiquidityPoolsService: NSObject {
             switch result {
             case .success(let data):
                 do {
-                    //print(String(data: data, encoding: .utf8)!)
+                    // print(String(data: data, encoding: .utf8)!)
                     let values = try self.jsonDecoder.decode(PageResponse<LiquidityPoolResponse>.self, from: data)
                     response(.success(details: values))
                 } catch {

@@ -958,6 +958,8 @@
 		83DF81A026EF684F00AF72CD /* LiquidityPoolEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF819E26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift */; };
 		83DF81A226EF822000AF72CD /* LiquidityPoolPriceResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81A126EF822000AF72CD /* LiquidityPoolPriceResponse.swift */; };
 		83DF81A326EF822000AF72CD /* LiquidityPoolPriceResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81A126EF822000AF72CD /* LiquidityPoolPriceResponse.swift */; };
+		83DF81A826EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81A726EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift */; };
+		83DF81A926EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81A726EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift */; };
 		83EA4763203C7F650031F13E /* LedgersLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */; };
 		83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */; };
 		83FE810423F0713E00F4A13D /* FeeStatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE810323F0713E00F4A13D /* FeeStatsService.swift */; };
@@ -1560,6 +1562,7 @@
 		83DF819826EDF62C00AF72CD /* LiquidityPoolRevokedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolRevokedEffectResponse.swift; sourceTree = "<group>"; };
 		83DF819E26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolEffectResponse.swift; sourceTree = "<group>"; };
 		83DF81A126EF822000AF72CD /* LiquidityPoolPriceResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolPriceResponse.swift; sourceTree = "<group>"; };
+		83DF81A726EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolLinksResponse.swift; sourceTree = "<group>"; };
 		83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersLocalTestCase.swift; sourceTree = "<group>"; };
 		83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersResponsesMock.swift; sourceTree = "<group>"; };
 		83FE810323F0713E00F4A13D /* FeeStatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeStatsService.swift; sourceTree = "<group>"; };
@@ -2737,6 +2740,7 @@
 				83697258202CB88300398A98 /* EffectLinksResponse.swift */,
 				43E34B622031D7AF003104A9 /* OfferLinksResponse.swift */,
 				83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */,
+				83DF81A726EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift */,
 			);
 			path = links;
 			sourceTree = "<group>";
@@ -3668,6 +3672,7 @@
 				8320A9F1251E6ED6002FE6FA /* CreateClaimableBalanceResultXDR.swift in Sources */,
 				745DF4EC2052FF9C000D3660 /* Generics.swift in Sources */,
 				745DF4ED2052FF9C000D3660 /* Checksum.swift in Sources */,
+				83DF81A926EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift in Sources */,
 				744FC6DF212D3CCC00ADFC88 /* Regex.swift in Sources */,
 				745DF4EE2052FF9C000D3660 /* RandomAccessCryptor.swift in Sources */,
 				745DF4EF2052FF9C000D3660 /* SHA2.swift in Sources */,
@@ -4225,6 +4230,7 @@
 				8320A9F0251E6ED6002FE6FA /* CreateClaimableBalanceResultXDR.swift in Sources */,
 				744C4DB7202A257400B46CDE /* OperationResponse.swift in Sources */,
 				743DF56D2020530A00713DE7 /* sc.c in Sources */,
+				83DF81A826EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift in Sources */,
 				743DF581202053B100713DE7 /* PrivateKey.swift in Sources */,
 				8395F94C246B44C500B04E11 /* FeeBumpTransactionXDR.swift in Sources */,
 				43E34B5E2031BE33003104A9 /* OrderbookResponse.swift in Sources */,
