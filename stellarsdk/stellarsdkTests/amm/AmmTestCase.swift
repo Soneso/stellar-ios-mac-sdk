@@ -11,11 +11,13 @@ import stellarsdk
 
 class AmmTestCase: XCTestCase {
 
-    let sdk = StellarSDK(withHorizonUrl:"https://horizon-protocol18.stellar.org")
-    let network = Network.custom(networkId: "Standalone protocol 18 Devnet; September 2021")
+    let sdk = StellarSDK(withHorizonUrl:"....")
+    let network = Network.custom(networkId: "....")
     let seed = "SAHSE34PEZCT3WAWBCR5TMVXUZES62OAJPNUV4Q5TZVAM72J6O2CW4W3"
     let assetAIssuingAccount = "GDQ4273UBKSHIE73RJB5KLBBM7W3ESHWA74YG7ZBXKZLKT5KZGPKKB7E"
     let assetBIssuingAccount = "GC2262FQJAHVJSYWI6XEVQEH5CLPYCVSOLQHCDHNSKVWHTKYEZNAQS25"
+    var effectsStreamItem:EffectsStreamItem? = nil
+    let liquidityPoolId = "4f7f29db33ead1a38c2edf17aa0416c369c207ca081de5c686c050c1ad320385"
     
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -91,7 +93,29 @@ class AmmTestCase: XCTestCase {
         
         do {
             let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
-                
+            
+            effectsStreamItem = sdk.effects.stream(for: .effectsForLiquidityPool(liquidityPool: liquidityPoolId, cursor: "now"))
+            effectsStreamItem?.onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(_, let effectResponse):
+                    if let effect = effectResponse as? LiquidityPoolDepositedEffectResponse {
+                        print("liquidity pool id: " + effect.liquidityPool.poolId)
+                        print("shares received: " + effect.sharesReceived)
+                        if (effect.reservesDeposited.first?.asset.code == "COOL") {
+                            expectation.fulfill()
+                        }
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - stream", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("CB Test stream error \(error?.localizedDescription ?? "")")
+                    }
+                    break
+                }
+            }
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
@@ -102,7 +126,7 @@ class AmmTestCase: XCTestCase {
                         let minPrice = Price.fromString(price: "1.0")
                         let maxPrice = Price.fromString(price: "2.0")
                         
-                        let liquidityPoolDepositOp = LiquidityPoolDepositOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: "4f7f29db33ead1a38c2edf17aa0416c369c207ca081de5c686c050c1ad320385", maxAmountA: 250.0, maxAmountB: 250.0, minPrice: minPrice, maxPrice: maxPrice)
+                        let liquidityPoolDepositOp = LiquidityPoolDepositOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: self.liquidityPoolId, maxAmountA: 250.0, maxAmountB: 250.0, minPrice: minPrice, maxPrice: maxPrice)
                         let transaction = try Transaction(sourceAccount: muxSource,
                                                           operations: [liquidityPoolDepositOp],
                                                           memo: Memo.none,
@@ -147,7 +171,30 @@ class AmmTestCase: XCTestCase {
         
         do {
             let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
-                
+            
+            effectsStreamItem = sdk.effects.stream(for: .effectsForLiquidityPool(liquidityPool: liquidityPoolId, cursor: "now"))
+            effectsStreamItem?.onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(_, let effectResponse):
+                    if let effect = effectResponse as? LiquidityPoolWithdrewEffectResponse {
+                        print("liquidity pool id: " + effect.liquidityPool.poolId)
+                        print("shares redeemed: " + effect.sharesRedeemed)
+                        if (effect.reservesReceived.first?.asset.code == "COOL") {
+                            expectation.fulfill()
+                        }
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"testPoolShareWithdraw Test - stream", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("CB Test stream error \(error?.localizedDescription ?? "")")
+                    }
+                    break
+                }
+            }
+            
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
@@ -155,7 +202,7 @@ class AmmTestCase: XCTestCase {
                         let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
                         print ("Muxed source account id: \(muxSource.accountId)")
                         
-                        let liquidityPoolWithdrawOp = LiquidityPoolWithdrawOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: "4f7f29db33ead1a38c2edf17aa0416c369c207ca081de5c686c050c1ad320385", amount: 100.0, minAmountA: 100.0, minAmountB: 100.0)
+                        let liquidityPoolWithdrawOp = LiquidityPoolWithdrawOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: self.liquidityPoolId, amount: 100.0, minAmountA: 100.0, minAmountB: 100.0)
                         let transaction = try Transaction(sourceAccount: muxSource,
                                                           operations: [liquidityPoolWithdrawOp],
                                                           memo: Memo.none,
@@ -195,14 +242,35 @@ class AmmTestCase: XCTestCase {
     }
     
     func testGetEffectsForLiquidityPool() {
-        let expectation = XCTestExpectation(description: "Get effects for liquidity and parse their details successfuly")
+        let expectation = XCTestExpectation(description: "Get effects for liquidity ppol and parse their details successfuly")
         
-        sdk.effects.getEffects(forLiquidityPool: "4f7f29db33ead1a38c2edf17aa0416c369c207ca081de5c686c050c1ad320385", order:Order.descending) { (response) -> (Void) in
+        sdk.effects.getEffects(forLiquidityPool: liquidityPoolId, order:Order.descending) { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
             case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"EFF Test", horizonRequestError: error)
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetEffectsForLiquidityPool Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetOperationsForLiquidityPool() {
+        let expectation = XCTestExpectation(description: "Get operations for liquidity ppol and parse their details successfuly")
+        sdk.operations.getOperations(forLiquidityPool: liquidityPoolId, from: nil, order: Order.descending, includeFailed: true, join: "transactions") { (response) -> (Void) in
+            switch response {
+            case .success(let ops):
+                if let operation = ops.records.first {
+                    XCTAssert(operation.transactionSuccessful)
+                } else {
+                    XCTAssert(false)
+                }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetOperationsForLiquidityPool Test", horizonRequestError: error)
                 XCTAssert(false)
             }
             

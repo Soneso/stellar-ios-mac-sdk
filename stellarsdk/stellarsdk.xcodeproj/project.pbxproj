@@ -956,6 +956,8 @@
 		83DF819A26EDF62C00AF72CD /* LiquidityPoolRevokedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF819826EDF62C00AF72CD /* LiquidityPoolRevokedEffectResponse.swift */; };
 		83DF819F26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF819E26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift */; };
 		83DF81A026EF684F00AF72CD /* LiquidityPoolEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF819E26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift */; };
+		83DF81A226EF822000AF72CD /* LiquidityPoolPriceResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81A126EF822000AF72CD /* LiquidityPoolPriceResponse.swift */; };
+		83DF81A326EF822000AF72CD /* LiquidityPoolPriceResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81A126EF822000AF72CD /* LiquidityPoolPriceResponse.swift */; };
 		83EA4763203C7F650031F13E /* LedgersLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */; };
 		83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */; };
 		83FE810423F0713E00F4A13D /* FeeStatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE810323F0713E00F4A13D /* FeeStatsService.swift */; };
@@ -1557,6 +1559,7 @@
 		83DF819526EDF60600AF72CD /* LiquidityPoolRemovedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolRemovedEffectResponse.swift; sourceTree = "<group>"; };
 		83DF819826EDF62C00AF72CD /* LiquidityPoolRevokedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolRevokedEffectResponse.swift; sourceTree = "<group>"; };
 		83DF819E26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolEffectResponse.swift; sourceTree = "<group>"; };
+		83DF81A126EF822000AF72CD /* LiquidityPoolPriceResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolPriceResponse.swift; sourceTree = "<group>"; };
 		83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersLocalTestCase.swift; sourceTree = "<group>"; };
 		83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersResponsesMock.swift; sourceTree = "<group>"; };
 		83FE810323F0713E00F4A13D /* FeeStatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeStatsService.swift; sourceTree = "<group>"; };
@@ -2660,6 +2663,7 @@
 			children = (
 				83D408F226EBAC78003A9C0F /* LiquidityPoolResponse.swift */,
 				83D4090D26EBB049003A9C0F /* ReserveResponse.swift */,
+				83DF81A126EF822000AF72CD /* LiquidityPoolPriceResponse.swift */,
 			);
 			path = liquidity_pool_responses;
 			sourceTree = "<group>";
@@ -3509,6 +3513,7 @@
 				745DF48A2052FF9C000D3660 /* LedgerEntryChangeXDR.swift in Sources */,
 				745DF48B2052FF9C000D3660 /* LedgerKeyXDR.swift in Sources */,
 				745DF48C2052FF9C000D3660 /* LedgerKeyAccountXDR.swift in Sources */,
+				83DF81A326EF822000AF72CD /* LiquidityPoolPriceResponse.swift in Sources */,
 				745DF48D2052FF9C000D3660 /* LedgerKeyTrustlineXDR.swift in Sources */,
 				83AFD63F234FC60700A574D2 /* PathPaymentStrictSendOperation.swift in Sources */,
 				745DF48E2052FF9C000D3660 /* LedgerKeyOfferXDR.swift in Sources */,
@@ -4065,6 +4070,7 @@
 				7464B72B219442E90029FDC8 /* PointOfContactDocumentation.swift in Sources */,
 				83AFD63D234FC60700A574D2 /* PathPaymentStrictSendOperation.swift in Sources */,
 				83DD2C98202F249800713FEE /* PaymentsService.swift in Sources */,
+				83DF81A226EF822000AF72CD /* LiquidityPoolPriceResponse.swift in Sources */,
 				83379C212280ABA600BD5F8E /* ManageBuyOfferOperation.swift in Sources */,
 				7467C3F121424D9E00412FE1 /* TransferServerService.swift in Sources */,
 				744FC6FC212D545C00ADFC88 /* ResolveAddressResponse.swift in Sources */,
