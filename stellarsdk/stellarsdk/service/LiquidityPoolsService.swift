@@ -13,7 +13,13 @@ public enum LiquidityPoolDetailsResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
+public enum LiquidityPoolTradesResponseEnum {
+    case success(details: LiquidityPoolTradesResponse)
+    case failure(error: HorizonRequestError)
+}
+
 public typealias LiquidityPoolDetailsResponseClosure = (_ response:LiquidityPoolDetailsResponseEnum) -> (Void)
+public typealias LiquidityPoolTradesResponseClosure = (_ response:LiquidityPoolTradesResponseEnum) -> (Void)
 
 public class LiquidityPoolsService: NSObject {
     let serviceHelper: ServiceHelper
@@ -77,6 +83,23 @@ public class LiquidityPoolsService: NSObject {
         }
         
         getLiquidityPoolsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+    }
+    
+    open func getLiquidityPoolTrades(poolId:String, response:@escaping LiquidityPoolTradesResponseClosure) {
+        let requestPath = "/liquidity_pools/" + poolId + "/trades"
+        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                do {
+                    let value = try self.jsonDecoder.decode(LiquidityPoolTradesResponse.self, from: data)
+                    response(.success(details: value))
+                } catch {
+                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+                }
+            case .failure(let error):
+                response(.failure(error:error))
+            }
+        }
     }
     
     open func getLiquidityPoolsFromUrl(url:String, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {

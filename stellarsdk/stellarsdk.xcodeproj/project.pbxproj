@@ -960,6 +960,10 @@
 		83DF81A326EF822000AF72CD /* LiquidityPoolPriceResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81A126EF822000AF72CD /* LiquidityPoolPriceResponse.swift */; };
 		83DF81A826EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81A726EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift */; };
 		83DF81A926EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81A726EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift */; };
+		83DF81AB26EFC36000AF72CD /* LiquidityPoolTradesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81AA26EFC36000AF72CD /* LiquidityPoolTradesResponse.swift */; };
+		83DF81AC26EFC36000AF72CD /* LiquidityPoolTradesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81AA26EFC36000AF72CD /* LiquidityPoolTradesResponse.swift */; };
+		83DF81AE26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81AD26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift */; };
+		83DF81AF26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81AD26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift */; };
 		83EA4763203C7F650031F13E /* LedgersLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */; };
 		83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */; };
 		83FE810423F0713E00F4A13D /* FeeStatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE810323F0713E00F4A13D /* FeeStatsService.swift */; };
@@ -1563,6 +1567,8 @@
 		83DF819E26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolEffectResponse.swift; sourceTree = "<group>"; };
 		83DF81A126EF822000AF72CD /* LiquidityPoolPriceResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolPriceResponse.swift; sourceTree = "<group>"; };
 		83DF81A726EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolLinksResponse.swift; sourceTree = "<group>"; };
+		83DF81AA26EFC36000AF72CD /* LiquidityPoolTradesResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolTradesResponse.swift; sourceTree = "<group>"; };
+		83DF81AD26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolTradesLinksResponse.swift; sourceTree = "<group>"; };
 		83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersLocalTestCase.swift; sourceTree = "<group>"; };
 		83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersResponsesMock.swift; sourceTree = "<group>"; };
 		83FE810323F0713E00F4A13D /* FeeStatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeStatsService.swift; sourceTree = "<group>"; };
@@ -2667,6 +2673,7 @@
 				83D408F226EBAC78003A9C0F /* LiquidityPoolResponse.swift */,
 				83D4090D26EBB049003A9C0F /* ReserveResponse.swift */,
 				83DF81A126EF822000AF72CD /* LiquidityPoolPriceResponse.swift */,
+				83DF81AA26EFC36000AF72CD /* LiquidityPoolTradesResponse.swift */,
 			);
 			path = liquidity_pool_responses;
 			sourceTree = "<group>";
@@ -2741,6 +2748,7 @@
 				43E34B622031D7AF003104A9 /* OfferLinksResponse.swift */,
 				83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */,
 				83DF81A726EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift */,
+				83DF81AD26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift */,
 			);
 			path = links;
 			sourceTree = "<group>";
@@ -3706,11 +3714,13 @@
 				745DF5022052FF9C000D3660 /* Base58Encode.swift in Sources */,
 				745DF5032052FF9C000D3660 /* WordList.swift in Sources */,
 				745DF5042052FF9C000D3660 /* BigInt+Extension.swift in Sources */,
+				83DF81AC26EFC36000AF72CD /* LiquidityPoolTradesResponse.swift in Sources */,
 				745DF5052052FF9C000D3660 /* SMP.swift in Sources */,
 				745DF5062052FF9C000D3660 /* HDCrypto.swift in Sources */,
 				83B4CB2925271BE400EEE55E /* Claimant.swift in Sources */,
 				744FC6FD212D545C00ADFC88 /* ResolveAddressResponse.swift in Sources */,
 				745DF5072052FF9C000D3660 /* DataConvertable.swift in Sources */,
+				83DF81AF26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift in Sources */,
 				7464B72F219443210029FDC8 /* CurrencyDocumentation.swift in Sources */,
 				745DF5082052FF9C000D3660 /* RIPEMD160.swift in Sources */,
 				745DF5092052FF9C000D3660 /* Mnemonic.swift in Sources */,
@@ -4264,11 +4274,13 @@
 				EC34A12520503CC5000FB042 /* String+FoundationExtension.swift in Sources */,
 				EC34A14420503CC5000FB042 /* Padding.swift in Sources */,
 				83DD2C5B202CEB0700713FEE /* LedgerLinksResponse.swift in Sources */,
+				83DF81AB26EFC36000AF72CD /* LiquidityPoolTradesResponse.swift in Sources */,
 				8369722A2028F6A700398A98 /* TrustlineDeauthorizedEffectResponse.swift in Sources */,
 				833CBF9C2033533100C23CFE /* ManageOfferOperationXDR.swift in Sources */,
 				83B4CB2825271BE400EEE55E /* Claimant.swift in Sources */,
 				743DF54C201F73FC00713DE7 /* VersionByte.swift in Sources */,
 				745C41532040388900E33006 /* OperationsStreamItem.swift in Sources */,
+				83DF81AE26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift in Sources */,
 				7464B72E219443210029FDC8 /* CurrencyDocumentation.swift in Sources */,
 				EC34A13720503CC5000FB042 /* RandomBytesSequence.swift in Sources */,
 				744FC6DC212D3CCC00ADFC88 /* Tokens.swift in Sources */,

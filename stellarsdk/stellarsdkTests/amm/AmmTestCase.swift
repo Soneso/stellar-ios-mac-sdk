@@ -19,6 +19,8 @@ class AmmTestCase: XCTestCase {
     var effectsStreamItem:EffectsStreamItem? = nil
     var operationsStreamItem:OperationsStreamItem? = nil
     let liquidityPoolId = "4f7f29db33ead1a38c2edf17aa0416c369c207ca081de5c686c050c1ad320385"
+    let assetNative = Asset(type: AssetType.ASSET_TYPE_NATIVE)
+    let nativeLiquidityPoolId = "6a8ff044dd52b38f3ccd4d85bdcfe2789abfefe7d375389199ebed516787db9f"
     
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -28,7 +30,7 @@ class AmmTestCase: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testCreatePoolShareTrustline() {
+    func testCreatePoolShareTrustlineNotNative() {
         
         let expectation = XCTestExpectation(description: "pool share trustline created")
         
@@ -40,6 +42,28 @@ class AmmTestCase: XCTestCase {
             
             let issuingAccountBKeyPair = try KeyPair(accountId: assetBIssuingAccount)
             let assetB = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM12, code: "SONESO", issuer: issuingAccountBKeyPair)
+            
+            effectsStreamItem = sdk.effects.stream(for: .effectsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now"))
+            effectsStreamItem?.onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(_, let effectResponse):
+                    if let effect = effectResponse as? TrustlineCreatedEffectResponse {
+                        if let poolId = effect.liquidityPoolId {
+                            print("trustline created: \(poolId)")
+                            expectation.fulfill()
+                        }
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - stream", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("CB Test stream error \(error?.localizedDescription ?? "")")
+                    }
+                    break
+                }
+            }
             
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
@@ -88,7 +112,86 @@ class AmmTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testPoolShareDeposit() {
+    func testCreatePoolShareTrustlineNative() {
+        
+        let expectation = XCTestExpectation(description: "pool share trustline created")
+        
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
+        
+            let issuingAccountAKeyPair = try KeyPair(accountId: assetAIssuingAccount)
+            let assetA = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "COOL", issuer: issuingAccountAKeyPair)
+            
+            effectsStreamItem = sdk.effects.stream(for: .effectsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now"))
+            effectsStreamItem?.onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(_, let effectResponse):
+                    if let effect = effectResponse as? TrustlineCreatedEffectResponse {
+                        if let poolId = effect.liquidityPoolId {
+                            print("trustline created: \(poolId)")
+                            expectation.fulfill()
+                        }
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - stream", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("CB Test stream error \(error?.localizedDescription ?? "")")
+                    }
+                    break
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
+                        print ("Muxed source account id: \(muxSource.accountId)")
+                        
+                        let changeTrustAsset = try ChangeTrustAsset(assetA:self.assetNative!, assetB:assetA!);
+                        let changeTrustOperation = ChangeTrustOperation(sourceAccountId: muxSource.accountId, asset:changeTrustAsset!)
+                        let transaction = try Transaction(sourceAccount: muxSource,
+                                                          operations: [changeTrustOperation],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(let response):
+                                print("create poolshare test: Transaction successfully sent. Hash:\(response.transactionHash)")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("create poolshare test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"create poolshare test", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"create poolshare test", horizonRequestError:error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testPoolShareDepositNonNative() {
         
         let expectation = XCTestExpectation(description: "pool share deposit")
         
@@ -110,9 +213,9 @@ class AmmTestCase: XCTestCase {
                     }
                 case .error(let error):
                     if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - stream", horizonRequestError:horizonRequestError)
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"pool share deposit - stream", horizonRequestError:horizonRequestError)
                     } else {
-                        print("CB Test stream error \(error?.localizedDescription ?? "")")
+                        print("pool share deposit stream error \(error?.localizedDescription ?? "")")
                     }
                     break
                 }
@@ -166,7 +269,85 @@ class AmmTestCase: XCTestCase {
         wait(for: [expectation], timeout: 15.0)
     }
     
-    func testPoolShareWithdraw() {
+    func testPoolShareDepositNative() {
+        
+        let expectation = XCTestExpectation(description: "pool share deposit native")
+        
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
+            
+            effectsStreamItem = sdk.effects.stream(for: .effectsForLiquidityPool(liquidityPool: self.nativeLiquidityPoolId, cursor: "now"))
+            effectsStreamItem?.onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(_, let effectResponse):
+                    if let effect = effectResponse as? LiquidityPoolDepositedEffectResponse {
+                        print("liquidity pool id: " + effect.liquidityPool.poolId)
+                        print("shares received: " + effect.sharesReceived)
+                        if (effect.reservesDeposited.last?.asset.code == "COOL") {
+                            expectation.fulfill()
+                        }
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"pool share deposit - stream", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("pool share deposit stream error \(error?.localizedDescription ?? "")")
+                    }
+                    break
+                }
+            }
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
+                        print ("Muxed source account id: \(muxSource.accountId)")
+                        
+                        let minPrice = Price.fromString(price: "1.0")
+                        let maxPrice = Price.fromString(price: "2.0")
+                        
+                        let liquidityPoolDepositOp = LiquidityPoolDepositOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: self.nativeLiquidityPoolId, maxAmountA: 5.0, maxAmountB: 5.0, minPrice: minPrice, maxPrice: maxPrice)
+                        let transaction = try Transaction(sourceAccount: muxSource,
+                                                          operations: [liquidityPoolDepositOp],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(let response):
+                                print("pool share deposit: Transaction successfully sent. Hash:\(response.transactionHash)")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("pool share deposit: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"pool share deposit", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"pool share deposit", horizonRequestError:error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testPoolShareWithdrawNonNative() {
         
         let expectation = XCTestExpectation(description: "pool share withdraw")
         
@@ -204,6 +385,82 @@ class AmmTestCase: XCTestCase {
                         print ("Muxed source account id: \(muxSource.accountId)")
                         
                         let liquidityPoolWithdrawOp = LiquidityPoolWithdrawOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: self.liquidityPoolId, amount: 100.0, minAmountA: 100.0, minAmountB: 100.0)
+                        let transaction = try Transaction(sourceAccount: muxSource,
+                                                          operations: [liquidityPoolWithdrawOp],
+                                                          memo: Memo.none,
+                                                          timeBounds:nil)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(let response):
+                                print("pool share withdraw: Transaction successfully sent. Hash:\(response.transactionHash)")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("pool share withdraw: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"pool share withdraw", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"ppool share withdraw", horizonRequestError:error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testPoolShareWithdrawNative() {
+        
+        let expectation = XCTestExpectation(description: "pool share withdraw")
+        
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
+            
+            operationsStreamItem = sdk.operations.stream(for: .operationsForLiquidityPool(liquidityPoolId: nativeLiquidityPoolId, cursor: "now"))
+            operationsStreamItem?.onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(_, let operationResponse):
+                    if let operation = operationResponse as? LiquidityPoolWithdrawOperationResponse {
+                        print("liquidity pool id: " + operation.liquidityPoolId)
+                        print("shares: " + operation.shares)
+                        if (operation.reservesReceived.last?.asset.code == "COOL") {
+                            expectation.fulfill()
+                        }
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"testPoolShareWithdraw Test - stream", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("CB Test stream error \(error?.localizedDescription ?? "")")
+                    }
+                    break
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
+                        print ("Muxed source account id: \(muxSource.accountId)")
+                        
+                        let liquidityPoolWithdrawOp = LiquidityPoolWithdrawOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: self.nativeLiquidityPoolId, amount: 1.0, minAmountA: 1.0, minAmountB: 1.0)
                         let transaction = try Transaction(sourceAccount: muxSource,
                                                           operations: [liquidityPoolWithdrawOp],
                                                           memo: Memo.none,
@@ -345,6 +602,56 @@ class AmmTestCase: XCTestCase {
                     }
                 }
                 XCTAssert(found)
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetLiquidityPools Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetAccountDetails() {
+        
+        let expectation = XCTestExpectation(description: "Get account details and parse them successfully")
+        
+        let sourceAccountKeyPair = try! KeyPair(secretSeed:seed)
+        
+        sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+            switch response {
+            case .success(let accountDetails):
+                var found = false
+                print("Account-ID: \(accountDetails.accountId)")
+                print("Sequence Nr: \(accountDetails.sequenceNumber)")
+                for balance in accountDetails.balances {
+                    if balance.assetType == "liquidity_pool_shares" {
+                        print("Liquidity pool id \(balance.liquidityPoolId!)")
+                        print("Balance \(balance.balance)")
+                        found = true
+                    }
+                }
+                XCTAssert(found)
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Get account details test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetLiquidityPoolTrades() {
+        let expectation = XCTestExpectation(description: "Get liquidity pool trades and parse details successfuly")
+        sdk.liquidityPools.getLiquidityPoolTrades(poolId:self.liquidityPoolId) { (response) -> (Void) in
+            switch response {
+            case .success(let trades):
+                if trades.records.first?.baseLiquidityPoolId == self.liquidityPoolId {
+                    XCTAssert(true)
+                } else {
+                    XCTAssert(false)
+                }
             case .failure(let error):
                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetLiquidityPools Test", horizonRequestError: error)
                 XCTAssert(false)
