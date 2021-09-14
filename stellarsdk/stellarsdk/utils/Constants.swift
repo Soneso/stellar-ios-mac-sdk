@@ -13,6 +13,7 @@ public struct AssetTypeAsString
     public static let NATIVE = "native"
     public static let CREDIT_ALPHANUM4 = "credit_alphanum4"
     public static let CREDIT_ALPHANUM12 = "credit_alphanum12"
+    public static let POOL_SHARE = "liquidity_pool_shares"
     
 }
 

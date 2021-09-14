@@ -13,7 +13,7 @@ import stellarsdk
 
 class AccountRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let accountId = "GCRIOIWOKDDNZCYUOL72PFQWHIPY5H6WXTV2LLFVCJG5RH4G63PQPO36"
+    let accountId = "GAF5KPGTZ3V2BCIYIZZBVPKKSYAVJGZSTGBMLBSYIWKWCLS2QHEAOHIF"
     
     override func setUp() {
         super.setUp()
@@ -50,7 +50,7 @@ class AccountRemoteTestCase: XCTestCase {
     func testGetAccountsByAsset() {
         let expectation = XCTestExpectation(description: "Get accounts and parse their details successfully")
         
-        sdk.accounts.getAccounts(signer: nil, asset: "RICH:GCRIOIWOKDDNZCYUOL72PFQWHIPY5H6WXTV2LLFVCJG5RH4G63PQPO36", cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
+        sdk.accounts.getAccounts(signer: nil, asset: "COOL:GCLYYEC7554Z3G6QZ4XIK5VY7KRL2P5DW77NVEE3WWVZNMN22SFWKMOU", cursor: nil, order: Order.descending, limit: 2) { (response) -> (Void) in
             switch response {
             case .success(let accountsResponse):
                 // load next page

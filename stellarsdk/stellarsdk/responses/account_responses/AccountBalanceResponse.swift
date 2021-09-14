@@ -44,6 +44,8 @@ public class AccountBalanceResponse: NSObject, Decodable {
     
     public var liquidityPoolId:String?
     
+    public var lastModifiedLedger:Int?
+    
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
         case balance
@@ -58,6 +60,7 @@ public class AccountBalanceResponse: NSObject, Decodable {
         case isAuthorizedToMaintainLiabilities = "is_authorized_to_maintain_liabilities"
         case isClawbackEnabled = "is_clawback_enabled"
         case liquidityPoolId = "liquidity_pool_id"
+        case lastModifiedLedger = "last_modified_ledger"
         
     }
     
@@ -80,5 +83,6 @@ public class AccountBalanceResponse: NSObject, Decodable {
         isAuthorizedToMaintainLiabilities = try values.decodeIfPresent(Bool.self, forKey: .isAuthorizedToMaintainLiabilities)
         isClawbackEnabled = try values.decodeIfPresent(Bool.self, forKey: .isClawbackEnabled)
         liquidityPoolId = try values.decodeIfPresent(String.self, forKey: .liquidityPoolId)
+        lastModifiedLedger = try values.decodeIfPresent(Int.self, forKey: .lastModifiedLedger)
     }
 }

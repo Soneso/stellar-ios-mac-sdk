@@ -184,7 +184,6 @@ class AccountLocalTestCase: XCTestCase {
                 XCTAssertNotNil(accountDetails.links.offers.href)
                 XCTAssertEqual(accountDetails.links.offers.href, "https://horizon-testnet.stellar.org/accounts/\(accountDetails.accountId)/offers{?cursor,limit,order}")
                 XCTAssertTrue(accountDetails.links.offers.templated ?? false)
-                XCTAssertEqual(accountDetails.pagingToken, "999")
                 XCTAssertEqual(accountDetails.subentryCount, 1)
                 XCTAssertNotNil(accountDetails.thresholds)
                 XCTAssertEqual(accountDetails.thresholds.highThreshold, 3)
@@ -195,9 +194,12 @@ class AccountLocalTestCase: XCTestCase {
                 XCTAssertEqual(accountDetails.flags.authRequired, true)
                 XCTAssertEqual(accountDetails.flags.authRevocable, true)
                 XCTAssertEqual(accountDetails.flags.authImmutable, true)
+                XCTAssertEqual(accountDetails.numSponsored, 0)
+                XCTAssertEqual(accountDetails.numSponsoring, 0)
+                XCTAssertEqual(accountDetails.pagingToken, "GDB2ATEJPYNF2KNSK7YZ5C5J5IF2OLYMWCFQ2AAERYKV7Y5BE3XT34UC")
                 
                 XCTAssertNotNil(accountDetails.balances)
-                XCTAssertTrue(accountDetails.balances.count == 3)
+                XCTAssertTrue(accountDetails.balances.count == 4)
                 var count = 0
                 for balance in accountDetails.balances {
                     XCTAssertNotNil(balance)
@@ -205,12 +207,20 @@ class AccountLocalTestCase: XCTestCase {
                     
                     switch count {
                         case 0:
+                            XCTAssertEqual(balance.assetType, AssetTypeAsString.POOL_SHARE)
+                            XCTAssertEqual(balance.balance, "1415.0000000")
+                            XCTAssertEqual(balance.liquidityPoolId, "4f7f29db33ead1a38c2edf17aa0416c369c207ca081de5c686c050c1ad320385")
+                            XCTAssertEqual(balance.limit, "922337203685.4775807")
+                            XCTAssertEqual(balance.lastModifiedLedger, 186356)
+                            XCTAssertEqual(balance.isAuthorized, false)
+                            XCTAssertEqual(balance.isAuthorizedToMaintainLiabilities, false)
+                        case 1:
                             XCTAssertEqual(balance.assetType, AssetTypeAsString.CREDIT_ALPHANUM4)
                             XCTAssertEqual(balance.balance, "126.8107491")
                             XCTAssertEqual(balance.limit, "5000.0000000")
                             XCTAssertEqual(balance.assetCode, "BAR")
                             XCTAssertEqual(balance.assetIssuer, "BARUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG")
-                        case 1:
+                        case 2:
                             XCTAssertEqual(balance.assetType, AssetTypeAsString.CREDIT_ALPHANUM12)
                             XCTAssertEqual(balance.balance, "294.0000000")
                             XCTAssertEqual(balance.limit, "922337203685.4775807")
@@ -223,7 +233,7 @@ class AccountLocalTestCase: XCTestCase {
                             XCTAssertNil(balance.assetIssuer)
                     }
                     
-                    if balance.assetType == AssetTypeAsString.NATIVE {
+                    if balance.assetType == AssetTypeAsString.NATIVE || balance.assetType == AssetTypeAsString.POOL_SHARE {
                         XCTAssertNil(balance.assetCode)
                         XCTAssertNil(balance.assetIssuer)
                     } else {
@@ -317,7 +327,6 @@ class AccountLocalTestCase: XCTestCase {
                 }
             },
             "id": "\(accountId)",
-            "paging_token": "999",
             "account_id": "\(accountId)",
             "sequence": "30232549674450945",
             "subentry_count": 1,
@@ -331,9 +340,19 @@ class AccountLocalTestCase: XCTestCase {
             "flags": {
                 "auth_required": true,
                 "auth_revocable": true,
-                "auth_immutable": true
+                "auth_immutable": true,
+                "auth_clawback_enabled": false
             },
             "balances": [
+                {
+                  "balance": "1415.0000000",
+                  "liquidity_pool_id": "4f7f29db33ead1a38c2edf17aa0416c369c207ca081de5c686c050c1ad320385",
+                  "limit": "922337203685.4775807",
+                  "last_modified_ledger": 186356,
+                  "is_authorized": false,
+                  "is_authorized_to_maintain_liabilities": false,
+                  "asset_type": "liquidity_pool_shares"
+                },
                 {
                     "balance": "126.8107491",
                     "limit": "5000.0000000",
@@ -341,7 +360,9 @@ class AccountLocalTestCase: XCTestCase {
                     "asset_code": "BAR",
                     "asset_issuer": "BARUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG",
                     "buying_liabilities": "0.0000",
-                    "selling_liabilities": "0.0000"
+                    "selling_liabilities": "0.0000",
+                    "is_authorized": true,
+                    "is_authorized_to_maintain_liabilities": true
                 },
                 {
                     "balance": "294.0000000",
@@ -350,7 +371,9 @@ class AccountLocalTestCase: XCTestCase {
                     "asset_code": "FOXYMOXY",
                     "asset_issuer": "FOXUUA74H4XOQYRSOW2RZUA4QL5PB37U3JS5NE3RTB2ELJVMIF5RLMAG",
                     "buying_liabilities": "0.0000",
-                    "selling_liabilities": "0.0000"
+                    "selling_liabilities": "0.0000",
+                    "is_authorized": true,
+                    "is_authorized_to_maintain_liabilities": true
                 },
                 {
                     "balance": "9999.9999900",
@@ -376,7 +399,10 @@ class AccountLocalTestCase: XCTestCase {
             "data": {
                 "club": "MTAw",
                 "run": "faster"
-            }
+            },
+            "num_sponsoring": 0,
+            "num_sponsored": 0,
+            "paging_token": "GDB2ATEJPYNF2KNSK7YZ5C5J5IF2OLYMWCFQ2AAERYKV7Y5BE3XT34UC"
         }
         """
         return accountResponseString
