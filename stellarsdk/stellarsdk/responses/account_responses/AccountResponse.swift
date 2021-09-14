@@ -54,7 +54,7 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
     public var sponsor:String?
     public var numSponsoring:Int
     public var numSponsored:Int
-
+    
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
         case links = "_links"

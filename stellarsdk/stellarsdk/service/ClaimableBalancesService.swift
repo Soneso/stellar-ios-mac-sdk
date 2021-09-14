@@ -8,9 +8,6 @@
 
 import Foundation
 
-
-import Foundation
-
 public enum ClaimableBalanceDetailsResponseEnum {
     case success(details: ClaimableBalanceResponse)
     case failure(error: HorizonRequestError)

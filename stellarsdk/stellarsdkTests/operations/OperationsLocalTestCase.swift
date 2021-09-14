@@ -165,6 +165,10 @@ class OperationsLocalTestCase: XCTestCase {
                     XCTAssert(false)
                 case .setTrustLineFlags:
                     XCTAssert(false)
+                case .liquidityPoolDeposit:
+                    XCTAssert(false)
+                case .liquidityPoolWithdraw:
+                    XCTAssert(false)
                 }
             }
         }

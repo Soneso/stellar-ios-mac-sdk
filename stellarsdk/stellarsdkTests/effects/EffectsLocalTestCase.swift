@@ -256,6 +256,18 @@ class EffectsLocalTestCase: XCTestCase {
                         XCTAssert(false)
                     case .trustlineFlagsUpdated:
                         XCTAssert(false)
+                    case .liquidityPoolDeposited:
+                        XCTAssert(false)
+                    case .liquidityPoolWithdrew:
+                        XCTAssert(false)
+                    case .liquidityPoolTrade:
+                        XCTAssert(false)
+                    case .liquidityPoolCreated:
+                        XCTAssert(false)
+                    case .liquidityPoolRemoved:
+                        XCTAssert(false)
+                    case .liquidityPoolRevoked:
+                        XCTAssert(false)
                 }
             }
         }

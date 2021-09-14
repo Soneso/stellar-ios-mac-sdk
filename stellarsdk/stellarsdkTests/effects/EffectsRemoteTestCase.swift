@@ -67,7 +67,7 @@ class EffectsRemoteTestCase: XCTestCase {
     func testGetEffectsForAccount() {
         let expectation = XCTestExpectation(description: "Get effects for account and parse their details successfuly")
         
-        sdk.effects.getEffects(forAccount: "GALA3JYOCVM4ENFPXMMXQBFGTQZKWRIOAVZSHGGNUVC4KOGOB3A4EFGZ", order:Order.descending) { (response) -> (Void) in
+        sdk.effects.getEffects(forAccount: "GAF5KPGTZ3V2BCIYIZZBVPKKSYAVJGZSTGBMLBSYIWKWCLS2QHEAOHIF", order:Order.descending) { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -103,7 +103,7 @@ class EffectsRemoteTestCase: XCTestCase {
     func testGetEffectsForLedger() {
         let expectation = XCTestExpectation(description: "Get effects for ledger")
         
-        sdk.effects.getEffects(forLedger: "1") { (response) -> (Void) in
+        sdk.effects.getEffects(forLedger: "123423") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -121,7 +121,7 @@ class EffectsRemoteTestCase: XCTestCase {
     func testGetEffectsForTransaction() {
         let expectation = XCTestExpectation(description: "Get effects for transaction")
         
-        sdk.effects.getEffects(forTransaction: "5e639a21dfeb6995d2137787ebae8998d50c24ef6eb3682c61e11a55b702af91") { (response) -> (Void) in
+        sdk.effects.getEffects(forTransaction: "cc4bff306cc2e57d85efa1bd448c63441d953204db8f673c691c8220ab026363") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)

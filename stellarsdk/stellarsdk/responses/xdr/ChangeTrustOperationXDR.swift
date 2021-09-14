@@ -9,17 +9,17 @@
 import Foundation
 
 public struct ChangeTrustOperationXDR: XDRCodable {
-    public let asset: AssetXDR
+    public let asset: ChangeTrustAssetXDR
     public private(set) var limit: Int64 = Int64.max
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         
-        asset = try container.decode(AssetXDR.self)
+        asset = try container.decode(ChangeTrustAssetXDR.self)
         limit = try container.decode(Int64.self)
     }
     
-    public init(asset: AssetXDR, limit:Int64) {
+    public init(asset: ChangeTrustAssetXDR, limit:Int64) {
         self.asset = asset
         self.limit = limit
     }

@@ -13,6 +13,74 @@ public struct AssetType {
     public static let ASSET_TYPE_NATIVE: Int32 = 0
     public static let ASSET_TYPE_CREDIT_ALPHANUM4: Int32 = 1
     public static let ASSET_TYPE_CREDIT_ALPHANUM12: Int32 = 2
+    public static let ASSET_TYPE_POOL_SHARE: Int32 = 3
+}
+
+public struct Alpha4XDR: XDRCodable {
+    let assetCode: WrappedData4
+    let issuer: PublicKey
+    
+    public init(assetCode: WrappedData4, issuer: PublicKey) {
+        self.assetCode = assetCode
+        self.issuer = issuer
+    }
+    
+    public init(assetCodeString: String, issuer: KeyPair) throws {
+        guard var codeData = assetCodeString.data(using: .utf8),
+              assetCodeString.count <= 4
+        else {
+            throw StellarSDKError.invalidArgument(message: "Invalid asset type")
+        }
+        
+        let extraCount = 4 - assetCodeString.count
+        codeData.append(contentsOf: Array<UInt8>(repeating: 0, count: extraCount))
+        self.init(assetCode: WrappedData4(codeData), issuer: issuer.publicKey)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(assetCode)
+        try container.encode(issuer)
+    }
+    
+    public var assetCodeString: String {
+        return (String(bytes: assetCode.wrapped, encoding: .utf8) ?? "")
+            .trimmingCharacters(in: CharacterSet(charactersIn: "\0"))
+    }
+}
+
+public struct Alpha12XDR: XDRCodable {
+    let assetCode: WrappedData12
+    let issuer: PublicKey
+    
+    public init(assetCode: WrappedData12, issuer: PublicKey) {
+        self.assetCode = assetCode
+        self.issuer = issuer
+    }
+    
+    public init(assetCodeString: String, issuer: KeyPair) throws {
+        guard var codeData = assetCodeString.data(using: .utf8),
+              assetCodeString.count > 4,
+              assetCodeString.count <= 12
+        else {
+            throw StellarSDKError.invalidArgument(message: "Invalid asset type")
+        }
+        
+        let extraCount = 12 - assetCodeString.count
+        codeData.append(contentsOf: Array<UInt8>(repeating: 0, count: extraCount))
+        self.init(assetCode: WrappedData12(codeData), issuer: issuer.publicKey)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(assetCode)
+        try container.encode(issuer)
+    }
+    
+    public var assetCodeString: String {
+        return (String(bytes: assetCode.wrapped, encoding: .utf8) ?? "")
+            .trimmingCharacters(in: CharacterSet(charactersIn: "\0"))
+    }
 }
 
 public enum AssetXDR: XDRCodable {
@@ -25,11 +93,9 @@ public enum AssetXDR: XDRCodable {
             case .native:
                 return "native"
             case .alphanum4(let a4):
-                return (String(bytes: a4.assetCode.wrapped, encoding: .utf8) ?? "")
-                    .trimmingCharacters(in: CharacterSet(charactersIn: "\0"))
+                return a4.assetCodeString
             case .alphanum12(let a12):
-                return (String(bytes: a12.assetCode.wrapped, encoding: .utf8) ?? "")
-                    .trimmingCharacters(in: CharacterSet(charactersIn: "\0"))
+                return a12.assetCodeString
         }
     }
     
@@ -46,29 +112,13 @@ public enum AssetXDR: XDRCodable {
     
     public init(assetCode: String, issuer: KeyPair) throws {
         if assetCode.count <= 4 {
-            guard var codeData = assetCode.data(using: .utf8) else {
-                throw StellarSDKError.invalidArgument(message: "Invalid asset type")
-            }
-            
-            let extraCount = 4 - assetCode.count
-            codeData.append(contentsOf: Array<UInt8>(repeating: 0, count: extraCount))
-            
-            let a4 = Alpha4XDR(assetCode: WrappedData4(codeData), issuer: issuer.publicKey)
+            let a4 = try Alpha4XDR(assetCodeString: assetCode, issuer: issuer)
             self = .alphanum4(a4)
-            
             return
         }
         else if assetCode.count <= 12 {
-            guard var codeData = assetCode.data(using: .utf8) else {
-                throw StellarSDKError.invalidArgument(message: "Invalid asset type")
-            }
-            
-            let extraCount = 12 - assetCode.count
-            codeData.append(contentsOf: Array<UInt8>(repeating: 0, count: extraCount))
-            
-            let a12 = Alpha12XDR(assetCode: WrappedData12(codeData), issuer: issuer.publicKey)
+            let a12 = try Alpha12XDR(assetCodeString: assetCode, issuer: issuer)
             self = .alphanum12(a12)
-            
             return
         }
         
@@ -91,38 +141,6 @@ public enum AssetXDR: XDRCodable {
                 self = .alphanum12(a12)
             default:
                 self = .native
-        }
-    }
-    
-    public struct Alpha4XDR: XDRCodable {
-        let assetCode: WrappedData4
-        let issuer: PublicKey
-        
-        public init(assetCode: WrappedData4, issuer: PublicKey) {
-            self.assetCode = assetCode
-            self.issuer = issuer
-        }
-        
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.unkeyedContainer()
-            try container.encode(assetCode)
-            try container.encode(issuer)
-        }
-    }
-    
-    public struct Alpha12XDR: XDRCodable {
-        let assetCode: WrappedData12
-        let issuer: PublicKey
-        
-        public init(assetCode: WrappedData12, issuer: PublicKey) {
-            self.assetCode = assetCode
-            self.issuer = issuer
-        }
-        
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.unkeyedContainer()
-            try container.encode(assetCode)
-            try container.encode(issuer)
         }
     }
     

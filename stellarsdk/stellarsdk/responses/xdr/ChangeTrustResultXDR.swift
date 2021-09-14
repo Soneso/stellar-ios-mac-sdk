@@ -18,6 +18,9 @@ public enum ChangeTrustResultCode: Int32 {
     case trustInvalidLimit = -3 // cannot drop limit below balance
     case changeTrustLowReserve = -4 // not enough funds to create a new trust line
     case changeTrustSelfNotAllowed = -5 // trusting self is not allowed
+    case trustlineMissing = -6 // Asset trustline is missing for pool
+    case cannotDelete = -7 // Asset trustline is still referenced in a pool
+    case notAuthMaintainLiabilities = -8 // Asset trustline is deauthorized
 }
 
 public enum ChangeTrustResultXDR: XDRCodable {

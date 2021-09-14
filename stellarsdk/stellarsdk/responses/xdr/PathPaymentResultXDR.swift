@@ -29,7 +29,7 @@ public enum PathPaymentResultCode: Int32 {
 }
 
 public enum PathPaymentResultXDR: XDRCodable {
-    case success(Int32, [ClaimOfferAtomXDR], SimplePaymentResultXDR)
+    case success(Int32, [ClaimAtomXDR], SimplePaymentResultXDR)
     case noIssuer(Int32, AssetXDR)
     case empty (Int32)
     
@@ -40,7 +40,7 @@ public enum PathPaymentResultXDR: XDRCodable {
         
         switch code {
             case .success:
-                let offers = try decodeArray(type: ClaimOfferAtomXDR.self, dec: decoder)
+                let offers = try decodeArray(type: ClaimAtomXDR.self, dec: decoder)
                 let last = try container.decode(SimplePaymentResultXDR.self)
                 self = .success(code.rawValue, offers, last)
             case .noIssuer:

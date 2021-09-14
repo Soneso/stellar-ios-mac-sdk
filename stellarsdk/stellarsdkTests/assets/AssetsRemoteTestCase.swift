@@ -68,18 +68,21 @@ class AssetsRemoteTestCase: XCTestCase {
     func testGetAssetAccountsAndBalances() {
         let expectation = XCTestExpectation(description: "Get asset details successfully")
         
-        sdk.assets.getAssets(for: "LUMP") { (response) -> (Void) in
+        sdk.assets.getAssets(for: "SONESO") { (response) -> (Void) in
             switch response {
             case .success(let assetsResponse):
                 if let asset = assetsResponse.records.first {
                     let accounts = asset.accounts
                     XCTAssert(accounts.authorized == 1)
-                    let numClaimableBalances = asset.numClaimableBalances
-                    XCTAssert(numClaimableBalances == 1)
+                    XCTAssert(accounts.authorizedToMaintainLiabilities == 0)
+                    XCTAssert(accounts.unauthorized == 0)
+                    XCTAssert(asset.numberOfAccounts == 1)
+                    XCTAssert(asset.numClaimableBalances == 0)
+                    XCTAssert(asset.claimableBalancesAmount == 0.0)
+                    XCTAssert(asset.amount == 20000.0)
                     let balances = asset.balances
-                    XCTAssert(balances.authorized == 0.0)
-                    let claimableBalancesAmount = asset.claimableBalancesAmount
-                    XCTAssert(claimableBalancesAmount == 200.0)
+                    XCTAssert(balances.authorized == 20000.0)
+                    
                 } else {
                     XCTAssert(false)
                 }

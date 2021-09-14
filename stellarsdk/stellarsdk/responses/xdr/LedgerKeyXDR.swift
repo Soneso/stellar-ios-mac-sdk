@@ -14,6 +14,7 @@ public enum LedgerKeyXDR: XDRCodable {
     case offer (LedgerKeyOfferXDR)
     case data (LedgerKeyDataXDR)
     case claimableBalance (ClaimableBalanceIDXDR)
+    case liquidityPool(LiquidityPoolIDXDR)
     
     
     public init(from decoder: Decoder) throws {
@@ -37,6 +38,9 @@ public enum LedgerKeyXDR: XDRCodable {
         case LedgerEntryType.claimableBalance.rawValue:
             let value = try container.decode(ClaimableBalanceIDXDR.self)
             self = .claimableBalance (value)
+        case LedgerEntryType.liquidityPool.rawValue:
+            let value = try container.decode(LiquidityPoolIDXDR.self)
+            self = .liquidityPool (value)
         default:
             let acc = try container.decode(LedgerKeyAccountXDR.self)
             self = .account(acc)
@@ -50,6 +54,7 @@ public enum LedgerKeyXDR: XDRCodable {
         case .offer: return LedgerEntryType.offer.rawValue
         case .data: return LedgerEntryType.data.rawValue
         case .claimableBalance: return LedgerEntryType.claimableBalance.rawValue
+        case .liquidityPool: return LedgerEntryType.liquidityPool.rawValue
         }
     }
     
@@ -68,6 +73,26 @@ public enum LedgerKeyXDR: XDRCodable {
             try container.encode(datamu)
         case .claimableBalance (let value):
             try container.encode(value)
+        case .liquidityPool (let value):
+            try container.encode(value)
         }
+    }
+}
+
+public struct LiquidityPoolIDXDR: XDRCodable {
+    public let liquidityPoolID:WrappedData32
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        liquidityPoolID = try container.decode(WrappedData32.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(liquidityPoolID)
+    }
+    
+    public var poolIDString: String {
+        return liquidityPoolID.wrapped.hexEncodedString()
     }
 }

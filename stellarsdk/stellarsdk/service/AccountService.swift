@@ -154,17 +154,19 @@ open class AccountService: NSObject {
     /// - Parameter signer: Optional. Account ID.
     /// - Parameter asset: Optional. An issued asset represented in coanolical form ("native" or "Code:IssuerAccountID").
     /// - Parameter sponsor: Optional. Account ID.
+    /// - Parameter liquidityPoolId: Liquidity Pool ID
     /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
     /// - Parameter order: Optional. The order in which to return rows, “asc” or “desc”, ordered by assetCode then by assetIssuer.
     /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
     ///
-    open func getAccounts(signer:String? = nil, asset:String? = nil, sponsor:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<AccountResponse>.ResponseClosure) {
+    open func getAccounts(signer:String? = nil, asset:String? = nil, sponsor:String? = nil, liquidityPoolId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<AccountResponse>.ResponseClosure) {
         var requestPath = "/accounts"
         
         var params = Dictionary<String,String>()
         params["signer"] = signer
         params["asset"] = asset
         params["sponsor"] = sponsor
+        params["liquidity_pool"] = liquidityPoolId
         params["cursor"] = cursor
         params["order"] = order?.rawValue
         if let limit = limit { params["limit"] = String(limit) }

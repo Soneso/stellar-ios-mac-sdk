@@ -81,10 +81,21 @@ class AssetsLocalTestCase: XCTestCase {
             XCTAssertEqual(firstAsset!.pagingToken, "ZZZ_GCTEZSVHLL5GNQ3VNSWJMU3W3ODMBWTXBDHKFYTUBBPZMFSYD5QXLSAM_credit_alphanum4")
             XCTAssertEqual(firstAsset!.amount, 42.0)
             XCTAssertEqual(firstAsset!.numberOfAccounts, 1)
+            XCTAssertNotNil(firstAsset!.accounts)
+            XCTAssertEqual(firstAsset!.accounts.authorized, 1)
+            XCTAssertEqual(firstAsset!.accounts.authorizedToMaintainLiabilities, 1)
+            XCTAssertEqual(firstAsset!.accounts.unauthorized, 1)
+            XCTAssertEqual(firstAsset!.numClaimableBalances, 1)
+            XCTAssertNotNil(firstAsset!.balances)
+            XCTAssertEqual(firstAsset!.balances.authorized, 20000.0)
+            XCTAssertEqual(firstAsset!.balances.authorizedToMaintainLiabilities, 1.0)
+            XCTAssertEqual(firstAsset!.balances.unauthorized, 5.0)
             XCTAssertNotNil(firstAsset!.flags)
             XCTAssertFalse(firstAsset!.flags.authRequired)
             XCTAssertFalse(firstAsset!.flags.authRevocable)
             XCTAssertFalse(firstAsset!.flags.authImmutable)
+            XCTAssertFalse(firstAsset!.flags.authClawbackEnabled)
+            XCTAssertEqual(firstAsset!.claimableBalancesAmount, 4.0)
             
             if (limit == 2) {
                 let secondAsset = assetsResponse.records.last
@@ -102,6 +113,7 @@ class AssetsLocalTestCase: XCTestCase {
                 XCTAssertTrue(secondAsset!.flags.authRequired)
                 XCTAssertTrue(secondAsset!.flags.authRevocable)
                 XCTAssertTrue(secondAsset!.flags.authImmutable)
+                XCTAssertTrue(secondAsset!.flags.authClawbackEnabled)
                 
                 expectation.fulfill()
             } else {
@@ -150,9 +162,23 @@ class AssetsLocalTestCase: XCTestCase {
                     "paging_token": "ZZZ_GCTEZSVHLL5GNQ3VNSWJMU3W3ODMBWTXBDHKFYTUBBPZMFSYD5QXLSAM_credit_alphanum4",
                     "amount": "42.0000000",
                     "num_accounts": 1,
+                    "accounts": {
+                        "authorized": 1,
+                        "authorized_to_maintain_liabilities": 1,
+                        "unauthorized": 1
+                    },
+                    "num_claimable_balances": 1,
+                    "balances": {
+                        "authorized": "20000.0000000",
+                        "authorized_to_maintain_liabilities": "1.0000000",
+                        "unauthorized": "5.0000000"
+                    },
+                    "claimable_balances_amount": "4.0000000",
                     "flags": {
                         "auth_required": false,
-                        "auth_revocable": false
+                        "auth_revocable": false,
+                        "auth_immutable": false,
+                        "auth_clawback_enabled": false
                     }
                 }
         """
@@ -171,10 +197,23 @@ class AssetsLocalTestCase: XCTestCase {
                             "paging_token": "zzv7wZvwguhe_GBGKYTIF74HSGAW5M6FMT7XJEPCZBXOD6RFHMETK4HL4EK55DUXEHVAZ_credit_alphanum12",
                             "amount": "0.0000000",
                             "num_accounts": 0,
+                            "accounts": {
+                                "authorized": 1,
+                                "authorized_to_maintain_liabilities": 0,
+                                "unauthorized": 0
+                            },
+                            "num_claimable_balances": 0,
+                            "balances": {
+                                "authorized": "20000.0000000",
+                                "authorized_to_maintain_liabilities": "0.0000000",
+                                "unauthorized": "0.0000000"
+                            },
+                            "claimable_balances_amount": "0.0000000",
                             "flags": {
                                 "auth_required": true,
                                 "auth_revocable": true,
-                                "auth_immutable": true
+                                "auth_immutable": true,
+                                "auth_clawback_enabled": true
                             }
                         }
             """

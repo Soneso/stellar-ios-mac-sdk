@@ -18,6 +18,7 @@ public enum RevokeSponsorshipResultCode: Int32 {
     case notSponsored = -2 // not sponsor of specified entry
     case lowReserve = -3 // new reserve payor cannot afford this entry
     case onlyTransferabel = -4 // sponsorship of ClaimableBalance must be transferred to another account
+    case malformed = -5
 }
 
 public enum RevokeSponsorshipResultXDR: XDRCodable {

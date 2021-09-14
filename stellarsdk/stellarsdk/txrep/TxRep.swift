@@ -829,9 +829,9 @@ public class TxRep: NSObject {
     
     private static func getChangeTrustOperation(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ChangeTrustOperation? {
         var key = opPrefix + "line"
-        let asset:Asset
+        let asset:ChangeTrustAsset
         if let assetStr = dic[key] {
-           if let asseta = decodeAsset(asset: assetStr) {
+           if let asseta = decodeChangeTrustAsset(asset: assetStr) {
                asset = asseta
            } else {
               throw TxRepError.invalidValue(key: key)
@@ -1211,7 +1211,7 @@ public class TxRep: NSObject {
             }
             break
         case .changeTrust(let changeTrustOp):
-            addLine(key: operationPrefix + "line", value: encodeAsset(asset: changeTrustOp.asset), lines: &lines)
+            addLine(key: operationPrefix + "line", value: encodeChangeTrustAsset(asset: changeTrustOp.asset), lines: &lines)
             addLine(key: operationPrefix + "limit", value: String(changeTrustOp.limit), lines: &lines)
             break
         case .allowTrust(let allowTrustOp):
@@ -1255,6 +1255,17 @@ public class TxRep: NSObject {
         }
     }
     
+    private static func encodeChangeTrustAsset(asset: ChangeTrustAssetXDR) -> String {
+        switch asset {
+        case .native:
+            return "XLM"
+        case .poolShare:
+            return "TODO" //TODO
+        default:
+            return asset.assetCode! + ":" + asset.issuer!.accountId
+        }
+    }
+    
     private static func decodeAsset(asset: String) -> Asset? {
         if asset == "XLM" {
             return Asset(type: AssetType.ASSET_TYPE_NATIVE)!
@@ -1269,6 +1280,26 @@ public class TxRep: NSObject {
         do {
             let kp = try KeyPair(accountId: issuer)
             return Asset(type: type, code: code, issuer: kp)
+        } catch {
+            return nil
+        }
+    }
+    
+    private static func decodeChangeTrustAsset(asset: String) -> ChangeTrustAsset? {
+        //TODO: poolshare
+        if asset == "XLM" {
+            return ChangeTrustAsset(type: AssetType.ASSET_TYPE_NATIVE)!
+        }
+        let components = asset.components(separatedBy: ":")
+        if components.count != 2 {
+            return nil
+        }
+        let code = components[0].trimmingCharacters(in: .whitespaces)
+        let issuer = components[1].trimmingCharacters(in: .whitespaces)
+        let type = code.count < 5 ? AssetType.ASSET_TYPE_CREDIT_ALPHANUM4 : AssetType.ASSET_TYPE_CREDIT_ALPHANUM12
+        do {
+            let kp = try KeyPair(accountId: issuer)
+            return ChangeTrustAsset(type: type, code: code, issuer: kp)
         } catch {
             return nil
         }
@@ -1320,6 +1351,10 @@ public class TxRep: NSObject {
             return "clawbackClaimableBalanceOp"
         case .setTrustLineFlags(_):
             return "setTrustLineFlagsOp"
+        case .liquidityPoolDeposit(_):
+            return "liquidityPoolDepositOp"
+        case .liquidityPoolWithdraw(_):
+            return "liquidityPoolWithdrawOp"
         }
     }
     private static func txRepOpTypeUpperCase(operation: OperationXDR) -> String {
@@ -1368,6 +1403,10 @@ public class TxRep: NSObject {
             return "CLAWBACK_CLAIMABLE_BALANCE"
         case .setTrustLineFlags(_):
             return "SET_TRUST_LINE_FLAGS"
+        case .liquidityPoolDeposit(_):
+            return "LIQUIDITY_POOL_DEPOSIT"
+        case .liquidityPoolWithdraw(_):
+            return "LIQUIDITY_POOL_WITHDRAW"
         }
     }
     private static func addLine(key:String, value:String, lines: inout [String]) -> Void {

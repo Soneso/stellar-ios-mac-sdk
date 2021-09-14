@@ -16,10 +16,10 @@ public class AccountBalanceResponse: NSObject, Decodable {
     public var balance:String
     
     /// Buying Liabilities for the specified asset.
-    public var buyingLiabilities:String
+    public var buyingLiabilities:String?
     
     /// Selling Liabilities for the specified asset.
-    public var sellingLiabilities:String
+    public var sellingLiabilities:String?
     
     /// Maximum number of asset amount this account can hold.
     public var limit:String!
@@ -42,6 +42,10 @@ public class AccountBalanceResponse: NSObject, Decodable {
     
     public var isClawbackEnabled:Bool?
     
+    public var liquidityPoolId:String?
+    
+    public var lastModifiedLedger:Int?
+    
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
         case balance
@@ -55,6 +59,8 @@ public class AccountBalanceResponse: NSObject, Decodable {
         case isAuthorized = "is_authorized"
         case isAuthorizedToMaintainLiabilities = "is_authorized_to_maintain_liabilities"
         case isClawbackEnabled = "is_clawback_enabled"
+        case liquidityPoolId = "liquidity_pool_id"
+        case lastModifiedLedger = "last_modified_ledger"
         
     }
     
@@ -66,8 +72,8 @@ public class AccountBalanceResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         balance = try values.decode(String.self, forKey: .balance) as String
-        buyingLiabilities = try values.decode(String.self, forKey: .buyingLiabilities) as String
-        sellingLiabilities = try values.decode(String.self, forKey: .sellingLiabilities) as String
+        buyingLiabilities = try values.decodeIfPresent(String.self, forKey: .buyingLiabilities) as String?
+        sellingLiabilities = try values.decodeIfPresent(String.self, forKey: .sellingLiabilities) as String?
         limit = try values.decodeIfPresent(String.self, forKey: .limit)
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
@@ -76,5 +82,7 @@ public class AccountBalanceResponse: NSObject, Decodable {
         isAuthorized = try values.decodeIfPresent(Bool.self, forKey: .isAuthorized)
         isAuthorizedToMaintainLiabilities = try values.decodeIfPresent(Bool.self, forKey: .isAuthorizedToMaintainLiabilities)
         isClawbackEnabled = try values.decodeIfPresent(Bool.self, forKey: .isClawbackEnabled)
+        liquidityPoolId = try values.decodeIfPresent(String.self, forKey: .liquidityPoolId)
+        lastModifiedLedger = try values.decodeIfPresent(Int.self, forKey: .lastModifiedLedger)
     }
 }

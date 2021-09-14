@@ -9,10 +9,11 @@
 import Foundation
 
 public struct LedgerKeyTrustLineXDR: XDRCodable {
+
     public let accountID: PublicKey
-    public let asset: AssetXDR
+    public let asset: TrustlineAssetXDR
     
-    init(accountID: PublicKey, asset: AssetXDR) {
+    init(accountID: PublicKey, asset: TrustlineAssetXDR) {
         self.accountID = accountID
         self.asset = asset
     }

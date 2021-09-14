@@ -19,6 +19,7 @@ public enum OperationsChange {
     case operationsForClaimableBalance(claimableBalanceId:String, cursor:String?)
     case operationsForLedger(ledger:String, cursor:String?)
     case operationsForTransaction(transaction:String, cursor:String?)
+    case operationsForLiquidityPool(liquidityPoolId:String, cursor:String?)
 }
 
 public typealias OperationDetailsResponseClosure = (_ response:OperationDetailsResponseEnum) -> (Void)
@@ -57,6 +58,11 @@ public class OperationsService: NSObject {
     
     open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         let path = "/transactions/" + hash + "/operations"
+        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+    }
+    
+    open func getOperations(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        let path = "/liquidity_pools/" + liquidityPoolId + "/operations"
         getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
     }
     
@@ -112,6 +118,11 @@ public class OperationsService: NSObject {
             }
         case .operationsForTransaction(let transaction, let cursor):
             subpath = "/transactions/" + transaction + "/operations"
+            if let cursor = cursor {
+                subpath = subpath + "?cursor=" + cursor
+            }
+        case .operationsForLiquidityPool(let liquidityPool, let cursor):
+            subpath = "/liquidity_pools/" + liquidityPool + "/operations"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor
             }

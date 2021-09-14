@@ -97,6 +97,10 @@ class OperationsFactory: NSObject {
                 return try jsonDecoder.decode(ClawbackClaimableBalanceOperationResponse.self, from: data)
             case .setTrustLineFlags:
                 return try jsonDecoder.decode(SetTrustLineFlagsOperationResponse.self, from: data)
+            case .liquidityPoolDeposit:
+                return try jsonDecoder.decode(LiquidityPoolDepostOperationResponse.self, from: data)
+            case .liquidityPoolWithdraw:
+                return try jsonDecoder.decode(LiquidityPoolWithdrawOperationResponse.self, from: data)
             }
         } else {
             throw HorizonRequestError.parsingResponseFailed(message: "Unknown operation type")

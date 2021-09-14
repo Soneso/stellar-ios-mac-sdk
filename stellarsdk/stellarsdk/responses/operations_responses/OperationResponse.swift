@@ -31,6 +31,8 @@ public enum OperationType: Int32 {
     case clawback = 19
     case clawbackClaimableBalance = 20
     case setTrustLineFlags = 21
+    case liquidityPoolDeposit = 22
+    case liquidityPoolWithdraw = 23
 }
 
 /// Represents an operation response. Superclass for all other operation response classes.

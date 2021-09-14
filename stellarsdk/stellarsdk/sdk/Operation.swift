@@ -104,6 +104,10 @@ public class Operation {
             return try ClawbackClaimableBalanceOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         case .setTrustLineFlags(let data):
             return SetTrustlineFlagsOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
+        case .liquidityPoolDeposit(let data):
+            return LiquidityPoolDepositOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
+        case .liquidityPoolWithdraw(let data):
+            return LiquidityPoolWithdrawOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         default:
             throw StellarSDKError.invalidArgument(message: "Unknown operation body \(operationXDR.body)")
         }

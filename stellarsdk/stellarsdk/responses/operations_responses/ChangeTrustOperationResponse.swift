@@ -18,7 +18,7 @@ public class ChangeTrustOperationResponse: OperationResponse {
     public var trustorMuxedId:String?
     
     /// Trustee account.
-    public var trustee:String
+    public var trustee:String?
     
     /// Asset type (native / alphanum4 / alphanum12)
     public var assetType:String
@@ -32,6 +32,9 @@ public class ChangeTrustOperationResponse: OperationResponse {
     /// The limit for the asset.
     public var limit:String?
     
+    /// Liquidity pool id if type is liquidity_pool_shares
+    public var liquidityPoolId:String?
+    
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case trustor
@@ -42,6 +45,7 @@ public class ChangeTrustOperationResponse: OperationResponse {
         case assetCode = "asset_code"
         case assetIssuer = "asset_issuer"
         case limit
+        case liquidityPoolId = "liquidity_pool_id"
     }
     
     /**
@@ -54,11 +58,12 @@ public class ChangeTrustOperationResponse: OperationResponse {
         trustor = try values.decode(String.self, forKey: .trustor)
         trustorMuxed = try values.decodeIfPresent(String.self, forKey: .trustorMuxed)
         trustorMuxedId = try values.decodeIfPresent(String.self, forKey: .trustorMuxedId)
-        trustee = try values.decode(String.self, forKey: .trustee)
+        trustee = try values.decodeIfPresent(String.self, forKey: .trustee)
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
         limit = try values.decodeIfPresent(String.self, forKey: .limit)
+        liquidityPoolId = try values.decodeIfPresent(String.self, forKey: .liquidityPoolId)
         
         try super.init(from: decoder)
     }

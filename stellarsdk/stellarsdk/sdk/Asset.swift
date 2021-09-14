@@ -37,6 +37,8 @@ public class Asset
                 self.issuer = issuer
             case AssetType.ASSET_TYPE_NATIVE:
                 break
+            case AssetType.ASSET_TYPE_POOL_SHARE:
+                break
             default:
                 return nil
         }
@@ -87,6 +89,20 @@ public class Asset
         }
     }
     
+    public func toTrustlineAssetXDR() throws -> TrustlineAssetXDR {
+        
+        do {
+            switch self.type {
+                case AssetType.ASSET_TYPE_NATIVE:
+                    return TrustlineAssetXDR.native
+                default:
+                    return try TrustlineAssetXDR(assetCode:code!, issuer:issuer!)
+            }
+        } catch {
+            throw StellarSDKError.xdrEncodingError(message: "Error encoding asset: " + error.localizedDescription)
+        }
+    }
+    
     /// Generates Asset object from a given XDR object.
     ///
     /// - Parameter assetXDR: the AssetXDR object to be used create the Asset object.
@@ -109,6 +125,102 @@ public class Asset
             case .alphanum12 (let a12):
                 let issuerKeyPair = KeyPair (publicKey: a12.issuer, privateKey: nil)
                 result = Asset(type:AssetType.ASSET_TYPE_CREDIT_ALPHANUM12, code:assetXDR.assetCode, issuer:issuerKeyPair)
+        }
+        guard let asset = result else {
+            throw StellarSDKError.xdrDecodingError(message: "Error decoding asset: invalid data in xdr")
+        }
+        return asset
+    }
+}
+
+public class ChangeTrustAsset : Asset {
+    public private(set) var assetA:Asset?
+    public private(set) var assetB:Asset?
+    
+    public init?(assetA:Asset, assetB:Asset) throws {
+        
+        // validate asset type
+        if AssetType.ASSET_TYPE_POOL_SHARE == assetA.type || AssetType.ASSET_TYPE_POOL_SHARE == assetB.type {
+            throw StellarSDKError.invalidArgument(message: "Asset can not be of type AssetType.ASSET_TYPE_POOL_SHARE")
+        }
+        if assetA.type == assetB.type && assetA.type == AssetType.ASSET_TYPE_NATIVE {
+            throw StellarSDKError.invalidArgument(message: "Assets can not be both of type AssetType.ASSET_TYPE_NATIVE")
+        }
+        
+        // validate asset order
+        // Native < AlphaNum4 < AlphaNum12, then by Code, then by Issuer, using lexicographic ordering.
+        var sortError = false
+        if assetA.type > assetB.type {
+            sortError = true
+        } else if assetA.type == assetB.type {
+            if assetA.code!.caseInsensitiveCompare(assetB.code!) == .orderedDescending {
+                sortError = true
+            } else if assetA.code!.caseInsensitiveCompare(assetB.code!) == .orderedSame {
+                if assetA.issuer!.accountId.caseInsensitiveCompare(assetB.issuer!.accountId) == .orderedDescending {
+                    sortError = true
+                }
+            }
+        }
+        if sortError {
+            throw StellarSDKError.invalidArgument(message: "Assets are in wrong order. Sort by: Native < AlphaNum4 < AlphaNum12, then by Code, then by Issuer, using lexicographic ordering.")
+        }
+        
+        self.assetA = assetA
+        self.assetB = assetB
+    
+        super.init(type: AssetType.ASSET_TYPE_POOL_SHARE)
+    }
+    
+    public override init?(type:Int32, code:String? = nil, issuer:KeyPair? = nil) {
+        super.init(type: type, code: code, issuer: issuer)
+    }
+    
+    public func toChangeTrustAssetXDR() throws -> ChangeTrustAssetXDR {
+        
+        do {
+            switch self.type {
+                case AssetType.ASSET_TYPE_NATIVE:
+                    return ChangeTrustAssetXDR.native
+                case AssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+                    return try ChangeTrustAssetXDR(assetCode:code!, issuer:issuer!)
+                case AssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+                    return try ChangeTrustAssetXDR(assetCode:code!, issuer:issuer!)
+                case AssetType.ASSET_TYPE_POOL_SHARE:
+                    let assetAXDR = try assetA!.toXDR()
+                    let assetBXDR = try assetB!.toXDR()
+                    let params = LiquidityPoolConstantProductParametersXDR(assetA: assetAXDR, assetB: assetBXDR, fee: LiquidityPoolConstantProductParametersXDR.LIQUIDITY_POOL_FEE_V18)
+                    return ChangeTrustAssetXDR(params: params)
+                default:
+                    throw StellarSDKError.xdrEncodingError(message: "Unknown asset type")
+                
+            }
+        } catch {
+            throw StellarSDKError.xdrEncodingError(message: "Error encoding asset: " + error.localizedDescription)
+        }
+    }
+    
+    public static func fromXDR(assetXDR:ChangeTrustAssetXDR) throws -> ChangeTrustAsset {
+        
+        var result: ChangeTrustAsset?
+        switch assetXDR {
+            case .native:
+                result = ChangeTrustAsset(type:AssetType.ASSET_TYPE_NATIVE)
+            
+            case .alphanum4 (let a4):
+                let issuerKeyPair = KeyPair (publicKey: a4.issuer, privateKey: nil)
+                result = ChangeTrustAsset(type:AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code:assetXDR.assetCode, issuer:issuerKeyPair)
+            
+            case .alphanum12 (let a12):
+                let issuerKeyPair = KeyPair (publicKey: a12.issuer, privateKey: nil)
+                result = ChangeTrustAsset(type:AssetType.ASSET_TYPE_CREDIT_ALPHANUM12, code:assetXDR.assetCode, issuer:issuerKeyPair)
+                
+            case .poolShare(let params):
+                switch params {
+                case .constantProduct(let cp):
+                    let assetA = try Asset.fromXDR(assetXDR: cp.assetA)
+                    let assetB = try Asset.fromXDR(assetXDR: cp.assetB)
+                    result = try ChangeTrustAsset(assetA: assetA, assetB: assetB)
+                }
         }
         guard let asset = result else {
             throw StellarSDKError.xdrDecodingError(message: "Error decoding asset: invalid data in xdr")
