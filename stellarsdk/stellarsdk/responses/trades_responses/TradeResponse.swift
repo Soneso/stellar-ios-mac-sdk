@@ -76,7 +76,7 @@ public class TradeResponse: NSObject, Decodable {
     public var counterLiquidityPoolId:String?
     
     /// An object of a number numerator and number denominator that represents the original offer price. To derive the price, divide n by d.
-    public var price:Price
+    public var price:TradePrice
     
     /// indicates which party of the trade made the sell offer
     public var baseIsSeller:Bool
@@ -141,7 +141,7 @@ public class TradeResponse: NSObject, Decodable {
         counterAssetCode = try values.decodeIfPresent(String.self, forKey: .counterAssetCode)
         counterAssetIssuer = try values.decodeIfPresent(String.self, forKey: .counterAssetIssuer)
         counterLiquidityPoolId = try values.decodeIfPresent(String.self, forKey: .counterLiquidityPoolId)
-        price = try values.decode(Price.self, forKey: .price) // TODO: this will probaly change to n & d = string in p18
+        price = try values.decode(TradePrice.self, forKey: .price)
         baseIsSeller = try values.decode(Bool.self, forKey: .baseIsSeller)
     }
 }

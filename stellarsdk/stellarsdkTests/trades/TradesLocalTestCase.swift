@@ -91,7 +91,8 @@ class TradesLocalTestCase: XCTestCase {
                 XCTAssertEqual(trade.counterAssetCode, "BTC")
                 XCTAssertEqual(trade.counterAssetIssuer, "GATEMHCCKCY67ZUCKTROYN24ZYT5GK4EQZ65JJLDHKHRUZI3EUEKMTCH")
                 XCTAssertEqual(trade.baseIsSeller, false)
-                XCTAssertEqual(trade.price, Price(numerator: 10000000, denominator: 108837))
+                XCTAssertEqual(trade.price.n, "10000000")
+                XCTAssertEqual(trade.price.d, "108837")
             }
             expectation.fulfill()
         }
@@ -144,8 +145,8 @@ class TradesLocalTestCase: XCTestCase {
             "counter_asset_issuer": "GATEMHCCKCY67ZUCKTROYN24ZYT5GK4EQZ65JJLDHKHRUZI3EUEKMTCH",
             "base_is_seller": false,
             "price": {
-                "n": 10000000,
-                "d": 108837
+                "n": "10000000",
+                "d": "108837"
             }
             }
         """

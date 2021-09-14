@@ -916,6 +916,8 @@
 		83B4CBB8252883D000EEE55E /* ClaimantPredicateResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CBB6252883D000EEE55E /* ClaimantPredicateResponse.swift */; };
 		83B4CBC8252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */; };
 		83B4CBC9252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */; };
+		83CFD7A726F1375A001043B5 /* TradePrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CFD7A626F1375A001043B5 /* TradePrice.swift */; };
+		83CFD7A826F1375A001043B5 /* TradePrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CFD7A626F1375A001043B5 /* TradePrice.swift */; };
 		83D408DE26EB798E003A9C0F /* LiquidityPoolWithdrawOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D408DD26EB798E003A9C0F /* LiquidityPoolWithdrawOperation.swift */; };
 		83D408DF26EB798E003A9C0F /* LiquidityPoolWithdrawOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D408DD26EB798E003A9C0F /* LiquidityPoolWithdrawOperation.swift */; };
 		83D408E926EB88A2003A9C0F /* LiquidityPoolsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D408E826EB88A2003A9C0F /* LiquidityPoolsService.swift */; };
@@ -1536,6 +1538,7 @@
 		83B4CBAC2528839500EEE55E /* ClaimantResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimantResponse.swift; sourceTree = "<group>"; };
 		83B4CBB6252883D000EEE55E /* ClaimantPredicateResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimantPredicateResponse.swift; sourceTree = "<group>"; };
 		83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimableBalanceLinksResponse.swift; sourceTree = "<group>"; };
+		83CFD7A626F1375A001043B5 /* TradePrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradePrice.swift; sourceTree = "<group>"; };
 		83D408DD26EB798E003A9C0F /* LiquidityPoolWithdrawOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolWithdrawOperation.swift; sourceTree = "<group>"; };
 		83D408E826EB88A2003A9C0F /* LiquidityPoolsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolsService.swift; sourceTree = "<group>"; };
 		83D408F226EBAC78003A9C0F /* LiquidityPoolResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolResponse.swift; sourceTree = "<group>"; };
@@ -1773,6 +1776,7 @@
 			isa = PBXGroup;
 			children = (
 				437D8A7F202EF0760024D031 /* TradeResponse.swift */,
+				83CFD7A626F1375A001043B5 /* TradePrice.swift */,
 			);
 			path = trades_responses;
 			sourceTree = "<group>";
@@ -3366,6 +3370,7 @@
 				745DF4232052FF9B000D3660 /* TransactionAccount.swift in Sources */,
 				745DF4242052FF9B000D3660 /* Asset.swift in Sources */,
 				832ADEFB262B9E2100571D46 /* ClawbackResultXDR.swift in Sources */,
+				83CFD7A826F1375A001043B5 /* TradePrice.swift in Sources */,
 				745DF4252052FF9B000D3660 /* Operation.swift in Sources */,
 				745DF4262052FF9B000D3660 /* CreateAccountOperation.swift in Sources */,
 				745DF4272052FF9B000D3660 /* PaymentOperation.swift in Sources */,
@@ -3926,6 +3931,7 @@
 				EC34A12620503CC5000FB042 /* Blowfish+Foundation.swift in Sources */,
 				83697248202A7CD100398A98 /* SetOptionsOperationResponse.swift in Sources */,
 				832ADEFA262B9E2100571D46 /* ClawbackResultXDR.swift in Sources */,
+				83CFD7A726F1375A001043B5 /* TradePrice.swift in Sources */,
 				7481B5462024C480000A783E /* AccountCreatedEffectResponse.swift in Sources */,
 				7464B7212194415F0029FDC8 /* StellarToml.swift in Sources */,
 				8369724C202A7FD400398A98 /* AllowTrustOperationResponse.swift in Sources */,
