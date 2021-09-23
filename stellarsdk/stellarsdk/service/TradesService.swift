@@ -34,7 +34,7 @@ public class TradesService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
-    open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
+    open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, tradeType:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
         
         var requestPath = "/trades"
         var params = Dictionary<String,String>()
@@ -45,6 +45,7 @@ public class TradesService: NSObject {
         params["counter_asset_code"] = counterAssetCode
         params["counter_asset_issuer"] = counterAssetIssuer
         params["offer_id"] = offerId
+        params["trade_type"] = tradeType
         params["cursor"] = cursor
         params["order"] = order?.rawValue
         if let limit = limit { params["limit"] = String(limit) }
