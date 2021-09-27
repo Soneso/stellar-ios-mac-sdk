@@ -29,6 +29,9 @@ public enum ChallengeValidationError: Error {
     case validationFailure
     case invalidTransactionType
     case invalidWebAuthDomain
+    case memoAndMuxedSourceAccountFound
+    case invalidMemoType
+    case invalidMemoValue
 }
 
 /// Possible errors received from a JWT token response.
@@ -88,9 +91,7 @@ public class WebAuthenticator {
     private let serviceHelper: ServiceHelper
     private let network: Network
     private let serverHomeDomain: String
-    
-    /// This can be used to ignore the timebounds values of the transaction. Its useful when the server time and client time are out of sync
-    public var ignoreTimebounds = false
+    private let gracePeriod:UInt64 = 60 * 5
     
     /// Get a WebAuthenticator instange from a domain
     ///
@@ -139,12 +140,13 @@ public class WebAuthenticator {
     /// Get JWT token for wallet
     ///
     /// - Parameter forClientAccount: account id of the client/user
+    /// - Parameter memo: ID memo of the client account if muxed and accountId starts with G
     /// - Parameter signers: list of signers (keypairs including secret seed) of the client account
     /// - Parameter homeDomain: domain of the server hosting it's stellar.toml
     /// - Parameter clientDomain: domain of the client hosting it's stellar.toml
     /// - Parameter clientDomainAccountKeyPair: Keypair of the client domain account including the seed (used for signing the transaction if client domain is provided)
-    public func jwtToken(forClientAccount accountId:String, signers:[KeyPair], homeDomain:String? = nil, clientDomain:String? = nil, clientDomainAccountKeyPair:KeyPair? = nil, completion:@escaping GetJWTTokenResponseClosure) {
-        getChallenge(forAccount: accountId, homeDomain: homeDomain, clientDomain: clientDomain) { (response) -> (Void) in
+    public func jwtToken(forClientAccount accountId:String, memo:UInt64? = nil, signers:[KeyPair], homeDomain:String? = nil, clientDomain:String? = nil, clientDomainAccountKeyPair:KeyPair? = nil, completion:@escaping GetJWTTokenResponseClosure) {
+        getChallenge(forAccount: accountId, memo:memo, homeDomain: homeDomain, clientDomain: clientDomain) { (response) -> (Void) in
             switch response {
             case .success(let challenge):
                 do {
@@ -153,7 +155,7 @@ public class WebAuthenticator {
                     if let cdakp = clientDomainAccountKeyPair {
                         clientDomainAccount = cdakp.accountId
                     }
-                    let challengeValid = self.isValidChallenge(transactionEnvelopeXDR: transactionEnvelope, userAccountId: accountId, serverSigningKey: self.serverSigningKey, clientDomainAccount: clientDomainAccount)
+                    let challengeValid = self.isValidChallenge(transactionEnvelopeXDR: transactionEnvelope, userAccountId: accountId, memo:memo, serverSigningKey: self.serverSigningKey, clientDomainAccount: clientDomainAccount, timeBoundsGracePeriod: self.gracePeriod)
                     switch challengeValid {
                     case .success:
                         var keyPairs:[KeyPair] = [KeyPair]()
@@ -185,12 +187,20 @@ public class WebAuthenticator {
         }
     }
     
-    public func getChallenge(forAccount accountId:String, homeDomain:String? = nil, clientDomain:String? = nil, completion:@escaping ChallengeResponseClosure) {
+    public func getChallenge(forAccount accountId:String, memo:UInt64? = nil, homeDomain:String? = nil, clientDomain:String? = nil, completion:@escaping ChallengeResponseClosure) {
         
         var path = (homeDomain != nil) ? "?account=\(accountId)&home_domain=\(homeDomain!)" : "?account=\(accountId)"
         
         if let cd = clientDomain {
             path.append("&client_domain=\(cd)");
+        }
+        
+        if let mid = memo {
+            if accountId.starts(with: "G") {
+                path.append("&memo=\(mid)");
+            } else {
+                completion(.failure(error: .requestFailed(message: "memo cannot be used if accountId is a muxed account")))
+            }
         }
         
         serviceHelper.GETRequestWithPath(path: path) { (result) -> (Void) in
@@ -213,7 +223,7 @@ public class WebAuthenticator {
         }
     }
     
-    public func isValidChallenge(transactionEnvelopeXDR: TransactionEnvelopeXDR, userAccountId: String, serverSigningKey: String, clientDomainAccount:String? = nil) -> ChallengeValidationResponseEnum {
+    public func isValidChallenge(transactionEnvelopeXDR: TransactionEnvelopeXDR, userAccountId: String, memo:UInt64? = nil, serverSigningKey: String, clientDomainAccount:String? = nil, timeBoundsGracePeriod:UInt64? = nil) -> ChallengeValidationResponseEnum {
         do {
             switch transactionEnvelopeXDR {
             case .feeBump(_):
@@ -224,6 +234,27 @@ public class WebAuthenticator {
             
             if (transactionEnvelopeXDR.txSeqNum != 0) {
                 return .failure(error: .sequenceNumberNot0)
+            }
+            
+            if transactionEnvelopeXDR.txMemo.type() != MemoType.MEMO_TYPE_NONE {
+                if userAccountId.starts(with: "M") {
+                    return .failure(error: .memoAndMuxedSourceAccountFound)
+                } else if transactionEnvelopeXDR.txMemo.type() != MemoType.MEMO_TYPE_ID {
+                    return .failure(error: .invalidMemoType)
+                } else if let mval = memo {
+                    switch transactionEnvelopeXDR.txMemo {
+                    case .id(let value):
+                        if value != mval {
+                            return .failure(error: .invalidMemoValue)
+                        }
+                    default:
+                        return .failure(error: .invalidMemoValue)
+                    }
+                } else {
+                    return .failure(error: .invalidMemoValue)
+                }
+            } else if memo != nil {
+                return .failure(error: .invalidMemoValue)
             }
             
             var index = 0
@@ -284,9 +315,13 @@ public class WebAuthenticator {
                 return .failure(error: .invalidOperationCount)
             }
             
-            if !ignoreTimebounds, let minTime = transactionEnvelopeXDR.txTimeBounds?.minTime, let maxTime = transactionEnvelopeXDR.txTimeBounds?.maxTime {
+            if let minTime = transactionEnvelopeXDR.txTimeBounds?.minTime, let maxTime = transactionEnvelopeXDR.txTimeBounds?.maxTime {
                 let currentTimestamp = Date().timeIntervalSince1970
-                if (currentTimestamp < TimeInterval(minTime)) || (currentTimestamp > TimeInterval(maxTime)) {
+                var grace:UInt64 = 0
+                if let pgrace = timeBoundsGracePeriod {
+                    grace = pgrace
+                }
+                if (currentTimestamp < TimeInterval(minTime - grace)) || (currentTimestamp > TimeInterval(maxTime + grace)) {
                     return .failure(error: .invalidTimeBounds)
                 }
             }

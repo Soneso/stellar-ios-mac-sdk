@@ -41,6 +41,10 @@ class WebAuthenticatorSendChallengeResponseMock: ResponsesMock {
                             clientKeyPair = try! KeyPair(accountId: "GBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBABJBF")
                             validSignature = try! clientKeyPair.verify(signature: [UInt8](sign), message: transactionHash)
                         }
+                        if !validSignature {
+                            clientKeyPair = try! KeyPair(accountId: "GC6PZZU7XEYLCV7XW5LZC3J72HKQ7CABZCLVGPXCPLLRPZ4SJHC2US3P")
+                            validSignature = try! clientKeyPair.verify(signature: [UInt8](sign), message: transactionHash)
+                        }
                     }
                     
                     if validSignature {

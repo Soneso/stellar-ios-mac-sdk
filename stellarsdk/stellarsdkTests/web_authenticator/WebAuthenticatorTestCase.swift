@@ -66,6 +66,17 @@ class WebAuthenticatorTestCase: XCTestCase {
     let validCliendDomainOpSourceAccountClientPublicKey = "GDBEDW4SYL3NJY2ILKUE2MX7CU6BQKSK6UXZUHVOLZL2R3BKRLBEJRXC"
     let validCliendDomainOpSourceAccountClientPrivateKey = "SCNIS3DPXJ4PN27YGG7OGFTKAM73KAGL6PT6QA4CDIIKDDDPMUHCGCS4"
     
+    let challengeMuxedAccountIdM = "MC6PZZU7XEYLCV7XW5LZC3J72HKQ7CABZCLVGPXCPLLRPZ4SJHC2UAAAAAAACMICQPLEG"
+    let challengeMuxedAccountIdG = "GC6PZZU7XEYLCV7XW5LZC3J72HKQ7CABZCLVGPXCPLLRPZ4SJHC2US3P"
+    let challengeMuxedAccountIdGMemo:UInt64 = 19989123
+    let challengeMuxedAccountSeed = "SB7BORUWGKD6QVQMMOB556OPCIU6PXC4KOJ7WNQJGYK724XZA6IFRJL3"
+    
+    let invalidMemoTypeClientPublicKey = "GB5PZY253VWYRF47YMNFIWO3U6BG2SD2457FNQVFO4CLOAIUEN5IG7P7"
+    let invalidMemoTypeClientPrivateKey = "SCAJCHEEXKL6K4QGC4I7NGTTGS2KH7BTYKCF2DQRDQC5NCQKADJIQNHR"
+    
+    let invalidMemoValueClientPublicKey = "GCEQZYKOEJTZET2AKUY664EM44VFNRIAH7AXE4RIDWFV6UYGDTJWD2JJ"
+    let invalidMemoValueClientPrivateKey = "SCB62HPSFTIEKNXQ7SRN4ZDUCVUZ6N25ZJZXWMSBHOBA4PPFDFWT5TUQ"
+    
     var tomlServerMock: WebAuthenticatorTomlResponseMock!
     var tomlFailServerMock: WebAuthenticatorTomlFailResponseMock!
     var challengeServerMock: WebAuthenticatorChallengeResponseMock!
@@ -610,5 +621,134 @@ class WebAuthenticatorTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 65.0)
     }
+        
+    func testGetJWTMemoSuccess() {
+        let expectation = XCTestExpectation(description: "JWT is received with success.")
+        
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        if let keyPair = try? KeyPair(secretSeed: challengeMuxedAccountSeed) {
+            let userAccountId = challengeMuxedAccountIdG
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, memo: challengeMuxedAccountIdGMemo, signers: signers) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(true)
+                case .failure(_):
+                    XCTAssert(false)
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
     
+    func testGetJWTMuxedNoMemoSuccess() {
+        let expectation = XCTestExpectation(description: "JWT is received with success.")
+        
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        if let keyPair = try? KeyPair(secretSeed: challengeMuxedAccountSeed) {
+            let userAccountId = challengeMuxedAccountIdM
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(true)
+                case .failure(_):
+                    XCTAssert(false)
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetJWTMuxedAndMemoFail() {
+        let expectation = XCTestExpectation(description: "Fails because one can not pass muxed account + memo.")
+        
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        if let keyPair = try? KeyPair(secretSeed: challengeMuxedAccountSeed) {
+            let userAccountId = challengeMuxedAccountIdM
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, memo:challengeMuxedAccountIdGMemo, signers: signers) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(false)
+                case .failure(let error):
+                    switch error {
+                    case .requestError(_):
+                        XCTAssert(true)
+                    default:
+                        XCTAssert(false)
+                    }
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetChallengeInvalidMemoType() {
+        let expectation = XCTestExpectation(description: "A validation error is received.")
+        
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        if let keyPair = try? KeyPair(secretSeed: invalidMemoTypeClientPrivateKey) {
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, memo: 12345, signers: signers) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(false)
+                case .failure(let error):
+                    switch error {
+                    case .validationErrorError(let error):
+                        if error == .invalidMemoType {
+                            XCTAssert(true)
+                        } else {
+                            XCTAssert(false)
+                        }
+                    default:
+                        XCTAssert(false)
+                    }
+                    
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testGetChallengeInvalidMemoValue() {
+        let expectation = XCTestExpectation(description: "A validation error is received.")
+        
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        if let keyPair = try? KeyPair(secretSeed: invalidMemoValueClientPrivateKey) {
+            let userAccountId = keyPair.accountId
+            let signers = [keyPair]
+            webAuthenticator.jwtToken(forClientAccount: userAccountId, memo: 12345, signers: signers) { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(false)
+                case .failure(let error):
+                    switch error {
+                    case .validationErrorError(let error):
+                        if error == .invalidMemoValue {
+                            XCTAssert(true)
+                        } else {
+                            XCTAssert(false)
+                        }
+                    default:
+                        XCTAssert(false)
+                    }
+                    
+                }
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
 }

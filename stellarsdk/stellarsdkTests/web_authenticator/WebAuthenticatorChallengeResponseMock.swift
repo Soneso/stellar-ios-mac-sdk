@@ -72,6 +72,18 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
                 } else if key == "GDBEDW4SYL3NJY2ILKUE2MX7CU6BQKSK6UXZUHVOLZL2R3BKRLBEJRXC" {
                     mock.statusCode = 200
                     return self?.requestValidClientDomainOperation(userAccount: "GDBEDW4SYL3NJY2ILKUE2MX7CU6BQKSK6UXZUHVOLZL2R3BKRLBEJRXC", clientDomainAccount: "GBXFU2EMT2Y3IRGN2MSXIBIAXEPT77PYKN5HHQSDBLNCT7OCYYBABJBF")
+                } else if key == "GC6PZZU7XEYLCV7XW5LZC3J72HKQ7CABZCLVGPXCPLLRPZ4SJHC2US3P" || key == "MC6PZZU7XEYLCV7XW5LZC3J72HKQ7CABZCLVGPXCPLLRPZ4SJHC2UAAAAAAACMICQPLEG" {
+                    mock.statusCode = 200
+                    if let memo = mock.variables["memo"] {
+                        return self?.requestSuccess(account: key, memo: UInt64(memo))
+                    }
+                    return self?.requestSuccess(account: key)
+                } else if key == "GB5PZY253VWYRF47YMNFIWO3U6BG2SD2457FNQVFO4CLOAIUEN5IG7P7" {
+                    mock.statusCode = 200
+                    return self?.requestInvalidMemoType(account: key)
+                } else if key == "GCEQZYKOEJTZET2AKUY664EM44VFNRIAH7AXE4RIDWFV6UYGDTJWD2JJ" {
+                    mock.statusCode = 200
+                    return self?.requestInvalidMemoValue(account:key)
                 }
             }
             
@@ -94,16 +106,19 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         }
     }
     
-    func requestSuccess(account: String) -> String {
-        let clientKeyPair = try! KeyPair(accountId: account)
+    func requestSuccess(account: String, memo:UInt64? = nil) -> String {
         let transactionAccount = Account(keyPair: serverKeyPair, sequenceNumber: -1)
         
         let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
         
-        let operation1 = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        let operation1 = ManageDataOperation(sourceAccountId: account, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
         let operation2 = ManageDataOperation(sourceAccountId: serverKeyPair.accountId, name: "web_auth_domain", data: "api.stellar.org".data(using: .utf8))
         
-        let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation1,operation2], memo: nil, timeBounds: timeBounds)
+        var txmemo = Memo.none
+        if let memoval = memo {
+            txmemo = Memo.id(memoval)
+        }
+        let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation1,operation2], memo: txmemo, timeBounds: timeBounds)
         try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
         
         return """
@@ -338,6 +353,45 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         var encodedEnvelope = try! XDREncoder.encode(envelope)
         
         return "{ \"transaction\": \"\(Data(bytes: &encodedEnvelope, count: encodedEnvelope.count).base64EncodedString())\" }"
+    }
+    
+    func requestInvalidMemoType(account: String) -> String {
+        let transactionAccount = Account(keyPair: serverKeyPair, sequenceNumber: -1)
+        
+        let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
+        
+        let operation1 = ManageDataOperation(sourceAccountId: account, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        let operation2 = ManageDataOperation(sourceAccountId: serverKeyPair.accountId, name: "web_auth_domain", data: "api.stellar.org".data(using: .utf8))
+        
+        let txmemo = Memo.text("hello")
+        let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation1,operation2], memo: txmemo, timeBounds: timeBounds)
+        try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
+        
+        return """
+                {
+                "transaction": "\(try! transaction.encodedEnvelope())"
+                }
+                """
+    }
+    
+    func requestInvalidMemoValue(account: String) -> String {
+        let transactionAccount = Account(keyPair: serverKeyPair, sequenceNumber: -1)
+        
+        let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
+        
+        let operation1 = ManageDataOperation(sourceAccountId: account, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
+        let operation2 = ManageDataOperation(sourceAccountId: serverKeyPair.accountId, name: "web_auth_domain", data: "api.stellar.org".data(using: .utf8))
+        
+        let txmemo = Memo.id(9189181222)
+        
+        let transaction = try! Transaction(sourceAccount: transactionAccount, operations: [operation1,operation2], memo: txmemo, timeBounds: timeBounds)
+        try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
+        
+        return """
+                {
+                "transaction": "\(try! transaction.encodedEnvelope())"
+                }
+                """
     }
     
     let requestError = """
