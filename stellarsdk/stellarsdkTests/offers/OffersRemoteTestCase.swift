@@ -25,7 +25,7 @@ class OffersRemoteTestCase: XCTestCase {
     func testLoadOffersForAccount() {
         let expectation = XCTestExpectation(description: "Get offers")
         
-        sdk.offers.getOffers(forAccount: "GDCI2BM4JQHOLAUD7U3XRBIJDFWAHRVEB764HNGGWBWFXVDTYSYS624M") { (response) -> (Void) in
+        sdk.offers.getOffers(forAccount: "GARIJI33DZEOA2HT7H5Q3E7W6KY2KBOYA6ZSUHKNNWNQR75JSQMU3SRJ") { (response) -> (Void) in
             switch response {
             case .success(let offersResponse):
                 // load next page
@@ -41,11 +41,12 @@ class OffersRemoteTestCase: XCTestCase {
                                 XCTAssertTrue(offer1?.id == offer2?.id)
                                 XCTAssertTrue(offer1?.pagingToken == offer2?.pagingToken)
                                 XCTAssertTrue(offer1?.seller == offer2?.seller)
-                                XCTAssertTrue(offer1?.buying == offer2?.buying)
-                                XCTAssertTrue(offer1?.selling == offer2?.selling)
+                                XCTAssertTrue(offer1?.buying.assetType == offer2?.buying.assetType)
+                                XCTAssertTrue(offer1?.selling.assetType == offer2?.selling.assetType)
                                 XCTAssertTrue(offer1?.amount == offer2?.amount)
                                 XCTAssertTrue(offer1?.price == offer2?.price)
-                                XCTAssertTrue(offer1?.priceR == offer2?.priceR)
+                                XCTAssertTrue(offer1?.priceR.numerator == offer2?.priceR.numerator)
+                                XCTAssertTrue(offer1?.priceR.denominator == offer2?.priceR.denominator)
                                 XCTAssert(true)
                                 expectation.fulfill()
                             case .failure(let error):

@@ -124,7 +124,7 @@ class OffersLocalTestCase: XCTestCase {
                         "href": "https://horizon-testnet.stellar.org/accounts/GCJ34JYMXNI7N55YREWAACMMZECOMTPIYDTFCQBWPUP7BLJQDDTVGUW4"
                     }
                 },
-                "id": 121,
+                "id": "121",
                 "paging_token": "121",
                 "seller": "GCJ34JYMXNI7N55YREWAACMMZECOMTPIYDTFCQBWPUP7BLJQDDTVGUW4",
                 "selling": {
