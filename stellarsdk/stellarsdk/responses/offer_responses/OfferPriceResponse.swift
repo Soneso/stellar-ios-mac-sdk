@@ -14,10 +14,10 @@ import Foundation
 public class OfferPriceResponse: NSObject, Decodable {
     
     /// represent the buy price of the currencies on offer.
-    public var numerator:Int
+    public var numerator:Int32
     
     /// represent the sell price of the currencies on offer.
-    public var denominator:Int
+    public var denominator:Int32
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
@@ -33,7 +33,7 @@ public class OfferPriceResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        numerator = try values.decode(Int.self, forKey: .numerator)
-        denominator = try values.decode(Int.self, forKey: .denominator)
+        numerator = try values.decode(Int32.self, forKey: .numerator)
+        denominator = try values.decode(Int32.self, forKey: .denominator)
     }
 }
