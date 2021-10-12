@@ -20,6 +20,7 @@ public enum OrderbookChange {
                    buyingAssetType:String,
                    buyingAssetCode:String?,
                    buyingAssetIssuer:String?,
+                   limit:Int?,
                    cursor: String?)
 }
 
@@ -86,6 +87,7 @@ public class OrderbookService: NSObject {
                         let buyingAssetType,
                         let buyingAssetCode,
                         let buyingAssetIssuer,
+                        let limit,
                         let cursor):
             
             var params = Dictionary<String,String>()
@@ -95,8 +97,9 @@ public class OrderbookService: NSObject {
             params["buying_asset_type"] = buyingAssetType
             params["buying_asset_code"] = buyingAssetCode
             params["buying_asset_issuer"] = buyingAssetIssuer
+            if let limit = limit { params["limit"] = String(limit) }
             params["cursor"] = cursor
-        
+            
             subpath = "/order_book"
             
             if let pathParams = params.stringFromHttpParameters(),
