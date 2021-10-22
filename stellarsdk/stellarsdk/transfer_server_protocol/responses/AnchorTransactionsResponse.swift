@@ -40,6 +40,8 @@ public enum AnchorTransactionStatus: String {
     case tooSmall = "too_small"
     /// deposit/withdrawal size exceeded max_amount
     case tooLarge = "too_large"
+    /// catch-all for any error not enumerated above
+    case error = "error"
 }
 
 public struct AnchorTransactionsResponse: Decodable {
