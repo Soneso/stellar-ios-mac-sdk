@@ -176,7 +176,7 @@ class TomlTestCase: XCTestCase {
             XCTAssertTrue(stellarToml.accountInformation.version == "2.0.0")
             XCTAssertTrue(stellarToml.accountInformation.networkPassphrase == "Public Global Stellar Network ; September 2015")
             XCTAssertTrue(stellarToml.accountInformation.federationServer
-                == "https://stellarid.io/federation/")
+                == "https://api.domain.com/federation")
             XCTAssertTrue(stellarToml.accountInformation.authServer
             == "https://api.domain.com/auth")
             XCTAssertTrue(stellarToml.accountInformation.transferServer

@@ -11,16 +11,16 @@ import stellarsdk
 
 class AmmTestCase: XCTestCase {
 
-    let sdk = StellarSDK(withHorizonUrl:"...")
-    let network = Network.custom(networkId: "...")
-    let seed = "SAHSE34PEZCT3WAWBCR5TMVXUZES62OAJPNUV4Q5TZVAM72J6O2CW4W3"
-    let assetAIssuingAccount = "GDQ4273UBKSHIE73RJB5KLBBM7W3ESHWA74YG7ZBXKZLKT5KZGPKKB7E"
-    let assetBIssuingAccount = "GC2262FQJAHVJSYWI6XEVQEH5CLPYCVSOLQHCDHNSKVWHTKYEZNAQS25"
+    let sdk = StellarSDK()
+    let network = Network.testnet
+    let seed = "SDSGMMWD5NNF5GEWP6V7Z37FVRCU3AZKK6JCYFET57QAV2MWC3NM52SB"
+    let assetAIssuingAccount = "GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL"
+    let assetBIssuingAccount = "GAOF7ARG3ZAVUA63GCLXG5JQTMBAH3ZFYHGLGJLDXGDSXQRHD72LLGOB"
     var effectsStreamItem:EffectsStreamItem? = nil
     var operationsStreamItem:OperationsStreamItem? = nil
-    let liquidityPoolId = "4f7f29db33ead1a38c2edf17aa0416c369c207ca081de5c686c050c1ad320385"
+    let liquidityPoolId = "2c0bfa623845dd101cbf074a1ca1ae4b2458cc8d0104ad65939ebe2cd9054355"
     let assetNative = Asset(type: AssetType.ASSET_TYPE_NATIVE)
-    let nativeLiquidityPoolId = "6a8ff044dd52b38f3ccd4d85bdcfe2789abfefe7d375389199ebed516787db9f"
+    let nativeLiquidityPoolId = "246c5bef46e7540348777afc28d75b6aceecc8034937a017e33969aca62b0d08"
     
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -647,7 +647,7 @@ class AmmTestCase: XCTestCase {
         sdk.liquidityPools.getLiquidityPoolTrades(poolId:self.liquidityPoolId) { (response) -> (Void) in
             switch response {
             case .success(let trades):
-                if trades.records.first?.baseLiquidityPoolId == self.liquidityPoolId {
+                if trades.records.first?.counterLiquidityPoolId == self.liquidityPoolId {
                     XCTAssert(true)
                 } else {
                     XCTAssert(false)

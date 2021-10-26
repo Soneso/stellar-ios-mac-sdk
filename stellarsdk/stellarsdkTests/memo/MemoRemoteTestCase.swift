@@ -48,8 +48,8 @@ class MemoRemoteTestCase: XCTestCase {
         let expectation = XCTestExpectation(description: "Memo with payment transaction sent and received")
         
         do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDHWYHZ74TBMKDCW3GDFWLEKPHYZWKOXXAANJOEMV7QS3TAA22AXNQGK")
-            let destinationAccountKeyPair = try KeyPair(accountId: "GCDP5EESKZQM7UWQTTNVNAYYBUPK2AGR6OVPLB3OICUZO5WQKYZ66DZD")
+            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDSGMMWD5NNF5GEWP6V7Z37FVRCU3AZKK6JCYFET57QAV2MWC3NM52SB")
+            let destinationAccountKeyPair = try KeyPair(accountId: "GAU7P2ELW5RJJQ52IUIQEZMEHCGJFB5ZAKESYIGAPJURHLVIAAZV4LTK")
             
             streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now"))
             streamItem?.onReceive { (response) -> (Void) in

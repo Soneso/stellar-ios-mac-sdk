@@ -67,7 +67,7 @@ class EffectsRemoteTestCase: XCTestCase {
     func testGetEffectsForAccount() {
         let expectation = XCTestExpectation(description: "Get effects for account and parse their details successfuly")
         
-        sdk.effects.getEffects(forAccount: "GAF5KPGTZ3V2BCIYIZZBVPKKSYAVJGZSTGBMLBSYIWKWCLS2QHEAOHIF", order:Order.descending) { (response) -> (Void) in
+        sdk.effects.getEffects(forAccount: "GAQXAWHCM4A7SQCT3BOSVEGRI2OOB7LO2CMFOYFF6YRXU4VQSB5V2V2K", order:Order.descending) { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -85,7 +85,7 @@ class EffectsRemoteTestCase: XCTestCase {
     func testGetEffectsForOperation() {
         let expectation = XCTestExpectation(description: "Get effects for operation")
         
-        sdk.effects.getEffects(forOperation: "10157597659137") { (response) -> (Void) in
+        sdk.effects.getEffects(forOperation: "1577782006009857") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -103,7 +103,7 @@ class EffectsRemoteTestCase: XCTestCase {
     func testGetEffectsForLedger() {
         let expectation = XCTestExpectation(description: "Get effects for ledger")
         
-        sdk.effects.getEffects(forLedger: "123423") { (response) -> (Void) in
+        sdk.effects.getEffects(forLedger: "367497") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -121,7 +121,7 @@ class EffectsRemoteTestCase: XCTestCase {
     func testGetEffectsForTransaction() {
         let expectation = XCTestExpectation(description: "Get effects for transaction")
         
-        sdk.effects.getEffects(forTransaction: "cc4bff306cc2e57d85efa1bd448c63441d953204db8f673c691c8220ab026363") { (response) -> (Void) in
+        sdk.effects.getEffects(forTransaction: "b9d0b2292c4e09e8eb22d036171491e87b8d2086bf8b265874c8d182cb9c9020") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)

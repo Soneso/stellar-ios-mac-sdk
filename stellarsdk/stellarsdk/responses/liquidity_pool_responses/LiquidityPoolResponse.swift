@@ -18,6 +18,8 @@ public class LiquidityPoolResponse: NSObject, Decodable {
     public var totalShares:String
     public var reserves:[ReserveResponse]
     public var pagingToken:String
+    public var lastModifiedLedger:Int
+    public var lastModifiedTime:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -29,6 +31,8 @@ public class LiquidityPoolResponse: NSObject, Decodable {
         case totalShares = "total_shares"
         case reserves
         case pagingToken = "paging_token"
+        case lastModifiedLedger = "last_modified_ledger"
+        case lastModifiedTime = "last_modified_time"
     }
     
     /**
@@ -47,5 +51,7 @@ public class LiquidityPoolResponse: NSObject, Decodable {
         totalShares = try values.decode(String.self, forKey: .totalShares)
         reserves = try values.decode([ReserveResponse].self, forKey: .reserves)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
+        lastModifiedLedger = try values.decode(Int.self, forKey: .lastModifiedLedger)
+        lastModifiedTime = try values.decode(String.self, forKey: .lastModifiedTime)
     }
 }

@@ -11,7 +11,7 @@ import stellarsdk
 
 class TradesTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let testSuccessAccountId = "GCKZWCF7KARLKY5ZPZOQ3JUPFSYZ2WLTVIW62HOS35SQ6C7LY2LP6SOK"
+    let testSuccessAccountId = "GARIJI33DZEOA2HT7H5Q3E7W6KY2KBOYA6ZSUHKNNWNQR75JSQMU3SRJ"
     
     override func setUp() {
         super.setUp()
