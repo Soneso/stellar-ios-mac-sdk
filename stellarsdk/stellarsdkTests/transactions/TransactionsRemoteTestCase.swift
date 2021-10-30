@@ -149,6 +149,50 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
+    
+    func testGetTransactionDetailsClaimAtomTypeLiquidityPool() {
+        let expectation = XCTestExpectation(description: "Get transaction details")
+        
+        sdk.transactions.getTransactionDetails(transactionHash: "c08aa6ddc85a45e61616e04169255b65ef8f18a1770cfd1f9d6ef06e1d9181b5") { (response) -> (Void) in
+            switch response {
+            case .success(let transaction):
+                XCTAssert(transaction.transactionResult.feeCharged == 100);
+                switch(transaction.transactionResult.resultBody) {
+                    case .success(let operations):
+                        XCTAssert(operations.count == 1)
+                        switch(operations.first) {
+                            case .pathPaymentStrictSend(_, let result):
+                                switch(result) {
+                                    case .success(_, let claimAtoms, _):
+                                        XCTAssert(claimAtoms.count == 3)
+                                        switch (claimAtoms.first) {
+                                            case .liquidityPool(let claimAtomLiquidityPool):
+                                                XCTAssert(claimAtomLiquidityPool.amountSold == 55011524)
+                                                XCTAssert(claimAtomLiquidityPool.assetSold.assetCode == "USD")
+                                                XCTAssert(claimAtomLiquidityPool.amountBought == 12000000)
+                                                XCTAssert(claimAtomLiquidityPool.assetBought.assetCode == "USDC")
+                                            default:
+                                                XCTAssert(false)
+                                        }
+                                    default:
+                                        XCTAssert(false)
+                                }
+                            default:
+                                XCTAssert(false)
+                        }
+                    default:
+                        XCTAssert(false)
+                }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GTD Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
 
     func testTransactionSigning() {
         let keyPair = try! KeyPair(secretSeed: seed)

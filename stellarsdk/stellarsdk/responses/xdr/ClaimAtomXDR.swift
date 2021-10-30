@@ -144,7 +144,6 @@ public struct ClaimOfferAtomV0XDR: XDRCodable {
 
 public struct ClaimLiquidityAtomXDR: XDRCodable {
     public let liquidityPoolID: WrappedData32
-    public let offerId:Int64
     public let assetSold: AssetXDR
     public let amountSold:Int64
     public let assetBought: AssetXDR
@@ -154,7 +153,6 @@ public struct ClaimLiquidityAtomXDR: XDRCodable {
         var container = try decoder.unkeyedContainer()
         
         liquidityPoolID = try container.decode(WrappedData32.self)
-        offerId = try container.decode(Int64.self)
         assetSold = try container.decode(AssetXDR.self)
         amountSold = try container.decode(Int64.self)
         assetBought = try container.decode(AssetXDR.self)
@@ -164,7 +162,6 @@ public struct ClaimLiquidityAtomXDR: XDRCodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(liquidityPoolID)
-        try container.encode(offerId)
         try container.encode(assetSold)
         try container.encode(amountSold)
         try container.encode(assetBought)
