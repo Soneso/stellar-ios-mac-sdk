@@ -36,7 +36,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     fileprivate let validNewlineCharacters = ["\r\n", "\n", "\r"]
     
     var event = Dictionary<String, String>()
-    
+    var defaults = Dictionary<String, String>()
     
     public init(url: String, headers: [String : String] = [:]) {
         
@@ -280,16 +280,13 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     internal var lastEventID: String? {
         set {
             if let lastEventID = newValue {
-                let defaults = UserDefaults.standard
-                defaults.set(lastEventID, forKey: lastEventIDKey)
-                defaults.synchronize()
+                defaults[lastEventIDKey] = lastEventID
             }
         }
         
         get {
-            let defaults = UserDefaults.standard
             
-            if let lastEventID = defaults.string(forKey: lastEventIDKey) {
+            if let lastEventID = defaults[lastEventIDKey] {
                 return lastEventID
             }
             return nil
