@@ -16,7 +16,8 @@ public enum TradesChange {
                    counterAssetCode:String?,
                    counterAssetIssuer:String?,
                    cursor:String?,
-                   order:Order?)
+                   order:Order?,
+                   limit: Int?)
     case tradesForAccount(account:String, cursor:String?)
 }
 
@@ -103,7 +104,8 @@ public class TradesService: NSObject {
                         let counterAssetCode,
                         let counterAssetIssuer,
                         let cursor,
-                        let order):
+                        let order,
+                        let limit):
             
             var params = Dictionary<String,String>()
             params["base_asset_type"] = baseAssetType
@@ -114,7 +116,8 @@ public class TradesService: NSObject {
             params["counter_asset_issuer"] = counterAssetIssuer
             params["cursor"] = cursor
             params["order"] = order?.rawValue
-        
+            if let limit = limit { params["limit"] = String(limit) }
+            
             subpath = "/trades"
             
             if let pathParams = params.stringFromHttpParameters(),
