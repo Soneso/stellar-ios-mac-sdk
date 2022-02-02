@@ -291,10 +291,137 @@ public class TxRep: NSObject {
             case "MANAGE_BUY_OFFER":
                 let opPrefix = prefix + "manageBuyOfferOp."
                 return try getManageBuyOfferOperation(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "CREATE_CLAIMABLE_BALANCE":
+                let opPrefix = prefix + "createClaimableBalanceOp."
+                return try getCreateClaimableBalanceOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
             default:
                 throw TxRepError.invalidValue(key: key)
             }
         } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getCreateClaimableBalanceOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> CreateClaimableBalanceOperation? {
+       
+        var key = opPrefix + "asset"
+        let asset:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                asset = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        key = opPrefix + "amount"
+        let amount:Decimal
+        if let amountStr = dic[key], let amounta = Int64(amountStr) {
+            amount = fromAmount(amounta)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "claimants.len"
+        var claimants:[Claimant] = [Claimant]()
+        if let claimantsLen = dic[key] {
+            if let count = Int(claimantsLen) {
+                for i in 0..<count{
+                    try claimants.append(getClaimant(dic:dic, opPrefix: opPrefix, index: i))
+                }
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        }
+        return CreateClaimableBalanceOperation(asset:asset, amount:amount, claimants:claimants, sourceAccountId: sourceAccount?.accountId);
+    }
+    
+    private static func getClaimant(dic:Dictionary<String,String>, opPrefix:String, index:Int) throws -> Claimant {
+        var key = opPrefix + "claimants[" + String(index) + "].v0.destination";
+        let destination:String
+        if let destinationd = dic[key] {
+            do {
+                let kp = try KeyPair(accountId:destinationd)
+                destination = kp.accountId;
+            } catch {
+                throw TxRepError.invalidValue(key: key)
+            }
+            
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "claimants[" + String(index) + "].v0.predicate."
+        let predicate = try getClaimPredicate(dic: dic, opPrefix: key)
+        return Claimant(destination: destination, predicate: predicate)
+    }
+    
+    private static func getClaimPredicate(dic:Dictionary<String,String>, opPrefix:String) throws -> ClaimPredicateXDR {
+        var key = opPrefix + "type"
+        let type:String
+        if let typeStr = dic[key] {
+            type = typeStr
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        switch (type) {
+        case "CLAIM_PREDICATE_UNCONDITIONAL":
+            return ClaimPredicateXDR.claimPredicateUnconditional;
+        case "CLAIM_PREDICATE_AND":
+            key = opPrefix + "andPredicates.len"
+            var andPredicates:[ClaimPredicateXDR] = [ClaimPredicateXDR]()
+            if let predLen = dic[key] {
+                if let count = Int(predLen), count == 2 {
+                    for i in 0..<count{
+                        try andPredicates.append(getClaimPredicate(dic:dic, opPrefix: opPrefix + "andPredicates[" + String(i) + "]."));
+                    }
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+            return ClaimPredicateXDR.claimPredicateAnd(andPredicates)
+        case "CLAIM_PREDICATE_OR":
+            key = opPrefix + "orPredicates.len"
+            var orPredicates:[ClaimPredicateXDR] = [ClaimPredicateXDR]()
+            if let predLen = dic[key] {
+                if let count = Int(predLen), count == 2 {
+                    for i in 0..<count{
+                        try orPredicates.append(getClaimPredicate(dic:dic, opPrefix: opPrefix + "orPredicates[" + String(i) + "]."));
+                    }
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+            return ClaimPredicateXDR.claimPredicateOr(orPredicates)
+        case "CLAIM_PREDICATE_NOT":
+            return try ClaimPredicateXDR.claimPredicateNot(getClaimPredicate(dic: dic, opPrefix: opPrefix + "notPredicate."))
+        case "CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME":
+            key = opPrefix + "absBefore"
+            if let timeStr = dic[key] {
+                if let time64 = Int64(timeStr) {
+                    return ClaimPredicateXDR.claimPredicateBeforeAbsTime(time64)
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "CLAIM_PREDICATE_BEFORE_RELATIVE_TIME":
+            key = opPrefix + "relBefore"
+            if let timeStr = dic[key] {
+                if let time64 = Int64(timeStr) {
+                    return ClaimPredicateXDR.claimPredicateBeforeRelTime(time64)
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        default:
             throw TxRepError.missingValue(key: key)
         }
     }
@@ -1241,11 +1368,71 @@ public class TxRep: NSObject {
         case .bumpSequence(let bumpOp):
             addLine(key: operationPrefix + "bumpTo", value: String(bumpOp.bumpTo), lines: &lines)
             break
+        case .createClaimableBalance(let createOp):
+            addLine(key: operationPrefix + "asset", value: encodeAsset(asset: createOp.asset), lines: &lines)
+            addLine(key: operationPrefix + "amount", value: String(createOp.amount), lines: &lines)
+            addLine(key: operationPrefix + "claimants.len", value: String(createOp.claimants.count), lines: &lines)
+            var index = 0;
+            for claimant in createOp.claimants {
+                switch claimant {
+                case .claimantTypeV0(let c):
+                    addLine(key: operationPrefix + "claimants["+String(index)+"].type", value: "CLAIMANT_TYPE_V0", lines: &lines)
+                    addLine(key: operationPrefix + "claimants["+String(index)+"].v0.destination", value: c.accountID.accountId, lines: &lines)
+                    let px = operationPrefix + "claimants["+String(index)+"].v0.predicate."
+                    addClaimPredicate(predicate: c.predicate, prefix: px, lines: &lines)
+                }
+                index += 1;
+            }
+            break;
         default:
             break
         }
     }
     
+    private static func addClaimPredicate(predicate:ClaimPredicateXDR, prefix:String, lines: inout [String]) -> Void {
+        switch predicate {
+        case .claimPredicateUnconditional:
+            addLine(key: prefix + "type", value: "CLAIM_PREDICATE_UNCONDITIONAL", lines: &lines)
+            break
+        case .claimPredicateAnd(let array):
+            addLine(key: prefix + "type", value: "CLAIM_PREDICATE_AND", lines: &lines)
+            addLine(key: prefix + "andPredicates.len", value: String(array.count), lines: &lines)
+            var index = 0
+            for pred in array {
+                let px = prefix + "andPredicates[" + String(index) + "]."
+                addClaimPredicate(predicate: pred, prefix: px, lines: &lines)
+                index += 1
+            }
+            break
+        case .claimPredicateOr(let array):
+            addLine(key: prefix + "type", value: "CLAIM_PREDICATE_OR", lines: &lines)
+            addLine(key: prefix + "orPredicates.len", value: String(array.count), lines: &lines)
+            var index = 0
+            for pred in array {
+                let px = prefix + "orPredicates[" + String(index) + "]."
+                addClaimPredicate(predicate: pred, prefix: px, lines: &lines)
+                index += 1
+            }
+            break
+        case .claimPredicateNot(let optional):
+            addLine(key: prefix + "type", value: "CLAIM_PREDICATE_NOT", lines: &lines)
+            if let pred = optional {
+                addLine(key: prefix + "notPredicate._present", value: "true", lines: &lines)
+                addClaimPredicate(predicate: pred, prefix: prefix + "notPredicate.", lines: &lines)
+            } else {
+                addLine(key: prefix + "notPredicate._present", value: "false", lines: &lines)
+            }
+            break
+        case .claimPredicateBeforeAbsTime(let int64):
+            addLine(key: prefix + "type", value: "CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME", lines: &lines)
+            addLine(key: prefix + "absBefore", value: String(int64), lines: &lines)
+            break
+        case .claimPredicateBeforeRelTime(let int64):
+            addLine(key: prefix + "type", value: "CLAIM_PREDICATE_BEFORE_RELATIVE_TIME", lines: &lines)
+            addLine(key: prefix + "relBefore", value: String(int64), lines: &lines)
+            break
+        }
+    }
     private static func encodeAsset(asset: AssetXDR) -> String {
         switch asset {
         case .native:
