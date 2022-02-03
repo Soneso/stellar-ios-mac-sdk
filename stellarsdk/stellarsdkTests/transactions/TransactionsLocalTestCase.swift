@@ -356,6 +356,154 @@ class TransactionsLocalTestCase: XCTestCase {
         XCTAssert (txRepRes == txrep)
     }
     
+    func testClawbackTxRep() {
+        let txrep = """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+        tx.fee: 100
+        tx.seqNum: 2916609211498497
+        tx.timeBounds._present: true
+        tx.timeBounds.minTime: 0
+        tx.timeBounds.maxTime: 0
+        tx.memo.type: MEMO_NONE
+        tx.operations.len: 1
+        tx.operations[0].sourceAccount._present: true
+        tx.operations[0].sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+        tx.operations[0].body.type: CLAWBACK
+        tx.operations[0].body.clawbackOp.asset: ACC:GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+        tx.operations[0].body.clawbackOp.from: GDNRZEXQCACXLN4TNS4EJARUQKZGT7HDU4P54XD2SXENPMRRYSZXGYUX
+        tx.operations[0].body.clawbackOp.amount: 2330000000
+        tx.ext.v: 0
+        signatures.len: 1
+        signatures[0].hint: ecd197ef
+        signatures[0].signature: 336998785b7815aac464789d04735d06d0421c5f92d1307a9d164e270fa1a214d30d3f00260146a80a3bb0318c92058c05f6de07589b1172c4b6ab630c628c04
+        """;
+        
+        let expected = "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAGQAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAAEwAAAAFBQ0MAAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAAANsckvAQBXW3k2y4RII0grJp/OOnH95cepXI17IxxLNzAAAAAIrg+oAAAAAAAAAAAezRl+8AAABAM2mYeFt4FarEZHidBHNdBtBCHF+S0TB6nRZOJw+hohTTDT8AJgFGqAo7sDGMkgWMBfbeB1ibEXLEtqtjDGKMBA==";
+
+        let xdr = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr)
+        XCTAssert (xdr == expected)
+        let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
+        print(txRepRes)
+        XCTAssert (txRepRes == txrep)
+    }
+    
+    func testClawbackClamableBalanceTxRep() {
+        let txrep = """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+        tx.fee: 100
+        tx.seqNum: 2916609211498497
+        tx.timeBounds._present: true
+        tx.timeBounds.minTime: 0
+        tx.timeBounds.maxTime: 0
+        tx.memo.type: MEMO_NONE
+        tx.operations.len: 1
+        tx.operations[0].sourceAccount._present: false
+        tx.operations[0].body.type: CLAWBACK_CLAIMABLE_BALANCE
+        tx.operations[0].body.clawbackClaimableBalanceOp.balanceID.type: CLAIMABLE_BALANCE_ID_TYPE_V0
+        tx.operations[0].body.clawbackClaimableBalanceOp.balanceID.v0: f69d8bb300b851590ab2f9d5ef3e5936a571d9d8dbb00b62013873e106adb93a
+        tx.ext.v: 0
+        signatures.len: 1
+        signatures[0].hint: ecd197ef
+        signatures[0].signature: 6db5b9ff8e89c2103971550a485754286d1f782aa7fac17e2553bbaec9ab3969794d0fd5ba6d0b4575b9c75c1c464337fee1b4e5592eb77877b7a72487acb909
+        """;
+        
+        let expected = "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAGQAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAFAAAAAD2nYuzALhRWQqy+dXvPlk2pXHZ2NuwC2IBOHPhBq25OgAAAAAAAAAB7NGX7wAAAEBttbn/jonCEDlxVQpIV1QobR94Kqf6wX4lU7uuyas5aXlND9W6bQtFdbnHXBxGQzf+4bTlWS63eHe3pySHrLkJ"
+
+        let xdr = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr)
+        XCTAssert (xdr == expected)
+        let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
+        print(txRepRes)
+        XCTAssert (txRepRes == txrep)
+    }
+    
+    func testSetTrustlineFlagsTxRep() {
+        let txrep = """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+        tx.fee: 200
+        tx.seqNum: 2916609211498497
+        tx.timeBounds._present: true
+        tx.timeBounds.minTime: 0
+        tx.timeBounds.maxTime: 0
+        tx.memo.type: MEMO_NONE
+        tx.operations.len: 2
+        tx.operations[0].sourceAccount._present: true
+        tx.operations[0].sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+        tx.operations[0].body.type: SET_TRUST_LINE_FLAGS
+        tx.operations[0].body.setTrustLineFlagsOp.trustor: GDNRZEXQCACXLN4TNS4EJARUQKZGT7HDU4P54XD2SXENPMRRYSZXGYUX
+        tx.operations[0].body.setTrustLineFlagsOp.asset: ACC:GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+        tx.operations[0].body.setTrustLineFlagsOp.clearFlags: 6
+        tx.operations[0].body.setTrustLineFlagsOp.setFlags: 1
+        tx.operations[1].sourceAccount._present: false
+        tx.operations[1].body.type: SET_TRUST_LINE_FLAGS
+        tx.operations[1].body.setTrustLineFlagsOp.trustor: GDNRZEXQCACXLN4TNS4EJARUQKZGT7HDU4P54XD2SXENPMRRYSZXGYUX
+        tx.operations[1].body.setTrustLineFlagsOp.asset: BCC:GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+        tx.operations[1].body.setTrustLineFlagsOp.clearFlags: 5
+        tx.operations[1].body.setTrustLineFlagsOp.setFlags: 2
+        tx.ext.v: 0
+        signatures.len: 1
+        signatures[0].hint: ecd197ef
+        signatures[0].signature: 5d4569d07068fd4824c87bf531061cf962a820d9ac5d4fdda0a2728f035d154e5cc842aa8aa398bf8ba2f42577930af129c593832ab14ff02c25989eaf8fbf0b
+        """;
+        
+        let expected = "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAMgAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAABAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAAFQAAAADbHJLwEAV1t5NsuESCNIKyafzjpx/eXHqVyNeyMcSzcwAAAAFBQ0MAAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAABgAAAAEAAAAAAAAAFQAAAADbHJLwEAV1t5NsuESCNIKyafzjpx/eXHqVyNeyMcSzcwAAAAFCQ0MAAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAABQAAAAIAAAAAAAAAAezRl+8AAABAXUVp0HBo/UgkyHv1MQYc+WKoINmsXU/doKJyjwNdFU5cyEKqiqOYv4ui9CV3kwrxKcWTgyqxT/AsJZier4+/Cw=="
+        
+
+        let xdr = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr)
+        XCTAssert (xdr == expected)
+        let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
+        print(txRepRes)
+        XCTAssert (txRepRes == txrep)
+    }
+    
+    func testLiquidityPool() {
+        let txrep = """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+        tx.fee: 200
+        tx.seqNum: 2916609211498497
+        tx.timeBounds._present: true
+        tx.timeBounds.minTime: 0
+        tx.timeBounds.maxTime: 0
+        tx.memo.type: MEMO_NONE
+        tx.operations.len: 2
+        tx.operations[0].sourceAccount._present: true
+        tx.operations[0].sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
+        tx.operations[0].body.type: LIQUIDITY_POOL_DEPOSIT
+        tx.operations[0].body.liquidityPoolDepositOp.liquidityPoolID: f69d8bb300b851590ab2f9d5ef3e5936a571d9d8dbb00b62013873e106adb93a
+        tx.operations[0].body.liquidityPoolDepositOp.maxAmountA: 1000000000
+        tx.operations[0].body.liquidityPoolDepositOp.maxAmountB: 2000000000
+        tx.operations[0].body.liquidityPoolDepositOp.minPrice.n: 20
+        tx.operations[0].body.liquidityPoolDepositOp.minPrice.d: 1
+        tx.operations[0].body.liquidityPoolDepositOp.maxPrice.n: 30
+        tx.operations[0].body.liquidityPoolDepositOp.maxPrice.d: 1
+        tx.operations[1].sourceAccount._present: false
+        tx.operations[1].body.type: LIQUIDITY_POOL_WITHDRAW
+        tx.operations[1].body.liquidityPoolWithdrawOp.liquidityPoolID: ceab14eebbdbfe25a1830e39e311c2180846df74947ba24a386b8314ccba6622
+        tx.operations[1].body.liquidityPoolWithdrawOp.amount: 9000000000
+        tx.operations[1].body.liquidityPoolWithdrawOp.minAmountA: 2000000000
+        tx.operations[1].body.liquidityPoolWithdrawOp.minAmountB: 4000000000
+        tx.ext.v: 0
+        signatures.len: 1
+        signatures[0].hint: ecd197ef
+        signatures[0].signature: ed97d0d018a671c5a914a15346c1b38912d6695d1d152ffe976b8c9689ce2e7770b0e6cc8889c4a2423323898b087e5fbf43306ef7e63a75366befd3e2a9bd03
+        """;
+        
+        let expected = "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAMgAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAABAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAAFvadi7MAuFFZCrL51e8+WTalcdnY27ALYgE4c+EGrbk6AAAAADuaygAAAAAAdzWUAAAAABQAAAABAAAAHgAAAAEAAAAAAAAAF86rFO672/4loYMOOeMRwhgIRt90lHuiSjhrgxTMumYiAAAAAhhxGgAAAAAAdzWUAAAAAADuaygAAAAAAAAAAAHs0ZfvAAAAQO2X0NAYpnHFqRShU0bBs4kS1mldHRUv/pdrjJaJzi53cLDmzIiJxKJCMyOJiwh+X79DMG735jp1Nmvv0+KpvQM=";
+        
+        let xdr = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr)
+        XCTAssert (xdr == expected)
+        let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
+        print(txRepRes)
+        XCTAssert (txRepRes == txrep)
+    }
+    
     func testTransactionEnvelopeXDRStringInit() {
     
         let xdrStringV1 = "AAAAAgAAAABlfpQzRFiTdhYZiWYK6zm44YWGBfNHvoXOPM+imIUMTQAAA+gAD7FZAAAABAAAAAAAAAAAAAAAAQAAAAEAAAAAZX6UM0RYk3YWGYlmCus5uOGFhgXzR76FzjzPopiFDE0AAAABAAAAAByH6g1uUljaFtnxQRIrC6x47kLp1vHEcml+WhdzQjWKAAAAAAAAAAAA5OHAAAAAAAAAAAGYhQxNAAAAQMRhbj+98fzgU++ft/Sd5Nd/2qLPofcgLyRKyJafSKM4jSNNkLGQKL5oFSJnaBnaOxZ7Jc4q6s5GV9y1bcnIdQc="

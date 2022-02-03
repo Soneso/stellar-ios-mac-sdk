@@ -305,12 +305,228 @@ public class TxRep: NSObject {
             case "REVOKE_SPONSORSHIP":
                 let opPrefix = prefix + "revokeSponsorshipOp."
                 return try getRevokeSponsorshipOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "CLAWBACK":
+                let opPrefix = prefix + "clawbackOp."
+                return try getClawbackOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "CLAWBACK_CLAIMABLE_BALANCE":
+                let opPrefix = prefix + "clawbackClaimableBalanceOp."
+                return try getClawbackClaimableBalanceOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "SET_TRUST_LINE_FLAGS":
+                let opPrefix = prefix + "setTrustLineFlagsOp."
+                return try getSetTrustlineFlagsOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "LIQUIDITY_POOL_DEPOSIT":
+                let opPrefix = prefix + "liquidityPoolDepositOp."
+                return try getLiquidityPoolDepositOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "LIQUIDITY_POOL_WITHDRAW":
+                let opPrefix = prefix + "liquidityPoolWithdrawOp."
+                return try getLiquidityPoolWithdrawOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
             default:
                 throw TxRepError.invalidValue(key: key)
             }
         } else {
             throw TxRepError.missingValue(key: key)
         }
+    }
+    
+    private static func getLiquidityPoolWithdrawOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> LiquidityPoolWithdrawOperation? {
+        var key = opPrefix + "liquidityPoolID";
+        let liquidityPoolID:String
+        if let liquidityPoolIDStr = dic[key] {
+            liquidityPoolID = liquidityPoolIDStr
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "amount"
+        let amount:Decimal
+        if let amountStr = dic[key], let amounta = Int64(amountStr) {
+            amount = fromAmount(amounta)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "minAmountA"
+        let minAmountA:Decimal
+        if let amountStr = dic[key], let amounta = Int64(amountStr) {
+            minAmountA = fromAmount(amounta)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "minAmountB"
+        let minAmountB:Decimal
+        if let amountStr = dic[key], let amounta = Int64(amountStr) {
+            minAmountB = fromAmount(amounta)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        return LiquidityPoolWithdrawOperation(sourceAccountId: sourceAccount?.accountId,
+                                              liquidityPoolId: liquidityPoolID,
+                                              amount:amount,
+                                              minAmountA: minAmountA,
+                                              minAmountB: minAmountB)
+    }
+    
+    private static func getLiquidityPoolDepositOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> LiquidityPoolDepositOperation? {
+        var key = opPrefix + "liquidityPoolID";
+        let liquidityPoolID:String
+        if let liquidityPoolIDStr = dic[key] {
+            liquidityPoolID = liquidityPoolIDStr
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "maxAmountA"
+        let maxAmountA:Decimal
+        if let amountStr = dic[key], let amounta = Int64(amountStr) {
+            maxAmountA = fromAmount(amounta)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "maxAmountB"
+        let maxAmountB:Decimal
+        if let amountStr = dic[key], let amounta = Int64(amountStr) {
+            maxAmountB = fromAmount(amounta)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "minPrice.n"
+        let minPriceN:Int32
+        if let minPriceNStr = dic[key] {
+            if let minPriceNI = Int32(minPriceNStr) {
+                minPriceN = minPriceNI
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "minPrice.d"
+        let minPriceD:Int32
+        if let minPriceDStr = dic[key] {
+            if let minPriceDI = Int32(minPriceDStr) {
+                minPriceD = minPriceDI
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "maxPrice.n"
+        let maxPriceN:Int32
+        if let maxPriceNStr = dic[key] {
+            if let maxPriceNI = Int32(maxPriceNStr) {
+                maxPriceN = maxPriceNI
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "maxPrice.d"
+        let maxPriceD:Int32
+        if let maxPriceDStr = dic[key] {
+            if let maxPriceDI = Int32(maxPriceDStr) {
+                maxPriceD = maxPriceDI
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        return LiquidityPoolDepositOperation(sourceAccountId: sourceAccount?.accountId, liquidityPoolId: liquidityPoolID,
+                                             maxAmountA: maxAmountA, maxAmountB: maxAmountB,
+                                             minPrice: Price(numerator: minPriceN, denominator: minPriceD),
+                                             maxPrice: Price(numerator: maxPriceN, denominator: maxPriceD))
+    }
+    
+    private static func getSetTrustlineFlagsOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> SetTrustlineFlagsOperation? {
+        var key = opPrefix + "asset"
+        let asset:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                asset = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "trustor";
+        let accountId:String
+        if let accountIdStr = dic[key] {
+            do {
+                let kp = try KeyPair(accountId:accountIdStr)
+                accountId = kp.accountId;
+            } catch {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "clearFlags"
+        let clearFlags:UInt32
+        if let clearFlagsStr = dic[key] {
+            if let clearFlagsI = UInt32(clearFlagsStr) {
+                clearFlags = clearFlagsI
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "setFlags"
+        let setFlags:UInt32
+        if let setFlagsStr = dic[key] {
+            if let setFlagsI = UInt32(setFlagsStr) {
+                setFlags = setFlagsI
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        return SetTrustlineFlagsOperation(sourceAccountId: sourceAccount?.accountId, asset: asset, trustorAccountId: accountId, setFlags: setFlags, clearFlags: clearFlags)
+    }
+    
+    private static func getClawbackClaimableBalanceOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ClawbackClaimableBalanceOperation? {
+        let key = opPrefix + "balanceID.v0"
+        if let balanceId = dic[key] {
+            return ClawbackClaimableBalanceOperation(claimableBalanceID: balanceId, sourceAccountId: sourceAccount?.accountId)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getClawbackOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ClawbackOperation? {
+        var key = opPrefix + "asset"
+        let asset:Asset
+        if let assetStr = dic[key] {
+            if let asseta = decodeAsset(asset: assetStr) {
+                asset = asseta
+            } else {
+               throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        key = opPrefix + "amount"
+        let amount:Decimal
+        if let amountStr = dic[key], let amounta = Int64(amountStr) {
+            amount = fromAmount(amounta)
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = opPrefix + "from";
+        let accountId:String
+        if let accountIdStr = dic[key] {
+            do {
+                let kp = try KeyPair(accountId:accountIdStr)
+                accountId = kp.accountId;
+            } catch {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        return ClawbackOperation(sourceAccountId: sourceAccount?.accountId, asset: asset, fromAccountId: accountId, amount: amount)
     }
     
     private static func getRevokeSponsorshipOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> RevokeSponsorshipOperation? {
@@ -1642,6 +1858,42 @@ public class TxRep: NSObject {
                 }
                 break
             }
+            break
+        case .clawback(let clawbackOp):
+            addLine(key: operationPrefix + "asset", value: encodeAsset(asset: clawbackOp.asset), lines: &lines)
+            addLine(key: operationPrefix + "from", value: clawbackOp.from.accountId, lines: &lines)
+            addLine(key: operationPrefix + "amount", value: String(clawbackOp.amount), lines: &lines)
+            break
+        case .clawbackClaimableBalance(let cOp):
+            addLine(key: operationPrefix + "balanceID.type", value: "CLAIMABLE_BALANCE_ID_TYPE_V0", lines: &lines)
+            let claimableBalanceIDXDR = cOp.claimableBalanceID
+            switch claimableBalanceIDXDR {
+            case .claimableBalanceIDTypeV0(let wrappedData32):
+                let balanceId = wrappedData32.wrapped.hexEncodedString()
+                addLine(key: operationPrefix + "balanceID.v0", value: balanceId, lines: &lines)
+                break
+            }
+            break
+        case .setTrustLineFlags(let sOp):
+            addLine(key: operationPrefix + "trustor", value: sOp.accountID.accountId, lines: &lines)
+            addLine(key: operationPrefix + "asset", value: encodeAsset(asset: sOp.asset), lines: &lines)
+            addLine(key: operationPrefix + "clearFlags", value: String(sOp.clearFlags), lines: &lines)
+            addLine(key: operationPrefix + "setFlags", value: String(sOp.setFlags), lines: &lines)
+            break
+        case .liquidityPoolDeposit(let lOp):
+            addLine(key: operationPrefix + "liquidityPoolID", value: lOp.liquidityPoolID.wrapped.hexEncodedString(), lines: &lines)
+            addLine(key: operationPrefix + "maxAmountA", value: String(lOp.maxAmountA), lines: &lines)
+            addLine(key: operationPrefix + "maxAmountB", value: String(lOp.maxAmountB), lines: &lines)
+            addLine(key: operationPrefix + "minPrice.n", value: String(lOp.minPrice.n), lines: &lines)
+            addLine(key: operationPrefix + "minPrice.d", value: String(lOp.minPrice.d), lines: &lines)
+            addLine(key: operationPrefix + "maxPrice.n", value: String(lOp.maxPrice.n), lines: &lines)
+            addLine(key: operationPrefix + "maxPrice.d", value: String(lOp.maxPrice.d), lines: &lines)
+            break
+        case .liquidityPoolWithdraw(let lOp):
+            addLine(key: operationPrefix + "liquidityPoolID", value: lOp.liquidityPoolID.wrapped.hexEncodedString(), lines: &lines)
+            addLine(key: operationPrefix + "amount", value: String(lOp.amount), lines: &lines)
+            addLine(key: operationPrefix + "minAmountA", value: String(lOp.minAmountA), lines: &lines)
+            addLine(key: operationPrefix + "minAmountB", value: String(lOp.minAmountB), lines: &lines)
             break
         default:
             break
