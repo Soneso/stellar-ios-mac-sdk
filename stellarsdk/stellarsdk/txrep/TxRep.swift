@@ -294,9 +294,201 @@ public class TxRep: NSObject {
             case "CREATE_CLAIMABLE_BALANCE":
                 let opPrefix = prefix + "createClaimableBalanceOp."
                 return try getCreateClaimableBalanceOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "CLAIM_CLAIMABLE_BALANCE":
+                let opPrefix = prefix + "claimClaimableBalanceOp."
+                return try getClaimClaimableBalanceOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "BEGIN_SPONSORING_FUTURE_RESERVES":
+                let opPrefix = prefix + "beginSponsoringFutureReservesOp."
+                return try getBeginSponsoringFutureReservesOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "END_SPONSORING_FUTURE_RESERVES":
+                return try getEndSponsoringFutureReservesOp(sourceAccount: sourceAccount)
+            case "REVOKE_SPONSORSHIP":
+                let opPrefix = prefix + "revokeSponsorshipOp."
+                return try getRevokeSponsorshipOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
             default:
                 throw TxRepError.invalidValue(key: key)
             }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getRevokeSponsorshipOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> RevokeSponsorshipOperation? {
+        var key = opPrefix + "type"
+        let type:String
+        if let typeStr = dic[key] {
+            type = typeStr
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        if (type == "REVOKE_SPONSORSHIP_LEDGER_ENTRY") {
+            key = opPrefix + "ledgerKey.type"
+            let ledgerKeyType:String
+            if let ledgerKeyTypeStr = dic[key] {
+                ledgerKeyType = ledgerKeyTypeStr
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+            if (ledgerKeyType == "ACCOUNT") {
+                key = opPrefix + "ledgerKey.account.accountID";
+                let accountId:String
+                if let accountIdStr = dic[key] {
+                    do {
+                        let kp = try KeyPair(accountId:accountIdStr)
+                        accountId = kp.accountId;
+                    } catch {
+                        throw TxRepError.invalidValue(key: key)
+                    }
+                    let ledgerKey = try RevokeSponsorshipOperation.revokeAccountSponsorshipLedgerKey(accountId: accountId);
+                    return RevokeSponsorshipOperation(ledgerKey: ledgerKey, sourceAccountId: sourceAccount?.accountId);
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            } else if (ledgerKeyType == "TRUSTLINE") {
+                key = opPrefix + "ledgerKey.trustLine.accountID";
+                let accountId:String
+                if let accountIdStr = dic[key] {
+                    do {
+                        let kp = try KeyPair(accountId:accountIdStr)
+                        accountId = kp.accountId;
+                    } catch {
+                        throw TxRepError.invalidValue(key: key)
+                    }
+                    key = opPrefix + "ledgerKey.trustLine.asset"
+                    let asset:Asset
+                    if let assetStr = dic[key] {
+                        if let asseta = decodeAsset(asset: assetStr) {
+                            asset = asseta
+                        } else {
+                           throw TxRepError.invalidValue(key: key)
+                        }
+                    } else {
+                        throw TxRepError.missingValue(key: key)
+                    }
+                    let ledgerKey = try RevokeSponsorshipOperation.revokeTrustlineSponsorshipLedgerKey(accountId: accountId, asset: asset)
+                    return RevokeSponsorshipOperation(ledgerKey: ledgerKey, sourceAccountId: sourceAccount?.accountId);
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            } else if (ledgerKeyType == "OFFER") {
+                key = opPrefix + "ledgerKey.offer.sellerID";
+                let accountId:String
+                if let accountIdStr = dic[key] {
+                    do {
+                        let kp = try KeyPair(accountId:accountIdStr)
+                        accountId = kp.accountId;
+                    } catch {
+                        throw TxRepError.invalidValue(key: key)
+                    }
+                    key = opPrefix + "ledgerKey.offer.offerID"
+                    var offerId:UInt64 = 0
+                    if let offerIdStr = dic[key] {
+                        if let offerIdi = UInt64(offerIdStr) {
+                            offerId = offerIdi
+                        } else {
+                            throw TxRepError.invalidValue(key: key)
+                        }
+                    }
+                    let ledgerKey = try RevokeSponsorshipOperation.revokeOfferSponsorshipLedgerKey(sellerAccountId: accountId, offerId: offerId)
+                    return RevokeSponsorshipOperation(ledgerKey: ledgerKey, sourceAccountId: sourceAccount?.accountId);
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            } else if (ledgerKeyType == "DATA") {
+                key = opPrefix + "ledgerKey.data.accountID";
+                let accountId:String
+                if let accountIdStr = dic[key] {
+                    do {
+                        let kp = try KeyPair(accountId:accountIdStr)
+                        accountId = kp.accountId;
+                    } catch {
+                        throw TxRepError.invalidValue(key: key)
+                    }
+                    let jsonDecoder = JSONDecoder()
+                    key = opPrefix + "ledgerKey.data.dataName"
+                    var dataName:String
+                    if let text = dic[key] {
+                      do {
+                          if let textData = text.data(using: .utf8) {
+                              dataName = try jsonDecoder.decode(String.self, from:textData)
+                          } else {
+                              dataName = text.replacingOccurrences(of: "\"", with: "")
+                          }
+                      } catch {
+                          throw TxRepError.invalidValue(key: key)
+                      }
+                    } else {
+                      throw TxRepError.missingValue(key: key)
+                    }
+                    let ledgerKey = try RevokeSponsorshipOperation.revokeDataSponsorshipLedgerKey(accountId: accountId, dataName: dataName)
+                    return RevokeSponsorshipOperation(ledgerKey: ledgerKey, sourceAccountId: sourceAccount?.accountId);
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            } else if (ledgerKeyType == "CLAIMABLE_BALANCE") {
+                let key = opPrefix + "ledgerKey.claimableBalance.balanceID.v0"
+                if let balanceId = dic[key] {
+                    let ledgerKey = try RevokeSponsorshipOperation.revokeClaimableBalanceSponsorshipLedgerKey(balanceId: balanceId)
+                    return RevokeSponsorshipOperation(ledgerKey: ledgerKey, sourceAccountId: sourceAccount?.accountId);
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            }
+        } else if (type == "REVOKE_SPONSORSHIP_SIGNER") {
+            key = opPrefix + "signer.accountID";
+            let accountId:String
+            if let accountIdStr = dic[key] {
+                do {
+                    let kp = try KeyPair(accountId:accountIdStr)
+                    accountId = kp.accountId;
+                } catch {
+                    throw TxRepError.invalidValue(key: key)
+                }
+                
+                key = opPrefix + "signer.signerKey"
+                let signer:SignerKeyXDR
+                if let sKeyStr = dic[key] {
+                    do {
+                        if sKeyStr.hasPrefix("G") {
+                            signer = SignerKeyXDR.ed25519(WrappedData32(try sKeyStr.decodeEd25519PublicKey()))
+                        } else if sKeyStr.hasPrefix("T") {
+                            signer = SignerKeyXDR.preAuthTx(WrappedData32(try sKeyStr.decodePreAuthTx()))
+                        } else if sKeyStr.hasPrefix("X") {
+                            signer = SignerKeyXDR.hashX(WrappedData32(try sKeyStr.decodeSha256Hash()))
+                        } else {
+                           throw TxRepError.invalidValue(key: key)
+                        }
+                    } catch {
+                        throw TxRepError.invalidValue(key: key)
+                    }
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+                return RevokeSponsorshipOperation(signerAccountId: accountId, signerKey: signer, sourceAccountId: sourceAccount?.accountId)
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        }
+        return nil;
+    }
+    
+    private static func getEndSponsoringFutureReservesOp(sourceAccount:MuxedAccount?) throws -> EndSponsoringFutureReservesOperation? {
+        return EndSponsoringFutureReservesOperation(sponsoredAccountId: sourceAccount?.accountId);
+    }
+    
+    private static func getBeginSponsoringFutureReservesOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> BeginSponsoringFutureReservesOperation? {
+        let key = opPrefix + "sponsoredID"
+        if let accId = dic[key] {
+            return BeginSponsoringFutureReservesOperation(sponsoredAccountId: accId, sponsoringAccountId: sourceAccount?.accountId);
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getClaimClaimableBalanceOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> ClaimClaimableBalanceOperation? {
+        let key = opPrefix + "balanceID.v0"
+        if let balanceId = dic[key] {
+            return ClaimClaimableBalanceOperation(balanceId: balanceId, sourceAccountId: sourceAccount?.accountId);
         } else {
             throw TxRepError.missingValue(key: key)
         }
@@ -936,9 +1128,9 @@ public class TxRep: NSObject {
                 do {
                     if sKeyStr.hasPrefix("G") {
                         signer = SignerKeyXDR.ed25519(WrappedData32(try sKeyStr.decodeEd25519PublicKey()))
-                    } else if sKeyStr.hasPrefix("X") {
-                        signer = SignerKeyXDR.preAuthTx(WrappedData32(try sKeyStr.decodePreAuthTx()))
                     } else if sKeyStr.hasPrefix("T") {
+                        signer = SignerKeyXDR.preAuthTx(WrappedData32(try sKeyStr.decodePreAuthTx()))
+                    } else if sKeyStr.hasPrefix("X") {
                         signer = SignerKeyXDR.hashX(WrappedData32(try sKeyStr.decodeSha256Hash()))
                     } else {
                        throw TxRepError.invalidValue(key: key)
@@ -1384,6 +1576,73 @@ public class TxRep: NSObject {
                 index += 1;
             }
             break;
+        case .claimClaimableBalance(let claimOp):
+            addLine(key: operationPrefix + "balanceID.type", value: "CLAIMABLE_BALANCE_ID_TYPE_V0", lines: &lines)
+            switch claimOp.balanceID {
+            case .claimableBalanceIDTypeV0(let data):
+                let balanceId = data.wrapped.hexEncodedString()
+                addLine(key: operationPrefix + "balanceID.v0", value: balanceId, lines: &lines)
+            }
+            break
+        case .beginSponsoringFutureReserves(let begOp):
+            addLine(key: operationPrefix + "sponsoredID", value: begOp.sponsoredId.accountId, lines: &lines)
+            break
+        case .revokeSponsorship(let revokeOp):
+            switch revokeOp {
+            case .revokeSponsorshipLedgerEntry(let ledgerKeyXDR):
+                addLine(key: operationPrefix + "type", value: "REVOKE_SPONSORSHIP_LEDGER_ENTRY", lines: &lines)
+                switch ledgerKeyXDR {
+                case .account(let ledgerKeyAccountXDR):
+                    addLine(key: operationPrefix + "ledgerKey.type", value: "ACCOUNT", lines: &lines)
+                    addLine(key: operationPrefix + "ledgerKey.account.accountID", value: ledgerKeyAccountXDR.accountID.accountId, lines: &lines)
+                    break
+                case .trustline(let ledgerKeyTrustLineXDR):
+                    addLine(key: operationPrefix + "ledgerKey.type", value: "TRUSTLINE", lines: &lines)
+                    addLine(key: operationPrefix + "ledgerKey.trustLine.accountID", value: ledgerKeyTrustLineXDR.accountID.accountId, lines: &lines)
+                    addLine(key: operationPrefix + "ledgerKey.trustLine.asset", value: encodeTrustlineAsset(asset: ledgerKeyTrustLineXDR.asset), lines: &lines)
+                    break
+                case .offer(let ledgerKeyOfferXDR):
+                    addLine(key: operationPrefix + "ledgerKey.type", value: "OFFER", lines: &lines)
+                    addLine(key: operationPrefix + "ledgerKey.offer.sellerID", value: ledgerKeyOfferXDR.sellerId.accountId, lines: &lines)
+                    addLine(key: operationPrefix + "ledgerKey.offer.offerID", value: String(ledgerKeyOfferXDR.offerId), lines: &lines)
+                    break
+                case .data(let ledgerKeyDataXDR):
+                    addLine(key: operationPrefix + "ledgerKey.type", value: "DATA", lines: &lines)
+                    addLine(key: operationPrefix + "ledgerKey.data.accountID", value: ledgerKeyDataXDR.accountId.accountId, lines: &lines)
+                    addLine(key: operationPrefix + "ledgerKey.data.dataName", value: "\"" + ledgerKeyDataXDR.dataName + "\"", lines: &lines)
+                    break
+                case .claimableBalance(let claimableBalanceIDXDR):
+                    addLine(key: operationPrefix + "ledgerKey.type", value: "CLAIMABLE_BALANCE", lines: &lines)
+                    addLine(key: operationPrefix + "ledgerKey.claimableBalance.balanceID.type", value: "CLAIMABLE_BALANCE_ID_TYPE_V0", lines: &lines)
+                    switch claimableBalanceIDXDR {
+                    case .claimableBalanceIDTypeV0(let wrappedData32):
+                        let balanceId = wrappedData32.wrapped.hexEncodedString()
+                        addLine(key: operationPrefix + "ledgerKey.claimableBalance.balanceID.v0", value: balanceId, lines: &lines)
+                        break
+                    }
+                    break
+                default:
+                    break
+                }
+                break
+            case .revokeSponsorshipSignerEntry(let revokeSponsorshipSignerXDR):
+                addLine(key: operationPrefix + "type", value: "REVOKE_SPONSORSHIP_SIGNER", lines: &lines)
+                addLine(key: operationPrefix + "signer.accountID", value: revokeSponsorshipSignerXDR.accountID.accountId, lines: &lines)
+                let signerKey = revokeSponsorshipSignerXDR.signerKey
+                switch signerKey {
+                case .ed25519(let data):
+                    addLine(key: operationPrefix + "signer.signerKey", value: try! data.wrapped.encodeEd25519PublicKey(), lines: &lines)
+                    break
+                case .preAuthTx(let data):
+                    addLine(key: operationPrefix + "signer.signerKey", value: try! data.wrapped.encodePreAuthTx(), lines: &lines)
+                    break
+                case .hashX(let data):
+                    addLine(key: operationPrefix + "signer.signerKey", value: try! data.wrapped.encodeSha256Hash(), lines: &lines)
+                    break
+                }
+                break
+            }
+            break
         default:
             break
         }
@@ -1443,6 +1702,17 @@ public class TxRep: NSObject {
     }
     
     private static func encodeChangeTrustAsset(asset: ChangeTrustAssetXDR) -> String {
+        switch asset {
+        case .native:
+            return "XLM"
+        case .poolShare:
+            return "TODO" //TODO
+        default:
+            return asset.assetCode! + ":" + asset.issuer!.accountId
+        }
+    }
+    
+    private static func encodeTrustlineAsset(asset: TrustlineAssetXDR) -> String {
         switch asset {
         case .native:
             return "XLM"
