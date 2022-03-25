@@ -51,7 +51,7 @@ public extension String {
     func wrappedData32FromHex() -> WrappedData32 {
         var hex = self
         // remove leading zeros
-        while hex.hasPrefix("00") {
+        while hex.hasPrefix("00") && hex.count >= 66 {
             hex = String(hex.dropFirst(2))
         }
         var data = Data()

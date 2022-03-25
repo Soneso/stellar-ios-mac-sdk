@@ -37,27 +37,8 @@ public class ClaimClaimableBalanceOperation:Operation {
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         
-        let cIDXDR = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(ClaimClaimableBalanceOperation.wrappedDataFrom(balanceIdHexString:balanceId))
+        let cIDXDR = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(balanceId.wrappedData32FromHex())
         let cbXDR = ClaimClaimableBalanceOpXDR(balanceID: cIDXDR)
         return OperationBodyXDR.claimClaimableBalance(cbXDR)
-    }
-    
-    static func wrappedDataFrom(balanceIdHexString: String) -> WrappedData32 {
-        var hex = balanceIdHexString
-        // remove leading zeros
-        while hex.hasPrefix("00") {
-            hex = String(hex.dropFirst(2))
-        }
-        var data = Data()
-        while(hex.count > 0) {
-            let subIndex = hex.index(hex.startIndex, offsetBy: 2)
-            let c = String(hex[..<subIndex])
-            hex = String(hex[subIndex...])
-            var ch: UInt32 = 0
-            Scanner(string: c).scanHexInt32(&ch)
-            var char = UInt8(ch)
-            data.append(&char, count: 1)
-        }
-        return WrappedData32(data)
     }
 }

@@ -13,14 +13,14 @@ class AmmTestCase: XCTestCase {
 
     let sdk = StellarSDK()
     let network = Network.testnet
-    let seed = "SDSGMMWD5NNF5GEWP6V7Z37FVRCU3AZKK6JCYFET57QAV2MWC3NM52SB"
-    let assetAIssuingAccount = "GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL"
-    let assetBIssuingAccount = "GAOF7ARG3ZAVUA63GCLXG5JQTMBAH3ZFYHGLGJLDXGDSXQRHD72LLGOB"
+    let seed = "SCHA6AVUZOYY33A36TXORU4KDHKMHOSNXNNJQYUFCMRFYQSCRZEG2X3V"
+    let assetAIssuingAccount = "GAOFNT6RHNHWZ7HJ6VGEYQLD5MGUCGEH77NNCGWKXGQ2GEWGZRNLAFSD"
+    let assetBIssuingAccount = "GCG5I35O7WGOBTBT2V5R3TKL5OSMSKVY4TQAENXWQ6OAR5H2J54YU3IF"
     var effectsStreamItem:EffectsStreamItem? = nil
     var operationsStreamItem:OperationsStreamItem? = nil
-    let liquidityPoolId = "2c0bfa623845dd101cbf074a1ca1ae4b2458cc8d0104ad65939ebe2cd9054355"
+    let liquidityPoolId = "3f761e78e06400d0a3d55363cf5566e904ccafa4dbc6ecef1e420490ee7bdf54"
     let assetNative = Asset(type: AssetType.ASSET_TYPE_NATIVE)
-    let nativeLiquidityPoolId = "246c5bef46e7540348777afc28d75b6aceecc8034937a017e33969aca62b0d08"
+    let nativeLiquidityPoolId = "bbc3b56647b613ec39b1bf13f7b1ae570c1dbb3b2fe1da450e66d0a324c151ef"
     
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

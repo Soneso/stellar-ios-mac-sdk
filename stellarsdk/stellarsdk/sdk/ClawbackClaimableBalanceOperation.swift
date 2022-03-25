@@ -35,7 +35,7 @@ public class ClawbackClaimableBalanceOperation:Operation {
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         
-        let cIDXDR = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(ClaimClaimableBalanceOperation.wrappedDataFrom(balanceIdHexString:claimableBalanceID))
+        let cIDXDR = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(claimableBalanceID.wrappedData32FromHex())
         let cbXDR = ClawbackClaimableBalanceOpXDR(claimableBalanceID: cIDXDR)
         return OperationBodyXDR.clawbackClaimableBalance(cbXDR)
     }

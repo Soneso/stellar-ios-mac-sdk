@@ -1065,10 +1065,10 @@ class OperationsRemoteTestCase: XCTestCase {
     func testClaimClaimableBalance() {
         let expectation = XCTestExpectation(description: "can claim claimable balance")
         do {
-            let balanceId = "00000000592c4377beaca24f99c7e56b60a4a0a71c5910829c340daabba380ad848e43e3"
+            let balanceId = "000000001cec3edacd84bd67a2c8cfb7491ef4d824acac56e8b7428db9926f2905b896e1"
             let claimantAccountKeyPair = try KeyPair(secretSeed:"SCYBAXTTHKQI3NFNAZZJJK7IZEQHBB3RCAWLUJXK7PFTHTQLBHONALX7")
             let claimantAccountId = claimantAccountKeyPair.accountId
-            print("claimant: " + claimantAccountId) //GDQ7DUQ2KA5SZH5ZSBO7GNSG2XOGM5NVT5AWJQZRB2HCYGOTQ5VQ4QOH
+            print("claimant: " + claimantAccountId) //GDSHZPWSL5QBQKKDQNECFPI2PF7JQUACNWG65PMFOK6G5V4QBH4CX2KH
             
             /*streamItem = sdk.operations.stream(for: .operationsForAccount(account: claimantAccountId, cursor: "now"))
             streamItem?.onReceive { (response) -> (Void) in
@@ -1124,9 +1124,10 @@ class OperationsRemoteTestCase: XCTestCase {
                                                           operations: [claimClaimableBalanceOp],
                                                           memo: Memo.none,
                                                           timeBounds:nil)
+                        print("before signing: " + transaction.xdrEncoded!)
                         try transaction.sign(keyPair: claimantAccountKeyPair, network: Network.testnet)
-                        
-                        print(try transaction.transactionXDR.encodedEnvelope())
+                        let env = try transaction.transactionXDR.encodedEnvelope()
+                        print("after signing:  " + env)
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                             switch response {
                             case .success(let submitTransactionResponse):
@@ -1162,6 +1163,65 @@ class OperationsRemoteTestCase: XCTestCase {
         wait(for: [expectation], timeout: 315.0)
     }
     
+    func testIssue142() {
+        do {
+            let enva = "AAAAAgAAAABgQUKgloqfjWKlxglkCYLs+7ZijoZgvVAbtwl7003XEwABhqACDNetAAAhQgAAAAAAAAAAAAAAAQAAAAAAAAAPAAAAAABxD+mmyQJJTIhTgpDBVsNJPSwfe5Fvxh3cb/O17iEgAAAAAAAAAAA="
+            var transaction = try! Transaction(envelopeXdr: enva)
+            var balanceIdBeforeSigning = ""
+            var balanceIdAfterSigning = ""
+            var opBody = transaction.transactionXDR.operations.first?.body
+            switch opBody {
+            case .claimClaimableBalance(let claimOp):
+                switch claimOp.balanceID {
+                case .claimableBalanceIDTypeV0(let data):
+                    balanceIdBeforeSigning = self.hexEncodedString(data: data.wrapped)
+                    print("before signing: \(balanceIdBeforeSigning)")
+                }
+                break
+            default:
+                break
+            }
+            let signerKeyPair = try KeyPair(secretSeed:"SCYBAXTTHKQI3NFNAZZJJK7IZEQHBB3RCAWLUJXK7PFTHTQLBHONALX7")
+            try transaction.sign(keyPair: signerKeyPair, network: Network.testnet)
+            opBody = transaction.transactionXDR.operations.first?.body
+            switch opBody {
+            case .claimClaimableBalance(let claimOp):
+                switch claimOp.balanceID {
+                case .claimableBalanceIDTypeV0(let data):
+                    balanceIdAfterSigning = self.hexEncodedString(data: data.wrapped)
+                    print("after signing: \(balanceIdAfterSigning)")
+                }
+                break
+            default:
+                break
+            }
+            XCTAssertEqual(balanceIdBeforeSigning, balanceIdAfterSigning)
+            
+            let env = try transaction.transactionXDR.encodedEnvelope()
+            print("env befor signing:  " + enva)
+            print("env after signing:  " + env)
+
+            transaction = try! Transaction(envelopeXdr: env)
+            var balanceId3 = ""
+            opBody = transaction.transactionXDR.operations.first?.body
+            switch opBody {
+            case .claimClaimableBalance(let claimOp):
+                switch claimOp.balanceID {
+                case .claimableBalanceIDTypeV0(let data):
+                    balanceId3 = self.hexEncodedString(data: data.wrapped)
+                    print("after signing 3: \(balanceId3)")
+                }
+                break
+            default:
+                break
+            }
+            XCTAssertEqual(balanceIdBeforeSigning, balanceId3)
+        }
+        catch let error {
+            print(error)
+            XCTAssert(false)
+        }
+    }
     func testSponsorship() {
         let expectation = XCTestExpectation(description: "can begin and end sponsorship")
         do {
