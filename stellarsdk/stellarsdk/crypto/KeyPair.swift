@@ -156,6 +156,34 @@ public final class KeyPair {
         
         return decoratedSignature
     }
+    
+    /// Sign the provided payload data for payload signer where the input is the data being signed.
+    /// Per the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#signature-hint" CAP-40 Signature spec</a>
+    ///
+    /// - Parameter signerPayload: payload signers raw data to sign
+    ///
+    /// - Returns the DecoratedSignatureXDR object
+    ///
+    public func signPayloadDecorated(_ signerPayload: [UInt8]) -> DecoratedSignatureXDR {
+        
+        let decoratedSignature = signDecorated(signerPayload)
+        var signerPayloadData = signerPayload
+        var suffix = 4
+        if (signerPayload.count < suffix) {
+            suffix = signerPayload.count
+        }
+        
+        // copy the last four bytes of the payload into the new hint
+        var hint = Data(bytes: &signerPayloadData, count: signerPayload.count).suffix(suffix)
+        
+        //XOR the new hint with this keypair's public key hint
+        hint = Data.xor(left: hint, right: decoratedSignature.hint.wrapped)
+        return DecoratedSignatureXDR(hint: WrappedData4(hint) , signature: decoratedSignature.signature)
+    }
+    
+    public func signPayloadDecorated(_ signerPayload: Data) -> DecoratedSignatureXDR {
+        return signPayloadDecorated([UInt8](signerPayload))
+    }
 
     ///  Verify the provided data and signature match this keypair's public key.
     ///

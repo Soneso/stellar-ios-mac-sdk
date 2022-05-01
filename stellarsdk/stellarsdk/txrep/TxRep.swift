@@ -1739,6 +1739,9 @@ public class TxRep: NSObject {
                 case .hashX(let data):
                     addLine(key: operationPrefix + "signer.key", value: try! data.wrapped.encodeSha256Hash(), lines: &lines)
                     break
+                case .signedPayload(let payload):
+                    addLine(key: operationPrefix + "signer.key", value: try! payload.encodeSignedPayload(), lines: &lines)
+                    break
                 }
                 addLine(key: operationPrefix + "signer.weight", value: String(signer.weight), lines: &lines)
             } else {
@@ -1854,6 +1857,9 @@ public class TxRep: NSObject {
                     break
                 case .hashX(let data):
                     addLine(key: operationPrefix + "signer.signerKey", value: try! data.wrapped.encodeSha256Hash(), lines: &lines)
+                    break
+                case .signedPayload(let payload):
+                    addLine(key: operationPrefix + "signer.signerKey", value: try! payload.encodeSignedPayload(), lines: &lines)
                     break
                 }
                 break

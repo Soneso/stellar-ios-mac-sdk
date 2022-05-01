@@ -258,7 +258,8 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         
         let timeBounds = try! TimeBounds(minTime: UInt64(Date().timeIntervalSince1970), maxTime: UInt64(Date().timeIntervalSince1970 + 300))
         
-        var transaction = TransactionXDR(sourceAccount: transactionAccount.keyPair.publicKey, seqNum: transactionAccount.sequenceNumber, timeBounds: timeBounds.toXdr(), memo: .none, operations: [])
+        let cond = PreconditionsXDR.time(timeBounds.toXdr())
+        var transaction = TransactionXDR(sourceAccount: transactionAccount.keyPair.publicKey, seqNum: transactionAccount.sequenceNumber, cond: cond , memo: .none, operations: [])
         try! transaction.sign(keyPair: serverKeyPair, network: .testnet)
         
         return """
@@ -346,7 +347,8 @@ class WebAuthenticatorChallengeResponseMock: ResponsesMock {
         
         let operation = ManageDataOperation(sourceAccountId: clientKeyPair.accountId, name: "place.domain.com auth", data: generateNonce(length: 64)?.data(using: .utf8))
         
-        let transaction = TransactionXDR(sourceAccount: transactionAccount.keyPair.publicKey, seqNum: transactionAccount.sequenceNumber, timeBounds: timeBounds.toXdr(), memo: .none, operations: [try! operation.toXDR()])
+        let cond = PreconditionsXDR.time(timeBounds.toXdr())
+        let transaction = TransactionXDR(sourceAccount: transactionAccount.keyPair.publicKey, seqNum: transactionAccount.sequenceNumber, cond:cond, memo: .none, operations: [try! operation.toXDR()])
         
         let envelopeV1 = TransactionV1EnvelopeXDR(tx: transaction, signatures: [])
         let envelope = TransactionEnvelopeXDR.v1(envelopeV1)

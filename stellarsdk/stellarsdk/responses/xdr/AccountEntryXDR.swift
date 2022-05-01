@@ -72,6 +72,7 @@ public struct AccountEntryXDR: XDRCodable {
         try container.encode(numSubEntries)
         try container.encode(inflationDest)
         try container.encode(flags)
+        try container.encode(homeDomain)
         try container.encode(thresholds)
         try container.encode(signers)
         try container.encode(reserved)
@@ -185,12 +186,13 @@ public struct AccountEntryExtensionV2: XDRCodable {
     public var numSponsored: UInt32 = 0
     public var numSponsoring: UInt32 = 0
     public let signerSponsoringIDs:[PublicKey]
-    public var reserved: Int32 = 0
+    public var reserved:AccountEntryExtV2XDR
     
     public init(numSponsored: UInt32, numSponsoring: UInt32, signerSponsoringIDs:[PublicKey]) {
         self.numSponsored = numSponsored
         self.numSponsoring = numSponsoring
         self.signerSponsoringIDs = signerSponsoringIDs
+        self.reserved = .void
     }
     
     public init(from decoder: Decoder) throws {
@@ -199,7 +201,7 @@ public struct AccountEntryExtensionV2: XDRCodable {
         numSponsored = try container.decode(UInt32.self)
         numSponsoring = try container.decode(UInt32.self)
         signerSponsoringIDs = try decodeArrayOpt(type: PublicKey.self, dec: decoder)
-        reserved = try container.decode(Int32.self)
+        reserved = try container.decode(AccountEntryExtV2XDR.self)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -211,3 +213,104 @@ public struct AccountEntryExtensionV2: XDRCodable {
         try container.encode(reserved)
     }
 }
+
+public enum AccountEntryExtV2XDR : XDRCodable {
+    case void
+    case accountEntryExtensionV3 (AccountEntryExtensionV3)
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        let code = try container.decode(Int32.self)
+        
+        switch code {
+        case 0:
+            self = .void
+        case 2:
+            self = .accountEntryExtensionV3(try AccountEntryExtensionV3(from: decoder))
+        default:
+            self = .void
+        }
+    }
+    
+    private func type() -> Int32 {
+        switch self {
+        case .void: return 0
+        case .accountEntryExtensionV3: return 3
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(type())
+        
+        switch self {
+        case .void:
+            return
+        case .accountEntryExtensionV3(let accountEntryV3):
+            try container.encode(accountEntryV3)
+        }
+    }
+}
+
+public struct AccountEntryExtensionV3: XDRCodable {
+    public var ext: ExtensionPoint
+    public var seqLedger: UInt32 = 0
+    public var seqTime: UInt64 = 0
+    
+    public init(seqLedger: UInt32, seqTime: UInt64) {
+        self.ext = .void
+        self.seqLedger = seqLedger
+        self.seqTime = seqTime
+
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        ext = try container.decode(ExtensionPoint.self)
+        seqLedger = try container.decode(UInt32.self)
+        seqTime = try container.decode(UInt64.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(ext)
+        try container.encode(seqLedger)
+        try container.encode(seqTime)
+    }
+}
+
+public enum ExtensionPoint : XDRCodable {
+    case void
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        let code = try container.decode(Int32.self)
+        
+        switch code {
+        case 0:
+            self = .void
+        default:
+            self = .void
+        }
+    }
+    
+    private func type() -> Int32 {
+        switch self {
+        case .void: return 0
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(type())
+        
+        switch self {
+        case .void:
+            return
+        }
+    }
+}
+

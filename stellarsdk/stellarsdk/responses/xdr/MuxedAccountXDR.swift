@@ -12,6 +12,7 @@ public struct CryptoKeyType {
     static let KEY_TYPE_ED25519: Int32 = 0
     static let KEY_TYPE_PRE_AUTH_TX: Int32 = 1
     static let KEY_TYPE_HASH_X: Int32 = 2
+    static let KEY_TYPE_ED25519_SIGNED_PAYLOAD: Int32 = 3
     static let KEY_TYPE_MUXED_ED25519: Int32 = 0x100
 }
 

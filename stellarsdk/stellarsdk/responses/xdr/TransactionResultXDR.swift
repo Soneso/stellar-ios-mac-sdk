@@ -23,6 +23,8 @@ public enum TransactionResultCode: Int32 {
     case notSupported = -12
     case feeBumpInnerFailed = -13 // fee bump inner transaction failed
     case basSponsorship = -14 // sponsorship not ended
+    case basMinSeqAgeOrGap = -15 // minSeqAge or minSeqLedgerGap conditions not met
+    case malformed = -16 // precondition is invalid
 }
 
 public enum TransactionResultBodyXDR: Encodable {

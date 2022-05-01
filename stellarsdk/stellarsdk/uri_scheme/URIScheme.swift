@@ -249,7 +249,7 @@ public class URIScheme: NSObject {
             case .success(details: let accountDetails):
                 let reconfiguredTransactionXDR = TransactionXDR(sourceAccount: transactionXDR.sourceAccount,
                                                             seqNum: accountDetails.incrementedSequenceNumber(),
-                                                            timeBounds: transactionXDR.timeBounds,
+                                                            cond: transactionXDR.cond,
                                                             memo: transactionXDR.memo,
                                                             operations: transactionXDR.operations)
                 completion(.success(transactionXDR: reconfiguredTransactionXDR))
@@ -270,7 +270,7 @@ public class URIScheme: NSObject {
                 }
                 let reconfiguredTransactionXDR = TransactionXDR(sourceAccount: muxedAccount,
                                                             seqNum: accountDetails.incrementedSequenceNumber(),
-                                                            timeBounds: transactionXDR.timeBounds,
+                                                            cond: transactionXDR.cond,
                                                             memo: transactionXDR.memo,
                                                             operations: transactionXDR.operations)
                 completion(.success(transactionXDR: reconfiguredTransactionXDR))

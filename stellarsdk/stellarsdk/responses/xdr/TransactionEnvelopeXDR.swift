@@ -115,11 +115,43 @@ public enum TransactionEnvelopeXDR: XDRCodable {
             case .v0(let tev0):
                 return tev0.tx.timeBounds
             case .v1(let tev1):
-                return tev1.tx.timeBounds
+                let cond = tev1.tx.cond
+                switch cond {
+                case .time(let timeBoundsXDR):
+                    return timeBoundsXDR
+                default:
+                    return nil
+                }
             case .feeBump(let tevf):
                 switch tevf.tx.innerTx {
                 case .v1(let tev1):
-                    return tev1.tx.timeBounds
+                    let cond = tev1.tx.cond
+                    switch cond {
+                    case .time(let timeBoundsXDR):
+                        return timeBoundsXDR
+                    default:
+                        return nil
+                    }
+                }
+            }
+        }
+    }
+    
+    public var cond: PreconditionsXDR {
+        get {
+            switch self {
+            case .v0(let tev0):
+                var cond = PreconditionsXDR.none
+                if let tb = tev0.tx.timeBounds {
+                    cond = PreconditionsXDR.time(tb)
+                }
+                return cond
+            case .v1(let tev1):
+                return tev1.tx.cond
+            case .feeBump(let tevf):
+                switch tevf.tx.innerTx {
+                case .v1(let tev1):
+                    return tev1.tx.cond
                 }
             }
         }

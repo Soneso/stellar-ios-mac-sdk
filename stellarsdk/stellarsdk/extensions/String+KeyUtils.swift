@@ -44,6 +44,11 @@ extension String {
         return try decodeCheck(versionByte: .preAuthTX)
     }
     
+    public func decodeSignedPayload() throws -> Ed25519SignedPayload {
+        let xdr = try decodeCheck(versionByte: .signedPayload)
+        return try XDRDecoder.decode(Ed25519SignedPayload.self, data:xdr)
+    }
+    
     public func decodeSha256Hash() throws -> Data {
         return try decodeCheck(versionByte: .sha256Hash)
     }

@@ -38,6 +38,12 @@ public class CreateAccountOperation:Operation {
         self.startBalance = startBalance
         super.init(sourceAccountId:sourceAccountId)
     }
+    
+    public init(sourceAccountId:String?, destinationAccountId:String, startBalance:Decimal) throws {
+        self.destination = try KeyPair(accountId: destinationAccountId)
+        self.startBalance = startBalance
+        super.init(sourceAccountId:sourceAccountId)
+    }
 
     /// Creates a new CreateAccountOperation object from the given CreateAccountOperationXDR object.
     ///

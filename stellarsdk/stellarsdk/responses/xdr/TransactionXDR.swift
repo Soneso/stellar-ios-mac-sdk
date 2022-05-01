@@ -12,22 +12,17 @@ public struct TransactionXDR: XDRCodable {
     public let sourceAccount: MuxedAccountXDR
     public let fee: UInt32
     public let seqNum: Int64
-    public let timeBounds: TimeBoundsXDR?
+    public let cond: PreconditionsXDR
     public let memo: MemoXDR
     public let operations: [OperationXDR]
     public let reserved: Int32
     
     private var signatures = [DecoratedSignatureXDR]()
     
-    public init(sourceAccount: PublicKey, seqNum: Int64, timeBounds: TimeBoundsXDR?, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100) {
-        let mux = MuxedAccountXDR.ed25519(sourceAccount.bytes)
-        self.init(sourceAccount: mux, seqNum: seqNum, timeBounds: timeBounds, memo: memo, operations: operations, maxOperationFee: maxOperationFee)
-    }
-    
-    public init(sourceAccount: MuxedAccountXDR, seqNum: Int64, timeBounds: TimeBoundsXDR?, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100) {
+    public init(sourceAccount: MuxedAccountXDR, seqNum: Int64, cond: PreconditionsXDR, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100) {
         self.sourceAccount = sourceAccount
         self.seqNum = seqNum
-        self.timeBounds = timeBounds
+        self.cond = cond
         self.memo = memo
         self.operations = operations
         
@@ -36,13 +31,37 @@ public struct TransactionXDR: XDRCodable {
         reserved = 0
     }
     
+    public init(sourceAccount: PublicKey, seqNum: Int64, cond: PreconditionsXDR, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100) {
+        let mux = MuxedAccountXDR.ed25519(sourceAccount.bytes)
+        self.init(sourceAccount: mux, seqNum: seqNum, cond: cond, memo: memo, operations: operations, maxOperationFee: maxOperationFee)
+    }
+    
+    @available(*, deprecated, message: "use preconditions instead")
+    public init(sourceAccount: PublicKey, seqNum: Int64, timeBounds: TimeBoundsXDR?, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100) {
+        let mux = MuxedAccountXDR.ed25519(sourceAccount.bytes)
+        var cond = PreconditionsXDR.none
+        if let tb = timeBounds {
+            cond = PreconditionsXDR.time(tb)
+        }
+        self.init(sourceAccount: mux, seqNum: seqNum, cond: cond, memo: memo, operations: operations, maxOperationFee: maxOperationFee)
+    }
+
+    @available(*, deprecated, message: "use preconditions instead")
+    public init(sourceAccount: MuxedAccountXDR, seqNum: Int64, timeBounds: TimeBoundsXDR?, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100) {
+        var cond = PreconditionsXDR.none
+        if let tb = timeBounds {
+            cond = PreconditionsXDR.time(tb)
+        }
+        self.init(sourceAccount: sourceAccount, seqNum: seqNum, cond: cond, memo: memo, operations: operations, maxOperationFee:maxOperationFee)
+    }
+    
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         
         sourceAccount = try container.decode(MuxedAccountXDR.self)
         fee = try container.decode(UInt32.self)
         seqNum = try container.decode(Int64.self)
-        timeBounds = try decodeArray(type: TimeBoundsXDR.self, dec: decoder).first
+        cond = try container.decode(PreconditionsXDR.self)
         memo = try container.decode(MemoXDR.self)
         operations = try decodeArray(type: OperationXDR.self, dec: decoder)
         reserved = try container.decode(Int32.self)
@@ -54,11 +73,7 @@ public struct TransactionXDR: XDRCodable {
         try container.encode(sourceAccount)
         try container.encode(fee)
         try container.encode(seqNum)
-        if let _ = timeBounds {
-            try container.encode([timeBounds])
-        } else {
-            try container.encode([TimeBoundsXDR]())
-        }
+        try container.encode(cond)
         try container.encode(memo)
         try container.encode(operations)
         try container.encode(reserved)

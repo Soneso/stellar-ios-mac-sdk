@@ -54,6 +54,8 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
     public var sponsor:String?
     public var numSponsoring:Int
     public var numSponsored:Int
+    public var sequenceLedger:Int?
+    public var sequenceTime:String?
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
@@ -72,6 +74,8 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
         case sponsor
         case numSponsoring = "num_sponsoring"
         case numSponsored = "num_sponsored"
+        case sequenceLedger = "sequence_ledger"
+        case sequenceTime = "sequence_time"
     }
     
     /**
@@ -106,6 +110,9 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
         } else {
             numSponsored = 0
         }
+        sequenceLedger = try values.decodeIfPresent(Int.self, forKey: .sequenceLedger)
+        sequenceTime = try values.decodeIfPresent(String.self, forKey: .sequenceTime)
+            
     }
     
     ///  Returns sequence number incremented by one, but does not increment internal counter.

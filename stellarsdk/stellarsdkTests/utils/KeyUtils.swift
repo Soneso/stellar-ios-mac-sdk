@@ -73,6 +73,82 @@ class KeyUtils: XCTestCase {
             XCTAssertTrue(false)
         }
     }
-
-
+    
+    func testKeyUtilsSignedPayload32() {
+        let accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
+        let success = "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAQACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6IBZGM"
+        let dataStr = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
+        do {
+            let data = try Data(base16Encoded: dataStr)//"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20".uppercased().data(using: String.ExtendedEncoding.hexadecimal)
+            let pk = try PublicKey(accountId: accountId)
+            let payloadSigner = Ed25519SignedPayload(ed25519: pk.wrappedData32(), payload: data)
+            let encoded = try payloadSigner.encodeSignedPayload()
+            XCTAssertTrue(encoded == success)
+            let signedPayload = try encoded.decodeSignedPayload()
+            XCTAssertTrue(try signedPayload.publicKey().accountId == accountId)
+            let ddata = signedPayload.payload.base16EncodedString()
+            XCTAssertTrue(ddata == dataStr)
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
+    
+    func testKeyUtilsSignedPayload16() {
+        let accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
+        let success = "PA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAOQCAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUAAAAFGBU"
+        let dataStr = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d"
+        do {
+            let data = try Data(base16Encoded: dataStr)
+            let pk = try PublicKey(accountId: accountId)
+            let payloadSigner = Ed25519SignedPayload(ed25519: pk.wrappedData32(), payload: data)
+            let encoded = try payloadSigner.encodeSignedPayload()
+            XCTAssertTrue(encoded == success)
+            let signedPayload = try encoded.decodeSignedPayload()
+            XCTAssertTrue(try signedPayload.publicKey().accountId == accountId)
+            let ddata = signedPayload.payload.base16EncodedString()
+            XCTAssertTrue(ddata == dataStr)
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
+    
+    func testKeyUtilsSignedPayloadToLong() {
+        let accountId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
+        let dataStr = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f200102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f2001"
+        do {
+            let data = try Data(base16Encoded: dataStr)
+            let _ = try Signer.signedPayload(accountId: accountId, payload: data)
+            XCTAssertTrue(false)
+        } catch {
+            XCTAssertTrue(true)
+        }
+    }
+    
+    func testSignPayloadSigner() {
+        do {
+            let seedData = try Data(base16Encoded: "1123740522f11bfef6b3671f51e159ccf589ccf8965262dd5f97d1721d383dd4")
+            let kp = KeyPair(seed: try Seed(bytes: [UInt8](seedData)))
+            let payload = Data([1,2,3,4,5])
+            let sig = kp.signPayloadDecorated(payload)
+            let sigHint = Data([UInt8(0xFF & 252), 65, 0, 50])
+            XCTAssertTrue(sig.hint.wrapped.elementsEqual(sigHint))
+            XCTAssertTrue(true)
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
+    
+    func testSignPayloadSignerLessThanHint() {
+        do {
+            let seedData = try Data(base16Encoded: "1123740522f11bfef6b3671f51e159ccf589ccf8965262dd5f97d1721d383dd4")
+            let kp = KeyPair(seed: try Seed(bytes: [UInt8](seedData)))
+            let payload = Data([1,2,3])
+            let sig = kp.signPayloadDecorated(payload)
+            let sigHint = Data([UInt8(255), 64, 7, 55])
+            XCTAssertTrue(sig.hint.wrapped.elementsEqual(sigHint))
+            XCTAssertTrue(true)
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
 }

@@ -579,6 +579,105 @@ class TransactionsLocalTestCase: XCTestCase {
         }
     }
     
+    func testSetTimeBounds() {
+        do {
+            let kp = try KeyPair(secretSeed: "SCH27VUZZ6UAKB67BDNF6FA42YMBMQCBKXWGMFD5TZ6S5ZZCZFLRXKHS")
+            let acc = Account(keyPair: kp, sequenceNumber: 2908908335136768)
+            let op = try CreateAccountOperation(sourceAccountId: nil, destinationAccountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR", startBalance: 2000)
+            let preconditions = TransactionPreconditions(timeBounds: TimeBounds(minTime: 0, maxTime: 120))
+            let transaction = try Transaction(sourceAccount: acc, operations: [op], memo: nil, preconditions: preconditions)
+            XCTAssertTrue(transaction.preconditions?.timeBounds?.minTime == 0)
+            XCTAssertTrue(transaction.preconditions?.timeBounds?.maxTime == 120)
+            try transaction.sign(keyPair: kp, network: Network.testnet)
+            let envelopeString = try transaction.encodedEnvelope()
+            print(envelopeString)
+            let tx2 = try Transaction(envelopeXdr:envelopeString)
+            XCTAssertTrue(tx2.preconditions?.timeBounds?.minTime == 0)
+            XCTAssertTrue(tx2.preconditions?.timeBounds?.maxTime == 120)
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
+    
+    func testSetLedgerBounds() {
+        do {
+            let kp = try KeyPair(secretSeed: "SCH27VUZZ6UAKB67BDNF6FA42YMBMQCBKXWGMFD5TZ6S5ZZCZFLRXKHS")
+            let acc = Account(keyPair: kp, sequenceNumber: 2908908335136768)
+            let op = try CreateAccountOperation(sourceAccountId: nil, destinationAccountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR", startBalance: 2000)
+            let preconditions = TransactionPreconditions(ledgerBounds: LedgerBounds(minLedger: 1, maxLedger: 2), timeBounds: TimeBounds(minTime: 0, maxTime: 0))
+            let transaction = try Transaction(sourceAccount: acc, operations: [op], memo: nil, preconditions: preconditions)
+            XCTAssertTrue(transaction.preconditions?.ledgerBounds?.minLedger == 1)
+            XCTAssertTrue(transaction.preconditions?.ledgerBounds?.maxLedger == 2)
+            try transaction.sign(keyPair: kp, network: Network.testnet)
+            let envelopeString = try transaction.encodedEnvelope()
+            print(envelopeString)
+            let tx2 = try Transaction(envelopeXdr:envelopeString)
+            XCTAssertTrue(tx2.preconditions?.ledgerBounds?.minLedger == 1)
+            XCTAssertTrue(tx2.preconditions?.ledgerBounds?.maxLedger == 2)
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
+    
+    func testSetMinPreconditions() {
+        do {
+            let kp = try KeyPair(secretSeed: "SCH27VUZZ6UAKB67BDNF6FA42YMBMQCBKXWGMFD5TZ6S5ZZCZFLRXKHS")
+            let acc = Account(keyPair: kp, sequenceNumber: 2908908335136768)
+            let op = try CreateAccountOperation(sourceAccountId: nil, destinationAccountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR", startBalance: 2000)
+            let preconditions = TransactionPreconditions(minSeqNumber:120, minSeqAge: 19999, minSeqLedgerGap: 199)
+            let transaction = try Transaction(sourceAccount: acc, operations: [op], memo: nil, preconditions: preconditions)
+            XCTAssertTrue(transaction.preconditions?.minSeqNumber == 120)
+            XCTAssertTrue(transaction.preconditions?.minSeqAge == 19999)
+            XCTAssertTrue(transaction.preconditions?.minSeqLedgerGap == 199)
+            try transaction.sign(keyPair: kp, network: Network.testnet)
+            let envelopeString = try transaction.encodedEnvelope()
+            print(envelopeString)
+            let tx2 = try Transaction(envelopeXdr:envelopeString)
+            XCTAssertTrue(tx2.preconditions?.minSeqNumber == 120)
+            XCTAssertTrue(tx2.preconditions?.minSeqAge == 19999)
+            XCTAssertTrue(tx2.preconditions?.minSeqLedgerGap == 199)
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
+    
+    func testSetExtraSigners() {
+        do {
+            let kp = try KeyPair(secretSeed: "SCH27VUZZ6UAKB67BDNF6FA42YMBMQCBKXWGMFD5TZ6S5ZZCZFLRXKHS")
+            let acc = Account(keyPair: kp, sequenceNumber: 2908908335136768)
+            let op = try CreateAccountOperation(sourceAccountId: nil, destinationAccountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR", startBalance: 2000)
+            let dataStr = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20"
+            let data = try Data(base16Encoded: dataStr)
+            let accId = "GA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVSGZ"
+            let signerKey = try Signer.signedPayload(accountId: accId, payload: data)
+            
+            let preconditions = TransactionPreconditions(extraSigners:[signerKey])
+            let transaction = try Transaction(sourceAccount: acc, operations: [op], memo: nil, preconditions: preconditions)
+            var sk = transaction.preconditions!.extraSigners![0]
+            switch sk {
+            case .signedPayload(let payload):
+                XCTAssertTrue(try payload.publicKey().accountId == accId)
+                XCTAssertTrue(payload.payload.base16EncodedString() == dataStr)
+            default:
+                XCTAssertTrue(false)
+            }
+            try transaction.sign(keyPair: kp, network: Network.testnet)
+            let envelopeString = try transaction.encodedEnvelope()
+            print(envelopeString)
+            let tx2 = try Transaction(envelopeXdr:envelopeString)
+            sk = tx2.preconditions!.extraSigners![0]
+            switch sk {
+            case .signedPayload(let payload):
+                XCTAssertTrue(try payload.publicKey().accountId == accId)
+                XCTAssertTrue(payload.payload.base16EncodedString() == dataStr)
+            default:
+                XCTAssertTrue(false)
+            }
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
+    
     func testParsingIssue140() {
         let transactionResultXdr = "AAAAAAAAAMgAAAAAAAAAAgAAAAAAAAANAAAAAAAAAAIAAAACNfCKzrfR7vcGZKmF9u4JB9rXOtH0Avwy+G1ERVFOXC8AAAABVVNEQwAAAAA7mRE4Dv6Yi6CokA6xz+RPNm99vpRr7QdyQPf2JN8VxQAAAAAABkjxAAAAAVVTRAAAAAAA6KYahh5gr2D4B3PgY0blxyy+Wdyt2jdgjVjvQlEdn9wAAAAAAAZhQgAAAAEAAAAAclv7rnXBwN/wHMcTeKMrqR8n8UWSCkRkTKjFU7OhzpoAAAAANyoO2wAAAAAAAAAAABokRQAAAAFVU0RDAAAAADuZETgO/piLoKiQDrHP5E82b32+lGvtB3JA9/Yk3xXFAAAAAAAGSPEAAAAAMy2fJ5dNHVhsJoWeNbMJnNeI7wUVWTX+ByiWQuwp+68AAAAAAAAAAAAaJEUAAAAAAAAABQAAAAAAAAAA"
         let envelopeResultXdr = "AAAAAgAAAAAzLZ8nl00dWGwmhZ41swmc14jvBRVZNf4HKJZC7Cn7rwADDUAB6XUMAAAIeQAAAAAAAAAAAAAAAgAAAAEAAAAAMy2fJ5dNHVhsJoWeNbMJnNeI7wUVWTX+ByiWQuwp+68AAAANAAAAAVVTRAAAAAAA6KYahh5gr2D4B3PgY0blxyy+Wdyt2jdgjVjvQlEdn9wAAAAAAAZhQgAAAAAzLZ8nl00dWGwmhZ41swmc14jvBRVZNf4HKJZC7Cn7rwAAAAAAAAAAABngLwAAAAEAAAABVVNEQwAAAAA7mRE4Dv6Yi6CokA6xz+RPNm99vpRr7QdyQPf2JN8VxQAAAAEAAAAAMy2fJ5dNHVhsJoWeNbMJnNeI7wUVWTX+ByiWQuwp+68AAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAJbG9ic3RyLmNvAAAAAAAAAAAAAAAAAAAC7Cn7rwAAAEBtbQWhFE9e1z+uCEm/D54NYqSkQXL3kP+pgYYFmTiDNFCm0Bj4mljcPaANvqBGc1Kj/LoRWJh582FR5MAwGcIIAY1PewAAAEA0aWjOGDvgZ3vOreMwoHuuiapX9n4i79Lr3eZPXGmbZON97F46zEkjjqXavkp3TmvjAsEiOr++7hrdrnNXzhoG"

@@ -13,6 +13,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     //let sdk = StellarSDK(withHorizonUrl: "https://horizon.stellar.org")
     let sdk = StellarSDK()
     let seed = "SBFLTUTTPH36XNVCUAHYNUSVFLWDQFJ2ZH5YP3VNJJYQAJ2JZ2RZRGF7"
+    // GCRIOIWOKDDNZCYUOL72PFQWHIPY5H6WXTV2LLFVCJG5RH4G63PQPO36
     var streamItem:TransactionsStreamItem? = nil
     
     override func setUp() {
@@ -94,7 +95,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     
     func testGetTransactionsForClaimableBalance() {
         let expectation = XCTestExpectation(description: "Get transactions for account")
-        let claimableBalanceId = "00000000cca8fa61d9c3e2274943f24fbda525cdf836aee7267f0db2905571ad0eb8760c"
+        let claimableBalanceId = "0000000066c0c9b4e57c58c154d10dc4e96413b5d0f1dce050c42eaa91936417570191c5"
         sdk.transactions.getTransactions(forClaimableBalance: claimableBalanceId) { (response) -> (Void) in
             switch response {
             case .success(let transactions):
@@ -135,7 +136,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetTransactionDetails() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         
-        sdk.transactions.getTransactionDetails(transactionHash: "542fbd10071ea9f39217fa262336ac725f443bb6e35c0cab1c01ac16c21f226e") { (response) -> (Void) in
+        sdk.transactions.getTransactionDetails(transactionHash: "37c201ce8f75f92194a76da5be1ae68216301f80efdf8acea9601d12fa4851e9") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -203,7 +204,9 @@ class TransactionsRemoteTestCase: XCTestCase {
             case .success(let data):
                 let operationBody = OperationBodyXDR.inflation
                 let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
-                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation])
+                let tb = TimeBoundsXDR(minTime: 100, maxTime: 4000101011)
+                let cond = PreconditionsXDR.time(tb)
+                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, cond: cond, memo: .none, operations: [operation])
                 try! transaction.sign(keyPair: keyPair, network: .testnet)
                 let encodedT = try! transaction.encodedV1Transaction()
                 print("\nTransaction V1:")
@@ -260,7 +263,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         do {
             let source = try KeyPair(secretSeed:seed)
             let destination = try KeyPair(secretSeed: "SBK3OW43UIX4HDWDJNO4FTOKL3ESZ4CBDPA57UAUE7SL3JMPNHWZEYGF")
-            
+            // GAHVPXP7RPX5EGT6WFDS26AOM3SBZW2RKEDBZ5VO45J7NYDGJYKYE6UW
             streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: source.accountId, cursor: "now"))
             streamItem?.onReceive { response in
                 switch response {
@@ -349,7 +352,7 @@ class TransactionsRemoteTestCase: XCTestCase {
                 let operation0 = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody0)
                 let operationBody = OperationBodyXDR.bumpSequence(BumpSequenceOperationXDR(bumpTo: data.sequenceNumber + 10))
                 let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
-                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation0, operation], maxOperationFee: 190)
+                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, cond: PreconditionsXDR.none, memo: .none, operations: [operation0, operation], maxOperationFee: 190)
                 
                 try! transaction.sign(keyPair: keyPair, network: .testnet)
                 let xdrEnvelope = try! transaction.encodedEnvelope()
@@ -379,6 +382,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     
     func testTransactionV1Sign() throws {
         let keyPair = try! KeyPair(secretSeed: "SB2VUAO2O2GLVUQOY46ZDAF3SGWXOKTY27FYWGZCSV26S24VZ6TUKHGE")
+        // GDKLKYIQHG7S54YKQ6SMF5JZLYJFO4JZCI4WENCJMBCW3AEYSDSGTIWS
         // transaction envelope v1
         let xdr = "AAAAAgAAAADUtWEQOb8u8wqHpML1OV4SV3E5EjliNElgRW2AmJDkaQAAJxAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAEAAAAA1LVhEDm/LvMKh6TC9TleEldxORI5YjRJYEVtgJiQ5GkAAAABAAAAANS1YRA5vy7zCoekwvU5XhJXcTkSOWI0SWBFbYCYkORpAAAAAAAAAAAAAAABAAAAAAAAAAA="
 
@@ -463,7 +467,11 @@ class TransactionsRemoteTestCase: XCTestCase {
             // if its a v0 transaction envelope, convert it to a v1 transaction envelope
             let tV0Xdr = txEnvV0.tx
             let pk = try PublicKey(tV0Xdr.sourceAccountEd25519)
-            let transactionXdr = TransactionXDR(sourceAccount: pk, seqNum: tV0Xdr.seqNum, timeBounds: tV0Xdr.timeBounds, memo: tV0Xdr.memo, operations: tV0Xdr.operations, maxOperationFee: tV0Xdr.fee / UInt32(tV0Xdr.operations.count) )
+            var cond = PreconditionsXDR.none
+            if let tb = tV0Xdr.timeBounds {
+                cond = PreconditionsXDR.time(tb)
+            }
+            let transactionXdr = TransactionXDR(sourceAccount: pk, seqNum: tV0Xdr.seqNum, cond: cond, memo: tV0Xdr.memo, operations: tV0Xdr.operations, maxOperationFee: tV0Xdr.fee / UInt32(tV0Xdr.operations.count) )
             let txV1E = TransactionV1EnvelopeXDR(tx: transactionXdr, signatures: envelopeXDR.txSignatures)
             envelopeXDR = TransactionEnvelopeXDR.v1(txV1E)
         default:
@@ -534,8 +542,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         let expectation = XCTestExpectation(description: "FeeBumpTransaction successfully sent.")
         let destination = "GAQC6DUD2OVIYV3DTBPOSLSSOJGE4YJZHEGQXOU4GV6T7RABWZXELCUT"
-        let payerSeed = "SD7F3RYMDHQ6SBMVKONRRQCG4OFCW7HSWPS7CBGH762ZHVA6LC6RR5LD"
-        
+        let payerSeed = "SD7F3RYMDHQ6SBMVKONRRQCG4OFCW7HSWPS7CBGH762ZHVA6LC6RR5LD" // GCGBBRSKBPIQHGOPA5T637SQYHVGTKTIF6DUYZS34NLOUZNHI7JYBUNA
         
         do {
             let payerKeyPair = try KeyPair(secretSeed: payerSeed)
@@ -644,7 +651,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetFeeBumpTransactionDetails() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         
-        sdk.transactions.getTransactionDetails(transactionHash: "5a270b978380f9ac264787bea669eeca523a32ef7b8e1f0f570a207776d33c7b") { (response) -> (Void) in
+        sdk.transactions.getTransactionDetails(transactionHash: "f2983be607c3a3fc2cd93ce41274860572fc81efcee5f9451febbf7b955c78ac") { (response) -> (Void) in
             switch response {
             case .success(let response):
                 if let fbr = response.feeBumpTransactionResponse, let itr = response.innerTransactionResponse {
@@ -675,7 +682,6 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testFeeBumpTransactionV0EnvelopePost() {
         let expectation = XCTestExpectation(description: "FeeBumpTransaction successfully sent.")
         let payerSeed = "SBJUS3LKMADSRXARW2SPALMMVNUKMQRSNJLLJPS7B37L55EUOEAGE42B"
-        
         
         do {
             let payerKeyPair = try KeyPair(secretSeed: payerSeed)

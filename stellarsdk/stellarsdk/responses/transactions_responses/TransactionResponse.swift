@@ -66,6 +66,8 @@ public class TransactionResponse: NSObject, Decodable {
     public var feeBumpTransactionResponse:FeeBumpTransactionResponse?
     public var innerTransactionResponse:InnerTransactionResponse?
     
+    public var preconditions:TransactionPreconditionsResponse?
+    
     private enum CodingKeys: String, CodingKey {
         case links = "_links"
         case id
@@ -91,6 +93,7 @@ public class TransactionResponse: NSObject, Decodable {
         case transactionMeta = "result_meta_xdr"
         case feeBumpTransaction = "fee_bump_transaction"
         case innerTransaction = "inner_transaction"
+        case preconditions = "preconditions"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -160,6 +163,6 @@ public class TransactionResponse: NSObject, Decodable {
         
         feeBumpTransactionResponse = try values.decodeIfPresent(FeeBumpTransactionResponse.self, forKey: .feeBumpTransaction)
         innerTransactionResponse = try values.decodeIfPresent(InnerTransactionResponse.self, forKey: .innerTransaction)
-
+        preconditions = try values.decodeIfPresent(TransactionPreconditionsResponse.self, forKey: .preconditions)
     }
 }

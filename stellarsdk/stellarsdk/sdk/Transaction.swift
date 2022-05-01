@@ -16,7 +16,7 @@ public class Transaction {
     public let sourceAccount:TransactionAccount
     public let operations:[Operation]
     public let memo:Memo
-    public let timeBounds:TimeBounds?
+    public let preconditions:TransactionPreconditions?
     public private(set) var transactionXDR:TransactionXDR
     
     public var xdrEncoded: String? {
@@ -24,24 +24,23 @@ public class Transaction {
             return transactionXDR.xdrEncoded
         }
     }
-    
+        
     /// Creates a new Transaction object.
     ///
     /// - Parameter sourceAccount: Account that originates the transaction.
     /// - Parameter operations: Transactions contain an arbitrary list of operations inside them. Typically there is just one operation, but it’s possible to have multiple. Operations are executed in order as one ACID transaction, meaning that either all operations are applied or none are.
     /// - Parameter memo: Optional. The memo contains optional extra information. It is the responsibility of the client to interpret this value.
-    /// - Parameter timeBounds: Optional. The UNIX timestamp, determined by ledger time, of a lower and upper bound of when this transaction will be valid. If a transaction is submitted too early or too late, it will fail to make it into the transaction set.
+    /// - Parameter preconditions: Optional. Transaction preconditions as defined in CAP-21
     /// - Parameter maxOperationFee: Optional. The maximum fee in stoops you are willing to pay per operation. If not set, it will default to the network base fee which is currently set to 100 stroops (0.00001 lumens). Transaction fee is equal to operation fee times number of operations in this transaction.
     ///
-    public init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, timeBounds:TimeBounds?, maxOperationFee:UInt32 = 100) throws {
-        
+    public init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, preconditions:TransactionPreconditions?, maxOperationFee:UInt32 = 100) throws {
         if operations.count == 0 {
             throw StellarSDKError.invalidArgument(message: "At least one operation required")
         }
         
         self.sourceAccount = sourceAccount
         self.operations = operations
-        self.timeBounds = timeBounds
+        self.preconditions = preconditions
         
         self.fee = maxOperationFee * UInt32(operations.count)
         
@@ -60,15 +59,25 @@ public class Transaction {
             muxedAccount = MuxedAccountXDR.ed25519(sourceAccount.keyPair.publicKey.bytes)
         }
         
+        var condXdr = PreconditionsXDR.none
+        if let pc = preconditions {
+            condXdr = pc.toXdr()
+        }
         self.transactionXDR = TransactionXDR(sourceAccount: muxedAccount,
                                              seqNum: self.sourceAccount.incrementedSequenceNumber(),
-                                             timeBounds: self.timeBounds?.toXdr(),
+                                             cond: condXdr,
                                              memo: self.memo.toXDR(),
                                              operations: operationsXDR,
                                              maxOperationFee: maxOperationFee)
         
         self.sourceAccount.incrementSequenceNumber()
         
+    }
+    
+    @available(*, deprecated, message: "use init with preconditions instead")
+    public convenience init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, timeBounds:TimeBounds?, maxOperationFee:UInt32 = 100) throws {
+        let precond = TransactionPreconditions(timeBounds:timeBounds)
+        try self.init(sourceAccount:sourceAccount, operations:operations, memo:memo, preconditions:precond, maxOperationFee:maxOperationFee)
     }
     
     /// Creates a new Transaction object from an XDR string.
@@ -85,15 +94,12 @@ public class Transaction {
             operations.append(operation)
         }
         
-        var timebounds: TimeBounds?
-        if let timeboundsXDR = transactionXDR.timeBounds {
-            timebounds = TimeBounds(timebounds: timeboundsXDR)
-        }
+        let preconditions = TransactionPreconditions(preconditions: transactionXDR.cond)
         
         let txFee = transactionXDR.fee;
         let maxOperationFee = operations.count > 1 ? txFee /  UInt32(operations.count) : txFee
         
-        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionXDR.memo), timeBounds: timebounds, maxOperationFee: maxOperationFee)
+        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionXDR.memo), preconditions: preconditions, maxOperationFee: maxOperationFee)
     }
     
     /// Creates a new Transaction object from an Transaction Envelope XDR string.
@@ -111,15 +117,12 @@ public class Transaction {
             operations.append(operation)
         }
         
-        var timebounds: TimeBounds?
-        if let timeboundsXDR = transactionEnvelopeXDR.txTimeBounds {
-            timebounds = TimeBounds(timebounds: timeboundsXDR)
-        }
+        let preconditions = TransactionPreconditions(preconditions: transactionEnvelopeXDR.cond)
         
         let txFee = transactionEnvelopeXDR.txFee;
         let maxOperationFee = operations.count > 1 ? txFee /  UInt32(operations.count) : txFee
         
-        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionEnvelopeXDR.txMemo), timeBounds: timebounds, maxOperationFee: maxOperationFee)
+        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionEnvelopeXDR.txMemo), preconditions: preconditions, maxOperationFee: maxOperationFee)
         
         for signature in transactionEnvelopeXDR.txSignatures {
             self.transactionXDR.addSignature(signature: signature)
