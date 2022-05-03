@@ -225,7 +225,7 @@ public enum AccountEntryExtV2XDR : XDRCodable {
         switch code {
         case 0:
             self = .void
-        case 2:
+        case 3:
             self = .accountEntryExtensionV3(try AccountEntryExtensionV3(from: decoder))
         default:
             self = .void
