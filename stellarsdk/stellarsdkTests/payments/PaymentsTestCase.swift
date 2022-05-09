@@ -233,10 +233,99 @@ class PaymentsTestCase: XCTestCase {
                                                                 destinationAccountId: muxDest.accountId,
                                                                 asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                                                 amount: 1.5)
+                        
+                        let transaction = try Transaction(sourceAccount: muxSource,
+                                                          operations: [paymentOperation],
+                                                          memo: Memo.none)
+                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                        
+                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(let response):
+                                print("SRP Test: Transaction successfully sent. Hash \(response.transactionHash)")
+                            case .destinationRequiresMemo(let destinationAccountId):
+                                print("SRP Test: Destination requires memo \(destinationAccountId)")
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            case .failure(let error):
+                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
+                                XCTAssert(false)
+                                expectation.fulfill()
+                            }
+                        }
+                    } catch {
+                        XCTAssert(false)
+                        expectation.fulfill()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
+                    XCTAssert(false)
+                    expectation.fulfill()
+                }
+            }
+        } catch {
+            XCTAssert(false)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
+    func testSendAndReceiveNativePaymentWithPreconditions() {
+        
+        let expectation = XCTestExpectation(description: "Native payment successfully sent and received")
+        
+        do {
+            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
+            let destinationAccountKeyPair = try KeyPair(accountId: IOMIssuingAccountId)
+            
+            streamItem = sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: "now"))
+            streamItem?.onReceive { (response) -> (Void) in
+                switch response {
+                case .open:
+                    break
+                case .response(let id, let operationResponse):
+                    if let paymentResponse = operationResponse as? PaymentOperationResponse {
+                        print("Payment of \(paymentResponse.amount) XLM from \(paymentResponse.sourceAccount) received -  id \(id)" )
+                        self.streamItem?.closeStream()
+                        self.streamItem = nil
+                        XCTAssert(true)
+                        expectation.fulfill()
+                    }
+                case .error(let error):
+                    if let horizonRequestError = error as? HorizonRequestError {
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test - destination", horizonRequestError:horizonRequestError)
+                    } else {
+                        print("Error \(error?.localizedDescription ?? "")")
+                    }
+                }
+            }
+            
+            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accountResponse):
+                    do {
+                        let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
+                        print ("Muxed source account id: \(muxSource.accountId)")
+                        
+                        let muxDest = try MuxedAccount(accountId: self.IOMIssuingAccountId, id:9919191919)
+                        
+                        print ("Muxed destination account id: \(muxDest.accountId)")
+                        
+                        let paymentOperation = try PaymentOperation(sourceAccountId: muxSource.accountId,
+                                                                destinationAccountId: muxDest.accountId,
+                                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                                amount: 1.5)
+                        
+                        let lb = LedgerBounds(minLedger: 892052, maxLedger: 1892052)
+                        let tb = TimeBounds(minTime: 1652110741, maxTime: 1752110741)
+                        
+                        let precond = TransactionPreconditions(ledgerBounds: lb, timeBounds: tb, minSeqNumber: 3266266794033160, minSeqAge: 1, minSeqLedgerGap: 1)
+
                         let transaction = try Transaction(sourceAccount: muxSource,
                                                           operations: [paymentOperation],
                                                           memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          preconditions:precond)
                         try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
                         
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in

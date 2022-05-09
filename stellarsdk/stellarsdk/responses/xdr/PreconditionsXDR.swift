@@ -88,11 +88,11 @@ public struct PreconditionsV2XDR: XDRCodable {
     public let timeBounds:TimeBoundsXDR?
     public let ledgerBounds: LedgerBoundsXDR?
     public let sequenceNumber: Int64?
-    public let minSeqAge: UInt64?
-    public let minSeqLedgerGap: UInt32?
-    public let extraSigners:[SignerKeyXDR]?
+    public let minSeqAge: UInt64
+    public let minSeqLedgerGap: UInt32
+    public let extraSigners:[SignerKeyXDR]
     
-    public init(timeBounds:TimeBoundsXDR?, ledgerBounds: LedgerBoundsXDR?, sequenceNumber: Int64?, minSeqAge: UInt64?, minSeqLedgerGap: UInt32?, extraSigners: [SignerKeyXDR]?) {
+    public init(timeBounds:TimeBoundsXDR?, ledgerBounds: LedgerBoundsXDR?, sequenceNumber: Int64?, minSeqAge: UInt64 = 0, minSeqLedgerGap: UInt32 = 0, extraSigners: [SignerKeyXDR] = []) {
         self.timeBounds = timeBounds
         self.ledgerBounds = ledgerBounds
         self.sequenceNumber = sequenceNumber
@@ -102,20 +102,38 @@ public struct PreconditionsV2XDR: XDRCodable {
     }
 
     public init(from decoder: Decoder) throws {
-        //var container = try decoder.unkeyedContainer()
+        var container = try decoder.unkeyedContainer()
         timeBounds = try decodeArray(type: TimeBoundsXDR.self, dec: decoder).first
         ledgerBounds = try decodeArray(type: LedgerBoundsXDR.self, dec: decoder).first
         sequenceNumber = try decodeArray(type: Int64.self, dec: decoder).first
-        minSeqAge = try decodeArray(type: UInt64.self, dec: decoder).first
-        minSeqLedgerGap = try decodeArray(type: UInt32.self, dec: decoder).first
+        minSeqAge = try container.decode(UInt64.self)
+        minSeqLedgerGap = try container.decode(UInt32.self)
         extraSigners = try decodeArray(type: SignerKeyXDR.self, dec: decoder)
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(timeBounds)
-        try container.encode(ledgerBounds)
-        try container.encode(sequenceNumber)
+        if let tb = timeBounds {
+            try container.encode(Int32(1))
+            try container.encode(tb)
+        }
+        else {
+            try container.encode(Int32(0))
+        }
+        if let lb = ledgerBounds {
+            try container.encode(Int32(1))
+            try container.encode(lb)
+        }
+        else {
+            try container.encode(Int32(0))
+        }
+        if let sq = sequenceNumber {
+            try container.encode(Int32(1))
+            try container.encode(sq)
+        }
+        else {
+            try container.encode(Int32(0))
+        }
         try container.encode(minSeqAge)
         try container.encode(minSeqLedgerGap)
         try container.encode(extraSigners)

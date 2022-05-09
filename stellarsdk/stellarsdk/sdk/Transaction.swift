@@ -33,7 +33,7 @@ public class Transaction {
     /// - Parameter preconditions: Optional. Transaction preconditions as defined in CAP-21
     /// - Parameter maxOperationFee: Optional. The maximum fee in stoops you are willing to pay per operation. If not set, it will default to the network base fee which is currently set to 100 stroops (0.00001 lumens). Transaction fee is equal to operation fee times number of operations in this transaction.
     ///
-    public init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, preconditions:TransactionPreconditions?, maxOperationFee:UInt32 = 100) throws {
+    public init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, preconditions:TransactionPreconditions? = nil, maxOperationFee:UInt32 = 100) throws {
         if operations.count == 0 {
             throw StellarSDKError.invalidArgument(message: "At least one operation required")
         }

@@ -10,8 +10,8 @@ import Foundation
 
 public class PreconditionsTimeBoundsResponse: NSObject, Decodable {
     
-    public var minTime:Int?
-    public var maxTime:Int?
+    public var minTime:String?
+    public var maxTime:String?
     
     private enum CodingKeys: String, CodingKey {
         case minTime = "min_time"
@@ -20,7 +20,7 @@ public class PreconditionsTimeBoundsResponse: NSObject, Decodable {
     
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        minTime = try values.decodeIfPresent(Int.self, forKey: .minTime)
-        maxTime = try values.decodeIfPresent(Int.self, forKey: .maxTime)
+        minTime = try values.decodeIfPresent(String.self, forKey: .minTime)
+        maxTime = try values.decodeIfPresent(String.self, forKey: .maxTime)
     }
 }

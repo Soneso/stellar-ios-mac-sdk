@@ -13,7 +13,7 @@ import stellarsdk
 
 class AccountRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let accountId = "GAQXAWHCM4A7SQCT3BOSVEGRI2OOB7LO2CMFOYFF6YRXU4VQSB5V2V2K"
+    let accountId = "GD75U4XM6EAA62JAWE4EFDRSYJNYJO6EB6NTMXNX3FVC6C4IQ26JHOAD"
     
     override func setUp() {
         super.setUp()
@@ -37,6 +37,8 @@ class AccountRemoteTestCase: XCTestCase {
                 for balance in accountDetails.balances {
                     print("Balance \(balance.balance)")
                 }
+                print("Seq Ledger: \(accountDetails.sequenceLedger!)")
+                print("Seq Time: \(accountDetails.sequenceTime!)")
                 XCTAssert(true)
             case .failure(let error):
                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"Get account details test", horizonRequestError: error)

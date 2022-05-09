@@ -555,19 +555,20 @@ class TransactionsLocalTestCase: XCTestCase {
         }
     }
     
-    func testTransactionXDRStringInit2() {
+    func testTransactionXDRP19() {
         
-        let xdrString = "AAAAAGGbHZGjF1TCQg6NnlLEXMbKG9MXDlZFbCGY4tI4zx75AAAAZAAMTTAAAAABAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAy+FD8d+ZB8Wk9AjQrM1LDd5KKv2OuxlftjDu6Z8D5UIAAAAAR4aMAAAAAAA="
+        let xdrString = "AAAAAgAAAQAAAAAAABODof/acuzxAA9pILE4Qo4ywluEu8QPmzZdt9lqLwuIhryTAAAAZAALmqcAAAAMAAAAAgAAAAAAAAABAA2clAAc3tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAQAAAAAAABODof/acuzxAA9pILE4Qo4ywluEu8QPmzZdt9lqLwuIhryTAAAAAQAAAQAAAAACTzrbb3aC2IBy/P5SR+6HUM0IKF3u4XY6AiFDhxsJI3NF3+ibAAAAAAAAAAAA5OHAAAAAAAAAAAGIhryTAAAAQAOqw3zOmA6SaTDpeLmfQUB9w0h4kjE4y4CQUDWVl8KtW1QhikTt4mYbF2ZOSSdYM6hiY/QWtpB19nNMxqy/1gU="
         do {
-            let transaction = try TransactionXDR(xdr:xdrString)
-            let fee = transaction.fee
-            XCTAssert(fee == 1000)
-            let transactionXDRString = transaction.xdrEncoded
-            XCTAssertTrue(xdrString == transactionXDRString)
+            let tx = try Transaction(envelopeXdr: xdrString)
+            let pc = tx.preconditions
+            XCTAssertTrue(pc?.ledgerBounds != nil)
+            XCTAssertTrue(pc?.ledgerBounds?.minLedger == 892052)
+            XCTAssertTrue(pc?.ledgerBounds?.maxLedger == 1892052)
         } catch {
             XCTAssertTrue(false)
         }
     }
+    
     func testTransactionStringInit() {
         let xdrString = "AAAAAJ/Ax+axve53/7sXfQY0fI6jzBeHEcPl0Vsg1C2tqyRbAAAAZAAAAAAAAAAAAAAAAQAAAABb2L/OAAAAAFvYwPoAAAAAAAAAAQAAAAEAAAAAo7FW8r8Nj+SMwPPeAoL4aUkLob7QU68+9Y8CAia5k78AAAAKAAAAN0NJcDhiSHdnU2hUR042ZDE3bjg1ZlFGRVBKdmNtNFhnSWhVVFBuUUF4cUtORVd4V3JYIGF1dGgAAAAAAQAAAEDh/7kQjZbcXypISjto5NtGLuaDGrfL/F08apZQYp38JNMNQ9p/e1Fy0z23WOg/Ic+e91+hgbdTude6+1+i0V41AAAAAA=="
         do {
@@ -653,7 +654,7 @@ class TransactionsLocalTestCase: XCTestCase {
             
             let preconditions = TransactionPreconditions(extraSigners:[signerKey])
             let transaction = try Transaction(sourceAccount: acc, operations: [op], memo: nil, preconditions: preconditions)
-            var sk = transaction.preconditions!.extraSigners![0]
+            var sk = transaction.preconditions!.extraSigners[0]
             switch sk {
             case .signedPayload(let payload):
                 XCTAssertTrue(try payload.publicKey().accountId == accId)
@@ -665,7 +666,7 @@ class TransactionsLocalTestCase: XCTestCase {
             let envelopeString = try transaction.encodedEnvelope()
             print(envelopeString)
             let tx2 = try Transaction(envelopeXdr:envelopeString)
-            sk = tx2.preconditions!.extraSigners![0]
+            sk = tx2.preconditions!.extraSigners[0]
             switch sk {
             case .signedPayload(let payload):
                 XCTAssertTrue(try payload.publicKey().accountId == accId)

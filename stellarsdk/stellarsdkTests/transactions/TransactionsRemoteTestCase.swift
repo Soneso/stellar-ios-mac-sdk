@@ -77,8 +77,8 @@ class TransactionsRemoteTestCase: XCTestCase {
     
     func testGetTransactionsForAccount() {
         let expectation = XCTestExpectation(description: "Get transactions for account")
-        let pk = try! KeyPair(secretSeed: seed).publicKey
-        sdk.transactions.getTransactions(forAccount: pk.accountId) { (response) -> (Void) in
+        let pk = try! KeyPair(secretSeed: seed).publicKey.accountId
+        sdk.transactions.getTransactions(forAccount: pk ,order: Order.descending) { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -136,7 +136,7 @@ class TransactionsRemoteTestCase: XCTestCase {
     func testGetTransactionDetails() {
         let expectation = XCTestExpectation(description: "Get transaction details")
         
-        sdk.transactions.getTransactionDetails(transactionHash: "37c201ce8f75f92194a76da5be1ae68216301f80efdf8acea9601d12fa4851e9") { (response) -> (Void) in
+        sdk.transactions.getTransactionDetails(transactionHash: "855424532154d21ad9df42e4fb642f2a855569314aebb41da7f6d129cd9997f4") { (response) -> (Void) in
             switch response {
             case .success(_):
                 XCTAssert(true)
@@ -150,6 +150,33 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
+    
+    func testGetTransactionDetailsP19() {
+        let expectation = XCTestExpectation(description: "Get transaction details")
+        
+        sdk.transactions.getTransactionDetails(transactionHash: "855424532154d21ad9df42e4fb642f2a855569314aebb41da7f6d129cd9997f4") { (response) -> (Void) in
+            switch response {
+            case .success(let tx):
+                XCTAssert(tx.preconditions != nil)
+                XCTAssert(tx.preconditions?.timeBounds?.minTime == "1652110741")
+                XCTAssert(tx.preconditions?.timeBounds?.maxTime == "1752110741")
+                XCTAssert(tx.preconditions?.ledgerBounds?.minLedger == 892052)
+                XCTAssert(tx.preconditions?.ledgerBounds?.maxLedger == 1892052)
+                XCTAssert(tx.preconditions?.minAccountSequence == "3266266794033160")
+                XCTAssert(tx.preconditions?.minAccountSequenceAge == "1")
+                XCTAssert(tx.preconditions?.minAccountSequenceLedgerGap == 1)
+                XCTAssert(true)
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GTD Test", horizonRequestError: error)
+                XCTAssert(false)
+            }
+            
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 15.0)
+    }
+    
     
     func testGetTransactionDetailsClaimAtomTypeLiquidityPool() {
         let expectation = XCTestExpectation(description: "Get transaction details")

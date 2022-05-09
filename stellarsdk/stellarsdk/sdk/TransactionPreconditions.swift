@@ -19,11 +19,11 @@ final public class TransactionPreconditions {
     public let ledgerBounds:LedgerBounds?
     public let timeBounds:TimeBounds?
     public let minSeqNumber: Int64?
-    public let minSeqAge: UInt64?
-    public let minSeqLedgerGap: UInt32?
-    public let extraSigners:[SignerKeyXDR]?
+    public let minSeqAge: UInt64
+    public let minSeqLedgerGap: UInt32
+    public let extraSigners:[SignerKeyXDR]
 
-    public init(ledgerBounds:LedgerBounds? = nil, timeBounds:TimeBounds? = nil, minSeqNumber: Int64? = nil, minSeqAge: UInt64? = nil, minSeqLedgerGap: UInt32? = nil, extraSigners:[SignerKeyXDR]? = nil) {
+    public init(ledgerBounds:LedgerBounds? = nil, timeBounds:TimeBounds? = nil, minSeqNumber: Int64? = nil, minSeqAge: UInt64 = 0, minSeqLedgerGap: UInt32 = 0, extraSigners:[SignerKeyXDR] = []) {
         self.ledgerBounds = ledgerBounds
         self.timeBounds = timeBounds
         self.minSeqNumber = minSeqNumber
@@ -83,13 +83,13 @@ final public class TransactionPreconditions {
         if ledgerBounds != nil || minSeqNumber != nil {
             return true
         }
-        if let mslg = minSeqLedgerGap, mslg > 0 {
+        if minSeqLedgerGap > 0 {
             return true
         }
-        if let msa = minSeqAge, msa > 0 {
+        if minSeqAge > 0 {
             return true
         }
-        if let es = extraSigners, es.count > 0 {
+        if extraSigners.count > 0 {
             return true
         }
         return false

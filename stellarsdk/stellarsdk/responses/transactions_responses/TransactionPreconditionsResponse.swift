@@ -15,12 +15,12 @@ public class TransactionPreconditionsResponse: NSObject, Decodable {
     public var ledgerBounds:PreconditionsLedgerBoundsResponse?
     public var minAccountSequence:String?
     public var minAccountSequenceAge:String?
-    public var minAccountSequenceLedgerGap:String?
+    public var minAccountSequenceLedgerGap:Int?
     public var extraSigners:[String]?
     
     private enum CodingKeys: String, CodingKey {
-        case timeBounds
-        case ledgerBounds
+        case timeBounds = "timebounds"
+        case ledgerBounds = "ledgerbounds"
         case minAccountSequence = "min_account_sequence"
         case minAccountSequenceAge = "min_account_sequence_age"
         case minAccountSequenceLedgerGap = "min_account_sequence_ledger_gap"
@@ -33,7 +33,7 @@ public class TransactionPreconditionsResponse: NSObject, Decodable {
         ledgerBounds = try values.decodeIfPresent(PreconditionsLedgerBoundsResponse.self, forKey: .ledgerBounds)
         minAccountSequence = try values.decodeIfPresent(String.self, forKey: .minAccountSequence)
         minAccountSequenceAge = try values.decodeIfPresent(String.self, forKey: .minAccountSequenceAge)
-        minAccountSequenceLedgerGap = try values.decodeIfPresent(String.self, forKey: .minAccountSequenceLedgerGap)
+        minAccountSequenceLedgerGap = try values.decodeIfPresent(Int.self, forKey: .minAccountSequenceLedgerGap)
         extraSigners = try values.decodeIfPresent(Array.self, forKey: .extraSigners)
     }
 }
