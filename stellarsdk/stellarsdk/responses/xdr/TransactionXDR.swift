@@ -99,9 +99,6 @@ public struct TransactionXDR: XDRCodable {
     }
     
     public func toEnvelopeXDR() throws -> TransactionEnvelopeXDR {
-        guard !signatures.isEmpty else {
-            throw StellarSDKError.invalidArgument(message: "Transaction must be signed by at least one signer. Use transaction.sign().")
-        }
         let envelopeV1 = TransactionV1EnvelopeXDR(tx: self, signatures: signatures)
         return TransactionEnvelopeXDR.v1(envelopeV1)
     }
@@ -113,11 +110,7 @@ public struct TransactionXDR: XDRCodable {
         return Data(bytes: &encodedEnvelope, count: encodedEnvelope.count).base64EncodedString()
     }
     
-    public func toEnvelopeV1XDR() throws -> TransactionV1EnvelopeXDR {
-        guard !signatures.isEmpty else {
-            throw StellarSDKError.invalidArgument(message: "Transaction must be signed by at least one signer. Use transaction.sign().")
-        }
-        
+    public func toEnvelopeV1XDR() throws -> TransactionV1EnvelopeXDR {        
         return TransactionV1EnvelopeXDR(tx: self, signatures: signatures)
     }
     

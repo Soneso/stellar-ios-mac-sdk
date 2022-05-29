@@ -101,10 +101,6 @@ public struct FeeBumpTransactionXDR: XDRCodable {
     }
     
     public func toFBEnvelopeXDR() throws -> FeeBumpTransactionEnvelopeXDR {
-        guard !signatures.isEmpty else {
-            throw StellarSDKError.invalidArgument(message: "Transaction must be signed by at least one signer. Use transaction.sign().")
-        }
-        
         return FeeBumpTransactionEnvelopeXDR(tx: self, signatures: signatures)
     }
     

@@ -976,4 +976,27 @@ class TransactionsLocalTestCase: XCTestCase {
         
         return transactionsResponseString
     }
+    
+    func testEnvelopeNoSignatures() {
+        let sourceAccountKeyPair = try! KeyPair.generateRandomKeyPair()
+        let accountBId = try! KeyPair.generateRandomKeyPair().accountId
+        let accountASeqNr = Int64(379748123410432)
+        let accountA = Account(keyPair:sourceAccountKeyPair, sequenceNumber: accountASeqNr)
+        
+        do {
+            
+            let createAccountOperation = CreateAccountOperation(sourceAccountId: sourceAccountKeyPair.accountId, destination: try KeyPair(accountId: accountBId), startBalance: 10)
+            
+            let transaction = try Transaction(sourceAccount: accountA,
+                                              operations: [createAccountOperation],
+                                              memo: Memo.text("Enjoy this transaction!"))
+            
+            
+            let envelopeXdrBase64 = try! transaction.encodedEnvelope()
+            let transaction2 = try! Transaction(envelopeXdr: envelopeXdrBase64)
+            XCTAssertEqual(transaction.sourceAccount.keyPair.accountId, transaction2.sourceAccount.keyPair.accountId)
+        } catch {
+            XCTAssertTrue(false)
+        }
+    }
 }
