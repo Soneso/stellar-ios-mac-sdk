@@ -11,11 +11,44 @@ import stellarsdk
 
 class DataForAccountRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
-    let testSuccessAccountId = "GCRIOIWOKDDNZCYUOL72PFQWHIPY5H6WXTV2LLFVCJG5RH4G63PQPO36"
-    
+    let testKeyPair = try! KeyPair.generateRandomKeyPair()
+
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        let expectation = XCTestExpectation(description: "accounts prepared for tests")
+
+        let testAccountId = testKeyPair.accountId
+        let manageDataOp = ManageDataOperation(sourceAccountId: testAccountId, name: "soneso", data: "is super".data(using: .utf8))
+        
+        sdk.accounts.createTestAccount(accountId: testAccountId) { (response) -> (Void) in
+            switch response {
+            case .success(_):
+                self.sdk.accounts.getAccountDetails(accountId: testAccountId) { (response) -> (Void) in
+                    switch response {
+                    case .success(let accountResponse):
+                        let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                          operations: [manageDataOp],
+                                                          memo: Memo.none)
+                        try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
+                        
+                        try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                            switch response {
+                            case .success(let response):
+                                print("setUp: Transaction successfully sent. Hash:\(response.transactionHash)")
+                                expectation.fulfill()
+                            default:
+                                XCTFail()
+                            }
+                        }
+                    case .failure(_):
+                        XCTFail()
+                    }
+                }
+            case .failure(_):
+                XCTFail()
+            }
+        }
+        wait(for: [expectation], timeout: 25.0)
     }
     
     override func tearDown() {
@@ -25,13 +58,13 @@ class DataForAccountRemoteTestCase: XCTestCase {
 
     func testGetDataForAccount() {
         let expectation = XCTestExpectation(description: "Get data value for a given account and key")
-        sdk.accounts.getDataForAccount(accountId: testSuccessAccountId, key:"soneso") { (response) -> (Void) in
+        sdk.accounts.getDataForAccount(accountId: testKeyPair.accountId, key:"soneso") { (response) -> (Void) in
             switch response {
             case .success(let dataForAccount):
                 XCTAssertEqual(dataForAccount.value.base64Decoded(), "is super")
             case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GDFA testcase", horizonRequestError: error)
-                XCTAssert(false)
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetDataForAccount", horizonRequestError: error)
+                XCTFail()
             }
             expectation.fulfill()
         }
