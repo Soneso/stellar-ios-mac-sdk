@@ -14,13 +14,98 @@ class OperationsRemoteTestCase: XCTestCase {
     
     var streamItem:OperationsStreamItem? = nil
     var effectsStreamItem:EffectsStreamItem? = nil
-    
-    let seed = "SC3FVGWBQDEWH7XER6L23ZR7RRHOVMMVQVZ64RULNCK56SPZH4Q2LAKZ"
-    let IOMIssuingAccountId = "GAZ2MUQVDMYGTBTDYPZN5Y37DXHENQ6RADKHJE6PCCHRRWO55TQAKLVT"
+
+    let testKeyPair = try! KeyPair.generateRandomKeyPair()
+    let IOMIssuingAccountKeyPair = try! KeyPair.generateRandomKeyPair()
+    let accountToMergeKeyPair = try! KeyPair.generateRandomKeyPair()
+    let accountToSponsorKeyPair = try! KeyPair.generateRandomKeyPair()
+    let trustingAccountKeyPair = try! KeyPair.generateRandomKeyPair()
+    var claimableBalanceId:String? = nil
+    var transactionId:String? = nil
+    var ledger:Int? = nil
+    var operationId:String? = nil
     
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        let expectation = XCTestExpectation(description: "accounts prepared for tests")
+
+        let testAccountId = testKeyPair.accountId
+        let issuingAccountId = IOMIssuingAccountKeyPair.accountId
+        
+        let IOMAsset = ChangeTrustAsset(canonicalForm: "IOM:" + issuingAccountId)!
+        let changeTrustOp = ChangeTrustOperation(sourceAccountId:testAccountId, asset:IOMAsset, limit: 100000000)
+        let claimant = Claimant(destination:testAccountId)
+        let createClaimableBalance = CreateClaimableBalanceOperation(asset: IOMAsset, amount: 1.00, claimants: [claimant], sourceAccountId: issuingAccountId)
+        let createAccountOp = CreateAccountOperation(sourceAccountId: testAccountId, destination: accountToMergeKeyPair, startBalance: 100.0)
+        let createAccountOp2 = CreateAccountOperation(sourceAccountId: testAccountId, destination: trustingAccountKeyPair, startBalance: 100.0)
+        let createAccountOp3 = CreateAccountOperation(sourceAccountId: testAccountId, destination: accountToSponsorKeyPair, startBalance: 100.0)
+        let paymentOp1 = try! PaymentOperation(sourceAccountId: issuingAccountId, destinationAccountId: testAccountId, asset: IOMAsset, amount: 20000)
+        
+        sdk.accounts.createTestAccount(accountId: testAccountId) { (response) -> (Void) in
+            switch response {
+            case .success(_):
+                self.sdk.accounts.createTestAccount(accountId: issuingAccountId) { (response) -> (Void) in
+                    switch response {
+                    case .success(_):
+                        self.sdk.accounts.getAccountDetails(accountId: testAccountId) { (response) -> (Void) in
+                            switch response {
+                            case .success(let accountResponse):
+                                let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                                  operations: [changeTrustOp, createClaimableBalance,
+                                                                               createAccountOp, createAccountOp2,
+                                                                               createAccountOp3, paymentOp1],
+                                                                  memo: Memo.none)
+                                try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
+                                try! transaction.sign(keyPair: self.IOMIssuingAccountKeyPair, network: Network.testnet)
+                                
+                                try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                                    switch response {
+                                    case .success(let response):
+                                        print("setUp: Transaction successfully sent. Hash:\(response.transactionHash)")
+                                        self.transactionId = response.transactionHash
+                                        self.ledger = response.ledger
+                                        switch response.transactionMeta {
+                                        case .transactionMetaV2(let metaV2):
+                                            for opMeta in metaV2.operations {
+                                                for change in opMeta.changes.ledgerEntryChanges {
+                                                    switch change {
+                                                    case .created(let entry):
+                                                        switch entry.data {
+                                                        case .claimableBalance(let IDXdr):
+                                                            switch IDXdr.claimableBalanceID {
+                                                            case .claimableBalanceIDTypeV0(let data):
+                                                                self.claimableBalanceId = self.hexEncodedBalanceId(data:data.wrapped)
+                                                                print("claimable balance Id: \(self.claimableBalanceId!)")
+                                                            }
+                                                        default:
+                                                            break
+                                                        }
+                                                    default:
+                                                        break
+                                                    }
+                                                }
+                                            }
+                                        default:
+                                            break
+                                        }
+                                        expectation.fulfill()
+                                    default:
+                                        XCTFail()
+                                    }
+                                }
+                            case .failure(_):
+                                XCTFail()
+                            }
+                        }
+                    case .failure(_):
+                        XCTFail()
+                    }
+                }
+            case .failure(_):
+                XCTFail()
+            }
+        }
+        wait(for: [expectation], timeout: 25.0)
     }
     
     override func tearDown() {
@@ -28,164 +113,190 @@ class OperationsRemoteTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetOperations() {
-        let expectation = XCTestExpectation(description: "Get operations and parse their details successfully")
-        
-        sdk.operations.getOperations { (response) -> (Void) in
-            switch response {
-            case .success(let operationsResponse):
-                // load next page
-                operationsResponse.getNextPage(){ (response) -> (Void) in
-                    switch response {
-                    case .success(let nextOperationsResponse):
-                        // load previous page, should contain the same operations as the first page
-                        nextOperationsResponse.getPreviousPage(){ (response) -> (Void) in
-                            switch response {
-                            case .success(let prevOperationsResponse):
-                                let operation1 = operationsResponse.records.first
-                                let operation2 = prevOperationsResponse.records.last // because ordering is asc now.
-                                XCTAssertTrue(operation1?.id == operation2?.id)
-                                XCTAssertTrue(operation1?.sourceAccount == operation2?.sourceAccount)
-                                XCTAssertTrue(operation1?.sourceAccount == operation2?.sourceAccount)
-                                XCTAssertTrue(operation1?.operationTypeString == operation2?.operationTypeString)
-                                XCTAssertTrue(operation1?.operationType == operation2?.operationType)
-                                XCTAssertTrue(operation1?.createdAt == operation2?.createdAt)
-                                XCTAssertTrue(operation1?.transactionHash == operation2?.transactionHash)
-                                XCTAssert(true)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GO Test", horizonRequestError: error)
-                                XCTAssert(false)
+    func testAll() {
+        getOperations()
+        getOperationsForAccount()
+        getOperationsForClaimableBalance()
+        getOperationsForLedger()
+        getOperationsForTransaction()
+        getOperationDetails()
+        createAccount()
+        updateHomeDomain()
+        accountMerge()
+        updateInflationDestination()
+        changeTrustline()
+        mangeOffer()
+        createPassiveSellOffer()
+        manageAccountData()
+        createClaimableBalances()
+        claimableBalancesForSponsor()
+        getClaimableBalancesForClaimant()
+        getClaimableBalancesForAsset()
+        claimClaimableBalance()
+        //sponsorship()
+        sponsorship2()
+    }
+    
+    func getOperations() {
+        XCTContext.runActivity(named: "getOperations") { activity in
+            let expectation = XCTestExpectation(description: "Get operations and parse their details successfully")
+            
+            sdk.operations.getOperations { (response) -> (Void) in
+                switch response {
+                case .success(let operationsResponse):
+                    // load next page
+                    operationsResponse.getNextPage(){ (response) -> (Void) in
+                        switch response {
+                        case .success(let nextOperationsResponse):
+                            // load previous page, should contain the same operations as the first page
+                            nextOperationsResponse.getPreviousPage(){ (response) -> (Void) in
+                                switch response {
+                                case .success(let prevOperationsResponse):
+                                    let operation1 = operationsResponse.records.first
+                                    let operation2 = prevOperationsResponse.records.last // because ordering is asc now.
+                                    XCTAssertTrue(operation1?.id == operation2?.id)
+                                    XCTAssertTrue(operation1?.sourceAccount == operation2?.sourceAccount)
+                                    XCTAssertTrue(operation1?.sourceAccount == operation2?.sourceAccount)
+                                    XCTAssertTrue(operation1?.operationTypeString == operation2?.operationTypeString)
+                                    XCTAssertTrue(operation1?.operationType == operation2?.operationType)
+                                    XCTAssertTrue(operation1?.createdAt == operation2?.createdAt)
+                                    XCTAssertTrue(operation1?.transactionHash == operation2?.transactionHash)
+                                    XCTAssert(true)
+                                    expectation.fulfill()
+                                case .failure(let error):
+                                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getOperations", horizonRequestError: error)
+                                    XCTFail()
+                                }
                             }
+                        case .failure(let error):
+                            StellarSDKLog.printHorizonRequestErrorMessage(tag:"getOperations", horizonRequestError: error)
+                            XCTFail()
                         }
-                    case .failure(let error):
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GO Test", horizonRequestError: error)
-                        XCTAssert(false)
                     }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getOperations", horizonRequestError: error)
+                    XCTFail()
                 }
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GO Test", horizonRequestError: error)
-                XCTAssert(false)
-            }
-        }
-        
-        wait(for: [expectation], timeout: 15.0)
-    }
-    
-    func testGetOperationsForAccount() {
-        let expectation = XCTestExpectation(description: "Get operations for account")
-        let accountID = try! KeyPair(secretSeed: seed).accountId
-        sdk.operations.getOperations(forAccount: accountID, from: nil, order: Order.descending, includeFailed: true, join: "transactions") { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTAssert(true)
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOFA Test", horizonRequestError: error)
-                XCTAssert(false)
             }
             
-            expectation.fulfill()
+            wait(for: [expectation], timeout: 15.0)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetOperationsForClaimableBalance() {
-        let expectation = XCTestExpectation(description: "Get operations for claimable balance")
-        let claimableBalanceId = "00000000cca8fa61d9c3e2274943f24fbda525cdf836aee7267f0db2905571ad0eb8760c"
-        sdk.operations.getOperations(forClaimableBalance: claimableBalanceId, from: nil, order: Order.descending, includeFailed: true, join: "transactions") { (response) -> (Void) in
-            switch response {
-            case .success(let ops):
-                if let operation = ops.records.first {
-                    XCTAssert(operation.transactionSuccessful)
-                } else {
-                    XCTAssert(false)
+    func getOperationsForAccount() {
+        XCTContext.runActivity(named: "getOperationsForAccount") { activity in
+            let expectation = XCTestExpectation(description: "Get operations for account")
+            sdk.operations.getOperations(forAccount: testKeyPair.accountId, from: nil, order: Order.descending, includeFailed: true, join: "transactions") { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(true)
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getOperationsForAccount", horizonRequestError: error)
+                    XCTFail()
                 }
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOFA Test", horizonRequestError: error)
-                XCTAssert(false)
+                expectation.fulfill()
             }
-            
-            expectation.fulfill()
+            wait(for: [expectation], timeout: 15.0)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    
-    func testGetOperationsForLedger() {
-        let expectation = XCTestExpectation(description: "Get operations for ledger")
-        
-        sdk.operations.getOperations(forLedger: "180983", includeFailed:true, join:"transactions") { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTAssert(true)
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOFL Test", horizonRequestError: error)
-                XCTAssert(false)
+    func getOperationsForClaimableBalance() {
+        XCTContext.runActivity(named: "getOperationsForClaimableBalance") { activity in
+            let expectation = XCTestExpectation(description: "Get operations for claimable balance")
+                let claimableBalanceId = self.claimableBalanceId!
+            sdk.operations.getOperations(forClaimableBalance: claimableBalanceId, from: nil, order: Order.descending, includeFailed: true, join: "transactions") { (response) -> (Void) in
+                switch response {
+                case .success(let ops):
+                    if let operation = ops.records.first {
+                        XCTAssert(operation.transactionSuccessful)
+                    } else {
+                        XCTFail()
+                    }
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getOperationsForClaimableBalance", horizonRequestError: error)
+                    XCTFail()
+                }
+                expectation.fulfill()
             }
-            
-            expectation.fulfill()
+            wait(for: [expectation], timeout: 15.0)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetOperationsForTransaction() {
-        let expectation = XCTestExpectation(description: "Get operations for transaction")
-        
-        sdk.operations.getOperations(forTransaction: "c29bbf2190ca2cd19833320d2ce7024cbbad43cfdbcbfde9668bffed220f842f", includeFailed:true, join:"transactions") { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTAssert(true)
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOFT Test", horizonRequestError: error)
-                XCTAssert(false)
+    func getOperationsForLedger() {
+        XCTContext.runActivity(named: "getOperationsForLedger") { activity in
+            let expectation = XCTestExpectation(description: "Get operations for ledger")
+            
+            sdk.operations.getOperations(forLedger: String(ledger!), includeFailed:true, join:"transactions") { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(true)
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getOperationsForLedger", horizonRequestError: error)
+                    XCTFail()
+                }
+                
+                expectation.fulfill()
             }
             
-            expectation.fulfill()
+            wait(for: [expectation], timeout: 15.0)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetOperationDetails() {
-        let expectation = XCTestExpectation(description: "Get operation details")
-        
-        sdk.operations.getOperationDetails(operationId: "929512527241217", join:"transactions") { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTAssert(true)
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOD Test", horizonRequestError: error)
-                XCTAssert(false)
+    func getOperationsForTransaction() {
+        XCTContext.runActivity(named: "getOperationsForTransaction") { activity in
+            let expectation = XCTestExpectation(description: "Get operations for transaction")
+            
+            sdk.operations.getOperations(forTransaction: self.transactionId!, includeFailed:true, join:"transactions") { (response) -> (Void) in
+                switch response {
+                case .success(let response):
+                    XCTAssert(response.records.count > 0)
+                    self.operationId = response.records.first?.id
+                    XCTAssert(true)
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getOperationsForTransaction", horizonRequestError: error)
+                    XCTFail()
+                }
+                
+                expectation.fulfill()
             }
             
-            expectation.fulfill()
+            wait(for: [expectation], timeout: 15.0)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
+    
+    func getOperationDetails() {
+        XCTContext.runActivity(named: "getOperationsForTransaction") { activity in
+            let expectation = XCTestExpectation(description: "Get operation details")
+            
+            sdk.operations.getOperationDetails(operationId: self.operationId!, join:"transactions") { (response) -> (Void) in
+                switch response {
+                case .success(_):
+                    XCTAssert(true)
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getOperationDetails", horizonRequestError: error)
+                    XCTFail()
+                }
+                
+                expectation.fulfill()
+            }
+            
+            wait(for: [expectation], timeout: 15.0)
+        }
+    }
+    
+    func createAccount() {
+        XCTContext.runActivity(named: "createAccount") { activity in
+            let expectation = XCTestExpectation(description: "Create and fund a new account")
+            let sourceAccountKeyPair = testKeyPair
+            let destinationKeyPair = try! KeyPair.generateRandomKeyPair()
 
-    func testCreateAccount() {
-        let expectation = XCTestExpectation(description: "Create and fund a new account")
-        do {
-            
-            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
-            let destinationKeyPair = try KeyPair.generateRandomKeyPair()
-            print ("CA Test: Source account id: \(sourceAccountKeyPair.accountId)")
-            print("CA Test: New destination keipair created with secret seed: \(destinationKeyPair.secretSeed!) and accountId: \(destinationKeyPair.accountId)")
-
-    
             streamItem = sdk.operations.stream(for: .operationsForAccount(account:destinationKeyPair.accountId, cursor:nil))
             streamItem?.onReceive { (response) -> (Void) in
                 switch response {
                 case .open:
                     break
-                case .response(let id, let operationResponse):
-                    if let accountCreatedResponse = operationResponse as? AccountCreatedOperationResponse {
-                        print("CA Test: Stream source account received response with effect-ID: \(id) - type: Account created - New account with accountId: \(accountCreatedResponse.account) now has a balance of : \(accountCreatedResponse.startingBalance) XLM" )
-                        print("CA Test: Success")
+                case .response(_, let operationResponse):
+                    if let _ = operationResponse as? AccountCreatedOperationResponse {
                         self.streamItem?.closeStream()
                         self.streamItem = nil
                         XCTAssert(true)
@@ -193,9 +304,9 @@ class OperationsRemoteTestCase: XCTestCase {
                     }
                 case .error(let error):
                     if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"CCA Test - destination", horizonRequestError:horizonRequestError)
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"createAccount", horizonRequestError:horizonRequestError)
                     } else {
-                        print("CA Test: Stream error on destination account: \(error?.localizedDescription ?? "")")
+                        print("createAccount: Stream error on destination account: \(error?.localizedDescription ?? "")")
                     }
                 }
             }
@@ -203,58 +314,39 @@ class OperationsRemoteTestCase: XCTestCase {
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
-                    do {
-                        
-                        let createAccount = CreateAccountOperation(sourceAccount: nil, destination: destinationKeyPair, startBalance: 2.0)
-                        
-                        let transaction = try Transaction(sourceAccount: accountResponse,
-                                                          operations: [createAccount],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
-                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                        
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(_):
-                                print("CA Test: Transaction successfully sent")
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("CA Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test send error", horizonRequestError: error)
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            }
+                    let createAccount = try! CreateAccountOperation(sourceAccountId: nil, destinationAccountId: destinationKeyPair.accountId, startBalance: 2.0)
+                    
+                    let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                      operations: [createAccount],
+                                                      memo: Memo.none)
+                    try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                    
+                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        switch response {
+                        case .success(_):
+                            XCTAssert(true)
+                        default:
+                            XCTFail()
+                            expectation.fulfill()
                         }
-                    } catch {
-                        XCTAssert(false)
-                        expectation.fulfill()
                     }
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"CA Test", horizonRequestError: error)
-                    XCTAssert(false)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
             
-        } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            wait(for: [expectation], timeout: 15.0)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
         
     }
     
-    func testUpdateHomeDomain() {
-        let expectation = XCTestExpectation(description: "Set www.soneso.com as home domain")
-        do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
-            print ("Account ID: \(sourceAccountKeyPair.accountId)")
-            
+    func updateHomeDomain() {
+        XCTContext.runActivity(named: "updateHomeDomain") { activity in
+            let expectation = XCTestExpectation(description: "Set www.soneso.com as home domain")
+            let sourceAccountKeyPair = testKeyPair
             let homeDomain = "http://www.soneso.com"
-            print ("Home domain: \(homeDomain)")
             
             streamItem = sdk.operations.stream(for: .operationsForAccount(account:sourceAccountKeyPair.accountId, cursor:"now"))
             streamItem?.onReceive { (response) -> (Void) in
@@ -264,9 +356,7 @@ class OperationsRemoteTestCase: XCTestCase {
                 case .response(_, let operationResponse):
                     if let updateHomeDomainResponse = operationResponse as?  SetOptionsOperationResponse {
                         if let responseHomeDomain = updateHomeDomainResponse.homeDomain {
-                            print("UHD Test: Home domain updated to: \(responseHomeDomain)-" )
                             if homeDomain == responseHomeDomain {
-                                print("Success")
                                 self.streamItem?.closeStream()
                                 self.streamItem = nil
                                 expectation.fulfill()
@@ -277,7 +367,7 @@ class OperationsRemoteTestCase: XCTestCase {
                     if let horizonRequestError = error as? HorizonRequestError {
                         StellarSDKLog.printHorizonRequestErrorMessage(tag:"UDH Test - source", horizonRequestError:horizonRequestError)
                     } else {
-                        print("UID Test stream error \(error?.localizedDescription ?? "")")
+                        print("updateHomeDomain stream error \(error?.localizedDescription ?? "")")
                     }
                 }
             }
@@ -285,122 +375,74 @@ class OperationsRemoteTestCase: XCTestCase {
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
-                    do {
-                        
-                        
-                        let setHomeDomainOperation = try SetOptionsOperation(homeDomain: homeDomain)
-                        let transaction = try Transaction(sourceAccount: accountResponse,
-                                                          operations: [setHomeDomainOperation],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
-                        
-                        let thash = try transaction.getTransactionHash(network: Network.testnet)
-                        print("Transaction hash: \(thash)")
-                        
-                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                        
-                        let tenvelope = try transaction.encodedEnvelope()
-                        print ("Transaction envelope: \(tenvelope)")
-                        
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(_):
-                                print("UHD Test: Transaction successfully sent")
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("UHD Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"UHD Test - send error", horizonRequestError:error)
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            }
+                    let setHomeDomainOperation = try! SetOptionsOperation(sourceAccountId: sourceAccountKeyPair.accountId, homeDomain: homeDomain)
+                    let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                      operations: [setHomeDomainOperation],
+                                                      memo: Memo.none)
+                    
+                    try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                    
+                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        switch response {
+                        case .success(_):
+                            XCTAssert(true)
+                        default:
+                            XCTFail()
+                            expectation.fulfill()
                         }
-                    } catch {
-                        XCTAssert(false)
-                        expectation.fulfill()
                     }
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"UHD Test", horizonRequestError: error)
-                    XCTAssert(false)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
-            
-        } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            wait(for: [expectation], timeout: 20.0)
         }
-        
-        wait(for: [expectation], timeout: 20.0)
-        
     }
     
-    func testAccountMerge() {
-        let expectation = XCTestExpectation(description: "account merged")
-        do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SCXAOJMFMMK23LNHMLMECV7YQETZUD2VKROPMXVPS6AFKFH2ISYZCNDE")
+    func accountMerge() {
+        XCTContext.runActivity(named: "testAccountMerge") { activity in
+            let expectation = XCTestExpectation(description: "account merged")
+            let sourceAccountKeyPair = accountToMergeKeyPair
             
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
-                    do {
-                        
-                        let muxDestination = try MuxedAccount(accountId: "GAJGDV45S5A2BSATUE2PWQ5QHWTAW775ZHODVAHRUD7TAMOPMDUXXFXR",  id: 100000029292)
-                        
-                        print("dest:\(muxDestination.accountId)")
-                        
-                        let mergeAccountOperation = try AccountMergeOperation(destinationAccountId: muxDestination.accountId, sourceAccountId: accountResponse.accountId)
-                        
-                        let transaction = try Transaction(sourceAccount: accountResponse,
-                                                          operations: [mergeAccountOperation],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
-                        
-                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                        
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(let response):
-                                print("AM Test: Transaction successfully sent. Hash: \(response.transactionHash)")
-                                XCTAssert(true)
-                                expectation.fulfill()
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("AM Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"AM Test - send error", horizonRequestError:error)
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            }
+                    let muxDestination = try! MuxedAccount(accountId: self.testKeyPair.accountId,  id: 100000029292)
+                    let mergeAccountOperation = try! AccountMergeOperation(destinationAccountId: muxDestination.accountId, sourceAccountId: accountResponse.accountId)
+                    
+                    let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                      operations: [mergeAccountOperation],
+                                                      memo: Memo.none)
+                    
+                    try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                    
+                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        switch response {
+                        case .success(_):
+                            XCTAssert(true)
+                            expectation.fulfill()
+                        default:
+                            XCTFail()
+                            expectation.fulfill()
                         }
-                    } catch {
-                        XCTAssert(false)
-                        expectation.fulfill()
                     }
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"AM Test", horizonRequestError: error)
-                    XCTAssert(false)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
-            
-        } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            wait(for: [expectation], timeout: 20.0)
         }
-        
-        wait(for: [expectation], timeout: 20.0)
-        
     }
     
-    func testUpdateInflationDestination() {
-        let expectation = XCTestExpectation(description: "Set inflation destination")
-        do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
-            print ("UID Test source account id: \(sourceAccountKeyPair.accountId)")
-            let destinationAccountId = IOMIssuingAccountId
+    func updateInflationDestination() {
+        XCTContext.runActivity(named: "updateInflationDestination") { activity in
+            let expectation = XCTestExpectation(description: "Set inflation destination")
+            let sourceAccountKeyPair = testKeyPair
+            let destinationAccountId = IOMIssuingAccountKeyPair.accountId
             
             streamItem = sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now"))
             streamItem?.onReceive { (response) -> (Void) in
@@ -418,9 +460,9 @@ class OperationsRemoteTestCase: XCTestCase {
                     }
                 case .error(let error):
                     if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test - stream", horizonRequestError:horizonRequestError)
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"updateInflationDestination- stream", horizonRequestError:horizonRequestError)
                     } else {
-                        print("UID Test stream error \(error?.localizedDescription ?? "")")
+                        print("updateInflationDestination stream error \(error?.localizedDescription ?? "")")
                     }
                     break
                 }
@@ -429,59 +471,39 @@ class OperationsRemoteTestCase: XCTestCase {
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
-                    do {
-                        
-                        let setInflationOperation = try SetOptionsOperation(inflationDestination: KeyPair(accountId:destinationAccountId))
-                        
-                        let transaction = try Transaction(sourceAccount: accountResponse,
-                                                          operations: [setInflationOperation],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
-                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                        
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(_):
-                                print("UID Test: Transaction successfully sent")
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("UID Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test - send error", horizonRequestError:error)
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            }
+                    let setInflationOperation = try! SetOptionsOperation(sourceAccountId: sourceAccountKeyPair.accountId, inflationDestination: KeyPair(accountId:destinationAccountId))
+                    
+                    let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                      operations: [setInflationOperation],
+                                                      memo: Memo.none)
+                    try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                    
+                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        switch response {
+                        case .success(_):
+                            print("updateInflationDestination: Transaction successfully sent")
+                        default:
+                            XCTFail()
+                            expectation.fulfill()
                         }
-                    } catch {
-                        XCTAssert(false)
-                        expectation.fulfill()
                     }
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test", horizonRequestError: error)
-                    XCTAssert(false)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
-            
-        } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            wait(for: [expectation], timeout: 15.0)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
-        
     }
     
-    func testChangeTrustline() {
-        let expectation = XCTestExpectation(description: "Change trustline, allow destination account to receive IOM - our sdk token")
-        do {
-            
-            let issuingAccountKeyPair = try KeyPair(accountId: IOMIssuingAccountId)
+    func changeTrustline() {
+        XCTContext.runActivity(named: "changeTrustline") { activity in
+            let expectation = XCTestExpectation(description: "Change trustline, allow destination account to receive IOM - our sdk token")
+            let issuingAccountKeyPair = IOMIssuingAccountKeyPair
             let IOM = ChangeTrustAsset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
-            let trustingAccountKeyPair = try KeyPair(secretSeed: seed)
-            
-            printAccountDetails(tag: "CTL Test - trusting account", accountId: trustingAccountKeyPair.accountId)
+            let trustingAccountKeyPair = trustingAccountKeyPair
+        
             
             streamItem = sdk.operations.stream(for: .operationsForAccount(account: trustingAccountKeyPair.accountId, cursor: "now"))
             streamItem?.onReceive { (response) -> (Void) in
@@ -501,9 +523,9 @@ class OperationsRemoteTestCase: XCTestCase {
                     }
                 case .error(let error):
                     if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test - stream", horizonRequestError:horizonRequestError)
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"changeTrustline - stream", horizonRequestError:horizonRequestError)
                     } else {
-                        print("CTL Test stream error \(error?.localizedDescription ?? "")")
+                        print("changeTrustline stream error \(error?.localizedDescription ?? "")")
                     }
                     break
                 }
@@ -512,54 +534,39 @@ class OperationsRemoteTestCase: XCTestCase {
             sdk.accounts.getAccountDetails(accountId: trustingAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
-                    do {
-                        let changeTrustOp = ChangeTrustOperation(sourceAccountId:accountResponse.accountId, asset:IOM!, limit: 100000000)
-                        
-                        let transaction = try Transaction(sourceAccount: accountResponse,
-                                                          operations: [changeTrustOp],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
-                        
-                        try transaction.sign(keyPair: trustingAccountKeyPair, network: Network.testnet)
-                        
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(_):
-                                print("CTL Test: Transaction successfully sent")
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("CLT Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"CTL Test", horizonRequestError:error)
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            }
+                    let changeTrustOp = ChangeTrustOperation(sourceAccountId:accountResponse.accountId, asset:IOM!, limit: 100000000)
+                    
+                    let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                      operations: [changeTrustOp],
+                                                      memo: Memo.none)
+                    
+                    try! transaction.sign(keyPair: trustingAccountKeyPair, network: Network.testnet)
+                    
+                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        switch response {
+                        case .success(_):
+                            XCTAssert(true)
+                        default:
+                            XCTFail()
+                            expectation.fulfill()
                         }
-                    } catch {
-                        XCTAssert(false)
-                        expectation.fulfill()
                     }
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"CTL Test", horizonRequestError:error)
-                    XCTAssert(false)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
-        } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            wait(for: [expectation], timeout: 15.0)
         }
-        wait(for: [expectation], timeout: 15.0)
     }
-    
-    func testManageOffer() {
-        let expectation = XCTestExpectation(description: "Create an offer for IOM, the sdk token.")
-        do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
-            print ("MOF Test source accountId: \(sourceAccountKeyPair.accountId)")
+
+    func mangeOffer() {
+        XCTContext.runActivity(named: "mangeOffer") { activity in
+            let expectation = XCTestExpectation(description: "Create an offer for IOM, the sdk token.")
+            let sourceAccountKeyPair = testKeyPair
             
-            let issuingAccountKeyPair = try KeyPair(accountId: IOMIssuingAccountId)
+            let issuingAccountKeyPair = IOMIssuingAccountKeyPair
             let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
             let XLM = Asset(type: AssetType.ASSET_TYPE_NATIVE)
             
@@ -581,7 +588,7 @@ class OperationsRemoteTestCase: XCTestCase {
                     if let horizonRequestError = error as? HorizonRequestError {
                         StellarSDKLog.printHorizonRequestErrorMessage(tag:"MOF Test - stream", horizonRequestError:horizonRequestError)
                     } else {
-                        print("MOF Test: stream error \(error?.localizedDescription ?? "")")
+                        print("mangeOffer: stream error \(error?.localizedDescription ?? "")")
                     }
                     break
                 }
@@ -590,56 +597,42 @@ class OperationsRemoteTestCase: XCTestCase {
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
-                    do {
-                        let random = arc4random_uniform(21) + 10;
-                        let manageOfferOperation = ManageSellOfferOperation(selling:IOM!, buying:XLM!, amount:Decimal(random), price:Price(numerator:5, denominator:15), offerId:0)
-                        
-                        let transaction = try Transaction(sourceAccount: accountResponse,
-                                                          operations: [manageOfferOperation],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
-                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                        
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(_):
-                                print("MOF Test: Transaction successfully sent")
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("MDF Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"MOF Test - send error", horizonRequestError:error)
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            }
+                    let random = arc4random_uniform(21) + 10;
+                    let manageOfferOperation = ManageSellOfferOperation(sourceAccountId:nil, selling:IOM!, buying:XLM!,
+                                                                        amount:Decimal(random),
+                                                                        price:Price(numerator:5, denominator:15),
+                                                                        offerId:0)
+                    
+                    let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                      operations: [manageOfferOperation],
+                                                      memo: Memo.none)
+                    try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                    
+                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        switch response {
+                        case .success(_):
+                            XCTAssert(true)
+                        default:
+                            XCTFail()
+                            expectation.fulfill()
                         }
-                    } catch {
-                        XCTAssert(false)
-                        expectation.fulfill()
                     }
                 case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"MOF Test", horizonRequestError: error)
-                    XCTAssert(false)
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"mangeOffer", horizonRequestError: error)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
-            
-        } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            wait(for: [expectation], timeout: 30.0)
         }
-        
-        wait(for: [expectation], timeout: 30.0)
     }
     
-    func testCreatePassiveSellOffer() {
-        let expectation = XCTestExpectation(description: "Create a passive offer for IOM, the sdk token.")
-        do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
-            print ("CPO Test source accountId: \(sourceAccountKeyPair.accountId)")
+    func createPassiveSellOffer() {
+        XCTContext.runActivity(named: "createPassiveSellOffer") { activity in
+            let expectation = XCTestExpectation(description: "Create a passive offer for IOM, the sdk token.")
+            let sourceAccountKeyPair = testKeyPair
             
-            let issuingAccountKeyPair = try KeyPair(accountId: IOMIssuingAccountId)
+            let issuingAccountKeyPair = try! KeyPair(accountId: IOMIssuingAccountKeyPair.accountId)
             let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
             let XLM = Asset(type: AssetType.ASSET_TYPE_NATIVE)
             
@@ -660,7 +653,7 @@ class OperationsRemoteTestCase: XCTestCase {
                     if let horizonRequestError = error as? HorizonRequestError {
                         StellarSDKLog.printHorizonRequestErrorMessage(tag:"CPO Test - stream", horizonRequestError:horizonRequestError)
                     } else {
-                        print("CPO Test: stream error \(error?.localizedDescription ?? "")")
+                        print("createPassiveSellOffer: stream error \(error?.localizedDescription ?? "")")
                     }
                     break
                 }
@@ -669,55 +662,42 @@ class OperationsRemoteTestCase: XCTestCase {
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
-                    do {
-                        let random = arc4random_uniform(81) + 10;
-                        
-                        let createPassiveSellOfferOperation = CreatePassiveSellOfferOperation(selling:IOM!, buying:XLM!, amount:Decimal(random), price:Price(numerator:6, denominator:17))
-                        
-                        let transaction = try Transaction(sourceAccount: accountResponse,
-                                                          operations: [createPassiveSellOfferOperation],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
-                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                        
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(_):
-                                print("CPO Test: Transaction successfully sent")
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("CPO Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"CPO Test - send error", horizonRequestError:error)
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            }
+                    let random = arc4random_uniform(81) + 10;
+                    
+                    let createPassiveSellOfferOperation = CreatePassiveSellOfferOperation(sourceAccountId:sourceAccountKeyPair.accountId,
+                                                                                          selling:IOM!,
+                                                                                          buying:XLM!,
+                                                                                          amount:Decimal(random),
+                                                                                          price:Price(numerator:6, denominator:17))
+                    
+                    let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                      operations: [createPassiveSellOfferOperation],
+                                                      memo: Memo.none)
+                    try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                    
+                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        switch response {
+                        case .success(_):
+                            XCTAssert(true)
+                        default:
+                            XCTFail()
+                            expectation.fulfill()
                         }
-                    } catch {
-                        XCTAssert(false)
-                        expectation.fulfill()
                     }
                 case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"CPO Test", horizonRequestError: error)
-                    XCTAssert(false)
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"createPassiveSellOffer", horizonRequestError: error)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
-            
-        } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            wait(for: [expectation], timeout: 15.0)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testManageAccountData() {
-        let expectation = XCTestExpectation(description: "Add a key value pair to an account")
-        do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
-            print ("MAD Test: source accoint Id \(sourceAccountKeyPair.accountId)")
+    func manageAccountData() {
+        XCTContext.runActivity(named: "manageAccountData") { activity in
+            let expectation = XCTestExpectation(description: "Add a key value pair to an account")
+            let sourceAccountKeyPair = testKeyPair
             
             let name = "soneso"
             let value = "is super"
@@ -735,9 +715,9 @@ class OperationsRemoteTestCase: XCTestCase {
                     }
                 case .error(let error):
                     if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"MAD Test - stream", horizonRequestError:horizonRequestError)
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"manageAccountData - stream", horizonRequestError:horizonRequestError)
                     } else {
-                        print("MAD Test stream error \(error?.localizedDescription ?? "")")
+                        print("manageAccountData stream error \(error?.localizedDescription ?? "")")
                     }
                     break
                 }
@@ -748,95 +728,44 @@ class OperationsRemoteTestCase: XCTestCase {
                 case .success(let accountResponse):
                     do {
                         
-                        let manageDataOperation = ManageDataOperation(name:name, data:value.data(using: .utf8))
+                        let manageDataOperation = ManageDataOperation(sourceAccountId:sourceAccountKeyPair.accountId, name:name, data:value.data(using: .utf8))
                         
                         let transaction = try Transaction(sourceAccount: accountResponse,
                                                           operations: [manageDataOperation],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          memo: Memo.none)
                         try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
                         
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                             switch response {
                             case .success(_):
-                                print("MAD Test: Transaction successfully sent")
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("MAD Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"MAD Test - send error", horizonRequestError:error)
-                                XCTAssert(false)
+                                XCTAssert(true)
+                            default:
+                                XCTFail()
                                 expectation.fulfill()
                             }
                         }
                     } catch {
-                        XCTAssert(false)
+                        XCTFail()
                         expectation.fulfill()
                     }
                 case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"MAD Test", horizonRequestError: error)
-                    XCTAssert(false)
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"manageAccountData", horizonRequestError: error)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
-            
-        } catch {
-            XCTAssert(false)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 15.0)
-    }
-    
-    func printAccountDetails(tag: String, accountId: String) {
-        sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
-            switch response {
-            case .success(let accountResponse):
-                print("\(tag): Account ID: \(accountResponse.accountId)")
-                print("\(tag): Account Sequence: \(accountResponse.sequenceNumber)")
-                for balance in accountResponse.balances {
-                    if balance.assetType == AssetTypeAsString.NATIVE {
-                        print("\(tag): Account balance: \(balance.balance) XLM")
-                    } else {
-                        print("\(tag): Account balance: \(balance.balance) \(balance.assetCode!) of issuer: \(balance.assetIssuer!)")
-                    }
-                }
-            case .failure(let error):
-                print(error.localizedDescription)
-            }
+            wait(for: [expectation], timeout: 15.0)
         }
     }
-    
-    func testCreateClaimableBalances() {
-        let expectation = XCTestExpectation(description: "can create claimable balances")
-        do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
-            // GALA3JYOCVM4ENFPXMMXQBFGTQZKWRIOAVZSHGGNUVC4KOGOB3A4EFGZ
+
+    func createClaimableBalances() {
+        XCTContext.runActivity(named: "createClaimableBalances") { activity in
+            let expectation = XCTestExpectation(description: "can create claimable balances")
+            let sourceAccountKeyPair = testKeyPair
             let sourceAccountId = sourceAccountKeyPair.accountId
-            print("acc: " + sourceAccountId)
+
             var balanceId = "-1"
             
-            /*streamItem = sdk.operations.stream(for: .operationsForAccount(account: sourceAccountId, cursor: "now"))
-            streamItem?.onReceive { (response) -> (Void) in
-                switch response {
-                case .open:
-                    break
-                case .response( _, let operationResponse):
-                    if let opr = operationResponse as? CreateClaimableBalanceOperationResponse {
-                        print("OPR: amount: " + opr.amount)
-                        XCTAssert(true)
-                        expectation.fulfill()
-                    }
-                case .error(let error):
-                    if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - stream", horizonRequestError:horizonRequestError)
-                    } else {
-                        print("CB Test stream error \(error?.localizedDescription ?? "")")
-                    }
-                    break
-                }
-            }*/
             effectsStreamItem = sdk.effects.stream(for: .effectsForAccount(account:sourceAccountId, cursor: "now"))
             effectsStreamItem?.onReceive { (response) -> (Void) in
                 switch response {
@@ -844,9 +773,7 @@ class OperationsRemoteTestCase: XCTestCase {
                     break
                 case .response(_, let effectResponse):
                     if let effect = effectResponse as? ClaimableBalanceCreatedEffectResponse {
-                        print("ClaimableBalanceCreatedEffect received: balance_id: " + effect.balanceId)
                         if effect.balanceId.hasSuffix(balanceId) {
-                            print("match:\(effect.balanceId)")
                             expectation.fulfill()
                         }
                     }
@@ -854,7 +781,7 @@ class OperationsRemoteTestCase: XCTestCase {
                     if let horizonRequestError = error as? HorizonRequestError {
                         StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - stream", horizonRequestError:horizonRequestError)
                     } else {
-                        print("CB Test stream error \(error?.localizedDescription ?? "")")
+                        print("createClaimableBalances stream error \(error?.localizedDescription ?? "")")
                     }
                     break
                 }
@@ -863,234 +790,133 @@ class OperationsRemoteTestCase: XCTestCase {
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
-                    do {
-                        let XLM = Asset(type: AssetType.ASSET_TYPE_NATIVE)
-                        let moonIssuerKeypair = try KeyPair(accountId: "GCKZE4CKNCNTY34QEYSRKCXIRWQRE4QURA7URCA6QSQDGVDHYBZUW4W6")
-                        let MOON = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "MOON", issuer: moonIssuerKeypair)!
-                        let firstClaimant = Claimant(destination:"GDSHZPWSL5QBQKKDQNECFPI2PF7JQUACNWG65PMFOK6G5V4QBH4CX2KH")
-                        let predicateA = Claimant.predicateBeforeRelativeTime(seconds: 100)
-                        let predicateB = Claimant.predicateBeforeAbsoluteTime(unixEpoch: 1634000400)
-                        let predicateC = Claimant.predicateNot(predicate: predicateA)
-                        let predicateD = Claimant.predicateAnd(left: predicateC, right: predicateB)
-                        let predicateE = Claimant.predicateBeforeAbsoluteTime(unixEpoch: 1601671345)
-                        let predicateF = Claimant.predicateOr(left: predicateD, right: predicateE)
-                        let secondClaimant = Claimant(destination:"GAHHMAYMOTYPHQQEIPZNHPOXMSIBYR6LSU2BDW4GAFQH6HKA56U7EDE6",predicate: predicateF)
-                        
-                        let claimants = [ firstClaimant, secondClaimant]
-                        let createClaimableBalance = CreateClaimableBalanceOperation(asset: MOON, amount: 2.00, claimants: claimants)
-                        
-                        let transaction = try Transaction(sourceAccount: accountResponse,
-                                                          operations: [createClaimableBalance],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
-                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                        
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(let submitTransactionResponse):
-                                print("CB Test: Transaction successfully sent:" + submitTransactionResponse.transactionHash)
-                                switch submitTransactionResponse.transactionMeta {
-                                case .transactionMetaV2(let metaV2):
-                                    for opMeta in metaV2.operations {
-                                        for change in opMeta.changes.ledgerEntryChanges {
-                                            switch change {
-                                            case .created(let entry):
-                                                switch entry.data {
-                                                case .claimableBalance(let IDXdr):
-                                                    switch IDXdr.claimableBalanceID {
-                                                    case .claimableBalanceIDTypeV0(let data):
-                                                        balanceId = self.hexEncodedString(data: data.wrapped)
-                                                        print("Balance Id: \(balanceId)")
-                                                    }
-                                                default:
-                                                    break
+                    let firstClaimant = Claimant(destination:"GDSHZPWSL5QBQKKDQNECFPI2PF7JQUACNWG65PMFOK6G5V4QBH4CX2KH")
+                    let predicateA = Claimant.predicateBeforeRelativeTime(seconds: 100)
+                    let predicateB = Claimant.predicateBeforeAbsoluteTime(unixEpoch: 1634000400)
+                    let predicateC = Claimant.predicateNot(predicate: predicateA)
+                    let predicateD = Claimant.predicateAnd(left: predicateC, right: predicateB)
+                    let predicateE = Claimant.predicateBeforeAbsoluteTime(unixEpoch: 1601671345)
+                    let predicateF = Claimant.predicateOr(left: predicateD, right: predicateE)
+                    let secondClaimant = Claimant(destination:"GAHHMAYMOTYPHQQEIPZNHPOXMSIBYR6LSU2BDW4GAFQH6HKA56U7EDE6",predicate: predicateF)
+                    let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: self.IOMIssuingAccountKeyPair)
+                    
+                    let claimants = [ firstClaimant, secondClaimant]
+                    let createClaimableBalance = CreateClaimableBalanceOperation(asset: IOM!, amount: 2.00, claimants: claimants)
+                    
+                    let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                      operations: [createClaimableBalance],
+                                                      memo: Memo.none)
+                    try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                    
+                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        switch response {
+                        case .success(let submitTransactionResponse):
+                            switch submitTransactionResponse.transactionMeta {
+                            case .transactionMetaV2(let metaV2):
+                                for opMeta in metaV2.operations {
+                                    for change in opMeta.changes.ledgerEntryChanges {
+                                        switch change {
+                                        case .created(let entry):
+                                            switch entry.data {
+                                            case .claimableBalance(let IDXdr):
+                                                switch IDXdr.claimableBalanceID {
+                                                case .claimableBalanceIDTypeV0(let data):
+                                                    balanceId = self.hexEncodedBalanceId(data: data.wrapped)
                                                 }
                                             default:
                                                 break
                                             }
+                                        default:
+                                            break
                                         }
                                     }
-                                default:
-                                    break
                                 }
-                                //XCTAssert(true)
-                                //expectation.fulfill()
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("CB Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - send error", horizonRequestError:error)
-                                XCTAssert(false)
-                                expectation.fulfill()
+                            default:
+                                break
                             }
+                        default:
+                            XCTFail()
+                            expectation.fulfill()
                         }
-                    } catch {
-                        XCTAssert(false)
-                        expectation.fulfill()
                     }
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test", horizonRequestError: error)
-                    XCTAssert(false)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
+            wait(for: [expectation], timeout: 315.0)
         }
-        catch {
-            XCTAssert(false)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 315.0)
     }
-    
-    
-    func hexEncodedString(data: Data) -> String {
-        let hexDigits = Array(("0123456789abcdef").utf16)
-        var chars: [unichar] = []
-        chars.reserveCapacity(2 * data.count)
-        for byte in data {
-            chars.append(hexDigits[Int(byte / 16)])
-            chars.append(hexDigits[Int(byte % 16)])
-        }
-        return String(utf16CodeUnits: chars, count: chars.count)
-    }
-    
-    func testGetClaimableBalancesForSponsor() {
-        let expectation = XCTestExpectation(description: "can get claimable balances for sponsor")
-        do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:seed)
+   
+    func claimableBalancesForSponsor() {
+        XCTContext.runActivity(named: "claimableBalancesForSponsor") { activity in
+            let expectation = XCTestExpectation(description: "can get claimable balances for sponsor")
+            let sourceAccountKeyPair = testKeyPair
             let sourceAccountId = sourceAccountKeyPair.accountId
-            print("acc: " + sourceAccountId)
-            
-            
             
             sdk.claimableBalances.getClaimableBalances(sponsorAccountId: sourceAccountId, order:Order.descending) { (response) -> (Void) in
                 switch response {
                 case .success(let pageResponse):
-                    print("Records: \(pageResponse.records.count)")
-                    for record in pageResponse.records {
-                        print("NEXT RECORD")
-                        print("balanceId: \(record.balanceId)")
-                        print("asset: \(record.asset.toCanonicalForm())")
-                        print("amount: \(record.amount)")
-                        for claimant in record.claimants {
-                            print("claimant destination id: \(claimant.destination)")
-                            claimant.predicate.printPredicate()
-                        }
-                        print("last modified ledger: \(record.lastModifiedLedger)")
-                        print("last modified time: \(record.lastModifiedTime)")
-                    }
-                    XCTAssert(true)
+                    XCTAssert(pageResponse.records.count > 0)
+                    expectation.fulfill()
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"claimableBalancesForSponsor", horizonRequestError: error)
+                    XCTFail()
+                    expectation.fulfill()
+                }
+            }
+            wait(for: [expectation], timeout: 30.0)
+        }
+    }
+    
+    func getClaimableBalancesForClaimant() {
+        XCTContext.runActivity(named: "getClaimableBalancesForClaimant") { activity in
+            let expectation = XCTestExpectation(description: "can get claimable balances for claimant")
+            let claimantAccountId = "GDSHZPWSL5QBQKKDQNECFPI2PF7JQUACNWG65PMFOK6G5V4QBH4CX2KH"
+            
+            sdk.claimableBalances.getClaimableBalances(claimantAccountId: claimantAccountId, order:Order.descending) { (response) -> (Void) in
+                switch response {
+                case .success(let pageResponse):
+                    XCTAssert(pageResponse.records.count > 0)
+                    expectation.fulfill()
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getClaimableBalancesForClaimant", horizonRequestError: error)
+                    XCTFail()
+                    expectation.fulfill()
+                }
+            }
+            wait(for: [expectation], timeout: 30.0)
+        }
+    }
+    
+    func getClaimableBalancesForAsset() {
+        XCTContext.runActivity(named: "getClaimableBalancesForAsset") { activity in
+            let expectation = XCTestExpectation(description: "can get claimable balances for asset")
+            
+            let native = "native"
+            sdk.claimableBalances.getClaimableBalances(asset: Asset.init(canonicalForm: native)!, order:Order.descending) { (response) -> (Void) in
+                switch response {
+                case .success(let pageResponse):
+                    XCTAssert(pageResponse.records.count > 0)
                     expectation.fulfill()
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test", horizonRequestError: error)
-                    XCTAssert(false)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
+            wait(for: [expectation], timeout: 30.0)
         }
-        catch {
-            XCTAssert(false)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 315.0)
     }
     
-    func testGetClaimableBalancesForClaimant() {
-        let expectation = XCTestExpectation(description: "can get claimable balances for claimant")
-        let claimantAccountId = "GDSHZPWSL5QBQKKDQNECFPI2PF7JQUACNWG65PMFOK6G5V4QBH4CX2KH"
-        print("claimant account id: " + claimantAccountId)
-        
-        sdk.claimableBalances.getClaimableBalances(claimantAccountId: claimantAccountId, order:Order.descending) { (response) -> (Void) in
-            switch response {
-            case .success(let pageResponse):
-                print("Records: \(pageResponse.records.count)")
-                for record in pageResponse.records {
-                    print("NEXT RECORD")
-                    print("balanceId: \(record.balanceId)")
-                    print("asset: \(record.asset.toCanonicalForm())")
-                    print("amount: \(record.amount)")
-                    for claimant in record.claimants {
-                        print("claimant destination id: \(claimant.destination)")
-                        claimant.predicate.printPredicate()
-                    }
-                    print("last modified ledger: \(record.lastModifiedLedger)")
-                    print("last modified time: \(record.lastModifiedTime)")
-                }
-                XCTAssert(true)
-                expectation.fulfill()
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test", horizonRequestError: error)
-                XCTAssert(false)
-                expectation.fulfill()
-            }
-        }
-        wait(for: [expectation], timeout: 315.0)
-    }
-    
-    func testGetClaimableBalancesForAsset() {
-        let expectation = XCTestExpectation(description: "can get claimable balances for asset")
-        
-        let native = "native"
-        //let moon = "MOON:GCSODO5SLOZIAMJWUFZWKL4AIQRYCS6VZ55MQ5TF2SUO5QKVJW6TG2P5"
-        sdk.claimableBalances.getClaimableBalances(asset: Asset.init(canonicalForm: native)!, order:Order.descending) { (response) -> (Void) in
-            switch response {
-            case .success(let pageResponse):
-                print("Records: \(pageResponse.records.count)")
-                for record in pageResponse.records {
-                    print("NEXT RECORD")
-                    print("balanceId: \(record.balanceId)")
-                    print("asset: \(record.asset.toCanonicalForm())")
-                    print("amount: \(record.amount)")
-                    for claimant in record.claimants {
-                        print("claimant destination id: \(claimant.destination)")
-                        claimant.predicate.printPredicate()
-                    }
-                    print("last modified ledger: \(record.lastModifiedLedger)")
-                    print("last modified time: \(record.lastModifiedTime)")
-                }
-                XCTAssert(true)
-                expectation.fulfill()
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test", horizonRequestError: error)
-                XCTAssert(false)
-                expectation.fulfill()
-            }
-        }
-        wait(for: [expectation], timeout: 315.0)
-    }
-    
-    func testClaimClaimableBalance() {
-        let expectation = XCTestExpectation(description: "can claim claimable balance")
-        do {
-            let balanceId = "000000001cec3edacd84bd67a2c8cfb7491ef4d824acac56e8b7428db9926f2905b896e1"
-            let claimantAccountKeyPair = try KeyPair(secretSeed:"SCYBAXTTHKQI3NFNAZZJJK7IZEQHBB3RCAWLUJXK7PFTHTQLBHONALX7")
+    func claimClaimableBalance() {
+        XCTContext.runActivity(named: "claimClaimableBalance") { activity in
+            let expectation = XCTestExpectation(description: "can claim claimable balance")
+            let balanceId = self.claimableBalanceId!
+            let claimantAccountKeyPair = testKeyPair
             let claimantAccountId = claimantAccountKeyPair.accountId
-            print("claimant: " + claimantAccountId) //GDSHZPWSL5QBQKKDQNECFPI2PF7JQUACNWG65PMFOK6G5V4QBH4CX2KH
-            
-            /*streamItem = sdk.operations.stream(for: .operationsForAccount(account: claimantAccountId, cursor: "now"))
-            streamItem?.onReceive { (response) -> (Void) in
-                switch response {
-                case .open:
-                    break
-                case .response( _, let operationResponse):
-                    if let opr = operationResponse as? ClaimClaimableBalanceOperationResponse {
-                        if opr.balanceId.hasSuffix(balanceId) {
-                            XCTAssert(true)
-                            expectation.fulfill()
-                        }
-                    }
-                case .error(let error):
-                    if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - stream", horizonRequestError:horizonRequestError)
-                    } else {
-                        print("CB Test stream error \(error?.localizedDescription ?? "")")
-                    }
-                    break
-                }
-            }*/
+           
             effectsStreamItem = sdk.effects.stream(for: .effectsForAccount(account:claimantAccountId, cursor: "now"))
             effectsStreamItem?.onReceive { (response) -> (Void) in
                 switch response {
@@ -1098,7 +924,6 @@ class OperationsRemoteTestCase: XCTestCase {
                     break
                 case .response(_, let effectResponse):
                     if let effect = effectResponse as? ClaimableBalanceClaimedEffectResponse {
-                        print("ClaimableBalanceClaimedEffect received: balance_id: " + effect.balanceId)
                         if effect.balanceId.hasSuffix(balanceId) {
                             XCTAssert(true)
                             expectation.fulfill()
@@ -1108,7 +933,7 @@ class OperationsRemoteTestCase: XCTestCase {
                     if let horizonRequestError = error as? HorizonRequestError {
                         StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - stream", horizonRequestError:horizonRequestError)
                     } else {
-                        print("CB Test stream error \(error?.localizedDescription ?? "")")
+                        print("claimClaimableBalance stream error \(error?.localizedDescription ?? "")")
                     }
                     break
                 }
@@ -1117,168 +942,41 @@ class OperationsRemoteTestCase: XCTestCase {
             sdk.accounts.getAccountDetails(accountId: claimantAccountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
-                    do {
-                        let claimClaimableBalanceOp = ClaimClaimableBalanceOperation(balanceId: balanceId)
-                        
-                        let transaction = try Transaction(sourceAccount: accountResponse,
-                                                          operations: [claimClaimableBalanceOp],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
-                        print("before signing: " + transaction.xdrEncoded!)
-                        try transaction.sign(keyPair: claimantAccountKeyPair, network: Network.testnet)
-                        let env = try transaction.transactionXDR.encodedEnvelope()
-                        print("after signing:  " + env)
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(let submitTransactionResponse):
-                                print("CB Test: Transaction successfully sent:" + submitTransactionResponse.transactionHash)
-                                //XCTAssert(true)
-                                //expectation.fulfill()
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("CB Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - send error", horizonRequestError:error)
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            }
+                    let claimClaimableBalanceOp = ClaimClaimableBalanceOperation(balanceId: balanceId)
+                    
+                    let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                      operations: [claimClaimableBalanceOp],
+                                                      memo: Memo.none)
+
+                    try! transaction.sign(keyPair: claimantAccountKeyPair, network: Network.testnet)
+                    
+                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        switch response {
+                        case .success(_):
+                            XCTAssert(true)
+                        default:
+                            XCTFail()
+                            expectation.fulfill()
                         }
-                    } catch {
-                        XCTAssert(false)
-                        expectation.fulfill()
                     }
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test", horizonRequestError: error)
-                    XCTAssert(false)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
+            wait(for: [expectation], timeout: 30.0)
         }
-        catch {
-            XCTAssert(false)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 315.0)
     }
     
-    func testIssue142() {
-        do {
-            let enva = "AAAAAgAAAABgQUKgloqfjWKlxglkCYLs+7ZijoZgvVAbtwl7003XEwABhqACDNetAAAhQgAAAAAAAAAAAAAAAQAAAAAAAAAPAAAAAABxD+mmyQJJTIhTgpDBVsNJPSwfe5Fvxh3cb/O17iEgAAAAAAAAAAA="
-            var transaction = try! Transaction(envelopeXdr: enva)
-            var balanceIdBeforeSigning = ""
-            var balanceIdAfterSigning = ""
-            var opBody = transaction.transactionXDR.operations.first?.body
-            switch opBody {
-            case .claimClaimableBalance(let claimOp):
-                switch claimOp.balanceID {
-                case .claimableBalanceIDTypeV0(let data):
-                    balanceIdBeforeSigning = self.hexEncodedString(data: data.wrapped)
-                    print("before signing: \(balanceIdBeforeSigning)")
-                }
-                break
-            default:
-                break
-            }
-            let signerKeyPair = try KeyPair(secretSeed:"SCYBAXTTHKQI3NFNAZZJJK7IZEQHBB3RCAWLUJXK7PFTHTQLBHONALX7")
-            try transaction.sign(keyPair: signerKeyPair, network: Network.testnet)
-            opBody = transaction.transactionXDR.operations.first?.body
-            switch opBody {
-            case .claimClaimableBalance(let claimOp):
-                switch claimOp.balanceID {
-                case .claimableBalanceIDTypeV0(let data):
-                    balanceIdAfterSigning = self.hexEncodedString(data: data.wrapped)
-                    print("after signing: \(balanceIdAfterSigning)")
-                }
-                break
-            default:
-                break
-            }
-            XCTAssertEqual(balanceIdBeforeSigning, balanceIdAfterSigning)
-            
-            let env = try transaction.transactionXDR.encodedEnvelope()
-            print("env befor signing:  " + enva)
-            print("env after signing:  " + env)
-
-            transaction = try! Transaction(envelopeXdr: env)
-            var balanceId3 = ""
-            opBody = transaction.transactionXDR.operations.first?.body
-            switch opBody {
-            case .claimClaimableBalance(let claimOp):
-                switch claimOp.balanceID {
-                case .claimableBalanceIDTypeV0(let data):
-                    balanceId3 = self.hexEncodedString(data: data.wrapped)
-                    print("after signing 3: \(balanceId3)")
-                }
-                break
-            default:
-                break
-            }
-            XCTAssertEqual(balanceIdBeforeSigning, balanceId3)
-        }
-        catch let error {
-            print(error)
-            XCTAssert(false)
-        }
-    }
-    func testSponsorship() {
-        let expectation = XCTestExpectation(description: "can begin and end sponsorship")
-        do {
-            
-            let masterAccountKeyPair = try KeyPair(secretSeed:seed)
+    
+    func sponsorship() {
+        XCTContext.runActivity(named: "sponsorship") { activity in
+            let expectation = XCTestExpectation(description: "can begin and end sponsorship")
+            let masterAccountKeyPair = testKeyPair
             let masterAccountId = masterAccountKeyPair.accountId
-            let accountAKeyPair = try KeyPair.generateRandomKeyPair()
+            let accountAKeyPair = try! KeyPair.generateRandomKeyPair()
             let accountAId = accountAKeyPair.accountId
-            print("MASTER ACCOUNT: " + masterAccountId)
-            print("CREATED ACCOUNT: " + accountAId)
-            
-            /*streamItem = sdk.operations.stream(for: .operationsForAccount(account: masterAccountId, cursor: "now"))
-            streamItem?.onReceive { (response) -> (Void) in
-                switch response {
-                case .open:
-                    break
-                case .response( _, let operationResponse):
-                    if let _ = operationResponse as? BeginSponsoringFutureReservesOperationResponse {
-                        print("BEGIN")
-                    }
-                    if let _ = operationResponse as? EndSponsoringFutureReservesOperationResponse {
-                        print("END")
-                    }
-                    if let _ = operationResponse as? RevokeSponsorshipOperationResponse {
-                        print("REVOKE")
-                    }
-                case .error(let error):
-                    if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - stream", horizonRequestError:horizonRequestError)
-                    } else {
-                        print("CB Test stream error \(error?.localizedDescription ?? "")")
-                    }
-                    break
-                }
-            }
-            
-            effectsStreamItem = sdk.effects.stream(for: .allEffects(cursor: "now"))
-            effectsStreamItem?.onReceive { (response) -> (Void) in
-                switch response {
-                case .open:
-                    break
-                case .response(_, let effectResponse):
-                    if let eff = effectResponse as? DataSponsorshipCreatedEffectResponse {
-                        print("eff: data sponsorship created: " + eff.sponsor)
-                    }
-                    if let eff = effectResponse as? AccountSponsorshipCreatedEffectResponse {
-                        print("eff: account sponsorship created " + eff.sponsor)
-                    }
-                case .error(let error):
-                    if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - stream", horizonRequestError:horizonRequestError)
-                    } else {
-                        print("CB Test stream error \(error?.localizedDescription ?? "")")
-                    }
-                    break
-                }
-            }*/
             
             sdk.accounts.getAccountDetails(accountId: masterAccountId) { (response) -> (Void) in
                 switch response {
@@ -1321,8 +1019,7 @@ class OperationsRemoteTestCase: XCTestCase {
                         
                         let transaction = try Transaction(sourceAccount: accountResponse,
                                                           operations: [begingSponsorshipOp, createAccountOp, manageDataOp, changeTrustOp, payRichOp, createClaimableBalanceAOp, createOfferOp, addSignerOperation, addAccSignerOperation, endSponsoringOp, revokeAccountSponsorshipOp, revokeDataSponsorshipOp, revokeTrustlineSponsorshipOp, revokeSignerSponsorshipOp, revokeAccSignerSponsorshipOp],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          memo: Memo.none)
                         try transaction.sign(keyPair: masterAccountKeyPair, network: Network.testnet)
                         try transaction.sign(keyPair: accountAKeyPair, network: Network.testnet)
                         
@@ -1334,95 +1031,89 @@ class OperationsRemoteTestCase: XCTestCase {
                                 expectation.fulfill()
                             case .destinationRequiresMemo(let destinationAccountId):
                                 print("CB Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
+                                XCTFail()
                                 expectation.fulfill()
                             case .failure(let error):
                                 StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - send error", horizonRequestError:error)
-                                XCTAssert(false)
+                                XCTFail()
                                 expectation.fulfill()
                             }
                         }
                     } catch {
-                        XCTAssert(false)
+                        XCTFail()
                         expectation.fulfill()
                     }
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test", horizonRequestError: error)
-                    XCTAssert(false)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
+            wait(for: [expectation], timeout: 20.0)
         }
-        catch {
-            XCTAssert(false)
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 20.0)
     }
     
-    func testSponsorship2() {
-        let expectation = XCTestExpectation(description: "can begin and end sponsorship")
-        do {
-            
-            let masterAccountKeyPair = try KeyPair(secretSeed:seed)
+    
+    func sponsorship2() {
+        XCTContext.runActivity(named: "sponsorship2") { activity in
+            let expectation = XCTestExpectation(description: "can begin and end sponsorship")
+            let masterAccountKeyPair = testKeyPair
             let masterAccountId = masterAccountKeyPair.accountId
-            let accountAKeyPair = try KeyPair.generateRandomKeyPair()
+            let accountAKeyPair = accountToSponsorKeyPair
             let accountAId = accountAKeyPair.accountId
-            let issuerKeyPair = try KeyPair.generateRandomKeyPair()
-            let issuerAccountId = issuerKeyPair.accountId
+            let issuingAccountKeyPair = try! KeyPair(accountId: IOMIssuingAccountKeyPair.accountId)
             
             sdk.accounts.getAccountDetails(accountId: masterAccountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
-                    do {
-                        let begingSponsorshipOp = BeginSponsoringFutureReservesOperation(sponsoredAccountId: accountAId,sponsoringAccountId: masterAccountId)
+                    let begingSponsorshipOp = BeginSponsoringFutureReservesOperation(sponsoredAccountId: accountAId,sponsoringAccountId: masterAccountId)
+                
                     
-                        let skyAsset = ChangeTrustAsset(canonicalForm: "SKY:" + issuerAccountId)!
-                        let changeTrustOp = ChangeTrustOperation(sourceAccountId: nil, asset: skyAsset, limit: 10000.00)
-                        
-                        let endSponsoringOp = EndSponsoringFutureReservesOperation()
-                        
-                        
-                        let transaction = try Transaction(sourceAccount: accountResponse,
-                                                          operations: [begingSponsorshipOp, changeTrustOp, endSponsoringOp],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
-                        try transaction.sign(keyPair: masterAccountKeyPair, network: Network.testnet)
-                        try transaction.sign(keyPair: accountAKeyPair, network: Network.testnet)
-                        
-                        print(try transaction.transactionXDR.encodedEnvelope())
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(let submitTransactionResponse):
-                                print("CB Test: Transaction successfully sent:" + submitTransactionResponse.transactionHash)
-                                expectation.fulfill()
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("CB Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - send error", horizonRequestError:error)
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            }
+                    let IOM = ChangeTrustAsset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: issuingAccountKeyPair)
+                    let changeTrustOp = ChangeTrustOperation(sourceAccountId: accountAId, asset: IOM!, limit: 10000.00)
+                    
+                    let endSponsoringOp = EndSponsoringFutureReservesOperation(sponsoredAccountId: accountAId)
+                    
+                    
+                    let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                      operations: [begingSponsorshipOp, changeTrustOp, endSponsoringOp],
+                                                      memo: Memo.none)
+                    try! transaction.sign(keyPair: masterAccountKeyPair, network: Network.testnet)
+                    try! transaction.sign(keyPair: accountAKeyPair, network: Network.testnet)
+                    
+                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        switch response {
+                        case .success(_):
+                            expectation.fulfill()
+                        default:
+                            XCTFail()
+                            expectation.fulfill()
                         }
-                    } catch {
-                        XCTAssert(false)
-                        expectation.fulfill()
                     }
                 case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test", horizonRequestError: error)
-                    XCTAssert(false)
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"sponsorship2", horizonRequestError: error)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
+            wait(for: [expectation], timeout: 20.0)
         }
-        catch {
-            XCTAssert(false)
-            expectation.fulfill()
+    }
+     
+    
+    func hexEncodedBalanceId(data: Data) -> String {
+        let hexDigits = Array(("0123456789abcdef").utf16)
+        var chars: [unichar] = []
+        chars.reserveCapacity(2 * data.count)
+        for byte in data {
+            chars.append(hexDigits[Int(byte / 16)])
+            chars.append(hexDigits[Int(byte % 16)])
         }
-        
-        wait(for: [expectation], timeout: 20.0)
+        var z = String(utf16CodeUnits: chars, count: chars.count)
+        let leadingZeros = 72 - chars.count
+        if (leadingZeros > 0){
+            z = String(format: "%0"+String(leadingZeros)+"d", 0) + z
+        }
+        return z
     }
 }
