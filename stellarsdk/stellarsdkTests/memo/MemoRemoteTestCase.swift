@@ -13,9 +13,31 @@ class MemoRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
     var streamItem:TransactionsStreamItem? = nil
     
+    let sourceKeyPair = try! KeyPair.generateRandomKeyPair()
+    let destinationKeyPair = try! KeyPair.generateRandomKeyPair()
+    
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        let expectation = XCTestExpectation(description: "accounts prepared for tests")
+        let sourceAccountId = sourceKeyPair.accountId
+        let destinationAccountId = destinationKeyPair.accountId
+        
+        sdk.accounts.createTestAccount(accountId: sourceAccountId) { (response) -> (Void) in
+            switch response {
+            case .success(_):
+                self.sdk.accounts.createTestAccount(accountId: destinationAccountId) { (response) -> (Void) in
+                    switch response {
+                    case .success(_):
+                        expectation.fulfill()
+                    case .failure(_):
+                        XCTFail()
+                    }
+                }
+            case .failure(_):
+                XCTFail()
+            }
+        }
+        wait(for: [expectation], timeout: 25.0)
     }
     
     override func tearDown() {
@@ -23,33 +45,19 @@ class MemoRemoteTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testMemoNone() {
+    func testAll() {
         memoWithPaymentTransaction(memo: Memo.none)
-    }
-    
-    func testMemoText() {
-        do {
-            if let memo = try Memo(text: "Memo text test") {
-                memoWithPaymentTransaction(memo: memo)
-            } else {
-                XCTAssert(false)
-            }
-        } catch {
-            XCTAssert(false)
-        }
-    }
-    
-    func testMemoId() {
         memoWithPaymentTransaction(memo: Memo.id(12345678))
+        memoWithPaymentTransaction(memo: try! Memo(text: "Memo text test")!)
+        maxLengthMemoText()
     }
     
     func memoWithPaymentTransaction(memo: Memo) {
-        
-        let expectation = XCTestExpectation(description: "Memo with payment transaction sent and received")
-        
-        do {
-            let sourceAccountKeyPair = try KeyPair(secretSeed:"SDSGMMWD5NNF5GEWP6V7Z37FVRCU3AZKK6JCYFET57QAV2MWC3NM52SB")
-            let destinationAccountKeyPair = try KeyPair(accountId: "GAU7P2ELW5RJJQ52IUIQEZMEHCGJFB5ZAKESYIGAPJURHLVIAAZV4LTK")
+        XCTContext.runActivity(named: "memoWithPaymentTransaction" + memo.type()) { activity in
+            let expectation = XCTestExpectation(description: "Memo with payment transaction sent and received")
+            
+            let sourceAccountKeyPair = sourceKeyPair
+            let destinationAccountKeyPair = destinationKeyPair
             
             streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now"))
             streamItem?.onReceive { (response) -> (Void) in
@@ -65,7 +73,7 @@ class MemoRemoteTestCase: XCTestCase {
                     }
                 case .error(let error):
                     if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test - destination", horizonRequestError:horizonRequestError)
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"memoWithPaymentTransaction", horizonRequestError:horizonRequestError)
                     } else {
                         print("Error \(error?.localizedDescription ?? "")")
                     }
@@ -75,50 +83,36 @@ class MemoRemoteTestCase: XCTestCase {
             sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
-                    do {
-                        let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
-                                                                destinationAccountId: destinationAccountKeyPair.accountId,
-                                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
-                                                                amount: 1.5)
-                        let transaction = try Transaction(sourceAccount: accountResponse,
-                                                          operations: [paymentOperation],
-                                                          memo: memo,
-                                                          timeBounds:nil)
-                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                        
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(_):
-                                print("SRP Test: Transaction successfully sent")
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("SRP Test: Destination requires memo \(destinationAccountId)")
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
-                                XCTAssert(false)
-                                expectation.fulfill()
-                            }
+                    let paymentOperation = try! PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
+                                                            destinationAccountId: destinationAccountKeyPair.accountId,
+                                                            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                            amount: 1.5)
+                    let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                      operations: [paymentOperation],
+                                                      memo: memo)
+                    try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                    
+                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
+                        switch response {
+                        case .success(let response):
+                            XCTAssertNotNil(response)
+                        default:
+                            XCTFail()
+                            expectation.fulfill()
                         }
-                    } catch {
-                        XCTAssert(false)
-                        expectation.fulfill()
                     }
                 case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"SRP Test", horizonRequestError:error)
-                    XCTAssert(false)
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"memoWithPaymentTransaction", horizonRequestError:error)
+                    XCTFail()
                     expectation.fulfill()
                 }
             }
-        } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            
+            wait(for: [expectation], timeout: 15.0)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
 
-    func testMaxLengthMemoText() {
+    func maxLengthMemoText() {
         let failingTestString = "https://gift-fakeurlspam.info"
         let passingTestString1 = "https://gift-fakeurlspam.org"
         let passingTestString2 = "https://gift-fakeurlspam.cc"
