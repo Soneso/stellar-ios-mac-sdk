@@ -14,13 +14,13 @@ class URISchemeTestCase: XCTestCase {
     let accountID = "GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV"
     let secretSeed = "SBA2XQ5SRUW5H3FUQARMC6QYEPUYNSVCMM4PGESGVB2UIFHLM73TPXXF"
     
-    let unsignedURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com"
+    let unsignedURL = "web+stellar:tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9ONBFmFGORBZkWAAAAGQAC5sVAAAABAAAAAAAAAAAAAAAAQAAAAEAAAAAzULyQmobEYo0RVzB4Mhl3Wq%2FeVsmvTjQRZhRjkQWZFgAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAOd3d3LnNvbmVzby5jb20AAAAAAAAAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com"
 
     let signedURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&signature=ggKDaF580XxQB77YgEsyu2HvkX4gpUY3m0WPhsR6wATD5%2BTDiiHMMp%2FpsQP%2FBlNCAz8GAiXnTymKHmAKvS4HAw%3D%3D"
 
-    let validURL = "web+stellar:tx?xdr=AAAAALhxbBeA2gZSLD1MxZTLgRZIBEThkfQ5RAWAoN8fle9gAAAAZAAB0xgAAAACAAAAAAAAAAAAAAABAAAAAQAAAAC4cWwXgNoGUiw9TMWUy4EWSARE4ZH0OUQFgKDfH5XvYAAAAAkAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com&signature=ggKDaF580XxQB77YgEsyu2HvkX4gpUY3m0WPhsR6wATD5%2BTDiiHMMp%2FpsQP%2FBlNCAz8GAiXnTymKHmAKvS4HAw%3D%3D"
+    let validURL = "web+stellar:tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9ONBFmFGORBZkWAAAAGQAC5sVAAAABAAAAAAAAAAAAAAAAQAAAAEAAAAAzULyQmobEYo0RVzB4Mhl3Wq%2FeVsmvTjQRZhRjkQWZFgAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAOd3d3LnNvbmVzby5jb20AAAAAAAAAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com&signature=DMWa61b8j99unwZ%2Bz5PdXqbFg5Inibcwj4OycbN%2F%2B1b80BVLuH9TtINhuWQ%2B%2FXSpgQu8Q6sMytXu1QX%2BauGdDA%3D%3D"
     
-    let validURLCallback = "web+stellar:tx?xdr=AAAAAM1C8kJqGxGKNEVcweDIZd1qv3lbJr040EWYUY5EFmRYAAAAZAAAfvoAAAAdAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com&signature=ca5NoydAhPz10%2BFTGLN4gThguXfB%2FL2xO31wlcNu87ypmM2deNFdyXFWkgxwIirGOvQOtgRZvW%2BkwC%2Bucu4MBA%3D%3D&callback=url:https://examplePost.com"
+    let validURLCallback = "web+stellar:tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9ONBFmFGORBZkWAAAAGQAC5sVAAAABAAAAAAAAAAAAAAAAQAAAAEAAAAAzULyQmobEYo0RVzB4Mhl3Wq%2FeVsmvTjQRZhRjkQWZFgAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAOd3d3LnNvbmVzby5jb20AAAAAAAAAAAAAAAAAAA%3D%3D&origin_domain=place.domain.com&signature=DMWa61b8j99unwZ%2Bz5PdXqbFg5Inibcwj4OycbN%2F%2B1b80BVLuH9TtINhuWQ%2B%2FXSpgQu8Q6sMytXu1QX%2BauGdDA%3D%3D&callback=url:https://examplePost.com"
     
     let uriValidator = URISchemeValidator()
     
@@ -51,11 +51,8 @@ class URISchemeTestCase: XCTestCase {
         sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
             switch response {
             case .success(let data):
-                let operationBody = OperationBodyXDR.inflation
-                let mux = MuxedAccountXDR.ed25519(keyPair.publicKey.bytes)
-                let operation = OperationXDR(sourceAccount: mux, body: operationBody)
-                var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, cond: PreconditionsXDR.none, memo: .none, operations: [operation])
-                try! transaction.sign(keyPair: keyPair, network: .testnet)
+                let op = try! SetOptionsOperation(sourceAccountId: keyPair.accountId, homeDomain: "www.soneso.com")
+                let transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, cond: PreconditionsXDR.none, memo: .none, operations: [try! op.toXDR()])
                 let uriSchemeBuilder = URIScheme()
                 let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction)
                 print("URIScheme: \(uriScheme)")

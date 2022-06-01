@@ -325,7 +325,7 @@ class ClawbackTestCase: XCTestCase {
                     
                     try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                         switch response {
-                        case .success(let response):
+                        case .success(_):
                             XCTAssert(true)
                         default:
                             XCTFail()
@@ -552,7 +552,7 @@ class ClawbackTestCase: XCTestCase {
                     
                     try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                         switch response {
-                        case .success(let response):
+                        case .success(_):
                             XCTAssert(true)
                         default:
                             XCTFail()

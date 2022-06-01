@@ -335,10 +335,10 @@ public class URIScheme: NSObject {
     
     /// Gets the transactionXDR object corresponding to the xdr field value in the url.
     private func getTransactionXDR(fromURL url: String) -> TransactionXDR? {
-        let base64UrlEncodedTransaction = getTransactionXDRFieldValue(fromURL: url)
-        let base64Transaction = base64UrlEncodedTransaction?.urlDecoded
-        if let base64Transaction = base64Transaction {
-            if let transactionXDR = try? TransactionXDR(fromBinary: XDRDecoder.init(data: [UInt8].init(base64: base64Transaction))) {
+        let base64UrlEncodedTransactionEnvelope = getTransactionXDRFieldValue(fromURL: url)
+        let base64TransactionEnvelope = base64UrlEncodedTransactionEnvelope?.urlDecoded
+        if let base64TransactionEnvelope = base64TransactionEnvelope {
+            if let transactionXDR = try? Transaction(envelopeXdr: base64TransactionEnvelope).transactionXDR {
                 return transactionXDR
             }
         }
