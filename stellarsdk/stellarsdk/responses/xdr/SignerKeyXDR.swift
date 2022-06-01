@@ -97,7 +97,7 @@ public struct Ed25519SignedPayload: XDRCodable, Equatable {
     }
     
     public func encodeSignedPayload() throws -> String {
-        let data = try Data(bytes: XDREncoder.encode(self))
+        let data = try Data(XDREncoder.encode(self))
         return try data.encodeSignedPayload()
     }
     

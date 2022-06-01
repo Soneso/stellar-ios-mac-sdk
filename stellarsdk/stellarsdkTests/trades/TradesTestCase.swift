@@ -31,10 +31,10 @@ class TradesTestCase: XCTestCase {
             case .success(let tradesResponse):
                 
                 for trade in tradesResponse.records {
-                    print("\(trade.baseAccount) is the base account")
+                    print("\(trade.baseAccount!) is the base account")
                     print("\(trade.baseAmount) is the base amount code")
                     print("\(trade.baseAssetType) is the base asset type")
-                    print("\(trade.counterAccount) is the counter account")
+                    print("\(trade.counterAccount!) is the counter account")
                     print("\(trade.counterAmount) is the counter amount")
                     print("\(trade.counterAssetType) is the counter asset type")
                     print("\(trade.pagingToken) is the paging token")

@@ -142,7 +142,9 @@ class OffersLocalTestCase: XCTestCase {
                     "n": 387,
                     "d": 50
                 },
-                "price": "7.7400000"
+                "price": "7.7400000",
+                "last_modified_ledger": 289,
+                "last_modified_time": "2022-03-16T10:12:30Z"
             }
             """
         

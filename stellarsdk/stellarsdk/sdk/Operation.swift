@@ -115,7 +115,7 @@ public class Operation {
     
     public func toXDRBase64() throws -> String {
         let xdr = try toXDR()
-        return try Data(bytes: XDREncoder.encode(xdr)).base64EncodedString()
+        return try Data(XDREncoder.encode(xdr)).base64EncodedString()
     }
     
     func getOperationBodyXDR() throws -> OperationBodyXDR {

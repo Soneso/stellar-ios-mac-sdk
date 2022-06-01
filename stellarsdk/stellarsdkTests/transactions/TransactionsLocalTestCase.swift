@@ -73,7 +73,7 @@ class TransactionsLocalTestCase: XCTestCase {
             let signer = SignerKeyXDR.ed25519(WrappedData32(try accountBId.decodeEd25519PublicKey()))
             let setOptionsOperation = try SetOptionsOperation(sourceAccountId: sourceAccountKeyPair.accountId, inflationDestination: KeyPair(accountId: accountBId), clearFlags: 2, setFlags: 4, masterKeyWeight: 122, lowThreshold: 10, mediumThreshold: 50, highThreshold: 122, homeDomain: "https://www.soneso.com/blubber", signer: signer, signerWeight: 50)
             
-            let timeBounds = try TimeBounds(minTime: 1597351082, maxTime: 1597388888);
+            let timeBounds = TimeBounds(minTime: 1597351082, maxTime: 1597388888);
             
             let accountMergeOperation = try AccountMergeOperation(destinationAccountId: accountBId, sourceAccountId: sourceAccountKeyPair.accountId)
             
@@ -86,10 +86,11 @@ class TransactionsLocalTestCase: XCTestCase {
             let operations = [paymentOperation, pathPaymentStrictReceiveOperation, pathPaymentStrictSendOperation, manageSellOfferOperation, manageBuyOfferOperation, createPassiveSellOfferOperation, changeTrustOperation, allowTrustOperation, setOptionsOperation, accountMergeOperation, manageDataOperation, bumpSequenceOperation, createAccountOperation]
         
         
+            let preconditions = TransactionPreconditions(timeBounds:timeBounds)
             let transaction = try Transaction(sourceAccount: accountA,
                                               operations: operations,
                                               memo: Memo.text("Enjoy this transaction!"),
-                                              timeBounds:timeBounds)
+                                              preconditions:preconditions)
             
             try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
             print(try! TxRep.toTxRep(transactionEnvelope: transaction.encodedEnvelope()));

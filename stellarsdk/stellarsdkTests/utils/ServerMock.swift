@@ -16,7 +16,7 @@ class ServerMock: URLProtocol {
     }
     
     static func remove(mock: RequestMock) {
-        if let i = registeredRequestMocks.index(where: { $0 === mock }) {
+        if let i = registeredRequestMocks.firstIndex(where: { $0 === mock }) {
             registeredRequestMocks.remove(at: i)
         }
     }

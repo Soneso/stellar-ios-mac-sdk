@@ -64,7 +64,7 @@ public class Seed {
             var versionByte = VersionByte.seed.rawValue
             let versionByteData = Data(bytes: &versionByte, count: MemoryLayout.size(ofValue: versionByte))
             let payload = NSMutableData(data: versionByteData)
-            payload.append(Data(bytes: bytes))
+            payload.append(Data(bytes))
             let checksumedData = (payload as Data).crc16Data()
             
             return checksumedData.base32EncodedString

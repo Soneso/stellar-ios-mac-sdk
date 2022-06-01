@@ -89,13 +89,13 @@ public class FeeBumpTransaction {
     
     public func getTransactionHash(network:Network) throws -> String {
         let transactionHash = try [UInt8](feeBumpTransactionXDR.hash(network: network))
-        let str = Data(bytes: transactionHash).hexEncodedString()
+        let str = Data(transactionHash).hexEncodedString()
         return str
     }
     
     public func getTransactionHashData(network:Network) throws -> Data {
         let transactionHash = try [UInt8](feeBumpTransactionXDR.hash(network: network))
-        let data = Data(bytes: transactionHash)
+        let data = Data(transactionHash)
         return data
     }
 }

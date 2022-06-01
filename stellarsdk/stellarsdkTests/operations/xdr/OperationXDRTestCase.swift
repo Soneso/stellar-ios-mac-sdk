@@ -113,7 +113,7 @@ class OperationXDRTestCase: XCTestCase {
             let destination = try KeyPair(secretSeed: "SDHZGHURAYXKU2KMVHPOXI6JG2Q4BSQUQCEOY72O3QQTCLR2T455PMII")
             let startAmount = Decimal(1000)
             
-            let operation = CreateAccountOperation(sourceAccount: source, destination: destination, startBalance: startAmount)
+            let operation = try! CreateAccountOperation(sourceAccountId: source.accountId, destinationAccountId: destination.accountId, startBalance: startAmount)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! CreateAccountOperation
             
@@ -123,7 +123,7 @@ class OperationXDRTestCase: XCTestCase {
             default:
                 break
             }
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertEqual(destination.accountId, parsedOperation.destination.accountId)
             XCTAssertEqual(startAmount, parsedOperation.startBalance)
             
@@ -150,7 +150,7 @@ class OperationXDRTestCase: XCTestCase {
             let amount = Decimal(1000)
             let asset = Asset(type: AssetType.ASSET_TYPE_NATIVE)
             
-            let operation = PaymentOperation(sourceAccount: source, destination: destination, asset: asset!, amount: amount)
+            let operation = try! PaymentOperation(sourceAccountId: source.accountId, destinationAccountId: destination.accountId, asset: asset!, amount: amount)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! PaymentOperation
             
@@ -160,8 +160,8 @@ class OperationXDRTestCase: XCTestCase {
             default:
                 break
             }
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
-            XCTAssertEqual(destination.accountId, parsedOperation.destination.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(destination.accountId, parsedOperation.destinationAccountId)
             XCTAssertEqual(amount, parsedOperation.amount)
             XCTAssertTrue(parsedOperation.asset.type == AssetType.ASSET_TYPE_NATIVE)
             
@@ -200,7 +200,7 @@ class OperationXDRTestCase: XCTestCase {
             let path:[Asset] = [Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: pathIssuer1)!,
                         Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM12, code: "TESTTEST", issuer: pathIssuer2)!]
             
-            let operation = try PathPaymentOperation(sourceAccount: source, sendAsset: sendAsset!, sendMax: sendMax, destination: destination, destAsset: destAsset!, destAmount: destAmount, path: path)
+            let operation = try PathPaymentOperation(sourceAccountId: source.accountId, sendAsset: sendAsset!, sendMax: sendMax, destinationAccountId: destination.accountId, destAsset: destAsset!, destAmount: destAmount, path: path)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! PathPaymentOperation
             
@@ -212,8 +212,8 @@ class OperationXDRTestCase: XCTestCase {
                 break
             }
             XCTAssertTrue(parsedOperation.sendAsset.type == AssetType.ASSET_TYPE_NATIVE)
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
-            XCTAssertEqual(destination.accountId, parsedOperation.destination.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(destination.accountId, parsedOperation.destinationAccountId)
             XCTAssertEqual(sendMax, parsedOperation.sendMax)
             XCTAssertTrue(parsedOperation.destAsset.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
             XCTAssertEqual(destAmount, parsedOperation.destAmount)
@@ -249,7 +249,7 @@ class OperationXDRTestCase: XCTestCase {
             let destAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuer)
             let destAmount = Decimal(0.0001)
             
-            let operation = try PathPaymentOperation(sourceAccount: source, sendAsset: sendAsset!, sendMax: sendMax, destination: destination, destAsset: destAsset!, destAmount: destAmount, path:[])
+            let operation = try PathPaymentOperation(sourceAccountId: source.accountId, sendAsset: sendAsset!, sendMax: sendMax, destinationAccountId: destination.accountId, destAsset: destAsset!, destAmount: destAmount, path:[])
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! PathPaymentOperation
             
@@ -261,8 +261,8 @@ class OperationXDRTestCase: XCTestCase {
                 break
             }
             XCTAssertTrue(parsedOperation.sendAsset.type == AssetType.ASSET_TYPE_NATIVE)
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
-            XCTAssertEqual(destination.accountId, parsedOperation.destination.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(destination.accountId, parsedOperation.destinationAccountId)
             XCTAssertEqual(sendMax, parsedOperation.sendMax)
             XCTAssertTrue(parsedOperation.destAsset.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
             XCTAssertEqual(destAmount, parsedOperation.destAmount)
@@ -305,7 +305,7 @@ class OperationXDRTestCase: XCTestCase {
             default:
                 break
             }
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertEqual(limit, parsedOperation.limit)
             XCTAssertTrue(parsedOperation.asset.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
             XCTAssertTrue(parsedOperation.asset.code == "IOM")
@@ -326,7 +326,7 @@ class OperationXDRTestCase: XCTestCase {
             default:
                 break
             }
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertEqual(limit, parsedOperation.limit)
             XCTAssertTrue(parsedOperation.asset.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM12)
             XCTAssertTrue(parsedOperation.asset.code == "IOMIOM")
@@ -355,7 +355,7 @@ class OperationXDRTestCase: XCTestCase {
             let authorize = true
             //let authorize = TrustLineFlags.AUTHORIZED_FLAG
             
-            let operation = try AllowTrustOperation(sourceAccount: source, trustor: trustor, assetCode: assetCode, authorize: authorize)
+            let operation = try AllowTrustOperation(sourceAccountId: source.accountId, trustor: trustor, assetCode: assetCode, authorize: authorize)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! AllowTrustOperation
             
@@ -365,7 +365,7 @@ class OperationXDRTestCase: XCTestCase {
             default:
                 break
             }
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertEqual(trustor.accountId, parsedOperation.trustor.accountId)
             XCTAssertEqual(assetCode, parsedOperation.assetCode)
             XCTAssertEqual(TrustLineFlags.AUTHORIZED_FLAG, parsedOperation.authorize)
@@ -394,7 +394,7 @@ class OperationXDRTestCase: XCTestCase {
             let assetCode = "USDABC"
             let authorize = true
             
-            let operation = try AllowTrustOperation(sourceAccount: source, trustor: trustor, assetCode: assetCode, authorize: authorize)
+            let operation = try AllowTrustOperation(sourceAccountId: source.accountId, trustor: trustor, assetCode: assetCode, authorize: authorize)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! AllowTrustOperation
             
@@ -431,12 +431,12 @@ class OperationXDRTestCase: XCTestCase {
             let homeDomain = "stellar.org"
             let signerWeight = 1 as UInt32
             
-            let operation = try SetOptionsOperation(sourceAccount: source, inflationDestination: inflationDestination, clearFlags: clearFlags, setFlags: setFlags, masterKeyWeight: masterKeyWeight, lowThreshold: lowThreshold, mediumThreshold: mediumThreshold, highThreshold: highThreshold, homeDomain: homeDomain, signer: signer, signerWeight: signerWeight)
+            let operation = try SetOptionsOperation(sourceAccountId: source.accountId, inflationDestination: inflationDestination, clearFlags: clearFlags, setFlags: setFlags, masterKeyWeight: masterKeyWeight, lowThreshold: lowThreshold, mediumThreshold: mediumThreshold, highThreshold: highThreshold, homeDomain: homeDomain, signer: signer, signerWeight: signerWeight)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! SetOptionsOperation
             
             XCTAssertEqual(inflationDestination.accountId, parsedOperation.inflationDestination?.accountId)
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertEqual(clearFlags, parsedOperation.clearFlags)
             XCTAssertEqual(setFlags, parsedOperation.setFlags)
             XCTAssertEqual(masterKeyWeight, parsedOperation.masterKeyWeight)
@@ -468,11 +468,11 @@ class OperationXDRTestCase: XCTestCase {
             
             let homeDomain = "stellar.org"
             
-            let operation = try SetOptionsOperation(sourceAccount: source, homeDomain: homeDomain)
+            let operation = try SetOptionsOperation(sourceAccountId: source.accountId, homeDomain: homeDomain)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! SetOptionsOperation
             
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertNil(parsedOperation.inflationDestination?.accountId)
             XCTAssertNil(parsedOperation.clearFlags)
             XCTAssertNil(parsedOperation.setFlags)
@@ -504,11 +504,11 @@ class OperationXDRTestCase: XCTestCase {
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
             let signer = Signer.sha256Hash(hash: "stellar.org".sha256Hash)
             
-            let operation = try SetOptionsOperation(sourceAccount: source, signer: signer, signerWeight:10)
+            let operation = try SetOptionsOperation(sourceAccountId: source.accountId, signer: signer, signerWeight:10)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! SetOptionsOperation
             
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertNil(parsedOperation.inflationDestination?.accountId)
             XCTAssertNil(parsedOperation.clearFlags)
             XCTAssertNil(parsedOperation.setFlags)
@@ -542,22 +542,21 @@ class OperationXDRTestCase: XCTestCase {
             
             let sequenceNumber = Int64(2908908335136768)
             let account = Account(keyPair: source, sequenceNumber: sequenceNumber)
-            let createAccountOperation = CreateAccountOperation(destination: destination, startBalance: 2000)
+            let createAccountOperation = try! CreateAccountOperation(sourceAccountId: nil, destinationAccountId: destination.accountId, startBalance: 2000)
             let transaction = try Transaction(sourceAccount: account,
                                               operations: [createAccountOperation],
-                                              memo: Memo.none,
-                                              timeBounds:nil)
+                                              memo: Memo.none)
             
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let operationSource = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
             
             let signer = try Signer.preAuthTx(transaction: transaction, network: .testnet)
             
-            let operation = try SetOptionsOperation(sourceAccount: operationSource, signer: signer, signerWeight:10)
+            let operation = try SetOptionsOperation(sourceAccountId: operationSource.accountId, signer: signer, signerWeight:10)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! SetOptionsOperation
             
-            XCTAssertEqual(operationSource.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(operationSource.accountId, parsedOperation.sourceAccountId)
             XCTAssertNil(parsedOperation.inflationDestination?.accountId)
             XCTAssertNil(parsedOperation.clearFlags)
             XCTAssertNil(parsedOperation.setFlags)
@@ -597,7 +596,7 @@ class OperationXDRTestCase: XCTestCase {
             let price = Price.fromString(price: priceStr)
             let offerId = Int64(1)
             
-            let operation = ManageSellOfferOperation(sourceAccount: source, selling: selling!, buying: buying!, amount: amount, price: price, offerId: offerId)
+            let operation = ManageSellOfferOperation(sourceAccountId: source.accountId, selling: selling!, buying: buying!, amount: amount, price: price, offerId: offerId)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ManageSellOfferOperation
             
@@ -608,7 +607,7 @@ class OperationXDRTestCase: XCTestCase {
                 break
             }
             
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertTrue(parsedOperation.selling.type == AssetType.ASSET_TYPE_NATIVE)
             XCTAssertTrue(parsedOperation.buying.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
 //            XCTAssertEqual(parsedOperation.buying, buying)
@@ -645,7 +644,7 @@ class OperationXDRTestCase: XCTestCase {
             let priceStr = "2.93850088" // n=36731261 d=12500000
             let price = Price.fromString(price: priceStr)
             
-            let operation = CreatePassiveSellOfferOperation(sourceAccount: source, selling: selling!, buying: buying!, amount: amount, price: price)
+            let operation = CreatePassiveSellOfferOperation(sourceAccountId: source.accountId, selling: selling!, buying: buying!, amount: amount, price: price)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! CreatePassiveSellOfferOperation
             
@@ -656,7 +655,7 @@ class OperationXDRTestCase: XCTestCase {
                 break
             }
             
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertTrue(parsedOperation.selling.type == AssetType.ASSET_TYPE_NATIVE)
             XCTAssertTrue(parsedOperation.buying.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
             //            XCTAssertEqual(parsedOperation.buying, buying)
@@ -686,12 +685,12 @@ class OperationXDRTestCase: XCTestCase {
             // GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR
             let destination = try KeyPair(secretSeed: "SDHZGHURAYXKU2KMVHPOXI6JG2Q4BSQUQCEOY72O3QQTCLR2T455PMII")
             
-            let operation = AccountMergeOperation(sourceAccount: source, destination: destination)
+            let operation = try! AccountMergeOperation(destinationAccountId: destination.accountId, sourceAccountId: source.accountId)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! AccountMergeOperation
             
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
-            XCTAssertEqual(destination.accountId, parsedOperation.destination.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(destination.accountId, parsedOperation.destinationAccountId)
             
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAgAAAAA7eBSYbzcL5UKo7oXO24y1ckX+XuCtkDsyNHOp1n1bxA=", base64)
@@ -712,13 +711,13 @@ class OperationXDRTestCase: XCTestCase {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
             let name = "test"
-            let data = Data(bytes: [0,1,2,3,4])
+            let data = Data([0,1,2,3,4])
             
-            let operation = ManageDataOperation(sourceAccount: source, name: name, data: data)
+            let operation = ManageDataOperation(sourceAccountId: source.accountId, name: name, data: data)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ManageDataOperation
             
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertEqual(name, parsedOperation.name)
             XCTAssertEqual(data, parsedOperation.data)
             
@@ -742,11 +741,11 @@ class OperationXDRTestCase: XCTestCase {
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
             let name = "test"
             
-            let operation = ManageDataOperation(sourceAccount: source, name: name)
+            let operation = ManageDataOperation(sourceAccountId: source.accountId, name: name)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ManageDataOperation
             
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertEqual(name, parsedOperation.name)
             XCTAssertNil(parsedOperation.data)
             
@@ -769,11 +768,11 @@ class OperationXDRTestCase: XCTestCase {
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
             let bumpTo:Int64 = 9999999
             
-            let operation = BumpSequenceOperation(bumpTo: bumpTo, sourceAccount: source)
+            let operation = BumpSequenceOperation(bumpTo: bumpTo, sourceAccountId: source.accountId)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! BumpSequenceOperation
             
-            XCTAssertEqual(source.accountId, parsedOperation.sourceAccount?.accountId)
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertEqual(bumpTo, parsedOperation.bumpTo)
             
             let base64 = try operation.toXDRBase64()

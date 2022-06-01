@@ -230,7 +230,8 @@ class TransactionsRemoteTestCase: XCTestCase {
             switch response {
             case .success(let data):
                 let operationBody = OperationBodyXDR.inflation
-                let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
+                let mux = MuxedAccountXDR.ed25519(keyPair.publicKey.bytes)
+                let operation = OperationXDR(sourceAccount: mux, body: operationBody)
                 let tb = TimeBoundsXDR(minTime: 100, maxTime: 4000101011)
                 let cond = PreconditionsXDR.time(tb)
                 var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, cond: cond, memo: .none, operations: [operation])
@@ -262,7 +263,8 @@ class TransactionsRemoteTestCase: XCTestCase {
             switch response {
             case .success(let data):
                 let operationBody = OperationBodyXDR.inflation
-                let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
+                let mux = MuxedAccountXDR.ed25519(keyPair.publicKey.bytes)
+                let operation = OperationXDR(sourceAccount: mux, body: operationBody)
                 var transaction = TransactionV0XDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, timeBounds: nil, memo: .none, operations: [operation])
                 try! transaction.sign(keyPair: keyPair, network: .testnet)
                 let encodedT = try! transaction.encodedV0Transaction()
@@ -319,19 +321,18 @@ class TransactionsRemoteTestCase: XCTestCase {
                 switch response {
                 case .success(let accountResponse):
                     do {
-                        let paymentOperation = PaymentOperation(destination: destination,
+                        let paymentOperation = try! PaymentOperation(sourceAccountId: nil, destinationAccountId: destination.accountId,
                                                                 asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                                                 amount: 1.5)
                         
-                        let paymentOperation2 = PaymentOperation(sourceAccount: destination,
-                                                                destination: source,
+                        let paymentOperation2 = try! PaymentOperation(sourceAccountId: destination.accountId,
+                                                                 destinationAccountId: source.accountId,
                                                                 asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                                                 amount: 3.5)
                         
                         let transaction = try Transaction(sourceAccount: accountResponse,
                                                           operations: [paymentOperation, paymentOperation2],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          memo: Memo.none)
                         
                         try transaction.sign(keyPair: source, network: .testnet)
                         try transaction.sign(keyPair: destination, network: .testnet)
@@ -376,9 +377,10 @@ class TransactionsRemoteTestCase: XCTestCase {
             switch response {
             case .success(let data):
                 let operationBody0 = OperationBodyXDR.manageData(ManageDataOperationXDR(dataName: "kop", dataValue: "api.stellar.org".data(using: .utf8)))
-                let operation0 = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody0)
+                let mux = MuxedAccountXDR.ed25519(keyPair.publicKey.bytes)
+                let operation0 = OperationXDR(sourceAccount: mux, body: operationBody0)
                 let operationBody = OperationBodyXDR.bumpSequence(BumpSequenceOperationXDR(bumpTo: data.sequenceNumber + 10))
-                let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
+                let operation = OperationXDR(sourceAccount: mux, body: operationBody)
                 var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, cond: PreconditionsXDR.none, memo: .none, operations: [operation0, operation], maxOperationFee: 190)
                 
                 try! transaction.sign(keyPair: keyPair, network: .testnet)
@@ -619,8 +621,7 @@ class TransactionsRemoteTestCase: XCTestCase {
                                                                 amount: 1.5)
                         let innerTx = try Transaction(sourceAccount: accountResponse,
                                                           operations: [paymentOperation],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          memo: Memo.none)
                         try innerTx.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
                         
                         self.sdk.accounts.getAccountDetails(accountId: payerKeyPair.accountId) { (response) -> (Void) in

@@ -83,8 +83,7 @@ class ClawbackTestCase: XCTestCase {
                         /*let createAccount = try PaymentOperation(sourceAccountId: nil, destinationAccountId:"GB4ZJJ5UEP7PASWL4GUDNN2I5EGP3PSGCFOABS2YO6DPKAZCNOOZB4V4", asset:Asset(type: AssetType.ASSET_TYPE_NATIVE)!, amount: 100.0)*/
                         let transaction = try Transaction(sourceAccount: accountResponse,
                                                           operations: [createAccount],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          memo: Memo.none)
                         try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
                         
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
@@ -163,8 +162,7 @@ class ClawbackTestCase: XCTestCase {
            
                         let transaction = try Transaction(sourceAccount: accountResponse,
                                                           operations: [setOp],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          memo: Memo.none)
                         try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
                         
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
@@ -243,8 +241,7 @@ class ClawbackTestCase: XCTestCase {
                         
                         let transaction = try Transaction(sourceAccount: accountResponse,
                                                           operations: [changeTrustOp],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          memo: Memo.none)
                         
                         try transaction.sign(keyPair: trustingAccountKeyPair, network: self.network)
                         
@@ -326,8 +323,7 @@ class ClawbackTestCase: XCTestCase {
                         
                         let transaction = try Transaction(sourceAccount: muxSource,
                                                           operations: [paymentOperation],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          memo: Memo.none)
                         try transaction.sign(keyPair: issuingAccountKeyPair, network: self.network)
                         
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
@@ -408,8 +404,7 @@ class ClawbackTestCase: XCTestCase {
                         
                         let transaction = try Transaction(sourceAccount: muxSource,
                                                           operations: [clawbackOperation],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          memo: Memo.none)
                         try transaction.sign(keyPair: issuingAccountKeyPair, network: self.network)
                         
                         let xdrEnvelope = try! transaction.encodedEnvelope()
@@ -522,8 +517,7 @@ class ClawbackTestCase: XCTestCase {
                         
                         let transaction = try Transaction(sourceAccount: accountResponse,
                                                           operations: [setTrustlineFlagsOp],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          memo: Memo.none)
                         
                         try transaction.sign(keyPair: issuingAccountKeyPair, network: self.network)
                         
@@ -615,8 +609,7 @@ class ClawbackTestCase: XCTestCase {
                         
                         let transaction = try Transaction(sourceAccount: accountResponse,
                                                           operations: [createClaimableBalance],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          memo: Memo.none)
                         try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
                         
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
@@ -729,8 +722,7 @@ class ClawbackTestCase: XCTestCase {
                         
                         let transaction = try Transaction(sourceAccount: muxSource,
                                                           operations: [clawbackOperation],
-                                                          memo: Memo.none,
-                                                          timeBounds:nil)
+                                                          memo: Memo.none)
                         try transaction.sign(keyPair: issuingAccountKeyPair, network: self.network)
                         
                         let xdrEnvelope = try! transaction.encodedEnvelope()

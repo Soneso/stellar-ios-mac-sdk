@@ -52,7 +52,8 @@ class URISchemeTestCase: XCTestCase {
             switch response {
             case .success(let data):
                 let operationBody = OperationBodyXDR.inflation
-                let operation = OperationXDR(sourceAccount: keyPair.publicKey, body: operationBody)
+                let mux = MuxedAccountXDR.ed25519(keyPair.publicKey.bytes)
+                let operation = OperationXDR(sourceAccount: mux, body: operationBody)
                 var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, cond: PreconditionsXDR.none, memo: .none, operations: [operation])
                 try! transaction.sign(keyPair: keyPair, network: .testnet)
                 let uriSchemeBuilder = URIScheme()

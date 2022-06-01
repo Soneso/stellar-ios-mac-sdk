@@ -139,7 +139,8 @@ public class TxRep: NSObject {
         let memo:Memo? = try getMemo(dic:dic, prefix:prefix)
         let operations:[Operation] = try getOperations(dic:dic, prefix:prefix)
         let maxOperationFee = operations.count > 1 ? fee /  UInt32(operations.count) : fee
-        let transaction = try Transaction(sourceAccount: sourceAccount, operations: operations, memo: memo, timeBounds: timeBounds, maxOperationFee: maxOperationFee)
+        let preconditions = TransactionPreconditions(timeBounds: timeBounds)
+        let transaction = try Transaction(sourceAccount: sourceAccount, operations: operations, memo: memo, preconditions: preconditions, maxOperationFee: maxOperationFee)
         
         prefix = isFeeBump ? "feeBump.tx.innerTx." : "";
         let signatures:[DecoratedSignatureXDR] = try getSignatures(dic: dic, prefix: prefix)
@@ -1482,11 +1483,7 @@ public class TxRep: NSObject {
         if let present = dic[key], present == "true" {
             if let min = dic[prefix + "timeBounds.minTime"], let max = dic[prefix + "timeBounds.maxTime"],
                 let minTime = UInt64(min), let maxTime = UInt64(max) {
-                do {
-                    timeBounds = try TimeBounds(minTime: minTime, maxTime: maxTime)
-                } catch {
-                    throw TxRepError.invalidValue(key: prefix + "timeBounds")
-                }
+                timeBounds = TimeBounds(minTime: minTime, maxTime: maxTime)
             } else {
                 throw TxRepError.invalidValue(key: prefix + "timeBounds")
             }

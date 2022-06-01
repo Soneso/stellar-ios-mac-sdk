@@ -24,7 +24,7 @@ public struct ManageDataOperationXDR: XDRCodable {
         let dataValuePresent = try container.decode(UInt32.self)
         if dataValuePresent != 0 {
             let data = try container.decode(Data.self)
-            dataValue = Data(bytes: data)
+            dataValue = Data(data)
         } else {
             dataValue = nil
         }

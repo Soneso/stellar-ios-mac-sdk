@@ -21,7 +21,7 @@ extension Data {
             return muxed.ed25519AccountId
         case .med25519(let mux):
             let muxInverted = mux.toMuxedAccountMed25519XDRInverted()
-            let data = try Data(bytes: XDREncoder.encode(muxInverted))
+            let data = try Data(XDREncoder.encode(muxInverted))
             let result = try data.encodeMEd25519AccountId()
             return result.replacingOccurrences(of: "=", with: "")
         }
@@ -52,7 +52,7 @@ extension Data {
         var versionByteRaw = versionByte.rawValue
         let versionByteData = Data(bytes: &versionByteRaw, count: MemoryLayout.size(ofValue: versionByte))
         let payload = NSMutableData(data: versionByteData)
-        payload.append(Data(bytes: self.bytes))
+        payload.append(Data(self.bytes))
         let checksumedData = (payload as Data).crc16Data()
         
         return checksumedData.base32EncodedString

@@ -35,7 +35,7 @@ private func CRCCCITTXModem(_ bytes: Data) -> UInt16 {
 
 extension UInt8 {
     func crc16() -> UInt16 {
-        return CRCCCITTXModem(Data(bytes: [self]))
+        return CRCCCITTXModem(Data([self]))
     }
 }
 
