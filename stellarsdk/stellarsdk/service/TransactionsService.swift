@@ -223,7 +223,23 @@ public class TransactionsService: NSObject {
                     }
                     
                 case .failure(let error):
-                    response(.failure(error:error))
+                    switch error {
+                    case .notFound( _, _):
+                        // account not found => no memo required for this account.
+                        remainingDestinations.removeFirst()
+                        self.checkMemoRequiredForDestinations(destinations: remainingDestinations, response: { (nextResult) -> (Void) in
+                            switch nextResult {
+                            case .noMemoRequired:
+                                response(.noMemoRequired)
+                            case .memoRequired(let accountId):
+                                response(.memoRequired(destination: accountId))
+                            case .failure(let error):
+                                response(.failure(error: error))
+                            }
+                        })
+                    default:
+                        response(.failure(error:error))
+                    }
                 }
             }
         } else {

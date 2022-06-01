@@ -133,7 +133,7 @@ class OperationsRemoteTestCase: XCTestCase {
         getClaimableBalancesForClaimant()
         getClaimableBalancesForAsset()
         claimClaimableBalance()
-        //sponsorship()
+        sponsorship()
         sponsorship2()
     }
     
@@ -1023,18 +1023,12 @@ class OperationsRemoteTestCase: XCTestCase {
                         try transaction.sign(keyPair: masterAccountKeyPair, network: Network.testnet)
                         try transaction.sign(keyPair: accountAKeyPair, network: Network.testnet)
                         
-                        print(try transaction.transactionXDR.encodedEnvelope())
                         try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                             switch response {
                             case .success(let submitTransactionResponse):
-                                print("CB Test: Transaction successfully sent:" + submitTransactionResponse.transactionHash)
+                                print("sponsorship: Transaction successfully sent:" + submitTransactionResponse.transactionHash)
                                 expectation.fulfill()
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                print("CB Test: Destination requires memo \(destinationAccountId)")
-                                XCTFail()
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"CB Test - send error", horizonRequestError:error)
+                            default:
                                 XCTFail()
                                 expectation.fulfill()
                             }
