@@ -14,7 +14,6 @@ class OffersRemoteTestCase: XCTestCase {
     let network = Network.testnet
     let sellerKeyPair = try! KeyPair.generateRandomKeyPair()
     let IOMIssuerKeyPair = try! KeyPair.generateRandomKeyPair()
-    var effectsStreamItem:EffectsStreamItem? = nil
     var operationsStreamItem:OperationsStreamItem? = nil
     var offerId:String? = nil
     let sponsorKeyPair = try! KeyPair.generateRandomKeyPair()

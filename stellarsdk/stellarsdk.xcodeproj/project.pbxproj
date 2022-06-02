@@ -30,7 +30,6 @@
 		437D8A8D202F0B980024D031 /* TradesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A8C202F0B980024D031 /* TradesService.swift */; };
 		437D8A8F202F14A00024D031 /* TradeAggregationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A8E202F14A00024D031 /* TradeAggregationsService.swift */; };
 		437D8A92202F15DC0024D031 /* TradesTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A91202F15DC0024D031 /* TradesTestCase.swift */; };
-		437D8A95202F16EB0024D031 /* TradeAggregationsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A94202F16EB0024D031 /* TradeAggregationsTestCase.swift */; };
 		4390830720372AF600254042 /* MemoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4390830620372AF600254042 /* MemoProtocol.swift */; };
 		4390830920372BAF00254042 /* Memo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4390830820372BAF00254042 /* Memo.swift */; };
 		43AAA55120456B8C0039920E /* Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AAA55020456B8C0039920E /* Signer.swift */; };
@@ -499,7 +498,6 @@
 		745DF58B205304AC000D3660 /* TradesTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A91202F15DC0024D031 /* TradesTestCase.swift */; };
 		745DF58C205304AC000D3660 /* TradesLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E601203EE79700C0AB4F /* TradesLocalTestCase.swift */; };
 		745DF58D205304AC000D3660 /* TradesResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E603203EE7A800C0AB4F /* TradesResponsesMock.swift */; };
-		745DF58E205304AC000D3660 /* TradeAggregationsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A94202F16EB0024D031 /* TradeAggregationsTestCase.swift */; };
 		745F2BAD202C27FF008763F1 /* XDRCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BAC202C27FF008763F1 /* XDRCodable.swift */; };
 		745F2BAF202C281F008763F1 /* XDRCodableExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BAE202C281F008763F1 /* XDRCodableExtensions.swift */; };
 		745F2BB1202C2852008763F1 /* XDRDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BB0202C2852008763F1 /* XDRDecoder.swift */; };
@@ -1156,7 +1154,6 @@
 		437D8A8C202F0B980024D031 /* TradesService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradesService.swift; sourceTree = "<group>"; };
 		437D8A8E202F14A00024D031 /* TradeAggregationsService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradeAggregationsService.swift; sourceTree = "<group>"; };
 		437D8A91202F15DC0024D031 /* TradesTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradesTestCase.swift; sourceTree = "<group>"; };
-		437D8A94202F16EB0024D031 /* TradeAggregationsTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TradeAggregationsTestCase.swift; sourceTree = "<group>"; };
 		4390830620372AF600254042 /* MemoProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoProtocol.swift; sourceTree = "<group>"; };
 		4390830820372BAF00254042 /* Memo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Memo.swift; sourceTree = "<group>"; };
 		43AAA55020456B8C0039920E /* Signer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Signer.swift; sourceTree = "<group>"; };
@@ -1809,14 +1806,6 @@
 			path = trades;
 			sourceTree = "<group>";
 		};
-		437D8A93202F16C40024D031 /* trade_aggregations */ = {
-			isa = PBXGroup;
-			children = (
-				437D8A94202F16EB0024D031 /* TradeAggregationsTestCase.swift */,
-			);
-			path = trade_aggregations;
-			sourceTree = "<group>";
-		};
 		43D35B092034842E00C8BDBC /* payment_path_responses */ = {
 			isa = PBXGroup;
 			children = (
@@ -2135,7 +2124,6 @@
 				744C4DC0202A326600B46CDE /* operations */,
 				83DD2C9B202F24B900713FEE /* payments */,
 				437D8A90202F15AA0024D031 /* trades */,
-				437D8A93202F16C40024D031 /* trade_aggregations */,
 				7445EA0A201B106500470E0A /* stellarsdkTests.swift */,
 				7445EA0C201B106500470E0A /* Info.plist */,
 			);
@@ -3820,7 +3808,6 @@
 				745DF58C205304AC000D3660 /* TradesLocalTestCase.swift in Sources */,
 				745DF58D205304AC000D3660 /* TradesResponsesMock.swift in Sources */,
 				744A84D5214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,
-				745DF58E205304AC000D3660 /* TradeAggregationsTestCase.swift in Sources */,
 				743DF4F3201F130200713DE7 /* stellarsdk_macOSTests.swift in Sources */,
 				74A504F52192D85B00A608A0 /* KeyUtils.swift in Sources */,
 			);
@@ -4350,7 +4337,6 @@
 				7472333A219EE40200343E25 /* WebAuthenticatorTestCase.swift in Sources */,
 				EC34A15C205043AB000FB042 /* MnemonicGeneration.swift in Sources */,
 				744A84BD214403480086B8FC /* AnchorInfoResponseMock.swift in Sources */,
-				437D8A95202F16EB0024D031 /* TradeAggregationsTestCase.swift in Sources */,
 				8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */,
 				74723343219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift in Sources */,
 				4367E604203EE7A800C0AB4F /* TradesResponsesMock.swift in Sources */,
