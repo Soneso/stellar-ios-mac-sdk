@@ -91,6 +91,7 @@ class OffersRemoteTestCase: XCTestCase {
         loadOffersForSellingAsset()
         createBuyOffers()
         loadOffersForBuyingAsset()
+        getOrderbook()
     }
     
     func createSellOffers() {
@@ -433,6 +434,26 @@ class OffersRemoteTestCase: XCTestCase {
                 }
             }
             
+            wait(for: [expectation], timeout: 15.0)
+        }
+    }
+    
+    func getOrderbook() {
+        XCTContext.runActivity(named: "loadOffersForBuyingAsset") { activity in
+            let expectation = XCTestExpectation(description: "Get orderbook response and parse it successfully")
+            
+            sdk.orderbooks.getOrderbook(sellingAssetType: AssetTypeAsString.NATIVE, buyingAssetType: AssetTypeAsString.CREDIT_ALPHANUM4, buyingAssetCode:"IOM", buyingAssetIssuer:IOMIssuerKeyPair.accountId, limit:10) { (response) -> (Void) in
+                switch response {
+                case .success(let orderbookResponse):
+                    XCTAssertFalse(orderbookResponse.bids.isEmpty)
+                    XCTAssertFalse(orderbookResponse.asks.isEmpty)
+                    
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOB Test", horizonRequestError: error)
+                    XCTAssert(false)
+                }
+                expectation.fulfill()
+            }
             wait(for: [expectation], timeout: 15.0)
         }
     }
