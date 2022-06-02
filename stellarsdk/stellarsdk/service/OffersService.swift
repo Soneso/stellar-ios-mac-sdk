@@ -23,6 +23,13 @@ public enum OffersChange {
                           cursor:String?)
 }
 
+public enum OfferResponseEnum {
+    case success(details: OfferResponse)
+    case failure(error: HorizonRequestError)
+}
+
+public typealias OfferResponseClosure = (_ response:OfferResponseEnum) -> (Void)
+
 public class OffersService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
@@ -155,5 +162,32 @@ public class OffersService: NSObject {
     
         let streamItem = OffersStreamItem(requestUrl: serviceHelper.requestUrlWithPath(path: subpath))
         return streamItem
+    }
+    
+    /// Provides information and links relating to a single offer.
+    /// See [Horizon API] (https://developers.stellar.org/api/resources/offers/single/ "Offer Details")
+    ///
+    /// - Parameter offerId: The ID of the Offer
+    /// - Parameter response: The closure to be called upon response.
+    ///
+    /// - Throws:
+    ///     - 'HorizonRequestError.notFound' if there is no offer whose ID matches the 'offerId' parameter.
+    ///     - other 'HorizonRequestError' errors depending on the error case.
+    ///
+    open func getOfferDetails(offerId: String, response: @escaping OfferResponseClosure) {
+        serviceHelper.GETRequestWithPath(path: "/offers/\(offerId)") { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                do {
+                    let responseMessage = try self.jsonDecoder.decode(OfferResponse.self, from: data)
+                    response(.success(details:responseMessage))
+                } catch {
+                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+                }
+                
+            case .failure(let error):
+                response(.failure(error:error))
+            }
+        }
     }
 }
