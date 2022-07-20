@@ -22,6 +22,7 @@ public enum URISchemeIsValidEnum {
 
 public typealias URISchemeIsValidClosure = (_ completion: URISchemeIsValidEnum) -> (Void)
 
+/// see  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
 public class URISchemeValidator: NSObject {
     /// The predefined URIScheme prefix
     private let URISchemePrefix = "stellar.sep.7 - URI Scheme"

@@ -114,7 +114,7 @@ class URISchemeTestCase: XCTestCase {
             let expectation = XCTestExpectation(description: "URL Returned.")
             let keyPair = try! KeyPair(secretSeed: secretSeed)
             let uriSchemeBuilder = URIScheme()
-            let uriScheme = uriSchemeBuilder.getPayOperationURI(accountID: keyPair.accountId, amount: 123.21,assetCode: "ANA", assetIssuer: "GC4HC3AXQDNAMURMHVGMLFGLQELEQBCE4GI7IOKEAWAKBXY7SXXWBTLV")
+            let uriScheme = uriSchemeBuilder.getPayOperationURI(destination: keyPair.accountId, amount: 123.21,assetCode: "ANA", assetIssuer: "GC4HC3AXQDNAMURMHVGMLFGLQELEQBCE4GI7IOKEAWAKBXY7SXXWBTLV")
             XCTAssertEqual("web+stellar:pay?destination=GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV&amount=123.21&asset_code=ANA&asset_issuer=GC4HC3AXQDNAMURMHVGMLFGLQELEQBCE4GI7IOKEAWAKBXY7SXXWBTLV", uriScheme)
             expectation.fulfill()
         }

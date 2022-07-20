@@ -35,21 +35,33 @@ public typealias SubmitTransactionClosure = (_ completion: SubmitTransactionEnum
 /// A closure to be callded for the confirmation of a transaction.
 public typealias TransactionConfirmationClosure = ((TransactionXDR) -> (Bool))
 
+/// see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
 public class URIScheme: NSObject {
     let sdk = StellarSDK()
     
-    /// This function is used to generate a URIScheme compliant URL to serve as a request to sign a transaction.
+    /// This function is used to generate a URIScheme compliant URL to serve as a request to sign a transaction. It will URL-encode the given parameter values.
+    ///  see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md#operation-tx
     ///
     /// - Parameter transactionXDR: A TransactionXDR object representing a transaction on the stellar network.
-    /// - Parameter callBack: A URL callback that will be used to send the transactionXDR to.
-    /// - Parameter publicKey: A publicKey that will be used to sign the url for.
-    /// - Parameter message: A query parameter to indicate any additional information that the website or application wants to show the user in her wallet.
-    /// - Parameter networkPassphrase: Only needs to be set if this transaction is for other network than the public one.
-    /// - Parameter originDomain: A fully qualified domain name that specifies the originating domain of the URI request.
-    /// - Parameter publicKey: A signature of the hash of the URI request (excluding the signature field and value itself).
+    /// - Parameter replace: (optional) A  value that identifies the fields to be replaced in the xdr using the Txrep (SEP-0011) representation.
+    /// - Parameter callBack: (optional) A URL callback that will be used to send the transactionXDR to.
+    /// - Parameter publicKey: (optional) A publicKey that will be used to sign the url for.
+    /// - Parameter chain: (optional) Includes a single SEP-0007 request that spawned or triggered the creation of this SEP-0007 request
+    /// - Parameter message: (optional) A query parameter to indicate any additional information that the website or application wants to show the user in her wallet.
+    /// - Parameter networkPassphrase: (optional) Only needs to be set if this transaction is for other network than the public one.
+    /// - Parameter originDomain: (optional) A fully qualified domain name that specifies the originating domain of the URI request.
+    /// - Parameter signature: (optional) A signature of the hash of the URI request (excluding the signature field and value itself).
     ///
-    public func getSignTransactionURI(transactionXDR: TransactionXDR, callBack: String? = nil, publicKey: String? = nil, message: String? = nil, networkPassphrase: String? = nil,
-                                      originDomain: String? = nil, signature: String? = nil) -> String {
+    public func getSignTransactionURI(transactionXDR: TransactionXDR,
+                                      replace: String? = nil,
+                                      callBack: String? = nil,
+                                      publicKey: String? = nil,
+                                      chain: String? = nil,
+                                      message: String? = nil,
+                                      networkPassphrase: String? = nil,
+                                      originDomain: String? = nil,
+                                      signature: String? = nil) -> String {
+        
         var uriScheme = URISchemeName
         if let encodedEnvelope = try? transactionXDR.encodedEnvelope(), let urlEncondedEnvelope = encodedEnvelope.urlEncoded {
             var params: [String] = []
@@ -58,12 +70,20 @@ public class URIScheme: NSObject {
             
             params.append("\(SignTransactionParams.xdr)=\(urlEncondedEnvelope)")
             
+            if let replace = replace, let urlEncodedReplace = replace.urlEncoded {
+                params.append("\(SignTransactionParams.replace)=\(urlEncodedReplace)")
+            }
+            
             if let callBack = callBack, let urlEncodedCallBack = callBack.urlEncoded {
                 params.append("\(SignTransactionParams.callback)=\(urlEncodedCallBack)")
             }
             
             if let publicKey = publicKey {
                 params.append("\(SignTransactionParams.pubkey)=\(publicKey)")
+            }
+            
+            if let chain = chain, let urlEncodedChain = chain.urlEncoded {
+                params.append("\(SignTransactionParams.chain)=\(urlEncodedChain)")
             }
             
             if let message = message, message.count < MessageMaximumLength, let urlEncodedMessage = message.urlEncoded {
@@ -93,8 +113,10 @@ public class URIScheme: NSObject {
     }
     
     /// This function is used to generate a URIScheme compliant URL to serve as a request to pay a specific address with a specific asset, regardless of the source asset used by the payer.
+    /// It will URL-encode the given parameter values. If memo is MEMO_HASH or MEMO_RETURN it will bese64 encode it and the url encode it.
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md#operation-pay
     ///
-    /// - Parameter accountID: A valid account ID or payment address that will be used as destination for the payment.
+    /// - Parameter destination: A valid account ID or payment address that will be used as destination for the payment.
     /// - Parameter amount: Amount that destination will receive.
     /// - Parameter assetCode: Asset code (XLM if not present) destination will receive.
     /// - Parameter assetIssuer: Account ID of asset issuer (XLM if not present) destination will receive.
@@ -106,14 +128,22 @@ public class URIScheme: NSObject {
     /// - Parameter originDomain: A fully qualified domain name that specifies the originating domain of the URI request.
     /// - Parameter signature: A signature of the hash of the URI request (excluding the signature field and value itself).
     ///
-    public func getPayOperationURI(accountID: String, amount: Decimal? = nil, assetCode: String? = nil, assetIssuer: String? = nil, memo: String? = nil,
-                                   memoType: String? = MemoTypeAsString.TEXT, callBack: String? = nil, message: String? = nil, networkPassphrase: String? = nil,
-                                   originDomain: String? = nil, signature: String? = nil) -> String {
+    public func getPayOperationURI(destination: String,
+                                   amount: Decimal? = nil,
+                                   assetCode: String? = nil,
+                                   assetIssuer: String? = nil,
+                                   memo: String? = nil,
+                                   memoType: String? = MemoTypeAsString.TEXT,
+                                   callBack: String? = nil,
+                                   message: String? = nil,
+                                   networkPassphrase: String? = nil,
+                                   originDomain: String? = nil,
+                                   signature: String? = nil) -> String {
         var params: [String] = []
         var uriScheme = URISchemeName
         uriScheme += PayOperation
         
-        params.append("\(PayOperationParams.destination)=\(accountID)")
+        params.append("\(PayOperationParams.destination)=\(destination)")
         
         if let amount = amount {
             params.append("\(PayOperationParams.amount)=\(amount)")
@@ -172,7 +202,8 @@ public class URIScheme: NSObject {
         return uriScheme
     }
     
-    /// This function signs the transaction and sends it to the network.
+    
+    /// This function signs the transaction and sends it to the network. It throws a 'HorizonRequestError' on validation error.
     ///
     /// - Parameter forURL: A URIScheme compliant URL that was generated for the sign operation.
     /// - Parameter signerKeyPair: The KeyPair of the signer account.
@@ -181,7 +212,12 @@ public class URIScheme: NSObject {
     /// - Throws:
     ///     - A 'HorizonRequestError' error depending on the error case.
     ///
-    public func signTransaction(forURL url: String, signerKeyPair keyPair: KeyPair, network: Network = .public, transactionConfirmation: TransactionConfirmationClosure? = nil, completion: @escaping SubmitTransactionClosure) {
+    public func signTransaction(forURL url: String,
+                                signerKeyPair keyPair: KeyPair,
+                                network: Network = .public,
+                                transactionConfirmation: TransactionConfirmationClosure? = nil,
+                                completion: @escaping SubmitTransactionClosure) {
+        
         if let transactionXDR = getTransactionXDR(fromURL: url) {
             if let isConfirmed = transactionConfirmation?(transactionXDR), !isConfirmed {
                 completion(.failure(error: HorizonRequestError.requestFailed(message: "Transaction was not confirmed!")))

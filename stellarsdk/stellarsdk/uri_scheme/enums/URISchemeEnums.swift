@@ -11,8 +11,10 @@ import Foundation
 /// An enum used for the sing transaction parameters for URIScheme creation.
 public enum SignTransactionParams {
     case xdr
+    case replace
     case callback
     case pubkey
+    case chain
     case msg
     case network_passphrase
     case origin_domain
