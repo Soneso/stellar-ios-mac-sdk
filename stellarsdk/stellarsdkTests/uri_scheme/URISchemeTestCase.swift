@@ -202,7 +202,7 @@ class URISchemeTestCase: XCTestCase {
             let expectation = XCTestExpectation(description: "The transaction is signed and sent to the stellar network")
             let uriBuilder = URIScheme()
             let keyPair = try! KeyPair(secretSeed: secretSeed)
-            uriBuilder.signTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair) { (response) -> (Void) in
+            uriBuilder.signAndSubmitTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
                 case .success:
                     XCTAssert(true)
@@ -241,7 +241,7 @@ class URISchemeTestCase: XCTestCase {
              let expectation = XCTestExpectation(description: "The transaction is signed and sent to the callback")
              let uriBuilder = URIScheme()
              let keyPair = try! KeyPair(secretSeed: secretSeed)
-             uriBuilder.signTransaction(forURL: self.validCallbackTestUrl!, signerKeyPair: keyPair) { (response) -> (Void) in
+             uriBuilder.signAndSubmitTransaction(forURL: self.validCallbackTestUrl!, signerKeyPair: keyPair) { (response) -> (Void) in
                  switch response {
                  case .success:
                      XCTAssert(true)
@@ -265,7 +265,7 @@ class URISchemeTestCase: XCTestCase {
             let uriBuilder = URIScheme()
             let keyPair = try! KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
             
-            uriBuilder.signTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair) { (response) -> (Void) in
+            uriBuilder.signAndSubmitTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
                 case .failure(error: let error):
                     switch error {
@@ -289,7 +289,7 @@ class URISchemeTestCase: XCTestCase {
             let uriBuilder = URIScheme()
             let keyPair = try! KeyPair(secretSeed: secretSeed)
             let url = "web+stellar:tx?xdr=asdasdsadsadsa"
-            uriBuilder.signTransaction(forURL: url, signerKeyPair: keyPair) { (response) -> (Void) in
+            uriBuilder.signAndSubmitTransaction(forURL: url, signerKeyPair: keyPair) { (response) -> (Void) in
                 switch response {
                 case .failure(error: let error):
                     switch error {
@@ -312,7 +312,7 @@ class URISchemeTestCase: XCTestCase {
             let expectation = XCTestExpectation(description: "The transaction is going to be canceled by not confirming it!")
             let uriBuilder = URIScheme()
             let keyPair = try! KeyPair(secretSeed: secretSeed)
-            uriBuilder.signTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair, transactionConfirmation: { (transaction) -> (Bool) in
+            uriBuilder.signAndSubmitTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair, transactionConfirmation: { (transaction) -> (Bool) in
                 return false
             }) { (response) -> (Void) in
                 switch response {

@@ -212,7 +212,7 @@ public class URIScheme: NSObject {
     /// - Throws:
     ///     - A 'HorizonRequestError' error depending on the error case.
     ///
-    public func signTransaction(forURL url: String,
+    public func signAndSubmitTransaction(forURL url: String,
                                 signerKeyPair keyPair: KeyPair,
                                 network: Network = .public,
                                 transactionConfirmation: TransactionConfirmationClosure? = nil,
@@ -223,23 +223,12 @@ public class URIScheme: NSObject {
                 completion(.failure(error: HorizonRequestError.requestFailed(message: "Transaction was not confirmed!")))
                 return
             }
-            
-            setupTransactionXDR(transactionXDR: transactionXDR, signerKeyPair: keyPair, publicKey: getValue(forParam: SignTransactionParams.pubkey, fromURL: url)) { (response) -> (Void) in
-                switch response {
-                case .success(transactionXDR: var transaction):
-                    if transaction?.sourceAccount.ed25519AccountId == keyPair.accountId {
-                        try? transaction?.sign(keyPair: keyPair, network: .testnet)
-                        let callback = self.getValue(forParam: .callback, fromURL: url)
-                        self.submitTransaction(transactionXDR: transaction, callback: callback, keyPair: keyPair, completion: { (response) -> (Void) in
-                            completion(response)
-                        })
-                    } else {
-                        completion(.failure(error: HorizonRequestError.requestFailed(message: "Transaction's source account is no match for signer's public key!")))
-                    }
-                case .failure(error: let error):
-                    completion(.failure(error: error))
-                }
-            }
+            var transaction = transactionXDR
+            try? transaction.sign(keyPair: keyPair, network: .testnet)
+            let callback = self.getValue(forParam: .callback, fromURL: url)
+            self.submitTransaction(transactionXDR: transaction, callback: callback, keyPair: keyPair, completion: { (response) -> (Void) in
+                completion(response)
+            })
         } else {
             completion(.failure(error: HorizonRequestError.requestFailed(message: "TransactionXDR missing from url!")))
         }
@@ -278,75 +267,8 @@ public class URIScheme: NSObject {
         }
     }
     
-    /// Sets the sequence number for the transaction.
-    private func setTransactionXDRSequenceNr(transactionXDR: TransactionXDR, signerKeyPair: KeyPair, completion: @escaping SetupTransactionXDRClosure) {
-        sdk.accounts.getAccountDetails(accountId: transactionXDR.sourceAccount.ed25519AccountId) { (response) -> (Void) in
-            switch response {
-            case .success(details: let accountDetails):
-                let reconfiguredTransactionXDR = TransactionXDR(sourceAccount: transactionXDR.sourceAccount,
-                                                            seqNum: accountDetails.incrementedSequenceNumber(),
-                                                            cond: transactionXDR.cond,
-                                                            memo: transactionXDR.memo,
-                                                            operations: transactionXDR.operations)
-                completion(.success(transactionXDR: reconfiguredTransactionXDR))
-            case .failure(error: let error):
-                completion(.failure(error: error))
-            }
-        }
-    }
-    
-    /// Sets the source account and sequence number for the transaction.
-    private func setTransactionXDRSourceAndSequenceNr(transactionXDR: TransactionXDR, signerAccountID: String, completion: @escaping SetupTransactionXDRClosure) {
-        sdk.accounts.getAccountDetails(accountId: signerAccountID) { (response) -> (Void) in
-            switch response {
-            case .success(details: let accountDetails):
-                var muxedAccount = MuxedAccountXDR.ed25519(accountDetails.keyPair.publicKey.bytes)
-                if let muxi = try? signerAccountID.decodeMuxedAccount() {
-                    muxedAccount = muxi
-                }
-                let reconfiguredTransactionXDR = TransactionXDR(sourceAccount: muxedAccount,
-                                                            seqNum: accountDetails.incrementedSequenceNumber(),
-                                                            cond: transactionXDR.cond,
-                                                            memo: transactionXDR.memo,
-                                                            operations: transactionXDR.operations)
-                completion(.success(transactionXDR: reconfiguredTransactionXDR))
-            case .failure(error: let error):
-                completion(.failure(error: error))
-            }
-        }
-    }
-    
-    /// Checks and sets the transaction's source account and sequence number if they're missing.
-    private func setupTransactionXDR(transactionXDR: TransactionXDR, signerKeyPair: KeyPair, publicKey: String? = nil, completion: @escaping SetupTransactionXDRClosure) {
-        let sourceAccountIsEmpty = transactionXDR.sourceAccount.ed25519AccountId.isEmpty
-        let sequenceNumberIsEmpty = transactionXDR.seqNum == 0
-        let signerAccountID = publicKey ?? signerKeyPair.accountId
-        if sourceAccountIsEmpty && sequenceNumberIsEmpty {
-            setTransactionXDRSourceAndSequenceNr(transactionXDR: transactionXDR, signerAccountID: signerAccountID) { (response) -> (Void) in
-                switch response {
-                case .success(transactionXDR: let transaction):
-                    completion(.success(transactionXDR: transaction))
-                case .failure(error: let error):
-                    completion(.failure(error: error))
-                }
-            }
-            
-        } else if !sourceAccountIsEmpty && sequenceNumberIsEmpty {
-            setTransactionXDRSequenceNr(transactionXDR: transactionXDR, signerKeyPair: signerKeyPair) { (response) -> (Void) in
-                switch response {
-                case .success(transactionXDR: let transaction):
-                    completion(.success(transactionXDR: transaction))
-                case .failure(error: let error):
-                    completion(.failure(error: error))
-                }
-            }
-        } else {
-            completion(.success(transactionXDR: transactionXDR))
-        }
-    }
-    
     /// Gets the public key field value from the url.
-    private func getValue(forParam param: SignTransactionParams, fromURL url: String) -> String? {
+    public func getValue(forParam param: SignTransactionParams, fromURL url: String) -> String? {
         let fields = url.split(separator: "&")
         for field in fields {
             if field.hasPrefix("\(param)") {
