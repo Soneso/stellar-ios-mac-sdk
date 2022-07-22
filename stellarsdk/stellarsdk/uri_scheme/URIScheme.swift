@@ -237,11 +237,17 @@ public class URIScheme: NSObject {
     /// Sends the transaction to the network.
     private func submitTransaction(transactionXDR: TransactionXDR?, callback: String? = nil, keyPair: KeyPair, skipMemoRequiredCheck:Bool = false, completion: @escaping SubmitTransactionClosure) {
         if let transactionEncodedEnvelope = try? transactionXDR?.encodedEnvelope() {
-            if var callback = callback, callback.hasPrefix("uri:") {
-                callback = String(callback.dropLast(4))
+            if var callback = callback, callback.hasPrefix("url:") {
+                callback = String(callback.dropFirst(4))
                 let serviceHelper = ServiceHelper(baseURL: callback)
-                let data = try? JSONSerialization.data(withJSONObject: ["xdr":transactionEncodedEnvelope], options: .prettyPrinted)
-                serviceHelper.POSTRequestWithPath(path: "", body: data) { (response) -> (Void) in
+                var dataStr = ""
+                if let urlEncodedTransaction = transactionEncodedEnvelope.urlEncoded {
+                    dataStr = String("xdr=") + urlEncodedTransaction
+                } else {
+                    completion(.failure(error: HorizonRequestError.requestFailed(message: "error while urlencoding transaction")))
+                }
+                let data = dataStr.data(using: .utf8)
+                serviceHelper.POSTRequestWithPath(path: "", body: data, contentType: "application/x-www-form-urlencoded") { (response) -> (Void) in
                     let _ = serviceHelper
                     switch response {
                     case .success(_):

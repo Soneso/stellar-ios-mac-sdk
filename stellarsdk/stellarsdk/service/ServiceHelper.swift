@@ -122,10 +122,11 @@ class ServiceHelper: NSObject {
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
     /// - parameter body:  An optional parameter with the data that should be contained in the request body
+    /// - parameter contentType:  An optional parameter with the content type to set
     /// - parameter response:   The closure to be called upon response.
-    open func POSTRequestWithPath(path: String, jwtToken:String? = nil, body:Data? = nil, completion: @escaping ResponseClosure) {
+    open func POSTRequestWithPath(path: String, jwtToken:String? = nil, body:Data? = nil, contentType:String? = nil, completion: @escaping ResponseClosure) {
         let requestUrl = requestUrlWithPath(path: path)
-        requestFromUrl(url: requestUrl, method:.post, jwtToken:jwtToken, body:body, completion:completion)
+        requestFromUrl(url: requestUrl, method:.post, contentType:contentType, jwtToken:jwtToken, body:body, completion:completion)
     }
     
     /// Performs a patch request to the spcified path.
