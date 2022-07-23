@@ -14,7 +14,6 @@ public enum URISchemeErrors {
     case invalidOriginDomain
     case missingOriginDomain
     case missingSignature
-    case originDomainSignatureMismatch
     case invalidTomlDomain
     case invalidToml
     case tomlSignatureMissing

@@ -96,6 +96,7 @@ class URISchemeTestCase: XCTestCase {
                     let transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, cond: PreconditionsXDR.none, memo: .none, operations: [try! op.toXDR()])
                     let uriSchemeBuilder = URIScheme()
                     let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction)
+                    XCTAssert(uriScheme.hasPrefix("web+stellar:tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9O"))
                     self.signedTestUrl = uriScheme
                     self.unsignedTestUrl = uriScheme + self.originDomainParam
                     XCTAssert(true)
@@ -257,30 +258,6 @@ class URISchemeTestCase: XCTestCase {
              }
              wait(for: [expectation], timeout: 15)
          }
-    }
-    
-    func checkSourceAccountAndSignerAccountMismatch() {
-        XCTContext.runActivity(named: "checkSourceAccountAndSignerAccountMismatch") { activity in
-            let expectation = XCTestExpectation(description: "The transaction's source account is different than the sginer's public key")
-            let uriBuilder = URIScheme()
-            let keyPair = try! KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
-            
-            uriBuilder.signAndSubmitTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair) { (response) -> (Void) in
-                switch response {
-                case .failure(error: let error):
-                    switch error {
-                    case .requestFailed(let message):
-                        XCTAssertEqual("\(message)", "Transaction\'s source account is no match for signer\'s public key!")
-                    default:
-                        XCTAssert(false)
-                    }
-                default:
-                    XCTAssert(false)
-                }
-                expectation.fulfill()
-            }
-            wait(for: [expectation], timeout: 15)
-        }
     }
     
     func checkTransactionXDRMissing() {
