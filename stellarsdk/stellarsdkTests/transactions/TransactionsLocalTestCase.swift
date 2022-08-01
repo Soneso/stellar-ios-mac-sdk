@@ -111,9 +111,9 @@ class TransactionsLocalTestCase: XCTestCase {
         tx.sourceAccount: GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN
         tx.fee: 100
         tx.seqNum: 46489056724385793
-        tx.timeBounds._present: true
-        tx.timeBounds.minTime: 1535756672 (Fri Aug 31 16:04:32 PDT 2018)
-        tx.timeBounds.maxTime: 1567292672 (Sat Aug 31 16:04:32 PDT 2019)
+        tx.cond.type: PRECOND_TIME
+        tx.cond.timeBounds.minTime: 1535756672 (Sat Sep  1 01:04:32 CEST 2018)
+        tx.cond.timeBounds.maxTime: 1567292672 (Sun Sep  1 01:04:32 CEST 2019)
         tx.memo.type: MEMO_TEXT
         tx.memo.text: "Enjoy this transaction"
         tx.operations.len: 1
@@ -129,8 +129,11 @@ class TransactionsLocalTestCase: XCTestCase {
         """
 
         let envelope = try TxRep.fromTxRep(txRep:txRep);
-
         print(envelope)
+        
+        let xdr = "AAAAAgAAAAArFkuQQ4QuQY6SkLc5xxSdwpFOvl7VqKVvrfkPSqB+0AAAAGQApSmNAAAAAQAAAAEAAAAAW4nJgAAAAABdav0AAAAAAQAAABZFbmpveSB0aGlzIHRyYW5zYWN0aW9uAAAAAAABAAAAAAAAAAEAAAAAQF827djPIu+/gHK5hbakwBVRw03TjBN6yNQNQCzR97QAAAABVVNEAAAAAAAyUlQyIZKfbs+tUWuvK7N0nGSCII0/Go1/CpHXNW3tCwAAAAAX15OgAAAAAAAAAAFKoH7QAAAAQN77Tx+tHCeTJ7Va8YT9zd9z9Peoy0Dn5TSnHXOgUSS6Np23ptMbR8r9EYWSJGqFdebCSauU7Ddo3ttikiIc5Qw="
+        XCTAssert (xdr == envelope)
+        
         XCTAssert(true)
     }
     
@@ -152,15 +155,32 @@ class TransactionsLocalTestCase: XCTestCase {
         XCTAssert (xdr == xdr2)
     }
     
+    func testPreconditionsTxRep1() {
+        let xdr = "AAAAAgAAAQAAAAAAABODoXOW2Y6q7AdenusH1X8NBxVPFXEW+/PQFDiBQV05qf4DAAAAZAAKAJMAAAACAAAAAgAAAAEAAAAAYnk1lQAAAABobxaVAAAAAQANnJQAHN7UAAAAAQAKAJMAAAABAAAAAAAAAAEAAAABAAAAAgAAAACUkeBPpCcGYCoqeszK1YjZ1Ww1qY6fRI02d2hKG1nqvwAAAAHW9EEhELfDtkfmtBrXuEgEpTBlO8E/iQ2ZI/uNXLDV9AAAAAEAAAAEdGVzdAAAAAEAAAABAAABAAAAAAAAE4Ohc5bZjqrsB16e6wfVfw0HFU8VcRb789AUOIFBXTmp/gMAAAABAAABAAAAAAJPOttvlJHgT6QnBmAqKnrMytWI2dVsNamOn0SNNndoShtZ6r8AAAAAAAAAAADk4cAAAAAAAAAAATmp/gMAAABAvm+8CxO9sj4KEDwSS6hDxZAiUGdpIN2l+KOxTIkdI2joBFjT9B1U9YaORVDx4LTrLd4QM2taUuzXB51QtDQYDA=="
+        
+        let txrep = try! TxRep.toTxRep(transactionEnvelope: xdr)
+        print(txrep)
+        let xdr2 = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr2)
+        XCTAssert (xdr == xdr2)
+    }
+    
+    func testPreconditionsTxRep2() {
+        let xdr = "AAAAAgAAAQAAAAAAABODoa9e0m5apwHpUf3/HzJOJeQ5q7+CwSWrnHXENS8XoAfmAAAAZAAJ/s4AAAACAAAAAgAAAAEAAAAAYnk1lQAAAABobxaVAAAAAQANnJQAHN7UAAAAAQAJ/s4AAAABAAAAAAAAAAEAAAABAAAAAgAAAAJulGoyRpAB8JhKT+ffEiXh8Kgd8qrEXfiG3aK69JgQlAAAAAM/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAACABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAEAAAAEdGVzdAAAAAEAAAABAAABAAAAAAAAE4Ohr17SblqnAelR/f8fMk4l5Dmrv4LBJaucdcQ1LxegB+YAAAABAAABAAAAAAJPOttvipEw04NyfzwAhgQlf2S77YVGYbytcXKVNuM46+sMNAYAAAAAAAAAAADk4cAAAAAAAAAAARegB+YAAABAJG8wTpECV0rpq3TV9d26UL0MULmDxXKXGmKSJLiy9NCNJW3WMcrvrA6wiBsLHuCN7sIurD3o1/AKgntagup3Cw=="
+        
+        let txrep = try! TxRep.toTxRep(transactionEnvelope: xdr)
+        print(txrep)
+    }
+    
     func testCreateClaimableBalanceTxRep() {
         let txrep = """
         type: ENVELOPE_TYPE_TX
         tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
         tx.fee: 100
         tx.seqNum: 2916609211498497
-        tx.timeBounds._present: true
-        tx.timeBounds.minTime: 0
-        tx.timeBounds.maxTime: 0
+        tx.cond.type: PRECOND_TIME
+        tx.cond.timeBounds.minTime: 0
+        tx.cond.timeBounds.maxTime: 0
         tx.memo.type: MEMO_NONE
         tx.operations.len: 1
         tx.operations[0].sourceAccount._present: true
@@ -226,9 +246,9 @@ class TransactionsLocalTestCase: XCTestCase {
         tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
         tx.fee: 100
         tx.seqNum: 2916609211498497
-        tx.timeBounds._present: true
-        tx.timeBounds.minTime: 0
-        tx.timeBounds.maxTime: 0
+        tx.cond.type: PRECOND_TIME
+        tx.cond.timeBounds.minTime: 0
+        tx.cond.timeBounds.maxTime: 0
         tx.memo.type: MEMO_NONE
         tx.operations.len: 1
         tx.operations[0].sourceAccount._present: false
@@ -257,9 +277,9 @@ class TransactionsLocalTestCase: XCTestCase {
         tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
         tx.fee: 200
         tx.seqNum: 2916609211498497
-        tx.timeBounds._present: true
-        tx.timeBounds.minTime: 0
-        tx.timeBounds.maxTime: 0
+        tx.cond.type: PRECOND_TIME
+        tx.cond.timeBounds.minTime: 0
+        tx.cond.timeBounds.maxTime: 0
         tx.memo.type: MEMO_NONE
         tx.operations.len: 2
         tx.operations[0].sourceAccount._present: true
@@ -291,9 +311,9 @@ class TransactionsLocalTestCase: XCTestCase {
         tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
         tx.fee: 800
         tx.seqNum: 2916609211498497
-        tx.timeBounds._present: true
-        tx.timeBounds.minTime: 0
-        tx.timeBounds.maxTime: 0
+        tx.cond.type: PRECOND_TIME
+        tx.cond.timeBounds.minTime: 0
+        tx.cond.timeBounds.maxTime: 0
         tx.memo.type: MEMO_NONE
         tx.operations.len: 8
         tx.operations[0].sourceAccount._present: false
@@ -363,9 +383,9 @@ class TransactionsLocalTestCase: XCTestCase {
         tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
         tx.fee: 100
         tx.seqNum: 2916609211498497
-        tx.timeBounds._present: true
-        tx.timeBounds.minTime: 0
-        tx.timeBounds.maxTime: 0
+        tx.cond.type: PRECOND_TIME
+        tx.cond.timeBounds.minTime: 0
+        tx.cond.timeBounds.maxTime: 0
         tx.memo.type: MEMO_NONE
         tx.operations.len: 1
         tx.operations[0].sourceAccount._present: true
@@ -396,9 +416,9 @@ class TransactionsLocalTestCase: XCTestCase {
         tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
         tx.fee: 100
         tx.seqNum: 2916609211498497
-        tx.timeBounds._present: true
-        tx.timeBounds.minTime: 0
-        tx.timeBounds.maxTime: 0
+        tx.cond.type: PRECOND_TIME
+        tx.cond.timeBounds.minTime: 0
+        tx.cond.timeBounds.maxTime: 0
         tx.memo.type: MEMO_NONE
         tx.operations.len: 1
         tx.operations[0].sourceAccount._present: false
@@ -427,9 +447,9 @@ class TransactionsLocalTestCase: XCTestCase {
         tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
         tx.fee: 200
         tx.seqNum: 2916609211498497
-        tx.timeBounds._present: true
-        tx.timeBounds.minTime: 0
-        tx.timeBounds.maxTime: 0
+        tx.cond.type: PRECOND_TIME
+        tx.cond.timeBounds.minTime: 0
+        tx.cond.timeBounds.maxTime: 0
         tx.memo.type: MEMO_NONE
         tx.operations.len: 2
         tx.operations[0].sourceAccount._present: true
@@ -468,9 +488,9 @@ class TransactionsLocalTestCase: XCTestCase {
         tx.sourceAccount: GBCJLPKHE2QTXTYZNZG6K3OBRPHJHABT2MG6JLAMM5FOARHM2GL67VCW
         tx.fee: 200
         tx.seqNum: 2916609211498497
-        tx.timeBounds._present: true
-        tx.timeBounds.minTime: 0
-        tx.timeBounds.maxTime: 0
+        tx.cond.type: PRECOND_TIME
+        tx.cond.timeBounds.minTime: 0
+        tx.cond.timeBounds.maxTime: 0
         tx.memo.type: MEMO_NONE
         tx.operations.len: 2
         tx.operations[0].sourceAccount._present: true

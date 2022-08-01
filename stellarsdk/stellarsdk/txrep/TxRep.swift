@@ -42,7 +42,7 @@ public class TxRep: NSObject {
         addLine(key: prefix + "sourceAccount", value: transactionEnvelopeXDR.txSourceAccountId, lines: &lines)
         addLine(key: prefix + "fee", value: String(transactionEnvelopeXDR.txFee), lines: &lines)
         addLine(key: prefix + "seqNum", value: String(transactionEnvelopeXDR.txSeqNum), lines: &lines)
-        addTimeBounds(timeBounds: transactionEnvelopeXDR.txTimeBounds, prefix: prefix, lines: &lines)
+        addPreconditions(cond: transactionEnvelopeXDR.cond, prefix: prefix, lines: &lines)
         try addMemo(memo: transactionEnvelopeXDR.txMemo, prefix: prefix, lines: &lines)
         addOperations(operations: transactionEnvelopeXDR.txOperations, prefix: prefix, lines: &lines)
         addLine(key: prefix + "ext.v", value: "0", lines: &lines)
@@ -135,11 +135,10 @@ public class TxRep: NSObject {
             throw TxRepError.missingValue(key: key)
         }
         
-        let timeBounds:TimeBounds? = try getTimeBounds(dic: dic, prefix: prefix)
         let memo:Memo? = try getMemo(dic:dic, prefix:prefix)
         let operations:[Operation] = try getOperations(dic:dic, prefix:prefix)
         let maxOperationFee = operations.count > 1 ? fee /  UInt32(operations.count) : fee
-        let preconditions = TransactionPreconditions(timeBounds: timeBounds)
+        let preconditions = try getPreconditions(dic: dic, prefix: prefix)
         let transaction = try Transaction(sourceAccount: sourceAccount, operations: operations, memo: memo, preconditions: preconditions, maxOperationFee: maxOperationFee)
         
         prefix = isFeeBump ? "feeBump.tx.innerTx." : "";
@@ -1477,6 +1476,116 @@ public class TxRep: NSObject {
         return BumpSequenceOperation(bumpTo: bumpTo, sourceAccountId: sourceAccount?.accountId)
     }
     
+    private static func getPreconditions(dic:Dictionary<String,String>, prefix:String) throws -> TransactionPreconditions {
+        var timeBounds:TimeBounds? = nil
+        var precondPrefix = prefix + "cond."
+        var key = precondPrefix + "type"
+        if let type = dic[key] {
+            if "PRECOND_NONE" == type {
+                return TransactionPreconditions()
+            }
+            
+            if "PRECOND_TIME" == type {
+                if let min = dic[precondPrefix + "timeBounds.minTime"], let max = dic[precondPrefix + "timeBounds.maxTime"],
+                    let minTime = UInt64(min), let maxTime = UInt64(max) {
+                    timeBounds = TimeBounds(minTime: minTime, maxTime: maxTime)
+                } else {
+                    throw TxRepError.invalidValue(key: precondPrefix + "timeBounds")
+                }
+                if let tb = timeBounds {
+                    return TransactionPreconditions(timeBounds: tb)
+                } else {
+                    throw TxRepError.missingValue(key: precondPrefix + "timeBounds")
+                }
+            }
+
+            if "PRECOND_V2" != type {
+                throw TxRepError.invalidValue(key: key)
+            } else {
+                precondPrefix += "v2."
+            }
+            
+            timeBounds = try getTimeBounds(dic: dic, prefix: precondPrefix)
+            let ledgerBounds:LedgerBounds? = try getLedgerBounds(dic: dic, prefix: precondPrefix)
+            
+            var minSeqNr:Int64? = nil
+            key = precondPrefix + "minSeqNum._present"
+            if let present = dic[key], present == "true" {
+                if let strVal = dic[precondPrefix + "minSeqNum"], let iVal = Int64(strVal) {
+                    minSeqNr = iVal
+                } else {
+                    throw TxRepError.invalidValue(key: precondPrefix + "minSeqNum")
+                }
+            }
+            
+            var minSeqAge:UInt64? = nil
+            key = precondPrefix + "minSeqAge"
+            if let strVal = dic[key] {
+                if let iVal = UInt64(strVal) {
+                    minSeqAge = iVal
+                } else {
+                    throw TxRepError.invalidValue(key: precondPrefix + "minSeqNum")
+                }
+            } else {
+               throw TxRepError.missingValue(key: precondPrefix + "minSeqNum")
+            }
+            
+            var minSeqLedgerGap:UInt32? = nil
+            key = precondPrefix + "minSeqLedgerGap"
+            if let strVal = dic[key] {
+                if let iVal = UInt32(strVal) {
+                    minSeqLedgerGap = iVal
+                } else {
+                    throw TxRepError.invalidValue(key: precondPrefix + "minSeqLedgerGap")
+                }
+            } else {
+               throw TxRepError.missingValue(key: precondPrefix + "minSeqLedgerGap")
+            }
+            var extraSigners:[SignerKeyXDR] = [SignerKeyXDR]()
+            key = precondPrefix + "extraSigners.len"
+            if let sLengthStr = dic[key] {
+                if let sCount = Int(sLengthStr) {
+                    if sCount > 2 {
+                        throw TxRepError.invalidValue(key: key + " > 2")
+                    }
+                    for i in 0..<sCount{
+                        key = precondPrefix + "extraSigners[" + String(i) + "]"
+                        if let sKeyStr = dic[key] {
+                            do {
+                                if sKeyStr.hasPrefix("G") {
+                                    extraSigners.append(SignerKeyXDR.ed25519(WrappedData32(try sKeyStr.decodeEd25519PublicKey())))
+                                } else if sKeyStr.hasPrefix("T") {
+                                    extraSigners.append(SignerKeyXDR.preAuthTx(WrappedData32(try sKeyStr.decodePreAuthTx())))
+                                } else if sKeyStr.hasPrefix("X") {
+                                    extraSigners.append(SignerKeyXDR.hashX(WrappedData32(try sKeyStr.decodeSha256Hash())))
+                                } else if sKeyStr.hasPrefix("P") {
+                                    extraSigners.append(SignerKeyXDR.signedPayload(try sKeyStr.decodeSignedPayload()))
+                                } else {
+                                   throw TxRepError.invalidValue(key: key)
+                                }
+                            } catch {
+                                throw TxRepError.invalidValue(key: key)
+                            }
+                        } else {
+                            throw TxRepError.missingValue(key: key)
+                        }
+                    }
+                } else {
+                   throw TxRepError.invalidValue(key: key)
+                }
+            }
+            return TransactionPreconditions(ledgerBounds: ledgerBounds, timeBounds: timeBounds, minSeqNumber: minSeqNr, minSeqAge: minSeqAge!, minSeqLedgerGap: minSeqLedgerGap!, extraSigners: extraSigners)
+        }
+        else {
+            timeBounds = try getTimeBounds(dic: dic, prefix: prefix)
+            if let tB = timeBounds {
+                return TransactionPreconditions(timeBounds:tB)
+            } else {
+                throw TxRepError.missingValue(key: precondPrefix + "type")
+            }
+        }
+    }
+    
     private static func getTimeBounds(dic:Dictionary<String,String>, prefix:String) throws -> TimeBounds? {
         var timeBounds:TimeBounds? = nil
         let key = prefix + "timeBounds._present"
@@ -1489,6 +1598,20 @@ public class TxRep: NSObject {
             }
         }
         return timeBounds
+    }
+    
+    private static func getLedgerBounds(dic:Dictionary<String,String>, prefix:String) throws -> LedgerBounds? {
+        var ledgerBounds:LedgerBounds? = nil
+        let key = prefix + "ledgerBounds._present"
+        if let present = dic[key], present == "true" {
+            if let min = dic[prefix + "ledgerBounds.minLedger"], let max = dic[prefix + "ledgerBounds.maxLedger"],
+                let minLedger = UInt32(min), let maxLedger = UInt32(max) {
+                ledgerBounds = LedgerBounds(minLedger: minLedger, maxLedger: maxLedger)
+            } else {
+                throw TxRepError.invalidValue(key: prefix + "ledgerBounds")
+            }
+        }
+        return ledgerBounds
     }
     
     private static func getMemo(dic:Dictionary<String,String>, prefix:String) throws -> Memo? {
@@ -2123,6 +2246,63 @@ public class TxRep: NSObject {
     }
     private static func addLine(key:String, value:String, lines: inout [String]) -> Void {
         lines.append(key + ": " + value);
+    }
+    
+    private static func addPreconditions(cond:PreconditionsXDR?, prefix:String, lines: inout [String]) -> Void {
+        if let preCond = cond {
+            switch preCond {
+            case .none:
+                addLine(key: prefix + "cond.type", value: "PRECOND_NONE", lines: &lines)
+            case .time(let timeBoundsXDR):
+                addLine(key: prefix + "cond.type", value: "PRECOND_TIME", lines: &lines)
+                addLine(key: prefix + "cond.timeBounds.minTime", value: String(timeBoundsXDR.minTime), lines: &lines)
+                addLine(key: prefix + "cond.timeBounds.maxTime", value: String(timeBoundsXDR.maxTime), lines: &lines)
+            case .v2(let preconditionsV2XDR):
+                addLine(key: prefix + "cond.type", value: "PRECOND_V2", lines: &lines)
+                addTimeBounds(timeBounds: preconditionsV2XDR.timeBounds, prefix: prefix + "cond.v2.", lines: &lines)
+                addLedgerBounds(ledgerBounds: preconditionsV2XDR.ledgerBounds, prefix: prefix + "cond.v2.", lines: &lines)
+                
+                if let minSeqNum = preconditionsV2XDR.sequenceNumber {
+                    addLine(key: prefix + "cond.v2.minSeqNum._present", value: "true", lines: &lines)
+                    addLine(key: prefix + "cond.v2.minSeqNum", value: String(minSeqNum), lines: &lines)
+                } else {
+                    addLine(key: prefix + "cond.v2.minSeqNum._present", value: "false", lines: &lines)
+                }
+                addLine(key: prefix + "cond.v2.minSeqAge", value: String(preconditionsV2XDR.minSeqAge), lines: &lines)
+                addLine(key: prefix + "cond.v2.minSeqLedgerGap", value: String(preconditionsV2XDR.minSeqLedgerGap), lines: &lines)
+                addLine(key: prefix + "cond.v2.extraSigners.len", value: String(preconditionsV2XDR.extraSigners.count), lines: &lines)
+                var count = 0
+                for extraSigner in preconditionsV2XDR.extraSigners {
+                    switch extraSigner {
+                    case .ed25519(let data):
+                        addLine(key: prefix + "cond.v2.extraSigners[\(String(count))]" , value: try! data.wrapped.encodeEd25519PublicKey(), lines: &lines)
+                        break
+                    case .preAuthTx(let data):
+                        addLine(key: prefix + "cond.v2.extraSigners[\(String(count))]", value: try! data.wrapped.encodePreAuthTx(), lines: &lines)
+                        break
+                    case .hashX(let data):
+                        addLine(key: prefix + "cond.v2.extraSigners[\(String(count))]", value: try! data.wrapped.encodeSha256Hash(), lines: &lines)
+                        break
+                    case .signedPayload(let payload):
+                        addLine(key: prefix + "cond.v2.extraSigners[\(String(count))]", value: try! payload.encodeSignedPayload(), lines: &lines)
+                        break
+                    }
+                    count += 1
+                }
+            }
+        } else {
+            addLine(key: prefix + "cond.type", value: "PRECOND_NONE", lines: &lines)
+        }
+    }
+    
+    private static func addLedgerBounds(ledgerBounds:LedgerBoundsXDR?, prefix:String, lines: inout [String]) -> Void {
+        if let lb = ledgerBounds {
+            addLine(key: prefix + "ledgerBounds._present", value: "true", lines: &lines)
+            addLine(key: prefix + "ledgerBounds.minLedger", value: String(lb.minLedger), lines: &lines)
+            addLine(key: prefix + "ledgerBounds.maxLedger", value: String(lb.maxLedger), lines: &lines)
+        } else {
+            addLine(key: prefix + "ledgerBounds._present", value: "false", lines: &lines)
+        }
     }
     
     private static func addTimeBounds(timeBounds:TimeBoundsXDR?, prefix:String, lines: inout [String]) -> Void {
