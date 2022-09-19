@@ -23,6 +23,8 @@ public class AccountInformation {
         case horizonUrl = "HORIZON_URL"
         case accounts = "ACCOUNTS"
         case uriRequestSigningKey = "URI_REQUEST_SIGNING_KEY"
+        case directPaymentServer = "DIRECT_PAYMENT_SERVER"
+        case anchorQuoteServer = "ANCHOR_QUOTE_SERVER"
         
     }
     
@@ -59,7 +61,7 @@ public class AccountInformation {
     public let webAuthEndpoint: String?
     
     /// Stellar public key
-    /// The signing key is used for the compliance protocol
+    /// The signing key is used for SEP-3 Compliance Protocol (deprecated) and SEP-10 Authentication Protocol
     public let signingKey: String?
     
     /// url
@@ -67,12 +69,17 @@ public class AccountInformation {
     public let horizonUrl: String?
     
     /// list of G... strings
-    /// A list of Stellar accounts that are controlled by this domain. Names defined in NODE_NAMES can be used as well, prefixed with $.
+    /// A list of Stellar accounts that are controlled by this domain.
     public let accounts: [String]
     
-    
-    /// URI request signing key
+    /// The signing key is used for SEP-7 delegated signing
     public let uriRequestSigningKey: String?
+    
+    /// The server used for receiving SEP-31 direct fiat-to-fiat payments. Requires SEP-12 and hence a KYC_SERVER TOML attribute.
+    public let directPaymentServer: String?
+    
+    /// The server used for receiving SEP-38 requests.
+    public let anchorQuoteServer: String?
     
     public init(fromToml toml:Toml) {
         version = toml.string(Keys.version.rawValue)
@@ -87,5 +94,7 @@ public class AccountInformation {
         horizonUrl = toml.string(Keys.horizonUrl.rawValue)
         accounts = toml.array(Keys.accounts.rawValue) ?? []
         uriRequestSigningKey = toml.string(Keys.uriRequestSigningKey.rawValue)
+        directPaymentServer = toml.string(Keys.directPaymentServer.rawValue)
+        anchorQuoteServer = toml.string(Keys.anchorQuoteServer.rawValue)
     }
 }

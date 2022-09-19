@@ -37,6 +37,8 @@ public typealias TomlFileClosure = (_ response:TomlForDomainEnum) -> (Void)
 /// Alternately to specifying a currency in its content, stellar.toml can link out to a separate TOML file for the currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
 public typealias TomlCurrencyFromUrlClosure = (_ response:TomlCurrencyFromUrlEnum) -> (Void)
 
+/// see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md
+/// Supported version: 2.5.0
 public class StellarToml {
 
     public let accountInformation: AccountInformation

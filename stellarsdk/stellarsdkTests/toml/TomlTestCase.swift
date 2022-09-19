@@ -192,6 +192,10 @@ class TomlTestCase: XCTestCase {
             XCTAssertTrue(stellarToml.accountInformation.accounts.contains("GAENZLGHJGJRCMX5VCHOLHQXU3EMCU5XWDNU4BGGJFNLI2EL354IVBK7"))
             XCTAssertTrue(stellarToml.accountInformation.accounts.contains("GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U"))
             XCTAssertNil(stellarToml.accountInformation.uriRequestSigningKey)
+            XCTAssertTrue(stellarToml.accountInformation.directPaymentServer
+            == "https://test.direct-payment.com")
+            XCTAssertTrue(stellarToml.accountInformation.anchorQuoteServer
+            == "https://test.anchor-quote.com")
             
             let documentation = stellarToml.issuerDocumentation
             XCTAssertTrue(documentation.orgName == "Organization Name")
@@ -206,7 +210,8 @@ class TomlTestCase: XCTestCase {
             XCTAssertTrue(documentation.orgKeybase == "accountname")
             XCTAssertTrue(documentation.orgTwitter == "orgtweet")
             XCTAssertTrue(documentation.orgGithub == "orgcode")
-            XCTAssertTrue(documentation.orgOfficialEmail == "support@domain.com")
+            XCTAssertTrue(documentation.orgOfficialEmail == "info@domain.com")
+            XCTAssertTrue(documentation.orgSupportEmail == "support@domain.com")
             XCTAssertNil(documentation.orgLicensingAuthority)
             XCTAssertNil(documentation.orgLicenseType)
             XCTAssertNil(documentation.orgLicenseNumber)
@@ -279,8 +284,6 @@ class TomlTestCase: XCTestCase {
                 "GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U");
             XCTAssertTrue(validators[2].history ==
                 "http://history.domain.com/prd/core-live/core_live_003/");
-            
-            
         } catch {
             XCTAssertTrue(false)
         }
@@ -303,6 +306,8 @@ class TomlTestCase: XCTestCase {
             "GAENZLGHJGJRCMX5VCHOLHQXU3EMCU5XWDNU4BGGJFNLI2EL354IVBK7",
             "GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U"
             ]
+            DIRECT_PAYMENT_SERVER="https://test.direct-payment.com"
+            ANCHOR_QUOTE_SERVER="https://test.anchor-quote.com"
             
             [DOCUMENTATION]
             ORG_NAME="Organization Name"
@@ -317,7 +322,8 @@ class TomlTestCase: XCTestCase {
             ORG_KEYBASE="accountname"
             ORG_TWITTER="orgtweet"
             ORG_GITHUB="orgcode"
-            ORG_OFFICIAL_EMAIL="support@domain.com"
+            ORG_OFFICIAL_EMAIL="info@domain.com"
+            ORG_SUPPORT_EMAIL="support@domain.com"
             
             [[PRINCIPALS]]
             name="Jane Jedidiah Johnson"

@@ -83,7 +83,7 @@ public class CurrencyDocumentation {
     /// true if token can be redeemed for underlying asset, otherwise false
     public let isAssetAnchored: Bool?
     
-    /// Type of asset anchored. Can be fiat, crypto, stock, bond, commodity, realestate, or other.
+    /// Type of asset anchored. Can be fiat, crypto, nft, stock, bond, commodity, realestate, or other.
     public let anchorAssetType: String?
     
     /// If anchored token, asset that token is anchored to. E.g. USD, BTC, SBUX, Address of real-estate investment property.

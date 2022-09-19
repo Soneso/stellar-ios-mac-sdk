@@ -24,60 +24,64 @@ public class IssuerDocumentation {
         case orgTwitter = "ORG_TWITTER"
         case orgGithub = "ORG_GITHUB"
         case orgOfficialEmail = "ORG_OFFICIAL_EMAIL"
+        case orgSupportEmail = "ORG_SUPPORT_EMAIL"
         case orgLicensingAuthority = "ORG_LICENSING_AUTHORITY"
         case orgLicenseType = "ORG_LICENSE_TYPE"
         case orgLicenseNumber = "ORG_LICENSE_NUMBER"
     }
 
-    /// Legal name of your organization
+    /// Legal name of the organization
     public let orgName: String?
     
-    /// (may not apply) DBA of your organization
+    /// (may not apply) DBA of the organization
     public let orgDBA: String?
     
     /// uses https:
-    /// Your organization's official URL. Your stellar.toml must be hosted on the same domain.
+    /// The organization's official URL. Your stellar.toml must be hosted on the same domain.
     public let orgURL: String?
     
-    /// Your organization's logo
+    /// The organization's logo
     public let orgLogo: String?
     
-    /// Short description of your organization
+    /// Short description of the organization
     public let orgDescription: String?
     
-    /// Physical address for your organization
+    /// Physical address of the organization
     public let orgPhysicalAddress: String?
     
     /// https:// url
     /// URL on the same domain as your ORG_URL that contains an image or pdf official document attesting to your physical address. It must list your ORG_NAME or ORG_DBA as the party at the address. Only documents from an official third party are acceptable. E.g. a utility bill, mail from a financial institution, or business license.
     public let orgPhysicalAddressAttestation: String?
     
-    /// Your organization's phone number
+    /// The organization's phone number
     public let orgPhoneNumber: String?
     
     /// https:// url
     /// URL on the same domain as your ORG_URL that contains an image or pdf of a phone bill showing both the phone number and your organization's name.
     public let orgPhoneNumberAttestation: String?
     
-    /// A Keybase account name for your organization. Should contain proof of ownership of any public online accounts you list here, including your organization's domain.
+    /// A Keybase account name of the organization. Should contain proof of ownership of any public online accounts you list here, including your organization's domain.
     public let orgKeybase: String?
     
-    /// Your organization's Twitter account
+    /// The organization's Twitter account
     public let orgTwitter: String?
     
-    /// Your organization's Github account
+    /// The organization's Github account
     public let orgGithub: String?
     
-    /// An email where clients can contact your organization. Must be hosted at your ORG_URL domain.
+    /// An email where clients can contact the organization. Must be hosted at your ORG_URL domain.
     public let orgOfficialEmail: String?
     
-    /// Name of the authority or agency that licensed your organization, if applicable
+    /// An email that users can use to request support regarding the organizations Stellar assets or applications.
+    public let orgSupportEmail: String?
+    
+    /// Name of the authority or agency that licensed the organization, if applicable
     public let orgLicensingAuthority: String?
     
-    /// Type of financial or other license your organization holds, if applicable
+    /// Type of financial or other license the organization holds, if applicable
     public let orgLicenseType: String?
     
-    /// Official license number of your organization, if applicable
+    /// Official license number of the organization, if applicable
     public let orgLicenseNumber: String?
     
     public init(fromToml toml:Toml) {
@@ -94,6 +98,7 @@ public class IssuerDocumentation {
         orgTwitter = toml.string(Keys.orgTwitter.rawValue)
         orgGithub = toml.string(Keys.orgGithub.rawValue)
         orgOfficialEmail = toml.string(Keys.orgOfficialEmail.rawValue)
+        orgSupportEmail = toml.string(Keys.orgSupportEmail.rawValue)
         orgLicensingAuthority = toml.string(Keys.orgLicensingAuthority.rawValue)
         orgLicenseType = toml.string(Keys.orgLicenseType.rawValue)
         orgLicenseNumber = toml.string(Keys.orgLicenseNumber.rawValue)
