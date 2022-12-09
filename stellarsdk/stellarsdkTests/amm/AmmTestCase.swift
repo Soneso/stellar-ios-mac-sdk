@@ -114,7 +114,7 @@ class AmmTestCase: XCTestCase {
                     if let effect = effectResponse as? TrustlineCreatedEffectResponse {
                         if let poolId = effect.liquidityPoolId {
                             self.nonNativeLiquidityPoolId = poolId
-                            print("trustline created: \(poolId)")
+                            print("trustline created. pool id: \(poolId)")
                             expectation.fulfill()
                         }
                     }
@@ -173,7 +173,7 @@ class AmmTestCase: XCTestCase {
                 case .response(_, let effectResponse):
                     if let effect = effectResponse as? TrustlineCreatedEffectResponse {
                         if let poolId = effect.liquidityPoolId {
-                            print("trustline created: \(poolId)")
+                            print("trustline created, pool id: \(poolId)")
                             self.nativeLiquidityPoolId = poolId
                             expectation.fulfill()
                         }
@@ -536,23 +536,10 @@ class AmmTestCase: XCTestCase {
     func getLiquidityPools() {
         XCTContext.runActivity(named: "getLiquidityPools") { activity in
             let expectation = XCTestExpectation(description: "Get liquidity pools and parse their details successfuly")
-            guard let poolId = self.nonNativeLiquidityPoolId else {
-                print("one must run all tests")
-                XCTFail()
-                return
-            }
-            sdk.liquidityPools.getLiquidityPools(order:Order.ascending, limit: 100) { (response) -> (Void) in
+            sdk.liquidityPools.getLiquidityPools(order:Order.ascending, limit: 4) { (response) -> (Void) in
                 switch response {
                 case .success(let pools):
-
-                    var found = false
-                    for pool in pools.records {
-                        if pool.poolId == poolId {
-                            found = true
-                            break
-                        }
-                    }
-                    XCTAssert(found)
+                    XCTAssert(pools.records.count == 4)
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetLiquidityPools Test", horizonRequestError: error)
                     XCTFail()

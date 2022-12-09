@@ -197,7 +197,8 @@ class AccountLocalTestCase: XCTestCase {
                 XCTAssertEqual(accountDetails.numSponsored, 0)
                 XCTAssertEqual(accountDetails.numSponsoring, 0)
                 XCTAssertEqual(accountDetails.pagingToken, "GDB2ATEJPYNF2KNSK7YZ5C5J5IF2OLYMWCFQ2AAERYKV7Y5BE3XT34UC")
-                
+                XCTAssertEqual(accountDetails.lastModifiedLedger, 1421849)
+                XCTAssertEqual(accountDetails.lastModifiedTime, "2022-12-09T20:26:11Z")
                 XCTAssertNotNil(accountDetails.balances)
                 XCTAssertTrue(accountDetails.balances.count == 4)
                 var count = 0
@@ -330,6 +331,8 @@ class AccountLocalTestCase: XCTestCase {
             "account_id": "\(accountId)",
             "sequence": "30232549674450945",
             "subentry_count": 1,
+            "last_modified_ledger": 1421849,
+            "last_modified_time": "2022-12-09T20:26:11Z",
             "inflation_destination": "GDLZ7O5LPSDUOEAD3JBJKCSKCVAMNG7IIRKH57CXQYB46ILW2D74F26M",
             "home_domain": "soneso.com",
             "thresholds": {

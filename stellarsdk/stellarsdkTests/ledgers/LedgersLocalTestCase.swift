@@ -101,10 +101,10 @@ class LedgersLocalTestCase: XCTestCase {
             XCTAssertEqual(firstLedger?.id, "63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99")
             XCTAssertEqual(firstLedger?.pagingToken, "4294967296")
             XCTAssertEqual(firstLedger?.hashXdr, "63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99")
-            XCTAssertNil(firstLedger?.previousHashXdr)
+            XCTAssertEqual(firstLedger?.previousHashXdr, "5c809de2f203e578a5941a25946f9ed8760f437277cd3972d0db0ac320a6ba46")
             XCTAssertEqual(firstLedger?.sequenceNumber, 1)
-            XCTAssertNil(firstLedger?.successfulTransactionCount)
-            XCTAssertNil(firstLedger?.failedTransactionCount)
+            XCTAssertEqual(firstLedger?.successfulTransactionCount, 2)
+            XCTAssertEqual(firstLedger?.failedTransactionCount, 1)
             XCTAssertEqual(firstLedger?.operationCount, 0)
             let closedAt = DateFormatter.iso8601.date(from:"1970-01-01T00:00:00Z")
             XCTAssertEqual(firstLedger?.closedAt, closedAt)
@@ -113,7 +113,7 @@ class LedgersLocalTestCase: XCTestCase {
             XCTAssertEqual(firstLedger?.baseReserveInStroops, 100000000)
             XCTAssertEqual(firstLedger?.maxTxSetSize, 100)
             XCTAssertEqual(firstLedger?.protocolVersion, 0)
-            XCTAssertNil(firstLedger?.txSetOperationCount)
+            XCTAssertEqual(firstLedger?.txSetOperationCount, 4)
             XCTAssertEqual(firstLedger?.headerXdr, "AAAAAdy3Lr5Tev4ZYxKMei6LWkNgcQaWhEQWlPvuxqAYEUSST/2WLmbNl35twoFs78799llnNyPHs8u5xPtPvzoq9KEAAAAAVg4WeQAAAAAAAAAA3z9hmASpL9tAVxktxD3XSOp3itxSvEmM6AUkwBS4ERkHVi1wPY+0ie6g6YCletq0h1OSHiaWAqDQKJxtKEtlSAAAWsAN4r8dMwM+/wAAABDxA9f6AAAAAwAAAAAAAAAAAAAAZAX14QAAAAH0B1YtcD2PtInuoOmApXratIdTkh4mlgKg0CicbShLZUibK4xTjWYpfADpjyadb48ZEs52+TAOiCYDUIxrs+NjEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
             if (limit == 2) {
                 let secondLedger = ledgersResponse.records.last
@@ -149,8 +149,8 @@ class LedgersLocalTestCase: XCTestCase {
                 XCTAssertNotNil(secondLedger?.previousHashXdr)
                 XCTAssertEqual(secondLedger?.previousHashXdr, "63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99")
                 XCTAssertEqual(secondLedger?.sequenceNumber, 2)
-                XCTAssertNil(secondLedger?.successfulTransactionCount)
-                XCTAssertNil(secondLedger?.failedTransactionCount)
+                XCTAssertEqual(secondLedger?.successfulTransactionCount, 2)
+                XCTAssertEqual(secondLedger?.failedTransactionCount, 1)
                 XCTAssertEqual(secondLedger?.operationCount, 30)
                 let closedAt = DateFormatter.iso8601.date(from:"2017-03-20T17:09:53Z")
                 XCTAssertEqual(secondLedger?.closedAt, closedAt)
@@ -222,9 +222,12 @@ class LedgersLocalTestCase: XCTestCase {
                     "id": "63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99",
                     "paging_token": "4294967296",
                     "hash": "63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99",
+                    "prev_hash": "5c809de2f203e578a5941a25946f9ed8760f437277cd3972d0db0ac320a6ba46",
                     "sequence": 1,
+                    "successful_transaction_count": 2,
+                    "failed_transaction_count": 1,
                     "operation_count": 0,
-                    "tx_set_operation_count": null,
+                    "tx_set_operation_count": 4,
                     "closed_at": "1970-01-01T00:00:00Z",
                     "total_coins": "100000000000.0000000",
                     "fee_pool": "0.0000000",
@@ -265,8 +268,8 @@ class LedgersLocalTestCase: XCTestCase {
                             "hash": "6827e2e9d0e276395b7e54b3f8377de0b4e65fab914efbd0b520e8e1044de738",
                             "prev_hash": "63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99",
                             "sequence": 2,
-                            "successful_transaction_count": null,
-                            "failed_transaction_count": null,
+                            "successful_transaction_count": 2,
+                            "failed_transaction_count": 1,
                             "operation_count": 30,
                             "tx_set_operation_count": 22,
                             "closed_at": "2017-03-20T17:09:53Z",
