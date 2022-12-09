@@ -18,10 +18,10 @@ public class AccountSignerResponse: NSObject, Decodable {
     public var weight:Int
     
     /// Key representing the signer that can be different depending on the signer's type.
-    public var key:String?
+    public var key:String
     
     /// Type of the key e.g. ed25519_public_key
-    public var type:String?
+    public var type:String
     
     public var sponsor:String?
     
@@ -41,8 +41,8 @@ public class AccountSignerResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         weight = try values.decode(Int.self, forKey: .weight)
-        key = try values.decodeIfPresent(String.self, forKey: .key)
-        type = try values.decodeIfPresent(String.self, forKey: .type)
+        key = try values.decode(String.self, forKey: .key)
+        type = try values.decode(String.self, forKey: .type)
         sponsor = try values.decodeIfPresent(String.self, forKey: .sponsor)
     }
 }

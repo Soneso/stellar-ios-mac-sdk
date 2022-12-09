@@ -25,22 +25,22 @@ public class LedgerResponse: NSObject, Decodable {
     public var hashXdr:String
     
     /// The hash of the ledger that chronologically came before this one.
-    public var previousHashXdr:String?
+    public var previousHashXdr:String
     
     /// Sequence number of this ledger, suitable for use as the as the :id parameter for url templates that require a ledger number.
     public var sequenceNumber:Int64
 
     /// The number of successful transactions in this ledger.
-    public var successfulTransactionCount:Int?
+    public var successfulTransactionCount:Int
 
     /// The number of failed transactions in this ledger.
-    public var failedTransactionCount:Int?
+    public var failedTransactionCount:Int
     
     /// The number of operations in this ledger.
     public var operationCount:Int
     
     /// The total number of operations in the transactions set.
-    public var txSetOperationCount:Int?
+    public var txSetOperationCount:Int
     
     /// An ISO 8601 formatted string of when this ledger was closed.
     public var closedAt:Date
@@ -52,10 +52,10 @@ public class LedgerResponse: NSObject, Decodable {
     public var feePool:String
     
     /// The fee the network charges per operation in a transaction.
-    public var baseFeeInStroops:Int?
+    public var baseFeeInStroops:Int
 
     /// The reserve the network uses when calculating an account’s minimum balance.
-    public var baseReserveInStroops:Int?
+    public var baseReserveInStroops:Int
     
     /// The maximum number of transactions validators have agreed to process in a given ledger.
     public var maxTxSetSize:Int
@@ -100,17 +100,17 @@ public class LedgerResponse: NSObject, Decodable {
         id = try values.decode(String.self, forKey: .id)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         hashXdr = try values.decode(String.self, forKey: .hashXdr)
-        previousHashXdr = try values.decodeIfPresent(String.self, forKey: .previousHashXdr)
+        previousHashXdr = try values.decode(String.self, forKey: .previousHashXdr)
         sequenceNumber = try values.decode(Int64.self, forKey: .sequenceNumber)
-        successfulTransactionCount = try values.decodeIfPresent(Int.self, forKey: .successfulTransactionCount)
-        failedTransactionCount = try values.decodeIfPresent(Int.self, forKey: .failedTransactionCount)
+        successfulTransactionCount = try values.decode(Int.self, forKey: .successfulTransactionCount)
+        failedTransactionCount = try values.decode(Int.self, forKey: .failedTransactionCount)
         operationCount = try values.decode(Int.self, forKey: .operationCount)
-        txSetOperationCount = try values.decodeIfPresent(Int.self, forKey: .txSetOperationCount)
+        txSetOperationCount = try values.decode(Int.self, forKey: .txSetOperationCount)
         closedAt = try values.decode(Date.self, forKey: .closedAt)
         totalCoins = try values.decode(String.self, forKey: .totalCoins)
         feePool = try values.decode(String.self, forKey: .feePool)
-        baseFeeInStroops = try values.decodeIfPresent(Int.self, forKey: .baseFeeInStroops)
-        baseReserveInStroops = try values.decodeIfPresent(Int.self, forKey: .baseReserveInStroops)
+        baseFeeInStroops = try values.decode(Int.self, forKey: .baseFeeInStroops)
+        baseReserveInStroops = try values.decode(Int.self, forKey: .baseReserveInStroops)
         maxTxSetSize = try values.decode(Int.self, forKey: .maxTxSetSize)
         protocolVersion = try values.decode(Decimal.self, forKey: .protocolVersion)
         headerXdr = try values.decode(String.self, forKey: .headerXdr)

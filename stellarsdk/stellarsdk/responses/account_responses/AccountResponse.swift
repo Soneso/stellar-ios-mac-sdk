@@ -28,7 +28,7 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
     public var subentryCount:UInt
     
     /// A paging token, specifying where the returned records start from.
-    public var pagingToken:String?
+    public var pagingToken:String
 
     /// Account designated to receive inflation if any.
     public var inflationDestination:String?
@@ -57,6 +57,10 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
     public var sequenceLedger:Int?
     public var sequenceTime:String?
     
+    public var lastModifiedLedger:Int
+    
+    public var lastModifiedTime:String
+    
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
         case links = "_links"
@@ -76,6 +80,8 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
         case numSponsored = "num_sponsored"
         case sequenceLedger = "sequence_ledger"
         case sequenceTime = "sequence_time"
+        case lastModifiedLedger = "last_modified_ledger"
+        case lastModifiedTime = "last_modified_time"
     }
     
     /**
@@ -90,7 +96,7 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
         self.keyPair = try KeyPair(accountId: accountId)
         let sequenceNumberString = try values.decode(String.self, forKey: .sequenceNumber)
         sequenceNumber = Int64(sequenceNumberString)!
-        pagingToken = try values.decodeIfPresent(String.self, forKey: .pagingToken)
+        pagingToken = try values.decode(String.self, forKey: .pagingToken)
         subentryCount = try values.decode(UInt.self, forKey: .subentryCount)
         thresholds = try values.decode(AccountThresholdsResponse.self, forKey: .thresholds)
         flags = try values.decode(AccountFlagsResponse.self, forKey: .flags)
@@ -112,6 +118,8 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
         }
         sequenceLedger = try values.decodeIfPresent(Int.self, forKey: .sequenceLedger)
         sequenceTime = try values.decodeIfPresent(String.self, forKey: .sequenceTime)
+        lastModifiedLedger = try values.decode(Int.self, forKey: .lastModifiedLedger)
+        lastModifiedTime = try values.decode(String.self, forKey: .lastModifiedTime)
             
     }
     

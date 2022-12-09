@@ -21,7 +21,7 @@ public class OfferResponse: NSObject, Decodable {
     /// Paging token suitable for use as a cursor parameter.
     public var pagingToken:String
     
-    /// The Asset this offer wants to sell.
+    /// The seller of this offer.
     public var seller:String
     
     /// The Asset this offer wants to sell.
