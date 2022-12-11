@@ -912,6 +912,8 @@
 		83B4CBB8252883D000EEE55E /* ClaimantPredicateResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CBB6252883D000EEE55E /* ClaimantPredicateResponse.swift */; };
 		83B4CBC8252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */; };
 		83B4CBC9252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */; };
+		83C54D062945F23700CC1E8A /* QuickStartTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C54D052945F23700CC1E8A /* QuickStartTest.swift */; };
+		83C54D072945F23700CC1E8A /* QuickStartTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C54D052945F23700CC1E8A /* QuickStartTest.swift */; };
 		83CFD7A726F1375A001043B5 /* TradePrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CFD7A626F1375A001043B5 /* TradePrice.swift */; };
 		83CFD7A826F1375A001043B5 /* TradePrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CFD7A626F1375A001043B5 /* TradePrice.swift */; };
 		83D408DE26EB798E003A9C0F /* LiquidityPoolWithdrawOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D408DD26EB798E003A9C0F /* LiquidityPoolWithdrawOperation.swift */; };
@@ -1546,6 +1548,7 @@
 		83B4CBAC2528839500EEE55E /* ClaimantResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimantResponse.swift; sourceTree = "<group>"; };
 		83B4CBB6252883D000EEE55E /* ClaimantPredicateResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimantPredicateResponse.swift; sourceTree = "<group>"; };
 		83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimableBalanceLinksResponse.swift; sourceTree = "<group>"; };
+		83C54D052945F23700CC1E8A /* QuickStartTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickStartTest.swift; sourceTree = "<group>"; };
 		83CFD7A626F1375A001043B5 /* TradePrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradePrice.swift; sourceTree = "<group>"; };
 		83D408DD26EB798E003A9C0F /* LiquidityPoolWithdrawOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolWithdrawOperation.swift; sourceTree = "<group>"; };
 		83D408E826EB88A2003A9C0F /* LiquidityPoolsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolsService.swift; sourceTree = "<group>"; };
@@ -2103,6 +2106,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				83C54D042945F1DD00CC1E8A /* docs */,
 				8310BDCC26EB6183004D3EF2 /* amm */,
 				74723338219EE3D500343E25 /* web_authenticator */,
 				746D78FD21959FD90008AA79 /* toml */,
@@ -2673,6 +2677,14 @@
 				83B4CBB6252883D000EEE55E /* ClaimantPredicateResponse.swift */,
 			);
 			path = claimable_balances_responses;
+			sourceTree = "<group>";
+		};
+		83C54D042945F1DD00CC1E8A /* docs */ = {
+			isa = PBXGroup;
+			children = (
+				83C54D052945F23700CC1E8A /* QuickStartTest.swift */,
+			);
+			path = docs;
 			sourceTree = "<group>";
 		};
 		83D408E726EB8835003A9C0F /* liquidity_pool_responses */ = {
@@ -3759,6 +3771,7 @@
 				745DF56B205304AC000D3660 /* AccountResponsesMock.swift in Sources */,
 				745DF56C205304AC000D3660 /* AccountRemoteTestCase.swift in Sources */,
 				745DF56D205304AC000D3660 /* DataForAccountLocalTestCase.swift in Sources */,
+				83C54D072945F23700CC1E8A /* QuickStartTest.swift in Sources */,
 				83FE811323F0856600F4A13D /* FeeStatsRemoteTestCase.swift in Sources */,
 				746D7905219AE2BE0008AA79 /* TomlResponseSignatureMismatchMock.swift in Sources */,
 				745DF56E205304AC000D3660 /* DataForAccountResponsesMock.swift in Sources */,
@@ -4365,6 +4378,7 @@
 				8357A91F203B768A00A144A9 /* DataForAccountRemoteTestCase.swift in Sources */,
 				83EA4763203C7F650031F13E /* LedgersLocalTestCase.swift in Sources */,
 				43D35B1020348EF800C8BDBC /* PaymentPathsTestCase.swift in Sources */,
+				83C54D062945F23700CC1E8A /* QuickStartTest.swift in Sources */,
 				8369723E202A708300398A98 /* AccountResponsesMock.swift in Sources */,
 				430BE2E92035A33D00E6AB97 /* PriceTestCase.swift in Sources */,
 				744A84B72143F02F0086B8FC /* WithdrawResponseMock.swift in Sources */,

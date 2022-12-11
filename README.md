@@ -309,7 +309,7 @@ Example "send payment":
 ```swift
 // create the payment operation
 let paymentOperation = PaymentOperation(sourceAccountId: sourceAccountId,
-                                        destinationId: destinationAccountId,
+                                        destinationAccountId: destinationAccountId,
                                         asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                         amount: 1.5)
                                         
