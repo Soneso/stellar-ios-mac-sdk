@@ -156,15 +156,14 @@ On the other hand, if you would like to create an account in the public net, you
 ```swift
 
 // build the operation
-let createAccount = CreateAccountOperation(sourceAccount: nil, 
-                                           destination: destinationKeyPair, 
+let createAccount = try CreateAccountOperation(sourceAccountId: nil,
+                                           destinationAccountId: destinationAccountId,
                                            startBalance: 2.0)
 
 // build the transaction
 let transaction = try Transaction(sourceAccount: accountResponse,
                                      operations: [createAccount],
-                                     memo: Memo.none,
-                                     timeBounds:nil)
+                                     memo: Memo.none)
                                      
 // sign the transaction
 try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
@@ -204,7 +203,7 @@ sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Vo
         print("sequence number: \(accountDetails.sequenceNumber)")
 
         for signer in accountDetails.signers {
-            print("signer public key: \(signer.publicKey)")
+            print("signer public key: \(signer.key)")
         }
 
         print("auth required: \(accountDetails.flags.authRequired)")
@@ -247,6 +246,13 @@ sdk.payments.getPayments(order:Order.descending, limit:10) { response in
 ```
 You can use the parameters:`limit`, `order`, and `cursor` to customize the query. You can also get most recent payments for accounts, ledgers and transactions. 
 
+For example get payments for account:
+
+```swift
+sdk.payments.getPayments(forAccount:keyPair.accountId, order:Order.descending, limit:10)
+```
+
+
 Horizon has SSE support for push data. You can use it like this:
 
 first define your stream item somwhere to be able to hold the reference:
@@ -256,9 +262,9 @@ var streamItem:OperationsStreamItem? = nil
 
 then create, assign and use it:
 ```swift
-streamItem = sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountKeyPair.accountId, cursor: nil))
+streamItem = sdk.payments.stream(for: .paymentsForAccount(account: destinationAccountId, cursor: nil))
 
-streamItem?.onReceive { (response) -> (Void) in
+streamItem.onReceive { (response) -> (Void) in
     switch response {
     case .open:
         break
@@ -302,16 +308,15 @@ Example "send payment":
 
 ```swift
 // create the payment operation
-let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
-                                        destination: destinationAccountKeyPair,
+let paymentOperation = PaymentOperation(sourceAccountId: sourceAccountId,
+                                        destinationId: destinationAccountId,
                                         asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                         amount: 1.5)
                                         
 // create the transaction containing the payment operation                                        
 let transaction = try Transaction(sourceAccount: accountResponse,
                                   operations: [paymentOperation],
-                                  memo: Memo.none,
-                                  timeBounds:nil)
+                                  memo: Memo.none)
 
 // sign the transaction
 try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
@@ -321,7 +326,7 @@ try sdk.transactions.submitTransaction(transaction: transaction) { (response) ->
     switch response {
       case .success(_):
           // ...
-      case .failure(_):
+      default:
           // ...
     }
 }
@@ -512,31 +517,23 @@ The Stellar Ecosystem Proposal [SEP-007](https://github.com/stellar/stellar-prot
 Generate a URI that will serve as a request to sign a transaction. The URI (request) will typically be signed by the user’s trusted wallet where he stores his secret key(s).
 
 ```swift
-sdk.accounts.getAccountDetails(accountId: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q") { (response) -> (Void) in
-    switch response {
-    case .success(let data):
-        // create the payment operation
-        let paymentOperation = PaymentOperation(sourceAccount: sourceAccountKeyPair,
-                                                destination: destinationAccountKeyPair,
-                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
-                                                amount: 1.5)
-        
-        // create the transaction containing the payment operation
-        let transaction = try Transaction(sourceAccount: accountResponse,
-                                          operations: [paymentOperation],
-                                          memo: Memo.none,
-                                          timeBounds:nil)
-        // create the URIScheme object
-        let uriSchemeBuilder = URIScheme()
-        
-        // get the URI with your transactionXDR
-	// more params can be added to the url, check method definition
-        let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction.transactionXDR, callBack: "your_callback_api.com")
-        
-    case .failure(let error):
-        //
-    }
-}
+// create the payment operation
+let paymentOperation = try! PaymentOperation(sourceAccountId: sourceAccountId,
+                                        destinationAccountId: destinationAccountId,
+                                        asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                        amount: 1.5)
+
+// create the transaction containing the payment operation
+let transaction = try! Transaction(sourceAccount: accountResponse,
+                                  operations: [paymentOperation],
+                                  memo: Memo.none)
+// create the URIScheme object
+let uriSchemeBuilder = URIScheme()
+
+// get the URI with your transactionXDR
+// more params can be added to the url, check method definition
+let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction.transactionXDR, callBack: "your_callback_api.com")
+print (uriScheme);
 ```
 
 #### 7.2 Generate a URI for pay operation
@@ -546,7 +543,8 @@ Generate a URI that will serve as a request to pay a specific address with a spe
 ```swift
 let uriSchemeBuilder = URIScheme()
 // more params can be added to the url, check method definition
-let uriScheme = uriSchemeBuilder.getPayOperationURI(accountID: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q", amount: 100, assetCode: "BTC", callBack: "your_callback_api.com")
+let uriScheme = uriSchemeBuilder.getPayOperationURI(destination: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q", amount: 100, assetCode: "BTC", assetIssuer:"GC2PIUYXSD23UVLR5LZJPUMDREQ3VTM23XVMERNCHBRTRVFKWJUSRON5", callBack: "your_callback_api.com")
+print (uriScheme);
 ```
 
 #### 7.3 Sign a transaction from a given URI and send it to the network
