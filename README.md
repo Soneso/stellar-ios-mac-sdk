@@ -149,6 +149,8 @@ sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Vo
 }
 ```
 
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L18)
+ 
 #### 2.2 Public net
 
 On the other hand, if you would like to create an account in the public net, you should buy some Stellar Lumens from an exchange. When you withdraw the Lumens into your new account, the exchange will automatically create the account for you. However, if you want to create an account from another account of your own, you may run the following code:
@@ -178,6 +180,8 @@ try sdk.transactions.submitTransaction(transaction: transaction) { (response) ->
     }
 }
 ```
+
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L43)
 
 ### 3. Check account
 #### 3.1 Basic info
@@ -218,6 +222,8 @@ sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Vo
 }
 ```
 
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L106)
+
 #### 3.2 Check payments
 
 You can check the most recent payments by:
@@ -244,6 +250,8 @@ sdk.payments.getPayments(order:Order.descending, limit:10) { response in
     }
 }
 ```
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L158)
+
 You can use the parameters:`limit`, `order`, and `cursor` to customize the query. You can also get most recent payments for accounts, ledgers and transactions. 
 
 For example get payments for account:
@@ -252,6 +260,7 @@ For example get payments for account:
 sdk.payments.getPayments(forAccount:keyPair.accountId, order:Order.descending, limit:10)
 ```
 
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L188)
 
 Horizon has SSE support for push data. You can use it like this:
 
@@ -288,6 +297,8 @@ later you can close the stream item:
 ```swift
 streamItem.close()
 ```
+
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L222)
 
 #### 3.3 Check others
 
@@ -332,6 +343,8 @@ try sdk.transactions.submitTransaction(transaction: transaction) { (response) ->
 }
 ```
 
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L299)
+
 Get a transaction envelope from an XDR string:
 
 ```swift
@@ -343,6 +356,7 @@ do {
     print("Invalid xdr string")
 }
 ```
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L359)
 
 Get a transaction object from an XDR string:
 
@@ -536,6 +550,8 @@ let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transacti
 print (uriScheme);
 ```
 
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L372)
+
 #### 7.2 Generate a URI for pay operation
 
 Generate a URI that will serve as a request to pay a specific address with a specific asset, regardless of the source asset used by the payer.
@@ -546,6 +562,8 @@ let uriSchemeBuilder = URIScheme()
 let uriScheme = uriSchemeBuilder.getPayOperationURI(destination: "GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q", amount: 100, assetCode: "BTC", assetIssuer:"GC2PIUYXSD23UVLR5LZJPUMDREQ3VTM23XVMERNCHBRTRVFKWJUSRON5", callBack: "your_callback_api.com")
 print (uriScheme);
 ```
+
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L424)
 
 #### 7.3 Sign a transaction from a given URI and send it to the network
 
