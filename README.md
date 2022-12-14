@@ -153,7 +153,7 @@ See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/
  
 #### 2.2 Public net
 
-On the other hand, if you would like to create an account in the public net, you should buy some Stellar Lumens from an exchange. When you withdraw the Lumens into your new account, the exchange will automatically create the account for you. However, if you want to create an account from another account of your own, you may run the following code:
+On the other hand, if you would like to create an account in the public net, you should buy some Stellar Lumens from an exchange. See [Stellar's lumen buying guide](https://www.stellar.org/lumens/exchanges). When you withdraw the Lumens into your new account, the exchange will automatically create the account for you. However, if you want to create an account from another account of your own, you may run the following code:
 
 ```swift
 
