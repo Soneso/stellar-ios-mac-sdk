@@ -264,7 +264,7 @@ See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/
 
 Horizon has SSE support for push data. You can use it like this:
 
-first define your stream item somwhere to be able to hold the reference:
+first define your stream item somewhere to be able to hold the reference:
 ```swift
 var streamItem:OperationsStreamItem? = nil
 ```
@@ -302,7 +302,7 @@ See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/
 
 #### 3.3 Check others
 
-Just like payments, you you check `assets`, `transactions`, `effects`, `offers`, `operations`, `ledgers` etc.  by:
+Just like payments, you can check `assets`, `transactions`, `effects`, `offers`, `operations`, `ledgers` etc.  by:
 
 ```swift
 sdk.assets.getAssets()
@@ -636,7 +636,7 @@ Our SDK is also used by the [LOBSTR Wallet](https://lobstr.co).
 
 ## Stellar Ecosystem Proposals (SEPs) implemented
 
-- [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md) - Stellar Toml
+- [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md) - Stellar Info File (Toml)
 - [SEP-0002](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md) - Federation protocol
 - [SEP-0005](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md) - Key Derivation Methods for Stellar Accounts
 - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md) - Anchor/Client interoperability

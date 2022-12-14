@@ -58,15 +58,15 @@ sdk.accounts.getAccountDetails(accountId: "GAWE7LGEFNRN3QZL5ILVLYKKKGGVYCXXDCIBU
  
 ```
 
-As you can see, you first need an account id to be able to query the account details. The account id provided in the example above may not represent an existing account at the time you are trying to test this. It is so, because the testnet is reset every 3 month. We recommend you to generate your own account first, by using a very hepful tool named [Stellar Laboratory](https://laboratory.stellar.org/#account-creator?network=test).
+As you can see, you first need an account id to be able to query the account details. The account id provided in the example above may not represent an existing account at the time you are trying to test this. It is so, because the testnet is reset every 3 month. We recommend you to generate your own account first, by using a very helpful tool named [Stellar Laboratory](https://laboratory.stellar.org/#account-creator?network=test).
 
-To do so, first generate a new keypair, wich represents the public key/account id and secret seed of a new account to be created (do not forget to save them somewhere). Next, fund the acount on the testnet by using the "freindbot" provided by Stellar Laboratory.
+To do so, first generate a new keypair, which represents the public key/account id and secret seed of a new account to be created (do not forget to save them somewhere). Next, fund the account on the testnet by using the "freindbot" provided by Stellar Laboratory.
 
 Now that you have your new account on the test network, you can query it's details. First, give it a try in Stellar Laboratory. Navigate to `Explore Endpoints - Accounts - Single Account`, paste your new account id there and request the details. In the ```json``` response that you receive, you can see all details of the account. Check the [Stellar API Docs](https://developers.stellar.org/api/resources/accounts/) to learn more about account details.
 
 Next, you can try to query the details by using the sdk as shown in the example above. First, replace the account id in the code with your own and then execute the code. 
 
-The ```getAccountDetails``` function replies by using a completition handler. In case of success, you receive an [AccountResponse](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdk/responses/account_responses/AccountResponse.swift) object, holding the account details of the queried account. In the example above, we print it's account id, it's sequence number and the balances it posesses. 
+The ```getAccountDetails``` function replies by using a completion handler. In case of success, you receive an [AccountResponse](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdk/responses/account_responses/AccountResponse.swift) object, holding the account details of the queried account. In the example above, we print it's account id, it's sequence number and the balances it possesses. 
 
 As mentioned above, the sdk provides many services similar to the account service that allow you to query the data from the Stellar Blockchain. At the time of writing, following services are available:
 
@@ -88,7 +88,7 @@ As mentioned above, the sdk provides many services similar to the account servic
 
 ## Building and submitting transactions
 
-Actions that change things in Stellar, like sending payments, changing your account, or making offers to trade various kinds of currencies, are called operations. In order to actually perform an operation, you create a transaction, which is just a group of operations accompanied by some extra information, like what account is making the transaction and a cryptographic signature to verify that the transaction is authentic. You can use the[Transaction](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdk/sdk/Transaction.swift) class to create the requests to send to Horizon. 
+Actions that change things in Stellar, like sending payments, changing your account, or making offers to trade various kinds of currencies, are called operations. To actually perform an operation, you create a transaction, which is just a group of operations accompanied by some extra information, like what account is making the transaction and a cryptographic signature to verify that the transaction is authentic. You can use the [Transaction](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdk/sdk/Transaction.swift) class to create the requests to send to Horizon. 
 
 Stellar stores and communicates transaction data in a binary format called XDR. Luckily, the Stellar SDK provide tools that take care of all that. 
 

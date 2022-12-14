@@ -66,7 +66,7 @@ However, you’ll want to know that someone has actually paid you. If you are an
 
 A simple program that watches the network for payments and prints each one might look like:
 
-First define your stream item somwhere to be able to hold the reference:
+First define your stream item somewhere to be able to hold the reference:
 ```swift
 var streamItem:OperationsStreamItem? = nil
 ```

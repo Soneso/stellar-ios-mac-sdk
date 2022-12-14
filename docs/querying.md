@@ -4,13 +4,13 @@ This SDK supports all endpoints exposed by [Horizon](https://developers.stellar.
 
 The Horizon API serves as a bridge between apps and Stellar Core. Projects like wallets, decentralized exchanges, and asset issuers use Horizon to submit transactions, query an account balance, or stream events like transactions to an account.
 
-Queriying Horizon is one of the main uses of this SDK. The SDK takes care of the underlaying communication with Horizon and converts the received data into easy to use response objects.
+Querying Horizon is one of the main uses of this SDK. The SDK takes care of the underlaying communication with Horizon and converts the received data into easy-to-use response objects.
 
 **Resources**
 
 Data on the Stellar ledger is organized according to resources. Each resource has several different endpoints provided by Horizon.
 
-Ressource types are: Ledgers, Transactions, Operations, Effects, Accounts, Offers, Claimable Balances, Trades, Assets, Liquidity Pools.
+Resource types are: Ledgers, Transactions, Operations, Effects, Accounts, Offers, Claimable Balances, Trades, Assets, Liquidity Pools.
 
 The SDK covers all endpoints by providing so called services. 
 
@@ -45,7 +45,7 @@ sdk.accounts.getAccountDetails(accountId: "GAWE7LGEFNRN3QZL5ILVLYKKKGGVYCXXDCIBU
  
 ```
 
-The ```getAccountDetails``` function replies by using a completition handler. In case of success, you receive an [AccountResponse](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdk/responses/account_responses/AccountResponse.swift) object, holding the account details of the queried account. In the example above, we print it's account id, it's sequence number and the balances it posesses. 
+The ```getAccountDetails``` function replies by using a completion handler. In case of success, you receive an [AccountResponse](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdk/responses/account_responses/AccountResponse.swift) object, holding the account details of the queried account. In the example above, we print it's account id, its sequence number and the balances it possesses. 
 
 As mentioned above, the sdk provides many services similar to the account service that allow you to query the data from the Stellar Blockchain. At the time of writing, following services are available:
 

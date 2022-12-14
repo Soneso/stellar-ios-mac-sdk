@@ -3,7 +3,7 @@
 
 Assets are the units that are traded on the Stellar Network.
 
-Other than lumens (see below) all assets consists of an type, code, and issuer.
+Other than lumens (see below) all assets consist of an type, code, and issuer.
 
 Lumens (XLM) are the native currency of the network. A lumen is the only asset type that can be used on the Stellar network that doesn’t require an issuer or a trustline.
 
@@ -122,7 +122,7 @@ You can read more about issuing assets on the official [Stellar developer site](
 
 ### Issue an asset tutorial
 
-This tutorial is based on the example from the offical Stellar developer site wich can be found [here](https://developers.stellar.org/docs/issuing-assets/how-to-issue-an-asset).
+This tutorial is based on the example from the official Stellar developer site which can be found [here](https://developers.stellar.org/docs/issuing-assets/how-to-issue-an-asset).
 
 **1. Create issuing account and an object to represent the new asset**
 
@@ -176,6 +176,6 @@ You can find the full working code as a testcase [here](https://github.com/Sones
 
 How to publish information about an asset is described on the official Stellar developer site [here](https://developers.stellar.org/docs/issuing-assets/publishing-asset-info).
 
-This SDK supports the parsing of Stellar Info Files as described in [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md). The description on how to use the integrated parser of the SDK can be found [here](sep-0001.md).
+This SDK supports the parsing of Stellar Info Files as described in [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md). The description on how to use the integrated parser of the SDK can be found [here](seps#stellar-info-file---sep-0001.md).
 
 Next chapter is [Querying data](querying.md).

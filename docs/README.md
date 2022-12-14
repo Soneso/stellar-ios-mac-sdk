@@ -1,7 +1,7 @@
 # Welcome
 
 
-This Swift Stellar SDK helps iOS and macOS developers to interact with the Stellar Blockchain and it's Ecosystem. 
+This Swift Stellar SDK helps iOS and macOS developers to interact with the Stellar Blockchain and its Ecosystem. 
 
 The SDK has three main uses: 
 
@@ -11,7 +11,7 @@ The SDK has three main uses:
 
 The goal of this documentation is to provide you knowledge of how to use the different functions of SDK in your app. 
 
-Before you start, please familiarize yourself with the basic concepts of Stellar. Take a look at the [Stellar deleloper site](https://developers.stellar.org/docs/).
+Before you start, please familiarize yourself with the basic concepts of Stellar. Take a look at the [Stellar developer site](https://developers.stellar.org/docs/).
 
 We also recommend that you use the [Stellar Laboratory](https://laboratory.stellar.org/) tools while learning to implement applications that access the Stellar Network. It provides a set of tools that enables you to try out and learn about the Stellar Network. With the laboratory you can manually build transactions, sign them, and submit them to the network via the browser. It can also make requests to any of the Horizon endpoints.
 

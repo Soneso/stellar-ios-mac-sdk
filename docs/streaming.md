@@ -4,7 +4,7 @@ This SDK provides streaming support for all [Horizon endpoints](https://develope
 
 It is possible to use the streaming mode for example to listen for new payments for a given account as transactions happen in the Stellar network. You can use it like this:
 
-First define your stream item somwhere to be able to hold the reference:
+First define your stream item somewhere to be able to hold the reference:
 ```swift
 var streamItem:OperationsStreamItem? = nil
 ```
