@@ -10,7 +10,7 @@ import Foundation
 
 public struct OperationXDR: XDRCodable {
     public var sourceAccount: MuxedAccountXDR?
-    public let body: OperationBodyXDR
+    public var body: OperationBodyXDR
     
     @available(*, deprecated, message: "use init(sourceAccount: MuxedAccountXDR?, body: OperationBodyXDR) instead")
     public init(sourceAccount: PublicKey?, body: OperationBodyXDR) {
@@ -44,5 +44,19 @@ public struct OperationXDR: XDRCodable {
         }
         
         try container.encode(body)
+    }
+    
+    public mutating func setFootprint(footprint:Footprint) {
+        var invokeHostFuncOp:InvokeHostFunctionOpXDR? = nil
+        switch body {
+            case .invokeHostFunction(let value):
+                invokeHostFuncOp = value
+            default:
+                break
+        }
+        if invokeHostFuncOp != nil {
+            invokeHostFuncOp!.ledgerFootprint = footprint.xdrFootprint
+            self.body = OperationBodyXDR.invokeHostFunction(invokeHostFuncOp!)
+        }
     }
 }

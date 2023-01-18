@@ -10,6 +10,10 @@ import Foundation
 
 public class StellarSDK: NSObject {
     
+    public static let publicNetUrl = "https://horizon.stellar.org"
+    public static let testNetUrl = "https://horizon-testnet.stellar.org"
+    public static let futureNetUrl = "https://horizon-futurenet.stellar.org"
+    
     public var horizonURL: String
     
     public var accounts: AccountService
@@ -29,7 +33,7 @@ public class StellarSDK: NSObject {
     public var liquidityPools: LiquidityPoolsService
     
     public override init() {
-        horizonURL = "https://horizon-testnet.stellar.org"
+        horizonURL = StellarSDK.testNetUrl
         
         accounts = AccountService(baseURL: horizonURL)
         assets = AssetsService(baseURL: horizonURL)
@@ -66,5 +70,17 @@ public class StellarSDK: NSObject {
         paymentPaths = PaymentPathsService(baseURL: horizonURL)
         claimableBalances = ClaimableBalancesService(baseURL: horizonURL)
         liquidityPools = LiquidityPoolsService(baseURL: horizonURL)
+    }
+    
+    public static func publicNet() -> StellarSDK {
+        return StellarSDK(withHorizonUrl: StellarSDK.publicNetUrl)
+    }
+    
+    public static func testNet() -> StellarSDK {
+        return StellarSDK(withHorizonUrl: StellarSDK.testNetUrl)
+    }
+    
+    public static func futureNet() -> StellarSDK {
+        return StellarSDK(withHorizonUrl: StellarSDK.futureNetUrl)
     }
 }

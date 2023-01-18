@@ -14,7 +14,7 @@ public struct TransactionXDR: XDRCodable {
     public let seqNum: Int64
     public let cond: PreconditionsXDR
     public let memo: MemoXDR
-    public let operations: [OperationXDR]
+    public var operations: [OperationXDR]
     public let reserved: Int32
     
     private var signatures = [DecoratedSignatureXDR]()

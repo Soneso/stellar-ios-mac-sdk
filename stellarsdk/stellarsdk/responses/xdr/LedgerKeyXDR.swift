@@ -8,6 +8,11 @@
 
 import Foundation
 
+public enum ConfigSettingID: Int32 {
+    case contractMaxSize = 0
+}
+
+
 public enum LedgerKeyXDR: XDRCodable {
     case account (LedgerKeyAccountXDR)
     case trustline (LedgerKeyTrustLineXDR)
@@ -15,6 +20,9 @@ public enum LedgerKeyXDR: XDRCodable {
     case data (LedgerKeyDataXDR)
     case claimableBalance (ClaimableBalanceIDXDR)
     case liquidityPool(LiquidityPoolIDXDR)
+    case contractData(WrappedData32, SCValXDR)
+    case contractCode(WrappedData32)
+    case configSetting(Int32)
     
     
     public init(from decoder: Decoder) throws {
@@ -41,6 +49,16 @@ public enum LedgerKeyXDR: XDRCodable {
         case LedgerEntryType.liquidityPool.rawValue:
             let value = try container.decode(LiquidityPoolIDXDR.self)
             self = .liquidityPool (value)
+        case LedgerEntryType.contractData.rawValue:
+            let contractId = try container.decode(WrappedData32.self)
+            let key = try container.decode(SCValXDR.self)
+            self = .contractData (contractId, key)
+        case LedgerEntryType.contractCode.rawValue:
+            let hash = try container.decode(WrappedData32.self)
+            self = .contractCode (hash)
+        case LedgerEntryType.configSetting.rawValue:
+            let configSettingId = try container.decode(Int32.self)
+            self = .configSetting (configSettingId)
         default:
             let acc = try container.decode(LedgerKeyAccountXDR.self)
             self = .account(acc)
@@ -55,6 +73,9 @@ public enum LedgerKeyXDR: XDRCodable {
         case .data: return LedgerEntryType.data.rawValue
         case .claimableBalance: return LedgerEntryType.claimableBalance.rawValue
         case .liquidityPool: return LedgerEntryType.liquidityPool.rawValue
+        case .contractData: return LedgerEntryType.contractData.rawValue
+        case .contractCode: return LedgerEntryType.contractCode.rawValue
+        case .configSetting: return LedgerEntryType.configSetting.rawValue
         }
     }
     
@@ -75,6 +96,13 @@ public enum LedgerKeyXDR: XDRCodable {
             try container.encode(value)
         case .liquidityPool (let value):
             try container.encode(value)
+        case .contractData (let contractId, let key):
+            try container.encode(contractId)
+            try container.encode(key)
+        case .contractCode (let hash):
+            try container.encode(hash)
+        case .configSetting (let configSettingId):
+            try container.encode(configSettingId)
         }
     }
 }

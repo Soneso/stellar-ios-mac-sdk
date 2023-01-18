@@ -101,6 +101,8 @@ class OperationsFactory: NSObject {
                 return try jsonDecoder.decode(LiquidityPoolDepostOperationResponse.self, from: data)
             case .liquidityPoolWithdraw:
                 return try jsonDecoder.decode(LiquidityPoolWithdrawOperationResponse.self, from: data)
+            case .invokeHostFunction:
+                return try jsonDecoder.decode(InvokeHostFunctionOperationResponse.self, from: data)
             }
         } else {
             throw HorizonRequestError.parsingResponseFailed(message: "Unknown operation type")

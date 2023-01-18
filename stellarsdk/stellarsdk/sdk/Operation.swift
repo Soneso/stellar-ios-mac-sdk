@@ -108,6 +108,8 @@ public class Operation {
             return LiquidityPoolDepositOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         case .liquidityPoolWithdraw(let data):
             return LiquidityPoolWithdrawOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
+        case .invokeHostFunction(let data):
+            return try InvokeHostFunctionOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         default:
             throw StellarSDKError.invalidArgument(message: "Unknown operation body \(operationXDR.body)")
         }

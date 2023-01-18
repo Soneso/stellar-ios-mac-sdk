@@ -2190,6 +2190,8 @@ public class TxRep: NSObject {
             return "liquidityPoolDepositOp"
         case .liquidityPoolWithdraw(_):
             return "liquidityPoolWithdrawOp"
+        case .invokeHostFunction(_):
+            return "invokeHostFunction"
         }
     }
     private static func txRepOpTypeUpperCase(operation: OperationXDR) -> String {
@@ -2242,6 +2244,8 @@ public class TxRep: NSObject {
             return "LIQUIDITY_POOL_DEPOSIT"
         case .liquidityPoolWithdraw(_):
             return "LIQUIDITY_POOL_WITHDRAW"
+        case .invokeHostFunction(_):
+            return "INVOKE_HOST_FUNCTION"
         }
     }
     private static func addLine(key:String, value:String, lines: inout [String]) -> Void {

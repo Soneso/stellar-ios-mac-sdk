@@ -169,6 +169,8 @@ class OperationsLocalTestCase: XCTestCase {
                     XCTAssert(false)
                 case .liquidityPoolWithdraw:
                     XCTAssert(false)
+                case .invokeHostFunction:
+                    XCTAssert(false)
                 }
             }
         }

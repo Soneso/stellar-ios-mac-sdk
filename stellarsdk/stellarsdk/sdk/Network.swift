@@ -13,6 +13,7 @@ import Foundation
 public enum Network {
     case `public`
     case testnet
+    case futurenet
     case custom(networkId: String)
 }
 
@@ -25,6 +26,8 @@ extension Network {
             return "Public Global Stellar Network ; September 2015".sha256Hash
         case .testnet:
             return "Test SDF Network ; September 2015".sha256Hash
+        case .futurenet:
+            return "Test SDF Future Network ; October 2022".sha256Hash
         case .custom(let networkId):
             return networkId.sha256Hash
         }

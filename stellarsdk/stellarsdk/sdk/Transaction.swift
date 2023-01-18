@@ -163,4 +163,17 @@ public class Transaction {
         let data = Data(transactionHash)
         return data
     }
+    
+    /// Sets a given footprint to the included invoke host function operations
+    public func setFootprint(footprint:Footprint) {
+        for operation in operations {
+            if let op = operation as? InvokeHostFunctionOperation {
+                op.footprint = footprint.xdrFootprint
+            }
+        }
+        
+        for i in 0...transactionXDR.operations.count - 1 {
+            transactionXDR.operations[i].setFootprint(footprint: footprint)
+        }
+    }
 }

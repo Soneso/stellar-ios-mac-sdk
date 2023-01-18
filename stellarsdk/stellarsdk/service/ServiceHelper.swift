@@ -264,7 +264,7 @@ class ServiceHelper: NSObject {
                 }
                 
                 switch httpResponse.statusCode {
-                case 200, 202:
+                case 200, 201, 202:
                     break
                 case 400: // Bad request
                     if let data = data {

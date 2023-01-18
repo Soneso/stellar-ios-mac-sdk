@@ -143,6 +143,40 @@ open class AccountService: NSObject {
         task.resume()
     }
     
+    /// Creates an account on futurenet
+    ///
+    /// - Parameter accountId: A Stellar account ID. This can be generated using the KeyPair class:
+    ///
+    ///                             let myKeyPair = try KeyPair.generateRandomKeyPair()
+    ///                             let accountId = myKeyPair.accountId
+    ///
+    /// - Parameter response:  The closure to be called upon response.
+    ///
+    open func createFutureNetTestAccount(accountId:String, response: @escaping CreateTestAccountClosure) {
+        
+        let url = URL(string: "https://friendbot-futurenet.stellar.org")
+        let components = NSURLComponents(url: url!, resolvingAgainstBaseURL: false)
+        let item = URLQueryItem(name: "addr", value: accountId)
+        components?.queryItems = [item]
+        
+        
+        let task = URLSession.shared.dataTask(with: components!.url!) { data, httpResponse, error in
+            guard error == nil else {
+                response(.failure(error: HorizonRequestError.requestFailed(message: error!.localizedDescription)))
+                return
+            }
+            guard let data = data else {
+                response(.failure(error: HorizonRequestError.emptyResponse))
+                return
+            }
+            
+            let json = try! JSONSerialization.jsonObject(with: data, options: [])
+            response(.success(details: json))
+        }
+        
+        task.resume()
+    }
+    
     /// This endpoint allows filtering accounts who have a given signer or have a trustline to an asset. The result is a list of accounts.
     
     /// To find all accounts who are trustees to an asset, pass the query parameter asset using the canonical representation for an issued assets which is Code:IssuerAccountID. Read more about canonical representation of assets in SEP-0011.

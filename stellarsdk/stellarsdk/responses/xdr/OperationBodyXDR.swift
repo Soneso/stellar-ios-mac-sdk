@@ -33,6 +33,7 @@ public enum OperationBodyXDR: XDRCodable {
     case setTrustLineFlags(SetTrustLineFlagsOpXDR)
     case liquidityPoolDeposit(LiquidityPoolDepositOpXDR)
     case liquidityPoolWithdraw(LiquidityPoolWithdrawOpXDR)
+    case invokeHostFunction(InvokeHostFunctionOpXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -88,6 +89,8 @@ public enum OperationBodyXDR: XDRCodable {
                 self = .liquidityPoolDeposit(try container.decode(LiquidityPoolDepositOpXDR.self))
             case OperationType.liquidityPoolWithdraw.rawValue:
                 self = .liquidityPoolWithdraw(try container.decode(LiquidityPoolWithdrawOpXDR.self))
+            case OperationType.invokeHostFunction.rawValue:
+                self = .invokeHostFunction(try container.decode(InvokeHostFunctionOpXDR.self))
             default:
                 throw StellarSDKError.xdrDecodingError(message: "Could not decode operation")
         }
@@ -119,6 +122,7 @@ public enum OperationBodyXDR: XDRCodable {
             case .setTrustLineFlags: return OperationType.setTrustLineFlags.rawValue
             case .liquidityPoolDeposit: return OperationType.liquidityPoolDeposit.rawValue
             case .liquidityPoolWithdraw: return OperationType.liquidityPoolWithdraw.rawValue
+            case .invokeHostFunction: return OperationType.invokeHostFunction.rawValue
         }
     }
     
@@ -175,6 +179,8 @@ public enum OperationBodyXDR: XDRCodable {
         case .liquidityPoolDeposit (let op):
             try container.encode(op)
         case .liquidityPoolWithdraw (let op):
+            try container.encode(op)
+        case .invokeHostFunction(let op):
             try container.encode(op)
         }
     }

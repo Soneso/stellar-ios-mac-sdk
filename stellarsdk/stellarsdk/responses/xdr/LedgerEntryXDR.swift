@@ -15,6 +15,9 @@ public enum LedgerEntryType: Int32 {
     case data = 3
     case claimableBalance = 4
     case liquidityPool = 5
+    case contractData = 6
+    case contractCode = 7
+    case configSetting = 8
 }
 
 public struct LedgerEntryXDR: XDRCodable {
