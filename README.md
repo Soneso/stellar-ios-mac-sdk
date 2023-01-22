@@ -19,7 +19,7 @@ To integrate stellar SDK into your Xcode project using CocoaPods, specify it in 
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk', '~> 2.2.5'
+    pod 'stellar-ios-mac-sdk', '~> 2.3.0'
 end
 ```
 
@@ -44,7 +44,7 @@ $ brew install carthage
 To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 2.2.5
+github "soneso/stellar-ios-mac-sdk" ~> 2.3.0
 ```
 
 Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.
@@ -52,7 +52,7 @@ Run `carthage update` to build the framework and drag the build `stellar-ios-mac
 ### Swift Package Manager
 
 ```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "2.2.5"),
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "2.3.0"),
 ```
 
 ### Manual
@@ -645,6 +645,10 @@ Our SDK is also used by the [LOBSTR Wallet](https://lobstr.co).
 - [SEP-0010](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md) - Stellar Web Authentication
 - [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md) - Txrep
 - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md) - Anchor/Client customer info transfer
+
+## Soroban support
+
+This SDK provides experimental [support for Soroban](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/soroban.md). 
 
 ## How to contribute
 
