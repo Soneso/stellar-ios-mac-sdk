@@ -8,6 +8,8 @@
 
 import Foundation
 
+/// Footprint received when simulating a transaction.
+/// Contains utility functions.
 public class Footprint {
     
     public let xdrFootprint:LedgerFootprintXDR

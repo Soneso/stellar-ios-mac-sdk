@@ -421,6 +421,78 @@ public enum SCValXDR: XDRCodable {
         return try SCValXDR(from: xdrDecoder)
     }
     
+    public var vec:[SCValXDR]? {
+        switch self {
+        case .object(let obj):
+            return obj?.vec
+        default:
+            return nil
+        }
+    }
+    
+    public var map:[SCMapEntryXDR]? {
+        switch self {
+        case .object(let obj):
+            return obj?.map
+        default:
+            return nil
+        }
+    }
+    
+    public var u64:UInt64? {
+        switch self {
+        case .object(let obj):
+            return obj?.u64
+        default:
+            return nil
+        }
+    }
+    
+    public var i64:Int64? {
+        switch self {
+        case .object(let obj):
+            return obj?.i64
+        default:
+            return nil
+        }
+    }
+    
+    public var u128:Int128PartsXDR? {
+        switch self {
+        case .object(let obj):
+            return obj?.u128
+        default:
+            return nil
+        }
+    }
+    
+    public var bytes:Data? {
+        switch self {
+        case .object(let obj):
+            return obj?.bytes
+        default:
+            return nil
+        }
+    }
+    
+    public var contractCode:SCContractCodeXDR? {
+        switch self {
+        case .object(let obj):
+            return obj?.contractCode
+        default:
+            return nil
+        }
+    }
+    
+    public var accountId:PublicKey? {
+        switch self {
+        case .object(let obj):
+            return obj?.accountId
+        default:
+            return nil
+        }
+    }
+    
     public var isU63: Bool {
         return type() == SCValType.u63.rawValue
     }

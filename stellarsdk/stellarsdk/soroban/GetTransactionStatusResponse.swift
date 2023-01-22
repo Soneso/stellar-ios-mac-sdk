@@ -8,6 +8,8 @@
 
 import Foundation
 
+/// Response when polling the rpc server to find out if a transaction has been
+/// completed.
 public class GetTransactionStatusResponse: NSObject, Decodable {
     
     /// Hash (id) of the transaction as a hex-encoded string
@@ -52,9 +54,11 @@ public class GetTransactionStatusResponse: NSObject, Decodable {
         error = try values.decodeIfPresent(TransactionStatusError.self, forKey: .error)
     }
     
-    public var firstResult:TransactionStatusResult? {
-        return results?.first
+    /// Extracts the value from the first transaction status result
+    public var resultValue:SCValXDR? {
+        return results?.first?.value
     }
+    
     /// Extracts the wasm id from the response if the transaction installed a contract
     public var wasmId:String? {
         return binHex

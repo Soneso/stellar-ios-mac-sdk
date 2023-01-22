@@ -41,7 +41,7 @@ public class InvokeHostFunctionOperation:Operation {
         return op
     }
     
-    public static func forInstallingContract(contractCode:Data, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+    public static func forInstallingContractCode(contractCode:Data, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         let op = InvokeHostFunctionOperation(hostFunctionType: HostFunctionType.installContractCode, sourceAccountId:sourceAccountId)
         op.contractCode = contractCode
         op.footprint = footprint
@@ -57,14 +57,14 @@ public class InvokeHostFunctionOperation:Operation {
         return op
     }
     
-    public static func forDeployCreateTokenContractWithSourceAccount(salt:WrappedData32? = nil, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+    public static func forDeploySACWithSourceAccount(salt:WrappedData32? = nil, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         let op = InvokeHostFunctionOperation(hostFunctionType: HostFunctionType.createContract, sourceAccountId:sourceAccountId)
         op.salt = salt
         op.footprint = footprint
         return op
     }
     
-    public static func forDeployCreateTokenContractWithAsset(asset:Asset? = nil, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+    public static func forDeploySACWithAsset(asset:Asset? = nil, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         let op = InvokeHostFunctionOperation(hostFunctionType: HostFunctionType.createContract, sourceAccountId:sourceAccountId)
         op.asset = asset
         op.footprint = footprint
@@ -137,9 +137,9 @@ public class InvokeHostFunctionOperation:Operation {
         } else if hostFunctionType == HostFunctionType.createContract, let wasmId = wasmId { // create contract
             return try createContractBodyXDR(wasmId: wasmId)
         } else if hostFunctionType == HostFunctionType.createContract, let asset = asset { // deploy create token contract with asset
-            return try deployCreateTokenContractWithAssetBodyXDR(asset: asset)
+            return try deploySACWithAssetBodyXDR(asset: asset)
         } else if hostFunctionType == HostFunctionType.createContract { // deploy create token contract with source account
-            return try deployCreateTokenContractWithSourceAccountBodyXDR()
+            return try deploySACWithSourceAccountBodyXDR()
         } else {
             throw StellarSDKError.encodingError(message: "error xdr encoding invoke host function operation , incomplete data")
         }
@@ -190,13 +190,13 @@ public class InvokeHostFunctionOperation:Operation {
         return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
     }
     
-    private func deployCreateTokenContractWithAssetBodyXDR(asset:Asset) throws -> OperationBodyXDR {
+    private func deploySACWithAssetBodyXDR(asset:Asset) throws -> OperationBodyXDR {
         let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromAsset(try asset.toXDR()), source: SCContractCodeXDR.token)
         let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!)
         return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
     }
     
-    private func deployCreateTokenContractWithSourceAccountBodyXDR() throws -> OperationBodyXDR {
+    private func deploySACWithSourceAccountBodyXDR() throws -> OperationBodyXDR {
         if salt == nil {
             var saltData = Data(count: 32)
             let result = saltData.withUnsafeMutableBytes {

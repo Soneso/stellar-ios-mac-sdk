@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Response when submitting a real transaction to the stellar network.
 public class SendTransactionResponse: NSObject, Decodable {
     
     /// The transaction hash (in an hex-encoded string), and the initial transaction status, ("pending" or something)

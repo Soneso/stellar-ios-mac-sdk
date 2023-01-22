@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Response for fetching current info about a stellar account.
 public class GetAccountResponse: NSObject, Decodable {
     /// Account Id of the account
     public var id:String

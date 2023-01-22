@@ -56,6 +56,9 @@ private enum RpcResult {
 /// A closure to be called when a HTTP response is received
 private typealias RpcResponseClosure = (_ response:RpcResult) -> (Void)
 
+/// This class helps you to connect to a local or remote soroban rpc server
+/// and send requests to the server. It parses the results and provides
+/// corresponding response objects.
 public class SorobanServer {
     private let endpoint: String
     private let jsonDecoder = JSONDecoder()
@@ -87,6 +90,9 @@ public class SorobanServer {
         return headers
     }()
     
+    public var enableLogging = false
+    public var acknowledgeExperimental = false
+    
     /// Init a SorobanServer instance
     ///
     /// - Parameter endpoint: Endpoint representing the url of the soroban rpc server to use
@@ -95,7 +101,7 @@ public class SorobanServer {
         self.endpoint = endpoint
     }
     
-    /// General node health check.
+    /// General node health check request.
     public func getHealth(completion:@escaping GetHealthResponseClosure) {
         
         request(body: try? buildRequestJson(method: "getHealth")) { (result) -> (Void) in
@@ -151,7 +157,8 @@ public class SorobanServer {
         }
     }
     
-    /// For reading the current value of ledger entries directly. Allows you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry. This is a backup way to access your contract data which may not be available via events or simulateTransaction.
+    /// For reading the current value of ledger entries directly. Allows you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry.
+    /// This is a backup way to access your contract data which may not be available via events or simulateTransaction.
     /// To fetch contract wasm byte-code, use the ContractCode ledger entry key.
     public func getLedgerEntry(base64EncodedKey: String, completion:@escaping GetLedgerEntryResponseClosure) {
         
@@ -209,7 +216,8 @@ public class SorobanServer {
     }
     
     /// Submit a real transaction to the stellar network. This is the only way to make changes “on-chain”.
-    /// Unlike Horizon, this does not wait for transaction completion. It simply validates and enqueues the transaction. Clients should call getTransactionStatus to learn about transaction success/failure.
+    /// Unlike Horizon, this does not wait for transaction completion. It simply validates and enqueues the transaction.
+    /// Clients should call getTransactionStatus to learn about transaction success/failure.
     public func sendTransaction(transaction: Transaction, completion:@escaping SendTransactionResponseClosure) {
         
         request(body: try? buildRequestJson(method: "sendTransaction", args: [transaction.encodedEnvelope()])) { (result) -> (Void) in
@@ -281,6 +289,11 @@ public class SorobanServer {
     
     
     private func request(body: Data?, completion: @escaping RpcResponseClosure) {
+        if !self.acknowledgeExperimental {
+            completion(.failure(error:.requestFailed(message:"Error: acknowledgeExperimental flag not set")))
+            return
+        }
+        
         let url = URL(string: endpoint)!
         var urlRequest = URLRequest(url: url)
 
@@ -300,7 +313,7 @@ public class SorobanServer {
                 return
             }
             
-            if let data = data {
+            if let data = data, self.enableLogging {
                 let log = String(decoding: data, as: UTF8.self)
                 print(log)
             }

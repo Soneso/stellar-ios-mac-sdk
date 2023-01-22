@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// General node health check response.
 public class GetHealthResponse: NSObject, Decodable {
     
     /// Health status e.g. "healthy"
@@ -21,4 +22,8 @@ public class GetHealthResponse: NSObject, Decodable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         status = try values.decode(String.self, forKey: .status)
     }
+}
+
+public struct HealthStatus {
+    public static let HEALTHY: String = "healthy"
 }

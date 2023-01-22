@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Response when reading the current values of ledger entries.
 public class GetLedgerEntryResponse: NSObject, Decodable {
     
     /// The current value of the given ledger entry  (serialized in a base64 string)

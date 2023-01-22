@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Internal error used within some of the responses.
 public class TransactionStatusError: NSObject, Decodable {
     
     /// Short unique string representing the type of error

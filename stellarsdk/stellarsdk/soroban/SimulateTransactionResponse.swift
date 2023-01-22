@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Response that will be received when submitting a trial contract invocation.
 public class SimulateTransactionResponse: NSObject, Decodable {
     
     /// Footprint containing the ledger keys expected to be written by this transaction
