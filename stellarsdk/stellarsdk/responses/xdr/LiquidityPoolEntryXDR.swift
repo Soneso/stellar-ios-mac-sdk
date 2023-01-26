@@ -88,6 +88,7 @@ public struct ConstantProductXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         try container.encode(params)
         try container.encode(reserveA)
+        try container.encode(reserveB)
         try container.encode(totalPoolShares)
         try container.encode(poolSharesTrustLineCount)
     }

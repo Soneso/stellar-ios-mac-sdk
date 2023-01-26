@@ -31,13 +31,13 @@ public struct AccountEntryXDR: XDRCodable {
     public let numSubEntries:UInt32
     public var inflationDest: PublicKey?
     public let flags:UInt32 // see AccountFlags
-    public let homeDomain:String?
+    public let homeDomain:String
     public let thresholds:WrappedData4
     public let signers: [SignerXDR]
     public let reserved: AccountEntryExtXDR
     
 
-    public init(accountID: PublicKey, balance:Int64, sequenceNumber:Int64, numSubEntries:UInt32, inflationDest:PublicKey? = nil, flags:UInt32, homeDomain:String? = nil, thresholds: WrappedData4, signers: [SignerXDR]) {
+    public init(accountID: PublicKey, balance:Int64, sequenceNumber:Int64, numSubEntries:UInt32, homeDomain:String, inflationDest:PublicKey? = nil, flags:UInt32, thresholds: WrappedData4, signers: [SignerXDR]) {
         self.accountID = accountID
         self.balance = balance
         self.sequenceNumber = sequenceNumber
