@@ -185,10 +185,10 @@ public enum AccountEntryExtV1XDR: XDRCodable {
 public struct AccountEntryExtensionV2: XDRCodable {
     public var numSponsored: UInt32 = 0
     public var numSponsoring: UInt32 = 0
-    public let signerSponsoringIDs:[PublicKey]
+    public var signerSponsoringIDs:[PublicKey?]
     public var reserved:AccountEntryExtV2XDR
     
-    public init(numSponsored: UInt32, numSponsoring: UInt32, signerSponsoringIDs:[PublicKey]) {
+    public init(numSponsored: UInt32, numSponsoring: UInt32, signerSponsoringIDs:[PublicKey?]) {
         self.numSponsored = numSponsored
         self.numSponsoring = numSponsoring
         self.signerSponsoringIDs = signerSponsoringIDs
@@ -200,7 +200,16 @@ public struct AccountEntryExtensionV2: XDRCodable {
         
         numSponsored = try container.decode(UInt32.self)
         numSponsoring = try container.decode(UInt32.self)
-        signerSponsoringIDs = try decodeArrayOpt(type: PublicKey.self, dec: decoder)
+        signerSponsoringIDs = [PublicKey?]()
+        let count = try container.decode(Int32.self)
+        for _ in stride(from: count, to: 0, by: -1) { 
+            let present = try container.decode(Int32.self) == 1
+            if (present) {
+                signerSponsoringIDs.append(try container.decode(PublicKey.self))
+            } else {
+                signerSponsoringIDs.append(nil)
+            }
+        }
         reserved = try container.decode(AccountEntryExtV2XDR.self)
     }
     
@@ -209,7 +218,18 @@ public struct AccountEntryExtensionV2: XDRCodable {
         
         try container.encode(numSponsored)
         try container.encode(numSponsoring)
-        try container.encode(signerSponsoringIDs)
+        let count = signerSponsoringIDs.count
+        try container.encode(Int32(count))
+        if (count > 0) {
+            for i in 0 ... count - 1 {
+                if let next = signerSponsoringIDs[i] {
+                    try container.encode(Int32(1))
+                    try container.encode(next)
+                } else {
+                    try container.encode(Int32(0))
+                }
+            }
+        }
         try container.encode(reserved)
     }
 }

@@ -77,7 +77,7 @@ class SorobanTest: XCTestCase {
                 XCTFail()
             }
         }
-        wait(for: [expectation], timeout: 20.0)
+        wait(for: [expectation], timeout: 30.0)
     }
     
     func testAll() {

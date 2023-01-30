@@ -34,7 +34,7 @@ class OperationXDRTestCase: XCTestCase {
                         case .success(let operations):
                             self.validateOperation(operationXDR: operations.first!)
                             expectation.fulfill()
-                        case .failed:
+                        default:
                             XCTAssert(false)
                         }
                     }

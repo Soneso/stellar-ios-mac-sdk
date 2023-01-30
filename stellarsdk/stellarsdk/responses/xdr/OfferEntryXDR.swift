@@ -45,6 +45,7 @@ public struct OfferEntryXDR: XDRCodable {
         try container.encode(sellerID)
         try container.encode(offerID)
         try container.encode(selling)
+        try container.encode(buying)
         try container.encode(amount)
         try container.encode(price)
         try container.encode(flags)
