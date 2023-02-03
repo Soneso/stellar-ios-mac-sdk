@@ -62,6 +62,7 @@ public class TransactionResponse: NSObject, Decodable {
     public var transactionEnvelope: TransactionEnvelopeXDR
     public var transactionResult: TransactionResultXDR
     public var transactionMeta: TransactionMetaXDR
+    public var feeMeta: LedgerEntryChangesXDR?
     
     public var feeBumpTransactionResponse:FeeBumpTransactionResponse?
     public var innerTransactionResponse:InnerTransactionResponse?
@@ -91,6 +92,7 @@ public class TransactionResponse: NSObject, Decodable {
         case envelopeXDR = "envelope_xdr"
         case transactionResult = "result_xdr"
         case transactionMeta = "result_meta_xdr"
+        case feeMeta = "fee_meta_xdr"
         case feeBumpTransaction = "fee_bump_transaction"
         case innerTransaction = "inner_transaction"
         case preconditions = "preconditions"
@@ -160,6 +162,12 @@ public class TransactionResponse: NSObject, Decodable {
         let encodedMeta = try values.decode(String.self, forKey: .transactionMeta)
         let metaData = Data(base64Encoded: encodedMeta)!
         transactionMeta = try XDRDecoder.decode(TransactionMetaXDR.self, data:metaData)
+        
+        let encodedFeeMeta = try values.decodeIfPresent(String.self, forKey: .feeMeta)
+        if let feeMetaXdrStr = encodedFeeMeta {
+            let feeMetaData = Data(base64Encoded: feeMetaXdrStr)!
+            feeMeta = try XDRDecoder.decode(LedgerEntryChangesXDR.self, data:feeMetaData)
+        }
         
         feeBumpTransactionResponse = try values.decodeIfPresent(FeeBumpTransactionResponse.self, forKey: .feeBumpTransaction)
         innerTransactionResponse = try values.decodeIfPresent(InnerTransactionResponse.self, forKey: .innerTransaction)
