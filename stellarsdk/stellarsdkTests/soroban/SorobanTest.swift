@@ -11,10 +11,10 @@ import stellarsdk
 
 class SorobanTest: XCTestCase {
 
-    let sorobanServer = SorobanServer(endpoint: "https://futurenet.sorobandev.com/soroban/rpc")
+    let sorobanServer = SorobanServer(endpoint: "https://horizon-futurenet.stellar.cash/soroban/rpc")
     let sdk = StellarSDK.futureNet()
     let network = Network.futurenet
-    let accountAKeyPair = try! KeyPair.generateRandomKeyPair()
+    let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
     let accountBKeyPair = try! KeyPair.generateRandomKeyPair()
     var installTransactionId:String? = nil
     var installWasmId:String? = nil
@@ -29,13 +29,14 @@ class SorobanTest: XCTestCase {
     var asset:Asset? = nil
     var deployWithAssetTransactionId:String? = nil
     var deployWithAssetFootprint:Footprint? = nil
+    var submitterAccount:GetAccountResponse?
     
     override func setUp() {
         super.setUp()
         let expectation = XCTestExpectation(description: "account prepared for tests")
         sorobanServer.enableLogging = true
         sorobanServer.acknowledgeExperimental = true
-        let accountAId = accountAKeyPair.accountId
+        let accountAId = submitterKeyPair.accountId
         let accountBId = accountBKeyPair.accountId
         let asset = ChangeTrustAsset(canonicalForm: "SONESO:" + accountBId)!
         self.asset = asset
@@ -54,7 +55,7 @@ class SorobanTest: XCTestCase {
                                 let transaction = try! Transaction(sourceAccount: accountResponse,
                                                                   operations: [changeTrustOp, payOp],
                                                                   memo: Memo.none)
-                                try! transaction.sign(keyPair: self.accountAKeyPair, network: Network.futurenet)
+                                try! transaction.sign(keyPair: self.submitterKeyPair, network: Network.futurenet)
                                 try! transaction.sign(keyPair: self.accountBKeyPair, network: Network.futurenet)
                                 try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                                     switch response {
@@ -82,22 +83,37 @@ class SorobanTest: XCTestCase {
     
     func testAll() {
         getHealth()
-        getAccount()
-        installContractCode()
+        getNetwork()
+        
+        // install
+        getSubmitterAccount()
+        installContractCode(name: "hello")
         getInstallTransactionStatus()
         getTransactionDetails(transactionHash: self.installTransactionId!, footprint: self.installContractFootprint!.xdrEncoded)
         getTransactionStatusError()
+        
+        // create
+        getSubmitterAccount()
         createContract()
         getCreateTransactionStatus()
         getTransactionDetails(transactionHash: self.createTransactionId!, footprint: self.createContractFootprint!.xdrEncoded)
         getLedgerEntries()
+        
+        // invoke
+        getSubmitterAccount()
         invokeContract()
         getInvokeTransactionStatus()
         getTransactionDetails(transactionHash: self.invokeTransactionId!, footprint: self.invokeContractFootprint!.xdrEncoded)
+        
+        // SAC with source account
+        getSubmitterAccount()
         deploySACWithSourceAccount()
         getDeploySATransactionStatus()
         getTransactionDetails(transactionHash: self.deploySATransactionId!, footprint: self.deploySAFootprint!.xdrEncoded)
         getSACWithSALedgerEntries()
+        
+        // SAC with asset
+        getSubmitterAccount()
         deploySACWithAsset()
         getDeployWithAssetTransactionStatus()
         getTransactionDetails(transactionHash: self.deployWithAssetTransactionId!, footprint: self.deployWithAssetFootprint!.xdrEncoded)
@@ -121,15 +137,15 @@ class SorobanTest: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
-    func getAccount() {
+    func getSubmitterAccount() {
         let expectation = XCTestExpectation(description: "get account response received")
         
-        let accountId = accountAKeyPair.accountId
+        let accountId = submitterKeyPair.accountId
         sorobanServer.getAccount(accountId: accountId) { (response) -> (Void) in
             switch response {
             case .success(let accResponse):
                 XCTAssertEqual(accountId, accResponse.id)
-                XCTAssertNotEqual(accountId, accResponse.sequence)
+                self.submitterAccount = accResponse
                 expectation.fulfill()
             case .failure(let error):
                 self.printError(error: error)
@@ -140,58 +156,68 @@ class SorobanTest: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
-    func installContractCode() {
+    func getNetwork() {
+        let expectation = XCTestExpectation(description: "geth network response received")
+        
+        sorobanServer.getNetwork() { (response) -> (Void) in
+            switch response {
+            case .success(let networkResponse):
+                XCTAssertEqual("https://friendbot-futurenet.stellar.org/", networkResponse.friendbotUrl)
+                XCTAssertEqual("Test SDF Future Network ; October 2022", networkResponse.passphrase)
+            case .failure(let error):
+                self.printError(error: error)
+                XCTFail()
+            }
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 10.0)
+    }
+    
+    func installContractCode(name:String) {
         let expectation = XCTestExpectation(description: "contract code successfully deployed")
         
         let bundle = Bundle(for: type(of: self))
-        guard let path = bundle.path(forResource: "hello", ofType: "wasm") else {
+        guard let path = bundle.path(forResource: name, ofType: "wasm") else {
             // File not found
             XCTFail()
             return
         }
         let contractCode = FileManager.default.contents(atPath: path)
-        let accountId = accountAKeyPair.accountId
-        sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+        let installOperation = try! InvokeHostFunctionOperation.forInstallingContractCode(contractCode: contractCode!)
+        
+        let transaction = try! Transaction(sourceAccount: submitterAccount!,
+                                           operations: [installOperation], memo: Memo.none)
+        
+        self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
             switch response {
-            case .success(let accountResponse):
-                let installOperation = try! InvokeHostFunctionOperation.forInstallingContractCode(contractCode: contractCode!)
+            case .success(let simulateResponse):
+                XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
+                XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
+                XCTAssertNotNil(simulateResponse.results)
+                XCTAssert(simulateResponse.results!.count > 0)
+                XCTAssertNotNil(simulateResponse.footprint)
+                transaction.setFootprint(footprint: simulateResponse.footprint!)
+                self.installContractFootprint = simulateResponse.footprint
+                try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
                 
-                let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                   operations: [installOperation], memo: Memo.none)
+                // check encoding and decoding
+                let enveloperXdr = try! transaction.encodedEnvelope();
+                XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
                 
-                self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+                self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
                     switch response {
-                    case .success(let simulateResponse):
-                        XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
-                        XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
-                        XCTAssertNotNil(simulateResponse.results)
-                        XCTAssert(simulateResponse.results!.count > 0)
-                        transaction.setFootprint(footprint: simulateResponse.footprint)
-                        self.installContractFootprint = simulateResponse.footprint
-                        try! transaction.sign(keyPair: self.accountAKeyPair, network: self.network)
-                        
-                        // check encoding and decoding
-                        let enveloperXdr = try! transaction.encodedEnvelope();
-                        XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
-                        
-                        self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(let sendResponse):
-                                XCTAssert(TransactionStatus.PENDING == sendResponse.status)
-                                self.installTransactionId = sendResponse.transactionId
-                            case .failure(let error):
-                                self.printError(error: error)
-                                XCTFail()
-                            }
-                            expectation.fulfill()
-                        }
+                    case .success(let sendResponse):
+                        XCTAssert(TransactionStatus.PENDING == sendResponse.status)
+                        self.installTransactionId = sendResponse.transactionId
                     case .failure(let error):
                         self.printError(error: error)
                         XCTFail()
-                        expectation.fulfill()
                     }
+                    expectation.fulfill()
                 }
-            case .failure(_):
+            case .failure(let error):
+                self.printError(error: error)
                 XCTFail()
                 expectation.fulfill()
             }
@@ -226,37 +252,34 @@ class SorobanTest: XCTestCase {
     }
     
     func getTransactionDetails(transactionHash:String, footprint:String) {
-        XCTContext.runActivity(named: "getInstallTransactionDetails") { activity in
-            let expectation = XCTestExpectation(description: "Get install transaction and operation details sucessfully")
-            sdk.transactions.getTransactionDetails(transactionHash: transactionHash) { (response) -> (Void) in
-                switch response {
-                case .success(let response):
-                    XCTAssert(response.operationCount == 1)
-                    self.sdk.operations.getOperations(forTransaction: transactionHash, includeFailed:true) { (response) -> (Void) in
-                        switch response {
-                        case .success(let response):
-                            XCTAssert(response.records.count > 0)
-                            if let op = response.records.first! as? InvokeHostFunctionOperationResponse {
-                                XCTAssertEqual(op.footprint, footprint)
-                            } else {
-                                XCTFail()
-                            }
-                        case .failure(let error):
-                            StellarSDKLog.printHorizonRequestErrorMessage(tag:"getOperationsForTransaction", horizonRequestError: error)
+        let expectation = XCTestExpectation(description: "Get install transaction and operation details sucessfully")
+        sdk.transactions.getTransactionDetails(transactionHash: transactionHash) { (response) -> (Void) in
+            switch response {
+            case .success(let response):
+                XCTAssert(response.operationCount == 1)
+                self.sdk.operations.getOperations(forTransaction: transactionHash, includeFailed:true) { (response) -> (Void) in
+                    switch response {
+                    case .success(let response):
+                        XCTAssert(response.records.count > 0)
+                        if let op = response.records.first! as? InvokeHostFunctionOperationResponse {
+                            XCTAssertEqual(op.footprint, footprint)
+                        } else {
                             XCTFail()
                         }
-                        
-                        expectation.fulfill()
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"getOperationsForTransaction", horizonRequestError: error)
+                        XCTFail()
                     }
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getTransactionDetails", horizonRequestError: error)
-                    XCTFail()
+                    
                     expectation.fulfill()
                 }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"getTransactionDetails", horizonRequestError: error)
+                XCTFail()
+                expectation.fulfill()
             }
-            
-            wait(for: [expectation], timeout: 15.0)
         }
+        wait(for: [expectation], timeout: 15.0)
     }
 
     func getTransactionStatusError() {
@@ -282,48 +305,40 @@ class SorobanTest: XCTestCase {
     
     func createContract() {
         let expectation = XCTestExpectation(description: "contract successfully created")
-        let accountId = accountAKeyPair.accountId
-        sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+        let createOperation = try! InvokeHostFunctionOperation.forCreatingContract(wasmId: self.installWasmId!)
+        
+        let transaction = try! Transaction(sourceAccount: submitterAccount!,
+                                           operations: [createOperation], memo: Memo.none)
+        
+        self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
             switch response {
-            case .success(let accountResponse):
-                let createOperation = try! InvokeHostFunctionOperation.forCreatingContract(wasmId: self.installWasmId!)
+            case .success(let simulateResponse):
+                XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
+                XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
+                XCTAssertNotNil(simulateResponse.results)
+                XCTAssert(simulateResponse.results!.count > 0)
+                self.createContractFootprint = simulateResponse.footprint
+                XCTAssertNotNil(simulateResponse.footprint)
+                transaction.setFootprint(footprint: simulateResponse.footprint!)
+                try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
                 
-                let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                   operations: [createOperation], memo: Memo.none)
+                // check encoding and decoding
+                let enveloperXdr = try! transaction.encodedEnvelope();
+                XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
                 
-                self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+                self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
                     switch response {
-                    case .success(let simulateResponse):
-                        XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
-                        XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
-                        XCTAssertNotNil(simulateResponse.results)
-                        XCTAssert(simulateResponse.results!.count > 0)
-                        self.createContractFootprint = simulateResponse.footprint
-                        transaction.setFootprint(footprint: simulateResponse.footprint)
-                        try! transaction.sign(keyPair: self.accountAKeyPair, network: self.network)
-                        
-                        // check encoding and decoding
-                        let enveloperXdr = try! transaction.encodedEnvelope();
-                        XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
-                        
-                        self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(let sendResponse):
-                                XCTAssert(TransactionStatus.PENDING == sendResponse.status)
-                                self.createTransactionId = sendResponse.transactionId
-                            case .failure(let error):
-                                self.printError(error: error)
-                                XCTFail()
-                            }
-                            expectation.fulfill()
-                        }
+                    case .success(let sendResponse):
+                        XCTAssert(TransactionStatus.PENDING == sendResponse.status)
+                        self.createTransactionId = sendResponse.transactionId
                     case .failure(let error):
                         self.printError(error: error)
                         XCTFail()
-                        expectation.fulfill()
                     }
+                    expectation.fulfill()
                 }
-            case .failure(_):
+            case .failure(let error):
+                self.printError(error: error)
                 XCTFail()
                 expectation.fulfill()
             }
@@ -384,50 +399,42 @@ class SorobanTest: XCTestCase {
     
     func invokeContract() {
         let expectation = XCTestExpectation(description: "contract successfully invoked")
-        let accountId = accountAKeyPair.accountId
-        sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+        let functionName = "hello"
+        let arg = SCValXDR.symbol("friend")
+        let invokeOperation = try! InvokeHostFunctionOperation.forInvokingContract(contractId: self.contractId!, functionName: functionName, functionArguments: [arg])
+        
+        let transaction = try! Transaction(sourceAccount: submitterAccount!,
+                                           operations: [invokeOperation], memo: Memo.none)
+        
+        self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
             switch response {
-            case .success(let accountResponse):
-                let functionName = "hello"
-                let arg = SCValXDR.symbol("friend")
-                let invokeOperation = try! InvokeHostFunctionOperation.forInvokingContract(contractId: self.contractId!, functionName: functionName, functionArguments: [arg])
+            case .success(let simulateResponse):
+                XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
+                XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
+                XCTAssertNotNil(simulateResponse.results)
+                XCTAssert(simulateResponse.results!.count > 0)
+                XCTAssertNotNil(simulateResponse.footprint)
+                transaction.setFootprint(footprint: simulateResponse.footprint!)
+                try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
+                self.invokeContractFootprint = simulateResponse.footprint
                 
-                let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                   operations: [invokeOperation], memo: Memo.none)
+                // check encoding and decoding
+                let enveloperXdr = try! transaction.encodedEnvelope();
+                XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
                 
-                self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+                self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
                     switch response {
-                    case .success(let simulateResponse):
-                        XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
-                        XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
-                        XCTAssertNotNil(simulateResponse.results)
-                        XCTAssert(simulateResponse.results!.count > 0)
-                        transaction.setFootprint(footprint: simulateResponse.footprint)
-                        try! transaction.sign(keyPair: self.accountAKeyPair, network: self.network)
-                        self.invokeContractFootprint = simulateResponse.footprint
-                        
-                        // check encoding and decoding
-                        let enveloperXdr = try! transaction.encodedEnvelope();
-                        XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
-                        
-                        self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(let sendResponse):
-                                XCTAssert(TransactionStatus.PENDING == sendResponse.status)
-                                self.invokeTransactionId = sendResponse.transactionId
-                            case .failure(let error):
-                                self.printError(error: error)
-                                XCTFail()
-                            }
-                            expectation.fulfill()
-                        }
+                    case .success(let sendResponse):
+                        XCTAssert(TransactionStatus.PENDING == sendResponse.status)
+                        self.invokeTransactionId = sendResponse.transactionId
                     case .failure(let error):
                         self.printError(error: error)
                         XCTFail()
-                        expectation.fulfill()
                     }
+                    expectation.fulfill()
                 }
-            case .failure(_):
+            case .failure(let error):
+                self.printError(error: error)
                 XCTFail()
                 expectation.fulfill()
             }
@@ -474,47 +481,39 @@ class SorobanTest: XCTestCase {
     
     func deploySACWithSourceAccount() {
         let expectation = XCTestExpectation(description: "contract successfully deployed")
-        let accountId = accountAKeyPair.accountId
-        sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+        let deployOperation = try! InvokeHostFunctionOperation.forDeploySACWithSourceAccount()
+        
+        let transaction = try! Transaction(sourceAccount: submitterAccount!,
+                                           operations: [deployOperation], memo: Memo.none)
+        
+        self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
             switch response {
-            case .success(let accountResponse):
-                let deployOperation = try! InvokeHostFunctionOperation.forDeploySACWithSourceAccount()
+            case .success(let simulateResponse):
+                XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
+                XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
+                XCTAssertNotNil(simulateResponse.results)
+                XCTAssert(simulateResponse.results!.count > 0)
+                XCTAssertNotNil(simulateResponse.footprint)
+                transaction.setFootprint(footprint: simulateResponse.footprint!)
+                try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
+                self.deploySAFootprint = simulateResponse.footprint
+                // check encoding and decoding
+                let enveloperXdr = try! transaction.encodedEnvelope();
+                XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
                 
-                let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                   operations: [deployOperation], memo: Memo.none)
-                
-                self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+                self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
                     switch response {
-                    case .success(let simulateResponse):
-                        XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
-                        XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
-                        XCTAssertNotNil(simulateResponse.results)
-                        XCTAssert(simulateResponse.results!.count > 0)
-                        transaction.setFootprint(footprint: simulateResponse.footprint)
-                        try! transaction.sign(keyPair: self.accountAKeyPair, network: self.network)
-                        self.deploySAFootprint = simulateResponse.footprint
-                        // check encoding and decoding
-                        let enveloperXdr = try! transaction.encodedEnvelope();
-                        XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
-                        
-                        self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(let sendResponse):
-                                XCTAssert(TransactionStatus.PENDING == sendResponse.status)
-                                self.deploySATransactionId = sendResponse.transactionId
-                            case .failure(let error):
-                                self.printError(error: error)
-                                XCTFail()
-                            }
-                            expectation.fulfill()
-                        }
+                    case .success(let sendResponse):
+                        XCTAssert(TransactionStatus.PENDING == sendResponse.status)
+                        self.deploySATransactionId = sendResponse.transactionId
                     case .failure(let error):
                         self.printError(error: error)
                         XCTFail()
-                        expectation.fulfill()
                     }
+                    expectation.fulfill()
                 }
-            case .failure(_):
+            case .failure(let error):
+                self.printError(error: error)
                 XCTFail()
                 expectation.fulfill()
             }
@@ -578,7 +577,8 @@ class SorobanTest: XCTestCase {
                         XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
                         XCTAssertNotNil(simulateResponse.results)
                         XCTAssert(simulateResponse.results!.count > 0)
-                        transaction.setFootprint(footprint: simulateResponse.footprint)
+                        XCTAssertNotNil(simulateResponse.footprint)
+                        transaction.setFootprint(footprint: simulateResponse.footprint!)
                         try! transaction.sign(keyPair: self.accountBKeyPair, network: self.network)
                         self.deployWithAssetFootprint = simulateResponse.footprint
                         // check encoding and decoding

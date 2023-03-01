@@ -59,4 +59,18 @@ public struct OperationXDR: XDRCodable {
             self.body = OperationBodyXDR.invokeHostFunction(invokeHostFuncOp!)
         }
     }
+    
+    public mutating func setContractAuth(auth:[ContractAuthXDR]) {
+        var invokeHostFuncOp:InvokeHostFunctionOpXDR? = nil
+        switch body {
+            case .invokeHostFunction(let value):
+                invokeHostFuncOp = value
+            default:
+                break
+        }
+        if invokeHostFuncOp != nil {
+            invokeHostFuncOp!.auth = auth
+            self.body = OperationBodyXDR.invokeHostFunction(invokeHostFuncOp!)
+        }
+    }
 }

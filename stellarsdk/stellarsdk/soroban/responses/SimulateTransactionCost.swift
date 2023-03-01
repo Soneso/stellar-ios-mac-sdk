@@ -1,5 +1,5 @@
 //
-//  Cost.swift
+//  SimulateTransactionCost.swift
 //  stellarsdk
 //
 //  Created by Christian Rogobete.
@@ -9,7 +9,7 @@
 import Foundation
 
 /// Information about the fees expected, instructions used, etc.
-public class Cost: NSObject, Decodable {
+public class SimulateTransactionCost: NSObject, Decodable {
     
     /// Stringified-number of the total cpu instructions consumed by this transaction
     public var cpuInsns:String

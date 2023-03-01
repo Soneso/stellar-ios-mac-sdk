@@ -14,6 +14,11 @@ public enum GetHealthResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
+public enum GetNetworkResponseEnum {
+    case success(response: GetNetworkResponse)
+    case failure(error: SorobanRpcRequestError)
+}
+
 public enum GetAccountResponseEnum {
     case success(response: GetAccountResponse)
     case failure(error: SorobanRpcRequestError)
@@ -39,13 +44,26 @@ public enum GetTransactionStatusResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
+public enum GetEventsResponseEnum {
+    case success(response: GetEventsResponse)
+    case failure(error: SorobanRpcRequestError)
+}
+
+public enum GetNonceResponseEnum {
+    case success(response: UInt64)
+    case failure(error: SorobanRpcRequestError)
+}
+
 /// A closure to be called with the response from a post challenge request.
 public typealias GetHealthResponseClosure = (_ response:GetHealthResponseEnum) -> (Void)
+public typealias GetNetworkResponseClosure = (_ response:GetNetworkResponseEnum) -> (Void)
 public typealias GetAccountResponseClosure = (_ response:GetAccountResponseEnum) -> (Void)
 public typealias GetLedgerEntryResponseClosure = (_ response:GetLedgerEntryResponseEnum) -> (Void)
 public typealias SimulateTransactionResponseClosure = (_ response:SimulateTransactionResponseEnum) -> (Void)
 public typealias SendTransactionResponseClosure = (_ response:SendTransactionResponseEnum) -> (Void)
 public typealias GetTransactionStatusResponseClosure = (_ response:GetTransactionStatusResponseEnum) -> (Void)
+public typealias GetEventsResponseClosure = (_ response:GetEventsResponseEnum) -> (Void)
+public typealias GetNonceResponseClosure = (_ response:GetNonceResponseEnum) -> (Void)
 
 /// An enum to diferentiate between succesful and failed responses
 private enum RpcResult {
@@ -112,6 +130,33 @@ public class SorobanServer {
                         do {
                             let health = try self.jsonDecoder.decode(GetHealthResponse.self, from: JSONSerialization.data(withJSONObject: result))
                             completion(.success(response: health))
+                        } catch {
+                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
+                        }
+                    } else if let error = response["error"] as? [String: Any] {
+                        completion(.failure(error: .errorResponse(errorData: error)))
+                    } else {
+                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    }
+                } else {
+                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                }
+            case .failure(let error):
+                completion(.failure(error: error))
+            }
+        }
+    }
+    
+    public func getNetwork(completion:@escaping GetNetworkResponseClosure) {
+        
+        request(body: try? buildRequestJson(method: "getNetwork")) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    if let result = response["result"] as? [String: Any] {
+                        do {
+                            let network = try self.jsonDecoder.decode(GetNetworkResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                            completion(.success(response: network))
                         } catch {
                             completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
                         }
@@ -271,6 +316,91 @@ public class SorobanServer {
                 completion(.failure(error: error))
             }
         }
+    }
+    
+    public func getNonce(accountId: String, contractId: String, completion:@escaping GetNonceResponseClosure) throws {
+        let ledgerKeyXdr = try LedgerKeyXDR(nonceAccountId: accountId, nonceContractId: contractId)
+        let encoded = try XDREncoder.encode(ledgerKeyXdr)
+        let ledgerKey = Data(bytes: encoded, count: encoded.count).base64EncodedString()
+        getLedgerEntry(base64EncodedKey:ledgerKey) { (response) -> (Void) in
+            switch response {
+            case .success(let response):
+                if let entryData = try? LedgerEntryDataXDR(xdr:response.ledgerEntryData) {
+                    switch entryData {
+                    case .contractData(let contractDataEntryXDR):
+                        if let nonce = contractDataEntryXDR.val.object?.u64 {
+                            completion(.success(response: nonce))
+                            return
+                        }
+                    default:
+                        break
+                    }
+                }
+                completion(.failure(error: SorobanRpcRequestError.parsingResponseFailed(message: "invalid ledger entry data", responseData: Data())))
+            case .failure(let error):
+                switch error {
+                case .errorResponse(let data):
+                    if let code = data["code"] as? Int, code == -32600 { // not found for that ledger
+                        completion(.success(response: 0))
+                        return
+                    }
+                default:
+                    break
+                }
+                completion(.failure(error: error))
+            }
+        }
+    }
+    
+    public func getEvents(startLedger:String, endLedger:String, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
+        
+        request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, endLedger: endLedger, eventFilters: eventFilters, paginationOptions: paginationOptions))) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    if let result = response["result"] as? [String: Any] {
+                        do {
+                            let decoded = try self.jsonDecoder.decode(GetEventsResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                            completion(.success(response: decoded))
+                        } catch {
+                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
+                        }
+                    } else if let error = response["error"] as? [String: Any] {
+                        completion(.failure(error: .errorResponse(errorData: error)))
+                    } else {
+                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    }
+                } else {
+                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                }
+            case .failure(let error):
+                completion(.failure(error: error))
+            }
+        }
+    }
+    
+    private func buildEventsRequestParams(startLedger:String, endLedger:String, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
+        var result: [String : Any] = [
+            "startLedger": startLedger,
+            "endLedger": endLedger,
+        ]
+        // filters
+        if (eventFilters != nil && eventFilters!.count > 0) {
+            var arr:[[String : Any]] = []
+            for event in eventFilters! {
+                arr.append(event.buildRequestParams())
+            }
+            result["filters"] = arr
+        }
+        
+        // pagination options
+        if (paginationOptions != nil) {
+            let params = paginationOptions!.buildRequestParams()
+            if (params != nil) {
+                result["pagination"] = params
+            }
+        }
+        return result;
     }
     
     private func buildRequestJson(method:String, args:Any? = nil) throws -> Data? {

@@ -22,6 +22,7 @@ public struct EnvelopeType {
     static let ENVELOPE_TYPE_CONTRACT_ID_FROM_ASSET: Int32 = 10
     static let ENVELOPE_TYPE_CONTRACT_ID_FROM_SOURCE_ACCOUNT: Int32 = 11
     static let ENVELOPE_TYPE_CREATE_CONTRACT_ARGS: Int32 = 12
+    static let ENVELOPE_TYPE_CONTRACT_AUTH: Int32 = 13
 }
 
 public enum TransactionEnvelopeXDR: XDRCodable {

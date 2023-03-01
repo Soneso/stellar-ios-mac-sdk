@@ -176,4 +176,21 @@ public class Transaction {
             transactionXDR.operations[i].setFootprint(footprint: footprint)
         }
     }
+    
+    public func setContractAuth(auth:[ContractAuth]) throws {
+        var authXdr:[ContractAuthXDR] = []
+        for next in auth {
+            authXdr.append(try ContractAuthXDR(contractAuth: next))
+        }
+        
+        for operation in operations {
+            if let op = operation as? InvokeHostFunctionOperation {
+                op.auth = authXdr
+            }
+        }
+        
+        for i in 0...transactionXDR.operations.count - 1 {
+            transactionXDR.operations[i].setContractAuth(auth: authXdr)
+        }
+    }
 }

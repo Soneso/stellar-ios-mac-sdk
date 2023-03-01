@@ -11,14 +11,11 @@ import Foundation
 /// Response that will be received when submitting a trial contract invocation.
 public class SimulateTransactionResponse: NSObject, Decodable {
     
-    /// Footprint containing the ledger keys expected to be written by this transaction
-    public var footprint:Footprint
-    
     /// If error is present then results will not be in the response
-    public var results:[TransactionStatusResult]?
+    public var results:[SimulateTransactionResult]?
     
     /// Information about the fees expected, instructions used, etc.
-    public var cost:Cost
+    public var cost:SimulateTransactionCost
     
     /// Stringified-number of the current latest ledger observed by the node when this response was generated.
     public var latestLedger:String
@@ -27,7 +24,6 @@ public class SimulateTransactionResponse: NSObject, Decodable {
     public var error:String?
 
     private enum CodingKeys: String, CodingKey {
-        case footprint
         case results
         case cost
         case latestLedger
@@ -36,17 +32,35 @@ public class SimulateTransactionResponse: NSObject, Decodable {
 
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        let footBase64 = try values.decodeIfPresent(String.self, forKey: .footprint)
-        if (footBase64 != nil && footBase64!.trim() != "") {
-            footprint = try Footprint(fromBase64: footBase64!)
-        } else {
-            footprint = Footprint.empty()
-        }
         latestLedger = try values.decode(String.self, forKey: .latestLedger)
-        cost = try values.decode(Cost.self, forKey: .cost)
+        cost = try values.decode(SimulateTransactionCost.self, forKey: .cost)
         error = try values.decodeIfPresent(String.self, forKey: .error)
         if error == nil {
-            results = try values.decodeIfPresent([TransactionStatusResult].self, forKey: .results)
+            results = try values.decodeIfPresent([SimulateTransactionResult].self, forKey: .results)
         }
+    }
+    
+    public var footprint:Footprint? {
+        if(results != nil && results!.count > 0) {
+            return results![0].footprint
+        }
+        return nil;
+    }
+    
+    public var auth:[ContractAuth]? {
+        if(results != nil && results!.count > 0) {
+            if let auth = results![0].auth, auth.count > 0 {
+                do {
+                    var res:[ContractAuth] = []
+                    for xdr in auth {
+                        res.append(try ContractAuth(fromBase64Xdr: xdr))
+                    }
+                    return res
+                } catch {
+                    return nil
+                }
+            }
+        }
+        return nil;
     }
 }

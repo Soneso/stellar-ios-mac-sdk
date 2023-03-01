@@ -64,6 +64,17 @@ public enum LedgerKeyXDR: XDRCodable {
             self = .account(acc)
         }
     }
+    
+    public init(nonceAccountId: String, nonceContractId: String) throws {
+        let address = Address.accountId(nonceAccountId)
+        let obj = SCObjectXDR.nonceKey(try SCAddressXDR(address: address))
+        let val = SCValXDR.object(obj)
+        if let contractIdData = nonceContractId.data(using: .hexadecimal) {
+            self = .contractData(WrappedData32(contractIdData), val)
+        } else {
+            throw StellarSDKError.invalidArgument(message: "invalid contract id")
+        }
+    }
   
     public func type() -> Int32 {
         switch self {

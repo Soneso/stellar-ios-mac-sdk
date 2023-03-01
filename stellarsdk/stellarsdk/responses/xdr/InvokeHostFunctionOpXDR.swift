@@ -214,21 +214,137 @@ public struct LedgerFootprintXDR: XDRCodable {
 public struct InvokeHostFunctionOpXDR: XDRCodable {
     public let function: HostFunctionXDR
     public var ledgerFootprint: LedgerFootprintXDR
+    public var auth: [ContractAuthXDR]
     
-    public init(function:HostFunctionXDR, ledgerFootprint:LedgerFootprintXDR) {
+    public init(function:HostFunctionXDR, ledgerFootprint:LedgerFootprintXDR, auth: [ContractAuthXDR]) {
         self.function = function
         self.ledgerFootprint = ledgerFootprint
+        self.auth = auth
     }
 
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         function = try container.decode(HostFunctionXDR.self)
         ledgerFootprint = try container.decode(LedgerFootprintXDR.self)
+        auth = try decodeArray(type: ContractAuthXDR.self, dec: decoder)
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(function)
         try container.encode(ledgerFootprint)
+        try container.encode(auth)
+    }
+}
+
+public struct AuthorizedInvocationXDR: XDRCodable {
+    public let contractID: WrappedData32
+    public let functionName: String
+    public let args: [SCValXDR]
+    public let subInvocations: [AuthorizedInvocationXDR]
+    
+    public init(contractID:WrappedData32, functionName:String, args:[SCValXDR], subInvocations: [AuthorizedInvocationXDR]) {
+        self.contractID = contractID
+        self.functionName = functionName
+        self.args = args
+        self.subInvocations = subInvocations
+    }
+    
+    public init(authorizedInvocation:AuthorizedInvocation) throws {
+        if let contractIdData = authorizedInvocation.contractId.data(using: .hexadecimal) {
+            
+            var subInvocs:[AuthorizedInvocationXDR] = []
+            for sub in authorizedInvocation.subInvocations {
+                subInvocs.append(try AuthorizedInvocationXDR(authorizedInvocation: sub))
+            }
+            self.init(contractID: WrappedData32(contractIdData),
+                      functionName: authorizedInvocation.functionName,
+                      args: authorizedInvocation.args,
+                      subInvocations: subInvocs)
+        } else {
+            throw StellarSDKError.invalidArgument(message: "error creating AuthorizedInvocationXDR, invalid authorizedInvocation.contractId")
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        contractID = try container.decode(WrappedData32.self)
+        functionName = try container.decode(String.self)
+        args = try decodeArray(type: SCValXDR.self, dec: decoder)
+        subInvocations = try decodeArray(type: AuthorizedInvocationXDR.self, dec: decoder)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(contractID)
+        try container.encode(functionName)
+        try container.encode(args)
+        try container.encode(subInvocations)
+    }
+}
+
+public struct AddressWithNonceXDR: XDRCodable {
+    public let address: SCAddressXDR
+    public let nonce: UInt64
+    
+    public init(address:SCAddressXDR, nonce:UInt64) {
+        self.address = address
+        self.nonce = nonce
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        address = try container.decode(SCAddressXDR.self)
+        nonce = try container.decode(UInt64.self)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(address)
+        try container.encode(nonce)
+    }
+}
+
+public struct ContractAuthXDR: XDRCodable {
+    public let addressWithNonce: AddressWithNonceXDR?
+    public let rootInvocation: AuthorizedInvocationXDR
+    public let signatureArgs: [SCValXDR]
+    
+    public init(addressWithNonce:AddressWithNonceXDR?, rootInvocation: AuthorizedInvocationXDR, signatureArgs: [SCValXDR]) {
+        self.addressWithNonce = addressWithNonce
+        self.rootInvocation = rootInvocation
+        self.signatureArgs = signatureArgs
+    }
+    
+    public init(contractAuth: ContractAuth) throws {
+        var addr:AddressWithNonceXDR? = nil
+        if (contractAuth.address != nil && contractAuth.nonce != nil) {
+            addr = AddressWithNonceXDR(address: try SCAddressXDR(address: contractAuth.address!), nonce: contractAuth.nonce!)
+        }
+        let root = try AuthorizedInvocationXDR(authorizedInvocation: contractAuth.rootInvocation)
+        // PATCH see https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
+        let oneMoreVec = SCValXDR.object(SCObjectXDR.vec(contractAuth.signatureArgs))
+        
+        self.init(addressWithNonce: addr, rootInvocation: root, signatureArgs: [oneMoreVec])
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        addressWithNonce = try decodeArray(type: AddressWithNonceXDR.self, dec: decoder).first
+        rootInvocation = try container.decode(AuthorizedInvocationXDR.self)
+        signatureArgs = try decodeArray(type: SCValXDR.self, dec: decoder)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        if let an = addressWithNonce {
+            try container.encode(Int32(1))
+            try container.encode(an)
+        }
+        else {
+            try container.encode(Int32(0))
+        }
+        try container.encode(rootInvocation)
+        try container.encode(signatureArgs)
     }
 }

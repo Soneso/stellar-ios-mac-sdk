@@ -27,17 +27,21 @@ public class InvokeHostFunctionOperation:Operation {
     public var salt:WrappedData32?
     public var asset:Asset?
     
+    // auth
+    public var auth:[ContractAuthXDR] = []
+    
     public init(hostFunctionType:HostFunctionType, sourceAccountId:String? = nil) {
         self.hostFunctionType = hostFunctionType;
         super.init(sourceAccountId: sourceAccountId)
     }
     
-    public static func forInvokingContract(contractId:String, functionName:String, functionArguments:[SCValXDR]? = nil, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+    public static func forInvokingContract(contractId:String, functionName:String, functionArguments:[SCValXDR]? = nil, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil, auth: [ContractAuth]? = nil) throws -> InvokeHostFunctionOperation {
         let op = InvokeHostFunctionOperation(hostFunctionType: HostFunctionType.invokeContract, sourceAccountId:sourceAccountId)
         op.contractId = contractId
         op.functionName = functionName
         op.arguments = functionArguments
         op.footprint = footprint
+        op.auth = try contractAuthArrToXdr(arr: auth)
         return op
     }
     
@@ -79,6 +83,7 @@ public class InvokeHostFunctionOperation:Operation {
     public init(fromXDR:InvokeHostFunctionOpXDR, sourceAccountId:String?) throws {
         
         self.footprint = fromXDR.ledgerFootprint
+        self.auth = fromXDR.auth
         
         switch fromXDR.function {
         case .invokeContract(let args):
@@ -145,6 +150,17 @@ public class InvokeHostFunctionOperation:Operation {
         }
     }
     
+    private static func contractAuthArrToXdr(arr:[ContractAuth]?) throws -> [ContractAuthXDR] {
+        if(arr == nil) {
+            return []
+        }
+        var xdrArr:[ContractAuthXDR] = []
+        for val in arr! {
+            xdrArr.append(try ContractAuthXDR(contractAuth: val))
+        }
+        return xdrArr
+    }
+    
     private func invokeContractBodyXDR() throws -> OperationBodyXDR {
         if let contractId = contractId, let functionName = functionName {
             var invokeArgs = [SCValXDR]()
@@ -154,7 +170,7 @@ public class InvokeHostFunctionOperation:Operation {
                 if arguments != nil {
                     invokeArgs.append(contentsOf: arguments!)
                 }
-                let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.invokeContract(invokeArgs), ledgerFootprint: footprint!)
+                let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.invokeContract(invokeArgs), ledgerFootprint: footprint!, auth: auth)
                 return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
             } else {
                 throw StellarSDKError.encodingError(message: "error xdr encoding invoke host function operation, invalid contract id")
@@ -167,7 +183,7 @@ public class InvokeHostFunctionOperation:Operation {
     private func installContractCodeBodyXDR() throws -> OperationBodyXDR {
         if let contractCode = contractCode {
             let args = InstallContractCodeArgsXDR(code: contractCode)
-            let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.installContractCode(args), ledgerFootprint: footprint!)
+            let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.installContractCode(args), ledgerFootprint: footprint!, auth: auth)
             return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
         } else {
             throw StellarSDKError.encodingError(message: "error xdr encoding invoke host function operation (install), incomplete data")
@@ -186,13 +202,13 @@ public class InvokeHostFunctionOperation:Operation {
             salt = WrappedData32(saltData)
         }
         let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromSourceAccount(salt!), source: SCContractCodeXDR.wasmRef(wasmId.wrappedData32FromHex()))
-        let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!)
+        let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!, auth: auth)
         return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
     }
     
     private func deploySACWithAssetBodyXDR(asset:Asset) throws -> OperationBodyXDR {
         let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromAsset(try asset.toXDR()), source: SCContractCodeXDR.token)
-        let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!)
+        let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!, auth: auth)
         return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
     }
     
@@ -208,7 +224,7 @@ public class InvokeHostFunctionOperation:Operation {
             salt = WrappedData32(saltData)
         }
         let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromSourceAccount(salt!), source: SCContractCodeXDR.token)
-        let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!)
+        let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!, auth: auth)
         return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
     }
     

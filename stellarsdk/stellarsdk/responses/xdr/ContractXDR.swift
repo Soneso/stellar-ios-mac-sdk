@@ -36,6 +36,14 @@ public enum SCStatusType: Int32 {
     case hostContextError = 6
     case vmError = 7
     case contractError = 8
+    case hostAuthError = 9
+}
+
+public enum SCHostAuthErrorCode: Int32 {
+    case unknownError = 0
+    case nonceError = 1
+    case duplicateAthorization = 2
+    case authNotAuthorized = 3
 }
 
 public enum SCHostValErrorCode: Int32 {
@@ -123,6 +131,7 @@ public enum SCStatusXDR: XDRCodable {
     case hostContextError(Int32)
     case vmError(Int32)
     case contractError(UInt32)
+    case hostAuthError(UInt32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -156,6 +165,9 @@ public enum SCStatusXDR: XDRCodable {
         case .contractError:
             let contractError = try container.decode(UInt32.self)
             self = .contractError(contractError)
+        case .hostAuthError:
+            let contractError = try container.decode(UInt32.self)
+            self = .hostAuthError(contractError)
         }
     }
     
@@ -170,6 +182,7 @@ public enum SCStatusXDR: XDRCodable {
         case .hostContextError: return SCStatusType.hostContextError.rawValue
         case .vmError: return SCStatusType.vmError.rawValue
         case .contractError: return SCStatusType.contractError.rawValue
+        case .hostAuthError: return SCStatusType.hostAuthError.rawValue
         }
     }
     
@@ -202,6 +215,9 @@ public enum SCStatusXDR: XDRCodable {
             break
         case .contractError (let contractError):
             try container.encode(contractError)
+            break
+        case .hostAuthError (let hostAuthError):
+            try container.encode(hostAuthError)
             break
         }
     }
@@ -313,6 +329,91 @@ public enum SCStatusXDR: XDRCodable {
             return nil
         }
     }
+    
+    public var hostAuthError:UInt32? {
+        switch self {
+        case .hostAuthError(let val):
+            return val
+        default:
+            return nil
+        }
+    }
+}
+
+public enum SCAddressType: Int32 {
+    case account = 0
+    case contract = 1
+}
+
+public enum SCAddressXDR: XDRCodable {
+    case account(PublicKey)
+    case contract(WrappedData32)
+    
+    public init(address: Address) throws {
+        switch address {
+        case .accountId(let accountId):
+            self = .account(try PublicKey(accountId: accountId))
+        case .contractId(let contractId):
+            if let contractIdData = contractId.data(using: .hexadecimal) {
+                self = .contract(WrappedData32(contractIdData))
+            } else {
+                throw StellarSDKError.encodingError(message: "error xdr encoding invoke host function operation, invalid contract id")
+            }
+        }
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        let discriminant = try container.decode(Int32.self)
+        let type = SCAddressType(rawValue: discriminant)!
+        
+        switch type {
+        case .account:
+            let account = try container.decode(PublicKey.self)
+            self = .account(account)
+        case .contract:
+            let contract = try container.decode(WrappedData32.self)
+            self = .contract(contract)
+        }
+    }
+    
+    public func type() -> Int32 {
+        switch self {
+        case .account: return SCAddressType.account.rawValue
+        case .contract: return SCAddressType.contract.rawValue
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(type())
+        switch self {
+        case .account (let account):
+            try container.encode(account)
+            break
+        case .contract (let contract):
+            try container.encode(contract)
+            break
+        }
+    }
+    
+    public var accountId:String? {
+        switch self {
+        case .account(let pk):
+            return pk.accountId
+        default:
+            return nil
+        }
+    }
+    
+    public var contractId:String? {
+        switch self {
+        case .contract(let data):
+            return data.wrapped.hexEncodedString()
+        default:
+            return nil
+        }
+    }
 }
 
 public enum SCValXDR: XDRCodable {
@@ -362,6 +463,19 @@ public enum SCValXDR: XDRCodable {
             let status = try container.decode(SCStatusXDR.self)
             self = .status(status)
         }
+    }
+    
+    public init(address: Address) throws {
+        self = .object(try SCObjectXDR(address: address))
+    }
+    
+    public init(accountEd25519Signature: AccountEd25519Signature) {
+        let pkBytes = SCObjectXDR.bytes(Data(accountEd25519Signature.publicKey.bytes))
+        let sigBytes = SCObjectXDR.bytes(Data(accountEd25519Signature.signature))
+        let pkMapEntry = SCMapEntryXDR(key: SCValXDR.symbol("public_key"), val: SCValXDR.object(pkBytes))
+        let sigMapEntry = SCMapEntryXDR(key: SCValXDR.symbol("signature"), val: SCValXDR.object(sigBytes))
+        let obj = SCObjectXDR.map([pkMapEntry,sigMapEntry])
+        self = .object(obj)
     }
     
     public func type() -> Int32 {
@@ -484,10 +598,19 @@ public enum SCValXDR: XDRCodable {
         }
     }
     
-    public var accountId:PublicKey? {
+    public var address:SCAddressXDR? {
         switch self {
         case .object(let obj):
-            return obj?.accountId
+            return obj?.address
+        default:
+            return nil
+        }
+    }
+    
+    public var nonceKey:SCAddressXDR? {
+        switch self {
+        case .object(let obj):
+            return obj?.nonceKey
         default:
             return nil
         }
@@ -616,7 +739,8 @@ public enum SCObjectType: Int32 {
     case i128 = 5
     case bytes = 6
     case contractCode = 7
-    case accountId = 8
+    case address = 8
+    case nonceKey = 9
 }
 
 
@@ -735,7 +859,8 @@ public enum SCObjectXDR: XDRCodable {
     case i128(Int128PartsXDR)
     case bytes(Data)
     case contractCode(SCContractCodeXDR)
-    case accountId(PublicKey)
+    case address(SCAddressXDR)
+    case nonceKey(SCAddressXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -767,11 +892,18 @@ public enum SCObjectXDR: XDRCodable {
         case .contractCode:
             let contractCode = try container.decode(SCContractCodeXDR.self)
             self = .contractCode(contractCode)
-        case .accountId:
-            let accountId = try container.decode(PublicKey.self)
-            self = .accountId(accountId)
+        case .address:
+            let address = try container.decode(SCAddressXDR.self)
+            self = .address(address)
+        case .nonceKey:
+            let address = try container.decode(SCAddressXDR.self)
+            self = .nonceKey(address)
         
         }
+    }
+    
+    public init(address: Address) throws {
+        self = .address(try SCAddressXDR(address: address))
     }
     
     public func type() -> Int32 {
@@ -784,7 +916,8 @@ public enum SCObjectXDR: XDRCodable {
         case .i128: return SCObjectType.i128.rawValue
         case .bytes: return SCObjectType.bytes.rawValue
         case .contractCode: return SCObjectType.contractCode.rawValue
-        case .accountId: return SCObjectType.accountId.rawValue
+        case .address: return SCObjectType.address.rawValue
+        case .nonceKey: return SCObjectType.nonceKey.rawValue
         }
     }
     
@@ -816,8 +949,11 @@ public enum SCObjectXDR: XDRCodable {
         case .contractCode (let contractCode):
             try container.encode(contractCode)
             break
-        case .accountId (let accountId):
-            try container.encode(accountId)
+        case .address (let address):
+            try container.encode(address)
+            break
+        case .nonceKey (let address):
+            try container.encode(address)
             break
         }
     }
@@ -926,13 +1062,26 @@ public enum SCObjectXDR: XDRCodable {
         }
     }
     
-    public var isAccountId:Bool {
-        return type() == SCObjectType.accountId.rawValue
+    public var isAddress:Bool {
+        return type() == SCObjectType.address.rawValue
     }
     
-    public var accountId:PublicKey? {
+    public var address:SCAddressXDR? {
         switch self {
-        case .accountId(let val):
+        case .address(let val):
+            return val
+        default:
+            return nil
+        }
+    }
+    
+    public var isNonceKey:Bool {
+        return type() == SCObjectType.nonceKey.rawValue
+    }
+    
+    public var nonceKey:SCAddressXDR? {
+        switch self {
+        case .nonceKey(let val):
             return val
         default:
             return nil
