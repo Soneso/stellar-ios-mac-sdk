@@ -392,9 +392,81 @@ let operation = try InvokeHostFunctionOperation.forDeploySACWithSourceAccount()
 let operation = try InvokeHostFunctionOperation.forDeploySACWithAsset(asset: asset)
 ```
 
+#### Soroban Authorization
+
+The iOS SDK provides support for the [Soroban Authorization Framework](https://soroban.stellar.org/docs/learn/authorization).
+
+For this purpose, it offers the `Address`, `AuthorizedInvocation` and `ContractAuth` classes as well as helper functions like `getNonce(...)`.
+
+Here is a code fragment showing how they can be used:
+
+**nonce:** 
+
+```swift
+sorobanServer.getNonce(accountId:accountId, contractId:contractId) { (response) -> (Void) in
+    switch response {
+        case .success(let nonce):
+            self.nonce = nonce
+        case .failure(let error):
+            //...
+    }
+}
+```
+
+**authorization:**
+
+```swift
+let invokerAddress = Address.accountId(invokerId)
+
+let functionName = "auth"
+let args = [try SCValXDR(address:invokerAddress), SCValXDR.u32(3)]
+
+let rootInvocation = AuthorizedInvocation(contractId: contractId, functionName: functionName, args: args)
+
+let contractAuth = ContractAuth(address: invokerAddress, nonce: nonce, rootInvocation: rootInvocation)
+
+try contractAuth.sign(signer: invokerKeyPair, network: Network.futurenet)
+
+let invokeOperation = try InvokeHostFunctionOperation.forInvokingContract(contractId: contractId, 
+                                                                          functionName: functionName,
+                                                                          functionArguments: args, 
+                                                                          auth: [contractAuth])
+                
+let transaction = try Transaction(sourceAccount: accountResponse,
+                                  operations: [invokeOperation], 
+                                  memo: Memo.none)
+                
+sorobanServer.simulateTransaction(transaction: transaction) { (response) -> //...
+```
+
+The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code).
+
+Many other examples like [iOS atomic swap](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanAtomicSwapTest.swift) can be found in the Soroban auth test cases of the SDK.
+
+#### Get Events
+
+The Soroban-RPC server provides the possibility to request contract events. 
+
+You can use the iOS SDK to request events like this:
+
+```swift
+let eventFilter = EventFilter(type:"contract", contractIds: [contractId])
+
+sorobanServer.getEvents(startLedger: startLedger, endLedger: endLedger, eventFilters: [eventFilter]) { (response) -> (Void) in
+    switch response {
+        case .success(let eventsResponse):
+            // ...
+        case .failure(let error):
+            // ...
+    }
+}
+```
+Find the complete example code [here](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanEventsTest.swift#L283).
+
+
 #### Hints and Tips
 
-You can find the working code and more in the [Soroban Test Cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanTest.swift) of the iOS SDK. The Hello Word Contract wasm byte-code file can be found in the soroban [test folder](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdkTests/soroban) folder.
+You can find the working code and more in the [Soroban Test Cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban) of the iOS SDK. The wasm byte-code files can also be found there.
 
 Because Soroban and the iOS SDK support for Soroban are in development, errors may occur. For a better understanding of an error you can enable the ```SorobanServer``` logging:
 
