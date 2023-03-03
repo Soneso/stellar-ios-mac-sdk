@@ -400,7 +400,7 @@ For this purpose, it offers the `Address`, `AuthorizedInvocation` and `ContractA
 
 Here is a code fragment showing how they can be used:
 
-**nonce:** 
+*Get nonce:* 
 
 ```swift
 sorobanServer.getNonce(accountId:accountId, contractId:contractId) { (response) -> (Void) in
@@ -413,7 +413,7 @@ sorobanServer.getNonce(accountId:accountId, contractId:contractId) { (response) 
 }
 ```
 
-**authorization:**
+*Authorization:*
 
 ```swift
 let invokerAddress = Address.accountId(invokerId)
