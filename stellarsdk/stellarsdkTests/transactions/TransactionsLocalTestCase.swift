@@ -554,6 +554,699 @@ class TransactionsLocalTestCase: XCTestCase {
         XCTAssert (txRepRes == txrep)
     }
     
+    func testTXRepSorobanInstallContractCode() {
+        let txrep = """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GAI4D5HAVLV4I3TJQ6IQJIDV53BC7UAQYPYVMTE4L6Y3VJ4I2OY3XI5T
+        tx.fee: 100
+        tx.seqNum: 699950820229121
+        tx.cond.type: PRECOND_NONE
+        tx.memo.type: MEMO_NONE
+        tx.operations.len: 1
+        tx.operations[0].sourceAccount._present: false
+        tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+        tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.function.installContractCodeArgs.code: 0061736d0100000001150460017e017e60027e7e017e60027f7e017e6000000219040178013800000176015f00000176013400010176013600010304030200030503010001060b027f0141000b7f0141000b071d030568656c6c6f0005066d656d6f727902000873646b737461727400060c01060a9004033900200041ff0171410849200142808080808080808010547145044041064208100410001a0b200041017441ff0171ad2001420486844201840bc10302067f027e410242001004100121082300220441046a2201411c6a22053f002203411074410f6a41707122064b04402003200520066b41ffff036a4180807c714110762206200320064a1b40004100480440200640004100480440000b0b0b200524002004411c360200200141046b22034100360204200341003602082003410336020c200341083602102001420037031020012008370310419c09280200410176410a4b044041064208100410001a0b03402002419c092802004101764804402002419c092802004101764f047f417f05200241017441a0096a2f01000b220341fa004c200341304e7104402007420686210842002107200341ff017141df004604404201210705200341ff0171220441394d200441304f710440200341ff0171ad422e7d210705200341ff0171220441da004d200441c1004f710440200341ff0171ad42357d210705200341ff0171220441fa004d200441e1004f710440200341ff0171ad423b7d21070541064208100410001a0b0b0b0b200720088421070541064208100410001a0b200241016a21020c010b0b41042007100421072001200129031020071002370310200120012903102000100337031020012903100b1100230104400f0b4101240141ac0924000b0b8d010600418c080b013c004198080b2f010000002800000041006c006c006f0063006100740069006f006e00200074006f006f0020006c00610072006700650041cc080b013c0041d8080b25010000001e0000007e006c00690062002f00720074002f0073007400750062002e0074007300418c090b011c004198090b11010000000a000000480065006c006c006f001e11636f6e7472616374656e766d657461763000000000000000000000001d00430e636f6e747261637473706563763000000000000000000000000568656c6c6f000000000000010000000000000002746f00000000000800000001000003ea00000008
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractCode.hash: e811e15852de29ad91753af97e6ead60d953f76e7eb2644aa09938c82d080199
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
+        tx.ext.v: 0
+        signatures.len: 1
+        signatures[0].hint: 88d3b1bb
+        signatures[0].signature: d7df4d986b844dfc760496e0e9d104c67211ff92961164caad7d59c449278480b25d69458e805787c12cd74bab7386f7c249be76def42c3f7c2c230531554b0b
+        """;
+        
+        let expected = "AAAAAgAAAAARwfTgquvEbmmHkQSgde7CL9AQw/FWTJxfsbqniNOxuwAAAGQAAnyaAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAgAAA3wAYXNtAQAAAAEVBGABfgF+YAJ+fgF+YAJ/fgF+YAAAAhkEAXgBOAAAAXYBXwAAAXYBNAABAXYBNgABAwQDAgADBQMBAAEGCwJ/AUEAC38BQQALBx0DBWhlbGxvAAUGbWVtb3J5AgAIc2Rrc3RhcnQABgwBBgqQBAM5ACAAQf8BcUEISSABQoCAgICAgICAEFRxRQRAQQZCCBAEEAAaCyAAQQF0Qf8Bca0gAUIEhoRCAYQLwQMCBn8CfkECQgAQBBABIQgjACIEQQRqIgFBHGoiBT8AIgNBEHRBD2pBcHEiBksEQCADIAUgBmtB//8DakGAgHxxQRB2IgYgAyAGShtAAEEASARAIAZAAEEASARAAAsLCyAFJAAgBEEcNgIAIAFBBGsiA0EANgIEIANBADYCCCADQQM2AgwgA0EINgIQIAFCADcDECABIAg3AxBBnAkoAgBBAXZBCksEQEEGQggQBBAAGgsDQCACQZwJKAIAQQF2SARAIAJBnAkoAgBBAXZPBH9BfwUgAkEBdEGgCWovAQALIgNB+gBMIANBME5xBEAgB0IGhiEIQgAhByADQf8BcUHfAEYEQEIBIQcFIANB/wFxIgRBOU0gBEEwT3EEQCADQf8Bca1CLn0hBwUgA0H/AXEiBEHaAE0gBEHBAE9xBEAgA0H/AXGtQjV9IQcFIANB/wFxIgRB+gBNIARB4QBPcQRAIANB/wFxrUI7fSEHBUEGQggQBBAAGgsLCwsgByAIhCEHBUEGQggQBBAAGgsgAkEBaiECDAELC0EEIAcQBCEHIAEgASkDECAHEAI3AxAgASABKQMQIAAQAzcDECABKQMQCxEAIwEEQA8LQQEkAUGsCSQACwuNAQYAQYwICwE8AEGYCAsvAQAAACgAAABBAGwAbABvAGMAYQB0AGkAbwBuACAAdABvAG8AIABsAGEAcgBnAGUAQcwICwE8AEHYCAslAQAAAB4AAAB+AGwAaQBiAC8AcgB0AC8AcwB0AHUAYgAuAHQAcwBBjAkLARwAQZgJCxEBAAAACgAAAEgAZQBsAGwAbwAeEWNvbnRyYWN0ZW52bWV0YXYwAAAAAAAAAAAAAAAdAEMOY29udHJhY3RzcGVjdjAAAAAAAAAAAAAAAAVoZWxsbwAAAAAAAAEAAAAAAAAAAnRvAAAAAAAIAAAAAQAAA+oAAAAIAAAAAQAAAAfoEeFYUt4prZF1Ovl+bq1g2VP3bn6yZEqgmTjILQgBmQAAAAAAAAAAAAAAAAAAAAGI07G7AAAAQNffTZhrhE38dgSW4OnRBMZyEf+SlhFkyq19WcRJJ4SAsl1pRY6AV4fBLNdLq3OG98JJvnbe9Cw/fCwjBTFVSws=";
+        
+        let xdr = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr)
+        XCTAssert (xdr == expected)
+        let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
+        print(txRepRes)
+        XCTAssert (txRepRes == txrep)
+    }
+    
+    func testTxRepSorobanCreateContract() {
+        let txrep = """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GCX3VZJFJTICKE7OJ6I2H5FQQ3UKRM4F55UCCVDPSJQEQOXZB7YRWEIM
+        tx.fee: 100
+        tx.seqNum: 700225698136066
+        tx.cond.type: PRECOND_NONE
+        tx.memo.type: MEMO_NONE
+        tx.operations.len: 1
+        tx.operations[0].sourceAccount._present: false
+        tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+        tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_CREATE_CONTRACT
+        tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.type: SCCONTRACT_CODE_WASM_REF
+        tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.wasm_id: e811e15852de29ad91753af97e6ead60d953f76e7eb2644aa09938c82d080199
+        tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.type: CONTRACT_ID_FROM_SOURCE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.salt: 697552b02c33739d0000799bb9ed9955ab849d58b575406461673b9f544f9437
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractCode.hash: e811e15852de29ad91753af97e6ead60d953f76e7eb2644aa09938c82d080199
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: 1a1e28893379dcf707d921ba300402d6976b15283a1e8b71df5d89e445d5d6df
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_STATIC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
+        tx.ext.v: 0
+        signatures.len: 1
+        signatures[0].hint: f90ff11b
+        signatures[0].signature: 999896922fd58755609c40fb640e472b746fec02c8ad088ac1c831743655dc5827922ea1eb52d6192360bfbc87da75162e21d366527f2289528269aea6a74b04
+        """;
+        
+        let expected = "AAAAAgAAAACvuuUlTNAlE+5PkaP0sIboqLOF72ghVG+SYEg6+Q/xGwAAAGQAAnzaAAAAAgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAABpdVKwLDNznQAAeZu57ZlVq4SdWLV1QGRhZzufVE+UNwAAAADoEeFYUt4prZF1Ovl+bq1g2VP3bn6yZEqgmTjILQgBmQAAAAEAAAAH6BHhWFLeKa2RdTr5fm6tYNlT925+smRKoJk4yC0IAZkAAAABAAAABhoeKIkzedz3B9khujAEAtaXaxUoOh6Lcd9dieRF1dbfAAAAAwAAAAMAAAAAAAAAAAAAAAH5D/EbAAAAQJmYlpIv1YdVYJxA+2QORyt0b+wCyK0IisHIMXQ2VdxYJ5IuoetS1hkjYL+8h9p1Fi4h02ZSfyKJUoJprqanSwQ=";
+        
+        
+        let xdr = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr)
+        XCTAssert (xdr == expected)
+        let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
+        print(txRepRes)
+        XCTAssert (txRepRes == txrep)
+    }
+    
+    func testTxRepSorobanInvokeContract() {
+        let txrep = """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GAQT2VKQOKFT25Y76MNVTUQGAW5FGMDUTEYRKRSN4T6R6Q3P4ODUABRL
+        tx.fee: 100
+        tx.seqNum: 700444741468163
+        tx.cond.type: PRECOND_NONE
+        tx.memo.type: MEMO_NONE
+        tx.operations.len: 1
+        tx.operations[0].sourceAccount._present: false
+        tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+        tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_INVOKE_CONTRACT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs.len: 3
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.bin: f7e6d29ebdbc115cbb06b9f144e557aff277ad5befb008bc9459a10bb134c479
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].sym: hello
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].sym: friend
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.contractID: f7e6d29ebdbc115cbb06b9f144e557aff277ad5befb008bc9459a10bb134c479
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.key.type: SCV_STATIC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].type: CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractCode.hash: e811e15852de29ad91753af97e6ead60d953f76e7eb2644aa09938c82d080199
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
+        tx.ext.v: 0
+        signatures.len: 1
+        signatures[0].hint: 6fe38740
+        signatures[0].signature: c5c8d1975454d00bb8610bd8d3b6880b82bf11e1f6f43e7d7339275bba88f4ec37673b58802f4298ec5c2bf89e36224f1b4ac21adef5d1486147def4b147b90e
+        """;
+        
+        let expected = "AAAAAgAAAAAhPVVQcos9dx/zG1nSBgW6UzB0mTEVRk3k/R9Db+OHQAAAAGQAAn0NAAAAAwAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAMAAAAEAAAAAQAAAAYAAAAg9+bSnr28EVy7BrnxROVXr/J3rVvvsAi8lFmhC7E0xHkAAAAFAAAABWhlbGxvAAAAAAAABQAAAAZmcmllbmQAAAAAAAIAAAAG9+bSnr28EVy7BrnxROVXr/J3rVvvsAi8lFmhC7E0xHkAAAADAAAAAwAAAAfoEeFYUt4prZF1Ovl+bq1g2VP3bn6yZEqgmTjILQgBmQAAAAAAAAAAAAAAAAAAAAFv44dAAAAAQMXI0ZdUVNALuGEL2NO2iAuCvxHh9vQ+fXM5J1u6iPTsN2c7WIAvQpjsXCv4njYiTxtKwhre9dFIYUfe9LFHuQ4=";
+        
+        let xdr = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr)
+        XCTAssert (xdr == expected)
+        let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
+        print(txRepRes)
+        XCTAssert (txRepRes == txrep)
+    }
+    
+    func testTxRepSorobanDeploySACSrcAcc() {
+        let txrep = """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GAHNCPKG2JV7BOIFVANQYSPQMBEAXOY43HWQKQRKXY5F4Q6BDC3X2DXU
+        tx.fee: 100
+        tx.seqNum: 701235015450628
+        tx.cond.type: PRECOND_NONE
+        tx.memo.type: MEMO_NONE
+        tx.operations.len: 1
+        tx.operations[0].sourceAccount._present: false
+        tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+        tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_CREATE_CONTRACT
+        tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.type: SCCONTRACT_CODE_TOKEN
+        tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.type: CONTRACT_ID_FROM_SOURCE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.salt: 9566851518a113fc7adedf5a4e27f0c04e4141f74ebac59598077500cf812544
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 0
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: 977fe6300294de0e53ef9bca220e625102fff523c35ea865bb79b764453be4b4
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_STATIC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
+        tx.ext.v: 0
+        signatures.len: 1
+        signatures[0].hint: c118b77d
+        signatures[0].signature: 403c2f3696f7df6400d1d087f55cd343015bf1bfa9bb95ae47b9ac6a160a3eaa152a83f615fe27f63cb94ccb77d12e5ecaf71500f6c7685fce44ef279c59fb03
+        """;
+        
+        let expected = "AAAAAgAAAAAO0T1G0mvwuQWoGwxJ8GBIC7sc2e0FQiq+Ol5DwRi3fQAAAGQAAn3FAAAABAAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAACVZoUVGKET/Hre31pOJ/DATkFB9066xZWYB3UAz4ElRAAAAAEAAAAAAAAAAQAAAAaXf+YwApTeDlPvm8oiDmJRAv/1I8NeqGW7ebdkRTvktAAAAAMAAAADAAAAAAAAAAAAAAABwRi3fQAAAEBAPC82lvffZADR0If1XNNDAVvxv6m7la5HuaxqFgo+qhUqg/YV/if2PLlMy3fRLl7K9xUA9sdoX85E7yecWfsD";
+        
+        let xdr = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr)
+        XCTAssert (xdr == expected)
+        let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
+        print(txRepRes)
+        XCTAssert (txRepRes == txrep)
+    }
+    
+    func testTxRepSorobanDeploySACAsset() {
+        let txrep = """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GBVB7WYKS7FNHYS6SU2XBNL3JTI57BWYHLRYNR65TNDAUIDCVPC5QODD
+        tx.fee: 100
+        tx.seqNum: 701415404077058
+        tx.cond.type: PRECOND_NONE
+        tx.memo.type: MEMO_NONE
+        tx.operations.len: 1
+        tx.operations[0].sourceAccount._present: false
+        tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+        tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_CREATE_CONTRACT
+        tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.source.type: SCCONTRACT_CODE_TOKEN
+        tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.type: CONTRACT_ID_FROM_ASSET
+        tx.operations[0].body.invokeHostFunctionOp.function.createContractArgs.contractID.asset: IOM:GBD6JRML66ATNIZV6SW3YAN2JIZO7BUU7JRYZP3KXQ6UWVOCNWTQXFZE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 0
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 3
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: df908b9ccc3102bcc8a2b1f03cf0b6a57697931362793bb332cdc729e975410f
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_STATIC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.contractID: df908b9ccc3102bcc8a2b1f03cf0b6a57697931362793bb332cdc729e975410f
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.type: SCO_VEC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.vec.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.vec[0].type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.vec[0].sym: Admin
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.contractID: df908b9ccc3102bcc8a2b1f03cf0b6a57697931362793bb332cdc729e975410f
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj.type: SCO_VEC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj.vec.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj.vec[0].type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].contractData.key.obj.vec[0].sym: Metadata
+        tx.operations[0].body.invokeHostFunctionOp.auth.len: 0
+        tx.ext.v: 0
+        signatures.len: 1
+        signatures[0].hint: 62abc5d8
+        signatures[0].signature: 60965ae1b766081a6439f54c6e167284ced64f2a555bc0ee3894bd6e894a443941ad04bfb7678375f8a34932581bc6c267a5af7562e1de9d34a2577a05a99103
+        """;
+        
+        let expected = "AAAAAgAAAABqH9sKl8rT4l6VNXC1e0zR34bYOuOGx92bRgogYqvF2AAAAGQAAn3vAAAAAgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAAIAAAABSU9NAAAAAABH5MWL94E2ozX0rbwBukoy74aU+mOMv2q8PUtVwm2nCwAAAAEAAAAAAAAAAwAAAAbfkIuczDECvMiisfA88LaldpeTE2J5O7Myzccp6XVBDwAAAAMAAAADAAAABt+Qi5zMMQK8yKKx8DzwtqV2l5MTYnk7szLNxynpdUEPAAAABAAAAAEAAAAAAAAAAQAAAAUAAAAFQWRtaW4AAAAAAAAG35CLnMwxArzIorHwPPC2pXaXkxNieTuzMs3HKel1QQ8AAAAEAAAAAQAAAAAAAAABAAAABQAAAAhNZXRhZGF0YQAAAAAAAAAAAAAAAWKrxdgAAABAYJZa4bdmCBpkOfVMbhZyhM7WTypVW8DuOJS9bolKRDlBrQS/t2eDdfijSTJYG8bCZ6WvdWLh3p00old6BamRAw==";
+        
+        let xdr = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr)
+        XCTAssert (xdr == expected)
+        let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
+        print(txRepRes)
+        XCTAssert (txRepRes == txrep)
+    }
+    
+    func testTxRepSorobanInvokeAuthTest1() {
+        let txrep = """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GAY5EPJ3N5KL4QHXADD2W6B574IIU5DZWRY63TTRCGHJBNNYUVVQZ3MR
+        tx.fee: 100
+        tx.seqNum: 701591497736195
+        tx.cond.type: PRECOND_NONE
+        tx.memo.type: MEMO_NONE
+        tx.operations.len: 1
+        tx.operations[0].sourceAccount._present: false
+        tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+        tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_INVOKE_CONTRACT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs.len: 4
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.bin: 6a964b996d200a64972d35129abbee5b1724ade12974dfe664d433466f4d01f9
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].sym: auth
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.address.accountId: GDETISNUQP33A3G57OKA3ULULK6VVT6IYBBLJUSXFZQX2W3YCKBM6WYH
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].type: SCV_U32
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].u32: 3
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 3
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].account.accountID: GDETISNUQP33A3G57OKA3ULULK6VVT6IYBBLJUSXFZQX2W3YCKBM6WYH
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractData.contractID: 6a964b996d200a64972d35129abbee5b1724ade12974dfe664d433466f4d01f9
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractData.key.type: SCV_STATIC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[2].type: CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[2].contractCode.hash: 9f0bc3696780799491f3f1ef7d8d6c9eb4ac09e4d7e54e623ab92f1b767c4389
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: 6a964b996d200a64972d35129abbee5b1724ade12974dfe664d433466f4d01f9
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj.address.accountId: GDETISNUQP33A3G57OKA3ULULK6VVT6IYBBLJUSXFZQX2W3YCKBM6WYH
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.contractID: 6a964b996d200a64972d35129abbee5b1724ade12974dfe664d433466f4d01f9
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.type: SCO_NONCE_KEY
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.nonceAddress.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].contractData.key.obj.nonceAddress.accountId: GDETISNUQP33A3G57OKA3ULULK6VVT6IYBBLJUSXFZQX2W3YCKBM6WYH
+        tx.operations[0].body.invokeHostFunctionOp.auth.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce.address.accountId: GDETISNUQP33A3G57OKA3ULULK6VVT6IYBBLJUSXFZQX2W3YCKBM6WYH
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce.nonce: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.contractID: 6a964b996d200a64972d35129abbee5b1724ade12974dfe664d433466f4d01f9
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.functionName: auth
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.address.accountId: GDETISNUQP33A3G57OKA3ULULK6VVT6IYBBLJUSXFZQX2W3YCKBM6WYH
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[1].type: SCV_U32
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[1].u32: 3
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations.len: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.type: SCO_MAP
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].key.type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].key.sym: public_key
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].val.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].val.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].val.obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].val.obj.bin: c93449b483f7b06cddfb940dd1745abd5acfc8c042b4d2572e617d5b781282cf
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].key.type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].key.sym: signature
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].val.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].val.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].val.obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].val.obj.bin: 0b8e45e4ce3a350696d0ec24c8dfd4f1835f0fb640029aa1b009e46041fc331f9ec4d27266b3141d2ca283db6887f4ebb68531d343d4e044f9bb9e2751268904
+        tx.ext.v: 0
+        signatures.len: 1
+        signatures[0].hint: b8a56b0c
+        signatures[0].signature: 9a766e5916a608dcc2b17c32a00a51a5bae3c062cf3c6a95eeeab95049888193f4a46f5ad6e2124c2bf3439188678122f1427badf688131e773cdaa45c3b9109
+        """;
+        
+        let expected = "AAAAAgAAAAAx0j07b1S+QPcAx6t4Pf8QinR5tHHtznERjpC1uKVrDAAAAGQAAn4YAAAAAwAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAQAAAAEAAAAAQAAAAYAAAAgapZLmW0gCmSXLTUSmrvuWxckreEpdN/mZNQzRm9NAfkAAAAFAAAABGF1dGgAAAAEAAAAAQAAAAgAAAAAAAAAAMk0SbSD97Bs3fuUDdF0Wr1az8jAQrTSVy5hfVt4EoLPAAAAAQAAAAMAAAADAAAAAAAAAADJNEm0g/ewbN37lA3RdFq9Ws/IwEK00lcuYX1beBKCzwAAAAZqlkuZbSAKZJctNRKau+5bFySt4Sl03+Zk1DNGb00B+QAAAAMAAAADAAAAB58Lw2lngHmUkfPx732NbJ60rAnk1+VOYjq5Lxt2fEOJAAAAAgAAAAZqlkuZbSAKZJctNRKau+5bFySt4Sl03+Zk1DNGb00B+QAAAAQAAAABAAAACAAAAAAAAAAAyTRJtIP3sGzd+5QN0XRavVrPyMBCtNJXLmF9W3gSgs8AAAAGapZLmW0gCmSXLTUSmrvuWxckreEpdN/mZNQzRm9NAfkAAAAEAAAAAQAAAAkAAAAAAAAAAMk0SbSD97Bs3fuUDdF0Wr1az8jAQrTSVy5hfVt4EoLPAAAAAQAAAAEAAAAAAAAAAMk0SbSD97Bs3fuUDdF0Wr1az8jAQrTSVy5hfVt4EoLPAAAAAAAAAABqlkuZbSAKZJctNRKau+5bFySt4Sl03+Zk1DNGb00B+QAAAARhdXRoAAAAAgAAAAQAAAABAAAACAAAAAAAAAAAyTRJtIP3sGzd+5QN0XRavVrPyMBCtNJXLmF9W3gSgs8AAAABAAAAAwAAAAAAAAABAAAABAAAAAEAAAAAAAAAAQAAAAQAAAABAAAAAQAAAAIAAAAFAAAACnB1YmxpY19rZXkAAAAAAAQAAAABAAAABgAAACDJNEm0g/ewbN37lA3RdFq9Ws/IwEK00lcuYX1beBKCzwAAAAUAAAAJc2lnbmF0dXJlAAAAAAAABAAAAAEAAAAGAAAAQAuOReTOOjUGltDsJMjf1PGDXw+2QAKaobAJ5GBB/DMfnsTScmazFB0sooPbaIf067aFMdND1OBE+bueJ1EmiQQAAAAAAAAAAbilawwAAABAmnZuWRamCNzCsXwyoApRpbrjwGLPPGqV7uq5UEmIgZP0pG9a1uISTCvzQ5GIZ4Ei8UJ7rfaIEx53PNqkXDuRCQ==";
+        
+        
+        let xdr = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr)
+        XCTAssert (xdr == expected)
+        let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
+        print(txRepRes)
+        XCTAssert (txRepRes == txrep)
+    }
+    
+    func testTxRepSorobanInvokeAuthTest2() {
+        let txrep = """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GDYVOEHHXD7FNTYCQU6K2JP5CPIDMC7647RLWUNXP7OTSKYCK6I4ORZD
+        tx.fee: 100
+        tx.seqNum: 706685328949252
+        tx.cond.type: PRECOND_NONE
+        tx.memo.type: MEMO_NONE
+        tx.operations.len: 1
+        tx.operations[0].sourceAccount._present: false
+        tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+        tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_INVOKE_CONTRACT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs.len: 4
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.bin: ace40a194f6fa17565dd96f77d5c018c7cd95a71a9fbf067dbf9ca734880597a
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].sym: auth
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.address.accountId: GDYVOEHHXD7FNTYCQU6K2JP5CPIDMC7647RLWUNXP7OTSKYCK6I4ORZD
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].type: SCV_U32
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].u32: 5
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.contractID: ace40a194f6fa17565dd96f77d5c018c7cd95a71a9fbf067dbf9ca734880597a
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.key.type: SCV_STATIC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].type: CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractCode.hash: 9f0bc3696780799491f3f1ef7d8d6c9eb4ac09e4d7e54e623ab92f1b767c4389
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.contractID: ace40a194f6fa17565dd96f77d5c018c7cd95a71a9fbf067dbf9ca734880597a
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].contractData.key.obj.address.accountId: GDYVOEHHXD7FNTYCQU6K2JP5CPIDMC7647RLWUNXP7OTSKYCK6I4ORZD
+        tx.operations[0].body.invokeHostFunctionOp.auth.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce._present: false
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.contractID: ace40a194f6fa17565dd96f77d5c018c7cd95a71a9fbf067dbf9ca734880597a
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.functionName: auth
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.address.accountId: GDYVOEHHXD7FNTYCQU6K2JP5CPIDMC7647RLWUNXP7OTSKYCK6I4ORZD
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[1].type: SCV_U32
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[1].u32: 5
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations.len: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs.len: 0
+        tx.ext.v: 0
+        signatures.len: 1
+        signatures[0].hint: 025791c7
+        signatures[0].signature: db7ccd50b6a791466fdbbe9e8fca7999409ac64b181493ac896029172a3819d46839cb3c1839f0e94adcc8f666422b82a82be9aa86c2869a02ba19675100a609
+        """;
+        
+        let expected = "AAAAAgAAAADxVxDnuP5WzwKFPK0l/RPQNgv+5+K7Ubd/3TkrAleRxwAAAGQAAoK6AAAABAAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAQAAAAEAAAAAQAAAAYAAAAgrOQKGU9voXVl3Zb3fVwBjHzZWnGp+/Bn2/nKc0iAWXoAAAAFAAAABGF1dGgAAAAEAAAAAQAAAAgAAAAAAAAAAPFXEOe4/lbPAoU8rSX9E9A2C/7n4rtRt3/dOSsCV5HHAAAAAQAAAAUAAAACAAAABqzkChlPb6F1Zd2W931cAYx82VpxqfvwZ9v5ynNIgFl6AAAAAwAAAAMAAAAHnwvDaWeAeZSR8/HvfY1snrSsCeTX5U5iOrkvG3Z8Q4kAAAABAAAABqzkChlPb6F1Zd2W931cAYx82VpxqfvwZ9v5ynNIgFl6AAAABAAAAAEAAAAIAAAAAAAAAADxVxDnuP5WzwKFPK0l/RPQNgv+5+K7Ubd/3TkrAleRxwAAAAEAAAAArOQKGU9voXVl3Zb3fVwBjHzZWnGp+/Bn2/nKc0iAWXoAAAAEYXV0aAAAAAIAAAAEAAAAAQAAAAgAAAAAAAAAAPFXEOe4/lbPAoU8rSX9E9A2C/7n4rtRt3/dOSsCV5HHAAAAAQAAAAUAAAAAAAAAAAAAAAAAAAABAleRxwAAAEDbfM1QtqeRRm/bvp6PynmZQJrGSxgUk6yJYCkXKjgZ1Gg5yzwYOfDpStzI9mZCK4KoK+mqhsKGmgK6GWdRAKYJ";
+        
+        
+        
+        let xdr = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr)
+        XCTAssert (xdr == expected)
+        let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
+        print(txRepRes)
+        XCTAssert (txRepRes == txrep)
+    }
+    
+    func testTxRepSorobanInvokeAuthTestSwap() {
+        let txrep = """
+        type: ENVELOPE_TYPE_TX
+        tx.sourceAccount: GAERW3OYAVYMZMPMVKHSCDS4ORFPLT5Z3YXA4VM3BVYEA2W7CG3V6YYB
+        tx.fee: 100
+        tx.seqNum: 454682417823797
+        tx.cond.type: PRECOND_NONE
+        tx.memo.type: MEMO_NONE
+        tx.operations.len: 1
+        tx.operations[0].sourceAccount._present: false
+        tx.operations[0].body.type: INVOKE_HOST_FUNCTION
+        tx.operations[0].body.invokeHostFunctionOp.function.type: HOST_FUNCTION_TYPE_INVOKE_CONTRACT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs.len: 10
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[0].obj.bin: 828e7031194ec4fb9461d8283b448d3eaf5e36357cf465d8db6021ded6eff05c
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[1].sym: swap
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[2].obj.address.accountId: GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[3].obj.address.accountId: GBMLPRFCZDZJPKUPHUSHCKA737GOZL7ERZLGGMJ6YGHBFJZ6ZKMKCZTM
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[4].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[4].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[4].obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[4].obj.bin: d93f5c7bb0ebc4a9c8f727c5cebc4e41194d38257e1d0d910356b43bfc528813
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[5].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[5].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[5].obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[5].obj.bin: 8dc97b166bd98c755b0e881ee9bd6d0b45e797ec73671f30e026f14a0f1cce67
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[6].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[6].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[6].obj.type: SCO_I128
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[6].obj.i128.lo: 1000
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[6].obj.i128.hi: 0
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[7].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[7].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[7].obj.type: SCO_I128
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[7].obj.i128.lo: 4500
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[7].obj.i128.hi: 0
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[8].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[8].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[8].obj.type: SCO_I128
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[8].obj.i128.lo: 5000
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[8].obj.i128.hi: 0
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[9].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[9].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[9].obj.type: SCO_I128
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[9].obj.i128.lo: 950
+        tx.operations[0].body.invokeHostFunctionOp.function.invokeArgs[9].obj.i128.hi: 0
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly.len: 6
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.contractID: 828e7031194ec4fb9461d8283b448d3eaf5e36357cf465d8db6021ded6eff05c
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.key.type: SCV_STATIC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[0].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractData.contractID: 8dc97b166bd98c755b0e881ee9bd6d0b45e797ec73671f30e026f14a0f1cce67
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractData.key.type: SCV_STATIC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[1].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[2].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[2].contractData.contractID: 8dc97b166bd98c755b0e881ee9bd6d0b45e797ec73671f30e026f14a0f1cce67
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[2].contractData.key.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[2].contractData.key.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[2].contractData.key.obj.type: SCO_VEC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[2].contractData.key.obj.vec.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[2].contractData.key.obj.vec[0].type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[2].contractData.key.obj.vec[0].sym: Metadata
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[3].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[3].contractData.contractID: d93f5c7bb0ebc4a9c8f727c5cebc4e41194d38257e1d0d910356b43bfc528813
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[3].contractData.key.type: SCV_STATIC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[3].contractData.key.ic: SCS_LEDGER_KEY_CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[4].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[4].contractData.contractID: d93f5c7bb0ebc4a9c8f727c5cebc4e41194d38257e1d0d910356b43bfc528813
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[4].contractData.key.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[4].contractData.key.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[4].contractData.key.obj.type: SCO_VEC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[4].contractData.key.obj.vec.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[4].contractData.key.obj.vec[0].type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[4].contractData.key.obj.vec[0].sym: Metadata
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[5].type: CONTRACT_CODE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readOnly[5].contractCode.hash: 2aa932bbdb0faf6fd2de7f2d190b3739ca32f62a156c73b25dd908dae8b1a989
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite.len: 8
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].type: ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[0].account.accountID: GBMLPRFCZDZJPKUPHUSHCKA737GOZL7ERZLGGMJ6YGHBFJZ6ZKMKCZTM
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].type: ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[1].account.accountID: GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].type: TRUSTLINE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].trustLine.accountID: GBMLPRFCZDZJPKUPHUSHCKA737GOZL7ERZLGGMJ6YGHBFJZ6ZKMKCZTM
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[2].trustLine.asset: CAT:GDYD52U5BORAJA634A7MXGKDUQAK6UNY7T3B67UIB5XQGJ5QHHULQV3Y
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[3].type: TRUSTLINE
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[3].trustLine.accountID: GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[3].trustLine.asset: CAT:GDYD52U5BORAJA634A7MXGKDUQAK6UNY7T3B67UIB5XQGJ5QHHULQV3Y
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[4].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[4].contractData.contractID: 828e7031194ec4fb9461d8283b448d3eaf5e36357cf465d8db6021ded6eff05c
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[4].contractData.key.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[4].contractData.key.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[4].contractData.key.obj.type: SCO_NONCE_KEY
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[4].contractData.key.obj.nonceAddress.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[4].contractData.key.obj.nonceAddress.accountId: GBMLPRFCZDZJPKUPHUSHCKA737GOZL7ERZLGGMJ6YGHBFJZ6ZKMKCZTM
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[5].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[5].contractData.contractID: 828e7031194ec4fb9461d8283b448d3eaf5e36357cf465d8db6021ded6eff05c
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[5].contractData.key.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[5].contractData.key.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[5].contractData.key.obj.type: SCO_NONCE_KEY
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[5].contractData.key.obj.nonceAddress.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[5].contractData.key.obj.nonceAddress.accountId: GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.contractID: 8dc97b166bd98c755b0e881ee9bd6d0b45e797ec73671f30e026f14a0f1cce67
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.type: SCO_VEC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[0].type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[0].sym: Allowance
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.type: SCO_MAP
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[0].key.type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[0].key.sym: from
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[0].val.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[0].val.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[0].val.obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[0].val.obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[0].val.obj.address.accountId: GBMLPRFCZDZJPKUPHUSHCKA737GOZL7ERZLGGMJ6YGHBFJZ6ZKMKCZTM
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[1].key.type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[1].key.sym: spender
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[1].val.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[1].val.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[1].val.obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[1].val.obj.address.type: SC_ADDRESS_TYPE_CONTRACT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[6].contractData.key.obj.vec[1].obj.map[1].val.obj.address.contractId: 828e7031194ec4fb9461d8283b448d3eaf5e36357cf465d8db6021ded6eff05c
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].type: CONTRACT_DATA
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.contractID: d93f5c7bb0ebc4a9c8f727c5cebc4e41194d38257e1d0d910356b43bfc528813
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.type: SCO_VEC
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[0].type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[0].sym: Allowance
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.type: SCO_MAP
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[0].key.type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[0].key.sym: from
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[0].val.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[0].val.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[0].val.obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[0].val.obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[0].val.obj.address.accountId: GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[1].key.type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[1].key.sym: spender
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[1].val.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[1].val.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[1].val.obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[1].val.obj.address.type: SC_ADDRESS_TYPE_CONTRACT
+        tx.operations[0].body.invokeHostFunctionOp.footprint.readWrite[7].contractData.key.obj.vec[1].obj.map[1].val.obj.address.contractId: 828e7031194ec4fb9461d8283b448d3eaf5e36357cf465d8db6021ded6eff05c
+        tx.operations[0].body.invokeHostFunctionOp.auth.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce.address.accountId: GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].addressWithNonce.nonce: 6
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.contractID: 828e7031194ec4fb9461d8283b448d3eaf5e36357cf465d8db6021ded6eff05c
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.functionName: swap
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args.len: 4
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[0].obj.bin: d93f5c7bb0ebc4a9c8f727c5cebc4e41194d38257e1d0d910356b43bfc528813
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[1].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[1].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[1].obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[1].obj.bin: 8dc97b166bd98c755b0e881ee9bd6d0b45e797ec73671f30e026f14a0f1cce67
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[2].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[2].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[2].obj.type: SCO_I128
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[2].obj.i128.lo: 1000
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[2].obj.i128.hi: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[3].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[3].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[3].obj.type: SCO_I128
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[3].obj.i128.lo: 4500
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.args[3].obj.i128.hi: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].contractID: d93f5c7bb0ebc4a9c8f727c5cebc4e41194d38257e1d0d910356b43bfc528813
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].functionName: incr_allow
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args.len: 3
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[0].obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[0].obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[0].obj.address.accountId: GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[1].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[1].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[1].obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[1].obj.address.type: SC_ADDRESS_TYPE_CONTRACT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[1].obj.address.contractId: 828e7031194ec4fb9461d8283b448d3eaf5e36357cf465d8db6021ded6eff05c
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[2].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[2].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[2].obj.type: SCO_I128
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[2].obj.i128.lo: 1000
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].args[2].obj.i128.hi: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].rootInvocation.subInvocations[0].subInvocations.len: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.type: SCO_MAP
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].key.type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].key.sym: public_key
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].val.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].val.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].val.obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[0].val.obj.bin: c13e9ed33229c9ca59e7fba7505c900235cd792c5f9a2763f2d41691e0fd7424
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].key.type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].key.sym: signature
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].val.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].val.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].val.obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.auth[0].signatureArgs[0].obj.map[1].val.obj.bin: e0b6363b70446590bc37bd9538ed01cad346c9f6a0ed3bad9d7af04fd284c91f5a801bb546d6b07db5e4adc14802aa191c279c545e7a45106fa67698a4c3f206
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].addressWithNonce._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].addressWithNonce.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].addressWithNonce.address.accountId: GBMLPRFCZDZJPKUPHUSHCKA737GOZL7ERZLGGMJ6YGHBFJZ6ZKMKCZTM
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].addressWithNonce.nonce: 7
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.contractID: 828e7031194ec4fb9461d8283b448d3eaf5e36357cf465d8db6021ded6eff05c
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.functionName: swap
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args.len: 4
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[0].obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[0].obj.bin: 8dc97b166bd98c755b0e881ee9bd6d0b45e797ec73671f30e026f14a0f1cce67
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[1].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[1].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[1].obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[1].obj.bin: d93f5c7bb0ebc4a9c8f727c5cebc4e41194d38257e1d0d910356b43bfc528813
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[2].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[2].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[2].obj.type: SCO_I128
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[2].obj.i128.lo: 5000
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[2].obj.i128.hi: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[3].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[3].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[3].obj.type: SCO_I128
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[3].obj.i128.lo: 950
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.args[3].obj.i128.hi: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].contractID: 8dc97b166bd98c755b0e881ee9bd6d0b45e797ec73671f30e026f14a0f1cce67
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].functionName: incr_allow
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args.len: 3
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[0].obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[0].obj.address.type: SC_ADDRESS_TYPE_ACCOUNT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[0].obj.address.accountId: GBMLPRFCZDZJPKUPHUSHCKA737GOZL7ERZLGGMJ6YGHBFJZ6ZKMKCZTM
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[1].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[1].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[1].obj.type: SCO_ADDRESS
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[1].obj.address.type: SC_ADDRESS_TYPE_CONTRACT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[1].obj.address.contractId: 828e7031194ec4fb9461d8283b448d3eaf5e36357cf465d8db6021ded6eff05c
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[2].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[2].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[2].obj.type: SCO_I128
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[2].obj.i128.lo: 5000
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].args[2].obj.i128.hi: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].rootInvocation.subInvocations[0].subInvocations.len: 0
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs.len: 1
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.type: SCO_MAP
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map.len: 2
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map[0].key.type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map[0].key.sym: public_key
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map[0].val.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map[0].val.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map[0].val.obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map[0].val.obj.bin: 58b7c4a2c8f297aa8f3d2471281fdfccecafe48e5663313ec18e12a73eca98a1
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map[1].key.type: SCV_SYMBOL
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map[1].key.sym: signature
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map[1].val.type: SCV_OBJECT
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map[1].val.obj._present: true
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map[1].val.obj.type: SCO_BYTES
+        tx.operations[0].body.invokeHostFunctionOp.auth[1].signatureArgs[0].obj.map[1].val.obj.bin: ffdb371608f9953970ada9a99b3c6157f5fb20f44434409a268b920c27fb364b14a35068be5d147fa7169d18c6598cfd6d49d1dc38a9129260b208401d090702
+        tx.ext.v: 0
+        signatures.len: 1
+        signatures[0].hint: df11b75f
+        signatures[0].signature: cee4413fab6192bddf46d2a5fe693bde708532759b326de2e171dc976a831c99e126e84fa6325e95876c6752fcc8d7b35e1858f103eec52cc031dc687ab3c308
+        """;
+        
+        let expected = "AAAAAgAAAAAJG23YBXDMseyqjyEOXHRK9c+53i4OVZsNcEBq3xG3XwAAAGQAAZ2IAAAANQAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAAAAAAoAAAAEAAAAAQAAAAYAAAAggo5wMRlOxPuUYdgoO0SNPq9eNjV89GXY22Ah3tbv8FwAAAAFAAAABHN3YXAAAAAEAAAAAQAAAAgAAAAAAAAAAME+ntMyKcnKWef7p1BckAI1zXksX5onY/LUFpHg/XQkAAAABAAAAAEAAAAIAAAAAAAAAABYt8SiyPKXqo89JHEoH9/M7K/kjlZjMT7BjhKnPsqYoQAAAAQAAAABAAAABgAAACDZP1x7sOvEqcj3J8XOvE5BGU04JX4dDZEDVrQ7/FKIEwAAAAQAAAABAAAABgAAACCNyXsWa9mMdVsOiB7pvW0LReeX7HNnHzDgJvFKDxzOZwAAAAQAAAABAAAABQAAAAAAAAPoAAAAAAAAAAAAAAAEAAAAAQAAAAUAAAAAAAARlAAAAAAAAAAAAAAABAAAAAEAAAAFAAAAAAAAE4gAAAAAAAAAAAAAAAQAAAABAAAABQAAAAAAAAO2AAAAAAAAAAAAAAAGAAAABoKOcDEZTsT7lGHYKDtEjT6vXjY1fPRl2NtgId7W7/BcAAAAAwAAAAMAAAAGjcl7FmvZjHVbDoge6b1tC0Xnl+xzZx8w4CbxSg8czmcAAAADAAAAAwAAAAaNyXsWa9mMdVsOiB7pvW0LReeX7HNnHzDgJvFKDxzOZwAAAAQAAAABAAAAAAAAAAEAAAAFAAAACE1ldGFkYXRhAAAABtk/XHuw68SpyPcnxc68TkEZTTglfh0NkQNWtDv8UogTAAAAAwAAAAMAAAAG2T9ce7DrxKnI9yfFzrxOQRlNOCV+HQ2RA1a0O/xSiBMAAAAEAAAAAQAAAAAAAAABAAAABQAAAAhNZXRhZGF0YQAAAAcqqTK72w+vb9Lefy0ZCzc5yjL2KhVsc7Jd2Qja6LGpiQAAAAgAAAAAAAAAAFi3xKLI8peqjz0kcSgf38zsr+SOVmMxPsGOEqc+ypihAAAAAAAAAADBPp7TMinJylnn+6dQXJACNc15LF+aJ2Py1BaR4P10JAAAAAEAAAAAWLfEosjyl6qPPSRxKB/fzOyv5I5WYzE+wY4Spz7KmKEAAAABQ0FUAAAAAADwPuqdC6IEg9vgPsuZQ6QAr1G4/PYffogPbwMnsDnouAAAAAEAAAAAwT6e0zIpycpZ5/unUFyQAjXNeSxfmidj8tQWkeD9dCQAAAABQ0FUAAAAAADwPuqdC6IEg9vgPsuZQ6QAr1G4/PYffogPbwMnsDnouAAAAAaCjnAxGU7E+5Rh2Cg7RI0+r142NXz0ZdjbYCHe1u/wXAAAAAQAAAABAAAACQAAAAAAAAAAWLfEosjyl6qPPSRxKB/fzOyv5I5WYzE+wY4Spz7KmKEAAAAGgo5wMRlOxPuUYdgoO0SNPq9eNjV89GXY22Ah3tbv8FwAAAAEAAAAAQAAAAkAAAAAAAAAAME+ntMyKcnKWef7p1BckAI1zXksX5onY/LUFpHg/XQkAAAABo3JexZr2Yx1Ww6IHum9bQtF55fsc2cfMOAm8UoPHM5nAAAABAAAAAEAAAAAAAAAAgAAAAUAAAAJQWxsb3dhbmNlAAAAAAAABAAAAAEAAAABAAAAAgAAAAUAAAAEZnJvbQAAAAQAAAABAAAACAAAAAAAAAAAWLfEosjyl6qPPSRxKB/fzOyv5I5WYzE+wY4Spz7KmKEAAAAFAAAAB3NwZW5kZXIAAAAABAAAAAEAAAAIAAAAAYKOcDEZTsT7lGHYKDtEjT6vXjY1fPRl2NtgId7W7/BcAAAABtk/XHuw68SpyPcnxc68TkEZTTglfh0NkQNWtDv8UogTAAAABAAAAAEAAAAAAAAAAgAAAAUAAAAJQWxsb3dhbmNlAAAAAAAABAAAAAEAAAABAAAAAgAAAAUAAAAEZnJvbQAAAAQAAAABAAAACAAAAAAAAAAAwT6e0zIpycpZ5/unUFyQAjXNeSxfmidj8tQWkeD9dCQAAAAFAAAAB3NwZW5kZXIAAAAABAAAAAEAAAAIAAAAAYKOcDEZTsT7lGHYKDtEjT6vXjY1fPRl2NtgId7W7/BcAAAAAgAAAAEAAAAAAAAAAME+ntMyKcnKWef7p1BckAI1zXksX5onY/LUFpHg/XQkAAAAAAAAAAaCjnAxGU7E+5Rh2Cg7RI0+r142NXz0ZdjbYCHe1u/wXAAAAARzd2FwAAAABAAAAAQAAAABAAAABgAAACDZP1x7sOvEqcj3J8XOvE5BGU04JX4dDZEDVrQ7/FKIEwAAAAQAAAABAAAABgAAACCNyXsWa9mMdVsOiB7pvW0LReeX7HNnHzDgJvFKDxzOZwAAAAQAAAABAAAABQAAAAAAAAPoAAAAAAAAAAAAAAAEAAAAAQAAAAUAAAAAAAARlAAAAAAAAAAAAAAAAdk/XHuw68SpyPcnxc68TkEZTTglfh0NkQNWtDv8UogTAAAACmluY3JfYWxsb3cAAAAAAAMAAAAEAAAAAQAAAAgAAAAAAAAAAME+ntMyKcnKWef7p1BckAI1zXksX5onY/LUFpHg/XQkAAAABAAAAAEAAAAIAAAAAYKOcDEZTsT7lGHYKDtEjT6vXjY1fPRl2NtgId7W7/BcAAAABAAAAAEAAAAFAAAAAAAAA+gAAAAAAAAAAAAAAAAAAAABAAAABAAAAAEAAAAAAAAAAQAAAAQAAAABAAAAAQAAAAIAAAAFAAAACnB1YmxpY19rZXkAAAAAAAQAAAABAAAABgAAACDBPp7TMinJylnn+6dQXJACNc15LF+aJ2Py1BaR4P10JAAAAAUAAAAJc2lnbmF0dXJlAAAAAAAABAAAAAEAAAAGAAAAQOC2NjtwRGWQvDe9lTjtAcrTRsn2oO07rZ168E/ShMkfWoAbtUbWsH215K3BSAKqGRwnnFReekUQb6Z2mKTD8gYAAAABAAAAAAAAAABYt8SiyPKXqo89JHEoH9/M7K/kjlZjMT7BjhKnPsqYoQAAAAAAAAAHgo5wMRlOxPuUYdgoO0SNPq9eNjV89GXY22Ah3tbv8FwAAAAEc3dhcAAAAAQAAAAEAAAAAQAAAAYAAAAgjcl7FmvZjHVbDoge6b1tC0Xnl+xzZx8w4CbxSg8czmcAAAAEAAAAAQAAAAYAAAAg2T9ce7DrxKnI9yfFzrxOQRlNOCV+HQ2RA1a0O/xSiBMAAAAEAAAAAQAAAAUAAAAAAAATiAAAAAAAAAAAAAAABAAAAAEAAAAFAAAAAAAAA7YAAAAAAAAAAAAAAAGNyXsWa9mMdVsOiB7pvW0LReeX7HNnHzDgJvFKDxzOZwAAAAppbmNyX2FsbG93AAAAAAADAAAABAAAAAEAAAAIAAAAAAAAAABYt8SiyPKXqo89JHEoH9/M7K/kjlZjMT7BjhKnPsqYoQAAAAQAAAABAAAACAAAAAGCjnAxGU7E+5Rh2Cg7RI0+r142NXz0ZdjbYCHe1u/wXAAAAAQAAAABAAAABQAAAAAAABOIAAAAAAAAAAAAAAAAAAAAAQAAAAQAAAABAAAAAAAAAAEAAAAEAAAAAQAAAAEAAAACAAAABQAAAApwdWJsaWNfa2V5AAAAAAAEAAAAAQAAAAYAAAAgWLfEosjyl6qPPSRxKB/fzOyv5I5WYzE+wY4Spz7KmKEAAAAFAAAACXNpZ25hdHVyZQAAAAAAAAQAAAABAAAABgAAAED/2zcWCPmVOXCtqambPGFX9fsg9EQ0QJomi5IMJ/s2SxSjUGi+XRR/pxadGMZZjP1tSdHcOKkSkmCyCEAdCQcCAAAAAAAAAAHfEbdfAAAAQM7kQT+rYZK930bSpf5pO95whTJ1mzJt4uFx3JdqgxyZ4SboT6YyXpWHbGdS/MjXs14YWPED7sUswDHcaHqzwwg=";
+        
+        let xdr = try! TxRep.fromTxRep(txRep: txrep)
+        print(xdr)
+        XCTAssert (xdr == expected)
+        let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
+        print(txRepRes)
+        XCTAssert (txRepRes == txrep)
+    }
+    
     func testTransactionEnvelopeXDRStringInit() {
     
         let xdrStringV1 = "AAAAAgAAAABlfpQzRFiTdhYZiWYK6zm44YWGBfNHvoXOPM+imIUMTQAAA+gAD7FZAAAABAAAAAAAAAAAAAAAAQAAAAEAAAAAZX6UM0RYk3YWGYlmCus5uOGFhgXzR76FzjzPopiFDE0AAAABAAAAAByH6g1uUljaFtnxQRIrC6x47kLp1vHEcml+WhdzQjWKAAAAAAAAAAAA5OHAAAAAAAAAAAGYhQxNAAAAQMRhbj+98fzgU++ft/Sd5Nd/2qLPofcgLyRKyJafSKM4jSNNkLGQKL5oFSJnaBnaOxZ7Jc4q6s5GV9y1bcnIdQc="

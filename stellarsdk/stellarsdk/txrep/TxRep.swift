@@ -83,7 +83,7 @@ public class TxRep: NSObject {
                 if let val = UInt64(feeBumpFeeStr) {
                     feeBumpFee = val
                 } else {
-                   throw TxRepError.invalidValue(key: "feeBump.tx.fee")
+                    throw TxRepError.invalidValue(key: "feeBump.tx.fee")
                 }
             } else {
                 throw TxRepError.missingValue(key: "feeBump.tx.fee")
@@ -105,7 +105,7 @@ public class TxRep: NSObject {
             if let val = UInt32(feeStr) {
                 fee = val
             } else {
-               throw TxRepError.invalidValue(key: key)
+                throw TxRepError.invalidValue(key: key)
             }
         } else {
             throw TxRepError.missingValue(key: key)
@@ -117,7 +117,7 @@ public class TxRep: NSObject {
             if let val = Int64(seqNrStr) {
                 seqNr = val - 1
             } else {
-               throw TxRepError.invalidValue(key: key)
+                throw TxRepError.invalidValue(key: key)
             }
         } else {
             throw TxRepError.missingValue(key: key)
@@ -151,7 +151,7 @@ public class TxRep: NSObject {
             //let baseFee =  fbf / UInt64(operations.count + 1)
             let feeBumpSourceAcc = try MuxedAccount(accountId: src)
             let feeBumpTransaction = try FeeBumpTransaction(sourceAccount: feeBumpSourceAcc, fee: fbf
-                , innerTransaction: transaction)
+                                                            , innerTransaction: transaction)
             let fSignatures = try getSignatures(dic: dic, prefix: "feeBump.")
             for sig in fSignatures {
                 feeBumpTransaction.addSignature(signature: sig)
@@ -174,7 +174,7 @@ public class TxRep: NSObject {
                     }
                 }
             } else {
-               throw TxRepError.invalidValue(key: key)
+                throw TxRepError.invalidValue(key: key)
             }
         } else {
             throw TxRepError.missingValue(key: key)
@@ -196,7 +196,7 @@ public class TxRep: NSObject {
                     }
                 }
             } else {
-               throw TxRepError.invalidValue(key: key)
+                throw TxRepError.invalidValue(key: key)
             }
         } else {
             throw TxRepError.missingValue(key: key)
@@ -216,7 +216,7 @@ public class TxRep: NSObject {
                 throw TxRepError.invalidValue(key: key)
             }
         } else {
-           throw TxRepError.missingValue(key: key)
+            throw TxRepError.missingValue(key: key)
         }
         key = sigPrefix + "signature"
         let signature:Data
@@ -228,7 +228,7 @@ public class TxRep: NSObject {
                 throw TxRepError.invalidValue(key: key)
             }
         } else {
-           throw TxRepError.missingValue(key: key)
+            throw TxRepError.missingValue(key: key)
         }
         return DecoratedSignatureXDR(hint: WrappedData4(hint), signature: signature)
     }
@@ -320,6 +320,792 @@ public class TxRep: NSObject {
             case "LIQUIDITY_POOL_WITHDRAW":
                 let opPrefix = prefix + "liquidityPoolWithdrawOp."
                 return try getLiquidityPoolWithdrawOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            case "INVOKE_HOST_FUNCTION":
+                let opPrefix = prefix + "invokeHostFunctionOp."
+                return try getInvokeHostFunctionOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+            default:
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    private static func getInvokeHostFunctionOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> InvokeHostFunctionOperation? {
+        var key = opPrefix + "function.type";
+        let fcType:String
+        if let fcTypeStr = dic[key] {
+            fcType = fcTypeStr
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        var hostFunctionXdr:HostFunctionXDR?
+        
+        switch fcType {
+        case "HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE":
+            key = opPrefix + "function.installContractCodeArgs.code"
+            if let code = dic[key] {
+                hostFunctionXdr = HostFunctionXDR.installContractCode(InstallContractCodeArgsXDR(code: Data(hex: code)))
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "HOST_FUNCTION_TYPE_INVOKE_CONTRACT":
+            key = opPrefix + "function.invokeArgs.len"
+            var invokeArgs:[SCValXDR] = []
+            if let argsLen = dic[key] {
+                if let count = Int(argsLen) {
+                    for i in 0..<count{
+                        try invokeArgs.append(getSCVal(dic:dic, prefix:opPrefix + "function.invokeArgs[\(i)]."))
+                    }
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+            hostFunctionXdr = HostFunctionXDR.invokeContract(invokeArgs)
+        case "HOST_FUNCTION_TYPE_CREATE_CONTRACT":
+            key = opPrefix + "function.createContractArgs."
+            hostFunctionXdr = HostFunctionXDR.createContract(try getCreateContractArgs(dic: dic, prefix: key))
+        default:
+            throw TxRepError.invalidValue(key: key)
+        }
+        
+        let xdrOp = InvokeHostFunctionOpXDR(function: hostFunctionXdr!,
+                                         ledgerFootprint: try getFootprint(dic: dic, prefix: opPrefix + "footprint."),
+                                         auth: try getContractAuthArr(dic:dic, prefix: opPrefix))
+        
+        
+        return try InvokeHostFunctionOperation(fromXDR: xdrOp, sourceAccountId: sourceAccount?.accountId)
+    }
+    
+    private static func getCreateContractArgs(dic:Dictionary<String,String>, prefix:String) throws -> CreateContractArgsXDR {
+        var key = prefix + "source.type"
+        var contractCodeType:String?
+        if let typeStr = dic[key] {
+            contractCodeType = typeStr
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        switch contractCodeType {
+        case "SCCONTRACT_CODE_WASM_REF":
+            key = prefix + "source.wasm_id"
+            if let wasmId = dic[key] {
+                key = prefix + "contractID.salt"
+                if let salt = dic[key] {
+                    let cID = ContractIDXDR.fromSourceAccount(WrappedData32(Data(hex: salt)))
+                    let src = SCContractCodeXDR.wasmRef(WrappedData32(Data(hex: wasmId)))
+                    return CreateContractArgsXDR(contractId: cID, source: src)
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "SCCONTRACT_CODE_TOKEN":
+            key = prefix + "contractID.type"
+            var contractIdType:String?
+            if let typeStr = dic[key] {
+                contractIdType = typeStr
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+            switch contractIdType {
+            case "CONTRACT_ID_FROM_SOURCE_ACCOUNT":
+                key = prefix + "contractID.salt"
+                if let salt = dic[key] {
+                    let cID = ContractIDXDR.fromSourceAccount(WrappedData32(Data(hex: salt)))
+                    let src = SCContractCodeXDR.token
+                    return CreateContractArgsXDR(contractId: cID, source: src)
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            case "CONTRACT_ID_FROM_ASSET":
+                key = prefix + "contractID.asset"
+                if let assetStr = dic[key] {
+                    if let asset = decodeAsset(asset: assetStr) {
+                        let cID = ContractIDXDR.fromAsset(try asset.toXDR())
+                        let src = SCContractCodeXDR.token
+                        return CreateContractArgsXDR(contractId: cID, source: src)
+                    } else {
+                        throw TxRepError.invalidValue(key: key)
+                    }
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            default:
+                throw TxRepError.invalidValue(key: key)
+            }
+        default:
+            throw TxRepError.invalidValue(key: key)
+        }
+    }
+    
+    private static func getFootprint(dic:Dictionary<String,String>, prefix:String) throws -> LedgerFootprintXDR {
+        var readOnly:[LedgerKeyXDR] = []
+        var readWrite:[LedgerKeyXDR] = []
+        var key = prefix + "readOnly.len"
+        if let readOnlyLen = dic[key] {
+            if let count = Int(readOnlyLen) {
+                for i in 0..<count{
+                    try readOnly.append(getContractLedgerKey(dic:dic, prefix:prefix + "readOnly[\(i)]."))
+                }
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        key = prefix + "readWrite.len"
+        if let readWriteLen = dic[key] {
+            if let count = Int(readWriteLen) {
+                for i in 0..<count{
+                    try readWrite.append(getContractLedgerKey(dic:dic, prefix:prefix + "readWrite[\(i)]."))
+                }
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        return LedgerFootprintXDR(readOnly: readOnly, readWrite: readWrite)
+    }
+    
+    private static func getContractLedgerKey(dic:Dictionary<String,String>, prefix:String) throws -> LedgerKeyXDR {
+        var key = prefix + "type"
+        var type:String?
+        if let typeStr = dic[key] {
+            type = typeStr
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        switch type {
+        case "ACCOUNT":
+            key = prefix + "account.accountID"
+            if let accountId = dic[key] {
+                return try LedgerKeyXDR.account(LedgerKeyAccountXDR(accountID: KeyPair(accountId: accountId).publicKey))
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "TRUSTLINE":
+            key = prefix + "trustLine.accountID"
+            if let accountId = dic[key] {
+                key = prefix + "trustLine.asset"
+                if let assetStr = dic[key] {
+                    let pk = try KeyPair(accountId: accountId).publicKey
+                    if let asset = decodeAsset(asset: assetStr) {
+                        return try LedgerKeyXDR.trustline(LedgerKeyTrustLineXDR(accountID: pk, asset: asset.toTrustlineAssetXDR()))
+                    } else {
+                        throw TxRepError.missingValue(key: key)
+                    }
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "CONTRACT_DATA":
+            key = prefix + "contractData.contractID"
+            if let contractId = dic[key] {
+                let key = try getSCVal(dic: dic, prefix: prefix + "contractData.key.")
+                return LedgerKeyXDR.contractData(WrappedData32(Data(hex: contractId)), key)
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "CONTRACT_CODE":
+            key = prefix + "contractCode.hash"
+            if let code = dic[key] {
+                return LedgerKeyXDR.contractCode(WrappedData32(Data(hex: code)))
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        default:
+            throw TxRepError.invalidValue(key: key)
+        }
+    }
+    
+    private static func getContractAuthArr(dic:Dictionary<String,String>, prefix:String) throws -> [ContractAuthXDR] {
+        var result:[ContractAuthXDR] = []
+        let key = prefix + "auth.len"
+        if let authLen = dic[key] {
+            if let count = Int(authLen) {
+                for i in 0..<count{
+                    try result.append(getContractAuth(dic:dic, prefix:prefix + "auth[\(i)]."))
+                }
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        return result;
+    }
+    
+    private static func getContractAuth(dic:Dictionary<String,String>, prefix:String) throws -> ContractAuthXDR {
+        var addrWithNonce:AddressWithNonceXDR?
+        var key = prefix + "addressWithNonce._present"
+        if let present = dic[key] {
+            if "true" == present {
+                addrWithNonce = try getAddressWithNonce(dic: dic, prefix: prefix + "addressWithNonce.")
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        let rootInvocation = try getAuthorizedInvocation(dic:dic, prefix: prefix + "rootInvocation.")
+        
+        var signatureArgs:[SCValXDR] = []
+        key = prefix + "signatureArgs.len"
+        if let argsLen = dic[key] {
+            if let count = Int(argsLen) {
+                for i in 0..<count{
+                    try signatureArgs.append(getSCVal(dic:dic, prefix:prefix + "signatureArgs[\(i)]."))
+                }
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        // PATCH see https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
+        if (signatureArgs.count > 0) {
+            signatureArgs = [SCValXDR.object(SCObjectXDR.vec(signatureArgs))]
+        }
+        
+        return ContractAuthXDR(addressWithNonce: addrWithNonce, rootInvocation: rootInvocation, signatureArgs: signatureArgs);
+    }
+    
+    private static func getAuthorizedInvocation(dic:Dictionary<String,String>, prefix:String) throws -> AuthorizedInvocationXDR {
+        var cId:WrappedData32?
+        var key = prefix + "contractID"
+        if let contractId = dic[key] {
+            cId = WrappedData32(Data(hex: contractId))
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        var functionName:String?
+        key = prefix + "functionName"
+        if let functionNameStr = dic[key] {
+            functionName = functionNameStr
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        var args:[SCValXDR] = []
+        key = prefix + "args.len"
+        if let argsLen = dic[key] {
+            if let count = Int(argsLen) {
+                for i in 0..<count{
+                    try args.append(getSCVal(dic:dic, prefix:prefix + "args[\(i)]."))
+                }
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        var subInvocations:[AuthorizedInvocationXDR] = []
+        key = prefix + "subInvocations.len"
+        if let subInvocationsLen = dic[key] {
+            if let count = Int(subInvocationsLen) {
+                for i in 0..<count{
+                    try subInvocations.append(getAuthorizedInvocation(dic:dic, prefix:prefix + "subInvocations[\(i)]."))
+                }
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        return AuthorizedInvocationXDR(contractID: cId!, functionName: functionName!, args: args, subInvocations: subInvocations)
+    }
+    
+    private static func getSCVal(dic:Dictionary<String,String>, prefix:String) throws -> SCValXDR {
+        var key = prefix + "type"
+        var type:String?
+        if let typeStr = dic[key] {
+            type = typeStr
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        switch type {
+        case "SCV_U63":
+            key = prefix + "u63"
+            if let u63Str = dic[key] {
+                if let u63 = UInt64(u63Str) {
+                    return SCValXDR.u63(u63)
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "SCV_U32":
+            key = prefix + "u32"
+            if let u32Str = dic[key] {
+                if let u32 = UInt32(u32Str) {
+                    return SCValXDR.u32(u32)
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "SCV_I32":
+            key = prefix + "i32"
+            if let i32Str = dic[key] {
+                if let i32 = Int32(i32Str) {
+                    return SCValXDR.i32(i32)
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "SCV_STATIC":
+            return try SCValXDR.sstatic(getSCStatic(dic: dic, prefix: prefix))
+        case "SCV_OBJECT":
+            return try SCValXDR.object(getSCObject(dic: dic, prefix: prefix + "obj."))
+        case "SCV_SYMBOL":
+            key = prefix + "sym"
+            if let sym = dic[key] {
+                return SCValXDR.symbol(sym)
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "SCV_BITSET":
+            key = prefix + "bits"
+            if let bitsStr = dic[key] {
+                if let u64 = UInt64(bitsStr) {
+                    return SCValXDR.bitset(u64)
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "SCV_STATUS":
+            return try SCValXDR.object(getSCObject(dic: dic, prefix: prefix + "status."))
+        default:
+            throw TxRepError.invalidValue(key: key)
+        }
+    }
+    
+    private static func getSCObject(dic:Dictionary<String,String>, prefix:String) throws -> SCObjectXDR? {
+        var key = prefix + "_present"
+        if let present = dic[key] {
+            if "false" == present {
+                return nil
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        
+        key = prefix + "type"
+        var type:String?
+        if let typeStr = dic[key] {
+            type = typeStr
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+        switch type {
+        case "SCO_VEC":
+            return try SCObjectXDR.vec(getSCVec(dic: dic, prefix: prefix))
+        case "SCO_MAP":
+            return try SCObjectXDR.map(getSCMap(dic: dic, prefix: prefix))
+        case "SCO_U64":
+            key = prefix + "u64"
+            if let u64Str = dic[key] {
+                if let u64 = UInt64(u64Str) {
+                    return SCObjectXDR.u64(u64)
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "SCO_I64":
+            key = prefix + "i64"
+            if let i64Str = dic[key] {
+                if let i64 = Int64(i64Str) {
+                    return SCObjectXDR.i64(i64)
+                } else {
+                    throw TxRepError.invalidValue(key: key)
+                }
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "SCO_U128":
+            return try SCObjectXDR.u128(getI128Parts(dic: dic, prefix: prefix + "u128."))
+        case "SCO_I128":
+            return try SCObjectXDR.i128(getI128Parts(dic: dic, prefix: prefix + "i128."))
+        case "SCO_BYTES":
+            key = prefix + "bin"
+            if let bytesStr = dic[key] {
+                return SCObjectXDR.bytes(Data(hex: bytesStr))
+            } else {
+                throw TxRepError.missingValue(key: key)
+            }
+        case "SCO_CONTRACT_CODE":
+            return try SCObjectXDR.contractCode(getSCContractCode(dic: dic, prefix: prefix + "contractCode."))
+        case "SCO_ADDRESS":
+            return try SCObjectXDR.address(getSCAddress(dic: dic, prefix: prefix + "address."))
+        case "SCO_NONCE_KEY":
+            return try SCObjectXDR.nonceKey(getSCAddress(dic: dic, prefix: prefix + "nonceAddress."))
+        default:
+            throw TxRepError.invalidValue(key: key)
+        }
+    }
+    
+    private static func getSCContractCode(dic:Dictionary<String,String>, prefix:String) throws -> SCContractCodeXDR {
+        var key = prefix + "type"
+        if let type = dic[key] {
+            if "SCCONTRACT_CODE_WASM_REF" == type {
+                key = prefix + "wasm_id"
+                if let wasmIdStr = dic[key] {
+                    return SCContractCodeXDR.wasmRef(WrappedData32(Data(hex: wasmIdStr)))
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            } else if "SCCONTRACT_CODE_TOKEN" == type {
+                return SCContractCodeXDR.token
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getI128Parts(dic:Dictionary<String,String>, prefix:String) throws -> Int128PartsXDR {
+        var key = prefix + "lo"
+        if let loStr = dic[key] {
+            if let lo = UInt64(loStr) {
+                key = prefix + "hi"
+                if let hiStr = dic[key] {
+                    if let hi = UInt64(hiStr) {
+                        return Int128PartsXDR(lo: lo, hi: hi)
+                    } else {
+                        throw TxRepError.invalidValue(key: key)
+                    }
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getSCMap(dic:Dictionary<String,String>, prefix:String) throws -> [SCMapEntryXDR] {
+        let key = prefix + "map.len"
+        if let mapLen = dic[key] {
+            if let count = Int(mapLen) {
+                var map:[SCMapEntryXDR] = []
+                for i in 0..<count{
+                    let key = try getSCVal(dic: dic, prefix:prefix + "map[\(i)].key.")
+                    let val = try getSCVal(dic: dic, prefix:prefix + "map[\(i)].val.")
+                    map.append(SCMapEntryXDR(key: key, val: val))
+                }
+                return map
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getSCVec(dic:Dictionary<String,String>, prefix:String) throws -> [SCValXDR] {
+        let key = prefix + "vec.len"
+        if let vecLen = dic[key] {
+            if let count = Int(vecLen) {
+                var vec:[SCValXDR] = []
+                for i in 0..<count{
+                    try vec.append(getSCVal(dic: dic, prefix:prefix + "vec[\(i)]."))
+                }
+                return vec
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getSCStatic(dic:Dictionary<String,String>, prefix:String) throws -> Int32 {
+        let key = prefix + "ic"
+        if let staticStr = dic[key] {
+            switch staticStr {
+            case "SCS_VOID":
+                return SCStatic.void.rawValue
+            case "SCS_TRUE":
+                return SCStatic.strue.rawValue
+            case "SCS_FALSE":
+                return SCStatic.sfalse.rawValue
+            case "SCS_LEDGER_KEY_CONTRACT_CODE":
+                return SCStatic.ledgerKeyContractCode.rawValue
+            default:
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getAddressWithNonce(dic:Dictionary<String,String>, prefix:String) throws -> AddressWithNonceXDR {
+        let address = try getSCAddress(dic: dic, prefix: prefix + "address.")
+        let key = prefix + "nonce"
+        if let nonceStr = dic[key] {
+            if let nonceU64 = UInt64(nonceStr) {
+                return AddressWithNonceXDR(address: address, nonce: nonceU64)
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getSCAddress(dic:Dictionary<String,String>, prefix:String) throws -> SCAddressXDR {
+        var key = prefix + "type"
+        if let type = dic[key] {
+            if "SC_ADDRESS_TYPE_ACCOUNT" == type {
+                key = prefix + "accountId"
+                if let accountId = dic[key] {
+                    return try SCAddressXDR(address: Address.accountId(accountId))
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            } else if "SC_ADDRESS_TYPE_CONTRACT" == type {
+                key = prefix + "contractId"
+                if let contractId = dic[key] {
+                    return try SCAddressXDR(address: Address.contractId(contractId))
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            } else {
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getSCStatus(dic:Dictionary<String,String>, prefix:String) throws -> SCStatusXDR {
+        var key = prefix + "type"
+        if let type = dic[key] {
+            switch type {
+            case "SST_OK":
+                return SCStatusXDR.ok
+            case "SST_UNKNOWN_ERROR":
+                return try SCStatusXDR.unknownError(getSCUnknownErrorCode(dic: dic, prefix: prefix).rawValue)
+            case "SST_HOST_VALUE_ERROR":
+                return try SCStatusXDR.hostValueError(getSCHostValueErrorCode(dic: dic, prefix: prefix).rawValue)
+            case "SST_HOST_OBJECT_ERROR":
+                return try SCStatusXDR.hostObjectError(getSCHostObjectErrorCode(dic: dic, prefix: prefix).rawValue)
+            case "SST_HOST_FUNCTION_ERROR":
+                return try SCStatusXDR.hostFunctionError(getSCHostFunctionErrorCode(dic: dic, prefix: prefix).rawValue)
+            case "SST_HOST_STORAGE_ERROR":
+                return try SCStatusXDR.hostStorageError(getSCHostStorageErrorCode(dic: dic, prefix: prefix).rawValue)
+            case "SST_HOST_CONTEXT_ERROR":
+                return try SCStatusXDR.hostContextError(getSCHostContextErrorCode(dic: dic, prefix: prefix).rawValue)
+            case "SST_VM_ERROR":
+                return try SCStatusXDR.vmError(getSCVMErrorCode(dic: dic, prefix: prefix).rawValue)
+            default:
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getSCVMErrorCode(dic:Dictionary<String,String>, prefix:String) throws -> SCVmErrorCode {
+        let key = prefix + "vmCode"
+        if let code = dic[key] {
+            switch code {
+            case "VM_UNKNOWN":
+                return SCVmErrorCode.unknownError
+            case "VM_VALIDATION":
+                return SCVmErrorCode.validation
+            case "VM_INSTANTIATION":
+                return SCVmErrorCode.instantiation
+            case "VM_FUNCTION":
+                return SCVmErrorCode.function
+            case "VM_TABLE":
+                return SCVmErrorCode.table
+            case "VM_MEMORY":
+                return SCVmErrorCode.memory
+            case "VM_GLOBAL":
+                return SCVmErrorCode.global
+            case "VM_VALUE":
+                return SCVmErrorCode.value
+            case "VM_TRAP_UNREACHABLE":
+                return SCVmErrorCode.trapUnreachable
+            case "VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS":
+                return SCVmErrorCode.memoryAccessOutOfBounds
+            case "VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS":
+                return SCVmErrorCode.tableAccessOutOfBounds
+            case "VM_TRAP_ELEM_UNINITIALIZED":
+                return SCVmErrorCode.elemUnitialized
+            case "VM_TRAP_DIVISION_BY_ZERO":
+                return SCVmErrorCode.divisionByZero
+            case "VM_TRAP_INTEGER_OVERFLOW":
+                return SCVmErrorCode.integerOverflow
+            case "VM_TRAP_INVALID_CONVERSION_TO_INT":
+                return SCVmErrorCode.invalidConversionToInt
+            case "VM_TRAP_STACK_OVERFLOW":
+                return SCVmErrorCode.stackOverflow
+            case "VM_TRAP_UNEXPECTED_SIGNATURE":
+                return SCVmErrorCode.unexpectedSignature
+            case "VM_TRAP_MEM_LIMIT_EXCEEDED":
+                return SCVmErrorCode.memLimitExceeded
+            case "VM_TRAP_CPU_LIMIT_EXCEEDED":
+                return SCVmErrorCode.cpuLimitExceeded
+            default:
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getSCHostContextErrorCode(dic:Dictionary<String,String>, prefix:String) throws -> SCHostContextErrorCode {
+        let key = prefix + "contextCode"
+        if let code = dic[key] {
+            switch code {
+            case "HOST_CONTEXT_UNKNOWN_ERROR":
+                return SCHostContextErrorCode.unknownError
+            case "HOST_CONTEXT_NO_CONTRACT_RUNNING":
+                return SCHostContextErrorCode.noContractRunning
+            default:
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getSCHostStorageErrorCode(dic:Dictionary<String,String>, prefix:String) throws -> SCHostStorageErrorCode {
+        let key = prefix + "storageCode"
+        if let code = dic[key] {
+            switch code {
+            case "HOST_STORAGE_UNKNOWN_ERROR":
+                return SCHostStorageErrorCode.unknownError
+            case "HOST_STORAGE_EXPECT_CONTRACT_DATA":
+                return SCHostStorageErrorCode.expectContractData
+            case "HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY":
+                return SCHostStorageErrorCode.readwriteAccessToReadonlyEntry
+            case "HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY":
+                return SCHostStorageErrorCode.accessToUnknownEntry
+            case "HOST_STORAGE_MISSING_KEY_IN_GET":
+                return SCHostStorageErrorCode.missingKeyInGet
+            case "HOST_STORAGE_GET_ON_DELETED_KEY":
+                return SCHostStorageErrorCode.getOnDeletedKey
+            default:
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getSCHostFunctionErrorCode(dic:Dictionary<String,String>, prefix:String) throws -> SCHostFnErrorCode {
+        let key = prefix + "fnCode"
+        if let code = dic[key] {
+            switch code {
+            case "HOST_FN_UNKNOWN_ERROR":
+                return SCHostFnErrorCode.unknownError
+            case "HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION":
+                return SCHostFnErrorCode.hostFunctionAction
+            case "HOST_FN_INPUT_ARGS_WRONG_LENGTH":
+                return SCHostFnErrorCode.inputArgsWrongLenght
+            case "HOST_FN_INPUT_ARGS_WRONG_TYPE":
+                return SCHostFnErrorCode.inputArgsWrongType
+            case "HOST_FN_INPUT_ARGS_INVALID":
+                return SCHostFnErrorCode.inputArgsInvalid
+            default:
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getSCHostObjectErrorCode(dic:Dictionary<String,String>, prefix:String) throws -> SCHostObjErrorCode {
+        let key = prefix + "objCode"
+        if let code = dic[key] {
+            switch code {
+            case "HOST_OBJECT_UNKNOWN_ERROR":
+                return SCHostObjErrorCode.unknownError
+            case "HOST_OBJECT_UNKNOWN_REFERENCE":
+                return SCHostObjErrorCode.unknownReference
+            case "HOST_OBJECT_UNEXPECTED_TYPE":
+                return SCHostObjErrorCode.unexpectedType
+            case "HOST_OBJECT_OBJECT_COUNT_EXCEEDS_U32_MAX":
+                return SCHostObjErrorCode.objectCountExceedsU32Max
+            case "HOST_OBJECT_VEC_INDEX_OUT_OF_BOUND":
+                return SCHostObjErrorCode.vecIndexOutOfBound
+            case "HOST_OBJECT_CONTRACT_HASH_WRONG_LENGTH":
+                return SCHostObjErrorCode.contractHashWrongLenght
+            default:
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getSCHostValueErrorCode(dic:Dictionary<String,String>, prefix:String) throws -> SCHostValErrorCode {
+        let key = prefix + "valCode"
+        if let code = dic[key] {
+            switch code {
+            case "HOST_VALUE_UNKNOWN_ERROR":
+                return SCHostValErrorCode.unknownError
+            case "HOST_VALUE_RESERVED_TAG_VALUE":
+                return SCHostValErrorCode.reservedTagValue
+            case "HOST_VALUE_UNEXPECTED_VAL_TYPE":
+                return SCHostValErrorCode.unexpectedValType
+            case "HOST_VALUE_U63_OUT_OF_RANGE":
+                return SCHostValErrorCode.u63OutOfRange
+            case "HOST_VALUE_U32_OUT_OF_RANGE":
+                return SCHostValErrorCode.u32OutOfRange
+            case "HOST_VALUE_STATIC_UNKNOWN":
+                return SCHostValErrorCode.staticUnknown
+            case "HOST_VALUE_MISSING_OBJECT":
+                return SCHostValErrorCode.missingObject
+            case "HOST_VALUE_SYMBOL_TOO_LONG":
+                return SCHostValErrorCode.symbolTooLong
+            case "HOST_VALUE_SYMBOL_BAD_CHAR":
+                return SCHostValErrorCode.symbolBadChar
+            case "HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8":
+                return SCHostValErrorCode.symbolContainsNonUTF8
+            case "HOST_VALUE_BITSET_TOO_MANY_BITS":
+                return SCHostValErrorCode.bitsetTooManyBits
+            case "HOST_VALUE_STATUS_UNKNOWN":
+                return SCHostValErrorCode.statusUnknown
+            default:
+                throw TxRepError.invalidValue(key: key)
+            }
+        } else {
+            throw TxRepError.missingValue(key: key)
+        }
+    }
+    
+    private static func getSCUnknownErrorCode(dic:Dictionary<String,String>, prefix:String) throws -> SCUnknownErrorCode {
+        let key = prefix + "unknownCode"
+        if let code = dic[key] {
+            switch code {
+            case "UNKNOWN_ERROR_GENERAL":
+                return SCUnknownErrorCode.errorGeneral
+            case "UNKNOWN_ERROR_XDR":
+                return SCUnknownErrorCode.errorXDR
             default:
                 throw TxRepError.invalidValue(key: key)
             }
@@ -2021,8 +2807,559 @@ public class TxRep: NSObject {
             addLine(key: operationPrefix + "minAmountA", value: String(lOp.minAmountA), lines: &lines)
             addLine(key: operationPrefix + "minAmountB", value: String(lOp.minAmountB), lines: &lines)
             break
+        case .invokeHostFunction(let iOp):
+            let fcPrefix = operationPrefix + "function.";
+            let function = iOp.function;
+            addLine(key: fcPrefix + "type" , value: txRepHostFuncType(function: function), lines: &lines)
+            switch function {
+            case .invokeContract(let invokeArgs):
+                addLine(key: fcPrefix + "invokeArgs.len" , value: String(invokeArgs.count), lines: &lines)
+                var index = 0
+                for val in invokeArgs {
+                    addSCVal(val: val, prefix: fcPrefix + "invokeArgs[\(index)]." , lines: &lines)
+                    index += 1
+                }
+                break
+            case .createContract(let args):
+                switch args.source {
+                case .wasmRef(let wrappedData32):
+                    addLine(key: fcPrefix + "createContractArgs.source.type" , value: "SCCONTRACT_CODE_WASM_REF", lines: &lines)
+                    addLine(key: fcPrefix + "createContractArgs.source.wasm_id" , value: wrappedData32.wrapped.hexEncodedString(), lines: &lines)
+                case .token:
+                    addLine(key: fcPrefix + "createContractArgs.source.type" , value: "SCCONTRACT_CODE_TOKEN", lines: &lines)
+                    break
+                }
+                switch args.contractId {
+                case .fromSourceAccount(let wrappedData32):
+                    addLine(key: fcPrefix + "createContractArgs.contractID.type", value: "CONTRACT_ID_FROM_SOURCE_ACCOUNT", lines: &lines)
+                    addLine(key: fcPrefix + "createContractArgs.contractID.salt", value: wrappedData32.wrapped.hexEncodedString(), lines: &lines)
+                    break
+                case .fromAsset(let asset):
+                    addLine(key: fcPrefix + "createContractArgs.contractID.type", value: "CONTRACT_ID_FROM_ASSET", lines: &lines)
+                    addLine(key: fcPrefix + "createContractArgs.contractID.asset", value: encodeAsset(asset: asset), lines: &lines)
+                default:
+                    break
+                }
+                break
+            case .installContractCode(let args):
+                addLine(key: fcPrefix + "installContractCodeArgs.code" , value: args.code.hexEncodedString(), lines: &lines)
+                break
+            }
+            
+            addFootprint(footprint: iOp.ledgerFootprint, prefix: operationPrefix + "footprint.", lines: &lines)
+            addLine(key: operationPrefix + "auth.len" , value: String(iOp.auth.count), lines: &lines)
+            var index = 0
+            for val in iOp.auth {
+                addContractAuth(auth: val, prefix: operationPrefix + "auth[\(index)].", lines: &lines)
+                index += 1
+            }
         default:
             break
+        }
+    }
+    
+    private static func addContractAuth(auth:ContractAuthXDR, prefix:String, lines: inout [String]) -> Void {
+        if let addrWithNonce = auth.addressWithNonce {
+            addLine(key: prefix + "addressWithNonce._present", value: "true", lines: &lines)
+            addAddressWithNonce(addr: addrWithNonce, prefix: prefix + "addressWithNonce.", lines: &lines)
+        } else {
+            addLine(key: prefix + "addressWithNonce._present", value: "false", lines: &lines)
+        }
+        addAuthorizedInvocation(invocation: auth.rootInvocation, prefix: prefix + "rootInvocation.", lines: &lines)
+        
+        var signatureArgs:[SCValXDR] = []
+        // prev 7 fix see: https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
+        if (auth.signatureArgs.count > 0) {
+            let first = auth.signatureArgs.first
+            if let obj = first?.object, let vec = obj.vec {
+                signatureArgs = vec
+            }
+            else {
+                signatureArgs = auth.signatureArgs
+            }
+        }
+        addLine(key: prefix + "signatureArgs.len" , value: String(signatureArgs.count), lines: &lines)
+        var index = 0
+        for arg in signatureArgs {
+            addSCVal(val: arg, prefix: prefix + "signatureArgs[\(index)].", lines: &lines)
+            index += 1
+        }
+    }
+    
+    private static func addAuthorizedInvocation(invocation:AuthorizedInvocationXDR, prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "contractID", value: invocation.contractID.wrapped.hexEncodedString(), lines: &lines)
+        addLine(key: prefix + "functionName", value: invocation.functionName, lines: &lines)
+        
+        let args = invocation.args
+        addLine(key: prefix + "args.len" , value: String(args.count), lines: &lines)
+        var index = 0
+        for arg in args {
+            addSCVal(val: arg, prefix: prefix + "args[\(index)].", lines: &lines)
+            index += 1
+        }
+        
+        let subInvocations = invocation.subInvocations
+        addLine(key: prefix + "subInvocations.len" , value: String(subInvocations.count), lines: &lines)
+        index = 0
+        for sub in subInvocations {
+            addAuthorizedInvocation(invocation: sub, prefix: prefix + "subInvocations[\(index)].", lines: &lines)
+            index += 1
+        }
+    }
+    
+    private static func addAddressWithNonce(addr:AddressWithNonceXDR, prefix:String, lines: inout [String]) -> Void {
+        addSCAddress(addr: addr.address, prefix: prefix + "address.", lines: &lines)
+        addLine(key: prefix + "nonce", value: String(addr.nonce), lines: &lines)
+    }
+    
+    private static func addFootprint(footprint:LedgerFootprintXDR, prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "readOnly.len" , value: String(footprint.readOnly.count), lines: &lines)
+        var index = 0
+        for key in footprint.readOnly {
+            addContractLedgerKey(key: key, prefix: prefix + "readOnly[\(index)].", lines: &lines)
+            index += 1
+        }
+        
+        addLine(key: prefix + "readWrite.len" , value: String(footprint.readWrite.count), lines: &lines)
+        index = 0
+        for key in footprint.readWrite {
+            addContractLedgerKey(key: key, prefix: prefix + "readWrite[\(index)].", lines: &lines)
+            index += 1
+        }
+    }
+    
+    private static func addContractLedgerKey(key:LedgerKeyXDR, prefix:String, lines: inout [String]) -> Void {
+        switch key {
+        case .account(let ledgerKeyAccountXDR):
+            addLine(key: prefix + "type" , value: "ACCOUNT", lines: &lines)
+            addLine(key: prefix + "account.accountID" , value: ledgerKeyAccountXDR.accountID.accountId, lines: &lines)
+            break
+        case .trustline(let ledgerKeyTrustLineXDR):
+            addLine(key: prefix + "type" , value: "TRUSTLINE", lines: &lines)
+            addLine(key: prefix + "trustLine.accountID" , value: ledgerKeyTrustLineXDR.accountID.accountId, lines: &lines)
+            addLine(key: prefix + "trustLine.asset" , value: encodeTrustlineAsset(asset: ledgerKeyTrustLineXDR.asset), lines: &lines)
+            break
+        case .contractData(let wrappedData32, let sCValXDR):
+            addLine(key: prefix + "type" , value: "CONTRACT_DATA", lines: &lines)
+            addLine(key: prefix + "contractData.contractID" , value: wrappedData32.wrapped.hexEncodedString(), lines: &lines)
+            addSCVal(val: sCValXDR, prefix: prefix + "contractData.key." , lines: &lines)
+            break
+        case .contractCode(let wrappedData32):
+            addLine(key: prefix + "type" , value: "CONTRACT_CODE", lines: &lines)
+            addLine(key: prefix + "contractCode.hash" , value: wrappedData32.wrapped.hexEncodedString(), lines: &lines)
+            break
+        default :
+            break
+        }
+    }
+    
+    private static func addSCVal(val:SCValXDR, prefix:String, lines: inout [String]) -> Void {
+        switch val {
+        case .u63(let uInt64):
+            addLine(key: prefix + "type" , value: "SCV_U63", lines: &lines)
+            addLine(key: prefix + "u63" , value: String(uInt64), lines: &lines)
+            break
+        case .u32(let uInt32):
+            addLine(key: prefix + "type" , value: "SCV_U32", lines: &lines)
+            addLine(key: prefix + "u32" , value: String(uInt32), lines: &lines)
+            break
+        case .i32(let int32):
+            addLine(key: prefix + "type" , value: "SCV_I32", lines: &lines)
+            addLine(key: prefix + "u32" , value: String(int32), lines: &lines)
+            break
+        case .sstatic(let int32):
+            addLine(key: prefix + "type" , value: "SCV_STATIC", lines: &lines)
+            switch int32 {
+            case SCStatic.void.rawValue:
+                addLine(key: prefix + "ic" , value: "SCS_VOID", lines: &lines)
+                break
+            case SCStatic.strue.rawValue:
+                addLine(key: prefix + "ic" , value: "SCS_TRUE", lines: &lines)
+                break
+            case SCStatic.sfalse.rawValue:
+                addLine(key: prefix + "ic" , value: "SCS_FALSE", lines: &lines)
+                break
+            case SCStatic.ledgerKeyContractCode.rawValue:
+                addLine(key: prefix + "ic" , value: "SCS_LEDGER_KEY_CONTRACT_CODE", lines: &lines)
+                break
+            default:
+                break
+            }
+            break
+        case .object(let sCObjectXDR):
+            addLine(key: prefix + "type" , value: "SCV_OBJECT", lines: &lines)
+            if let obj = sCObjectXDR {
+                addLine(key: prefix + "obj._present", value: "true", lines: &lines)
+                addSCObject(obj: obj, prefix: prefix + "obj.", lines: &lines)
+            } else {
+                addLine(key: prefix + "obj._present", value: "false", lines: &lines)
+            }
+            break
+        case .symbol(let symbol):
+            addLine(key: prefix + "type" , value: "SCV_SYMBOL", lines: &lines)
+            addLine(key: prefix + "sym" , value: symbol, lines: &lines)
+            break
+        case .bitset(let uInt64):
+            addLine(key: prefix + "type" , value: "SCV_BITSET", lines: &lines)
+            addLine(key: prefix + "bits" , value: String(uInt64), lines: &lines)
+            break
+        case .status(let sCStatusXDR):
+            addLine(key: prefix + "type" , value: "SCV_STATUS", lines: &lines)
+            addSCStatus(status: sCStatusXDR, prefix: prefix + "status.", lines: &lines)
+            break
+        }
+    }
+    
+    private static func addSCObject(obj:SCObjectXDR, prefix:String, lines: inout [String]) -> Void {
+        switch obj {
+        case .vec(let vec):
+            addLine(key: prefix + "type" , value: "SCO_VEC", lines: &lines)
+            addLine(key: prefix + "vec.len" , value: String(vec.count), lines: &lines)
+            var index = 0
+            for val in vec {
+                addSCVal(val: val, prefix: prefix + "vec[\(index)].", lines: &lines)
+                index += 1
+            }
+            break
+        case .map(let map):
+            addLine(key: prefix + "type" , value: "SCO_MAP", lines: &lines)
+            addLine(key: prefix + "map.len" , value: String(map.count), lines: &lines)
+            var index = 0
+            for entry in map {
+                addSCVal(val: entry.key, prefix: prefix + "map[\(index)].key.", lines: &lines)
+                addSCVal(val: entry.val, prefix: prefix + "map[\(index)].val.", lines: &lines)
+                index += 1
+            }
+            break
+        case .u64(let uInt64):
+            addLine(key: prefix + "type" , value: "SCO_U64", lines: &lines)
+            addLine(key: prefix + "u64" , value: String(uInt64), lines: &lines)
+            break
+        case .i64(let int64):
+            addLine(key: prefix + "type" , value: "SCO_I64", lines: &lines)
+            addLine(key: prefix + "u64" , value: String(int64), lines: &lines)
+            break
+        case .u128(let int128PartsXDR):
+            addLine(key: prefix + "type" , value: "SCO_U128", lines: &lines)
+            addLine(key: prefix + "u128.lo" , value: String(int128PartsXDR.lo), lines: &lines)
+            addLine(key: prefix + "u128.hi" , value: String(int128PartsXDR.hi), lines: &lines)
+            break
+        case .i128(let int128PartsXDR):
+            addLine(key: prefix + "type" , value: "SCO_I128", lines: &lines)
+            addLine(key: prefix + "i128.lo" , value: String(int128PartsXDR.lo), lines: &lines)
+            addLine(key: prefix + "i128.hi" , value: String(int128PartsXDR.hi), lines: &lines)
+            break
+        case .bytes(let data):
+            addLine(key: prefix + "type" , value: "SCO_BYTES", lines: &lines)
+            addLine(key: prefix + "bin" , value: data.hexEncodedString(), lines: &lines)
+            break
+        case .contractCode(let sCContractCodeXDR):
+            addLine(key: prefix + "type" , value: "SCO_CONTRACT_CODE", lines: &lines)
+            switch sCContractCodeXDR {
+            case .wasmRef(let wrappedData32):
+                addLine(key: prefix + "contractCode.type" , value: "SCCONTRACT_CODE_WASM_REF", lines: &lines)
+                addLine(key: prefix + "contractCode.wasm_id" , value: wrappedData32.wrapped.hexEncodedString(), lines: &lines)
+                break
+            case .token:
+                addLine(key: prefix + "contractCode.type" , value: "SCCONTRACT_CODE_TOKEN", lines: &lines)
+                break
+            }
+        case .address(let address):
+            addLine(key: prefix + "type" , value: "SCO_ADDRESS", lines: &lines)
+            addSCAddress(addr: address, prefix: prefix + "address.", lines: &lines)
+            break
+        case .nonceKey(let nonceAddress):
+            addLine(key: prefix + "type" , value: "SCO_NONCE_KEY", lines: &lines)
+            addSCAddress(addr: nonceAddress, prefix: prefix + "nonceAddress.", lines: &lines)
+            break
+        }
+    }
+    
+    private static func addSCAddress(addr:SCAddressXDR, prefix:String, lines: inout [String]) -> Void {
+        switch addr {
+        case .account(let publicKey):
+            addLine(key: prefix + "type" , value: "SC_ADDRESS_TYPE_ACCOUNT", lines: &lines)
+            addLine(key: prefix + "accountId" , value: KeyPair(publicKey: publicKey).accountId, lines: &lines)
+            break
+        case .contract(let wrappedData32):
+            addLine(key: prefix + "type" , value: "SC_ADDRESS_TYPE_CONTRACT", lines: &lines)
+            addLine(key: prefix + "contractId" , value: wrappedData32.wrapped.hexEncodedString(), lines: &lines)
+            break
+        }
+    }
+    private static func addSCStatus(status:SCStatusXDR, prefix:String, lines: inout [String]) -> Void {
+        switch status {
+        case .ok:
+            addLine(key: prefix + "type" , value: "SST_OK", lines: &lines)
+            break
+        case .unknownError(let code):
+            addLine(key: prefix + "status.type" , value: "SST_UNKNOWN_ERROR", lines: &lines)
+            if code == SCUnknownErrorCode.errorGeneral.rawValue {
+                addLine(key: prefix + "status.unknownCode" , value: "UNKNOWN_ERROR_GENERAL", lines: &lines)
+            } else if code == SCUnknownErrorCode.errorXDR.rawValue {
+                addLine(key: prefix + "status.unknownCode" , value: "UNKNOWN_ERROR_XDR", lines: &lines)
+            }
+            break
+        case .hostValueError(let code):
+            addSCHostValueError(code: code, prefix: prefix, lines: &lines)
+            break
+        case .hostObjectError(let code):
+            addSCHostObjectError(code: code, prefix: prefix, lines: &lines)
+            break
+        case .hostFunctionError(let code):
+            addSCHostFunctionError(code: code, prefix: prefix, lines: &lines)
+            break
+        case .hostStorageError(let code):
+            addSCHostStorageError(code: code, prefix: prefix, lines: &lines)
+            break
+        case .hostContextError(let code):
+            addSCHostContextError(code: code, prefix: prefix, lines: &lines)
+            break
+        case .vmError(let code):
+            addSCVMError(code: code, prefix: prefix, lines: &lines)
+            break
+        case .contractError(let code):
+            addSCContractError(code: code, prefix: prefix, lines: &lines)
+            break
+        case .hostAuthError(let code):
+            addSCHostAuthError(code: code, prefix: prefix, lines: &lines)
+            break
+        }
+    }
+    
+    private static func addSCHostAuthError(code:Int32, prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "status.type" , value: "SST_HOST_AUTH_ERROR", lines: &lines)
+        switch code {
+        case SCHostAuthErrorCode.unknownError.rawValue:
+            addLine(key: prefix + "status.authCode" , value: "HOST_AUTH_UNKNOWN_ERROR", lines: &lines)
+            break
+        case SCHostAuthErrorCode.nonceError.rawValue:
+            addLine(key: prefix + "status.authCode" , value: "HOST_AUTH_NONCE_ERROR", lines: &lines)
+            break
+        case SCHostAuthErrorCode.duplicateAthorization.rawValue:
+            addLine(key: prefix + "status.authCode" , value: "HOST_AUTH_DUPLICATE_AUTHORIZATION", lines: &lines)
+            break
+        case SCHostAuthErrorCode.authNotAuthorized.rawValue:
+            addLine(key: prefix + "status.authCode" , value: "HOST_AUTH_NOT_AUTHORIZED", lines: &lines)
+            break
+        default:
+            break
+        }
+    }
+    
+    private static func addSCContractError(code:Int32, prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "status.type" , value: "SST_CONTRACT_ERROR", lines: &lines)
+        addLine(key: prefix + "status.contractCode" , value: String(code), lines: &lines)
+    }
+    
+    private static func addSCVMError(code:Int32, prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "status.type" , value: "SST_VM_ERROR", lines: &lines)
+        switch code {
+        case SCVmErrorCode.unknownError.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_UNKNOWN", lines: &lines)
+            break
+        case SCVmErrorCode.validation.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_VALIDATION", lines: &lines)
+            break
+        case SCVmErrorCode.instantiation.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_INSTANTIATION", lines: &lines)
+            break
+        case SCVmErrorCode.function.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_FUNCTION", lines: &lines)
+            break
+        case SCVmErrorCode.table.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_TABLE", lines: &lines)
+            break
+        case SCVmErrorCode.memory.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_MEMORY", lines: &lines)
+            break
+        case SCVmErrorCode.global.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_GLOBAL", lines: &lines)
+            break
+        case SCVmErrorCode.value.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_VALUE", lines: &lines)
+            break
+        case SCVmErrorCode.trapUnreachable.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_TRAP_UNREACHABLE", lines: &lines)
+            break
+        case SCVmErrorCode.tableAccessOutOfBounds.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_TRAP_TABLE_ACCESS_OUT_OF_BOUNDS", lines: &lines)
+            break
+        case SCVmErrorCode.memoryAccessOutOfBounds.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_TRAP_MEMORY_ACCESS_OUT_OF_BOUNDS", lines: &lines)
+            break
+        case SCVmErrorCode.elemUnitialized.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_TRAP_ELEM_UNINITIALIZED", lines: &lines)
+            break
+        case SCVmErrorCode.divisionByZero.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_TRAP_DIVISION_BY_ZERO", lines: &lines)
+            break
+        case SCVmErrorCode.integerOverflow.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_TRAP_INTEGER_OVERFLOW", lines: &lines)
+            break
+        case SCVmErrorCode.invalidConversionToInt.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_TRAP_INVALID_CONVERSION_TO_INT", lines: &lines)
+            break
+        case SCVmErrorCode.stackOverflow.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_TRAP_STACK_OVERFLOW", lines: &lines)
+            break
+        case SCVmErrorCode.unexpectedSignature.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_TRAP_UNEXPECTED_SIGNATURE", lines: &lines)
+            break
+        case SCVmErrorCode.memLimitExceeded.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_TRAP_MEM_LIMIT_EXCEEDED", lines: &lines)
+            break
+        case SCVmErrorCode.cpuLimitExceeded.rawValue:
+            addLine(key: prefix + "status.vmCode" , value: "VM_TRAP_CPU_LIMIT_EXCEEDED", lines: &lines)
+            break
+        default:
+            break
+        }
+    }
+    
+    private static func addSCHostContextError(code:Int32, prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "status.type" , value: "SST_HOST_CONTEXT_ERROR", lines: &lines)
+        switch code {
+        case SCHostContextErrorCode.unknownError.rawValue:
+            addLine(key: prefix + "status.contextCode" , value: "HOST_CONTEXT_UNKNOWN_ERROR", lines: &lines)
+            break
+        case SCHostContextErrorCode.noContractRunning.rawValue:
+            addLine(key: prefix + "status.contextCode" , value: "HOST_CONTEXT_NO_CONTRACT_RUNNING", lines: &lines)
+            break
+        default:
+            break
+        }
+    }
+    
+    private static func addSCHostStorageError(code:Int32, prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "status.type" , value: "SST_HOST_STORAGE_ERROR", lines: &lines)
+        switch code {
+        case SCHostStorageErrorCode.unknownError.rawValue:
+            addLine(key: prefix + "status.storageCode" , value: "HOST_STORAGE_UNKNOWN_ERROR", lines: &lines)
+            break
+        case SCHostStorageErrorCode.expectContractData.rawValue:
+            addLine(key: prefix + "status.storageCode" , value: "HOST_STORAGE_EXPECT_CONTRACT_DATA", lines: &lines)
+            break
+        case SCHostStorageErrorCode.readwriteAccessToReadonlyEntry.rawValue:
+            addLine(key: prefix + "status.storageCode" , value: "HOST_STORAGE_READWRITE_ACCESS_TO_READONLY_ENTRY", lines: &lines)
+            break
+        case SCHostStorageErrorCode.accessToUnknownEntry.rawValue:
+            addLine(key: prefix + "status.storageCode" , value: "HOST_STORAGE_ACCESS_TO_UNKNOWN_ENTRY", lines: &lines)
+            break
+        case SCHostStorageErrorCode.missingKeyInGet.rawValue:
+            addLine(key: prefix + "status.storageCode" , value: "HOST_STORAGE_MISSING_KEY_IN_GET", lines: &lines)
+            break
+        case SCHostStorageErrorCode.getOnDeletedKey.rawValue:
+            addLine(key: prefix + "status.storageCode" , value: "HOST_STORAGE_GET_ON_DELETED_KEY", lines: &lines)
+            break
+        default:
+            break
+        }
+    }
+    
+    private static func addSCHostFunctionError(code:Int32, prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "status.type" , value: "SST_HOST_FUNCTION_ERROR", lines: &lines)
+        switch code {
+        case SCHostFnErrorCode.unknownError.rawValue:
+            addLine(key: prefix + "status.fnCode" , value: "HOST_FN_UNKNOWN_ERROR", lines: &lines)
+            break
+        case SCHostFnErrorCode.hostFunctionAction.rawValue:
+            addLine(key: prefix + "status.fnCode" , value: "HOST_FN_UNEXPECTED_HOST_FUNCTION_ACTION", lines: &lines)
+            break
+        case SCHostFnErrorCode.inputArgsWrongLenght.rawValue:
+            addLine(key: prefix + "status.fnCode" , value: "HOST_FN_INPUT_ARGS_WRONG_LENGTH", lines: &lines)
+            break
+        case SCHostFnErrorCode.inputArgsWrongType.rawValue:
+            addLine(key: prefix + "status.fnCode" , value: "HOST_FN_INPUT_ARGS_WRONG_TYPE", lines: &lines)
+            break
+        case SCHostFnErrorCode.inputArgsInvalid.rawValue:
+            addLine(key: prefix + "status.fnCode" , value: "HOST_FN_INPUT_ARGS_INVALID", lines: &lines)
+            break
+        default:
+            break
+        }
+    }
+    
+    private static func addSCHostObjectError(code:Int32, prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "status.type" , value: "SST_HOST_OBJECT_ERROR", lines: &lines)
+        switch code {
+        case SCHostObjErrorCode.unknownError.rawValue:
+            addLine(key: prefix + "status.objCode" , value: "HOST_OBJECT_UNKNOWN_ERROR", lines: &lines)
+            break
+        case SCHostObjErrorCode.unknownReference.rawValue:
+            addLine(key: prefix + "status.objCode" , value: "HOST_OBJECT_UNKNOWN_REFERENCE", lines: &lines)
+            break
+        case SCHostObjErrorCode.unexpectedType.rawValue:
+            addLine(key: prefix + "status.objCode" , value: "HOST_OBJECT_UNEXPECTED_TYPE", lines: &lines)
+            break
+        case SCHostObjErrorCode.objectCountExceedsU32Max.rawValue:
+            addLine(key: prefix + "status.objCode" , value: "HOST_OBJECT_OBJECT_COUNT_EXCEEDS_U32_MAX", lines: &lines)
+            break
+        case SCHostObjErrorCode.objectNotExists.rawValue:
+            addLine(key: prefix + "status.objCode" , value: "HOST_OBJECT_OBJECT_NOT_EXIST", lines: &lines)
+            break
+        case SCHostObjErrorCode.vecIndexOutOfBound.rawValue:
+            addLine(key: prefix + "status.objCode" , value: "HOST_OBJECT_VEC_INDEX_OUT_OF_BOUND", lines: &lines)
+            break
+        case SCHostObjErrorCode.contractHashWrongLenght.rawValue:
+            addLine(key: prefix + "status.objCode" , value: "HOST_OBJECT_CONTRACT_HASH_WRONG_LENGTH", lines: &lines)
+            break
+        default:
+            break
+        }
+    }
+    
+    private static func addSCHostValueError(code:Int32, prefix:String, lines: inout [String]) -> Void {
+        addLine(key: prefix + "status.type" , value: "SST_HOST_VALUE_ERROR", lines: &lines)
+        switch code {
+        case SCHostValErrorCode.unknownError.rawValue:
+            addLine(key: prefix + "status.valCode" , value: "HOST_VALUE_UNKNOWN_ERROR", lines: &lines)
+            break
+        case SCHostValErrorCode.reservedTagValue.rawValue:
+            addLine(key: prefix + "status.valCode" , value: "HOST_VALUE_RESERVED_TAG_VALUE", lines: &lines)
+            break
+        case SCHostValErrorCode.unexpectedValType.rawValue:
+            addLine(key: prefix + "status.valCode" , value: "HOST_VALUE_UNEXPECTED_VAL_TYPE", lines: &lines)
+            break
+        case SCHostValErrorCode.u63OutOfRange.rawValue:
+            addLine(key: prefix + "status.valCode" , value: "HOST_VALUE_U63_OUT_OF_RANGE", lines: &lines)
+            break
+        case SCHostValErrorCode.u32OutOfRange.rawValue:
+            addLine(key: prefix + "status.valCode" , value: "HOST_VALUE_U32_OUT_OF_RANGE", lines: &lines)
+            break
+        case SCHostValErrorCode.staticUnknown.rawValue:
+            addLine(key: prefix + "status.valCode" , value: "HOST_VALUE_STATIC_UNKNOWN", lines: &lines)
+            break
+        case SCHostValErrorCode.missingObject.rawValue:
+            addLine(key: prefix + "status.valCode" , value: "HOST_VALUE_MISSING_OBJECT", lines: &lines)
+            break
+        case SCHostValErrorCode.symbolTooLong.rawValue:
+            addLine(key: prefix + "status.valCode" , value: "HOST_VALUE_SYMBOL_BAD_CHAR", lines: &lines)
+            break
+        case SCHostValErrorCode.symbolContainsNonUTF8.rawValue:
+            addLine(key: prefix + "status.valCode" , value: "HOST_VALUE_SYMBOL_CONTAINS_NON_UTF8", lines: &lines)
+            break
+        case SCHostValErrorCode.bitsetTooManyBits.rawValue:
+            addLine(key: prefix + "status.valCode" , value: "HOST_VALUE_BITSET_TOO_MANY_BITS", lines: &lines)
+            break
+        case SCHostValErrorCode.statusUnknown.rawValue:
+            addLine(key: prefix + "status.valCode" , value: "HOST_VALUE_STATUS_UNKNOWN", lines: &lines)
+            break
+        case SCHostValErrorCode.symbolBadChar.rawValue:
+            addLine(key: prefix + "status.valCode" , value: "HOST_VALUE_SYMBOL_TOO_LONG", lines: &lines)
+            break
+        default:
+            break
+        }
+    }
+    private static func txRepHostFuncType(function:HostFunctionXDR) -> String {
+        switch function {
+        case .invokeContract(_):
+            return "HOST_FUNCTION_TYPE_INVOKE_CONTRACT"
+        case .createContract(_):
+            return "HOST_FUNCTION_TYPE_CREATE_CONTRACT"
+        case .installContractCode(_):
+            return "HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE"
         }
     }
     
@@ -2094,8 +3431,8 @@ public class TxRep: NSObject {
         switch asset {
         case .native:
             return "XLM"
-        case .poolShare:
-            return "TODO" //TODO
+        case .poolShare(let data):
+            return data.wrapped.hexEncodedString()
         default:
             return asset.assetCode! + ":" + asset.issuer!.accountId
         }
@@ -2191,7 +3528,7 @@ public class TxRep: NSObject {
         case .liquidityPoolWithdraw(_):
             return "liquidityPoolWithdrawOp"
         case .invokeHostFunction(_):
-            return "invokeHostFunction"
+            return "invokeHostFunctionOp"
         }
     }
     private static func txRepOpTypeUpperCase(operation: OperationXDR) -> String {

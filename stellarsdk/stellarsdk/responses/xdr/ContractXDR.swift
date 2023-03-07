@@ -106,7 +106,7 @@ public enum SCVmErrorCode: Int32 {
     case memoryAccessOutOfBounds = 9
     case tableAccessOutOfBounds = 10
     case elemUnitialized = 11
-    case devisionByZero = 12
+    case divisionByZero = 12
     case integerOverflow = 13
     case invalidConversionToInt = 14
     case stackOverflow = 15
@@ -130,8 +130,8 @@ public enum SCStatusXDR: XDRCodable {
     case hostStorageError(Int32)
     case hostContextError(Int32)
     case vmError(Int32)
-    case contractError(UInt32)
-    case hostAuthError(UInt32)
+    case contractError(Int32)
+    case hostAuthError(Int32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -163,10 +163,10 @@ public enum SCStatusXDR: XDRCodable {
             let vmError = try container.decode(Int32.self)
             self = .vmError(vmError)
         case .contractError:
-            let contractError = try container.decode(UInt32.self)
+            let contractError = try container.decode(Int32.self)
             self = .contractError(contractError)
         case .hostAuthError:
-            let contractError = try container.decode(UInt32.self)
+            let contractError = try container.decode(Int32.self)
             self = .hostAuthError(contractError)
         }
     }
@@ -321,7 +321,7 @@ public enum SCStatusXDR: XDRCodable {
         return type() == SCStatusType.contractError.rawValue
     }
     
-    public var contractError:UInt32? {
+    public var contractError:Int32? {
         switch self {
         case .contractError(let val):
             return val
@@ -330,7 +330,7 @@ public enum SCStatusXDR: XDRCodable {
         }
     }
     
-    public var hostAuthError:UInt32? {
+    public var hostAuthError:Int32? {
         switch self {
         case .hostAuthError(let val):
             return val
