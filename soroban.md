@@ -58,10 +58,10 @@ let accountId = accountKeyPair.accountId
 sdk.accounts.createFutureNetTestAccount(accountId: accountId) { (response) -> (Void) in //...
 ```
 
-Next you can fetch current information about your Stellar account using the ```SorobanServer```:
+Next you can fetch current information about your Stellar account using the ```iOS SDK```:
 
 ```swift
-sorobanServer.getAccount(accountId: accountId) { (response) -> (Void) in
+sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
     switch response {
     case .success(let accResponse):
         print("Sequence: \(accResponse.sequence)")
@@ -136,21 +136,21 @@ print("Transaction Id: " + sendResponse.transactionId)
 print("Status: " + sendResponse.status) // pending
 ```
 
-The status is ```pending``` because the transaction needs to be processed by the Soroban-RPC Server first. Therefore we need to wait a bit and poll for the current transaction status by using the ```getTransactionStatus``` request:
+The status is ```pending``` because the transaction needs to be processed by the Soroban-RPC Server first. Therefore we need to wait a bit and poll for the current transaction status by using the ```getTransaction``` request:
 
 ```swift
 // Fetch transaction status
-sorobanServer.getTransactionStatus(transactionHash: transactionId) { (response) -> (Void) in
+sorobanServer.getTransaction(transactionHash: transactionId) { (response) -> (Void) in
     switch response {
     case .success(let statusResponse):
         if TransactionStatus.SUCCESS == statusResponse.status {
             let wasmId = statusResponse.wasmId
             // ...
-        } else if TransactionStatus.PENDING == statusResponse.status {
+        } else if GetTransactionResponse.STATUS_SUCCESS == statusResponse.status {
             // try again later
 
-        } else if TransactionStatus.ERROR == statusResponse.status {
-            let error = stausResponse.error
+        } else if GetTransactionResponse.ERROR == statusResponse.status {
+            // ...
         }
     case .failure(let error):
         // ...
@@ -217,14 +217,14 @@ print("Transaction Id: " + sendResponse.transactionId)
 print("Status: " + sendResponse.status) // pending
 ```
 
-The status is ```pending``` because the transaction needs to be processed by the Soroban-RPC Server first. Therefore we need to wait a bit and poll for the current transaction status by using the ```getTransactionStatus``` request:
+The status is ```pending``` because the transaction needs to be processed by the Soroban-RPC Server first. Therefore we need to wait a bit and poll for the current transaction status by using the ```getTransaction``` request:
 
 ```swift
 // Fetch transaction status
-sorobanServer.getTransactionStatus(transactionHash: transactionId) { (response) -> (Void) in
+sorobanServer.getTransaction(transactionHash: transactionId) { (response) -> (Void) in
     switch response {
     case .success(let statusResponse):
-        if TransactionStatus.SUCCESS == statusResponse.status {
+        if GetTransactionResponse.SUCCESS == statusResponse.status {
             self.contractId = statusResponse.contractId // yey!
         } 
         // ...
@@ -257,16 +257,16 @@ First let's have a look to a simple (hello word) contract created with the [Asse
 *Hello Word contract AssemblyScript code:*
 
 ```typescript
-import {SymbolVal, VectorObject, fromSymbolStr} from 'as-soroban-sdk/lib/value';
+import {Symbol, VecObject, fromSmallSymbolStr} from 'as-soroban-sdk/lib/value';
 import {Vec} from 'as-soroban-sdk/lib/vec';
 
-export function hello(to: SymbolVal): VectorObject {
+export function hello(to: Symbol): VecObject {
 
-  let vec = new Vec();
-  vec.pushFront(fromSymbolStr("Hello"));
-  vec.pushBack(to);
-  
-  return vec.getHostObject();
+    let vec = new Vec();
+    vec.pushFront(fromSmallSymbolStr("Hello"));
+    vec.pushBack(to);
+
+    return vec.getHostObject();
 }
 ```
 
