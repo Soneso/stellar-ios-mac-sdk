@@ -9,21 +9,28 @@
 import Foundation
 
 public enum SCValType: Int32 {
-    case u63 = 0
-    case u32 = 1
-    case i32 = 2
-    case sstatic = 3
-    case object = 4
-    case symbol = 5
-    case bitset = 6
-    case status = 7
-}
-
-public enum SCStatic: Int32 {
-    case void = 0
-    case strue = 1
-    case sfalse = 2
-    case ledgerKeyContractCode = 3
+    case bool = 0
+    case void = 1
+    case status = 2
+    case u32 = 3
+    case i32 = 4
+    case u64 = 5
+    case i64 = 6
+    case timepoint = 7
+    case duration = 8
+    case u128 = 9
+    case i128 = 10
+    case u256 = 11
+    case i256 = 12
+    case bytes = 13
+    case string = 14
+    case symbol = 15
+    case vec = 16
+    case map = 17
+    case contractExecutable = 18
+    case address = 19
+    case ledgerKeyContractExecutable = 20
+    case ledgerKeyNonce = 21
 }
 
 public enum SCStatusType: Int32 {
@@ -416,78 +423,170 @@ public enum SCAddressXDR: XDRCodable {
     }
 }
 
+public struct SCNonceKeyXDR: XDRCodable {
+    public let nonceAddress: SCAddressXDR
+    
+    public init(nonceAddress:SCAddressXDR) {
+        self.nonceAddress = nonceAddress
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        nonceAddress = try container.decode(SCAddressXDR.self)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(nonceAddress)
+    }
+}
+
 public enum SCValXDR: XDRCodable {
 
-    case u63(UInt64)
+    case bool(Bool)
+    case void
+    case status(SCStatusXDR)
     case u32(UInt32)
     case i32(Int32)
-    case sstatic(Int32)
-    case object(SCObjectXDR?)
+    case u64(UInt64)
+    case i64(Int64)
+    case timepoint(UInt64)
+    case duration(UInt64)
+    case u128(Int128PartsXDR)
+    case i128(Int128PartsXDR)
+    case u256(WrappedData32)
+    case i256(WrappedData32)
+    case bytes(Data)
+    case string(String)
     case symbol(String)
-    case bitset(UInt64)
-    case status(SCStatusXDR)
+    case vec([SCValXDR]?)
+    case map([SCMapEntryXDR]?)
+    case contractExecutable(SCContractExecutableXDR)
+    case address(SCAddressXDR)
+    case ledgerKeyContractExecutable
+    case ledgerKeyNonce(SCNonceKeyXDR)
     
+    public init(address: Address) throws {
+        self = .address(try SCAddressXDR(address: address))
+    }
+
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
         let type = SCValType(rawValue: discriminant)!
         
         switch type {
-        case .u63:
-            let u63 = try container.decode(UInt64.self)
-            self = .u63(u63)
+        case .bool:
+            let b = try container.decode(Bool.self)
+            self = .bool(b)
+        case .void:
+            self = .void
+            break
+        case .status:
+            let status = try container.decode(SCStatusXDR.self)
+            self = .status(status)
         case .u32:
             let u32 = try container.decode(UInt32.self)
             self = .u32(u32)
         case .i32:
             let i32 = try container.decode(Int32.self)
             self = .i32(i32)
-        case .sstatic:
-            let sstatic = try container.decode(Int32.self)
-            self = .sstatic(sstatic)
-        case .object:
-            let objectPresent = try container.decode(UInt32.self)
-            if objectPresent != 0 {
-                let object = try container.decode(SCObjectXDR.self)
-                self = .object(object)
-            } else {
-                self = .object(nil)
-            }
+        case .u64:
+            let u64 = try container.decode(UInt64.self)
+            self = .u64(u64)
+        case .i64:
+            let i64 = try container.decode(Int64.self)
+            self = .i64(i64)
+        case .timepoint:
+            let timepoint = try container.decode(UInt64.self)
+            self = .timepoint(timepoint)
+        case .duration:
+            let duration = try container.decode(UInt64.self)
+            self = .duration(duration)
+        case .u128:
+            let u128 = try container.decode(Int128PartsXDR.self)
+            self = .u128(u128)
+        case .i128:
+            let i128 = try container.decode(Int128PartsXDR.self)
+            self = .i128(i128)
+        case .u256:
+            let u256 = try container.decode(WrappedData32.self)
+            self = .u256(u256)
+        case .i256:
+            let i256 = try container.decode(WrappedData32.self)
+            self = .i256(i256)
+        case .bytes:
+            let bytes = try container.decode(Data.self)
+            self = .bytes(bytes)
+        case .string:
+            let string = try container.decode(String.self)
+            self = .string(string)
         case .symbol:
             let symbol = try container.decode(String.self)
             self = .symbol(symbol)
-        case .bitset:
-            let bitset = try container.decode(UInt64.self)
-            self = .bitset(bitset)
-        case .status:
-            let status = try container.decode(SCStatusXDR.self)
-            self = .status(status)
+        case .vec:
+            let vecPresent = try container.decode(UInt32.self)
+            if vecPresent != 0 {
+                let vec = try decodeArray(type: SCValXDR.self, dec: decoder)
+                self = .vec(vec)
+            } else {
+                self = .vec(nil)
+            }
+        case .map:
+            let mapPresent = try container.decode(UInt32.self)
+            if mapPresent != 0 {
+                let map = try decodeArray(type: SCMapEntryXDR.self, dec: decoder)
+                self = .map(map)
+            } else {
+                self = .map(nil)
+            }
+        case .contractExecutable:
+            let contractExecutable = try container.decode(SCContractExecutableXDR.self)
+            self = .contractExecutable(contractExecutable)
+        case .address:
+            let address = try container.decode(SCAddressXDR.self)
+            self = .address(address)
+        case .ledgerKeyContractExecutable:
+            self = .ledgerKeyContractExecutable
+            break
+        case .ledgerKeyNonce:
+            let ledgerKeyNonce = try container.decode(SCNonceKeyXDR.self)
+            self = .ledgerKeyNonce(ledgerKeyNonce)
         }
     }
     
-    public init(address: Address) throws {
-        self = .object(try SCObjectXDR(address: address))
-    }
-    
     public init(accountEd25519Signature: AccountEd25519Signature) {
-        let pkBytes = SCObjectXDR.bytes(Data(accountEd25519Signature.publicKey.bytes))
-        let sigBytes = SCObjectXDR.bytes(Data(accountEd25519Signature.signature))
-        let pkMapEntry = SCMapEntryXDR(key: SCValXDR.symbol("public_key"), val: SCValXDR.object(pkBytes))
-        let sigMapEntry = SCMapEntryXDR(key: SCValXDR.symbol("signature"), val: SCValXDR.object(sigBytes))
-        let obj = SCObjectXDR.map([pkMapEntry,sigMapEntry])
-        self = .object(obj)
+        let pkBytes = Data(accountEd25519Signature.publicKey.bytes)
+        let sigBytes = Data(accountEd25519Signature.signature)
+        let pkMapEntry = SCMapEntryXDR(key: SCValXDR.symbol("public_key"), val: SCValXDR.bytes(pkBytes))
+        let sigMapEntry = SCMapEntryXDR(key: SCValXDR.symbol("signature"), val: SCValXDR.bytes(sigBytes))
+        self = .map([pkMapEntry,sigMapEntry])
     }
     
     public func type() -> Int32 {
         switch self {
-        case .u63: return SCValType.u63.rawValue
+        case .bool: return SCValType.bool.rawValue
+        case .void: return SCValType.bool.rawValue
+        case .status: return SCValType.status.rawValue
         case .u32: return SCValType.u32.rawValue
         case .i32: return SCValType.i32.rawValue
-        case .sstatic: return SCValType.sstatic.rawValue
-        case .object: return SCValType.object.rawValue
+        case .u64: return SCValType.u64.rawValue
+        case .i64: return SCValType.i64.rawValue
+        case .timepoint: return SCValType.timepoint.rawValue
+        case .duration: return SCValType.duration.rawValue
+        case .u128: return SCValType.u128.rawValue
+        case .i128: return SCValType.i128.rawValue
+        case .u256: return SCValType.u256.rawValue
+        case .i256: return SCValType.i256.rawValue
+        case .bytes: return SCValType.bytes.rawValue
+        case .string: return SCValType.string.rawValue
         case .symbol: return SCValType.symbol.rawValue
-        case .bitset: return SCValType.bitset.rawValue
-        case .status: return SCValType.status.rawValue
+        case .vec: return SCValType.vec.rawValue
+        case .map: return SCValType.map.rawValue
+        case .contractExecutable: return SCValType.contractExecutable.rawValue
+        case .ledgerKeyContractExecutable: return SCValType.ledgerKeyContractExecutable.rawValue
+        case .address: return SCValType.address.rawValue
+        case .ledgerKeyNonce: return SCValType.ledgerKeyNonce.rawValue
         }
     }
     
@@ -495,8 +594,13 @@ public enum SCValXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         try container.encode(type())
         switch self {
-        case .u63 (let u63):
-            try container.encode(u63)
+        case .bool (let bool):
+            try container.encode(bool)
+            break
+        case .void:
+            break
+        case .status (let status):
+            try container.encode(status)
             break
         case .u32 (let u32):
             try container.encode(u32)
@@ -504,29 +608,70 @@ public enum SCValXDR: XDRCodable {
         case .i32 (let i32):
             try container.encode(i32)
             break
-        case .sstatic (let sstatic):
-            try container.encode(sstatic)
+        case .u64 (let u64):
+            try container.encode(u64)
             break
-        case .object (let object):
-            if let object = object {
+        case .i64 (let i64):
+            try container.encode(i64)
+            break
+        case .timepoint (let timepoint):
+            try container.encode(timepoint)
+            break
+        case .duration (let duration):
+            try container.encode(duration)
+            break
+        case .u128 (let u128):
+            try container.encode(u128)
+            break
+        case .i128 (let i128):
+            try container.encode(i128)
+            break
+        case .u256 (let u256):
+            try container.encode(u256)
+            break
+        case .i256 (let i256):
+            try container.encode(i256)
+            break
+        case .bytes (let bytes):
+            try container.encode(bytes)
+            break
+        case .string (let string):
+            try container.encode(string)
+            break
+        case .symbol (let symbol):
+            try container.encode(symbol)
+            break
+        case .vec (let vec):
+            if let vec = vec {
                 let flag: Int32 = 1
                 try container.encode(flag)
-                try container.encode(object)
+                try container.encode(vec)
             } else {
                 let flag: Int32 = 0
                 try container.encode(flag)
             }
             break
-        case .symbol (let symbol):
-            try container.encode(symbol)
+        case .map (let map):
+            if let map = map {
+                let flag: Int32 = 1
+                try container.encode(flag)
+                try container.encode(map)
+            } else {
+                let flag: Int32 = 0
+                try container.encode(flag)
+            }
             break
-        case .bitset (let bitset):
-            try container.encode(bitset)
+        case .contractExecutable(let exec):
+            try container.encode(exec)
             break
-        case .status (let status):
-            try container.encode(status)
+        case .address(let address):
+            try container.encode(address)
             break
-
+        case .ledgerKeyContractExecutable:
+            break
+        case .ledgerKeyNonce (let nonceKey):
+            try container.encode(nonceKey)
+            break
         }
     }
     
@@ -535,98 +680,22 @@ public enum SCValXDR: XDRCodable {
         return try SCValXDR(from: xdrDecoder)
     }
     
-    public var vec:[SCValXDR]? {
+
+    public var isBool:Bool {
+        return type() == SCValType.bool.rawValue
+    }
+    
+    public var bool:Bool? {
         switch self {
-        case .object(let obj):
-            return obj?.vec
+        case .bool(let bool):
+            return bool
         default:
             return nil
         }
     }
     
-    public var map:[SCMapEntryXDR]? {
-        switch self {
-        case .object(let obj):
-            return obj?.map
-        default:
-            return nil
-        }
-    }
-    
-    public var u64:UInt64? {
-        switch self {
-        case .object(let obj):
-            return obj?.u64
-        default:
-            return nil
-        }
-    }
-    
-    public var i64:Int64? {
-        switch self {
-        case .object(let obj):
-            return obj?.i64
-        default:
-            return nil
-        }
-    }
-    
-    public var u128:Int128PartsXDR? {
-        switch self {
-        case .object(let obj):
-            return obj?.u128
-        default:
-            return nil
-        }
-    }
-    
-    public var bytes:Data? {
-        switch self {
-        case .object(let obj):
-            return obj?.bytes
-        default:
-            return nil
-        }
-    }
-    
-    public var contractCode:SCContractCodeXDR? {
-        switch self {
-        case .object(let obj):
-            return obj?.contractCode
-        default:
-            return nil
-        }
-    }
-    
-    public var address:SCAddressXDR? {
-        switch self {
-        case .object(let obj):
-            return obj?.address
-        default:
-            return nil
-        }
-    }
-    
-    public var nonceKey:SCAddressXDR? {
-        switch self {
-        case .object(let obj):
-            return obj?.nonceKey
-        default:
-            return nil
-        }
-    }
-    
-    public var isU63: Bool {
-        return type() == SCValType.u63.rawValue
-    }
-    
-    public var u63:UInt64? {
-        switch self {
-        case .u63(let val):
-            return val
-        default:
-            return nil
-        }
+    public var isVoid:Bool {
+        return type() == SCValType.void.rawValue
     }
     
     public var isU32:Bool {
@@ -655,36 +724,144 @@ public enum SCValXDR: XDRCodable {
         }
     }
     
-    public var isStatic:Bool {
-        return type() == SCValType.sstatic.rawValue
+    public var isStatus:Bool {
+        return type() == SCValType.status.rawValue
     }
     
-    public var sstatic:Int32? {
+    public var status:SCStatusXDR? {
         switch self {
-        case .sstatic(let val):
+        case .status(let val):
             return val
         default:
             return nil
         }
     }
     
-    public var isObj:Bool {
-        return type() == SCValType.object.rawValue
+    public var isU64: Bool {
+        return type() == SCValType.u64.rawValue
     }
     
-    public var hasObject:Bool {
+    public var u64:UInt64? {
         switch self {
-        case .object(let optional):
-            return optional != nil
+        case .u64(let u64):
+            return u64
         default:
-            return false
+            return nil
         }
     }
     
-    public var object:SCObjectXDR? {
+    public var isI64: Bool {
+        return type() == SCValType.i64.rawValue
+    }
+    
+    public var i64:Int64? {
         switch self {
-        case .object(let optional):
-            return optional
+        case .i64(let i64):
+            return i64
+        default:
+            return nil
+        }
+    }
+    
+    public var isTimepoint: Bool {
+        return type() == SCValType.timepoint.rawValue
+    }
+    
+    public var timepoint:UInt64? {
+        switch self {
+        case .timepoint(let timepoint):
+            return timepoint
+        default:
+            return nil
+        }
+    }
+    
+    public var isDuration: Bool {
+        return type() == SCValType.duration.rawValue
+    }
+    
+    public var duration:UInt64? {
+        switch self {
+        case .duration(let duration):
+            return duration
+        default:
+            return nil
+        }
+    }
+    
+    public var isU128: Bool {
+        return type() == SCValType.u128.rawValue
+    }
+    
+    public var u128:Int128PartsXDR? {
+        switch self {
+        case .u128(let u128):
+            return u128
+        default:
+            return nil
+        }
+    }
+    
+    public var isI128: Bool {
+        return type() == SCValType.i128.rawValue
+    }
+    
+    public var i128:Int128PartsXDR? {
+        switch self {
+        case .i128(let i128):
+            return i128
+        default:
+            return nil
+        }
+    }
+    
+    public var isU256: Bool {
+        return type() == SCValType.u256.rawValue
+    }
+    
+    public var u256:WrappedData32? {
+        switch self {
+        case .u256(let u256):
+            return u256
+        default:
+            return nil
+        }
+    }
+    
+    public var isI256: Bool {
+        return type() == SCValType.i256.rawValue
+    }
+    
+    public var i256:WrappedData32? {
+        switch self {
+        case .i256(let i256):
+            return i256
+        default:
+            return nil
+        }
+    }
+    
+    public var isBytes:Bool {
+        return type() == SCValType.bytes.rawValue
+    }
+    
+    public var bytes:Data? {
+        switch self {
+        case .bytes(let bytes):
+            return bytes
+        default:
+            return nil
+        }
+    }
+    
+    public var isString:Bool {
+        return type() == SCValType.string.rawValue
+    }
+    
+    public var string:String? {
+        switch self {
+        case .string(let val):
+            return val
         default:
             return nil
         }
@@ -703,44 +880,74 @@ public enum SCValXDR: XDRCodable {
         }
     }
     
-    public var isBitset:Bool {
-        return type() == SCValType.bitset.rawValue
+    public var isVec: Bool {
+        return type() == SCValType.vec.rawValue
     }
     
-    public var bitset:UInt64? {
+    public var vec:[SCValXDR]? {
         switch self {
-        case .bitset(let val):
+        case .vec(let vec):
+            return vec
+        default:
+            return nil
+        }
+    }
+    
+    public var isMap: Bool {
+        return type() == SCValType.map.rawValue
+    }
+    
+    public var map:[SCMapEntryXDR]? {
+        switch self {
+        case .map(let map):
+            return map
+        default:
+            return nil
+        }
+    }
+    
+    public var isContractExecutable: Bool {
+        return type() == SCValType.contractExecutable.rawValue
+    }
+    
+    public var contractExecutable:SCContractExecutableXDR? {
+        switch self {
+        case .contractExecutable(let val):
             return val
         default:
             return nil
         }
     }
     
-    public var isStatus:Bool {
-        return type() == SCValType.status.rawValue
+    public var isAddress: Bool {
+        return type() == SCValType.address.rawValue
     }
     
-    public var status:SCStatusXDR? {
+    public var address:SCAddressXDR? {
         switch self {
-        case .status(let val):
+        case .address(let val):
             return val
         default:
             return nil
         }
     }
-}
-
-public enum SCObjectType: Int32 {
-    case vec = 0
-    case map = 1
-    case u64 = 2
-    case i64 = 3
-    case u128 = 4
-    case i128 = 5
-    case bytes = 6
-    case contractCode = 7
-    case address = 8
-    case nonceKey = 9
+    
+    public var isLedgerKeyContractExecutable: Bool {
+        return type() == SCValType.ledgerKeyContractExecutable.rawValue
+    }
+    
+    public var isLedgerKeyNonce: Bool {
+        return type() == SCValType.ledgerKeyNonce.rawValue
+    }
+    
+    public var ledgerKeyNonce:SCNonceKeyXDR? {
+        switch self {
+        case .ledgerKeyNonce(let val):
+            return val
+        default:
+            return nil
+        }
+    }
 }
 
 
@@ -771,7 +978,7 @@ public enum SCContractCodeType: Int32 {
     case token = 1
 }
 
-public enum SCContractCodeXDR: XDRCodable {
+public enum SCContractExecutableXDR: XDRCodable {
 
     case wasmRef(WrappedData32)
     case token
@@ -846,245 +1053,5 @@ public struct Int128PartsXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         try container.encode(lo)
         try container.encode(hi)
-    }
-}
-
-public enum SCObjectXDR: XDRCodable {
-
-    case vec([SCValXDR])
-    case map([SCMapEntryXDR])
-    case u64(UInt64)
-    case i64(Int64)
-    case u128(Int128PartsXDR)
-    case i128(Int128PartsXDR)
-    case bytes(Data)
-    case contractCode(SCContractCodeXDR)
-    case address(SCAddressXDR)
-    case nonceKey(SCAddressXDR)
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        let discriminant = try container.decode(Int32.self)
-        let type = SCObjectType(rawValue: discriminant)!
-        
-        switch type {
-        case .vec:
-            let vec = try decodeArray(type: SCValXDR.self, dec: decoder)
-            self = .vec(vec)
-        case .map:
-            let map = try decodeArray(type: SCMapEntryXDR.self, dec: decoder)
-            self = .map(map)
-        case .u64:
-            let u64 = try container.decode(UInt64.self)
-            self = .u64(u64)
-        case .i64:
-            let i64 = try container.decode(Int64.self)
-            self = .i64(i64)
-        case .u128:
-            let u128 = try container.decode(Int128PartsXDR.self)
-            self = .u128(u128)
-        case .i128:
-            let i128 = try container.decode(Int128PartsXDR.self)
-            self = .i128(i128)
-        case .bytes:
-            let bytes = try container.decode(Data.self)
-            self = .bytes(bytes)
-        case .contractCode:
-            let contractCode = try container.decode(SCContractCodeXDR.self)
-            self = .contractCode(contractCode)
-        case .address:
-            let address = try container.decode(SCAddressXDR.self)
-            self = .address(address)
-        case .nonceKey:
-            let address = try container.decode(SCAddressXDR.self)
-            self = .nonceKey(address)
-        
-        }
-    }
-    
-    public init(address: Address) throws {
-        self = .address(try SCAddressXDR(address: address))
-    }
-    
-    public func type() -> Int32 {
-        switch self {
-        case .vec: return SCObjectType.vec.rawValue
-        case .map: return SCObjectType.map.rawValue
-        case .u64: return SCObjectType.u64.rawValue
-        case .i64: return SCObjectType.i64.rawValue
-        case .u128: return SCObjectType.u128.rawValue
-        case .i128: return SCObjectType.i128.rawValue
-        case .bytes: return SCObjectType.bytes.rawValue
-        case .contractCode: return SCObjectType.contractCode.rawValue
-        case .address: return SCObjectType.address.rawValue
-        case .nonceKey: return SCObjectType.nonceKey.rawValue
-        }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        try container.encode(type())
-        switch self {
-        case .vec (let vec):
-            try container.encode(vec)
-            break
-        case .map (let map):
-            try container.encode(map)
-            break
-        case .u64 (let u64):
-            try container.encode(u64)
-            break
-        case .i64 (let i64):
-            try container.encode(i64)
-            break
-        case .u128 (let u128):
-            try container.encode(u128)
-            break
-        case .i128 (let i128):
-            try container.encode(i128)
-            break
-        case .bytes (let bytes):
-            try container.encode(bytes)
-            break
-        case .contractCode (let contractCode):
-            try container.encode(contractCode)
-            break
-        case .address (let address):
-            try container.encode(address)
-            break
-        case .nonceKey (let address):
-            try container.encode(address)
-            break
-        }
-    }
-    
-    public var isVec:Bool {
-        return type() == SCObjectType.vec.rawValue
-    }
-    
-    public var vec:[SCValXDR]? {
-        switch self {
-        case .vec(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isMap:Bool {
-        return type() == SCObjectType.map.rawValue
-    }
-    
-    public var map:[SCMapEntryXDR]? {
-        switch self {
-        case .map(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isU64:Bool {
-        return type() == SCObjectType.u64.rawValue
-    }
-    
-    public var u64:UInt64? {
-        switch self {
-        case .u64(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isI64:Bool {
-        return type() == SCObjectType.i64.rawValue
-    }
-    
-    public var i64:Int64? {
-        switch self {
-        case .i64(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isU128:Bool {
-        return type() == SCObjectType.u128.rawValue
-    }
-    
-    public var u128:Int128PartsXDR? {
-        switch self {
-        case .u128(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isI128:Bool {
-        return type() == SCObjectType.i128.rawValue
-    }
-    
-    public var i128:Int128PartsXDR? {
-        switch self {
-        case .i128(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isBytes:Bool {
-        return type() == SCObjectType.bytes.rawValue
-    }
-    
-    public var bytes:Data? {
-        switch self {
-        case .bytes(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isContractCode:Bool {
-        return type() == SCObjectType.contractCode.rawValue
-    }
-    
-    public var contractCode:SCContractCodeXDR? {
-        switch self {
-        case .contractCode(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isAddress:Bool {
-        return type() == SCObjectType.address.rawValue
-    }
-    
-    public var address:SCAddressXDR? {
-        switch self {
-        case .address(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isNonceKey:Bool {
-        return type() == SCObjectType.nonceKey.rawValue
-    }
-    
-    public var nonceKey:SCAddressXDR? {
-        switch self {
-        case .nonceKey(let val):
-            return val
-        default:
-            return nil
-        }
     }
 }

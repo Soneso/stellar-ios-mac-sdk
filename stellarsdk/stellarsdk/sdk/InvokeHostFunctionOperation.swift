@@ -165,7 +165,7 @@ public class InvokeHostFunctionOperation:Operation {
         if let contractId = contractId, let functionName = functionName {
             var invokeArgs = [SCValXDR]()
             if let contractIdData = contractId.data(using: .hexadecimal) {
-                invokeArgs.append(SCValXDR.object(SCObjectXDR.bytes(contractIdData)))
+                invokeArgs.append(SCValXDR.bytes(contractIdData))
                 invokeArgs.append(SCValXDR.symbol(functionName))
                 if arguments != nil {
                     invokeArgs.append(contentsOf: arguments!)
@@ -201,13 +201,13 @@ public class InvokeHostFunctionOperation:Operation {
             }
             salt = WrappedData32(saltData)
         }
-        let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromSourceAccount(salt!), source: SCContractCodeXDR.wasmRef(wasmId.wrappedData32FromHex()))
+        let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromSourceAccount(salt!), source: SCContractExecutableXDR.wasmRef(wasmId.wrappedData32FromHex()))
         let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!, auth: auth)
         return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
     }
     
     private func deploySACWithAssetBodyXDR(asset:Asset) throws -> OperationBodyXDR {
-        let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromAsset(try asset.toXDR()), source: SCContractCodeXDR.token)
+        let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromAsset(try asset.toXDR()), source: SCContractExecutableXDR.token)
         let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!, auth: auth)
         return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
     }
@@ -223,24 +223,13 @@ public class InvokeHostFunctionOperation:Operation {
             }
             salt = WrappedData32(saltData)
         }
-        let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromSourceAccount(salt!), source: SCContractCodeXDR.token)
+        let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromSourceAccount(salt!), source: SCContractExecutableXDR.token)
         let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!, auth: auth)
         return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
     }
     
     private static func contractIdFromArg(arg:SCValXDR) -> String? {
-        switch arg {
-            case .object(let obj):
-                switch obj {
-                case .bytes(let data):
-                    return data.hexEncodedString()
-                default:
-                    break
-                }
-            default:
-                break;
-        }
-        return nil
+        return arg.bytes?.hexEncodedString()
     }
     
     private static func functionNameFromArg(arg:SCValXDR) -> String? {

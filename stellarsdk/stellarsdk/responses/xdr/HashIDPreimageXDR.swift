@@ -113,10 +113,10 @@ public struct ContractAuthPreimage: XDRCodable {
 
 public struct CreateContractArgs: XDRCodable {
     let networkID: WrappedData32
-    let source: SCContractCodeXDR
+    let source: SCContractExecutableXDR
     let salt: [UInt8]
     
-    init(networkID: WrappedData32, source: SCContractCodeXDR, salt: [UInt8]) {
+    init(networkID: WrappedData32, source: SCContractExecutableXDR, salt: [UInt8]) {
         self.networkID = networkID
         self.source = source
         self.salt = salt

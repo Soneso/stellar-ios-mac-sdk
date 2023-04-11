@@ -19,15 +19,21 @@ public enum GetNetworkResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
-public enum GetAccountResponseEnum {
+/*public enum GetAccountResponseEnum {
     case success(response: GetAccountResponse)
     case failure(error: SorobanRpcRequestError)
-}
+}*/
 
 public enum GetLedgerEntryResponseEnum {
     case success(response: GetLedgerEntryResponse)
     case failure(error: SorobanRpcRequestError)
 }
+
+public enum GetLatestLedgerResponseEnum {
+    case success(response: GetLatestLedgerResponse)
+    case failure(error: SorobanRpcRequestError)
+}
+
 
 public enum SimulateTransactionResponseEnum {
     case success(response: SimulateTransactionResponse)
@@ -39,8 +45,8 @@ public enum SendTransactionResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
-public enum GetTransactionStatusResponseEnum {
-    case success(response: GetTransactionStatusResponse)
+public enum GetTransactionResponseEnum {
+    case success(response: GetTransactionResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -57,11 +63,12 @@ public enum GetNonceResponseEnum {
 /// A closure to be called with the response from a post challenge request.
 public typealias GetHealthResponseClosure = (_ response:GetHealthResponseEnum) -> (Void)
 public typealias GetNetworkResponseClosure = (_ response:GetNetworkResponseEnum) -> (Void)
-public typealias GetAccountResponseClosure = (_ response:GetAccountResponseEnum) -> (Void)
+//public typealias GetAccountResponseClosure = (_ response:GetAccountResponseEnum) -> (Void)
 public typealias GetLedgerEntryResponseClosure = (_ response:GetLedgerEntryResponseEnum) -> (Void)
+public typealias GetLatestLedgerResponseClosure = (_ response:GetLatestLedgerResponseEnum) -> (Void)
 public typealias SimulateTransactionResponseClosure = (_ response:SimulateTransactionResponseEnum) -> (Void)
 public typealias SendTransactionResponseClosure = (_ response:SendTransactionResponseEnum) -> (Void)
-public typealias GetTransactionStatusResponseClosure = (_ response:GetTransactionStatusResponseEnum) -> (Void)
+public typealias GetTransactionResponseClosure = (_ response:GetTransactionResponseEnum) -> (Void)
 public typealias GetEventsResponseClosure = (_ response:GetEventsResponseEnum) -> (Void)
 public typealias GetNonceResponseClosure = (_ response:GetNonceResponseEnum) -> (Void)
 
@@ -120,6 +127,7 @@ public class SorobanServer {
     }
     
     /// General node health check request.
+    /// See: https://soroban.stellar.org/api/methods/getHealth
     public func getHealth(completion:@escaping GetHealthResponseClosure) {
         
         request(body: try? buildRequestJson(method: "getHealth")) { (result) -> (Void) in
@@ -147,6 +155,8 @@ public class SorobanServer {
         }
     }
     
+    /// General info about the currently configured network.
+    /// See: https://soroban.stellar.org/api/methods/getNetwork
     public func getNetwork(completion:@escaping GetNetworkResponseClosure) {
         
         request(body: try? buildRequestJson(method: "getNetwork")) { (result) -> (Void) in
@@ -173,7 +183,7 @@ public class SorobanServer {
             }
         }
     }
-    
+    /*
     /// Fetch a minimal set of current info about a stellar account.
     public func getAccount(accountId: String, completion:@escaping GetAccountResponseClosure) {
         
@@ -200,11 +210,12 @@ public class SorobanServer {
                 completion(.failure(error: error))
             }
         }
-    }
+    }*/
     
     /// For reading the current value of ledger entries directly. Allows you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry.
     /// This is a backup way to access your contract data which may not be available via events or simulateTransaction.
     /// To fetch contract wasm byte-code, use the ContractCode ledger entry key.
+    /// See: https://soroban.stellar.org/api/methods/getLedgerEntry
     public func getLedgerEntry(base64EncodedKey: String, completion:@escaping GetLedgerEntryResponseClosure) {
         
         request(body: try? buildRequestJson(method: "getLedgerEntry", args: ["key" : base64EncodedKey])) { (result) -> (Void) in
@@ -232,7 +243,37 @@ public class SorobanServer {
         }
     }
     
+    /// For finding out the current latest known ledger of this node. This is a subset of the ledger info from Horizon.
+    /// See: https://soroban.stellar.org/api/methods/getLatestLedger
+    public func getLatestLedger(completion:@escaping GetLatestLedgerResponseClosure) {
+        
+        request(body: try? buildRequestJson(method: "getLatestLedger")) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    if let result = response["result"] as? [String: Any] {
+                        do {
+                            let response = try self.jsonDecoder.decode(GetLatestLedgerResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                            completion(.success(response: response))
+                        } catch {
+                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
+                        }
+                    } else if let error = response["error"] as? [String: Any] {
+                        completion(.failure(error: .errorResponse(errorData: error)))
+                    } else {
+                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    }
+                } else {
+                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                }
+            case .failure(let error):
+                completion(.failure(error: error))
+            }
+        }
+    }
+    
     /// Submit a trial contract invocation to get back return values, expected ledger footprint, and expected costs.
+    /// See: https://soroban.stellar.org/api/methods/simulateTransaction
     public func simulateTransaction(transaction: Transaction, completion:@escaping SimulateTransactionResponseClosure) {
         
         request(body: try? buildRequestJson(method: "simulateTransaction", args: [transaction.encodedEnvelope()])) { (result) -> (Void) in
@@ -263,6 +304,7 @@ public class SorobanServer {
     /// Submit a real transaction to the stellar network. This is the only way to make changes “on-chain”.
     /// Unlike Horizon, this does not wait for transaction completion. It simply validates and enqueues the transaction.
     /// Clients should call getTransactionStatus to learn about transaction success/failure.
+    /// See: https://soroban.stellar.org/api/methods/sendTransaction
     public func sendTransaction(transaction: Transaction, completion:@escaping SendTransactionResponseClosure) {
         
         request(body: try? buildRequestJson(method: "sendTransaction", args: [transaction.encodedEnvelope()])) { (result) -> (Void) in
@@ -291,15 +333,16 @@ public class SorobanServer {
     }
     
     /// Clients will poll this to tell when the transaction has been completed.
-    public func getTransactionStatus(transactionHash:String, completion:@escaping GetTransactionStatusResponseClosure) {
+    /// See: https://soroban.stellar.org/api/methods/getTransaction
+    public func getTransaction(transactionHash:String, completion:@escaping GetTransactionResponseClosure) {
         
-        request(body: try? buildRequestJson(method: "getTransactionStatus", args: [transactionHash])) { (result) -> (Void) in
+        request(body: try? buildRequestJson(method: "getTransaction", args: [transactionHash])) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     if let result = response["result"] as? [String: Any] {
                         do {
-                            let decoded = try self.jsonDecoder.decode(GetTransactionStatusResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                            let decoded = try self.jsonDecoder.decode(GetTransactionResponse.self, from: JSONSerialization.data(withJSONObject: result))
                             completion(.success(response: decoded))
                         } catch {
                             completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
@@ -318,6 +361,7 @@ public class SorobanServer {
         }
     }
     
+    /// Helper to get the accounts nonce for the given contract id.
     public func getNonce(accountId: String, contractId: String, completion:@escaping GetNonceResponseClosure) throws {
         let ledgerKeyXdr = try LedgerKeyXDR(nonceAccountId: accountId, nonceContractId: contractId)
         let encoded = try XDREncoder.encode(ledgerKeyXdr)
@@ -328,7 +372,7 @@ public class SorobanServer {
                 if let entryData = try? LedgerEntryDataXDR(xdr:response.ledgerEntryData) {
                     switch entryData {
                     case .contractData(let contractDataEntryXDR):
-                        if let nonce = contractDataEntryXDR.val.object?.u64 {
+                        if let nonce = contractDataEntryXDR.val.u64 {
                             completion(.success(response: nonce))
                             return
                         }
@@ -352,9 +396,15 @@ public class SorobanServer {
         }
     }
     
-    public func getEvents(startLedger:String, endLedger:String, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
+    /// Clients can request a filtered list of events emitted by a given ledger range.
+    /// Soroban-RPC will support querying within a maximum 24 hours of recent ledgers.
+    /// Note, this could be used by the client to only prompt a refresh when there is a new ledger with relevant events. It should also be used by backend Dapp components to "ingest" events into their own database for querying and serving.
+    /// If making multiple requests, clients should deduplicate any events received, based on the event's unique id field. This prevents double-processing in the case of duplicate events being received.
+    /// By default soroban-rpc retains the most recent 24 hours of events.
+    /// See: https://soroban.stellar.org/api/methods/getEvents
+    public func getEvents(startLedger:String, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
         
-        request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, endLedger: endLedger, eventFilters: eventFilters, paginationOptions: paginationOptions))) { (result) -> (Void) in
+        request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, eventFilters: eventFilters, paginationOptions: paginationOptions))) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
@@ -379,10 +429,9 @@ public class SorobanServer {
         }
     }
     
-    private func buildEventsRequestParams(startLedger:String, endLedger:String, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
+    private func buildEventsRequestParams(startLedger:String, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
         var result: [String : Any] = [
-            "startLedger": startLedger,
-            "endLedger": endLedger,
+            "startLedger": startLedger
         ]
         // filters
         if (eventFilters != nil && eventFilters!.count > 0) {

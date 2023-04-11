@@ -8,10 +8,17 @@
 
 import Foundation
 
+/// General info about the currently configured network.
+/// See: https://soroban.stellar.org/api/methods/getNetwork
 public class GetNetworkResponse: NSObject, Decodable {
     
-    public var friendbotUrl:String
+    ///  (optional) - The URL of this network's "friendbot" faucet
+    public var friendbotUrl:String?
+    
+    ///  Network passphrase configured
     public var passphrase:String
+    
+    /// Protocol version of the latest ledger
     public var protocolVersion:String
     
     private enum CodingKeys: String, CodingKey {
@@ -22,7 +29,7 @@ public class GetNetworkResponse: NSObject, Decodable {
 
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        friendbotUrl = try values.decode(String.self, forKey: .friendbotUrl)
+        friendbotUrl = try values.decodeIfPresent(String.self, forKey: .friendbotUrl)
         passphrase = try values.decode(String.self, forKey: .passphrase)
         protocolVersion = try values.decode(String.self, forKey: .protocolVersion)
     }

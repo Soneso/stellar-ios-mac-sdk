@@ -10,14 +10,16 @@ import Foundation
 
 public class SimulateTransactionResult: NSObject, Decodable {
     
-    public var auth:[String]?
+    public var auth:[String]? // ContractAuthXdr
     public var footprint:Footprint
-    public var xdr:String
+    public var xdr:String?
+    public var events:[String]? // DiagnosticEventXdr
     
     private enum CodingKeys: String, CodingKey {
         case auth
         case footprint
         case xdr
+        case events
     }
 
     public required init(from decoder: Decoder) throws {
@@ -29,10 +31,14 @@ public class SimulateTransactionResult: NSObject, Decodable {
         } else {
             footprint = Footprint.empty()
         }
-        xdr = try values.decode(String.self, forKey: .xdr)
+        xdr = try values.decodeIfPresent(String.self, forKey: .xdr)
+        events = try values.decodeIfPresent([String].self, forKey: .events)
     }
     
     public var value:SCValXDR? {
-        try? SCValXDR.fromXdr(base64: xdr)
+        if let xdr = xdr {
+            return try? SCValXDR.fromXdr(base64: xdr)
+        }
+        return nil
     }
 }

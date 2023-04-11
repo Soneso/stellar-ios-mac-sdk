@@ -8,13 +8,20 @@
 
 import Foundation
 
+/// Part of the getEvents request
+/// See: https://soroban.stellar.org/api/methods/getEvents
 public class EventFilter {
     
+    /// (optional) A comma separated list of event types (system, contract, or diagnostic) used to filter events. If omitted, all event types are included.
     public let type:String?
-    public let contractIds: [String]?
-    public let topics: [[SegmentFilter]]?
     
-    public init(type:String? = nil, contractIds: [String]? = nil, topics: [[SegmentFilter]]? = nil) {
+    /// (optional) List of contract ids to query for events. If omitted, return events for all contracts. Maximum 5 contract IDs are allowed per request.
+    public let contractIds: [String]?
+    
+    /// (optional) List of topic filters. If omitted, query for all events. If multiple filters are specified, events will be included if they match any of the filters. Maximum 5 filters are allowed per request.
+    public let topics: [TopicFilter]?
+    
+    public init(type:String? = nil, contractIds: [String]? = nil, topics: [TopicFilter]? = nil) {
         self.type = type
         self.contractIds = contractIds
         self.topics = topics
@@ -34,14 +41,10 @@ public class EventFilter {
             result["contractIds"] = arr
         }
         // topics
-        if (topics != nil && topics!.count > 0) {
-            var arr:[[[String : Any]]] = []
-            for segments in topics! {
-                var segArr:[[String : Any]] = []
-                for segement in segments {
-                    segArr.append(segement.buildRequestParams())
-                }
-                arr.append(segArr)
+        if (topics != nil && topics!.count > 0) { // TODO: Test this!
+            var arr:[[String]] = []
+            for topic in topics! {
+                arr.append(topic.segmentMatchers)
             }
             result["topics"] = arr
         }

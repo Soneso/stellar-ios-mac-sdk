@@ -8,9 +8,11 @@
 
 import Foundation
 
+/// Part of the getEvents request
+/// See: https://soroban.stellar.org/api/methods/getEvents
 public class EventInfoValue: NSObject, Decodable {
     
-    /// xdr-encoded return value of the contract call
+    /// The emitted body value of the event (serialized in a base64 string - XdrSCVal).
     public var xdr:String
     
     private enum CodingKeys: String, CodingKey {

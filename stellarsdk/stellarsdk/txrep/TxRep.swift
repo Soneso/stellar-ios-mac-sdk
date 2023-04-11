@@ -320,9 +320,9 @@ public class TxRep: NSObject {
             case "LIQUIDITY_POOL_WITHDRAW":
                 let opPrefix = prefix + "liquidityPoolWithdrawOp."
                 return try getLiquidityPoolWithdrawOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
-            case "INVOKE_HOST_FUNCTION":
+            /*case "INVOKE_HOST_FUNCTION":
                 let opPrefix = prefix + "invokeHostFunctionOp."
-                return try getInvokeHostFunctionOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+                return try getInvokeHostFunctionOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)*/
             default:
                 throw TxRepError.invalidValue(key: key)
             }
@@ -330,6 +330,7 @@ public class TxRep: NSObject {
             throw TxRepError.missingValue(key: key)
         }
     }
+    /*
     private static func getInvokeHostFunctionOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> InvokeHostFunctionOperation? {
         var key = opPrefix + "function.type";
         let fcType:String
@@ -395,7 +396,7 @@ public class TxRep: NSObject {
                 key = prefix + "contractID.salt"
                 if let salt = dic[key] {
                     let cID = ContractIDXDR.fromSourceAccount(WrappedData32(Data(hex: salt)))
-                    let src = SCContractCodeXDR.wasmRef(WrappedData32(Data(hex: wasmId)))
+                    let src = SCContractExecutableXDR.wasmRef(WrappedData32(Data(hex: wasmId)))
                     return CreateContractArgsXDR(contractId: cID, source: src)
                 } else {
                     throw TxRepError.missingValue(key: key)
@@ -416,7 +417,7 @@ public class TxRep: NSObject {
                 key = prefix + "contractID.salt"
                 if let salt = dic[key] {
                     let cID = ContractIDXDR.fromSourceAccount(WrappedData32(Data(hex: salt)))
-                    let src = SCContractCodeXDR.token
+                    let src = SCContractExecutableXDR.token
                     return CreateContractArgsXDR(contractId: cID, source: src)
                 } else {
                     throw TxRepError.missingValue(key: key)
@@ -426,7 +427,7 @@ public class TxRep: NSObject {
                 if let assetStr = dic[key] {
                     if let asset = decodeAsset(asset: assetStr) {
                         let cID = ContractIDXDR.fromAsset(try asset.toXDR())
-                        let src = SCContractCodeXDR.token
+                        let src = SCContractExecutableXDR.token
                         return CreateContractArgsXDR(contractId: cID, source: src)
                     } else {
                         throw TxRepError.invalidValue(key: key)
@@ -761,18 +762,18 @@ public class TxRep: NSObject {
         }
     }
     
-    private static func getSCContractCode(dic:Dictionary<String,String>, prefix:String) throws -> SCContractCodeXDR {
+    private static func getSCContractCode(dic:Dictionary<String,String>, prefix:String) throws -> SCContractExecutableXDR {
         var key = prefix + "type"
         if let type = dic[key] {
             if "SCCONTRACT_CODE_WASM_REF" == type {
                 key = prefix + "wasm_id"
                 if let wasmIdStr = dic[key] {
-                    return SCContractCodeXDR.wasmRef(WrappedData32(Data(hex: wasmIdStr)))
+                    return SCContractExecutableXDR.wasmRef(WrappedData32(Data(hex: wasmIdStr)))
                 } else {
                     throw TxRepError.missingValue(key: key)
                 }
             } else if "SCCONTRACT_CODE_TOKEN" == type {
-                return SCContractCodeXDR.token
+                return SCContractExecutableXDR.token
             } else {
                 throw TxRepError.invalidValue(key: key)
             }
@@ -1113,7 +1114,7 @@ public class TxRep: NSObject {
             throw TxRepError.missingValue(key: key)
         }
     }
-    
+    */
     private static func getLiquidityPoolWithdrawOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> LiquidityPoolWithdrawOperation? {
         var key = opPrefix + "liquidityPoolID";
         let liquidityPoolID:String
@@ -2807,7 +2808,7 @@ public class TxRep: NSObject {
             addLine(key: operationPrefix + "minAmountA", value: String(lOp.minAmountA), lines: &lines)
             addLine(key: operationPrefix + "minAmountB", value: String(lOp.minAmountB), lines: &lines)
             break
-        case .invokeHostFunction(let iOp):
+        /*case .invokeHostFunction(let iOp):
             let fcPrefix = operationPrefix + "function.";
             let function = iOp.function;
             addLine(key: fcPrefix + "type" , value: txRepHostFuncType(function: function), lines: &lines)
@@ -2852,12 +2853,12 @@ public class TxRep: NSObject {
             for val in iOp.auth {
                 addContractAuth(auth: val, prefix: operationPrefix + "auth[\(index)].", lines: &lines)
                 index += 1
-            }
+            }*/
         default:
             break
         }
     }
-    
+    /*
     private static func addContractAuth(auth:ContractAuthXDR, prefix:String, lines: inout [String]) -> Void {
         if let addrWithNonce = auth.addressWithNonce {
             addLine(key: prefix + "addressWithNonce._present", value: "true", lines: &lines)
@@ -3361,7 +3362,7 @@ public class TxRep: NSObject {
         case .installContractCode(_):
             return "HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE"
         }
-    }
+    }*/
     
     private static func addClaimPredicate(predicate:ClaimPredicateXDR, prefix:String, lines: inout [String]) -> Void {
         switch predicate {

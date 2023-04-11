@@ -67,8 +67,8 @@ public enum LedgerKeyXDR: XDRCodable {
     
     public init(nonceAccountId: String, nonceContractId: String) throws {
         let address = Address.accountId(nonceAccountId)
-        let obj = SCObjectXDR.nonceKey(try SCAddressXDR(address: address))
-        let val = SCValXDR.object(obj)
+        let nk = SCNonceKeyXDR(nonceAddress: try SCAddressXDR(address: address))
+        let val = SCValXDR.ledgerKeyNonce(nk)
         if let contractIdData = nonceContractId.data(using: .hexadecimal) {
             self = .contractData(WrappedData32(contractIdData), val)
         } else {

@@ -10,19 +10,23 @@ import Foundation
 
 public enum SCSpecType: Int32 {
     case val = 0
-    case u32 = 1
-    case i32 = 2
-    case u64 = 3
-    case i64 = 4
-    case u128 = 5
-    case i128 = 6
-    case bool = 7
-    case symbol = 8
-    case bitset = 9
-    case status = 10
-    case bytes = 11
-    case invoker = 12
-    case address = 13
+    case bool = 1
+    case void = 2
+    case status = 3
+    case u32 = 4
+    case i32 = 5
+    case u64 = 6
+    case i64 = 7
+    case timepoint = 8
+    case duration = 9
+    case u128 = 10
+    case i128 = 11
+    case u256 = 12
+    case i256 = 13
+    case bytes = 14
+    case string = 16
+    case symbol = 17
+    case address = 19
     
     // Types with parameters
     case option = 1000
@@ -192,18 +196,22 @@ public struct SCSpecTypeUDTXDR: XDRCodable {
 public indirect enum SCSpecTypeDefXDR: XDRCodable {
 
     case val
-    case u64
-    case i64
-    case u128
-    case i128
+    case bool
+    case void
+    case status
     case u32
     case i32
-    case bool
-    case symbol
-    case bitset
-    case status
+    case u64
+    case i64
+    case timepoint
+    case duration
+    case u128
+    case i128
+    case u256
+    case i256
     case bytes
-    case invoker
+    case string
+    case symbol
     case address
     case option(SCSpecTypeOptionXDR)
     case result(SCSpecTypeResultXDR)
@@ -220,30 +228,38 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
         let type = SCSpecType(rawValue: discriminant)!
         
         switch type {
-        case .u64:
-            self = .u64
-        case .i64:
-            self = .i64
-        case .u128:
-            self = .u128
-        case .i128:
-            self = .i128
+        case .bool:
+            self = .bool
+        case .void:
+            self = .void
+        case .status:
+            self = .status
         case .u32:
             self = .u32
         case .i32:
             self = .i32
-        case .bool:
-            self = .bool
-        case .symbol:
-            self = .symbol
-        case .bitset:
-            self = .bitset
-        case .status:
-            self = .status
+        case .u64:
+            self = .u64
+        case .i64:
+            self = .i64
+        case .timepoint:
+            self = .timepoint
+        case .duration:
+            self = .duration
+        case .u128:
+            self = .u128
+        case .i128:
+            self = .i128
+        case .u256:
+            self = .u256
+        case .i256:
+            self = .i256
         case .bytes:
             self = .bytes
-        case .invoker:
-            self = .invoker
+        case .string:
+            self = .string
+        case .symbol:
+            self = .symbol
         case .address:
             self = .address
         case .option:
@@ -278,18 +294,22 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
     public func type() -> Int32 {
         switch self {
         case .val: return SCSpecType.val.rawValue
-        case .u64: return SCSpecType.u64.rawValue
-        case .i64: return SCSpecType.i64.rawValue
-        case .u128: return SCSpecType.u128.rawValue
-        case .i128: return SCSpecType.i128.rawValue
+        case .bool: return SCSpecType.bool.rawValue
+        case .void: return SCSpecType.bool.rawValue
+        case .status: return SCSpecType.status.rawValue
         case .u32: return SCSpecType.u32.rawValue
         case .i32: return SCSpecType.i32.rawValue
-        case .bool: return SCSpecType.bool.rawValue
-        case .symbol: return SCSpecType.symbol.rawValue
-        case .bitset: return SCSpecType.bitset.rawValue
-        case .status: return SCSpecType.status.rawValue
+        case .u64: return SCSpecType.u64.rawValue
+        case .i64: return SCSpecType.i64.rawValue
+        case .timepoint: return SCSpecType.timepoint.rawValue
+        case .duration: return SCSpecType.duration.rawValue
+        case .u128: return SCSpecType.u128.rawValue
+        case .i128: return SCSpecType.i128.rawValue
+        case .u256: return SCSpecType.u256.rawValue
+        case .i256: return SCSpecType.i256.rawValue
         case .bytes: return SCSpecType.bytes.rawValue
-        case .invoker: return SCSpecType.invoker.rawValue
+        case .string: return SCSpecType.string.rawValue
+        case .symbol: return SCSpecType.symbol.rawValue
         case .address: return SCSpecType.address.rawValue
         case .option: return SCSpecType.option.rawValue
         case .result: return SCSpecType.result.rawValue
@@ -306,34 +326,6 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         try container.encode(type())
         switch self {
-        case .val:
-            break
-        case .u64:
-            break
-        case .i64:
-            break
-        case .u128:
-            break
-        case .i128:
-            break
-        case .u32:
-            break
-        case .i32:
-            break
-        case .bool:
-            break
-        case .symbol:
-            break
-        case .bitset:
-            break
-        case .status:
-            break
-        case .bytes:
-            break
-        case .invoker:
-            break
-        case .address:
-            break
         case .option (let option):
             try container.encode(option)
             break
@@ -357,6 +349,8 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
             break
         case .udt (let udt):
             try container.encode(udt)
+            break
+        default:
             break
         }
     }

@@ -120,9 +120,9 @@ public enum ContractIDXDR: XDRCodable {
 
 public struct CreateContractArgsXDR: XDRCodable {
     public let contractId: ContractIDXDR
-    public let source: SCContractCodeXDR
+    public let source: SCContractExecutableXDR
     
-    public init(contractId:ContractIDXDR, source:SCContractCodeXDR) {
+    public init(contractId:ContractIDXDR, source:SCContractExecutableXDR) {
         self.contractId = contractId
         self.source = source
     }
@@ -130,7 +130,7 @@ public struct CreateContractArgsXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         contractId = try container.decode(ContractIDXDR.self)
-        source = try container.decode(SCContractCodeXDR.self)
+        source = try container.decode(SCContractExecutableXDR.self)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -323,7 +323,7 @@ public struct ContractAuthXDR: XDRCodable {
         }
         let root = try AuthorizedInvocationXDR(authorizedInvocation: contractAuth.rootInvocation)
         // PATCH see https://discord.com/channels/897514728459468821/1076723574884282398/1078095366890729595
-        let oneMoreVec = SCValXDR.object(SCObjectXDR.vec(contractAuth.signatureArgs))
+        let oneMoreVec = SCValXDR.vec(contractAuth.signatureArgs)
         
         self.init(addressWithNonce: addr, rootInvocation: root, signatureArgs: [oneMoreVec])
     }
