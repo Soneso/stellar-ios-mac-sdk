@@ -53,6 +53,23 @@ extension String {
         return try decodeCheck(versionByte: .sha256Hash)
     }
     
+    public func decodeContractId() throws -> Data {
+        return try decodeCheck(versionByte: .contractId)
+    }
+    
+    public func decodeContractIdHex() throws -> String {
+        let data = try decodeCheck(versionByte: .contractId)
+        return data.hexEncodedString()
+    }
+    
+    public func encodeContractIdHex() throws -> String {
+        if let data = data(using: .hexadecimal) {
+            return try data.encodeContractId()
+        }
+        throw StellarSDKError.invalidArgument(message: "Not a hex string \(self)")
+    }
+    
+    
     public func isValidEd25519PublicKey() -> Bool {
         return isValid(versionByte: .accountId)
     }

@@ -118,6 +118,9 @@ class SorobanTest: XCTestCase {
         getDeployWithAssetTransactionStatus()
         getTransactionDetails(transactionHash: self.deployWithAssetTransactionId!, footprint: self.deployWithAssetFootprint!.xdrEncoded)
         getSACWithAssetLedgerEntries()
+        
+        // contract id encoding
+        contractIdEncoding()
     }
     
     func getHealth() {
@@ -691,5 +694,15 @@ class SorobanTest: XCTestCase {
         case .parsingResponseFailed(let message, _):
             print(message)
         }
+    }
+    
+    func contractIdEncoding() {
+        let contractIdA = "86efd9a9d6fbf70297294772c9676127e16a23c2141cab3e29be836bb537a9b9";
+        let strEncodedA = "CCDO7WNJ2357OAUXFFDXFSLHMET6C2RDYIKBZKZ6FG7IG25VG6U3SLHT";
+        let strEncodedB = try! contractIdA.encodeContractIdHex();
+        XCTAssertEqual(strEncodedA, strEncodedB)
+        
+        let contractIdB = try! strEncodedB.decodeContractIdHex();
+        XCTAssertEqual(contractIdA, contractIdB)
     }
 }

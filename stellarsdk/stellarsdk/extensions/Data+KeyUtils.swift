@@ -48,6 +48,10 @@ extension Data {
         return try encodeCheck(versionByte: .sha256Hash)
     }
     
+    public func encodeContractId() throws -> String {
+        return try encodeCheck(versionByte: .contractId)
+    }
+    
     private func encodeCheck(versionByte:VersionByte) throws -> String {
         var versionByteRaw = versionByte.rawValue
         let versionByteData = Data(bytes: &versionByteRaw, count: MemoryLayout.size(ofValue: versionByte))

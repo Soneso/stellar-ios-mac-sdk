@@ -15,6 +15,7 @@ enum VersionByte:UInt8 {
     case seed = 144
     case preAuthTX = 152
     case sha256Hash = 184
+    case contractId = 16
 }
 
 extension VersionByte: RawRepresentable {
@@ -34,6 +35,8 @@ extension VersionByte: RawRepresentable {
             return 152
         case .sha256Hash:
             return 184
+        case .contractId:
+            return 16
         }
     }
 }
