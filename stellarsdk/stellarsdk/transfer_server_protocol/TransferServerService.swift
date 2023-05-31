@@ -50,12 +50,6 @@ public enum AnchorFeeResponseEnum {
     case failure(error: TransferServerError)
 }
 
-/// An enum used to diferentiate between successful and failed anchor put customer info responses.
-public enum AnchorCustomerInfoPutResponseEnum {
-    case success
-    case failure(error: TransferServerError)
-}
-
 /// A closure to be called with the response from a transfer server for domain request.
 public typealias TransferServerServiceClosure = (_ response:TransferServerServiceForDomainEnum) -> (Void)
 
@@ -77,8 +71,6 @@ public typealias AnchorTransactionResponseClosure = (_ response:AnchorTransactio
 /// A closure to be called with the response from a fee request.
 public typealias AnchorFeeResponseClosure = (_ response:AnchorFeeResponseEnum) -> (Void)
 
-/// A closure to be called with the response from a put info request.
-public typealias AnchorCustomerInfoPutResponseClosure = (_ response:AnchorCustomerInfoPutResponseEnum) -> (Void)
 
 public class TransferServerService: NSObject {
 
@@ -378,38 +370,6 @@ public class TransferServerService: NSObject {
                     completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }
                 
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
-            }
-        }
-    }
-    
-    /**
-     This anchor endpoint allows a wallet or exchange to upload information about the customer (chiefly KYC information) on the customer's behalf. It is often used following a /deposit or /withdraw request that responds with non_interactive_customer_info_needed. The endpoint accommodates KYC data that is large or binary formatted (image of driver's license, photo of bill for proof of address, etc...). A wallet may make multiple requests to /customer to upload data, and the endpoint is idempotent. All calls to /customer must include a JWT token retrieved using the SEP-10 authentication flow. This ensures that the client uploading the KYC data is the owner of the account.
-     */
-    public func putCustomerInfo(request: PutCustomerInfoRequest,  completion:@escaping AnchorCustomerInfoPutResponseClosure) {
-        let requestPath = "/customer"
-        
-        serviceHelper.PUTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters(), jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(_):
-                completion(.success)
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
-            }
-        }
-    }
-    
-    /**
-     Delete all personal information that the anchor has stored about a given customer. [account] is the Stellar account ID (G...) of the customer to delete. This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted.
-     */
-    public func deleteCustomerInfo(account: String, jwt:String?, completion:@escaping AnchorCustomerInfoPutResponseClosure) {
-        let requestPath = "/customer/\(account)"
-        
-        serviceHelper.DELETERequestWithPath(path: requestPath, jwtToken: jwt) { (result) -> (Void) in
-            switch result {
-            case .success(_):
-                completion(.success)
             case .failure(let error):
                 completion(.failure(error: self.errorFor(horizonError: error)))
             }

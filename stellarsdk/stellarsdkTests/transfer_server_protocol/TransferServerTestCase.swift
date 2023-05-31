@@ -25,8 +25,6 @@ class TransferServerTestCase: XCTestCase {
     var withdrawServerMock: WithdrawResponseMock!
     var anchorInfoServerMock: AnchorInfoResponseMock!
     var anchorTransactionsServerMock: AnchorTransactionsResponseMock!
-    var putCustomerInfoServerMock: PutCustomerInfoResponseMock!
-    var deleteCustomerInfoResponseMock: DeleteCustomerInfoResponseMock!
     
     override func setUp() {
         super.setUp()
@@ -37,8 +35,6 @@ class TransferServerTestCase: XCTestCase {
         withdrawServerMock = WithdrawResponseMock(address: transferServer)
         anchorInfoServerMock = AnchorInfoResponseMock(address: transferServer)
         anchorTransactionsServerMock = AnchorTransactionsResponseMock(address: transferServer)
-        putCustomerInfoServerMock = PutCustomerInfoResponseMock(address: transferServer)
-        deleteCustomerInfoResponseMock = DeleteCustomerInfoResponseMock(address: transferServer)
         transferServerService = TransferServerService(transferServiceAddress: "http://\(transferServer)")
     }
     
@@ -400,93 +396,4 @@ class TransferServerTestCase: XCTestCase {
         
         wait(for: [expectation], timeout: 15.0)
     }
-    
-    func testPutCustomerInfoSuccess() {
-        let request = PutCustomerInfoRequest(account: successAccount, jwt: "BTC")
-        let expectation = XCTestExpectation(description: "Test put customer info")
-        
-        transferServerService.putCustomerInfo(request: request) { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(true)
-            case .failure(_):
-                XCTAssert(false)
-            }
-            expectation.fulfill()
-        }
-
-        wait(for: [expectation], timeout: 15.0)
-    }
-    
-    func testPutCustomerInfoError() {
-        let request = PutCustomerInfoRequest(account: successAccount, jwt: "error_jwt")
-        let expectation = XCTestExpectation(description: "Test put customer info")
-        
-        transferServerService.putCustomerInfo(request: request) { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .anchorError(let message):
-                    XCTAssert(message == "This anchor doesn't support the given currency code: ETH")
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
-            }
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 15.0)
-    }
-    
-    func testDeleteCustomerInfoSuccess() {
-        let expectation = XCTestExpectation(description: "Test delete customer info")
-        
-        transferServerService.deleteCustomerInfo(account: successAccount, jwt: "") { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(true)
-            case .failure(_):
-                XCTAssert(false)
-            }
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 15.0)
-    }
-    
-    func testDeleteCustomerInfoUnauthorized() {
-        let expectation = XCTestExpectation(description: "Test delete customer info")
-        
-        transferServerService.deleteCustomerInfo(account: creationNotSupportedAccount, jwt: "") { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(false)
-            case .failure(_):
-                XCTAssert(true)
-            }
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 15.0)
-    }
-    
-    func testDeleteCustomerInfoNotFound() {
-        let expectation = XCTestExpectation(description: "Test delete customer info")
-        
-        transferServerService.deleteCustomerInfo(account: errorAccount, jwt: "") { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(false)
-            case .failure(_):
-                XCTAssert(true)
-            }
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 15.0)
-    }
-    
 }

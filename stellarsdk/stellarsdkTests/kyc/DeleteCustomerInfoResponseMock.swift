@@ -25,6 +25,7 @@ class DeleteCustomerInfoResponseMock: ResponsesMock {
                 mock.statusCode = 401
             } else if mock.variables["variable"] == "GBYLNNAUUJQ7YJSGIATU432IJP2QYTTPKIY5AFWT7LFZAIT76QYVLTAG" {
                 mock.statusCode = 404
+                return self.notFoundError
             }
             
             return nil
@@ -35,4 +36,10 @@ class DeleteCustomerInfoResponseMock: ResponsesMock {
                            httpMethod: "DELETE",
                            mockHandler: handler)
     }
+    
+    let notFoundError = """
+    {
+      "error":  "customer with `id` not found"
+    }
+    """
 }
