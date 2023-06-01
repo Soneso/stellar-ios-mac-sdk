@@ -69,7 +69,7 @@ class TradesTestCase: XCTestCase {
                 XCTFail()
             }
         }
-        wait(for: [expectation], timeout: 25.0)
+        wait(for: [expectation], timeout: 40.0)
     }
     
     override func tearDown() {

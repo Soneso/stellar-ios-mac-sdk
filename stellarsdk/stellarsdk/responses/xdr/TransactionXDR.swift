@@ -10,16 +10,16 @@ import Foundation
 
 public struct TransactionXDR: XDRCodable {
     public let sourceAccount: MuxedAccountXDR
-    public let fee: UInt32
+    public var fee: UInt32
     public let seqNum: Int64
     public let cond: PreconditionsXDR
     public let memo: MemoXDR
     public var operations: [OperationXDR]
-    public let reserved: Int32
+    public var ext: TransactionExtXDR
     
     private var signatures = [DecoratedSignatureXDR]()
     
-    public init(sourceAccount: MuxedAccountXDR, seqNum: Int64, cond: PreconditionsXDR, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100) {
+    public init(sourceAccount: MuxedAccountXDR, seqNum: Int64, cond: PreconditionsXDR, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100, ext:TransactionExtXDR = TransactionExtXDR.void) {
         self.sourceAccount = sourceAccount
         self.seqNum = seqNum
         self.cond = cond
@@ -28,31 +28,12 @@ public struct TransactionXDR: XDRCodable {
         
         self.fee = maxOperationFee * UInt32(operations.count)
         
-        reserved = 0
+        self.ext = ext
     }
     
-    public init(sourceAccount: PublicKey, seqNum: Int64, cond: PreconditionsXDR, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100) {
+    public init(sourceAccount: PublicKey, seqNum: Int64, cond: PreconditionsXDR, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100, ext:TransactionExtXDR = TransactionExtXDR.void) {
         let mux = MuxedAccountXDR.ed25519(sourceAccount.bytes)
-        self.init(sourceAccount: mux, seqNum: seqNum, cond: cond, memo: memo, operations: operations, maxOperationFee: maxOperationFee)
-    }
-    
-    @available(*, deprecated, message: "use preconditions instead")
-    public init(sourceAccount: PublicKey, seqNum: Int64, timeBounds: TimeBoundsXDR?, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100) {
-        let mux = MuxedAccountXDR.ed25519(sourceAccount.bytes)
-        var cond = PreconditionsXDR.none
-        if let tb = timeBounds {
-            cond = PreconditionsXDR.time(tb)
-        }
-        self.init(sourceAccount: mux, seqNum: seqNum, cond: cond, memo: memo, operations: operations, maxOperationFee: maxOperationFee)
-    }
-
-    @available(*, deprecated, message: "use preconditions instead")
-    public init(sourceAccount: MuxedAccountXDR, seqNum: Int64, timeBounds: TimeBoundsXDR?, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100) {
-        var cond = PreconditionsXDR.none
-        if let tb = timeBounds {
-            cond = PreconditionsXDR.time(tb)
-        }
-        self.init(sourceAccount: sourceAccount, seqNum: seqNum, cond: cond, memo: memo, operations: operations, maxOperationFee:maxOperationFee)
+        self.init(sourceAccount: mux, seqNum: seqNum, cond: cond, memo: memo, operations: operations, maxOperationFee: maxOperationFee, ext:ext)
     }
     
     public init(from decoder: Decoder) throws {
@@ -64,7 +45,7 @@ public struct TransactionXDR: XDRCodable {
         cond = try container.decode(PreconditionsXDR.self)
         memo = try container.decode(MemoXDR.self)
         operations = try decodeArray(type: OperationXDR.self, dec: decoder)
-        reserved = try container.decode(Int32.self)
+        ext = try container.decode(TransactionExtXDR.self)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -76,7 +57,7 @@ public struct TransactionXDR: XDRCodable {
         try container.encode(cond)
         try container.encode(memo)
         try container.encode(operations)
-        try container.encode(reserved)
+        try container.encode(ext)
     }
     
     public mutating func sign(keyPair:KeyPair, network:Network) throws {
@@ -125,5 +106,113 @@ public struct TransactionXDR: XDRCodable {
         var encodedT = try XDREncoder.encode(self)
         
         return Data(bytes: &encodedT, count: encodedT.count).base64EncodedString()
+    }
+}
+
+public struct SorobanResourcesXDR: XDRCodable {
+    public var footprint: LedgerFootprintXDR;
+    public var instructions: UInt32
+    public var readBytes: UInt32
+    public var writeBytes: UInt32
+    public var extendedMetaDataSizeBytes: UInt32
+    
+    public init(footprint: LedgerFootprintXDR, instructions: UInt32, readBytes: UInt32, writeBytes: UInt32, extendedMetaDataSizeBytes: UInt32) {
+        self.footprint = footprint
+        self.instructions = instructions
+        self.readBytes = readBytes
+        self.writeBytes = writeBytes
+        self.extendedMetaDataSizeBytes = extendedMetaDataSizeBytes
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        
+        footprint = try container.decode(LedgerFootprintXDR.self)
+        instructions = try container.decode(UInt32.self)
+        readBytes = try container.decode(UInt32.self)
+        writeBytes = try container.decode(UInt32.self)
+        extendedMetaDataSizeBytes = try container.decode(UInt32.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(footprint)
+        try container.encode(instructions)
+        try container.encode(readBytes)
+        try container.encode(writeBytes)
+        try container.encode(extendedMetaDataSizeBytes)
+    }
+}
+
+public struct SorobanTransactionDataXDR: XDRCodable {
+    public var resources: SorobanResourcesXDR;
+    public var refundableFee: Int64
+    public let ext: ExtensionPoint
+    
+    internal init(resources: SorobanResourcesXDR, refundableFee: Int64, ext: ExtensionPoint) {
+        self.resources = resources
+        self.refundableFee = refundableFee
+        self.ext = ext
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        
+        resources = try container.decode(SorobanResourcesXDR.self)
+        refundableFee = try container.decode(Int64.self)
+        ext = try container.decode(ExtensionPoint.self)
+    }
+    
+    public init(fromBase64 xdr:String) throws {
+        let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: xdr))
+        self = try SorobanTransactionDataXDR(from: xdrDecoder)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(resources)
+        try container.encode(refundableFee)
+        try container.encode(ext)
+    }
+}
+
+public enum TransactionExtXDR : XDRCodable {
+    case void
+    case sorobanTransactionData(SorobanTransactionDataXDR)
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        let code = try container.decode(Int32.self)
+        
+        switch code {
+        case 0:
+            self = .void
+        case 1:
+            self = .sorobanTransactionData(try container.decode(SorobanTransactionDataXDR.self))
+        default:
+            self = .void
+        }
+    }
+    
+    private func type() -> Int32 {
+        switch self {
+        case .void: return 0
+        case .sorobanTransactionData:return 1
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(type())
+        
+        switch self {
+        case .void:
+            return
+        case .sorobanTransactionData(let data):
+            try container.encode(data)
+            return
+        }
     }
 }

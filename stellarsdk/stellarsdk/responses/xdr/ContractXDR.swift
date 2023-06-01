@@ -127,6 +127,30 @@ public enum SCUnknownErrorCode: Int32 {
     case errorXDR = 1
 }
 
+public enum ContractCostType: Int32 {
+    case wasmInsnExec = 0
+    case wasmMemAlloc = 1
+    case hostMemAlloc = 2
+    case hostMemCpy = 3
+    case hostMemCmp = 4
+    case invokeHostFunction = 5
+    case visitObject = 6
+    case valXdrConv = 7
+    case valSer = 8
+    case valDeser = 9
+    case computeSha256Hash = 10
+    case computeEd25519PubKey = 11
+    case mapEntry = 12
+    case vecEntry = 13
+    case guardFrame = 14
+    case verifyEd25519Sig = 15
+    case vmMemRead = 16
+    case vmMemWrite = 17
+    case vmInstantiation = 18
+    case invokeVmFunction = 19
+    case chargeBudget = 20
+}
+
 public enum SCStatusXDR: XDRCodable {
 
     case ok
@@ -452,10 +476,10 @@ public enum SCValXDR: XDRCodable {
     case i64(Int64)
     case timepoint(UInt64)
     case duration(UInt64)
-    case u128(Int128PartsXDR)
+    case u128(UInt128PartsXDR)
     case i128(Int128PartsXDR)
-    case u256(WrappedData32)
-    case i256(WrappedData32)
+    case u256(UInt256PartsXDR)
+    case i256(Int256PartsXDR)
     case bytes(Data)
     case string(String)
     case symbol(String)
@@ -504,16 +528,16 @@ public enum SCValXDR: XDRCodable {
             let duration = try container.decode(UInt64.self)
             self = .duration(duration)
         case .u128:
-            let u128 = try container.decode(Int128PartsXDR.self)
+            let u128 = try container.decode(UInt128PartsXDR.self)
             self = .u128(u128)
         case .i128:
             let i128 = try container.decode(Int128PartsXDR.self)
             self = .i128(i128)
         case .u256:
-            let u256 = try container.decode(WrappedData32.self)
+            let u256 = try container.decode(UInt256PartsXDR.self)
             self = .u256(u256)
         case .i256:
-            let i256 = try container.decode(WrappedData32.self)
+            let i256 = try container.decode(Int256PartsXDR.self)
             self = .i256(i256)
         case .bytes:
             let bytes = try container.decode(Data.self)
@@ -793,7 +817,7 @@ public enum SCValXDR: XDRCodable {
         return type() == SCValType.u128.rawValue
     }
     
-    public var u128:Int128PartsXDR? {
+    public var u128:UInt128PartsXDR? {
         switch self {
         case .u128(let u128):
             return u128
@@ -819,7 +843,7 @@ public enum SCValXDR: XDRCodable {
         return type() == SCValType.u256.rawValue
     }
     
-    public var u256:WrappedData32? {
+    public var u256:UInt256PartsXDR? {
         switch self {
         case .u256(let u256):
             return u256
@@ -832,7 +856,7 @@ public enum SCValXDR: XDRCodable {
         return type() == SCValType.i256.rawValue
     }
     
-    public var i256:WrappedData32? {
+    public var i256:Int256PartsXDR? {
         switch self {
         case .i256(let i256):
             return i256
@@ -1035,23 +1059,108 @@ public enum SCContractExecutableXDR: XDRCodable {
 }
 
 public struct Int128PartsXDR: XDRCodable {
+    public let hi: Int64
     public let lo: UInt64
-    public let hi: UInt64
     
-    public init(lo:UInt64, hi:UInt64) {
-        self.lo = lo
+    public init(hi:Int64, lo:UInt64) {
         self.hi = hi
+        self.lo = lo
     }
 
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
+        hi = try container.decode(Int64.self)
         lo = try container.decode(UInt64.self)
-        hi = try container.decode(UInt64.self)
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(lo)
         try container.encode(hi)
+        try container.encode(lo)
     }
 }
+
+public struct UInt128PartsXDR: XDRCodable {
+    public let hi: UInt64
+    public let lo: UInt64
+    
+    public init(hi:UInt64, lo:UInt64) {
+        self.hi = hi
+        self.lo = lo
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        hi = try container.decode(UInt64.self)
+        lo = try container.decode(UInt64.self)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(hi)
+        try container.encode(lo)
+    }
+}
+
+public struct Int256PartsXDR: XDRCodable {
+
+    public let hiHi: Int64
+    public let hiLo: UInt64
+    public let loHi: UInt64
+    public let loLo: UInt64
+    
+    public init(hiHi: Int64, hiLo: UInt64, loHi: UInt64, loLo: UInt64) {
+        self.hiHi = hiHi
+        self.hiLo = hiLo
+        self.loHi = loHi
+        self.loLo = loLo
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        hiHi = try container.decode(Int64.self)
+        hiLo = try container.decode(UInt64.self)
+        loHi = try container.decode(UInt64.self)
+        loLo = try container.decode(UInt64.self)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(hiHi)
+        try container.encode(hiLo)
+        try container.encode(loHi)
+        try container.encode(loLo)
+    }
+}
+
+public struct UInt256PartsXDR: XDRCodable {
+
+    public let hiHi: UInt64
+    public let hiLo: UInt64
+    public let loHi: UInt64
+    public let loLo: UInt64
+    
+    public init(hiHi: UInt64, hiLo: UInt64, loHi: UInt64, loLo: UInt64) {
+        self.hiHi = hiHi
+        self.hiLo = hiLo
+        self.loHi = loHi
+        self.loLo = loLo
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        hiHi = try container.decode(UInt64.self)
+        hiLo = try container.decode(UInt64.self)
+        loHi = try container.decode(UInt64.self)
+        loLo = try container.decode(UInt64.self)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(hiHi)
+        try container.encode(hiLo)
+        try container.encode(loHi)
+        try container.encode(loLo)
+    }
+}
+

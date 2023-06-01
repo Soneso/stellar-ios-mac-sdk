@@ -25,6 +25,7 @@ public enum TransactionResultCode: Int32 {
     case badSponsorship = -14 // sponsorship not ended
     case badMinSeqAgeOrGap = -15 // minSeqAge or minSeqLedgerGap conditions not met
     case malformed = -16 // precondition is invalid
+    case sorobanResourceLimitExceeded = -17 //declared Soroban resource usage exceeds the network limit
 }
 
 public enum TransactionResultBodyXDR: Encodable {
@@ -46,6 +47,7 @@ public enum TransactionResultBodyXDR: Encodable {
     case badSponsorship
     case badMinSeqAgeOrGap
     case malformed
+    case sorobanResourceLimitExceeded
     
     public func type() -> Int32 {
         switch self {
@@ -67,6 +69,7 @@ public enum TransactionResultBodyXDR: Encodable {
         case .badSponsorship: return TransactionResultCode.badSponsorship.rawValue
         case .badMinSeqAgeOrGap: return TransactionResultCode.badMinSeqAgeOrGap.rawValue
         case .malformed: return TransactionResultCode.malformed.rawValue
+        case .sorobanResourceLimitExceeded: return TransactionResultCode.sorobanResourceLimitExceeded.rawValue
         }
     }
     
@@ -151,6 +154,7 @@ public struct TransactionResultXDR: XDRCodable {
             case .badSponsorship: resultBody = .badSponsorship
             case .badMinSeqAgeOrGap: resultBody = .badMinSeqAgeOrGap
             case .malformed: resultBody = .malformed
+            case .sorobanResourceLimitExceeded: resultBody = .sorobanResourceLimitExceeded
         }
         _ = try container.decode(Int32.self)
         
@@ -183,6 +187,7 @@ public enum InnerTransactionResultBodyXDR: Encodable {
     case badSponsorship
     case badMinSeqAgeOrGap
     case malformed
+    case sorobanResourceLimitExceeded
     
     public func type() -> Int32 {
         switch self {
@@ -202,6 +207,7 @@ public enum InnerTransactionResultBodyXDR: Encodable {
         case .badSponsorship: return TransactionResultCode.badSponsorship.rawValue
         case .badMinSeqAgeOrGap: return TransactionResultCode.badMinSeqAgeOrGap.rawValue
         case .malformed: return TransactionResultCode.malformed.rawValue
+        case .sorobanResourceLimitExceeded: return TransactionResultCode.sorobanResourceLimitExceeded.rawValue
         }
     }
     
@@ -256,6 +262,7 @@ public struct InnerTransactionResultXDR: XDRCodable {
             case .badSponsorship: resultBody = .badSponsorship
             case .badMinSeqAgeOrGap: resultBody = .badMinSeqAgeOrGap
             case .malformed: resultBody = .malformed
+            case .sorobanResourceLimitExceeded: resultBody = .sorobanResourceLimitExceeded
             default:
                 break
         }

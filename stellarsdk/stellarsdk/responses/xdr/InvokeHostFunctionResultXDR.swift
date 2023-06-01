@@ -19,9 +19,10 @@ public enum InvokeHostFunctionResultCode: Int32 {
 
 public enum InvokeHostFunctionResultXDR: XDRCodable {
 
-    case success (SCValXDR)
+    case success ([SCValXDR])
     case malformed
     case trapped
+    case resourceLimitExceeded
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -30,7 +31,7 @@ public enum InvokeHostFunctionResultXDR: XDRCodable {
         
         switch code {
         case .success:
-            let val = try container.decode(SCValXDR.self)
+            let val = try decodeArray(type: SCValXDR.self, dec: decoder)
             self = .success(val)
         case .malformed:
             self = .malformed
@@ -47,6 +48,8 @@ public enum InvokeHostFunctionResultXDR: XDRCodable {
         case .malformed:
             break
         case .trapped:
+            break
+        case .resourceLimitExceeded:
             break
         }
     }

@@ -320,9 +320,9 @@ public class TxRep: NSObject {
             case "LIQUIDITY_POOL_WITHDRAW":
                 let opPrefix = prefix + "liquidityPoolWithdrawOp."
                 return try getLiquidityPoolWithdrawOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
-            case "INVOKE_HOST_FUNCTION":
+            /*case "INVOKE_HOST_FUNCTION":
                 let opPrefix = prefix + "invokeHostFunctionOp."
-                return try getInvokeHostFunctionOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)
+                return try getInvokeHostFunctionOp(dic: dic, opPrefix: opPrefix, sourceAccount: sourceAccount)*/
             default:
                 throw TxRepError.invalidValue(key: key)
             }
@@ -330,7 +330,7 @@ public class TxRep: NSObject {
             throw TxRepError.missingValue(key: key)
         }
     }
-    
+    /*
     private static func getInvokeHostFunctionOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> InvokeHostFunctionOperation? {
         var key = opPrefix + "function.type";
         let fcType:String
@@ -346,7 +346,7 @@ public class TxRep: NSObject {
         case "HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE":
             key = opPrefix + "function.installContractCodeArgs.code"
             if let code = dic[key] {
-                hostFunctionXdr = HostFunctionXDR.installContractCode(InstallContractCodeArgsXDR(code: Data(hex: code)))
+                hostFunctionXdr = HostFunctionXDR.installContractCode(UploadContractWasmArgsXDR(code: Data(hex: code)))
             } else {
                 throw TxRepError.missingValue(key: key)
             }
@@ -803,8 +803,8 @@ public class TxRep: NSObject {
             if let lo = UInt64(loStr) {
                 key = prefix + "hi"
                 if let hiStr = dic[key] {
-                    if let hi = UInt64(hiStr) {
-                        return Int128PartsXDR(lo: lo, hi: hi)
+                    if let hi = Int64(hiStr) {
+                        return Int128PartsXDR(hi: hi, lo: lo)
                     } else {
                         throw TxRepError.invalidValue(key: key)
                     }
@@ -1109,7 +1109,7 @@ public class TxRep: NSObject {
             throw TxRepError.missingValue(key: key)
         }
     }
-    
+    */
     private static func getLiquidityPoolWithdrawOp(dic:Dictionary<String,String>, opPrefix:String, sourceAccount:MuxedAccount?) throws -> LiquidityPoolWithdrawOperation? {
         var key = opPrefix + "liquidityPoolID";
         let liquidityPoolID:String
@@ -2803,7 +2803,7 @@ public class TxRep: NSObject {
             addLine(key: operationPrefix + "minAmountA", value: String(lOp.minAmountA), lines: &lines)
             addLine(key: operationPrefix + "minAmountB", value: String(lOp.minAmountB), lines: &lines)
             break
-        case .invokeHostFunction(let iOp):
+        /*case .invokeHostFunction(let iOp):
             let fcPrefix = operationPrefix + "function.";
             let function = iOp.function;
             addLine(key: fcPrefix + "type" , value: txRepHostFuncType(function: function), lines: &lines)
@@ -2817,7 +2817,7 @@ public class TxRep: NSObject {
                 }
                 break
             case .createContract(let args):
-                switch args.source {
+                switch args.executable {
                 case .wasmRef(let wrappedData32):
                     addLine(key: fcPrefix + "createContractArgs.source.type" , value: "SCCONTRACT_CODE_WASM_REF", lines: &lines)
                     addLine(key: fcPrefix + "createContractArgs.source.wasm_id" , value: wrappedData32.wrapped.hexEncodedString(), lines: &lines)
@@ -2848,12 +2848,12 @@ public class TxRep: NSObject {
             for val in iOp.auth {
                 addContractAuth(auth: val, prefix: operationPrefix + "auth[\(index)].", lines: &lines)
                 index += 1
-            }
+            }*/
         default:
             break
         }
     }
-    
+    /*
     private static func addContractAuth(auth:ContractAuthXDR, prefix:String, lines: inout [String]) -> Void {
         if let addrWithNonce = auth.addressWithNonce {
             addLine(key: prefix + "addressWithNonce._present", value: "true", lines: &lines)
@@ -2984,13 +2984,13 @@ public class TxRep: NSObject {
             break
         case .u128(let int128PartsXDR):
             addLine(key: prefix + "type" , value: "SCV_U128", lines: &lines)
-            addLine(key: prefix + "u128.lo" , value: String(int128PartsXDR.lo), lines: &lines)
             addLine(key: prefix + "u128.hi" , value: String(int128PartsXDR.hi), lines: &lines)
+            addLine(key: prefix + "u128.lo" , value: String(int128PartsXDR.lo), lines: &lines)
             break
         case .i128(let int128PartsXDR):
             addLine(key: prefix + "type" , value: "SCV_I128", lines: &lines)
-            addLine(key: prefix + "i128.lo" , value: String(int128PartsXDR.lo), lines: &lines)
             addLine(key: prefix + "i128.hi" , value: String(int128PartsXDR.hi), lines: &lines)
+            addLine(key: prefix + "i128.lo" , value: String(int128PartsXDR.lo), lines: &lines)
             break
         case .u256(_):
             addLine(key: prefix + "type" , value: "SCV_U256", lines: &lines)
@@ -3354,7 +3354,7 @@ public class TxRep: NSObject {
         case .installContractCode(_):
             return "HOST_FUNCTION_TYPE_INSTALL_CONTRACT_CODE"
         }
-    }
+    }*/
     
     private static func addClaimPredicate(predicate:ClaimPredicateXDR, prefix:String, lines: inout [String]) -> Void {
         switch predicate {

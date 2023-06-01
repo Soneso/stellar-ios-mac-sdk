@@ -19,13 +19,13 @@ class SorobanAtomicSwapTest: XCTestCase {
     let sdk = StellarSDK.futureNet()
     let network = Network.futurenet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
-    let aliceKeyPair = try! KeyPair(secretSeed: "SDU4I7GRJPI7XWGOJDO6WMVSOM3XU57RDBIXY67JOOWERHQT5D2E224V") // GDUG444TELMBAHRJIE2YYPX6MANC4Y442VDFMYYO7DG75BUXXQW4LCTA
-    let bobKeyPair = try! KeyPair(secretSeed: "SBR7ELIC7VZVR5KRQCW4PHTVXRCRZKRN4RNSRQJBOA5XHFYEMUNNFEM3") // GDLQG27OQHR6RRNTMMIT7YGLGBFZQRKKSZSRXGMWZFZD6SCFRSY7FIH5
-    let atomicSwapContractId = "eeed6390e27c4df75eb8baecc2d059f56f87a72a3796ac99ba65cf1b6368930d"
-    let nativeTokenContractId  = "4a1e5322d3fa1525e7acc7282ee9e9006dd38b55fde29aa86da347ed231dba50"
-    let catTokenContractId = "75349045d3c3ebd07b1de12a69731c0a69c7411efb6fc48ddc6c7c073b554d0f"
+    let aliceKeyPair = try! KeyPair(secretSeed: "SBFUQ62QHPUZYF76ND4KFANQI4WGP62BN3GZKHTM67XXLBUOERI5R4ZD") // GCCZHIMWV7CNB76WXOVZ7QKU25AQWR6Q25TSCIBJFAOFVXJNXGTZNN6R
+    let bobKeyPair = try! KeyPair(secretSeed: "SDLF7VP2MO6XWHJXTTKUUNT63CEFRH3LG5ARYF6WBYSXS4TMRWIBFG5P") // GBH6UHX7VYRG6VZ7GDNYSI6ZSDZGV3GIGQRPPPPLENH3WY7FAZAFROLD
+    let atomicSwapContractId = "098fe6de43565b1956454f82c04e7d176c222c9971f5cb24adac193fb132fb23"
+    let tokenAId  = "7a2a228956a3586bc009faa033142e7a5deffb607e1a4b4ffa1ef6cd8206e9e1"
+    let tokenBId = "116eb3e5c57b77d74abcde25766369ba36df632d28e46880eca087c643a78332"
     let swapFunctionName = "swap"
-    let incrAllowFunctionName = "incr_allow"
+    let incrAllowFunctionName = "increase_allowance"
     
     var aliceNonce:UInt64?
     var bobNonce:UInt64?
@@ -109,20 +109,20 @@ class SorobanAtomicSwapTest: XCTestCase {
             let addressAlice = Address.accountId(aliceKeyPair.accountId)
             let addressBob = Address.accountId(bobKeyPair.accountId)
             let addressSwapContract = Address.contractId(atomicSwapContractId)
-            let tokenABytes = SCValXDR.bytes(nativeTokenContractId.data(using: .hexadecimal)!)
-            let tokenBBytes = SCValXDR.bytes(catTokenContractId.data(using: .hexadecimal)!)
-            let amountA = SCValXDR.i128(Int128PartsXDR(lo: 1000, hi: 0))
-            let minBForA = SCValXDR.i128(Int128PartsXDR(lo: 4500, hi: 0))
-            let amountB = SCValXDR.i128(Int128PartsXDR(lo: 5000, hi: 0))
-            let minAForB = SCValXDR.i128(Int128PartsXDR(lo: 950, hi: 0))
+            let tokenABytes = SCValXDR.bytes(tokenAId.data(using: .hexadecimal)!)
+            let tokenBBytes = SCValXDR.bytes(tokenBId.data(using: .hexadecimal)!)
+            let amountA = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 1000))
+            let minBForA = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 4500))
+            let amountB = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 5000))
+            let minAForB = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 950))
             
             let aliceSubAuthArgs:[SCValXDR] = [try SCValXDR(address: addressAlice), try SCValXDR(address: addressSwapContract), amountA]
-            let aliceSubAuthInvocation = AuthorizedInvocation(contractId: nativeTokenContractId, functionName: incrAllowFunctionName, args: aliceSubAuthArgs)
+            let aliceSubAuthInvocation = AuthorizedInvocation(contractId: tokenAId, functionName: incrAllowFunctionName, args: aliceSubAuthArgs)
             let aliceRootAuthArgs:[SCValXDR] = [tokenABytes, tokenBBytes, amountA, minBForA]
             let aliceRootInvocation = AuthorizedInvocation(contractId: atomicSwapContractId, functionName: swapFunctionName, args: aliceRootAuthArgs, subInvocations: [aliceSubAuthInvocation])
             
             let bobSubAuthArgs:[SCValXDR] = [try SCValXDR(address: addressBob), try SCValXDR(address: addressSwapContract), amountB]
-            let bobSubAuthInvocation = AuthorizedInvocation(contractId: catTokenContractId, functionName: incrAllowFunctionName, args: bobSubAuthArgs)
+            let bobSubAuthInvocation = AuthorizedInvocation(contractId: tokenBId, functionName: incrAllowFunctionName, args: bobSubAuthArgs)
             let bobRootAuthArgs:[SCValXDR] = [tokenBBytes, tokenABytes, amountB, minAForB]
             let bobRootInvocation = AuthorizedInvocation(contractId: atomicSwapContractId, functionName: swapFunctionName, args: bobRootAuthArgs, subInvocations: [bobSubAuthInvocation])
             
@@ -153,7 +153,11 @@ class SorobanAtomicSwapTest: XCTestCase {
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
-                    transaction.setFootprint(footprint: simulateResponse.footprint!)
+                    XCTAssertNotNil(simulateResponse.transactionData)
+                    XCTAssertNotNil(simulateResponse.minResourceFee)
+                    
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
                     
                     // check encoding and decoding

@@ -11,7 +11,7 @@ import Foundation
 public enum HostFunctionType: Int32 {
     case invokeContract = 0
     case createContract = 1
-    case installContractCode = 2
+    case uploadContractWasm = 2
 }
 
 public enum ContractIDType: Int32 {
@@ -25,7 +25,7 @@ public enum ContractIDPublicKeyType: Int32 {
     case publicKeyEd25519 = 1
 }
 
-public struct InstallContractCodeArgsXDR: XDRCodable {
+public struct UploadContractWasmArgsXDR: XDRCodable {
     public let code: Data
     
     public init(code:Data) {
@@ -118,33 +118,11 @@ public enum ContractIDXDR: XDRCodable {
     }
 }
 
-public struct CreateContractArgsXDR: XDRCodable {
-    public let contractId: ContractIDXDR
-    public let source: SCContractExecutableXDR
+public enum HostFunctionArgsXDR: XDRCodable {
     
-    public init(contractId:ContractIDXDR, source:SCContractExecutableXDR) {
-        self.contractId = contractId
-        self.source = source
-    }
-
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        contractId = try container.decode(ContractIDXDR.self)
-        source = try container.decode(SCContractExecutableXDR.self)
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        try container.encode(contractId)
-        try container.encode(source)
-    }
-}
-
-public enum HostFunctionXDR: XDRCodable {
-
     case invokeContract([SCValXDR])
     case createContract(CreateContractArgsXDR)
-    case installContractCode(InstallContractCodeArgsXDR)
+    case uploadContractWasm(UploadContractWasmArgsXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -158,9 +136,9 @@ public enum HostFunctionXDR: XDRCodable {
         case .createContract:
             let createContract = try container.decode(CreateContractArgsXDR.self)
             self = .createContract(createContract)
-        case .installContractCode:
-            let installContractCode = try container.decode(InstallContractCodeArgsXDR.self)
-            self = .installContractCode(installContractCode)
+        case .uploadContractWasm:
+            let installContractCode = try container.decode(UploadContractWasmArgsXDR.self)
+            self = .uploadContractWasm(installContractCode)
         }
     }
     
@@ -168,7 +146,7 @@ public enum HostFunctionXDR: XDRCodable {
         switch self {
         case .invokeContract: return HostFunctionType.invokeContract.rawValue
         case .createContract: return HostFunctionType.createContract.rawValue
-        case .installContractCode: return HostFunctionType.installContractCode.rawValue
+        case .uploadContractWasm: return HostFunctionType.uploadContractWasm.rawValue
         }
     }
     
@@ -182,10 +160,55 @@ public enum HostFunctionXDR: XDRCodable {
         case .createContract (let createContract):
             try container.encode(createContract)
             break
-        case .installContractCode (let installContractCode):
+        case .uploadContractWasm (let installContractCode):
             try container.encode(installContractCode)
             break
         }
+    }
+}
+
+public struct CreateContractArgsXDR: XDRCodable {
+    public let contractId: ContractIDXDR
+    public let executable: SCContractExecutableXDR
+    
+    public init(contractId:ContractIDXDR, source:SCContractExecutableXDR) {
+        self.contractId = contractId
+        self.executable = source
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        contractId = try container.decode(ContractIDXDR.self)
+        executable = try container.decode(SCContractExecutableXDR.self)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(contractId)
+        try container.encode(executable)
+    }
+}
+
+public struct HostFunctionXDR: XDRCodable {
+
+    public let args: HostFunctionArgsXDR
+    public var auth: [ContractAuthXDR]
+    
+    public init(args: HostFunctionArgsXDR, auth: [ContractAuthXDR]) {
+        self.args = args
+        self.auth = auth
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        args = try container.decode(HostFunctionArgsXDR.self)
+        auth = try decodeArray(type: ContractAuthXDR.self, dec: decoder)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(args)
+        try container.encode(auth)
     }
 }
 
@@ -212,28 +235,20 @@ public struct LedgerFootprintXDR: XDRCodable {
 }
 
 public struct InvokeHostFunctionOpXDR: XDRCodable {
-    public let function: HostFunctionXDR
-    public var ledgerFootprint: LedgerFootprintXDR
-    public var auth: [ContractAuthXDR]
+    public var functions: [HostFunctionXDR]
     
-    public init(function:HostFunctionXDR, ledgerFootprint:LedgerFootprintXDR, auth: [ContractAuthXDR]) {
-        self.function = function
-        self.ledgerFootprint = ledgerFootprint
-        self.auth = auth
+    public init(functions: [HostFunctionXDR]) {
+        self.functions = functions
     }
-
+    
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        function = try container.decode(HostFunctionXDR.self)
-        ledgerFootprint = try container.decode(LedgerFootprintXDR.self)
-        auth = try decodeArray(type: ContractAuthXDR.self, dec: decoder)
+        functions = try decodeArray(type: HostFunctionXDR.self, dec: decoder)
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(function)
-        try container.encode(ledgerFootprint)
-        try container.encode(auth)
+        try container.encode(functions)
     }
 }
 

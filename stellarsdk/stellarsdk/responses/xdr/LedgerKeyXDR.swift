@@ -10,8 +10,17 @@ import Foundation
 
 public enum ConfigSettingID: Int32 {
     case contractMaxSize = 0
+    case maxSizeBytes = 1
+    case computeV0 = 2
+    case ledgerCostV0 = 3
+    case historicalDataV0 = 4
+    case metaDataV0 = 5
+    case bandwidthV0 = 6
+    case paramsCpuInstructions = 7
+    case paramsMemoryBytes = 8
+    case keySizeBytes = 9
+    case entrySizeBytes = 10
 }
-
 
 public enum LedgerKeyXDR: XDRCodable {
     case account (LedgerKeyAccountXDR)

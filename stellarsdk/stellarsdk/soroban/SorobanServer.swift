@@ -19,11 +19,6 @@ public enum GetNetworkResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
-/*public enum GetAccountResponseEnum {
-    case success(response: GetAccountResponse)
-    case failure(error: SorobanRpcRequestError)
-}*/
-
 public enum GetLedgerEntryResponseEnum {
     case success(response: GetLedgerEntryResponse)
     case failure(error: SorobanRpcRequestError)
@@ -63,7 +58,6 @@ public enum GetNonceResponseEnum {
 /// A closure to be called with the response from a post challenge request.
 public typealias GetHealthResponseClosure = (_ response:GetHealthResponseEnum) -> (Void)
 public typealias GetNetworkResponseClosure = (_ response:GetNetworkResponseEnum) -> (Void)
-//public typealias GetAccountResponseClosure = (_ response:GetAccountResponseEnum) -> (Void)
 public typealias GetLedgerEntryResponseClosure = (_ response:GetLedgerEntryResponseEnum) -> (Void)
 public typealias GetLatestLedgerResponseClosure = (_ response:GetLatestLedgerResponseEnum) -> (Void)
 public typealias SimulateTransactionResponseClosure = (_ response:SimulateTransactionResponseEnum) -> (Void)
@@ -183,34 +177,6 @@ public class SorobanServer {
             }
         }
     }
-    /*
-    /// Fetch a minimal set of current info about a stellar account.
-    public func getAccount(accountId: String, completion:@escaping GetAccountResponseClosure) {
-        
-        request(body: try? buildRequestJson(method: "getAccount", args: [accountId])) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let result = response["result"] as? [String: Any] {
-                        do {
-                            let decoded = try self.jsonDecoder.decode(GetAccountResponse.self, from: JSONSerialization.data(withJSONObject: result))
-                            completion(.success(response: decoded))
-                        } catch {
-                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
-                        }
-                    } else if let error = response["error"] as? [String: Any] {
-                        completion(.failure(error: .errorResponse(errorData: error)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
-                    }
-                } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
-                }
-            case .failure(let error):
-                completion(.failure(error: error))
-            }
-        }
-    }*/
     
     /// For reading the current value of ledger entries directly. Allows you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry.
     /// This is a backup way to access your contract data which may not be available via events or simulateTransaction.

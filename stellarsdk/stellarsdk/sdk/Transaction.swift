@@ -12,7 +12,7 @@ import Foundation
 /// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/transactions.html, "Transactions")
 public class Transaction {
     
-    public let fee:UInt32
+    public var fee:UInt32
     public let sourceAccount:TransactionAccount
     public let operations:[Operation]
     public let memo:Memo
@@ -32,8 +32,9 @@ public class Transaction {
     /// - Parameter memo: Optional. The memo contains optional extra information. It is the responsibility of the client to interpret this value.
     /// - Parameter preconditions: Optional. Transaction preconditions as defined in CAP-21
     /// - Parameter maxOperationFee: Optional. The maximum fee in stoops you are willing to pay per operation. If not set, it will default to the network base fee which is currently set to 100 stroops (0.00001 lumens). Transaction fee is equal to operation fee times number of operations in this transaction.
+    /// - Parameter sorobanTransactionData: Optional. Soroban Transaction Data
     ///
-    public init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, preconditions:TransactionPreconditions? = nil, maxOperationFee:UInt32 = 100) throws {
+    public init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, preconditions:TransactionPreconditions? = nil, maxOperationFee:UInt32 = 100, sorobanTransactionData:SorobanTransactionDataXDR? = nil) throws {
         if operations.count == 0 {
             throw StellarSDKError.invalidArgument(message: "At least one operation required")
         }
@@ -63,12 +64,14 @@ public class Transaction {
         if let pc = preconditions {
             condXdr = pc.toXdr()
         }
+        let tExt = sorobanTransactionData != nil ? TransactionExtXDR.sorobanTransactionData(sorobanTransactionData!) : TransactionExtXDR.void
         self.transactionXDR = TransactionXDR(sourceAccount: muxedAccount,
                                              seqNum: self.sourceAccount.incrementedSequenceNumber(),
                                              cond: condXdr,
                                              memo: self.memo.toXDR(),
                                              operations: operationsXDR,
-                                             maxOperationFee: maxOperationFee)
+                                             maxOperationFee: maxOperationFee,
+                                             ext: tExt)
         
         self.sourceAccount.incrementSequenceNumber()
         
@@ -122,7 +125,7 @@ public class Transaction {
         let txFee = transactionEnvelopeXDR.txFee;
         let maxOperationFee = operations.count > 1 ? txFee /  UInt32(operations.count) : txFee
         
-        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionEnvelopeXDR.txMemo), preconditions: preconditions, maxOperationFee: maxOperationFee)
+        try self.init(sourceAccount: transactionSourceAccount, operations: operations, memo: Memo(memoXDR:transactionEnvelopeXDR.txMemo), preconditions: preconditions, maxOperationFee: maxOperationFee, sorobanTransactionData: transactionEnvelopeXDR.sorobanTransactionData)
         
         for signature in transactionEnvelopeXDR.txSignatures {
             self.transactionXDR.addSignature(signature: signature)
@@ -164,19 +167,15 @@ public class Transaction {
         return data
     }
     
-    /// Sets a given footprint to the included invoke host function operations
-    public func setFootprint(footprint:Footprint) {
-        for operation in operations {
-            if let op = operation as? InvokeHostFunctionOperation {
-                op.footprint = footprint.xdrFootprint
-            }
-        }
-        
-        for i in 0...transactionXDR.operations.count - 1 {
-            transactionXDR.operations[i].setFootprint(footprint: footprint)
-        }
+    public func setSorobanTransactionData(data: SorobanTransactionDataXDR) {
+        let ext = TransactionExtXDR.sorobanTransactionData(data)
+        transactionXDR.ext = ext
     }
     
+    public func addResourceFee(resourceFee:UInt32) {
+        fee += resourceFee
+        transactionXDR.fee = fee
+    }
     public func setContractAuth(auth:[ContractAuth]) throws {
         var authXdr:[ContractAuthXDR] = []
         for next in auth {

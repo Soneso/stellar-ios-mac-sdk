@@ -20,13 +20,25 @@ public class SimulateTransactionResponse: NSObject, Decodable {
     /// Stringified-number of the current latest ledger observed by the node when this response was generated.
     public var latestLedger:String
     
+    /// The recommended Soroban Transaction Data to use when submitting the simulated transaction. This data contains the refundable fee and resource usage information such as the ledger footprint and IO access data.
+    public var transactionData:SorobanTransactionDataXDR?
+    
+    /// Recommended minimum resource fee to add when submitting the transaction. This fee is to be added on top of the Stellar network fee.
+    public var minResourceFee:UInt32?
+    
+    /// Array of the events emitted during the contract invocation(s). The events are ordered by their emission time. (an array of serialized base64 strings - DiagnosticEventXdr)
+    public var events:[String]? // DiagnosticEventXdr
+
     ///  (optional) only present if the transaction failed. This field will include more details from stellar-core about why the invoke host function call failed.
     public var error:String?
-
+    
     private enum CodingKeys: String, CodingKey {
         case results
         case cost
         case latestLedger
+        case transactionData
+        case minResourceFee
+        case events
         case error
     }
 
@@ -34,6 +46,13 @@ public class SimulateTransactionResponse: NSObject, Decodable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         latestLedger = try values.decode(String.self, forKey: .latestLedger)
         cost = try values.decode(SimulateTransactionCost.self, forKey: .cost)
+        if let transactionDataXdrString = try values.decodeIfPresent(String.self, forKey: .transactionData) {
+            transactionData = try SorobanTransactionDataXDR(fromBase64: transactionDataXdrString)
+        }
+        if let resStr = try values.decodeIfPresent(String.self, forKey: .minResourceFee) {
+            minResourceFee = UInt32(resStr)
+        }
+        events = try values.decodeIfPresent([String].self, forKey: .events)
         error = try values.decodeIfPresent(String.self, forKey: .error)
         if error == nil {
             results = try values.decodeIfPresent([SimulateTransactionResult].self, forKey: .results)
@@ -41,8 +60,8 @@ public class SimulateTransactionResponse: NSObject, Decodable {
     }
     
     public var footprint:Footprint? {
-        if(results != nil && results!.count > 0) {
-            return results![0].footprint
+        if let fxdr = transactionData?.resources.footprint {
+            return Footprint(xdrFootprint: fxdr)
         }
         return nil;
     }

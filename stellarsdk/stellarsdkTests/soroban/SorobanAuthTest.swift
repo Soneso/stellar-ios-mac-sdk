@@ -52,8 +52,8 @@ class SorobanAuthTest: XCTestCase {
     }
     
     func testAll() throws {
-        installContractCode()
-        getInstallTransactionStatus()
+        uploadContractWasm()
+        getUploadTransactionStatus()
         createContract()
         getCreateTransactionStatus()
         try getNonce()
@@ -68,9 +68,9 @@ class SorobanAuthTest: XCTestCase {
     }
     
     
-    func installContractCode() {
-        XCTContext.runActivity(named: "installContractCode") { activity in
-            let expectation = XCTestExpectation(description: "contract code successfully deployed")
+    func uploadContractWasm() {
+        XCTContext.runActivity(named: "uploadContractWasm") { activity in
+            let expectation = XCTestExpectation(description: "contract code successfully uploaded")
             
             let bundle = Bundle(for: type(of: self))
             guard let path = bundle.path(forResource: "auth", ofType: "wasm") else {
@@ -84,7 +84,7 @@ class SorobanAuthTest: XCTestCase {
             sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
                 switch response {
                 case .success(let accountResponse):
-                    let installOperation = try! InvokeHostFunctionOperation.forInstallingContractCode(contractCode: contractCode!)
+                    let installOperation = try! InvokeHostFunctionOperation.forUploadingContractWasm(contractCode: contractCode!)
                     
                     let transaction = try! Transaction(sourceAccount: accountResponse,
                                                        operations: [installOperation], memo: Memo.none)
@@ -93,7 +93,11 @@ class SorobanAuthTest: XCTestCase {
                         switch response {
                         case .success(let simulateResponse):
                             XCTAssertNotNil(simulateResponse.footprint)
-                            transaction.setFootprint(footprint: simulateResponse.footprint!)
+                            XCTAssertNotNil(simulateResponse.transactionData)
+                            XCTAssertNotNil(simulateResponse.minResourceFee)
+                            
+                            transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                            transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                             try! transaction.sign(keyPair: self.senderKeyPair, network: self.network)
                             self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
                                 switch response {
@@ -122,9 +126,9 @@ class SorobanAuthTest: XCTestCase {
         }
     }
     
-    func getInstallTransactionStatus() {
-        XCTContext.runActivity(named: "getInstallTransactionStatus") { activity in
-            let expectation = XCTestExpectation(description: "get deployment status of the install transaction")
+    func getUploadTransactionStatus() {
+        XCTContext.runActivity(named: "getUploadTransactionStatus") { activity in
+            let expectation = XCTestExpectation(description: "get deployment status of the upload transaction")
             
             // wait a couple of seconds before checking the status
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(10), execute: {
@@ -165,7 +169,11 @@ class SorobanAuthTest: XCTestCase {
                         switch response {
                         case .success(let simulateResponse):
                             XCTAssertNotNil(simulateResponse.footprint)
-                            transaction.setFootprint(footprint: simulateResponse.footprint!)
+                            XCTAssertNotNil(simulateResponse.transactionData)
+                            XCTAssertNotNil(simulateResponse.minResourceFee)
+                            
+                            transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                            transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                             try! transaction.sign(keyPair: self.senderKeyPair, network: self.network)
                             
                             // check encoding and decoding
@@ -268,7 +276,17 @@ class SorobanAuthTest: XCTestCase {
                         switch response {
                         case .success(let simulateResponse):
                             XCTAssertNotNil(simulateResponse.footprint)
-                            transaction.setFootprint(footprint: simulateResponse.footprint!)
+                            XCTAssertNotNil(simulateResponse.transactionData)
+                            XCTAssertNotNil(simulateResponse.minResourceFee)
+                            
+                            // this is because in preview 9 the fee calculation from the simulation is not always accurate
+                            // see: https://discord.com/channels/897514728459468821/1112853306881081354
+                            var transactionData = simulateResponse.transactionData!
+                            transactionData.resources.instructions += transactionData.resources.instructions / 4
+                            let resourceFee = simulateResponse.minResourceFee! + 3000;
+                            
+                            transaction.setSorobanTransactionData(data: transactionData)
+                            transaction.addResourceFee(resourceFee: resourceFee)
                             try! transaction.sign(keyPair: self.senderKeyPair, network: self.network)
                             
                             // check encoding and decoding
@@ -330,7 +348,11 @@ class SorobanAuthTest: XCTestCase {
                         switch response {
                         case .success(let simulateResponse):
                             XCTAssertNotNil(simulateResponse.footprint)
-                            transaction.setFootprint(footprint: simulateResponse.footprint!)
+                            XCTAssertNotNil(simulateResponse.transactionData)
+                            XCTAssertNotNil(simulateResponse.minResourceFee)
+                            
+                            transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                            transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                             try! transaction.sign(keyPair: self.invokerKeyPair, network: self.network)
                             
                             // check encoding and decoding
@@ -391,7 +413,17 @@ class SorobanAuthTest: XCTestCase {
                         switch response {
                         case .success(let simulateResponse):
                             XCTAssertNotNil(simulateResponse.footprint)
-                            transaction.setFootprint(footprint: simulateResponse.footprint!)
+                            XCTAssertNotNil(simulateResponse.transactionData)
+                            XCTAssertNotNil(simulateResponse.minResourceFee)
+                            
+                            // this is because in preview 9 the fee calculation from the simulation is not always accurate
+                            // see: https://discord.com/channels/897514728459468821/1112853306881081354
+                            var transactionData = simulateResponse.transactionData!
+                            transactionData.resources.instructions += transactionData.resources.instructions / 4
+                            let resourceFee = simulateResponse.minResourceFee! + 3000;
+                            
+                            transaction.setSorobanTransactionData(data: transactionData)
+                            transaction.addResourceFee(resourceFee: resourceFee)
                             
                             XCTAssertNotNil(simulateResponse.auth)
                             if let simAuth = simulateResponse.auth {

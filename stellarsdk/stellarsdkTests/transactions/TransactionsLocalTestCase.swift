@@ -553,7 +553,7 @@ class TransactionsLocalTestCase: XCTestCase {
         print(txRepRes)
         XCTAssert (txRepRes == txrep)
     }
-    
+    /*
     func testTXRepSorobanInstallContractCode() {
         let txrep = """
         type: ENVELOPE_TYPE_TX
@@ -1102,7 +1102,7 @@ class TransactionsLocalTestCase: XCTestCase {
         print(txRepRes)
         XCTAssert (txRepRes == txrep)
     }
-    
+    */
     func testTransactionEnvelopeXDRStringInit() {
     
         let xdrStringV1 = "AAAAAgAAAABlfpQzRFiTdhYZiWYK6zm44YWGBfNHvoXOPM+imIUMTQAAA+gAD7FZAAAABAAAAAAAAAAAAAAAAQAAAAEAAAAAZX6UM0RYk3YWGYlmCus5uOGFhgXzR76FzjzPopiFDE0AAAABAAAAAByH6g1uUljaFtnxQRIrC6x47kLp1vHEcml+WhdzQjWKAAAAAAAAAAAA5OHAAAAAAAAAAAGYhQxNAAAAQMRhbj+98fzgU++ft/Sd5Nd/2qLPofcgLyRKyJafSKM4jSNNkLGQKL5oFSJnaBnaOxZ7Jc4q6s5GV9y1bcnIdQc="

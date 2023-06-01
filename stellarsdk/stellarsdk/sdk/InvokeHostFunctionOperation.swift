@@ -12,14 +12,13 @@ import Foundation
 public class InvokeHostFunctionOperation:Operation {
     
     public let hostFunctionType:HostFunctionType
-    public var footprint:LedgerFootprintXDR?
     
     // for invoking contracts
     public var contractId:String?
     public var functionName:String?
     public var arguments:[SCValXDR]?
     
-    // for installing (deploying) contracts
+    // for uploading contract wasm
     public var contractCode:Data?
     
     // for creating contracts
@@ -35,43 +34,38 @@ public class InvokeHostFunctionOperation:Operation {
         super.init(sourceAccountId: sourceAccountId)
     }
     
-    public static func forInvokingContract(contractId:String, functionName:String, functionArguments:[SCValXDR]? = nil, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil, auth: [ContractAuth]? = nil) throws -> InvokeHostFunctionOperation {
+    public static func forInvokingContract(contractId:String, functionName:String, functionArguments:[SCValXDR]? = nil, sourceAccountId:String? = nil, auth: [ContractAuth]? = nil) throws -> InvokeHostFunctionOperation {
         let op = InvokeHostFunctionOperation(hostFunctionType: HostFunctionType.invokeContract, sourceAccountId:sourceAccountId)
         op.contractId = contractId
         op.functionName = functionName
         op.arguments = functionArguments
-        op.footprint = footprint
         op.auth = try contractAuthArrToXdr(arr: auth)
         return op
     }
     
-    public static func forInstallingContractCode(contractCode:Data, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
-        let op = InvokeHostFunctionOperation(hostFunctionType: HostFunctionType.installContractCode, sourceAccountId:sourceAccountId)
+    public static func forUploadingContractWasm(contractCode:Data, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+        let op = InvokeHostFunctionOperation(hostFunctionType: HostFunctionType.uploadContractWasm, sourceAccountId:sourceAccountId)
         op.contractCode = contractCode
-        op.footprint = footprint
         return op
     }
     
-    public static func forCreatingContract(wasmId:String, salt:WrappedData32? = nil, asset:Asset? = nil, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+    public static func forCreatingContract(wasmId:String, salt:WrappedData32? = nil, asset:Asset? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         let op = InvokeHostFunctionOperation(hostFunctionType: HostFunctionType.createContract, sourceAccountId:sourceAccountId)
         op.wasmId = wasmId
         op.salt = salt
         op.asset = asset
-        op.footprint = footprint
         return op
     }
     
-    public static func forDeploySACWithSourceAccount(salt:WrappedData32? = nil, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+    public static func forDeploySACWithSourceAccount(salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         let op = InvokeHostFunctionOperation(hostFunctionType: HostFunctionType.createContract, sourceAccountId:sourceAccountId)
         op.salt = salt
-        op.footprint = footprint
         return op
     }
     
     public static func forDeploySACWithAsset(asset:Asset? = nil, footprint:LedgerFootprintXDR? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         let op = InvokeHostFunctionOperation(hostFunctionType: HostFunctionType.createContract, sourceAccountId:sourceAccountId)
         op.asset = asset
-        op.footprint = footprint
         return op
     }
     
@@ -81,11 +75,10 @@ public class InvokeHostFunctionOperation:Operation {
     /// - Parameter fromXDR: the InvokeHostFunctionOpXDR object to be used to create a new InvokeHostFunctionOperation object.
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     public init(fromXDR:InvokeHostFunctionOpXDR, sourceAccountId:String?) throws {
+        let function = fromXDR.functions.first!
+        self.auth = function.auth
         
-        self.footprint = fromXDR.ledgerFootprint
-        self.auth = fromXDR.auth
-        
-        switch fromXDR.function {
+        switch function.args {
         case .invokeContract(let args):
             self.hostFunctionType = HostFunctionType.invokeContract
             for (index, arg) in args.enumerated() {
@@ -101,14 +94,14 @@ public class InvokeHostFunctionOperation:Operation {
                 }
             }
             break
-        case .installContractCode(let args):
-            self.hostFunctionType = HostFunctionType.installContractCode
+        case .uploadContractWasm(let args):
+            self.hostFunctionType = HostFunctionType.uploadContractWasm
             self.contractCode = args.code
             break
         case .createContract(let args):
             self.hostFunctionType = HostFunctionType.createContract
             let contractId = args.contractId
-            let source = args.source
+            let source = args.executable
             switch contractId {
             case .fromSourceAccount(let wrappedData32):
                 self.salt = wrappedData32
@@ -130,15 +123,11 @@ public class InvokeHostFunctionOperation:Operation {
     
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
-        
-        if footprint == nil {
-            footprint = LedgerFootprintXDR(readOnly:[], readWrite:[])
-        }
-        
+                
         if hostFunctionType == HostFunctionType.invokeContract { // invoke contract
             return try invokeContractBodyXDR()
-        } else if hostFunctionType == HostFunctionType.installContractCode { // install contract
-            return try installContractCodeBodyXDR()
+        } else if hostFunctionType == HostFunctionType.uploadContractWasm { // install contract
+            return try uploadContractWasmBodyXDR()
         } else if hostFunctionType == HostFunctionType.createContract, let wasmId = wasmId { // create contract
             return try createContractBodyXDR(wasmId: wasmId)
         } else if hostFunctionType == HostFunctionType.createContract, let asset = asset { // deploy create token contract with asset
@@ -170,7 +159,9 @@ public class InvokeHostFunctionOperation:Operation {
                 if arguments != nil {
                     invokeArgs.append(contentsOf: arguments!)
                 }
-                let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.invokeContract(invokeArgs), ledgerFootprint: footprint!, auth: auth)
+                let xdrHostFunctionArgs = HostFunctionArgsXDR.invokeContract(invokeArgs);
+                let xdrHostFunction = HostFunctionXDR(args: xdrHostFunctionArgs, auth: auth)
+                let xdrFuncOp = InvokeHostFunctionOpXDR(functions: [xdrHostFunction])
                 return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
             } else {
                 throw StellarSDKError.encodingError(message: "error xdr encoding invoke host function operation, invalid contract id")
@@ -180,10 +171,13 @@ public class InvokeHostFunctionOperation:Operation {
         }
     }
     
-    private func installContractCodeBodyXDR() throws -> OperationBodyXDR {
+    private func uploadContractWasmBodyXDR() throws -> OperationBodyXDR {
         if let contractCode = contractCode {
-            let args = InstallContractCodeArgsXDR(code: contractCode)
-            let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.installContractCode(args), ledgerFootprint: footprint!, auth: auth)
+            let args = UploadContractWasmArgsXDR(code: contractCode)
+            let xdrHostFunctionArgs = HostFunctionArgsXDR.uploadContractWasm(args);
+            let xdrHostFunction = HostFunctionXDR(args: xdrHostFunctionArgs, auth: auth)
+            let xdrFuncOp = InvokeHostFunctionOpXDR(functions: [xdrHostFunction])
+            
             return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
         } else {
             throw StellarSDKError.encodingError(message: "error xdr encoding invoke host function operation (install), incomplete data")
@@ -202,13 +196,18 @@ public class InvokeHostFunctionOperation:Operation {
             salt = WrappedData32(saltData)
         }
         let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromSourceAccount(salt!), source: SCContractExecutableXDR.wasmRef(wasmId.wrappedData32FromHex()))
-        let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!, auth: auth)
+        let xdrHostFunctionArgs = HostFunctionArgsXDR.createContract(args);
+        let xdrHostFunction = HostFunctionXDR(args: xdrHostFunctionArgs, auth: auth)
+        let xdrFuncOp = InvokeHostFunctionOpXDR(functions: [xdrHostFunction])
+        
         return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
     }
     
     private func deploySACWithAssetBodyXDR(asset:Asset) throws -> OperationBodyXDR {
         let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromAsset(try asset.toXDR()), source: SCContractExecutableXDR.token)
-        let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!, auth: auth)
+        let xdrHostFunctionArgs = HostFunctionArgsXDR.createContract(args);
+        let xdrHostFunction = HostFunctionXDR(args: xdrHostFunctionArgs, auth: auth)
+        let xdrFuncOp = InvokeHostFunctionOpXDR(functions: [xdrHostFunction])
         return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
     }
     
@@ -224,7 +223,9 @@ public class InvokeHostFunctionOperation:Operation {
             salt = WrappedData32(saltData)
         }
         let args = CreateContractArgsXDR(contractId: ContractIDXDR.fromSourceAccount(salt!), source: SCContractExecutableXDR.token)
-        let xdrFuncOp = InvokeHostFunctionOpXDR(function: HostFunctionXDR.createContract(args), ledgerFootprint: footprint!, auth: auth)
+        let xdrHostFunctionArgs = HostFunctionArgsXDR.createContract(args);
+        let xdrHostFunction = HostFunctionXDR(args: xdrHostFunctionArgs, auth: auth)
+        let xdrFuncOp = InvokeHostFunctionOpXDR(functions: [xdrHostFunction])
         return OperationBodyXDR.invokeHostFunction(xdrFuncOp)
     }
     

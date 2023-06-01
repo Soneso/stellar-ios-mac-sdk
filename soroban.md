@@ -17,14 +17,14 @@ Soroban-RPC can be simply described as a “live network gateway for Soroban”.
 
 You can install your own instance of a Soroban-RPC Server as described [here](https://soroban.stellar.org/docs/tutorials/deploy-to-futurenet). Alternatively, you can use a public remote instance for testing.
 
-The Soroban-RPC API is described in this early stage [design document](https://docs.google.com/document/d/1TZUDgo_3zPz7TiPMMHVW_mtogjLyPL0plvzGMsxSz6A).
+The Soroban-RPC API is described [here](https://soroban.stellar.org/api/).
 
 #### Initialize SorobanServer 
 
 Provide the url to the endpoint of the Soroban-RPC server to connect to:
 
 ```swift
-let sorobanServer = SorobanServer(endpoint: "https://futurenet.sorobandev.com/soroban/rpc")
+let sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org:443")
 ```
 
 Set the experimental flag to true. Otherwise it will not work.
@@ -75,13 +75,13 @@ sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
 
 If you want to create a smart contract for testing, you can easily build one with our [AssemblyScript Soroban SDK](https://github.com/Soneso/as-soroban-sdk) or with the [official Stellar Rust SDK](https://soroban.stellar.org/docs/examples/hello-world). Here you can find [examples](https://github.com/Soneso/as-soroban-examples) to be build with the AssemblyScript SDK.
 
-There are two main steps involved in the process of deploying a contract. First you need to **install** the **contract code** and then to **create** the **contract**.
+There are two main steps involved in the process of deploying a contract. First you need to **upload** the **contract code** and then to **create** the **contract**.
 
-To **install** the **contract code**, first build a transaction containing the corresponding operation:
+To **upload** the **contract code**, first build a transaction containing the corresponding operation:
 
 ```swift
-// Create the operation for installing the contract code (*.wasm file content)
-let operation = try InvokeHostFunctionOperation.forInstallingContractCode(contractCode: contractCode)
+// Create the operation for uploading the contract code (*.wasm file content)
+let operation = try InvokeHostFunctionOperation.forUploadingContractWasm(contractCode: contractCode)
 
 // Build the transaction
 let transaction = try Transaction(sourceAccount: account,
@@ -89,7 +89,7 @@ let transaction = try Transaction(sourceAccount: account,
                                   memo: Memo.none)
 ```
 
-Next we need to **simulate** the transaction to obtain the **footprint** needed for final submission:
+Next we need to **simulate** the transaction to obtain the **soroban transaction data** and the **resource fee** needed for final submission:
 
 ```swift
 // Simulate first to obtain the footprint
@@ -103,17 +103,15 @@ sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Voi
     }
 }
 ```
-On success, one can find the **footprint** in the response. The response also contains other information such as information about the fees expected:
+
+On success, one can find the **soroban transaction data** and the **minimum resource fee** in the response.
+
+Next we need to set the **soroban transaction data** to our transaction, add the **resource fee** and  **sign** the transaction before sending it to the network using the ```SorobanServer```:
+
 
 ```swift
-print("cpuInsns: " + simulateResponse.cost.cpuInsns)
-print("memBytes: " + simulateResponse.cost.memBytes)
-```
-
-Next we need to set the **footprint** to our transaction, **sign** the transaction and send it to the network using the ```SorobanServer```:
-
-```swift
-transaction.setFootprint(footprint: footprint)
+transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
 try transaction.sign(keyPair: accountKeyPair, network: Network.futurenet)
 
 // send transaction to soroban rpc server
@@ -184,17 +182,13 @@ sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Voi
     }
 }
 ```
-On success, one can find the **footprint** in the response. The response also contains other information such as information about the fees expected:
+On success, one can find the **soroban transaction data** and the **minimum resource fee** in the response.
+
+Next we need to set the **soroban transaction data** to our transaction, add the **resource fee** and  **sign** the transaction before sending it to the network using the ```SorobanServer```:
 
 ```swift
-print("cpuInsns: " + simulateResponse.cost.cpuInsns)
-print("memBytes: " + simulateResponse.cost.memBytes)
-```
-
-Next we need to set the **footprint** to our transaction, **sign** the transaction and send it to the network using the ```SorobanServer```:
-
-```swift
-transaction.setFootprint(footprint: footprint)
+transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
 try transaction.sign(keyPair: accountKeyPair, network: Network.futurenet)
 
 // send transaction to soroban rpc server
@@ -243,7 +237,7 @@ The Soroban-RPC server also provides the possibility to request values of ledger
 For example, to fetch contract wasm byte-code, use the ContractCode ledger entry key:
 
 ```swift
-let contractCodeKey = footprint.contractCodeLedgerKey
+let contractCodeKey = simulateResponse.footprint.contractCodeLedgerKey
 
 sorobanServer.getLedgerEntry(base64EncodedKey:contractCodeKey) { (response) -> (Void) in // ...
 ```
@@ -293,7 +287,7 @@ let transaction = try Transaction(sourceAccount: accountResponse,
                                   memo: Memo.none)
 ```
 
-Next we need to **simulate** the transaction to obtain the **footprint** needed for final submission:
+Next we need to **simulate** the transaction to obtain the **transaction data** and **resource fee** needed for final submission:
 
 ```swift
 // Simulate first to obtain the footprint
@@ -307,17 +301,13 @@ sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Voi
     }
 }
 ```
-On success, one can find the **footprint** in the response. The response also contains other information such as information about the fees expected:
+On success, one can find the **transaction data** and the **resource fee** in the response. 
+
+Next we need to set the **soroban transaction data** to our transaction, to add the **resource fee** and **sign** the transaction to send it to the network using the ```SorobanServer```:
 
 ```swift
-print("cpuInsns: " + simulateResponse.cost.cpuInsns)
-print("memBytes: " + simulateResponse.cost.memBytes)
-```
-
-Next we need to set the **footprint** to our transaction, **sign** the transaction and send it to the network using the ```SorobanServer```:
-
-```swift
-transaction.setFootprint(footprint: footprint)
+transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
 try transaction.sign(keyPair: accountKeyPair, network: Network.futurenet)
 
 // send transaction to soroban rpc server
@@ -439,9 +429,25 @@ let transaction = try Transaction(sourceAccount: accountResponse,
 sorobanServer.simulateTransaction(transaction: transaction) { (response) -> //...
 ```
 
-The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code).
+The example above invokes this assembly script [auth contract](https://github.com/Soneso/as-soroban-examples/tree/main/auth#code). In this example the submitter of the transaction is not the same as the "invoker" of the contract function. 
 
-Many other examples like [iOS atomic swap](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanAtomicSwapTest.swift) can be found in the Soroban auth test cases of the SDK.
+One can find another example in the [Soroban Auth Test Cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanAuthTest.swift) of the SDK where the submitter and invoker are the same, as well as an example where contract auth from the simulation response is used.
+
+
+An advanced auth example can be found in the [iOS atomic swap](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanAtomicSwapTest.swift) test.
+
+Hint: Resource values and fees have been added in the new soroban preview 9 version. The calculation of the minimum resource values and fee by the simulation (preflight) is not always accurate, because it does not consider signatures. This may result in a failing transaction because of insufficient resources. In this case one can experiment and increase the resources values within the soroban transaction data before signing and submitting the transaction. E.g.:
+
+```swift
+var transactionData = simulateResponse.transactionData!
+transactionData.resources.instructions += transactionData.resources.instructions / 4
+let resourceFee = simulateResponse.minResourceFee! + 3000;
+
+transaction.setSorobanTransactionData(data: transactionData)
+transaction.addResourceFee(resourceFee: resourceFee)
+try transaction.sign(keyPair: accountKeyPair, network: Network.futurenet)
+```
+See also: https://discord.com/channels/897514728459468821/1112853306881081354
 
 #### Get Events
 

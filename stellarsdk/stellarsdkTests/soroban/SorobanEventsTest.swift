@@ -18,7 +18,7 @@ class SorobanEventsTest: XCTestCase {
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
     var installTransactionId:String? = nil
     var installWasmId:String? = nil
-    var installContractFootprint:Footprint? = nil
+    var uploadContractWasmFootprint:Footprint? = nil
     var createTransactionId:String? = nil
     var contractId:String? = nil
     var createContractFootprint:Footprint? = nil
@@ -47,8 +47,8 @@ class SorobanEventsTest: XCTestCase {
     
     func testAll() {
         getSubmitterAccount()
-        installContractCode(name: "event")
-        getInstallTransactionStatus()
+        uploadContractWasm(name: "event")
+        getUploadTransactionStatus()
         getSubmitterAccount()
         createContract()
         getCreateTransactionStatus()
@@ -79,8 +79,8 @@ class SorobanEventsTest: XCTestCase {
         }
     }
     
-    func installContractCode(name:String) {
-        XCTContext.runActivity(named: "installContractCode") { activity in
+    func uploadContractWasm(name:String) {
+        XCTContext.runActivity(named: "uploadContractWasm") { activity in
             let expectation = XCTestExpectation(description: "contract code successfully deployed")
             
             let bundle = Bundle(for: type(of: self))
@@ -91,7 +91,7 @@ class SorobanEventsTest: XCTestCase {
             }
             let contractCode = FileManager.default.contents(atPath: path)
             
-            let installOperation = try! InvokeHostFunctionOperation.forInstallingContractCode(contractCode: contractCode!)
+            let installOperation = try! InvokeHostFunctionOperation.forUploadingContractWasm(contractCode: contractCode!)
             
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [installOperation], memo: Memo.none)
@@ -100,8 +100,12 @@ class SorobanEventsTest: XCTestCase {
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
-                    transaction.setFootprint(footprint: simulateResponse.footprint!)
-                    self.installContractFootprint = simulateResponse.footprint
+                    XCTAssertNotNil(simulateResponse.transactionData)
+                    XCTAssertNotNil(simulateResponse.minResourceFee)
+                    
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
+                    self.uploadContractWasmFootprint = simulateResponse.footprint
                     try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
                     
                     self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
@@ -126,9 +130,9 @@ class SorobanEventsTest: XCTestCase {
         }
     }
     
-    func getInstallTransactionStatus() {
-        XCTContext.runActivity(named: "getInstallTransactionStatus") { activity in
-            let expectation = XCTestExpectation(description: "get deployment status of the install transaction")
+    func getUploadTransactionStatus() {
+        XCTContext.runActivity(named: "getUploadTransactionStatus") { activity in
+            let expectation = XCTestExpectation(description: "get deployment status of the upload transaction")
             
             // wait a couple of seconds before checking the status
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(10), execute: {
@@ -166,7 +170,11 @@ class SorobanEventsTest: XCTestCase {
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
-                    transaction.setFootprint(footprint: simulateResponse.footprint!)
+                    XCTAssertNotNil(simulateResponse.transactionData)
+                    XCTAssertNotNil(simulateResponse.minResourceFee)
+                    
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
                     
                     self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
@@ -228,7 +236,11 @@ class SorobanEventsTest: XCTestCase {
             self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
-                    transaction.setFootprint(footprint: simulateResponse.footprint!)
+                    XCTAssertNotNil(simulateResponse.transactionData)
+                    XCTAssertNotNil(simulateResponse.minResourceFee)
+                    
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
                     self.invokeContractFootprint = simulateResponse.footprint
                     

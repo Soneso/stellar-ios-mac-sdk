@@ -102,7 +102,7 @@ public class GetTransactionResponse: NSObject, Decodable {
                             case .invokeHostFunction(_, let invokeHostFunctionResultXDR):
                                 switch invokeHostFunctionResultXDR {
                                 case .success(let sCValXDR):
-                                    return sCValXDR;
+                                    return sCValXDR.first;
                                 default:
                                     break
                                 }

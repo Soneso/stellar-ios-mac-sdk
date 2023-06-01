@@ -46,20 +46,6 @@ public struct OperationXDR: XDRCodable {
         try container.encode(body)
     }
     
-    public mutating func setFootprint(footprint:Footprint) {
-        var invokeHostFuncOp:InvokeHostFunctionOpXDR? = nil
-        switch body {
-            case .invokeHostFunction(let value):
-                invokeHostFuncOp = value
-            default:
-                break
-        }
-        if invokeHostFuncOp != nil {
-            invokeHostFuncOp!.ledgerFootprint = footprint.xdrFootprint
-            self.body = OperationBodyXDR.invokeHostFunction(invokeHostFuncOp!)
-        }
-    }
-    
     public mutating func setContractAuth(auth:[ContractAuthXDR]) {
         var invokeHostFuncOp:InvokeHostFunctionOpXDR? = nil
         switch body {
@@ -68,8 +54,8 @@ public struct OperationXDR: XDRCodable {
             default:
                 break
         }
-        if invokeHostFuncOp != nil {
-            invokeHostFuncOp!.auth = auth
+        if invokeHostFuncOp?.functions.first != nil {
+            invokeHostFuncOp?.functions[0].auth = auth
             self.body = OperationBodyXDR.invokeHostFunction(invokeHostFuncOp!)
         }
     }

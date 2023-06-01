@@ -18,7 +18,7 @@ class SorobanTest: XCTestCase {
     let accountBKeyPair = try! KeyPair.generateRandomKeyPair()
     var installTransactionId:String? = nil
     var installWasmId:String? = nil
-    var installContractFootprint:Footprint? = nil
+    var uploadContractWasmFootprint:Footprint? = nil
     var createTransactionId:String? = nil
     var contractId:String? = nil
     var createContractFootprint:Footprint? = nil
@@ -85,38 +85,38 @@ class SorobanTest: XCTestCase {
         getHealth()
         getNetwork()
         
-        // install
+        // upload
         getSubmitterAccount()
-        installContractCode(name: "hello")
-        getInstallTransactionStatus()
-        getTransactionDetails(transactionHash: self.installTransactionId!, footprint: self.installContractFootprint!.xdrEncoded)
+        uploadContractWasm(name: "hello")
+        getUploadTransactionStatus()
+        getTransactionDetails(transactionHash: self.installTransactionId!, type:"upload_wasm")
         getTransactionStatusError()
         
         // create
         getSubmitterAccount()
         createContract()
         getCreateTransactionStatus()
-        getTransactionDetails(transactionHash: self.createTransactionId!, footprint: self.createContractFootprint!.xdrEncoded)
+        getTransactionDetails(transactionHash: self.createTransactionId!, type:"create_contract")
         getLedgerEntries()
         
         // invoke
         getSubmitterAccount()
         invokeContract()
         getInvokeTransactionStatus()
-        getTransactionDetails(transactionHash: self.invokeTransactionId!, footprint: self.invokeContractFootprint!.xdrEncoded)
+        getTransactionDetails(transactionHash: self.invokeTransactionId!, type:"invoke_contract")
         
         // SAC with source account
         getSubmitterAccount()
         deploySACWithSourceAccount()
         getDeploySATransactionStatus()
-        getTransactionDetails(transactionHash: self.deploySATransactionId!, footprint: self.deploySAFootprint!.xdrEncoded)
+        getTransactionDetails(transactionHash: self.deploySATransactionId!, type:"create_contract")
         getSACWithSALedgerEntries()
         
         // SAC with asset
         getSubmitterAccount()
         deploySACWithAsset()
         getDeployWithAssetTransactionStatus()
-        getTransactionDetails(transactionHash: self.deployWithAssetTransactionId!, footprint: self.deployWithAssetFootprint!.xdrEncoded)
+        getTransactionDetails(transactionHash: self.deployWithAssetTransactionId!, type:"create_contract")
         getSACWithAssetLedgerEntries()
         
         // contract id encoding
@@ -182,7 +182,7 @@ class SorobanTest: XCTestCase {
         }
     }
     
-    func installContractCode(name:String) {
+    func uploadContractWasm(name:String) {
         XCTContext.runActivity(named: "installContractCode") { activity in
             let expectation = XCTestExpectation(description: "contract code successfully deployed")
             
@@ -193,7 +193,7 @@ class SorobanTest: XCTestCase {
                 return
             }
             let contractCode = FileManager.default.contents(atPath: path)
-            let installOperation = try! InvokeHostFunctionOperation.forInstallingContractCode(contractCode: contractCode!)
+            let installOperation = try! InvokeHostFunctionOperation.forUploadingContractWasm(contractCode: contractCode!)
             
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [installOperation], memo: Memo.none)
@@ -206,8 +206,13 @@ class SorobanTest: XCTestCase {
                     XCTAssertNotNil(simulateResponse.results)
                     XCTAssert(simulateResponse.results!.count > 0)
                     XCTAssertNotNil(simulateResponse.footprint)
-                    transaction.setFootprint(footprint: simulateResponse.footprint!)
-                    self.installContractFootprint = simulateResponse.footprint
+                    XCTAssertNotNil(simulateResponse.transactionData)
+                    XCTAssertNotNil(simulateResponse.minResourceFee)
+                    
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
+                    
+                    self.uploadContractWasmFootprint = simulateResponse.footprint
                     try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
                     
                     // check encoding and decoding
@@ -236,9 +241,9 @@ class SorobanTest: XCTestCase {
         }
     }
     
-    func getInstallTransactionStatus() {
-        XCTContext.runActivity(named: "getInstallTransactionStatus") { activity in
-            let expectation = XCTestExpectation(description: "get deployment status of the install transaction")
+    func getUploadTransactionStatus() {
+        XCTContext.runActivity(named: "getUploadTransactionStatus") { activity in
+            let expectation = XCTestExpectation(description: "get deployment status of the upload transaction")
             
             // wait a couple of seconds before checking the status
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(10), execute: {
@@ -263,7 +268,7 @@ class SorobanTest: XCTestCase {
         }
     }
     
-    func getTransactionDetails(transactionHash:String, footprint:String) {
+    func getTransactionDetails(transactionHash:String, type:String) {
         XCTContext.runActivity(named: "getTransactionDetails") { activity in
             let expectation = XCTestExpectation(description: "Get install transaction and operation details sucessfully")
             sdk.transactions.getTransactionDetails(transactionHash: transactionHash) { (response) -> (Void) in
@@ -275,7 +280,11 @@ class SorobanTest: XCTestCase {
                         case .success(let response):
                             XCTAssert(response.records.count > 0)
                             if let op = response.records.first! as? InvokeHostFunctionOperationResponse {
-                                XCTAssertEqual(op.footprint, footprint)
+                                if let hf = op.hostFunctions?.first {
+                                    XCTAssertEqual(hf.type, type)
+                                } else {
+                                    XCTFail()
+                                }
                             } else {
                                 XCTFail()
                             }
@@ -336,7 +345,11 @@ class SorobanTest: XCTestCase {
                     XCTAssert(simulateResponse.results!.count > 0)
                     self.createContractFootprint = simulateResponse.footprint
                     XCTAssertNotNil(simulateResponse.footprint)
-                    transaction.setFootprint(footprint: simulateResponse.footprint!)
+                    XCTAssertNotNil(simulateResponse.transactionData)
+                    XCTAssertNotNil(simulateResponse.minResourceFee)
+                    
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
                     
                     // check encoding and decoding
@@ -437,7 +450,11 @@ class SorobanTest: XCTestCase {
                     XCTAssertNotNil(simulateResponse.results)
                     XCTAssert(simulateResponse.results!.count > 0)
                     XCTAssertNotNil(simulateResponse.footprint)
-                    transaction.setFootprint(footprint: simulateResponse.footprint!)
+                    XCTAssertNotNil(simulateResponse.transactionData)
+                    XCTAssertNotNil(simulateResponse.minResourceFee)
+                    
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
                     self.invokeContractFootprint = simulateResponse.footprint
                     
@@ -521,7 +538,11 @@ class SorobanTest: XCTestCase {
                     XCTAssertNotNil(simulateResponse.results)
                     XCTAssert(simulateResponse.results!.count > 0)
                     XCTAssertNotNil(simulateResponse.footprint)
-                    transaction.setFootprint(footprint: simulateResponse.footprint!)
+                    XCTAssertNotNil(simulateResponse.transactionData)
+                    XCTAssertNotNil(simulateResponse.minResourceFee)
+                    
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
                     self.deploySAFootprint = simulateResponse.footprint
                     // check encoding and decoding
@@ -611,7 +632,11 @@ class SorobanTest: XCTestCase {
                             XCTAssertNotNil(simulateResponse.results)
                             XCTAssert(simulateResponse.results!.count > 0)
                             XCTAssertNotNil(simulateResponse.footprint)
-                            transaction.setFootprint(footprint: simulateResponse.footprint!)
+                            XCTAssertNotNil(simulateResponse.transactionData)
+                            XCTAssertNotNil(simulateResponse.minResourceFee)
+                            
+                            transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                            transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                             try! transaction.sign(keyPair: self.accountBKeyPair, network: self.network)
                             self.deployWithAssetFootprint = simulateResponse.footprint
                             // check encoding and decoding

@@ -15,7 +15,7 @@ public enum HashIDPreimageXDR: XDRCodable {
     case contractID(ContractID)
     case fromAsset(FromAsset)
     case sourceAccountContractID(SourceAccountContractID)
-    case createContractArgs(CreateContractArgs)
+    case createContractArgs(HashIDPreimageCreateContractArgsXDR)
     case contractAuth(ContractAuthPreimage)
     
     public init(from decoder: Decoder) throws {
@@ -43,7 +43,7 @@ public enum HashIDPreimageXDR: XDRCodable {
             let value = try container.decode(SourceAccountContractID.self)
             self = .sourceAccountContractID(value)
         case EnvelopeType.ENVELOPE_TYPE_CREATE_CONTRACT_ARGS:
-            let value = try container.decode(CreateContractArgs.self)
+            let value = try container.decode(HashIDPreimageCreateContractArgsXDR.self)
             self = .createContractArgs(value)
         case EnvelopeType.ENVELOPE_TYPE_CONTRACT_AUTH:
             let value = try container.decode(ContractAuthPreimage.self)
@@ -111,23 +111,23 @@ public struct ContractAuthPreimage: XDRCodable {
     }
 }
 
-public struct CreateContractArgs: XDRCodable {
+public struct HashIDPreimageCreateContractArgsXDR: XDRCodable {
     let networkID: WrappedData32
-    let source: SCContractExecutableXDR
+    let executable: SCContractExecutableXDR
     let salt: [UInt8]
     
     init(networkID: WrappedData32, source: SCContractExecutableXDR, salt: [UInt8]) {
         self.networkID = networkID
-        self.source = source
+        self.executable = source
         self.salt = salt
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(networkID)
-        try container.encode(source)
+        try container.encode(executable)
         var bytesArray = salt
-        var wrapped = WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))
+        let wrapped = WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))
         try container.encode(wrapped)
     }
 }
@@ -148,7 +148,7 @@ public struct SourceAccountContractID: XDRCodable {
         try container.encode(networkID)
         try container.encode(sourceAccount)
         var bytesArray = salt
-        var wrapped = WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))
+        let wrapped = WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))
         try container.encode(wrapped)
     }
 }

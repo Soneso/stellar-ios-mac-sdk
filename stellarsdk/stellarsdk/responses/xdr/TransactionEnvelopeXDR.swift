@@ -163,6 +163,22 @@ public enum TransactionEnvelopeXDR: XDRCodable {
         }
     }
     
+    public var sorobanTransactionData: SorobanTransactionDataXDR? {
+        get {
+            switch self {
+            case .v1(let tev1):
+                switch tev1.tx.ext {
+                case.sorobanTransactionData(let data):
+                    return data
+                default:
+                    return nil
+                }
+            default:
+                return nil
+            }
+        }
+    }
+    
     public var txFee: UInt32 {
         get {
             switch self {
