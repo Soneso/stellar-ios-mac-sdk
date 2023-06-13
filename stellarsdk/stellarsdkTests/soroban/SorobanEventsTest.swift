@@ -311,7 +311,10 @@ class SorobanEventsTest: XCTestCase {
         XCTContext.runActivity(named: "getEvents") { activity in
             let expectation = XCTestExpectation(description: "successfully get events")
             let ledger = String(self.transactionLedger!)
-            let eventFilter = EventFilter(type:"contract", contractIds: [contractId!])
+            // seams that position of the topic in the filter must match event topics ...
+            let topicFilter = TopicFilter(segmentMatchers:["*", SCValXDR.symbol("increment").xdrEncoded!])
+            //let topicFilter = TopicFilter(segmentMatchers:[SCValXDR.symbol("COUNTER").xdrEncoded!, "*"])
+            let eventFilter = EventFilter(type:"contract", contractIds: [contractId!], topics: [topicFilter])
             
             self.sorobanServer.getEvents(startLedger: ledger, eventFilters: [eventFilter]) { (response) -> (Void) in
                 switch response {
