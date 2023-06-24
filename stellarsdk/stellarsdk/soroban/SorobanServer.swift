@@ -329,7 +329,13 @@ public class SorobanServer {
     
     /// Helper to get the accounts nonce for the given contract id.
     public func getNonce(accountId: String, contractId: String, completion:@escaping GetNonceResponseClosure) throws {
-        let ledgerKeyXdr = try LedgerKeyXDR(nonceAccountId: accountId, nonceContractId: contractId)
+        let nonceAddress = Address.accountId(accountId)
+        try getNonceForAddress(address: nonceAddress, contractId: contractId, completion: completion)
+    }
+    
+    /// Helper to get the address (account or contract) nonce for the given contract id.
+    public func getNonceForAddress(address: Address, contractId: String, completion:@escaping GetNonceResponseClosure) throws {
+        let ledgerKeyXdr = try LedgerKeyXDR(nonceAddress: address, nonceContractId: contractId)
         let encoded = try XDREncoder.encode(ledgerKeyXdr)
         let ledgerKey = Data(bytes: encoded, count: encoded.count).base64EncodedString()
         getLedgerEntry(base64EncodedKey:ledgerKey) { (response) -> (Void) in
