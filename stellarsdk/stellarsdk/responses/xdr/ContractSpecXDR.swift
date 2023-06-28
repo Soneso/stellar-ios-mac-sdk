@@ -177,14 +177,15 @@ public struct SCSpecTypeTupleXDR: XDRCodable {
 }
 
 public struct SCSpecTypeUDTXDR: XDRCodable {
-    public let name: [String]
+    public let name: String
     
-    public init(name:[String]) {
+    public init(name:String) {
         self.name = name
     }
 
     public init(from decoder: Decoder) throws {
-        name = try decodeArray(type: String.self, dec: decoder)
+        var container = try decoder.unkeyedContainer()
+        name = try container.decode(String.self)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -358,10 +359,10 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
 
 public struct SCSpecUDTStructFieldV0XDR: XDRCodable {
     public let doc: String
-    public let name: [String]
+    public let name: String
     public let type: SCSpecTypeDefXDR
     
-    public init(doc: String, name:[String], type:SCSpecTypeDefXDR) {
+    public init(doc: String, name:String, type:SCSpecTypeDefXDR) {
         self.doc = doc
         self.name = name
         self.type = type
@@ -370,7 +371,7 @@ public struct SCSpecUDTStructFieldV0XDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         doc = try container.decode(String.self)
-        name = try decodeArray(type: String.self, dec: decoder)
+        name = try container.decode(String.self)
         type = try container.decode(SCSpecTypeDefXDR.self)
     }
 
@@ -384,11 +385,11 @@ public struct SCSpecUDTStructFieldV0XDR: XDRCodable {
 
 public struct SCSpecUDTStructV0XDR: XDRCodable {
     public let doc: String
-    public let lib: [String]
-    public let name: [String]
+    public let lib: String
+    public let name: String
     public let fields: [SCSpecUDTStructFieldV0XDR]
     
-    public init(doc:String, lib:[String], name:[String], fields:[SCSpecUDTStructFieldV0XDR]) {
+    public init(doc:String, lib:String, name:String, fields:[SCSpecUDTStructFieldV0XDR]) {
         self.doc = doc
         self.lib = lib
         self.name = name
@@ -398,8 +399,8 @@ public struct SCSpecUDTStructV0XDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         doc = try container.decode(String.self)
-        lib = try decodeArray(type: String.self, dec: decoder)
-        name = try decodeArray(type: String.self, dec: decoder)
+        lib = try container.decode(String.self)
+        name = try container.decode(String.self)
         fields = try decodeArray(type: SCSpecUDTStructFieldV0XDR.self, dec: decoder)
     }
 
@@ -414,9 +415,9 @@ public struct SCSpecUDTStructV0XDR: XDRCodable {
 
 public struct SCSpecUDTUnionCaseVoidV0XDR: XDRCodable {
     public let doc: String
-    public let name: [String]
+    public let name: String
     
-    public init(doc: String, name:[String]) {
+    public init(doc: String, name:String) {
         self.doc = doc
         self.name = name
     }
@@ -424,7 +425,7 @@ public struct SCSpecUDTUnionCaseVoidV0XDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         doc = try container.decode(String.self)
-        name = try decodeArray(type: String.self, dec: decoder)
+        name = try container.decode(String.self)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -436,10 +437,10 @@ public struct SCSpecUDTUnionCaseVoidV0XDR: XDRCodable {
 
 public struct SCSpecUDTUnionCaseTupleV0XDR: XDRCodable {
     public let doc: String
-    public let name: [String]
+    public let name: String
     public let type: SCSpecTypeDefXDR
     
-    public init(doc: String, name:[String], type:SCSpecTypeDefXDR) {
+    public init(doc: String, name:String, type:SCSpecTypeDefXDR) {
         self.doc = doc
         self.name = name
         self.type = type
@@ -448,7 +449,7 @@ public struct SCSpecUDTUnionCaseTupleV0XDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         doc = try container.decode(String.self)
-        name = try decodeArray(type: String.self, dec: decoder)
+        name = try container.decode(String.self)
         type = try container.decode(SCSpecTypeDefXDR.self)
     }
 
@@ -509,11 +510,11 @@ public enum SCSpecUDTUnionCaseV0XDR: XDRCodable {
 
 public struct SCSpecUDTUnionV0XDR: XDRCodable {
     public let doc: String
-    public let lib: [String]
-    public let name: [String]
+    public let lib: String
+    public let name: String
     public let cases: [SCSpecUDTUnionCaseV0XDR]
     
-    public init(doc: String, lib:[String], name:[String], cases:[SCSpecUDTUnionCaseV0XDR]) {
+    public init(doc: String, lib:String, name:String, cases:[SCSpecUDTUnionCaseV0XDR]) {
         self.doc = doc
         self.lib = lib
         self.name = name
@@ -523,8 +524,8 @@ public struct SCSpecUDTUnionV0XDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         doc = try container.decode(String.self)
-        lib = try decodeArray(type: String.self, dec: decoder)
-        name = try decodeArray(type: String.self, dec: decoder)
+        lib = try container.decode(String.self)
+        name = try container.decode(String.self)
         cases = try decodeArray(type: SCSpecUDTUnionCaseV0XDR.self, dec: decoder)
     }
 
@@ -539,10 +540,10 @@ public struct SCSpecUDTUnionV0XDR: XDRCodable {
 
 public struct SCSpecUDTEnumCaseV0XDR: XDRCodable {
     public let doc: String
-    public let name: [String]
+    public let name: String
     public let value: UInt32
     
-    public init(doc: String, name:[String], value:UInt32) {
+    public init(doc: String, name:String, value:UInt32) {
         self.doc = doc
         self.name = name
         self.value = value
@@ -551,7 +552,7 @@ public struct SCSpecUDTEnumCaseV0XDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         doc = try container.decode(String.self)
-        name = try decodeArray(type: String.self, dec: decoder)
+        name = try container.decode(String.self)
         value = try container.decode(UInt32.self)
     }
 
@@ -565,11 +566,11 @@ public struct SCSpecUDTEnumCaseV0XDR: XDRCodable {
 
 public struct SCSpecUDTEnumV0XDR: XDRCodable {
     public let doc: String
-    public let lib: [String]
-    public let name: [String]
+    public let lib: String
+    public let name: String
     public let cases: [SCSpecUDTEnumCaseV0XDR]
     
-    public init(doc: String, lib:[String], name:[String], cases:[SCSpecUDTEnumCaseV0XDR]) {
+    public init(doc: String, lib:String, name:String, cases:[SCSpecUDTEnumCaseV0XDR]) {
         self.doc = doc
         self.lib = lib
         self.name = name
@@ -579,8 +580,8 @@ public struct SCSpecUDTEnumV0XDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         doc = try container.decode(String.self)
-        lib = try decodeArray(type: String.self, dec: decoder)
-        name = try decodeArray(type: String.self, dec: decoder)
+        lib = try container.decode(String.self)
+        name = try container.decode(String.self)
         cases = try decodeArray(type: SCSpecUDTEnumCaseV0XDR.self, dec: decoder)
     }
 
@@ -595,11 +596,11 @@ public struct SCSpecUDTEnumV0XDR: XDRCodable {
 
 public struct SCSpecUDTErrorEnumV0XDR: XDRCodable {
     public let doc: String
-    public let lib: [String]
-    public let name: [String]
+    public let lib: String
+    public let name: String
     public let cases: [SCSpecUDTEnumCaseV0XDR]
     
-    public init(doc: String, lib:[String], name:[String], cases:[SCSpecUDTEnumCaseV0XDR]) {
+    public init(doc: String, lib:String, name:String, cases:[SCSpecUDTEnumCaseV0XDR]) {
         self.doc = doc
         self.lib = lib
         self.name = name
@@ -609,8 +610,8 @@ public struct SCSpecUDTErrorEnumV0XDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         doc = try container.decode(String.self)
-        lib = try decodeArray(type: String.self, dec: decoder)
-        name = try decodeArray(type: String.self, dec: decoder)
+        lib = try container.decode(String.self)
+        name = try container.decode(String.self)
         cases = try decodeArray(type: SCSpecUDTEnumCaseV0XDR.self, dec: decoder)
     }
 
@@ -625,10 +626,10 @@ public struct SCSpecUDTErrorEnumV0XDR: XDRCodable {
 
 public struct SCSpecFunctionInputV0XDR: XDRCodable {
     public let doc: String
-    public let name: [String]
+    public let name: String
     public let type: SCSpecTypeDefXDR
     
-    public init(doc: String, name:[String], type:SCSpecTypeDefXDR) {
+    public init(doc: String, name:String, type:SCSpecTypeDefXDR) {
         self.doc = doc
         self.name = name
         self.type = type
@@ -637,7 +638,7 @@ public struct SCSpecFunctionInputV0XDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         doc = try container.decode(String.self)
-        name = try decodeArray(type: String.self, dec: decoder)
+        name = try container.decode(String.self)
         type = try container.decode(SCSpecTypeDefXDR.self)
     }
 
