@@ -89,36 +89,8 @@ public class GetTransactionResponse: NSObject, Decodable {
         if (error != nil || status != GetTransactionResponse.STATUS_SUCCESS || resultMetaXdr == nil) {
             return nil
         }
-
-        let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: resultMetaXdr!))
-        if let meta = try? TransactionMetaXDR.init(from: xdrDecoder) {
-            switch meta {
-            case .transactionMetaV3(let v3):
-                if let resultBody = v3.txResult.resultBody {
-                    switch resultBody {
-                    case .success(let results):
-                        if let result = results.first {
-                            switch result {
-                            case .invokeHostFunction(_, let invokeHostFunctionResultXDR):
-                                switch invokeHostFunctionResultXDR {
-                                case .success(let sCValXDR):
-                                    return sCValXDR.first;
-                                default:
-                                    break
-                                }
-                            default:
-                                break
-                            }
-                        }
-                    default:
-                        break
-                    }
-                }
-            default:
-                break
-            }
-        }
-        return nil
+        let meta = try? TransactionMetaXDR(fromBase64: resultMetaXdr!)
+        return meta?.transactionMetaV3?.sorobanMeta?.returnValue
     }
     
     /// Extracts the wasm id from the response if the transaction installed a contract
@@ -127,8 +99,8 @@ public class GetTransactionResponse: NSObject, Decodable {
     }
     
     /// Extracts the wasm id from the response if the transaction created a contract
-    public var contractId:String? {
-        return binHex
+    public var createdContractId:String? {
+        return resultValue?.address?.contractId
     }
     
     private var binHex:String? {

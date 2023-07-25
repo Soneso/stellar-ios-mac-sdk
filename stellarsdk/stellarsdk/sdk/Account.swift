@@ -33,4 +33,8 @@ public class Account: TransactionAccount
     public func incrementSequenceNumber() {
         sequenceNumber += 1
     }
+    
+    public func decrementSequenceNumber() {
+        sequenceNumber -= 1
+    }
 }

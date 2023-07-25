@@ -66,13 +66,13 @@ public class SimulateTransactionResponse: NSObject, Decodable {
         return nil;
     }
     
-    public var auth:[ContractAuth]? {
+    public var sorobanAuth:[SorobanAuthorizationEntryXDR]? {
         if(results != nil && results!.count > 0) {
-            if let auth = results![0].auth, auth.count > 0 {
+            if let auth = results![0].auth {
                 do {
-                    var res:[ContractAuth] = []
-                    for xdr in auth {
-                        res.append(try ContractAuth(fromBase64Xdr: xdr))
+                    var res:[SorobanAuthorizationEntryXDR] = []
+                    for base64Xdr in auth {
+                        res.append(try SorobanAuthorizationEntryXDR(fromBase64: base64Xdr))
                     }
                     return res
                 } catch {

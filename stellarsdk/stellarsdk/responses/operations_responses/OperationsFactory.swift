@@ -103,6 +103,10 @@ class OperationsFactory: NSObject {
                 return try jsonDecoder.decode(LiquidityPoolWithdrawOperationResponse.self, from: data)
             case .invokeHostFunction:
                 return try jsonDecoder.decode(InvokeHostFunctionOperationResponse.self, from: data)
+            case .bumpFootprintExpiration:
+                return try jsonDecoder.decode(BumpFootprintExpirationOperationResponse.self, from: data)
+            case .restoreFootprint:
+                return try jsonDecoder.decode(RestoreFootprintOperationResponse.self, from: data)
             }
         } else {
             throw HorizonRequestError.parsingResponseFailed(message: "Unknown operation type")

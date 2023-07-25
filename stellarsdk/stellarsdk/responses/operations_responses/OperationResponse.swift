@@ -34,6 +34,8 @@ public enum OperationType: Int32 {
     case liquidityPoolDeposit = 22
     case liquidityPoolWithdraw = 23
     case invokeHostFunction = 24
+    case bumpFootprintExpiration = 25
+    case restoreFootprint = 26
 }
 
 /// Represents an operation response. Superclass for all other operation response classes.

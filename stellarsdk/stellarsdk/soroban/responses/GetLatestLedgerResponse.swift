@@ -16,9 +16,9 @@ public class GetLatestLedgerResponse: NSObject, Decodable {
     /// hash of the latest ledger as a hex-encoded string
     public var id:String
     /// Stellar Core protocol version associated with the latest ledger
-    public var protocolVersion:Int
+    public var protocolVersion:String
     /// sequence number of the latest ledger
-    public var sequence:Int
+    public var sequence:UInt32
     
     private enum CodingKeys: String, CodingKey {
         case id
@@ -29,7 +29,7 @@ public class GetLatestLedgerResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decode(String.self, forKey: .id)
-        protocolVersion = try values.decode(Int.self, forKey: .protocolVersion)
-        sequence = try values.decode(Int.self, forKey: .sequence)
+        protocolVersion = try values.decode(String.self, forKey: .protocolVersion)
+        sequence = try values.decode(UInt32.self, forKey: .sequence)
     }
 }

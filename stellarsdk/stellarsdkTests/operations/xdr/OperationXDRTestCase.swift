@@ -99,6 +99,10 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertEqual(code, LiquidityPoolWithdrawResulCode.success.rawValue)
         case .invokeHostFunction(let code, _):
             XCTAssertEqual(code, InvokeHostFunctionResultCode.success.rawValue)
+        case .bumpFootprintExpiration(let code, _):
+            XCTAssertEqual(code, BumpFootprintExpirationResultCode.success.rawValue)
+        case .restoreFootprint(let code, _):
+            XCTAssertEqual(code, RestoreFootprintResultCode.success.rawValue)
         case .empty(let code):
             XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
         }

@@ -176,20 +176,21 @@ public class Transaction {
         fee += resourceFee
         transactionXDR.fee = fee
     }
-    public func setContractAuth(auth:[ContractAuth]) throws {
-        var authXdr:[ContractAuthXDR] = []
-        for next in auth {
-            authXdr.append(try ContractAuthXDR(contractAuth: next))
+    
+    public func setSorobanAuth(auth:[SorobanAuthorizationEntryXDR]?) {
+        var authToSet = auth
+        if (authToSet == nil) {
+            authToSet = []
         }
         
         for operation in operations {
             if let op = operation as? InvokeHostFunctionOperation {
-                op.auth = authXdr
+                op.auth = authToSet!
             }
         }
         
         for i in 0...transactionXDR.operations.count - 1 {
-            transactionXDR.operations[i].setContractAuth(auth: authXdr)
+            transactionXDR.operations[i].setSorobanAuth(auth: authToSet!)
         }
     }
 }

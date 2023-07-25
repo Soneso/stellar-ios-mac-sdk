@@ -16,8 +16,8 @@ class SorobanEventsTest: XCTestCase {
     let sdk = StellarSDK.futureNet()
     let network = Network.futurenet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
-    var installTransactionId:String? = nil
-    var installWasmId:String? = nil
+    var uploadTransactionId:String? = nil
+    var wasmId:String? = nil
     var uploadContractWasmFootprint:Footprint? = nil
     var createTransactionId:String? = nil
     var contractId:String? = nil
@@ -46,22 +46,22 @@ class SorobanEventsTest: XCTestCase {
     }
     
     func testAll() {
-        getSubmitterAccount()
-        uploadContractWasm(name: "event")
+        refreshSubmitterAccount()
+        uploadContractWasm(name: "soroban_events_contract")
         getUploadTransactionStatus()
-        getSubmitterAccount()
+        refreshSubmitterAccount()
         createContract()
         getCreateTransactionStatus()
-        getSubmitterAccount()
+        refreshSubmitterAccount()
         invokeContract()
         getInvokeTransactionStatus()
         getTransactionLedger()
         getEvents()
     }
     
-    func getSubmitterAccount() {
-        XCTContext.runActivity(named: "getSubmitterAccount") { activity in
-            let expectation = XCTestExpectation(description: "get account response received")
+    func refreshSubmitterAccount() {
+        XCTContext.runActivity(named: "refreshSubmitterAccount") { activity in
+            let expectation = XCTestExpectation(description: "current account data received")
             
             let accountId = submitterKeyPair.accountId
             sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
@@ -112,7 +112,7 @@ class SorobanEventsTest: XCTestCase {
                         switch response {
                         case .success(let sendResponse):
                             XCTAssert(SendTransactionResponse.STATUS_ERROR != sendResponse.status)
-                            self.installTransactionId = sendResponse.transactionId
+                            self.uploadTransactionId = sendResponse.transactionId
                         case .failure(let error):
                             self.printError(error: error)
                             XCTFail()
@@ -136,12 +136,12 @@ class SorobanEventsTest: XCTestCase {
             
             // wait a couple of seconds before checking the status
             DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(10), execute: {
-                self.sorobanServer.getTransaction(transactionHash: self.installTransactionId!) { (response) -> (Void) in
+                self.sorobanServer.getTransaction(transactionHash: self.uploadTransactionId!) { (response) -> (Void) in
                     switch response {
                     case .success(let statusResponse):
                         if GetTransactionResponse.STATUS_SUCCESS == statusResponse.status {
-                            self.installWasmId = statusResponse.wasmId
-                            XCTAssertNotNil(self.installWasmId)
+                            self.wasmId = statusResponse.wasmId
+                            XCTAssertNotNil(self.wasmId)
                         } else {
                             XCTFail()
                         }
@@ -161,7 +161,7 @@ class SorobanEventsTest: XCTestCase {
     func createContract() {
         XCTContext.runActivity(named: "createContract") { activity in
             let expectation = XCTestExpectation(description: "contract successfully created")
-            let createOperation = try! InvokeHostFunctionOperation.forCreatingContract(wasmId: self.installWasmId!)
+            let createOperation = try! InvokeHostFunctionOperation.forCreatingContract(wasmId: self.wasmId!, address: SCAddressXDR(accountId: submitterAccount!.accountId))
             
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [createOperation], memo: Memo.none)
@@ -175,6 +175,7 @@ class SorobanEventsTest: XCTestCase {
                     
                     transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
                     transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
+                    transaction.setSorobanAuth(auth: simulateResponse.sorobanAuth)
                     try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
                     
                     self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
@@ -208,7 +209,7 @@ class SorobanEventsTest: XCTestCase {
                     switch response {
                     case .success(let statusResponse):
                         if GetTransactionResponse.STATUS_SUCCESS == statusResponse.status {
-                            self.contractId = statusResponse.contractId
+                            self.contractId = statusResponse.createdContractId
                             XCTAssertNotNil(self.contractId)
                         } else {
                             XCTFail()
@@ -227,7 +228,7 @@ class SorobanEventsTest: XCTestCase {
     func invokeContract() {
         XCTContext.runActivity(named: "invokeContract") { activity in
             let expectation = XCTestExpectation(description: "contract successfully invoked")
-            let functionName = "events"
+            let functionName = "increment"
             let invokeOperation = try! InvokeHostFunctionOperation.forInvokingContract(contractId: self.contractId!, functionName: functionName)
             
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
@@ -293,16 +294,18 @@ class SorobanEventsTest: XCTestCase {
     func getTransactionLedger() {
         XCTContext.runActivity(named: "getTransactionLedger") { activity in
             let expectation = XCTestExpectation(description: "Get transaction ledger")
-            sdk.transactions.getTransactionDetails(transactionHash: self.invokeTransactionId!) { (response) -> (Void) in
-                switch response {
-                case .success(let response):
-                    self.transactionLedger = response.ledger
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getTransactionLedger", horizonRequestError: error)
-                    XCTFail()
+            DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(5), execute: {
+                self.sdk.transactions.getTransactionDetails(transactionHash: self.invokeTransactionId!) { (response) -> (Void) in
+                    switch response {
+                    case .success(let response):
+                        self.transactionLedger = response.ledger
+                    case .failure(let error):
+                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"getTransactionLedger", horizonRequestError: error)
+                        XCTFail()
+                    }
+                    expectation.fulfill()
                 }
-                expectation.fulfill()
-            }
+            })
             wait(for: [expectation], timeout: 15.0)
         }
     }

@@ -46,17 +46,13 @@ public struct OperationXDR: XDRCodable {
         try container.encode(body)
     }
     
-    public mutating func setContractAuth(auth:[ContractAuthXDR]) {
-        var invokeHostFuncOp:InvokeHostFunctionOpXDR? = nil
+    public mutating func setSorobanAuth(auth:[SorobanAuthorizationEntryXDR]) {
         switch body {
-            case .invokeHostFunction(let value):
-                invokeHostFuncOp = value
+            case .invokeHostFunction(var invokeFunc):
+                invokeFunc.auth = auth
+                self.body = OperationBodyXDR.invokeHostFunction(invokeFunc)
             default:
                 break
-        }
-        if invokeHostFuncOp?.functions.first != nil {
-            invokeHostFuncOp?.functions[0].auth = auth
-            self.body = OperationBodyXDR.invokeHostFunction(invokeHostFuncOp!)
         }
     }
 }

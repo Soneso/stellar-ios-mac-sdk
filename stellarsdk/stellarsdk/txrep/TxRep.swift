@@ -3522,6 +3522,10 @@ public class TxRep: NSObject {
             return "liquidityPoolWithdrawOp"
         case .invokeHostFunction(_):
             return "invokeHostFunctionOp"
+        case .bumpFootprintExpiration(_):
+            return "bumpFootprintExpirationOp"
+        case .restoreFootprint(_):
+            return "restoreFootprintOp"
         }
     }
     private static func txRepOpTypeUpperCase(operation: OperationXDR) -> String {
@@ -3576,6 +3580,10 @@ public class TxRep: NSObject {
             return "LIQUIDITY_POOL_WITHDRAW"
         case .invokeHostFunction(_):
             return "INVOKE_HOST_FUNCTION"
+        case .bumpFootprintExpiration(_):
+            return "BUMP_FOOTPRINT_EXPIRATION"
+        case .restoreFootprint(_):
+            return "RESTORE_FOOTPRINT"
         }
     }
     private static func addLine(key:String, value:String, lines: inout [String]) -> Void {

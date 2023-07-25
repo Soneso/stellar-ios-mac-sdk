@@ -64,4 +64,18 @@ public enum TransactionMetaXDR: XDRCodable {
             try container.encode(metaV3)
         }
     }
+    
+    public init(fromBase64 xdr:String) throws {
+        let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: xdr))
+        self = try TransactionMetaXDR(from: xdrDecoder)
+    }
+    
+    public var transactionMetaV3:TransactionMetaV3XDR? {
+        switch self {
+        case .transactionMetaV3(let val):
+            return val
+        default:
+            return nil
+        }
+    }
 }

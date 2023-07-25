@@ -21,8 +21,10 @@ class SorobanAuthTest: XCTestCase {
     var installWasmId:String?
     var createTransactionId:String?
     var contractId:String?
-    var nonce:UInt64?
     var invokeTransactionId:String?
+    var senderAccount:AccountResponse?
+    var invokerAccount:AccountResponse?
+    var latestLedger:UInt32?
     
     override func setUp() {
         super.setUp()
@@ -52,71 +54,84 @@ class SorobanAuthTest: XCTestCase {
     }
     
     func testAll() throws {
+        refreshSenderAccount()
         uploadContractWasm()
         getUploadTransactionStatus()
+        refreshSenderAccount()
         createContract()
         getCreateTransactionStatus()
-        try getNonce()
-        try invokeContractAuthAccount() // sender != invoker
+
+        refreshSenderAccount()
+        getLatestLedger()
+        invokeContractAuthAccount() // sender != invoker
         getInvokeTransactionStatus()
-        try getNonce()
-        try invokeContractAuthInvoker() // sender == invoker
-        getInvokeTransactionStatus()
-        try getNonce()
-        try invokeContractAuthSimAccount() // sender != invoker && auth from simulation
+
+        refreshInvokerAccount()
+        invokeContractAuthInvoker() // sender == invoker
         getInvokeTransactionStatus()
     }
     
+    
+    func refreshSenderAccount() {
+        XCTContext.runActivity(named: "refreshSubmitterAccount") { activity in
+            let expectation = XCTestExpectation(description: "current account data received")
+            
+            let accountId = senderKeyPair.accountId
+            sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+                switch response {
+                case .success(let accResponse):
+                    XCTAssertEqual(accountId, accResponse.accountId)
+                    self.senderAccount = accResponse
+                    expectation.fulfill()
+                case .failure(_):
+                    XCTFail()
+                }
+            }
+            
+            wait(for: [expectation], timeout: 10.0)
+        }
+    }
     
     func uploadContractWasm() {
         XCTContext.runActivity(named: "uploadContractWasm") { activity in
             let expectation = XCTestExpectation(description: "contract code successfully uploaded")
             
             let bundle = Bundle(for: type(of: self))
-            guard let path = bundle.path(forResource: "auth", ofType: "wasm") else {
+            guard let path = bundle.path(forResource: "soroban_auth_contract", ofType: "wasm") else {
                 // File not found
                 XCTFail()
                 expectation.fulfill()
                 return
             }
             let contractCode = FileManager.default.contents(atPath: path)
-            let accountId = senderKeyPair.accountId
-            sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+            let installOperation = try! InvokeHostFunctionOperation.forUploadingContractWasm(contractCode: contractCode!)
+            
+            let transaction = try! Transaction(sourceAccount: senderAccount!,
+                                               operations: [installOperation], memo: Memo.none)
+            
+            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
                 switch response {
-                case .success(let accountResponse):
-                    let installOperation = try! InvokeHostFunctionOperation.forUploadingContractWasm(contractCode: contractCode!)
+                case .success(let simulateResponse):
+                    XCTAssertNotNil(simulateResponse.footprint)
+                    XCTAssertNotNil(simulateResponse.transactionData)
+                    XCTAssertNotNil(simulateResponse.minResourceFee)
                     
-                    let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                       operations: [installOperation], memo: Memo.none)
-                    
-                    self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
+                    try! transaction.sign(keyPair: self.senderKeyPair, network: self.network)
+                    self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
                         switch response {
-                        case .success(let simulateResponse):
-                            XCTAssertNotNil(simulateResponse.footprint)
-                            XCTAssertNotNil(simulateResponse.transactionData)
-                            XCTAssertNotNil(simulateResponse.minResourceFee)
-                            
-                            transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
-                            transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
-                            try! transaction.sign(keyPair: self.senderKeyPair, network: self.network)
-                            self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
-                                switch response {
-                                case .success(let sendResponse):
-                                    XCTAssert(SendTransactionResponse.STATUS_ERROR != sendResponse.status)
-                                    self.installTransactionId = sendResponse.transactionId
-                                case .failure(let error):
-                                    self.printError(error: error)
-                                    XCTFail()
-                                }
-                                expectation.fulfill()
-                            }
+                        case .success(let sendResponse):
+                            XCTAssert(SendTransactionResponse.STATUS_ERROR != sendResponse.status)
+                            self.installTransactionId = sendResponse.transactionId
                         case .failure(let error):
                             self.printError(error: error)
                             XCTFail()
-                            expectation.fulfill()
                         }
+                        expectation.fulfill()
                     }
-                case .failure(_):
+                case .failure(let error):
+                    self.printError(error: error)
                     XCTFail()
                     expectation.fulfill()
                 }
@@ -157,46 +172,39 @@ class SorobanAuthTest: XCTestCase {
         XCTContext.runActivity(named: "createContract") { activity in
             let expectation = XCTestExpectation(description: "contract successfully created")
             let accountId = senderKeyPair.accountId
-            sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+            let createOperation = try! InvokeHostFunctionOperation.forCreatingContract(wasmId: self.installWasmId!, address: SCAddressXDR(accountId: accountId))
+            
+            let transaction = try! Transaction(sourceAccount: senderAccount!,
+                                               operations: [createOperation], memo: Memo.none)
+            
+            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
                 switch response {
-                case .success(let accountResponse):
-                    let createOperation = try! InvokeHostFunctionOperation.forCreatingContract(wasmId: self.installWasmId!)
+                case .success(let simulateResponse):
+                    XCTAssertNotNil(simulateResponse.footprint)
+                    XCTAssertNotNil(simulateResponse.transactionData)
+                    XCTAssertNotNil(simulateResponse.minResourceFee)
                     
-                    let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                       operations: [createOperation], memo: Memo.none)
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
+                    transaction.setSorobanAuth(auth: simulateResponse.sorobanAuth)
+                    try! transaction.sign(keyPair: self.senderKeyPair, network: self.network)
                     
-                    self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+                    // check encoding and decoding
+                    let enveloperXdr = try! transaction.encodedEnvelope();
+                    XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
+                    self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
                         switch response {
-                        case .success(let simulateResponse):
-                            XCTAssertNotNil(simulateResponse.footprint)
-                            XCTAssertNotNil(simulateResponse.transactionData)
-                            XCTAssertNotNil(simulateResponse.minResourceFee)
-                            
-                            transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
-                            transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
-                            try! transaction.sign(keyPair: self.senderKeyPair, network: self.network)
-                            
-                            // check encoding and decoding
-                            let enveloperXdr = try! transaction.encodedEnvelope();
-                            XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
-                            self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
-                                switch response {
-                                case .success(let sendResponse):
-                                    XCTAssert(SendTransactionResponse.STATUS_ERROR != sendResponse.status)
-                                    self.createTransactionId = sendResponse.transactionId
-                                case .failure(let error):
-                                    self.printError(error: error)
-                                    XCTFail()
-                                }
-                                expectation.fulfill()
-                            }
+                        case .success(let sendResponse):
+                            XCTAssert(SendTransactionResponse.STATUS_ERROR != sendResponse.status)
+                            self.createTransactionId = sendResponse.transactionId
                         case .failure(let error):
                             self.printError(error: error)
                             XCTFail()
-                            expectation.fulfill()
                         }
+                        expectation.fulfill()
                     }
-                case .failure(_):
+                case .failure(let error):
+                    self.printError(error: error)
                     XCTFail()
                     expectation.fulfill()
                 }
@@ -215,7 +223,8 @@ class SorobanAuthTest: XCTestCase {
                     switch response {
                     case .success(let statusResponse):
                         if GetTransactionResponse.STATUS_SUCCESS == statusResponse.status {
-                            self.contractId = statusResponse.contractId
+                            self.contractId = statusResponse.createdContractId
+                            print("Latest ledger:\(self.contractId!)")
                             XCTAssertNotNil(self.contractId)
                         } else {
                             XCTFail()
@@ -230,14 +239,15 @@ class SorobanAuthTest: XCTestCase {
             wait(for: [expectation], timeout: 20.0)
         }
     }
-
-    func getNonce() throws {
-        try XCTContext.runActivity(named: "getNonce") { activity in
-            let expectation = XCTestExpectation(description: "get nonce from server for sender and contract")
-            try self.sorobanServer.getNonce(accountId:invokerKeyPair.accountId, contractId:self.contractId!) { (response) -> (Void) in
+    
+    func getLatestLedger() {
+        XCTContext.runActivity(named: "getLatestLedger") { activity in
+            let expectation = XCTestExpectation(description: "get latest ledger")
+            self.sorobanServer.getLatestLedger() { (response) -> (Void) in
                 switch response {
-                case .success(let nonce):
-                    self.nonce = nonce
+                case .success(let response):
+                    self.latestLedger = response.sequence
+                    XCTAssertNotNil(self.latestLedger)
                 case .failure(let error):
                     self.printError(error: error)
                     XCTFail()
@@ -248,70 +258,67 @@ class SorobanAuthTest: XCTestCase {
         }
     }
     
-    func invokeContractAuthAccount() throws {
-        try XCTContext.runActivity(named: "invokeContractAuthAccount") { activity in
-            // If sender and invoker use the same account, the submission will fail
-            // because in that case we do not need address, nonce and signature in auth or we have to change the footprint - see invokeContractAuthInvoker()
-            // See https://discord.com/channels/897514728459468821/1078208197283807305
+    func invokeContractAuthAccount() {
+        XCTContext.runActivity(named: "invokeContractAuthAccount") { activity in
+            // submitter and invoker are NOT the same
+            // we need to sign soroban auth
             
             let expectation = XCTestExpectation(description: "contract successfully invoked")
-            let senderId = senderKeyPair.accountId
             let invokerId = invokerKeyPair.accountId
-            let functionName = "auth"
-            let invokerAddress = Address.accountId(invokerId)
-            let args = [try SCValXDR(address:invokerAddress), SCValXDR.u32(3)]
-            let rootInvocation = AuthorizedInvocation(contractId: self.contractId!, functionName: functionName, args: args)
-            let contractAuth = ContractAuth(address: invokerAddress, nonce: self.nonce!, rootInvocation: rootInvocation)
-            try contractAuth.sign(signer: invokerKeyPair, network: Network.futurenet)
+            let functionName = "increment"
+            let invokerAddress = try! SCAddressXDR(accountId: invokerId)
+            let args = [SCValXDR.address(invokerAddress), SCValXDR.u32(3)]
             
-            sdk.accounts.getAccountDetails(accountId: senderId) { (response) -> (Void) in
+            let invokeOperation = try! InvokeHostFunctionOperation.forInvokingContract(contractId: self.contractId!, functionName: functionName, functionArguments: args)
+            
+            let transaction = try! Transaction(sourceAccount: senderAccount!,
+                                               operations: [invokeOperation], memo: Memo.none)
+            
+            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
                 switch response {
-                case .success(let accountResponse):
-                    let invokeOperation = try! InvokeHostFunctionOperation.forInvokingContract(contractId: self.contractId!, functionName: functionName, functionArguments: args, auth: [contractAuth])
+                case .success(let simulateResponse):
+                    XCTAssertNotNil(simulateResponse.footprint)
+                    XCTAssertNotNil(simulateResponse.transactionData)
+                    XCTAssertNotNil(simulateResponse.minResourceFee)
                     
-                    let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                       operations: [invokeOperation], memo: Memo.none)
+                    // this is because since preview 9 the fee calculation from the simulation is not always accurate
+                    // see: https://discord.com/channels/897514728459468821/1112853306881081354
+                    var transactionData = simulateResponse.transactionData!
+                    transactionData.resources.instructions += transactionData.resources.instructions / 4
+                    let resourceFee = simulateResponse.minResourceFee! + 6000;
                     
-                    self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+                    transaction.setSorobanTransactionData(data: transactionData)
+                    transaction.addResourceFee(resourceFee: resourceFee)
+                    
+                    // sign auth and set it to the transaction
+                    var sorobanAuth = simulateResponse.sorobanAuth!
+                    for i in sorobanAuth.indices {
+                        try! sorobanAuth[i].sign(signer: self.invokerKeyPair,
+                                            network: Network.futurenet,
+                                            signatureExpirationLedger: self.latestLedger! + 10)
+                    }
+                    transaction.setSorobanAuth(auth: sorobanAuth)
+                    
+                    try! transaction.sign(keyPair: self.senderKeyPair, network: self.network)
+                    
+                    // check encoding and decoding
+                    let enveloperXdr = try! transaction.encodedEnvelope()
+                    let env2 = try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope()
+                    XCTAssertEqual(enveloperXdr, env2)
+                    
+                    self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
                         switch response {
-                        case .success(let simulateResponse):
-                            XCTAssertNotNil(simulateResponse.footprint)
-                            XCTAssertNotNil(simulateResponse.transactionData)
-                            XCTAssertNotNil(simulateResponse.minResourceFee)
-                            
-                            // this is because in preview 9 the fee calculation from the simulation is not always accurate
-                            // see: https://discord.com/channels/897514728459468821/1112853306881081354
-                            var transactionData = simulateResponse.transactionData!
-                            transactionData.resources.instructions += transactionData.resources.instructions / 4
-                            let resourceFee = simulateResponse.minResourceFee! + 3000;
-                            
-                            transaction.setSorobanTransactionData(data: transactionData)
-                            transaction.addResourceFee(resourceFee: resourceFee)
-                            try! transaction.sign(keyPair: self.senderKeyPair, network: self.network)
-                            
-                            // check encoding and decoding
-                            let enveloperXdr = try! transaction.encodedEnvelope()
-                            let env2 = try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope()
-                            XCTAssertEqual(enveloperXdr, env2)
-                            
-                            self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
-                                switch response {
-                                case .success(let sendResponse):
-                                    XCTAssert(SendTransactionResponse.STATUS_ERROR != sendResponse.status)
-                                    self.invokeTransactionId = sendResponse.transactionId
-                                case .failure(let error):
-                                    self.printError(error: error)
-                                    XCTFail()
-                                }
-                                expectation.fulfill()
-                            }
+                        case .success(let sendResponse):
+                            XCTAssert(SendTransactionResponse.STATUS_ERROR != sendResponse.status)
+                            self.invokeTransactionId = sendResponse.transactionId
                         case .failure(let error):
                             self.printError(error: error)
                             XCTFail()
-                            expectation.fulfill()
                         }
+                        expectation.fulfill()
                     }
-                case .failure(_):
+                case .failure(let error):
+                    self.printError(error: error)
                     XCTFail()
                     expectation.fulfill()
                 }
@@ -321,147 +328,84 @@ class SorobanAuthTest: XCTestCase {
         }
     }
     
-    func invokeContractAuthInvoker() throws {
-       try XCTContext.runActivity(named: "invokeContractAuthInvoker") { activity in
-            // see https://soroban.stellar.org/docs/learn/authorization#transaction-invoker
-            // If sender and invoker are the same
-            // so we should not need its address & nonce in contract auth and no need to sign
-            // see https://discord.com/channels/897514728459468821/1078208197283807305
+    func refreshInvokerAccount() {
+        XCTContext.runActivity(named: "refreshInvokerAccount") { activity in
+            let expectation = XCTestExpectation(description: "current account data received")
             
-            let expectation = XCTestExpectation(description: "contract successfully invoked")
-            let invokerId = invokerKeyPair.accountId
-            let functionName = "auth"
-            let invokerAddress = Address.accountId(invokerId)
-            let args = [try SCValXDR(address:invokerAddress), SCValXDR.u32(3)]
-            let rootInvocation = AuthorizedInvocation(contractId: self.contractId!, functionName: functionName, args: args)
-            let contractAuth = ContractAuth(rootInvocation: rootInvocation)
-            
-            sdk.accounts.getAccountDetails(accountId: invokerId) { (response) -> (Void) in
+            let accountId = invokerKeyPair.accountId
+            sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
                 switch response {
-                case .success(let accountResponse):
-                    let invokeOperation = try! InvokeHostFunctionOperation.forInvokingContract(contractId: self.contractId!, functionName: functionName, functionArguments: args, auth: [contractAuth])
-                    
-                    let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                       operations: [invokeOperation], memo: Memo.none)
-                    
-                    self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
-                        switch response {
-                        case .success(let simulateResponse):
-                            XCTAssertNotNil(simulateResponse.footprint)
-                            XCTAssertNotNil(simulateResponse.transactionData)
-                            XCTAssertNotNil(simulateResponse.minResourceFee)
-                            
-                            transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
-                            transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
-                            try! transaction.sign(keyPair: self.invokerKeyPair, network: self.network)
-                            
-                            // check encoding and decoding
-                            let enveloperXdr = try! transaction.encodedEnvelope()
-                            let env2 = try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope()
-                            XCTAssertEqual(enveloperXdr, env2)
-                            
-                            self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
-                                switch response {
-                                case .success(let sendResponse):
-                                    XCTAssert(SendTransactionResponse.STATUS_ERROR != sendResponse.status)
-                                    self.invokeTransactionId = sendResponse.transactionId
-                                case .failure(let error):
-                                    self.printError(error: error)
-                                    XCTFail()
-                                }
-                                expectation.fulfill()
-                            }
-                        case .failure(let error):
-                            self.printError(error: error)
-                            XCTFail()
-                            expectation.fulfill()
-                        }
-                    }
+                case .success(let accResponse):
+                    XCTAssertEqual(accountId, accResponse.accountId)
+                    self.invokerAccount = accResponse
+                    expectation.fulfill()
                 case .failure(_):
                     XCTFail()
-                    expectation.fulfill()
                 }
             }
             
-            wait(for: [expectation], timeout: 20.0)
+            wait(for: [expectation], timeout: 10.0)
         }
-            
     }
-    
-    func invokeContractAuthSimAccount() throws {
-        try XCTContext.runActivity(named: "invokeContractAuthSimAccount") { activity in
-            // If sender and invoker use the same account, the submission will fail
-            // because in that case we do not need address, nonce and signature in auth or we have to change the footprint - see invokeContractAuthInvoker()
-            // See https://discord.com/channels/897514728459468821/1078208197283807305
+
+    func invokeContractAuthInvoker() {
+        XCTContext.runActivity(named: "invokeContractAuthInvoker") { activity in
+            // submitter and invoker are the same
+            // no need to sign soroban auth
             
             let expectation = XCTestExpectation(description: "contract successfully invoked")
-            let senderId = senderKeyPair.accountId
             let invokerId = invokerKeyPair.accountId
-            let functionName = "auth"
-            let invokerAddress = Address.accountId(invokerId)
-            let args = [try SCValXDR(address:invokerAddress), SCValXDR.u32(3)]
+            let functionName = "increment"
+            let invokerAddress = try! SCAddressXDR(accountId: invokerId)
+            let args = [SCValXDR.address(invokerAddress), SCValXDR.u32(3)]
             
-            sdk.accounts.getAccountDetails(accountId: senderId) { (response) -> (Void) in
+            let invokeOperation = try! InvokeHostFunctionOperation.forInvokingContract(contractId: self.contractId!, functionName: functionName, functionArguments: args)
+            
+            let transaction = try! Transaction(sourceAccount: invokerAccount!,
+                                               operations: [invokeOperation], memo: Memo.none)
+            
+            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
                 switch response {
-                case .success(let accountResponse):
-                    let invokeOperation = try! InvokeHostFunctionOperation.forInvokingContract(contractId: self.contractId!, functionName: functionName, functionArguments: args)
+                case .success(let simulateResponse):
+                    XCTAssertNotNil(simulateResponse.footprint)
+                    XCTAssertNotNil(simulateResponse.transactionData)
+                    XCTAssertNotNil(simulateResponse.minResourceFee)
                     
-                    let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                       operations: [invokeOperation], memo: Memo.none)
+                    // this is because since preview 9 the fee calculation from the simulation is not always accurate
+                    // see: https://discord.com/channels/897514728459468821/1112853306881081354
+                    var transactionData = simulateResponse.transactionData!
+                    transactionData.resources.instructions += transactionData.resources.instructions / 4
+                    let resourceFee = simulateResponse.minResourceFee! + 6000;
                     
-                    self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+                    transaction.setSorobanTransactionData(data: transactionData)
+                    transaction.addResourceFee(resourceFee: resourceFee)
+                    // no need to sign soroban auth
+                    transaction.setSorobanAuth(auth: simulateResponse.sorobanAuth!)
+                    
+                    try! transaction.sign(keyPair: self.invokerKeyPair, network: self.network)
+                    
+                    // check encoding and decoding
+                    let enveloperXdr = try! transaction.encodedEnvelope()
+                    let env2 = try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope()
+                    XCTAssertEqual(enveloperXdr, env2)
+                    
+                    self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
                         switch response {
-                        case .success(let simulateResponse):
-                            XCTAssertNotNil(simulateResponse.footprint)
-                            XCTAssertNotNil(simulateResponse.transactionData)
-                            XCTAssertNotNil(simulateResponse.minResourceFee)
-                            
-                            // this is because in preview 9 the fee calculation from the simulation is not always accurate
-                            // see: https://discord.com/channels/897514728459468821/1112853306881081354
-                            var transactionData = simulateResponse.transactionData!
-                            transactionData.resources.instructions += transactionData.resources.instructions / 4
-                            let resourceFee = simulateResponse.minResourceFee! + 3000;
-                            
-                            transaction.setSorobanTransactionData(data: transactionData)
-                            transaction.addResourceFee(resourceFee: resourceFee)
-                            
-                            XCTAssertNotNil(simulateResponse.auth)
-                            if let simAuth = simulateResponse.auth {
-                                for nextAuth in simAuth {
-                                    try! nextAuth.sign(signer: self.invokerKeyPair, network: Network.futurenet)
-                                }
-                                try! transaction.setContractAuth(auth: simAuth)
-                            }
-                            try! transaction.sign(keyPair: self.senderKeyPair, network: self.network)
-                            
-                            // check encoding and decoding
-                            let enveloperXdr = try! transaction.encodedEnvelope()
-                            let env2 = try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope()
-                            XCTAssertEqual(enveloperXdr, env2)
-                            
-                            self.sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
-                                switch response {
-                                case .success(let sendResponse):
-                                    XCTAssert(SendTransactionResponse.STATUS_ERROR != sendResponse.status)
-                                    self.invokeTransactionId = sendResponse.transactionId
-                                case .failure(let error):
-                                    self.printError(error: error)
-                                    XCTFail()
-                                }
-                                expectation.fulfill()
-                            }
+                        case .success(let sendResponse):
+                            XCTAssert(SendTransactionResponse.STATUS_ERROR != sendResponse.status)
+                            self.invokeTransactionId = sendResponse.transactionId
                         case .failure(let error):
                             self.printError(error: error)
                             XCTFail()
-                            expectation.fulfill()
                         }
+                        expectation.fulfill()
                     }
-                case .failure(_):
+                case .failure(let error):
+                    self.printError(error: error)
                     XCTFail()
                     expectation.fulfill()
                 }
             }
-            
             wait(for: [expectation], timeout: 20.0)
         }
     }
@@ -475,10 +419,7 @@ class SorobanAuthTest: XCTestCase {
                     switch response {
                     case .success(let statusResponse):
                         if GetTransactionResponse.STATUS_SUCCESS == statusResponse.status {
-                            if let map = statusResponse.resultValue?.map, map.count > 0 {
-                                let accId = map[0].key.address?.accountId
-                                let val = map[0].val.u32
-                                print("{" + accId! + "," + String(val!) + "}")
+                            if let val = statusResponse.resultValue?.u32,val > 0 {
                                 expectation.fulfill()
                             } else {
                                 XCTFail()

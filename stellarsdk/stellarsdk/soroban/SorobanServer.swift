@@ -55,6 +55,11 @@ public enum GetNonceResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
+public enum GetContractCodeResponseEnum {
+    case success(response: ContractCodeEntryXDR)
+    case failure(error: SorobanRpcRequestError)
+}
+
 /// A closure to be called with the response from a post challenge request.
 public typealias GetHealthResponseClosure = (_ response:GetHealthResponseEnum) -> (Void)
 public typealias GetNetworkResponseClosure = (_ response:GetNetworkResponseEnum) -> (Void)
@@ -65,6 +70,7 @@ public typealias SendTransactionResponseClosure = (_ response:SendTransactionRes
 public typealias GetTransactionResponseClosure = (_ response:GetTransactionResponseEnum) -> (Void)
 public typealias GetEventsResponseClosure = (_ response:GetEventsResponseEnum) -> (Void)
 public typealias GetNonceResponseClosure = (_ response:GetNonceResponseEnum) -> (Void)
+public typealias GetContractCodeResponseClosure = (_ response:GetContractCodeResponseEnum) -> (Void)
 
 /// An enum to diferentiate between succesful and failed responses
 private enum RpcResult {
@@ -238,6 +244,64 @@ public class SorobanServer {
         }
     }
     
+    /// loads the contract code (wasm binary) for the given wasmId
+    public func getContractCodeForWasmId(wasmId: String, completion:@escaping GetContractCodeResponseClosure) {
+        let contractCodeKey = LedgerKeyContractCodeXDR(wasmId: wasmId, bodyType: ContractEntryBodyType.dataEntry)
+        let ledgerKey = LedgerKeyXDR.contractCode(contractCodeKey)
+        if let ledgerKeyBase64 = ledgerKey.xdrEncoded {
+            self.getLedgerEntry(base64EncodedKey:ledgerKeyBase64) { (response) -> (Void) in
+                switch response {
+                case .success(let response):
+                    let data = try? LedgerEntryDataXDR(fromBase64: response.ledgerEntryData)
+                    if let contractCode = data?.contractCode {
+                        completion(.success(response: contractCode))
+                    }
+                    else {
+                        completion(.failure(error: .requestFailed(message: "could not extract code")))
+                    }
+                case .failure(let error):
+                    completion(.failure(error: error))
+                }
+            }
+        } else {
+            completion(.failure(error: .requestFailed(message: "could not create ledger key")))
+        }
+    }
+    
+    /// loads the contract code (wasm binary) for the given contractId
+    public func getContractCodeForContractId(contractId: String, completion:@escaping GetContractCodeResponseClosure) throws {
+        let contractDataKey = LedgerKeyContractDataXDR(contract: try SCAddressXDR.init(contractId: contractId),
+                                                       key: SCValXDR.ledgerKeyContractInstance,
+                                                       durability: ContractDataDurability.persistent,
+                                                       bodyType: ContractEntryBodyType.dataEntry)
+        let ledgerKey = LedgerKeyXDR.contractData(contractDataKey)
+        if let ledgerKeyBase64 = ledgerKey.xdrEncoded {
+            self.getLedgerEntry(base64EncodedKey:ledgerKeyBase64) { (response) -> (Void) in
+                switch response {
+                case .success(let response):
+                    let data = try? LedgerEntryDataXDR(fromBase64: response.ledgerEntryData)
+                    if let contractData = data?.contractData, let wasmId = contractData.body.dataEntry?.val.contractInstance?.executable.wasm?.wrapped.hexEncodedString() {
+                        self.getContractCodeForWasmId(wasmId: wasmId) { (response) -> (Void) in
+                            switch response {
+                            case .success(let response):
+                                completion(.success(response: response))
+                            case .failure(let error):
+                                completion(.failure(error: error))
+                            }
+                        }
+                    }
+                    else {
+                        completion(.failure(error: .requestFailed(message: "could not extract wasm id")))
+                    }
+                case .failure(let error):
+                    completion(.failure(error: error))
+                }
+            }
+        } else {
+            completion(.failure(error: .requestFailed(message: "could not create ledger key")))
+        }
+    }
+    
     /// Submit a trial contract invocation to get back return values, expected ledger footprint, and expected costs.
     /// See: https://soroban.stellar.org/api/methods/simulateTransaction
     public func simulateTransaction(transaction: Transaction, completion:@escaping SimulateTransactionResponseClosure) {
@@ -322,47 +386,6 @@ public class SorobanServer {
                     completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
                 }
             case .failure(let error):
-                completion(.failure(error: error))
-            }
-        }
-    }
-    
-    /// Helper to get the accounts nonce for the given contract id.
-    public func getNonce(accountId: String, contractId: String, completion:@escaping GetNonceResponseClosure) throws {
-        let nonceAddress = Address.accountId(accountId)
-        try getNonceForAddress(address: nonceAddress, contractId: contractId, completion: completion)
-    }
-    
-    /// Helper to get the address (account or contract) nonce for the given contract id.
-    public func getNonceForAddress(address: Address, contractId: String, completion:@escaping GetNonceResponseClosure) throws {
-        let ledgerKeyXdr = try LedgerKeyXDR(nonceAddress: address, nonceContractId: contractId)
-        let encoded = try XDREncoder.encode(ledgerKeyXdr)
-        let ledgerKey = Data(bytes: encoded, count: encoded.count).base64EncodedString()
-        getLedgerEntry(base64EncodedKey:ledgerKey) { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                if let entryData = try? LedgerEntryDataXDR(xdr:response.ledgerEntryData) {
-                    switch entryData {
-                    case .contractData(let contractDataEntryXDR):
-                        if let nonce = contractDataEntryXDR.val.u64 {
-                            completion(.success(response: nonce))
-                            return
-                        }
-                    default:
-                        break
-                    }
-                }
-                completion(.failure(error: SorobanRpcRequestError.parsingResponseFailed(message: "invalid ledger entry data", responseData: Data())))
-            case .failure(let error):
-                switch error {
-                case .errorResponse(let data):
-                    if let code = data["code"] as? Int, code == -32600 { // not found for that ledger
-                        completion(.success(response: 0))
-                        return
-                    }
-                default:
-                    break
-                }
                 completion(.failure(error: error))
             }
         }

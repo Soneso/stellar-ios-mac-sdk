@@ -11,7 +11,7 @@ import Foundation
 public enum SCValType: Int32 {
     case bool = 0
     case void = 1
-    case status = 2
+    case error = 2
     case u32 = 3
     case i32 = 4
     case u64 = 5
@@ -27,104 +27,36 @@ public enum SCValType: Int32 {
     case symbol = 15
     case vec = 16
     case map = 17
-    case contractExecutable = 18
-    case address = 19
-    case ledgerKeyContractExecutable = 20
+    case address = 18
+    case contractInstance = 19
+    case ledgerKeyContractInstance = 20
     case ledgerKeyNonce = 21
 }
 
-public enum SCStatusType: Int32 {
-    case ok = 0
-    case unknownError = 1
-    case hostValueError = 2
-    case hostObjectError = 3
-    case hostFunctionError = 4
-    case hostStorageError = 5
-    case hostContextError = 6
-    case vmError = 7
-    case contractError = 8
-    case hostAuthError = 9
+public enum SCErrorType: Int32 {
+    case contract = 0
+    case wasmVm = 1
+    case context = 2
+    case storage = 3
+    case object = 4
+    case crypto = 5
+    case events = 6
+    case budget = 7
+    case value = 8
+    case auth = 9
 }
 
-public enum SCHostAuthErrorCode: Int32 {
-    case unknownError = 0
-    case nonceError = 1
-    case duplicateAthorization = 2
-    case authNotAuthorized = 3
-}
-
-public enum SCHostValErrorCode: Int32 {
-    case unknownError = 0
-    case reservedTagValue = 1
-    case unexpectedValType = 2
-    case u63OutOfRange = 3
-    case u32OutOfRange = 4
-    case staticUnknown = 5
-    case missingObject = 6
-    case symbolTooLong = 7
-    case symbolBadChar = 8
-    case symbolContainsNonUTF8 = 9
-    case bitsetTooManyBits = 10
-    case statusUnknown = 11
-}
-
-public enum SCHostObjErrorCode: Int32 {
-    case unknownError = 0
-    case unknownReference = 1
-    case unexpectedType = 2
-    case objectCountExceedsU32Max = 3
-    case objectNotExists = 4
-    case vecIndexOutOfBound = 5
-    case contractHashWrongLenght = 6
-}
-
-public enum SCHostFnErrorCode: Int32 {
-    case unknownError = 0
-    case hostFunctionAction = 1
-    case inputArgsWrongLenght = 2
-    case inputArgsWrongType = 3
-    case inputArgsInvalid = 4
-}
-
-public enum SCHostStorageErrorCode: Int32 {
-    case unknownError = 0
-    case expectContractData = 1
-    case readwriteAccessToReadonlyEntry = 2
-    case accessToUnknownEntry = 3
-    case missingKeyInGet = 4
-    case getOnDeletedKey = 5
-}
-
-public enum SCHostContextErrorCode: Int32 {
-    case unknownError = 0
-    case noContractRunning = 1
-}
-
-public enum SCVmErrorCode: Int32 {
-    case unknownError = 0
-    case validation = 1
-    case instantiation = 2
-    case function = 3
-    case table = 4
-    case memory = 5
-    case global = 6
-    case value = 7
-    case trapUnreachable = 8
-    case memoryAccessOutOfBounds = 9
-    case tableAccessOutOfBounds = 10
-    case elemUnitialized = 11
-    case divisionByZero = 12
-    case integerOverflow = 13
-    case invalidConversionToInt = 14
-    case stackOverflow = 15
-    case unexpectedSignature = 16
-    case memLimitExceeded = 17
-    case cpuLimitExceeded = 18
-}
-
-public enum SCUnknownErrorCode: Int32 {
-    case errorGeneral = 0
-    case errorXDR = 1
+public enum SCErrorCode: Int32 {
+    case arithDomain = 0
+    case indexBounds = 1
+    case invalidInput = 2
+    case missingValue = 3
+    case existingValue = 4
+    case exceededLimit = 5
+    case invalidAction = 6
+    case internalError = 7
+    case unexpectedType = 8
+    case unexpectedSize = 9
 }
 
 public enum ContractCostType: Int32 {
@@ -147,73 +79,84 @@ public enum ContractCostType: Int32 {
     case vmMemRead = 16
     case vmMemWrite = 17
     case vmInstantiation = 18
-    case invokeVmFunction = 19
-    case chargeBudget = 20
+    case vmCachedInstantiation = 19
+    case invokeVmFunction = 20
+    case chargeBudget = 21
+    case computeKeccak256Hash = 22
+    case computeEcdsaSecp256k1Key = 23
+    case computeEcdsaSecp256k1Sig = 24
+    case recoverEcdsaSecp256k1Key = 25
+    case int256AddSub = 26
+    case int256Mul = 27
+    case int256Div = 28
+    case int256Pow = 29
+    case int256Shift = 30
 }
 
-public enum SCStatusXDR: XDRCodable {
+public enum SCErrorXDR: XDRCodable {
 
-    case ok
-    case unknownError(Int32)
-    case hostValueError(Int32)
-    case hostObjectError(Int32)
-    case hostFunctionError(Int32)
-    case hostStorageError(Int32)
-    case hostContextError(Int32)
-    case vmError(Int32)
-    case contractError(Int32)
-    case hostAuthError(Int32)
+    case contract(Int32)
+    case wasmVm(Int32)
+    case context(Int32)
+    case storage(Int32)
+    case object(Int32)
+    case crypto(Int32)
+    case events(Int32)
+    case budget(Int32)
+    case value(Int32)
+    case auth(Int32)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let type = SCStatusType(rawValue: discriminant)!
+        let type = SCErrorType(rawValue: discriminant)!
         
         switch type {
-        case .ok:
-            self = .ok
-        case .unknownError:
-            let unknownError = try container.decode(Int32.self)
-            self = .unknownError(unknownError)
-        case .hostValueError:
-            let hostValueError = try container.decode(Int32.self)
-            self = .hostValueError(hostValueError)
-        case .hostObjectError:
-            let hostObjectError = try container.decode(Int32.self)
-            self = .hostObjectError(hostObjectError)
-        case .hostFunctionError:
-            let hostFunctionError = try container.decode(Int32.self)
-            self = .hostFunctionError(hostFunctionError)
-        case .hostStorageError:
-            let hostStorageError = try container.decode(Int32.self)
-            self = .hostStorageError(hostStorageError)
-        case .hostContextError:
-            let hostContextError = try container.decode(Int32.self)
-            self = .hostContextError(hostContextError)
-        case .vmError:
-            let vmError = try container.decode(Int32.self)
-            self = .vmError(vmError)
-        case .contractError:
-            let contractError = try container.decode(Int32.self)
-            self = .contractError(contractError)
-        case .hostAuthError:
-            let contractError = try container.decode(Int32.self)
-            self = .hostAuthError(contractError)
+        case .contract:
+            let errCode = try container.decode(Int32.self)
+            self = .contract(errCode)
+        case .wasmVm:
+            let errCode = try container.decode(Int32.self)
+            self = .wasmVm(errCode)
+        case .context:
+            let errCode = try container.decode(Int32.self)
+            self = .context(errCode)
+        case .storage:
+            let errCode = try container.decode(Int32.self)
+            self = .storage(errCode)
+        case .object:
+            let errCode = try container.decode(Int32.self)
+            self = .object(errCode)
+        case .crypto:
+            let errCode = try container.decode(Int32.self)
+            self = .crypto(errCode)
+        case .events:
+            let errCode = try container.decode(Int32.self)
+            self = .events(errCode)
+        case .budget:
+            let errCode = try container.decode(Int32.self)
+            self = .budget(errCode)
+        case .value:
+            let errCode = try container.decode(Int32.self)
+            self = .value(errCode)
+        case .auth:
+            let errCode = try container.decode(Int32.self)
+            self = .auth(errCode)
         }
     }
     
     public func type() -> Int32 {
         switch self {
-        case .ok: return SCStatusType.ok.rawValue
-        case .unknownError: return SCStatusType.unknownError.rawValue
-        case .hostValueError: return SCStatusType.hostValueError.rawValue
-        case .hostObjectError: return SCStatusType.hostObjectError.rawValue
-        case .hostFunctionError: return SCStatusType.hostFunctionError.rawValue
-        case .hostStorageError: return SCStatusType.hostStorageError.rawValue
-        case .hostContextError: return SCStatusType.hostContextError.rawValue
-        case .vmError: return SCStatusType.vmError.rawValue
-        case .contractError: return SCStatusType.contractError.rawValue
-        case .hostAuthError: return SCStatusType.hostAuthError.rawValue
+        case .contract: return SCErrorType.contract.rawValue
+        case .wasmVm: return SCErrorType.wasmVm.rawValue
+        case .context: return SCErrorType.context.rawValue
+        case .storage: return SCErrorType.storage.rawValue
+        case .object: return SCErrorType.object.rawValue
+        case .crypto: return SCErrorType.crypto.rawValue
+        case .events: return SCErrorType.events.rawValue
+        case .budget: return SCErrorType.budget.rawValue
+        case .value: return SCErrorType.value.rawValue
+        case .auth: return SCErrorType.auth.rawValue
         }
     }
     
@@ -221,152 +164,37 @@ public enum SCStatusXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         try container.encode(type())
         switch self {
-        case .ok:
+        case .contract (let errCode):
+            try container.encode(errCode)
             break
-        case .unknownError (let unknownError):
-            try container.encode(unknownError)
+        case .wasmVm (let errCode):
+            try container.encode(errCode)
             break
-        case .hostValueError (let hostValueError):
-            try container.encode(hostValueError)
+        case .context (let errCode):
+            try container.encode(errCode)
             break
-        case .hostObjectError (let hostObjectError):
-            try container.encode(hostObjectError)
+        case .storage (let errCode):
+            try container.encode(errCode)
             break
-        case .hostFunctionError (let hostFunctionError):
-            try container.encode(hostFunctionError)
+        case .object (let errCode):
+            try container.encode(errCode)
             break
-        case .hostStorageError (let hostStorageError):
-            try container.encode(hostStorageError)
+        case .crypto (let errCode):
+            try container.encode(errCode)
             break
-        case .hostContextError (let hostContextError):
-            try container.encode(hostContextError)
+        case .events (let errCode):
+            try container.encode(errCode)
             break
-        case .vmError (let vmError):
-            try container.encode(vmError)
+        case .budget (let errCode):
+            try container.encode(errCode)
             break
-        case .contractError (let contractError):
-            try container.encode(contractError)
+        case .value (let errCode):
+            try container.encode(errCode)
             break
-        case .hostAuthError (let hostAuthError):
-            try container.encode(hostAuthError)
+        case .auth (let errCode):
+            try container.encode(errCode)
             break
-        }
-    }
-    
-    public var isOk:Bool {
-        return type() == SCStatusType.ok.rawValue
-    }
-    
-    public var isUnknownError:Bool {
-        return type() == SCStatusType.unknownError.rawValue
-    }
-    
-    public var unknownError:Int32? {
-        switch self {
-        case .unknownError(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isHostValueError:Bool {
-        return type() == SCStatusType.hostValueError.rawValue
-    }
-    
-    public var hostValueError:Int32? {
-        switch self {
-        case .hostValueError(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isHostObjectError:Bool {
-        return type() == SCStatusType.hostObjectError.rawValue
-    }
-    
-    public var hostObjectError:Int32? {
-        switch self {
-        case .hostObjectError(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isHostFunctionError:Bool {
-        return type() == SCStatusType.hostFunctionError.rawValue
-    }
-    
-    public var hostFunctionError:Int32? {
-        switch self {
-        case .hostFunctionError(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isHostStorageError:Bool {
-        return type() == SCStatusType.hostStorageError.rawValue
-    }
-    
-    public var hostStorageError:Int32? {
-        switch self {
-        case .hostStorageError(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isHostContextError:Bool {
-        return type() == SCStatusType.hostContextError.rawValue
-    }
-    
-    public var hostContextError:Int32? {
-        switch self {
-        case .hostContextError(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isVmError:Bool {
-        return type() == SCStatusType.vmError.rawValue
-    }
-    
-    public var vmError:Int32? {
-        switch self {
-        case .vmError(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var isContractError:Bool {
-        return type() == SCStatusType.contractError.rawValue
-    }
-    
-    public var contractError:Int32? {
-        switch self {
-        case .contractError(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
-    public var hostAuthError:Int32? {
-        switch self {
-        case .hostAuthError(let val):
-            return val
-        default:
-            return nil
+            
         }
     }
 }
@@ -380,16 +208,15 @@ public enum SCAddressXDR: XDRCodable {
     case account(PublicKey)
     case contract(WrappedData32)
     
-    public init(address: Address) throws {
-        switch address {
-        case .accountId(let accountId):
-            self = .account(try PublicKey(accountId: accountId))
-        case .contractId(let contractId):
-            if let contractIdData = contractId.data(using: .hexadecimal) {
-                self = .contract(WrappedData32(contractIdData))
-            } else {
-                throw StellarSDKError.encodingError(message: "error xdr encoding invoke host function operation, invalid contract id")
-            }
+    public init(accountId: String) throws {
+        self = .account(try PublicKey(accountId: accountId))
+    }
+    
+    public init(contractId: String) throws {
+        if let contractIdData = contractId.data(using: .hexadecimal) {
+            self = .contract(WrappedData32(contractIdData))
+        } else {
+            throw StellarSDKError.encodingError(message: "error xdr encoding invoke host function operation, invalid contract id")
         }
     }
     
@@ -448,20 +275,20 @@ public enum SCAddressXDR: XDRCodable {
 }
 
 public struct SCNonceKeyXDR: XDRCodable {
-    public let nonceAddress: SCAddressXDR
+    public let nonce: Int64
     
-    public init(nonceAddress:SCAddressXDR) {
-        self.nonceAddress = nonceAddress
+    public init(nonce:Int64) {
+        self.nonce = nonce
     }
 
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        nonceAddress = try container.decode(SCAddressXDR.self)
+        nonce = try container.decode(Int64.self)
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(nonceAddress)
+        try container.encode(nonce)
     }
 }
 
@@ -469,7 +296,7 @@ public enum SCValXDR: XDRCodable {
 
     case bool(Bool)
     case void
-    case status(SCStatusXDR)
+    case error(SCErrorXDR)
     case u32(UInt32)
     case i32(Int32)
     case u64(UInt64)
@@ -485,14 +312,10 @@ public enum SCValXDR: XDRCodable {
     case symbol(String)
     case vec([SCValXDR]?)
     case map([SCMapEntryXDR]?)
-    case contractExecutable(SCContractExecutableXDR)
     case address(SCAddressXDR)
-    case ledgerKeyContractExecutable
+    case ledgerKeyContractInstance
+    case contractInstance(SCContractInstanceXDR)
     case ledgerKeyNonce(SCNonceKeyXDR)
-    
-    public init(address: Address) throws {
-        self = .address(try SCAddressXDR(address: address))
-    }
 
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -505,10 +328,9 @@ public enum SCValXDR: XDRCodable {
             self = .bool(b)
         case .void:
             self = .void
-            break
-        case .status:
-            let status = try container.decode(SCStatusXDR.self)
-            self = .status(status)
+        case .error:
+            let error = try container.decode(SCErrorXDR.self)
+            self = .error(error)
         case .u32:
             let u32 = try container.decode(UInt32.self)
             self = .u32(u32)
@@ -564,15 +386,16 @@ public enum SCValXDR: XDRCodable {
             } else {
                 self = .map(nil)
             }
-        case .contractExecutable:
-            let contractExecutable = try container.decode(SCContractExecutableXDR.self)
-            self = .contractExecutable(contractExecutable)
         case .address:
             let address = try container.decode(SCAddressXDR.self)
             self = .address(address)
-        case .ledgerKeyContractExecutable:
-            self = .ledgerKeyContractExecutable
+            
+        case .ledgerKeyContractInstance:
+            self = .ledgerKeyContractInstance
             break
+        case .contractInstance:
+            let contractInstance = try container.decode(SCContractInstanceXDR.self)
+            self = .contractInstance(contractInstance)
         case .ledgerKeyNonce:
             let ledgerKeyNonce = try container.decode(SCNonceKeyXDR.self)
             self = .ledgerKeyNonce(ledgerKeyNonce)
@@ -591,7 +414,7 @@ public enum SCValXDR: XDRCodable {
         switch self {
         case .bool: return SCValType.bool.rawValue
         case .void: return SCValType.bool.rawValue
-        case .status: return SCValType.status.rawValue
+        case .error: return SCValType.error.rawValue
         case .u32: return SCValType.u32.rawValue
         case .i32: return SCValType.i32.rawValue
         case .u64: return SCValType.u64.rawValue
@@ -607,9 +430,9 @@ public enum SCValXDR: XDRCodable {
         case .symbol: return SCValType.symbol.rawValue
         case .vec: return SCValType.vec.rawValue
         case .map: return SCValType.map.rawValue
-        case .contractExecutable: return SCValType.contractExecutable.rawValue
-        case .ledgerKeyContractExecutable: return SCValType.ledgerKeyContractExecutable.rawValue
         case .address: return SCValType.address.rawValue
+        case .ledgerKeyContractInstance: return SCValType.ledgerKeyContractInstance.rawValue
+        case .contractInstance: return SCValType.contractInstance.rawValue
         case .ledgerKeyNonce: return SCValType.ledgerKeyNonce.rawValue
         }
     }
@@ -620,51 +443,36 @@ public enum SCValXDR: XDRCodable {
         switch self {
         case .bool (let bool):
             try container.encode(bool)
-            break
         case .void:
             break
-        case .status (let status):
-            try container.encode(status)
-            break
+        case .error (let error):
+            try container.encode(error)
         case .u32 (let u32):
             try container.encode(u32)
-            break
         case .i32 (let i32):
             try container.encode(i32)
-            break
         case .u64 (let u64):
             try container.encode(u64)
-            break
         case .i64 (let i64):
             try container.encode(i64)
-            break
         case .timepoint (let timepoint):
             try container.encode(timepoint)
-            break
         case .duration (let duration):
             try container.encode(duration)
-            break
         case .u128 (let u128):
             try container.encode(u128)
-            break
         case .i128 (let i128):
             try container.encode(i128)
-            break
         case .u256 (let u256):
             try container.encode(u256)
-            break
         case .i256 (let i256):
             try container.encode(i256)
-            break
         case .bytes (let bytes):
             try container.encode(bytes)
-            break
         case .string (let string):
             try container.encode(string)
-            break
         case .symbol (let symbol):
             try container.encode(symbol)
-            break
         case .vec (let vec):
             if let vec = vec {
                 let flag: Int32 = 1
@@ -685,13 +493,13 @@ public enum SCValXDR: XDRCodable {
                 try container.encode(flag)
             }
             break
-        case .contractExecutable(let exec):
-            try container.encode(exec)
-            break
         case .address(let address):
             try container.encode(address)
             break
-        case .ledgerKeyContractExecutable:
+        case .ledgerKeyContractInstance:
+            break
+        case .contractInstance(let val):
+            try container.encode(val)
             break
         case .ledgerKeyNonce (let nonceKey):
             try container.encode(nonceKey)
@@ -748,13 +556,13 @@ public enum SCValXDR: XDRCodable {
         }
     }
     
-    public var isStatus:Bool {
-        return type() == SCValType.status.rawValue
+    public var isError:Bool {
+        return type() == SCValType.error.rawValue
     }
     
-    public var status:SCStatusXDR? {
+    public var error:SCErrorXDR? {
         switch self {
-        case .status(let val):
+        case .error(let val):
             return val
         default:
             return nil
@@ -930,19 +738,6 @@ public enum SCValXDR: XDRCodable {
         }
     }
     
-    public var isContractExecutable: Bool {
-        return type() == SCValType.contractExecutable.rawValue
-    }
-    
-    public var contractExecutable:SCContractExecutableXDR? {
-        switch self {
-        case .contractExecutable(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-    
     public var isAddress: Bool {
         return type() == SCValType.address.rawValue
     }
@@ -956,8 +751,21 @@ public enum SCValXDR: XDRCodable {
         }
     }
     
-    public var isLedgerKeyContractExecutable: Bool {
-        return type() == SCValType.ledgerKeyContractExecutable.rawValue
+    public var isContractInstance: Bool {
+        return type() == SCValType.contractInstance.rawValue
+    }
+    
+    public var contractInstance:SCContractInstanceXDR? {
+        switch self {
+        case .contractInstance(let val):
+            return val
+        default:
+            return nil
+        }
+    }
+    
+    public var isLedgerKeyContractInstance: Bool {
+        return type() == SCValType.ledgerKeyContractInstance.rawValue
     }
     
     public var isLedgerKeyNonce: Bool {
@@ -997,25 +805,24 @@ public struct SCMapEntryXDR: XDRCodable {
     }
 }
 
-public enum SCContractCodeType: Int32 {
-    case wasmRef = 0
+public enum ContractExecutableType: Int32 {
+    case wasm = 0
     case token = 1
 }
 
-public enum SCContractExecutableXDR: XDRCodable {
-
-    case wasmRef(WrappedData32)
+public enum ContractExecutableXDR: XDRCodable {
+    case wasm(WrappedData32)
     case token
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let type = SCContractCodeType(rawValue: discriminant)!
+        let type = ContractExecutableType(rawValue: discriminant)!
         
         switch type {
-        case .wasmRef:
-            let wasmRef = try container.decode(WrappedData32.self)
-            self = .wasmRef(wasmRef)
+        case .wasm:
+            let wasmHash = try container.decode(WrappedData32.self)
+            self = .wasm(wasmHash)
         case .token:
             self = .token
         }
@@ -1023,8 +830,8 @@ public enum SCContractExecutableXDR: XDRCodable {
     
     public func type() -> Int32 {
         switch self {
-        case .wasmRef: return SCContractCodeType.wasmRef.rawValue
-        case .token: return SCContractCodeType.token.rawValue
+        case .wasm: return ContractExecutableType.wasm.rawValue
+        case .token: return ContractExecutableType.token.rawValue
         }
     }
     
@@ -1032,21 +839,21 @@ public enum SCContractExecutableXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         try container.encode(type())
         switch self {
-        case .wasmRef (let wasmRef):
-            try container.encode(wasmRef)
+        case .wasm (let wasmHash):
+            try container.encode(wasmHash)
             break
         case .token:
             break
         }
     }
     
-    public var isWasmRef:Bool? {
-        return type() == SCContractCodeType.wasmRef.rawValue
+    public var isWasm:Bool? {
+        return type() == ContractExecutableType.wasm.rawValue
     }
     
-    public var wasmRef:WrappedData32? {
+    public var wasm:WrappedData32? {
         switch self {
-        case .wasmRef(let val):
+        case .wasm(let val):
             return val
         default:
             return nil
@@ -1054,7 +861,7 @@ public enum SCContractExecutableXDR: XDRCodable {
     }
     
     public var isToken:Bool? {
-        return type() == SCContractCodeType.token.rawValue
+        return type() == ContractExecutableType.token.rawValue
     }
 }
 
@@ -1164,3 +971,35 @@ public struct UInt256PartsXDR: XDRCodable {
     }
 }
 
+public struct SCContractInstanceXDR: XDRCodable {
+    public let executable: ContractExecutableXDR
+    public let storage: [SCMapEntryXDR]?
+    
+    public init(executable: ContractExecutableXDR, storage: [SCMapEntryXDR]?) {
+        self.executable = executable
+        self.storage = storage
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        executable = try container.decode(ContractExecutableXDR.self)
+        let present = try container.decode(Int32.self) == 1
+        if (present) {
+            storage = try decodeArray(type: SCMapEntryXDR.self, dec: decoder)
+        } else {
+            storage = nil
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(executable)
+        if let sm = storage {
+            try container.encode(Int32(1))
+            try container.encode(sm)
+        }
+        else {
+            try container.encode(Int32(0))
+        }
+    }
+}

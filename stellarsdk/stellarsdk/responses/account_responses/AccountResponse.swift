@@ -132,4 +132,8 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
     public func incrementSequenceNumber() {
         sequenceNumber += 1
     }
+    
+    public func decrementSequenceNumber() {
+        sequenceNumber -= 1
+    }
 }

@@ -34,6 +34,8 @@ public enum OperationBodyXDR: XDRCodable {
     case liquidityPoolDeposit(LiquidityPoolDepositOpXDR)
     case liquidityPoolWithdraw(LiquidityPoolWithdrawOpXDR)
     case invokeHostFunction(InvokeHostFunctionOpXDR)
+    case bumpFootprintExpiration(BumpFootprintExpirationOpXDR)
+    case restoreFootprint(RestoreFootprintOpXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -91,6 +93,10 @@ public enum OperationBodyXDR: XDRCodable {
                 self = .liquidityPoolWithdraw(try container.decode(LiquidityPoolWithdrawOpXDR.self))
             case OperationType.invokeHostFunction.rawValue:
                 self = .invokeHostFunction(try container.decode(InvokeHostFunctionOpXDR.self))
+            case OperationType.bumpFootprintExpiration.rawValue:
+                self = .bumpFootprintExpiration(try container.decode(BumpFootprintExpirationOpXDR.self))
+            case OperationType.restoreFootprint.rawValue:
+                self = .restoreFootprint(try container.decode(RestoreFootprintOpXDR.self))
             default:
                 throw StellarSDKError.xdrDecodingError(message: "Could not decode operation")
         }
@@ -123,6 +129,8 @@ public enum OperationBodyXDR: XDRCodable {
             case .liquidityPoolDeposit: return OperationType.liquidityPoolDeposit.rawValue
             case .liquidityPoolWithdraw: return OperationType.liquidityPoolWithdraw.rawValue
             case .invokeHostFunction: return OperationType.invokeHostFunction.rawValue
+            case .bumpFootprintExpiration: return OperationType.bumpFootprintExpiration.rawValue
+            case .restoreFootprint: return OperationType.restoreFootprint.rawValue
         }
     }
     
@@ -181,6 +189,10 @@ public enum OperationBodyXDR: XDRCodable {
         case .liquidityPoolWithdraw (let op):
             try container.encode(op)
         case .invokeHostFunction(let op):
+            try container.encode(op)
+        case .bumpFootprintExpiration(let op):
+            try container.encode(op)
+        case .restoreFootprint(let op):
             try container.encode(op)
         }
     }

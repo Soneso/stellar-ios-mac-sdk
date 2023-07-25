@@ -12,7 +12,7 @@ public enum SCSpecType: Int32 {
     case val = 0
     case bool = 1
     case void = 2
-    case status = 3
+    case error = 3
     case u32 = 4
     case i32 = 5
     case u64 = 6
@@ -199,7 +199,7 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
     case val
     case bool
     case void
-    case status
+    case error
     case u32
     case i32
     case u64
@@ -233,8 +233,8 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
             self = .bool
         case .void:
             self = .void
-        case .status:
-            self = .status
+        case .error:
+            self = .error
         case .u32:
             self = .u32
         case .i32:
@@ -297,7 +297,7 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
         case .val: return SCSpecType.val.rawValue
         case .bool: return SCSpecType.bool.rawValue
         case .void: return SCSpecType.bool.rawValue
-        case .status: return SCSpecType.status.rawValue
+        case .error: return SCSpecType.error.rawValue
         case .u32: return SCSpecType.u32.rawValue
         case .i32: return SCSpecType.i32.rawValue
         case .u64: return SCSpecType.u64.rawValue

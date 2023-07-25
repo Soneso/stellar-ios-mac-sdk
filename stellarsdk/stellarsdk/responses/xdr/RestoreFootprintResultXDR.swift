@@ -1,42 +1,38 @@
 //
-//  InvokeHostFunctionResultXDR.swift
+//  RestoreFootprintResultXDR.swift
 //  stellarsdk
 //
-//  Created by Christian Rogobete.
+//  Created by Christian Rogobete on 24.07.23.
 //  Copyright © 2023 Soneso. All rights reserved.
 //
 
 import Foundation
 
-public enum InvokeHostFunctionResultCode: Int32 {
+public enum RestoreFootprintResultCode: Int32 {
     // codes considered as "success" for the operation
     case success = 0 // success
     
     // codes considered as "failure" for the operation
     case malformed = -1
-    case trapped = -2
-    case resourceLimitExceeded = -3
+    case resourceLimitExceeded = -2
 }
 
-public enum InvokeHostFunctionResultXDR: XDRCodable {
-    case success(WrappedData32) // sha256 (InvokeHostFunctionSuccessPreImageXDR)
+public enum RestoreFootprintResultXDR: XDRCodable {
+
+    case success
     case malformed
-    case trapped
     case resourceLimitExceeded
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let code = InvokeHostFunctionResultCode(rawValue: discriminant)!
+        let code = RestoreFootprintResultCode(rawValue: discriminant)!
         
         switch code {
         case .success:
-            let val = try container.decode(WrappedData32.self)
-            self = .success(val)
+            self = .success
         case .malformed:
             self = .malformed
-        case .trapped:
-            self = .trapped
         default:
             self = .resourceLimitExceeded
         }
@@ -45,11 +41,9 @@ public enum InvokeHostFunctionResultXDR: XDRCodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         switch self {
-        case .success(let val):
-            try container.encode(val)
-        case .malformed:
+        case .success:
             break
-        case .trapped:
+        case .malformed:
             break
         case .resourceLimitExceeded:
             break

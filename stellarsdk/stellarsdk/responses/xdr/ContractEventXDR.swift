@@ -109,25 +109,6 @@ public enum ContractEventBodyXDR: XDRCodable {
     }
 }
 
-public struct OperationDiagnosticEventsXDR: XDRCodable {
-    public var events: [DiagnosticEventXDR]
-    
-    public init(events: [DiagnosticEventXDR]) {
-        self.events = events
-    }
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        events = try decodeArray(type: DiagnosticEventXDR.self, dec: decoder)
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        try container.encode(events)
-    }
-}
-
-
 public struct DiagnosticEventXDR: XDRCodable {
     public var inSuccessfulContractCall: Bool
     public var event: ContractEventXDR

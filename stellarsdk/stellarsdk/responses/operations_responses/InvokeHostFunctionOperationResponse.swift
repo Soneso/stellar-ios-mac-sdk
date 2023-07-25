@@ -10,35 +10,12 @@ import Foundation
 
 public class InvokeHostFunctionOperationResponse: OperationResponse {
     
-    public var hostFunctions:[HostFunctionResponse]?
-
-    
-    // Properties to encode and decode
-    private enum CodingKeys: String, CodingKey {
-        case hostFunctions = "host_functions"
-    }
-    
-    /**
-        Initializer - creates a new instance by decoding from the given decoder.
-     
-        - Parameter decoder: The decoder containing the data
-     */
-    public required init(from decoder: Decoder) throws {
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        hostFunctions = try values.decodeIfPresent([HostFunctionResponse].self, forKey: .hostFunctions)
-        try super.init(from: decoder)
-    }
-}
-
-
-public class HostFunctionResponse: NSObject, Decodable {
-    
-    public var type:String
+    public var function:String
     public var parameters:[ParameterResponse]?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
-        case type
+        case function
         case parameters
     }
     
@@ -48,11 +25,10 @@ public class HostFunctionResponse: NSObject, Decodable {
         - Parameter decoder: The decoder containing the data
      */
     public required init(from decoder: Decoder) throws {
-        
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        type = try values.decode(String.self, forKey: .type)
+        function = try values.decode(String.self, forKey: .function)
         parameters = try values.decodeIfPresent([ParameterResponse].self, forKey: .parameters)
-        
+        try super.init(from: decoder)
     }
 }
 
