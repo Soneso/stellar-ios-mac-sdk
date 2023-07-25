@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "stellar-ios-mac-sdk"
-  s.version      = "2.3.8"
+  s.version      = "2.3.9"
   s.summary      = "Fully featured iOS and macOS SDK that provides APIs to build transactions and connect to Horizon server for the Stellar ecosystem."
   s.module_name  = 'stellarsdk'
   s.swift_version = '5.0'
@@ -70,8 +70,8 @@ Pod::Spec.new do |s|
   # s.platform     = :ios, "5.0"
 
   #  When using multiple platforms
-   s.ios.deployment_target = "8.0"
-   s.osx.deployment_target = "10.10"
+   s.ios.deployment_target = "11.0"
+   s.osx.deployment_target = "11.0"
   # s.watchos.deployment_target = "2.0"
   # s.tvos.deployment_target = "9.0"
 
