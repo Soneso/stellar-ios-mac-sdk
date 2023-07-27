@@ -59,7 +59,7 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
     
     public var lastModifiedLedger:Int
     
-    public var lastModifiedTime:String
+    public var lastModifiedTime:String?
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
@@ -119,7 +119,7 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
         sequenceLedger = try values.decodeIfPresent(Int.self, forKey: .sequenceLedger)
         sequenceTime = try values.decodeIfPresent(String.self, forKey: .sequenceTime)
         lastModifiedLedger = try values.decode(Int.self, forKey: .lastModifiedLedger)
-        lastModifiedTime = try values.decode(String.self, forKey: .lastModifiedTime)
+        lastModifiedTime = try values.decodeIfPresent(String.self, forKey: .lastModifiedTime)
             
     }
     
