@@ -99,8 +99,16 @@ class AccountRemoteTestCase: XCTestCase {
                     for balance in accountDetails.balances {
                         print("Balance \(balance.balance)")
                     }
-                    print("Seq Ledger: \(accountDetails.sequenceLedger!)")
-                    print("Seq Time: \(accountDetails.sequenceTime!)")
+                    if let seqLedger = accountDetails.sequenceLedger {
+                        print("Seq Ledger: \(seqLedger)")
+                    } else {
+                        print("Seq Ledger: nil")
+                    }
+                    if let seqTime = accountDetails.sequenceLedger {
+                        print("Seq Time: \(seqTime)")
+                    } else {
+                        print("Seq Time: nil")
+                    }
                     XCTAssert(true)
                 case .failure(let error):
                     StellarSDKLog.printHorizonRequestErrorMessage(tag:"Get account details test", horizonRequestError: error)

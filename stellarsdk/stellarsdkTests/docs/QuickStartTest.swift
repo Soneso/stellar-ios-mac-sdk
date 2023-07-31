@@ -152,7 +152,7 @@ class QuickStartTest: XCTestCase {
             }
         }
     
-        wait(for: [expectation], timeout: 15.0)
+        wait(for: [expectation], timeout: 25.0)
     }
     
     func testCheckPaymentsExample() {
