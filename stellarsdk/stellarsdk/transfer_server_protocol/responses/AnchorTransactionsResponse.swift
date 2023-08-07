@@ -28,6 +28,9 @@ public enum AnchorTransactionStatus: String {
     case pendingUser = "pending_user"
     /// the user has not yet initiated their transfer to the anchor. This is the necessary first step in any deposit or withdrawal flow.
     case pendingUserTransferStart = "pending_user_transfer_start"
+    // if anchor detects the payment is fulfilled and the funds is ready for the user to pick up.
+    // This is the most common status after pending_user_transfer_start if the user must pick up the funds in person.
+    case pendingUserTransferComplete = "pending_user_transfer_complete"
     /// certain pieces of information need to be updated by the user.
     case pendingCustomerInfoUpdate = "pending_customer_info_update"
     /// certain pieces of information need to be updated by the user.
