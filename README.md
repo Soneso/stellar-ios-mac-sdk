@@ -19,7 +19,7 @@ To integrate stellar SDK into your Xcode project using CocoaPods, specify it in 
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk', '~> 2.4.0'
+    pod 'stellar-ios-mac-sdk', '~> 2.4.1'
 end
 ```
 
@@ -44,7 +44,7 @@ $ brew install carthage
 To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 2.4.0
+github "soneso/stellar-ios-mac-sdk" ~> 2.4.1
 ```
 
 Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.
@@ -52,7 +52,7 @@ Run `carthage update` to build the framework and drag the build `stellar-ios-mac
 ### Swift Package Manager
 
 ```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "2.4.0"),
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "2.4.1"),
 ```
 
 ### Manual
