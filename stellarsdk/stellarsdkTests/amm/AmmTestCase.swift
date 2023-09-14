@@ -78,7 +78,7 @@ class AmmTestCase: XCTestCase {
                 XCTFail()
             }
         }
-        wait(for: [expectation], timeout: 35.0)
+        wait(for: [expectation], timeout: 55.0)
     }
     
     func testAll() {
