@@ -128,7 +128,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: clientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(true)
@@ -149,7 +149,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: challengeFailClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -176,7 +176,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidSeqClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -207,7 +207,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidSourceAccClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -238,7 +238,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: validSecondOperationClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(true)
@@ -259,7 +259,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidSecondOperationClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -290,7 +290,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidSecondOperationClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -321,7 +321,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidOperationClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -352,7 +352,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidOperationCountClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -383,7 +383,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidHomeDomainClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -414,7 +414,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidWebAuthDomainClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -445,7 +445,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidTimeboundsClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -476,7 +476,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidSignatureClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -507,7 +507,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: notFoundSignatureClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -538,7 +538,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidClientSignatureClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -573,7 +573,7 @@ class WebAuthenticatorTestCase: XCTestCase {
             let signers = [keyPair]
             let clientDomain = "domain.client.com"
             let clientDomainAccountKey = try! KeyPair.generateRandomKeyPair()
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers, clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKey) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers, clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKey) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -607,7 +607,7 @@ class WebAuthenticatorTestCase: XCTestCase {
             let signers = [keyPair]
             let clientDomain = "domain.client.com"
             let clientDomainAccountKey = try! KeyPair(secretSeed: "SBE64KCQLJXJPMYLF22YCUSTH7WXJ7VZSCTPHXY3VDSIF3QUHJDBE6R6")
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers, clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKey) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers, clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKey) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(true)
@@ -629,7 +629,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: challengeMuxedAccountSeed) {
             let userAccountId = challengeMuxedAccountIdG
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, memo: challengeMuxedAccountIdGMemo, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, memo: challengeMuxedAccountIdGMemo, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(true)
@@ -650,7 +650,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: challengeMuxedAccountSeed) {
             let userAccountId = challengeMuxedAccountIdM
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(true)
@@ -671,7 +671,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: challengeMuxedAccountSeed) {
             let userAccountId = challengeMuxedAccountIdM
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, memo:challengeMuxedAccountIdGMemo, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, memo:challengeMuxedAccountIdGMemo, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -697,7 +697,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidMemoTypeClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, memo: 12345, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, memo: 12345, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)
@@ -728,7 +728,7 @@ class WebAuthenticatorTestCase: XCTestCase {
         if let keyPair = try? KeyPair(secretSeed: invalidMemoValueClientPrivateKey) {
             let userAccountId = keyPair.accountId
             let signers = [keyPair]
-            webAuthenticator.jwtToken(forClientAccount: userAccountId, memo: 12345, signers: signers) { (response) -> (Void) in
+            webAuthenticator.jwtToken(forUserAccount: userAccountId, memo: 12345, signers: signers) { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(false)

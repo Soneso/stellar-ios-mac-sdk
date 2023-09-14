@@ -591,17 +591,23 @@ This SEP defines the standard way for clients such as wallets or exchanges to cr
 Authenticate with a server and get a JWT token.
 
 ```swift
+let authEndpoint = "https://testanchor.stellar.org/auth"
+let serverSigningKey = "GCUZ6YLL5RQBTYLTTQLPCM73C5XAIUGK2TIMWQH7HPSGWVS2KJ2F3CHS"
+let serverHomeDomain = "testanchor.stellar.org"
+let userAccountId = "GB4L7JUU5DENUXYH3ANTLVYQL66KQLDDJTN5SF7MWEDGWSGUA375V44V"
+let userSeed = "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX"
+
 // Hold a strong reference to this to avoid being deallocated
-let webAuthenticator = WebAuthenticator(authEndpoint: "http://your_api.stellar.org/auth", network: .testnet, serverSigningKey: "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP", serverHomeDomain: "yourserverhomedomain.com" )
-    if let keyPair = try? KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX") {
-        webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
-            switch response {
-            case .success(let jwtToken):
-                // use the token to do your calls
-            case .failure(let error):
-                // handle the error
-            }
-        }
+let webAuth = WebAuthenticator(authEndpoint: authEndpoint, network: .testnet,
+                                serverSigningKey: serverSigningKey, serverHomeDomain: serverHomeDomain)
+
+let signers = [try! KeyPair(secretSeed: self.userSeed)]
+webAuth.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
+    switch response {
+    case .success(let jwtToken):
+        print("JWT received: \(jwtToken)")
+    case .failure(let error):
+        print("Error: \(error)")
     }
 }
 ```
@@ -612,7 +618,7 @@ Creates the WebAuthenticator by loading the web auth endpoint and the server sig
 
 ```swift
 
-let webAuthenticator = WebAuthenticator.from(domain:"yourserverhomedomain.com", network: .testnet)
+let webAuth = WebAuthenticator.from(domain:"yourserverhomedomain.com", network: .testnet)
 
 ```
 The Web Authenticator can now be used to get the JWT token (see: 8.1)

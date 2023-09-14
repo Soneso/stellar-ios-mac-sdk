@@ -946,6 +946,8 @@
 		83697252202A80D600398A98 /* ManageDataOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697251202A80D600398A98 /* ManageDataOperationResponse.swift */; };
 		83697255202BC5B900398A98 /* AccountLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697254202BC5B800398A98 /* AccountLinksResponse.swift */; };
 		83697259202CB88300398A98 /* EffectLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697258202CB88300398A98 /* EffectLinksResponse.swift */; };
+		83707A9C2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83707A9B2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift */; };
+		83707A9D2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83707A9B2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift */; };
 		83852AB226678E020013EA2A /* FeeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83852AB126678E020013EA2A /* FeeRequest.swift */; };
 		83852AB326678E020013EA2A /* FeeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83852AB126678E020013EA2A /* FeeRequest.swift */; };
 		83852ABC266790580013EA2A /* AnchorFeeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83852ABB266790580013EA2A /* AnchorFeeResponse.swift */; };
@@ -1681,6 +1683,7 @@
 		83697251202A80D600398A98 /* ManageDataOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageDataOperationResponse.swift; sourceTree = "<group>"; };
 		83697254202BC5B800398A98 /* AccountLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountLinksResponse.swift; sourceTree = "<group>"; };
 		83697258202CB88300398A98 /* EffectLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectLinksResponse.swift; sourceTree = "<group>"; };
+		83707A9B2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthRemoteTestCase.swift; sourceTree = "<group>"; };
 		83852AB126678E020013EA2A /* FeeRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeRequest.swift; sourceTree = "<group>"; };
 		83852ABB266790580013EA2A /* AnchorFeeResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorFeeResponse.swift; sourceTree = "<group>"; };
 		8395F93F246B380500B04E11 /* TransactionV0EnvelopeXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionV0EnvelopeXDR.swift; sourceTree = "<group>"; };
@@ -2567,6 +2570,7 @@
 				74723342219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift */,
 				7472333F219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift */,
 				74723345219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift */,
+				83707A9B2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift */,
 			);
 			path = web_authenticator;
 			sourceTree = "<group>";
@@ -4170,6 +4174,7 @@
 				745DF58A205304AC000D3660 /* PaymentsLocalTestCase.swift in Sources */,
 				745DF58B205304AC000D3660 /* TradesTestCase.swift in Sources */,
 				745DF58C205304AC000D3660 /* TradesLocalTestCase.swift in Sources */,
+				83707A9D2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift in Sources */,
 				83BD1EE92949F67D00F6C041 /* IssueAssetTest.swift in Sources */,
 				745DF58D205304AC000D3660 /* TradesResponsesMock.swift in Sources */,
 				744A84D5214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,
@@ -4799,6 +4804,7 @@
 				83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */,
 				8357A917203B0AD300A144A9 /* ResponseMock.swift in Sources */,
 				74A504F42192D85B00A608A0 /* KeyUtils.swift in Sources */,
+				83707A9C2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift in Sources */,
 				83D6D2EA2A27BAD700555110 /* PutVerificationResponseMock.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -139,13 +139,13 @@ public class WebAuthenticator {
     
     /// Get JWT token for wallet
     ///
-    /// - Parameter forClientAccount: account id of the client/user
+    /// - Parameter forUserAccount: account id of the user
     /// - Parameter memo: ID memo of the client account if muxed and accountId starts with G
     /// - Parameter signers: list of signers (keypairs including secret seed) of the client account
     /// - Parameter homeDomain: domain of the server hosting it's stellar.toml
     /// - Parameter clientDomain: domain of the client hosting it's stellar.toml
     /// - Parameter clientDomainAccountKeyPair: Keypair of the client domain account including the seed (used for signing the transaction if client domain is provided)
-    public func jwtToken(forClientAccount accountId:String, memo:UInt64? = nil, signers:[KeyPair], homeDomain:String? = nil, clientDomain:String? = nil, clientDomainAccountKeyPair:KeyPair? = nil, completion:@escaping GetJWTTokenResponseClosure) {
+    public func jwtToken(forUserAccount accountId:String, memo:UInt64? = nil, signers:[KeyPair], homeDomain:String? = nil, clientDomain:String? = nil, clientDomainAccountKeyPair:KeyPair? = nil, completion:@escaping GetJWTTokenResponseClosure) {
         getChallenge(forAccount: accountId, memo:memo, homeDomain: homeDomain, clientDomain: clientDomain) { (response) -> (Void) in
             switch response {
             case .success(let challenge):
@@ -378,7 +378,7 @@ public class WebAuthenticator {
         let json = ["transaction": base64EnvelopeXDR]
         let jsonData = try? JSONSerialization.data(withJSONObject: json)
         
-        serviceHelper.POSTRequestWithPath(path: "", body: jsonData) { (result) -> (Void) in
+        serviceHelper.POSTRequestWithPath(path: "", body: jsonData, contentType: "application/json") { (result) -> (Void) in
             switch result {
             case .success(let data):
                 if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
@@ -397,5 +397,4 @@ public class WebAuthenticator {
             }
         }
     }
-    
 }
