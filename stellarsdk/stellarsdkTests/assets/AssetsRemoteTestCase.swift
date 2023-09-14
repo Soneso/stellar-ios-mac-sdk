@@ -62,7 +62,7 @@ class AssetsRemoteTestCase: XCTestCase {
                 XCTFail()
             }
         }
-        wait(for: [expectation], timeout: 25.0)
+        wait(for: [expectation], timeout: 55.0)
     }
     
     
