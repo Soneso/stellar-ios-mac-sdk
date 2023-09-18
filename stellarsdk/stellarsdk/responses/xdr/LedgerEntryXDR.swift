@@ -18,6 +18,30 @@ public enum LedgerEntryType: Int32 {
     case contractData = 6
     case contractCode = 7
     case configSetting = 8
+    case expiration = 9
+}
+
+public struct ExpirationEntryXDR: XDRCodable {
+    public let keyHash: WrappedData32;
+    public let expirationLedgerSeq: UInt32;
+    
+    
+    public init(keyHash: WrappedData32, expirationLedgerSeq:UInt32) {
+        self.keyHash = keyHash
+        self.expirationLedgerSeq = expirationLedgerSeq
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        keyHash = try container.decode(WrappedData32.self)
+        expirationLedgerSeq = try container.decode(UInt32.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(keyHash)
+        try container.encode(expirationLedgerSeq)
+    }
 }
 
 public struct LedgerEntryXDR: XDRCodable {

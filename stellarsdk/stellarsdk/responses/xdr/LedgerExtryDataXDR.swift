@@ -18,6 +18,7 @@ public enum LedgerEntryDataXDR: XDRCodable {
     case contractData (ContractDataEntryXDR)
     case contractCode (ContractCodeEntryXDR)
     case configSetting (ConfigSettingEntryXDR)
+    case expiration (ExpirationEntryXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -43,6 +44,8 @@ public enum LedgerEntryDataXDR: XDRCodable {
                 self = .contractCode(try container.decode(ContractCodeEntryXDR.self))
             case LedgerEntryType.configSetting.rawValue:
                 self = .configSetting(try container.decode(ConfigSettingEntryXDR.self))
+            case LedgerEntryType.expiration.rawValue:
+                self = .expiration(try container.decode(ExpirationEntryXDR.self))
             default:
                 self = .account(try container.decode(AccountEntryXDR.self))
         }
@@ -60,6 +63,7 @@ public enum LedgerEntryDataXDR: XDRCodable {
             case .contractData: return LedgerEntryType.contractData.rawValue
             case .contractCode: return LedgerEntryType.contractCode.rawValue
             case .configSetting: return LedgerEntryType.configSetting.rawValue
+            case .expiration: return LedgerEntryType.expiration.rawValue
         }
     }
     
@@ -87,6 +91,8 @@ public enum LedgerEntryDataXDR: XDRCodable {
             try container.encode(contractCode)
         case .configSetting (let configSetting):
             try container.encode(configSetting)
+        case .expiration(let value):
+            try container.encode(value)
         }
     }
     
@@ -179,25 +185,35 @@ public enum LedgerEntryDataXDR: XDRCodable {
             return nil
         }
     }
+    
+    public var expiration:ExpirationEntryXDR? {
+        switch self {
+        case .expiration(let val):
+            return val
+        default:
+            return nil
+        }
+    }
 }
 
 public struct ContractDataEntryXDR: XDRCodable {
+    public let ext: ExtensionPoint
     public let contract: SCAddressXDR
     public let key: SCValXDR
     public let durability: ContractDataDurability
-    public let body: ContractDataEntryBodyXDR
-    public let expirationLedgerSeq: UInt32
+    public let val: SCValXDR
     
-    public init(contract: SCAddressXDR, key:SCValXDR, durability:ContractDataDurability, body:ContractDataEntryBodyXDR, expirationLedgerSeq:UInt32) {
+    public init(ext: ExtensionPoint,contract: SCAddressXDR, key:SCValXDR, durability:ContractDataDurability, val:SCValXDR) {
+        self.ext = ext
         self.contract = contract
         self.key = key
         self.durability = durability
-        self.body = body
-        self.expirationLedgerSeq = expirationLedgerSeq
+        self.val = val
     }
 
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
+        ext = try container.decode(ExtensionPoint.self)
         contract = try container.decode(SCAddressXDR.self)
         key = try container.decode(SCValXDR.self)
         let durabilityVal = try container.decode(Int32.self)
@@ -208,158 +224,35 @@ public struct ContractDataEntryXDR: XDRCodable {
                 durability = ContractDataDurability.persistent
         }
         
-        body = try container.decode(ContractDataEntryBodyXDR.self)
-        expirationLedgerSeq = try container.decode(UInt32.self)
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        try container.encode(contract)
-        try container.encode(key)
-        try container.encode(durability.rawValue)
-        try container.encode(body)
-        try container.encode(expirationLedgerSeq)
-    }
-}
-
-public struct ContractDataEntryBodyDataXDR: XDRCodable {
-    public let flags: UInt32
-    public let val: SCValXDR
-    
-    public init(flags: UInt32, val:SCValXDR) {
-        self.flags = flags
-        self.val = val
-    }
-
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        flags = try container.decode(UInt32.self)
         val = try container.decode(SCValXDR.self)
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(flags)
+        try container.encode(ext)
+        try container.encode(contract)
+        try container.encode(key)
+        try container.encode(durability.rawValue)
         try container.encode(val)
     }
 }
 
-public enum ContractDataEntryBodyXDR: XDRCodable {
-    case dataEntry(ContractDataEntryBodyDataXDR)
-    case expirationExtension
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        
-        let type = try container.decode(Int32.self)
-        
-        switch type {
-            case ContractEntryBodyType.dataEntry.rawValue:
-                self = .dataEntry(try container.decode(ContractDataEntryBodyDataXDR.self))
-            default:
-                self = .expirationExtension
-        }
-        
-    }
-    
-    public func type() -> Int32 {
-        switch self {
-            case .dataEntry: return ContractEntryBodyType.dataEntry.rawValue
-            case .expirationExtension: return ContractEntryBodyType.expirationExtension.rawValue
-        }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        
-        try container.encode(type())
-        
-        switch self {
-        case .dataEntry (let val):
-            try container.encode(val)
-        case .expirationExtension:
-            break
-        }
-    }
-    
-    public var dataEntry:ContractDataEntryBodyDataXDR? {
-        switch self {
-        case .dataEntry(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-}
-
-public enum ContractCodeEntryBodyXDR: XDRCodable {
-    case dataEntry(Data)
-    case expirationExtension
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        
-        let type = try container.decode(Int32.self)
-        
-        switch type {
-            case ContractEntryBodyType.dataEntry.rawValue:
-                self = .dataEntry(try container.decode(Data.self))
-            default:
-                self = .expirationExtension
-        }
-        
-    }
-    
-    public func type() -> Int32 {
-        switch self {
-            case .dataEntry: return ContractEntryBodyType.dataEntry.rawValue
-            case .expirationExtension: return ContractEntryBodyType.expirationExtension.rawValue
-        }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        
-        try container.encode(type())
-        
-        switch self {
-        case .dataEntry (let val):
-            try container.encode(val)
-        case .expirationExtension:
-            break
-        }
-    }
-    
-    public var dataEntry:Data? {
-        switch self {
-        case .dataEntry(let val):
-            return val
-        default:
-            return nil
-        }
-    }
-}
-
-
 public struct ContractCodeEntryXDR: XDRCodable {
     public var ext: ExtensionPoint
     public var hash: WrappedData32
-    public var body: ContractCodeEntryBodyXDR
-    public let expirationLedgerSeq: UInt32
+    public var code: Data
     
-    public init(ext: ExtensionPoint, hash: WrappedData32, body:ContractCodeEntryBodyXDR, expirationLedgerSeq:UInt32) {
+    public init(ext: ExtensionPoint, hash: WrappedData32, code:Data) {
         self.ext = ext
         self.hash = hash
-        self.body = body
-        self.expirationLedgerSeq = expirationLedgerSeq
+        self.code = code
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         ext = try container.decode(ExtensionPoint.self)
         hash = try container.decode(WrappedData32.self)
-        body = try container.decode(ContractCodeEntryBodyXDR.self)
-        expirationLedgerSeq = try container.decode(UInt32.self)
+        code = try container.decode(Data.self)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -367,35 +260,34 @@ public struct ContractCodeEntryXDR: XDRCodable {
         
         try container.encode(ext)
         try container.encode(hash)
-        try container.encode(body)
-        try container.encode(expirationLedgerSeq)
+        try container.encode(code)
     }
 }
 
 public struct ConfigSettingContractBandwidthV0XDR: XDRCodable {
     
-    public var ledgerMaxPropagateSizeBytes: UInt32
+    public var ledgerMaxTxsSizeBytes: UInt32
     public var txMaxSizeBytes: UInt32
-    public var feePropagateData1KB: Int64
+    public var feeTxSize1KB: Int64
 
-    public init(ledgerMaxPropagateSizeBytes: UInt32, txMaxSizeBytes: UInt32, feePropagateData1KB: Int64) {
-        self.ledgerMaxPropagateSizeBytes = ledgerMaxPropagateSizeBytes
+    public init(ledgerMaxTxsSizeBytes: UInt32, txMaxSizeBytes: UInt32, feeTxSize1KB: Int64) {
+        self.ledgerMaxTxsSizeBytes = ledgerMaxTxsSizeBytes
         self.txMaxSizeBytes = txMaxSizeBytes
-        self.feePropagateData1KB = feePropagateData1KB
+        self.feeTxSize1KB = feeTxSize1KB
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        ledgerMaxPropagateSizeBytes = try container.decode(UInt32.self)
+        ledgerMaxTxsSizeBytes = try container.decode(UInt32.self)
         txMaxSizeBytes = try container.decode(UInt32.self)
-        feePropagateData1KB = try container.decode(Int64.self)
+        feeTxSize1KB = try container.decode(Int64.self)
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(ledgerMaxPropagateSizeBytes)
+        try container.encode(ledgerMaxTxsSizeBytes)
         try container.encode(txMaxSizeBytes)
-        try container.encode(feePropagateData1KB)
+        try container.encode(feeTxSize1KB)
     }
 }
 
@@ -461,13 +353,12 @@ public struct ConfigSettingContractLedgerCostV0XDR: XDRCodable {
     public var feeReadLedgerEntry: Int64
     public var feeWriteLedgerEntry: Int64
     public var feeRead1KB: Int64
-    public var feeWrite1KB: Int64
-    public var bucketListSizeBytes: Int64
-    public var bucketListFeeRateLow: Int64
-    public var bucketListFeeRateHigh: Int64
-    public var bucketListGrowthFactor: UInt32
+    public var bucketListTargetSizeBytes: Int64
+    public var writeFee1KBBucketListLow: Int64
+    public var writeFee1KBBucketListHigh: Int64
+    public var bucketListWriteFeeGrowthFactor: UInt32
 
-    public init(ledgerMaxReadLedgerEntries: UInt32, ledgerMaxReadBytes: UInt32, ledgerMaxWriteLedgerEntries: UInt32, ledgerMaxWriteBytes: UInt32, txMaxReadLedgerEntries: UInt32, txMaxReadBytes: UInt32, txMaxWriteLedgerEntries: UInt32, txMaxWriteBytes: UInt32, feeReadLedgerEntry: Int64, feeWriteLedgerEntry: Int64, feeRead1KB: Int64, feeWrite1KB: Int64, bucketListSizeBytes: Int64, bucketListFeeRateLow: Int64, bucketListFeeRateHigh: Int64, bucketListGrowthFactor: UInt32) {
+    public init(ledgerMaxReadLedgerEntries: UInt32, ledgerMaxReadBytes: UInt32, ledgerMaxWriteLedgerEntries: UInt32, ledgerMaxWriteBytes: UInt32, txMaxReadLedgerEntries: UInt32, txMaxReadBytes: UInt32, txMaxWriteLedgerEntries: UInt32, txMaxWriteBytes: UInt32, feeReadLedgerEntry: Int64, feeWriteLedgerEntry: Int64, feeRead1KB: Int64, bucketListTargetSizeBytes: Int64, writeFee1KBBucketListLow: Int64, writeFee1KBBucketListHigh: Int64, bucketListWriteFeeGrowthFactor: UInt32) {
         self.ledgerMaxReadLedgerEntries = ledgerMaxReadLedgerEntries
         self.ledgerMaxReadBytes = ledgerMaxReadBytes
         self.ledgerMaxWriteLedgerEntries = ledgerMaxWriteLedgerEntries
@@ -479,11 +370,10 @@ public struct ConfigSettingContractLedgerCostV0XDR: XDRCodable {
         self.feeReadLedgerEntry = feeReadLedgerEntry
         self.feeWriteLedgerEntry = feeWriteLedgerEntry
         self.feeRead1KB = feeRead1KB
-        self.feeWrite1KB = feeWrite1KB
-        self.bucketListSizeBytes = bucketListSizeBytes
-        self.bucketListFeeRateLow = bucketListFeeRateLow
-        self.bucketListFeeRateHigh = bucketListFeeRateHigh
-        self.bucketListGrowthFactor = bucketListGrowthFactor
+        self.bucketListTargetSizeBytes = bucketListTargetSizeBytes
+        self.writeFee1KBBucketListLow = writeFee1KBBucketListLow
+        self.writeFee1KBBucketListHigh = writeFee1KBBucketListHigh
+        self.bucketListWriteFeeGrowthFactor = bucketListWriteFeeGrowthFactor
     }
     
     public init(from decoder: Decoder) throws {
@@ -499,11 +389,10 @@ public struct ConfigSettingContractLedgerCostV0XDR: XDRCodable {
         feeReadLedgerEntry = try container.decode(Int64.self)
         feeWriteLedgerEntry = try container.decode(Int64.self)
         feeRead1KB = try container.decode(Int64.self)
-        feeWrite1KB = try container.decode(Int64.self)
-        bucketListSizeBytes = try container.decode(Int64.self)
-        bucketListFeeRateLow = try container.decode(Int64.self)
-        bucketListFeeRateHigh = try container.decode(Int64.self)
-        bucketListGrowthFactor = try container.decode(UInt32.self)
+        bucketListTargetSizeBytes = try container.decode(Int64.self)
+        writeFee1KBBucketListLow = try container.decode(Int64.self)
+        writeFee1KBBucketListHigh = try container.decode(Int64.self)
+        bucketListWriteFeeGrowthFactor = try container.decode(UInt32.self)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -519,33 +408,32 @@ public struct ConfigSettingContractLedgerCostV0XDR: XDRCodable {
         try container.encode(feeReadLedgerEntry)
         try container.encode(feeWriteLedgerEntry)
         try container.encode(feeRead1KB)
-        try container.encode(feeWrite1KB)
-        try container.encode(bucketListSizeBytes)
-        try container.encode(bucketListFeeRateLow)
-        try container.encode(bucketListFeeRateHigh)
-        try container.encode(bucketListGrowthFactor)
+        try container.encode(bucketListTargetSizeBytes)
+        try container.encode(writeFee1KBBucketListLow)
+        try container.encode(writeFee1KBBucketListHigh)
+        try container.encode(bucketListWriteFeeGrowthFactor)
     }
 }
 
-public struct ConfigSettingContractMetaDataV0XDR: XDRCodable {
-    public var txMaxExtendedMetaDataSizeBytes: UInt32
-    public var feeExtendedMetaData1KB: Int64
+public struct ConfigSettingContractEventsV0XDR: XDRCodable {
+    public var txMaxContractEventsSizeBytes: UInt32
+    public var feeContractEvents1KB: Int64
 
-    public init(txMaxExtendedMetaDataSizeBytes: UInt32, feeExtendedMetaData1KB: Int64) {
-        self.txMaxExtendedMetaDataSizeBytes = txMaxExtendedMetaDataSizeBytes
-        self.feeExtendedMetaData1KB = feeExtendedMetaData1KB
+    public init(txMaxContractEventsSizeBytes: UInt32, feeContractEvents1KB: Int64) {
+        self.txMaxContractEventsSizeBytes = txMaxContractEventsSizeBytes
+        self.feeContractEvents1KB = feeContractEvents1KB
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        txMaxExtendedMetaDataSizeBytes = try container.decode(UInt32.self)
-        feeExtendedMetaData1KB = try container.decode(Int64.self)
+        txMaxContractEventsSizeBytes = try container.decode(UInt32.self)
+        feeContractEvents1KB = try container.decode(Int64.self)
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(txMaxExtendedMetaDataSizeBytes)
-        try container.encode(feeExtendedMetaData1KB)
+        try container.encode(txMaxContractEventsSizeBytes)
+        try container.encode(feeContractEvents1KB)
     }
 }
 
@@ -592,12 +480,40 @@ public struct ContractCostParamsXDR: XDRCodable {
     }
 }
 
+public struct EvictionIteratorXDR: XDRCodable {
+
+    public var bucketListLevel: UInt32
+    public var isCurrBucket: Bool
+    public var bucketFileOffset: UInt64
+
+    public init(bucketListLevel: UInt32, isCurrBucket: Bool, bucketFileOffset: UInt64) {
+        self.bucketListLevel = bucketListLevel
+        self.isCurrBucket = isCurrBucket
+        self.bucketFileOffset = bucketFileOffset
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        bucketListLevel = try container.decode(UInt32.self)
+        isCurrBucket = try container.decode(Bool.self)
+        bucketFileOffset = try container.decode(UInt64.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(bucketListLevel)
+        try container.encode(isCurrBucket)
+        try container.encode(bucketFileOffset)
+    }
+}
+
+
 public enum ConfigSettingEntryXDR: XDRCodable {
     case contractMaxSizeBytes(Int32)
     case contractCompute(ConfigSettingContractComputeV0XDR)
     case contractLedgerCost(ConfigSettingContractLedgerCostV0XDR)
     case contractHistoricalData(ConfigSettingContractHistoricalDataV0XDR)
-    case contractMetaData(ConfigSettingContractMetaDataV0XDR)
+    case contractEvents(ConfigSettingContractEventsV0XDR)
     case contractBandwidth(ConfigSettingContractBandwidthV0XDR)
     case contractCostParamsCpuInsns(ContractCostParamsXDR)
     case contractCostParamsMemBytes(ContractCostParamsXDR)
@@ -606,6 +522,7 @@ public enum ConfigSettingEntryXDR: XDRCodable {
     case stateExpirationSettings(StateExpirationSettingsXDR)
     case contractExecutionLanes(ConfigSettingContractExecutionLanesV0XDR)
     case bucketListSizeWindow([UInt64])
+    case evictionIterator(EvictionIteratorXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -621,8 +538,8 @@ public enum ConfigSettingEntryXDR: XDRCodable {
                 self = .contractLedgerCost(try container.decode(ConfigSettingContractLedgerCostV0XDR.self))
             case ConfigSettingID.contractHistoricalDataV0.rawValue:
                 self = .contractHistoricalData(try container.decode(ConfigSettingContractHistoricalDataV0XDR.self))
-            case ConfigSettingID.contractMetaDataV0.rawValue:
-                self = .contractMetaData(try container.decode(ConfigSettingContractMetaDataV0XDR.self))
+            case ConfigSettingID.contractEventsV0.rawValue:
+                self = .contractEvents(try container.decode(ConfigSettingContractEventsV0XDR.self))
             case ConfigSettingID.contractBandwidthV0.rawValue:
                 self = .contractBandwidth(try container.decode(ConfigSettingContractBandwidthV0XDR.self))
             case ConfigSettingID.contractCostParamsCpuInstructions.rawValue:
@@ -639,6 +556,8 @@ public enum ConfigSettingEntryXDR: XDRCodable {
                 self = .contractExecutionLanes(try container.decode(ConfigSettingContractExecutionLanesV0XDR.self))
             case ConfigSettingID.bucketListSizeWindow.rawValue:
                 self = .bucketListSizeWindow(try decodeArray(type: UInt64.self, dec: decoder))
+            case ConfigSettingID.evictionIterator.rawValue:
+                self = .evictionIterator(try container.decode(EvictionIteratorXDR.self))
             default:
                 self = .bucketListSizeWindow(try decodeArray(type: UInt64.self, dec: decoder))
         }
@@ -651,7 +570,7 @@ public enum ConfigSettingEntryXDR: XDRCodable {
             case .contractCompute: return ConfigSettingID.contractComputeV0.rawValue
             case .contractLedgerCost: return ConfigSettingID.contractLedgerCostV0.rawValue
             case .contractHistoricalData: return ConfigSettingID.contractHistoricalDataV0.rawValue
-            case .contractMetaData: return ConfigSettingID.contractMetaDataV0.rawValue
+            case .contractEvents: return ConfigSettingID.contractEventsV0.rawValue
             case .contractBandwidth: return ConfigSettingID.contractBandwidthV0.rawValue
             case .contractCostParamsCpuInsns: return ConfigSettingID.contractCostParamsCpuInstructions.rawValue
             case .contractCostParamsMemBytes: return ConfigSettingID.contractCostParamsMemoryBytes.rawValue
@@ -660,6 +579,7 @@ public enum ConfigSettingEntryXDR: XDRCodable {
             case .stateExpirationSettings: return ConfigSettingID.stateExpiration.rawValue
             case .contractExecutionLanes: return ConfigSettingID.contractExecutionLanes.rawValue
             case .bucketListSizeWindow: return ConfigSettingID.bucketListSizeWindow.rawValue
+            case .evictionIterator: return ConfigSettingID.evictionIterator.rawValue
         }
     }
     
@@ -677,7 +597,7 @@ public enum ConfigSettingEntryXDR: XDRCodable {
             try container.encode(val)
         case .contractHistoricalData (let val):
             try container.encode(val)
-        case .contractMetaData (let val):
+        case .contractEvents (let val):
             try container.encode(val)
         case .contractBandwidth (let val):
             try container.encode(val)
@@ -695,6 +615,8 @@ public enum ConfigSettingEntryXDR: XDRCodable {
             try container.encode(val)
         case .bucketListSizeWindow (let val):
             try container.encode(val)
+        case .evictionIterator(let val):
+            try container.encode(val)
         }
     }
 }
@@ -704,23 +626,23 @@ public struct StateExpirationSettingsXDR: XDRCodable {
     public var maxEntryExpiration: UInt32
     public var minTempEntryExpiration: UInt32
     public var minPersistentEntryExpiration: UInt32
-    public var autoBumpLedgers: UInt32
     public var persistentRentRateDenominator: Int64
     public var tempRentRateDenominator: Int64
     public var maxEntriesToExpire: UInt32
     public var bucketListSizeWindowSampleSize: UInt32
     public var evictionScanSize: UInt64
+    public var startingEvictionScanLevel: UInt32
 
-    public init(maxEntryExpiration: UInt32, minTempEntryExpiration: UInt32, minPersistentEntryExpiration: UInt32, autoBumpLedgers: UInt32, persistentRentRateDenominator: Int64, tempRentRateDenominator: Int64, maxEntriesToExpire: UInt32, bucketListSizeWindowSampleSize: UInt32, evictionScanSize: UInt64) {
+    public init(maxEntryExpiration: UInt32, minTempEntryExpiration: UInt32, minPersistentEntryExpiration: UInt32, persistentRentRateDenominator: Int64, tempRentRateDenominator: Int64, maxEntriesToExpire: UInt32, bucketListSizeWindowSampleSize: UInt32, evictionScanSize: UInt64, startingEvictionScanLevel: UInt32) {
         self.maxEntryExpiration = maxEntryExpiration
         self.minTempEntryExpiration = minTempEntryExpiration
         self.minPersistentEntryExpiration = minPersistentEntryExpiration
-        self.autoBumpLedgers = autoBumpLedgers
         self.persistentRentRateDenominator = persistentRentRateDenominator
         self.tempRentRateDenominator = tempRentRateDenominator
         self.maxEntriesToExpire = maxEntriesToExpire
         self.bucketListSizeWindowSampleSize = bucketListSizeWindowSampleSize
         self.evictionScanSize = evictionScanSize
+        self.startingEvictionScanLevel = startingEvictionScanLevel
     }
 
     public init(from decoder: Decoder) throws {
@@ -728,15 +650,12 @@ public struct StateExpirationSettingsXDR: XDRCodable {
         maxEntryExpiration = try container.decode(UInt32.self)
         minTempEntryExpiration = try container.decode(UInt32.self)
         minPersistentEntryExpiration = try container.decode(UInt32.self)
-        autoBumpLedgers = try container.decode(UInt32.self)
-        
         persistentRentRateDenominator = try container.decode(Int64.self)
         tempRentRateDenominator = try container.decode(Int64.self)
-        
         maxEntriesToExpire = try container.decode(UInt32.self)
         bucketListSizeWindowSampleSize = try container.decode(UInt32.self)
-        
         evictionScanSize = try container.decode(UInt64.self)
+        startingEvictionScanLevel = try container.decode(UInt32.self)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -744,12 +663,12 @@ public struct StateExpirationSettingsXDR: XDRCodable {
         try container.encode(maxEntryExpiration)
         try container.encode(minTempEntryExpiration)
         try container.encode(minPersistentEntryExpiration)
-        try container.encode(autoBumpLedgers)
         try container.encode(persistentRentRateDenominator)
         try container.encode(tempRentRateDenominator)
         try container.encode(maxEntriesToExpire)
         try container.encode(bucketListSizeWindowSampleSize)
         try container.encode(evictionScanSize)
+        try container.encode(startingEvictionScanLevel)
     }
 }
 

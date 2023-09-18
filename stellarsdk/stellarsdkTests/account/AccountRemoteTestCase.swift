@@ -72,7 +72,7 @@ class AccountRemoteTestCase: XCTestCase {
                 XCTFail()
             }
         }
-        wait(for: [expectation], timeout: 25.0)
+        wait(for: [expectation], timeout: 35.0)
     }
     
     override func tearDown() {

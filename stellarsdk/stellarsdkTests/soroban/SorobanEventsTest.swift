@@ -317,13 +317,14 @@ class SorobanEventsTest: XCTestCase {
             // seams that position of the topic in the filter must match event topics ...
             let topicFilter = TopicFilter(segmentMatchers:["*", SCValXDR.symbol("increment").xdrEncoded!])
             //let topicFilter = TopicFilter(segmentMatchers:[SCValXDR.symbol("COUNTER").xdrEncoded!, "*"])
-            let eventFilter = EventFilter(type:"contract", contractIds: [contractId!], topics: [topicFilter])
+            let eventFilter = EventFilter(type:"contract", contractIds: [try! contractId!.encodeContractIdHex()], topics: [topicFilter])
             
             self.sorobanServer.getEvents(startLedger: ledger, eventFilters: [eventFilter]) { (response) -> (Void) in
                 switch response {
                 case .success(let eventsResponse):
                     XCTAssert(eventsResponse.events.count > 0)
-                    XCTAssert(self.contractId! == eventsResponse.events[0].contractId)
+                    let cId = try! eventsResponse.events[0].contractId.decodeContractIdHex()
+                    XCTAssert(self.contractId! == cId)
                     XCTAssert("AAAADwAAAAdDT1VOVEVSAA==" == eventsResponse.events[0].topic[0])
                     XCTAssert("AAAAAwAAAAE=" == eventsResponse.events[0].value.xdr)
                     expectation.fulfill()

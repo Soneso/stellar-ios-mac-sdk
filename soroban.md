@@ -6,7 +6,7 @@ The following shows you how to use the iOS SDK to start **experimenting** with S
 
 **Please note, that both, Soroban itself and the iOS SDK support for Soroban are still under development, so breaking changes may occur.**
 
-**Supported version: Soroban Preview 10.**
+**Supported version: Soroban Preview 11.**
 
 ### Quick Start
 
@@ -461,7 +461,7 @@ You can use the iOS SDK to request events like this:
 
 ```swift
 let topicFilter = TopicFilter(segmentMatchers:["*", SCValXDR.symbol("increment").xdrEncoded!])
-let eventFilter = EventFilter(type:"contract", contractIds: [contractId!], topics: [topicFilter])
+let eventFilter = EventFilter(type:"contract", contractIds: [contractId], topics: [topicFilter])
             
 sorobanServer.getEvents(startLedger: ledger, eventFilters: [eventFilter]) { (response) -> (Void) in
     switch response {
@@ -472,6 +472,9 @@ sorobanServer.getEvents(startLedger: ledger, eventFilters: [eventFilter]) { (res
     }
 }
 ```
+
+contractId must currently start with "C...". If you only have the hex value you can encode it with: `contractId.encodeContractIdHex()`
+
 Find the complete code in the [Soroban Events Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanEventsTest.swift).
 
 

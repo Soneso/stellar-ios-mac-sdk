@@ -229,8 +229,6 @@ class SorobanTest: XCTestCase {
             self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
-                    XCTAssertNotNil(simulateResponse.results)
-                    XCTAssert(simulateResponse.results!.count > 0)
                     XCTAssertNotNil(simulateResponse.transactionData)
                     
                     let restoreFootprintOperation = RestoreFootprintOperation()
@@ -251,8 +249,6 @@ class SorobanTest: XCTestCase {
                     self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
                         switch response {
                         case .success(let simulateResponse):
-                            XCTAssertNotNil(simulateResponse.results)
-                            XCTAssert(simulateResponse.results!.count > 0)
                             XCTAssertNotNil(simulateResponse.transactionData)
                             
                             var transactionData = simulateResponse.transactionData!
@@ -419,7 +415,7 @@ class SorobanTest: XCTestCase {
                                                operations: [bumpOperation], memo: Memo.none)
             
             
-            let ledgerKeyContractCode = LedgerKeyContractCodeXDR(wasmId:wasmId, bodyType: ContractEntryBodyType.dataEntry)
+            let ledgerKeyContractCode = LedgerKeyContractCodeXDR(wasmId:wasmId)
             let codeKey = LedgerKeyXDR.contractCode(ledgerKeyContractCode)
             let footprint = LedgerFootprintXDR(readOnly: [codeKey], readWrite: [])
             let ressources = SorobanResourcesXDR(footprint: footprint)
@@ -431,8 +427,6 @@ class SorobanTest: XCTestCase {
             self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
-                    XCTAssertNotNil(simulateResponse.results)
-                    XCTAssert(simulateResponse.results!.count > 0)
                     XCTAssertNotNil(simulateResponse.transactionData)
                     
                     transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
@@ -642,9 +636,7 @@ class SorobanTest: XCTestCase {
             self.sorobanServer.getContractCodeForWasmId(wasmId: self.wasmId!) { (response) -> (Void) in
                 switch response {
                 case .success(let response):
-                    XCTAssertNotNil(response.body.dataEntry)
-                    let dataEntry = response.body.dataEntry!
-                    XCTAssertEqual(self.wasmContractCode, dataEntry)
+                    XCTAssertEqual(self.wasmContractCode, response.code)
                     expectation.fulfill()
                 case .failure(let error):
                     self.printError(error: error)
@@ -662,9 +654,7 @@ class SorobanTest: XCTestCase {
             try! self.sorobanServer.getContractCodeForContractId(contractId: self.contractId!) { (response) -> (Void) in
                 switch response {
                 case .success(let response):
-                    XCTAssertNotNil(response.body.dataEntry)
-                    let dataEntry = response.body.dataEntry!
-                    XCTAssertEqual(self.wasmContractCode, dataEntry)
+                    XCTAssertEqual(self.wasmContractCode, response.code)
                     expectation.fulfill()
                 case .failure(let error):
                     self.printError(error: error)

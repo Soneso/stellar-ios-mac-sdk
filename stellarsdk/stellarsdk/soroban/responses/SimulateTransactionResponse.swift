@@ -32,6 +32,12 @@ public class SimulateTransactionResponse: NSObject, Decodable {
     ///  (optional) only present if the transaction failed. This field will include more details from stellar-core about why the invoke host function call failed.
     public var error:String?
     
+    /// It can only present on successful simulation (i.e. no error) of InvokeHostFunction operations. If present, it indicates
+    /// the simulation detected expired ledger entries which requires restoring with the submission of a RestoreFootprint
+    /// operation before submitting the InvokeHostFunction operation. The restorePreamble.minResourceFee and restorePreamble.transactionData fields should
+    /// be used to construct the transaction containing the RestoreFootprint
+    public var restorePreamble:RestorePreamble?
+    
     private enum CodingKeys: String, CodingKey {
         case results
         case cost
@@ -40,6 +46,7 @@ public class SimulateTransactionResponse: NSObject, Decodable {
         case minResourceFee
         case events
         case error
+        case restorePreamble
     }
 
     public required init(from decoder: Decoder) throws {
@@ -57,6 +64,7 @@ public class SimulateTransactionResponse: NSObject, Decodable {
         if error == nil {
             results = try values.decodeIfPresent([SimulateTransactionResult].self, forKey: .results)
         }
+        restorePreamble = try values.decodeIfPresent(RestorePreamble.self, forKey: .restorePreamble)
     }
     
     public var footprint:Footprint? {
@@ -83,3 +91,30 @@ public class SimulateTransactionResponse: NSObject, Decodable {
         return nil;
     }
 }
+
+/// It can only present on successful simulation (i.e. no error) of InvokeHostFunction operations. If present, it indicates
+/// the simulation detected expired ledger entries which requires restoring with the submission of a RestoreFootprint
+/// operation before submitting the InvokeHostFunction operation. The restorePreamble.minResourceFee and restorePreamble.transactionData fields should
+/// be used to construct the transaction containing the RestoreFootprint
+public class RestorePreamble: NSObject, Decodable {
+    
+    /// The recommended Soroban Transaction Data to use when submitting the RestoreFootprint operation.
+    public var transactionData:SorobanTransactionDataXDR?
+    
+    ///  Recommended minimum resource fee to add when submitting the RestoreFootprint operation. This fee is to be added on top of the Stellar network fee.
+    public var minResourceFee:UInt32?
+
+    private enum CodingKeys: String, CodingKey {
+        case transactionData
+        case minResourceFee
+    }
+    
+    public required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        let transactionDataXdrString = try values.decode(String.self, forKey: .transactionData)
+        transactionData = try SorobanTransactionDataXDR(fromBase64: transactionDataXdrString)
+        let resStr = try values.decode(String.self, forKey: .minResourceFee)
+        minResourceFee = UInt32(resStr)
+    }
+}
+

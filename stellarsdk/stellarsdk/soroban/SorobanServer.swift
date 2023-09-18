@@ -246,7 +246,7 @@ public class SorobanServer {
     
     /// loads the contract code (wasm binary) for the given wasmId
     public func getContractCodeForWasmId(wasmId: String, completion:@escaping GetContractCodeResponseClosure) {
-        let contractCodeKey = LedgerKeyContractCodeXDR(wasmId: wasmId, bodyType: ContractEntryBodyType.dataEntry)
+        let contractCodeKey = LedgerKeyContractCodeXDR(wasmId: wasmId)
         let ledgerKey = LedgerKeyXDR.contractCode(contractCodeKey)
         if let ledgerKeyBase64 = ledgerKey.xdrEncoded {
             self.getLedgerEntry(base64EncodedKey:ledgerKeyBase64) { (response) -> (Void) in
@@ -272,15 +272,14 @@ public class SorobanServer {
     public func getContractCodeForContractId(contractId: String, completion:@escaping GetContractCodeResponseClosure) throws {
         let contractDataKey = LedgerKeyContractDataXDR(contract: try SCAddressXDR.init(contractId: contractId),
                                                        key: SCValXDR.ledgerKeyContractInstance,
-                                                       durability: ContractDataDurability.persistent,
-                                                       bodyType: ContractEntryBodyType.dataEntry)
+                                                       durability: ContractDataDurability.persistent)
         let ledgerKey = LedgerKeyXDR.contractData(contractDataKey)
         if let ledgerKeyBase64 = ledgerKey.xdrEncoded {
             self.getLedgerEntry(base64EncodedKey:ledgerKeyBase64) { (response) -> (Void) in
                 switch response {
                 case .success(let response):
                     let data = try? LedgerEntryDataXDR(fromBase64: response.ledgerEntryData)
-                    if let contractData = data?.contractData, let wasmId = contractData.body.dataEntry?.val.contractInstance?.executable.wasm?.wrapped.hexEncodedString() {
+                    if let contractData = data?.contractData, let wasmId = contractData.val.contractInstance?.executable.wasm?.wrapped.hexEncodedString() {
                         self.getContractCodeForWasmId(wasmId: wasmId) { (response) -> (Void) in
                             switch response {
                             case .success(let response):

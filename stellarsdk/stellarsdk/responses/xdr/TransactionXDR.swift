@@ -201,6 +201,33 @@ public enum ContractIDPreimageXDR: XDRCodable {
     }
 }
 
+public struct InvokeContractArgsXDR: XDRCodable {
+    public let contractAddress: SCAddressXDR
+    public let functionName: String
+    public let args: [SCValXDR]
+    
+    public init(contractAddress:SCAddressXDR, functionName:String, args: [SCValXDR]) {
+        self.contractAddress = contractAddress
+        self.functionName = functionName
+        self.args = args
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        contractAddress = try container.decode(SCAddressXDR.self)
+        functionName = try container.decode(String.self)
+        args = try decodeArray(type: SCValXDR.self, dec: decoder)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(contractAddress)
+        try container.encode(functionName)
+        try container.encode(args)
+    }
+}
+
+
 public struct CreateContractArgsXDR: XDRCodable {
     public let contractIDPreimage: ContractIDPreimageXDR
     public let executable: ContractExecutableXDR
@@ -230,7 +257,7 @@ public enum HostFunctionType: Int32 {
 }
 
 public enum HostFunctionXDR: XDRCodable {
-    case invokeContract([SCValXDR])
+    case invokeContract(InvokeContractArgsXDR)
     case createContract(CreateContractArgsXDR)
     case uploadContractWasm(Data)
 
@@ -241,7 +268,7 @@ public enum HostFunctionXDR: XDRCodable {
         
         switch type {
         case .invokeContract:
-            let invokeContract = try decodeArray(type: SCValXDR.self, dec: decoder)
+            let invokeContract = try container.decode(InvokeContractArgsXDR.self)
             self = .invokeContract(invokeContract)
         case .createContract:
             let createContract = try container.decode(CreateContractArgsXDR.self)
@@ -276,7 +303,7 @@ public enum HostFunctionXDR: XDRCodable {
         }
     }
     
-    public var invokeContract:[SCValXDR]? {
+    public var invokeContract:InvokeContractArgsXDR? {
         switch self {
         case .invokeContract(let val):
             return val
@@ -308,35 +335,8 @@ public enum SorobanAuthorizedFunctionType: Int32 {
     case contractHostFn = 1
 }
 
-public struct SorobanAuthorizedContractFunctionXDR: XDRCodable {
-    public var contractAddress: SCAddressXDR
-    public var functionName: String
-    public var args: [SCValXDR]
-    
-    public init(contractAddress: SCAddressXDR, functionName: String, args: [SCValXDR]) {
-        self.contractAddress = contractAddress
-        self.functionName = functionName
-        self.args = args
-    }
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        contractAddress = try container.decode(SCAddressXDR.self)
-        functionName = try container.decode(String.self)
-        args =  try decodeArray(type: SCValXDR.self, dec: decoder)
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        
-        try container.encode(contractAddress)
-        try container.encode(functionName)
-        try container.encode(args)
-    }
-}
-
 public enum SorobanAuthorizedFunctionXDR: XDRCodable {
-    case contractFn(SorobanAuthorizedContractFunctionXDR)
+    case contractFn(InvokeContractArgsXDR)
     case contractHostFn(CreateContractArgsXDR)
 
     public init(from decoder: Decoder) throws {
@@ -346,7 +346,7 @@ public enum SorobanAuthorizedFunctionXDR: XDRCodable {
         
         switch type {
         case .contractFn:
-            let contractFn = try container.decode(SorobanAuthorizedContractFunctionXDR.self)
+            let contractFn = try container.decode(InvokeContractArgsXDR.self)
             self = .contractFn(contractFn)
         case .contractHostFn:
             let contractHostFn = try container.decode(CreateContractArgsXDR.self)
@@ -374,7 +374,7 @@ public enum SorobanAuthorizedFunctionXDR: XDRCodable {
         }
     }
     
-    public var contractFn:SorobanAuthorizedContractFunctionXDR? {
+    public var contractFn:InvokeContractArgsXDR? {
         switch self {
         case .contractFn(let val):
             return val
@@ -419,13 +419,13 @@ public struct SorobanAddressCredentialsXDR: XDRCodable {
     public var address: SCAddressXDR
     public var nonce: Int64
     public var signatureExpirationLedger: UInt32
-    public var signatureArgs: [SCValXDR]
+    public var signature: SCValXDR
     
-    public init(address: SCAddressXDR, nonce: Int64, signatureExpirationLedger: UInt32, signatureArgs: [SCValXDR]) {
+    public init(address: SCAddressXDR, nonce: Int64, signatureExpirationLedger: UInt32, signature: SCValXDR) {
         self.address = address
         self.nonce = nonce
         self.signatureExpirationLedger = signatureExpirationLedger
-        self.signatureArgs = signatureArgs
+        self.signature = signature
     }
     
     public init(from decoder: Decoder) throws {
@@ -433,7 +433,7 @@ public struct SorobanAddressCredentialsXDR: XDRCodable {
         address = try container.decode(SCAddressXDR.self)
         nonce = try container.decode(Int64.self)
         signatureExpirationLedger = try container.decode(UInt32.self)
-        signatureArgs =  try decodeArray(type: SCValXDR.self, dec: decoder)
+        signature =  try container.decode(SCValXDR.self)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -441,11 +441,16 @@ public struct SorobanAddressCredentialsXDR: XDRCodable {
         try container.encode(address)
         try container.encode(nonce)
         try container.encode(signatureExpirationLedger)
-        try container.encode(signatureArgs)
+        try container.encode(signature)
     }
     
     public mutating func appendSignature(signature: SCValXDR) {
-        signatureArgs.append(signature)
+        var sigs = [SCValXDR]()
+        if let oldSigs = signature.vec {
+            sigs = oldSigs
+        }
+        sigs.append(signature)
+        self.signature = SCValXDR.vec(sigs)
     }
 }
 
@@ -621,14 +626,12 @@ public struct SorobanResourcesXDR: XDRCodable {
     public var instructions: UInt32
     public var readBytes: UInt32
     public var writeBytes: UInt32
-    public var extendedMetaDataSizeBytes: UInt32
     
-    public init(footprint: LedgerFootprintXDR, instructions: UInt32 = 0, readBytes: UInt32 = 0, writeBytes: UInt32 = 0, extendedMetaDataSizeBytes: UInt32 = 0) {
+    public init(footprint: LedgerFootprintXDR, instructions: UInt32 = 0, readBytes: UInt32 = 0, writeBytes: UInt32 = 0) {
         self.footprint = footprint
         self.instructions = instructions
         self.readBytes = readBytes
         self.writeBytes = writeBytes
-        self.extendedMetaDataSizeBytes = extendedMetaDataSizeBytes
     }
     
     public init(from decoder: Decoder) throws {
@@ -638,7 +641,6 @@ public struct SorobanResourcesXDR: XDRCodable {
         instructions = try container.decode(UInt32.self)
         readBytes = try container.decode(UInt32.self)
         writeBytes = try container.decode(UInt32.self)
-        extendedMetaDataSizeBytes = try container.decode(UInt32.self)
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -648,7 +650,6 @@ public struct SorobanResourcesXDR: XDRCodable {
         try container.encode(instructions)
         try container.encode(readBytes)
         try container.encode(writeBytes)
-        try container.encode(extendedMetaDataSizeBytes)
     }
 }
 

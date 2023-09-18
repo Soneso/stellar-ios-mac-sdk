@@ -20,13 +20,10 @@ public class InvokeHostFunctionOperation:Operation {
         super.init(sourceAccountId: sourceAccountId)
     }
     
-    public static func forInvokingContract(contractId:String, functionName:String, functionArguments:[SCValXDR]? = nil, sourceAccountId:String? = nil, auth: [SorobanAuthorizationEntryXDR]? = nil) throws -> InvokeHostFunctionOperation {
-        var args = [SCValXDR.address(try SCAddressXDR(contractId:contractId)),
-                    SCValXDR.symbol(functionName)]
-        if let fArgs = functionArguments {
-            args.append(contentsOf: fArgs)
-        }
-        let hostFunction = HostFunctionXDR.invokeContract(args)
+    public static func forInvokingContract(contractId:String, functionName:String, functionArguments:[SCValXDR] = [], sourceAccountId:String? = nil, auth: [SorobanAuthorizationEntryXDR]? = nil) throws -> InvokeHostFunctionOperation {
+        let invoekArgs = InvokeContractArgsXDR(contractAddress: try SCAddressXDR(contractId:contractId),
+                                               functionName: functionName, args: functionArguments)
+        let hostFunction = HostFunctionXDR.invokeContract(invoekArgs)
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
     }
     

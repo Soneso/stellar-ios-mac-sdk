@@ -15,13 +15,14 @@ public enum BumpFootprintExpirationResultCode: Int32 {
     // codes considered as "failure" for the operation
     case malformed = -1
     case resourceLimitExceeded = -2
+    case insufficientRefundableFee = -3
 }
 
 public enum BumpFootprintExpirationResultXDR: XDRCodable {
-
     case success
     case malformed
     case resourceLimitExceeded
+    case insufficientRefundableFee
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -33,6 +34,8 @@ public enum BumpFootprintExpirationResultXDR: XDRCodable {
             self = .success
         case .malformed:
             self = .malformed
+        case .insufficientRefundableFee:
+            self = .insufficientRefundableFee
         default:
             self = .resourceLimitExceeded
         }
@@ -46,6 +49,8 @@ public enum BumpFootprintExpirationResultXDR: XDRCodable {
         case .malformed:
             break
         case .resourceLimitExceeded:
+            break
+        case .insufficientRefundableFee:
             break
         }
     }

@@ -32,7 +32,6 @@ public enum SCSpecType: Int32 {
     case option = 1000
     case result = 1001
     case vec = 1002
-    case set = 1003
     case map = 1004
     case tuple = 1005
     case bytesN = 1006
@@ -121,24 +120,6 @@ public struct SCSpecTypeMapXDR: XDRCodable {
     }
 }
 
-public struct SCSpecTypeSetXDR: XDRCodable {
-    public let elementType: SCSpecTypeDefXDR
-    
-    public init(elementType:SCSpecTypeDefXDR) {
-        self.elementType = elementType
-    }
-
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        elementType = try container.decode(SCSpecTypeDefXDR.self)
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        try container.encode(elementType)
-    }
-}
-
 public struct SCSpecTypeBytesNXDR: XDRCodable {
     public let n: UInt32
     
@@ -218,7 +199,6 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
     case result(SCSpecTypeResultXDR)
     case vec(SCSpecTypeVecXDR)
     case map(SCSpecTypeMapXDR)
-    case set(SCSpecTypeSetXDR)
     case tuple(SCSpecTypeTupleXDR)
     case bytesN(SCSpecTypeBytesNXDR)
     case udt(SCSpecTypeUDTXDR)
@@ -275,9 +255,6 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
         case .map:
             let map = try container.decode(SCSpecTypeMapXDR.self)
             self = .map(map)
-        case .set:
-            let set = try container.decode(SCSpecTypeSetXDR.self)
-            self = .set(set)
         case .tuple:
             let tuple = try container.decode(SCSpecTypeTupleXDR.self)
             self = .tuple(tuple)
@@ -316,7 +293,6 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
         case .result: return SCSpecType.result.rawValue
         case .vec: return SCSpecType.vec.rawValue
         case .map: return SCSpecType.map.rawValue
-        case .set: return SCSpecType.set.rawValue
         case .tuple: return SCSpecType.tuple.rawValue
         case .bytesN: return SCSpecType.bytesN.rawValue
         case .udt: return SCSpecType.udt.rawValue
@@ -338,9 +314,6 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
             break
         case .map (let map):
             try container.encode(map)
-            break
-        case .set (let set):
-            try container.encode(set)
             break
         case .tuple (let tuple):
             try container.encode(tuple)

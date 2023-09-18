@@ -16,6 +16,8 @@ public enum InvokeHostFunctionResultCode: Int32 {
     case malformed = -1
     case trapped = -2
     case resourceLimitExceeded = -3
+    case entryExpired = -4
+    case insufficientRefundableFee = -5
 }
 
 public enum InvokeHostFunctionResultXDR: XDRCodable {
@@ -23,6 +25,8 @@ public enum InvokeHostFunctionResultXDR: XDRCodable {
     case malformed
     case trapped
     case resourceLimitExceeded
+    case entryExpired
+    case insufficientRefundableFee
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -37,8 +41,12 @@ public enum InvokeHostFunctionResultXDR: XDRCodable {
             self = .malformed
         case .trapped:
             self = .trapped
-        default:
+        case .resourceLimitExceeded:
             self = .resourceLimitExceeded
+        case .entryExpired:
+            self = .entryExpired
+        default:
+            self = .insufficientRefundableFee
         }
     }
     
@@ -52,6 +60,10 @@ public enum InvokeHostFunctionResultXDR: XDRCodable {
         case .trapped:
             break
         case .resourceLimitExceeded:
+            break
+        case .entryExpired:
+            break
+        case .insufficientRefundableFee:
             break
         }
     }

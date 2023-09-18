@@ -65,46 +65,43 @@ public enum ContractCostType: Int32 {
     case hostMemAlloc = 2
     case hostMemCpy = 3
     case hostMemCmp = 4
-    case invokeHostFunction = 5
+    case dispatchHostFunction = 5
     case visitObject = 6
-    case valXdrConv = 7
-    case valSer = 8
-    case valDeser = 9
-    case computeSha256Hash = 10
-    case computeEd25519PubKey = 11
-    case mapEntry = 12
-    case vecEntry = 13
-    case guardFrame = 14
-    case verifyEd25519Sig = 15
-    case vmMemRead = 16
-    case vmMemWrite = 17
-    case vmInstantiation = 18
-    case vmCachedInstantiation = 19
-    case invokeVmFunction = 20
-    case chargeBudget = 21
-    case computeKeccak256Hash = 22
-    case computeEcdsaSecp256k1Key = 23
-    case computeEcdsaSecp256k1Sig = 24
-    case recoverEcdsaSecp256k1Key = 25
-    case int256AddSub = 26
-    case int256Mul = 27
-    case int256Div = 28
-    case int256Pow = 29
-    case int256Shift = 30
+    case valSer = 7
+    case valDeser = 8
+    case computeSha256Hash = 9
+    case computeEd25519PubKey = 10
+    case mapEntry = 11
+    case vecEntry = 12
+    case verifyEd25519Sig = 13
+    case vmMemRead = 14
+    case vmMemWrite = 15
+    case vmInstantiation = 16
+    case vmCachedInstantiation = 17
+    case invokeVmFunction = 18
+    case computeKeccak256Hash = 19
+    case computeEcdsaSecp256k1Key = 20
+    case computeEcdsaSecp256k1Sig = 21
+    case recoverEcdsaSecp256k1Key = 22
+    case int256AddSub = 23
+    case int256Mul = 24
+    case int256Div = 25
+    case int256Pow = 26
+    case int256Shift = 27
 }
 
 public enum SCErrorXDR: XDRCodable {
 
-    case contract(Int32)
-    case wasmVm(Int32)
-    case context(Int32)
-    case storage(Int32)
-    case object(Int32)
-    case crypto(Int32)
-    case events(Int32)
-    case budget(Int32)
-    case value(Int32)
-    case auth(Int32)
+    case contract(UInt32)
+    case wasmVm
+    case context
+    case storage
+    case object
+    case crypto
+    case events
+    case budget
+    case value
+    case auth(Int32) //SCErrorCode
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -113,32 +110,24 @@ public enum SCErrorXDR: XDRCodable {
         
         switch type {
         case .contract:
-            let errCode = try container.decode(Int32.self)
-            self = .contract(errCode)
+            let contractCode = try container.decode(UInt32.self)
+            self = .contract(contractCode)
         case .wasmVm:
-            let errCode = try container.decode(Int32.self)
-            self = .wasmVm(errCode)
+            self = .wasmVm
         case .context:
-            let errCode = try container.decode(Int32.self)
-            self = .context(errCode)
+            self = .context
         case .storage:
-            let errCode = try container.decode(Int32.self)
-            self = .storage(errCode)
+            self = .storage
         case .object:
-            let errCode = try container.decode(Int32.self)
-            self = .object(errCode)
+            self = .object
         case .crypto:
-            let errCode = try container.decode(Int32.self)
-            self = .crypto(errCode)
+            self = .crypto
         case .events:
-            let errCode = try container.decode(Int32.self)
-            self = .events(errCode)
+            self = .events
         case .budget:
-            let errCode = try container.decode(Int32.self)
-            self = .budget(errCode)
+            self = .budget
         case .value:
-            let errCode = try container.decode(Int32.self)
-            self = .value(errCode)
+            self = .value
         case .auth:
             let errCode = try container.decode(Int32.self)
             self = .auth(errCode)
@@ -164,37 +153,28 @@ public enum SCErrorXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         try container.encode(type())
         switch self {
-        case .contract (let errCode):
-            try container.encode(errCode)
+        case .contract (let contractCode):
+            try container.encode(contractCode)
             break
-        case .wasmVm (let errCode):
-            try container.encode(errCode)
+        case .wasmVm:
             break
-        case .context (let errCode):
-            try container.encode(errCode)
+        case .context:
             break
-        case .storage (let errCode):
-            try container.encode(errCode)
+        case .storage:
             break
-        case .object (let errCode):
-            try container.encode(errCode)
+        case .object:
             break
-        case .crypto (let errCode):
-            try container.encode(errCode)
+        case .crypto:
             break
-        case .events (let errCode):
-            try container.encode(errCode)
+        case .events:
             break
-        case .budget (let errCode):
-            try container.encode(errCode)
+        case .budget:
             break
-        case .value (let errCode):
-            try container.encode(errCode)
+        case .value:
             break
         case .auth (let errCode):
             try container.encode(errCode)
             break
-            
         }
     }
 }

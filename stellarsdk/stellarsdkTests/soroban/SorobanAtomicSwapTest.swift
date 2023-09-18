@@ -19,11 +19,11 @@ class SorobanAtomicSwapTest: XCTestCase {
     let sdk = StellarSDK.futureNet()
     let network = Network.futurenet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
-    let aliceKeyPair = try! KeyPair(secretSeed: "SCCNDEUVQRF2AIDLVXXFJKF5U432EV76L6AP5K3JKSBTURTV6YLFOOPH") // GAOSAM3ULHTFEAVYY4JB2EWRMBG3YNJX43Q35DWPIUGUREBN4B2N34MC
-    let bobKeyPair = try! KeyPair(secretSeed: "SAABUQ2DGMJFF3H5U36ENCCFFW57VUBVS67CNCKLZUAJAMGJ7FNGHGUA") // GA42VE3ZCPIYJ5CQ3625SIDVSE7AL2MXUCSLAOVJ2PCMRQPTNNZU3TKP
-    let atomicSwapContractId = "d49ac53edffd688dde101ae6812d10316307522825864802517db51d773e258e"
-    let tokenAId  = "38ea40acd20bb71725982dc02577a91a14e1d12b6396ecf73916a8143056f31f"
-    let tokenBId = "cdfd5e41652a5834ea53491169162c53d1d1532aff014d4c8fedb26dd2640f7f"
+    let aliceKeyPair = try! KeyPair(secretSeed: "SA3R73N3GV4OKIZT26AUUJG3WNG3PPHEZOFZPA63GWXPSHOYTG656F36") // GDLVGIXEGHO36OGJ2WO6KXURWVZUS7G66QPUJWC5XAN6TPE3RD7T52OJ
+    let bobKeyPair = try! KeyPair(secretSeed: "SAUHJYL2B5IYBPHW4N2QDVPCIXRW6TRQUVLK4RW3ZCGVBHFNB7QLASUR") // GAMUB4XXSGDSI7ZUNQIORNVZCVOMV3O6B4ZCDVDN7V4W7DKJ2ESC2FFD
+    let atomicSwapContractId = "17cc3aab487feb8ec4e7fa6c72a0c7efa23535dfec0e07c1dd1c856c92cd861f"
+    let tokenAId  = "beda09012ba87e33d86cb7f0aab2a41a900202913c86c76d2226cb6e799c2c22"
+    let tokenBId = "ce9784639b8256f6bfdc2761936d62dcb8bc1dc7734cac2384f65a445d584cab"
     let swapFunctionName = "swap"
     var invokeTransactionId:String?
     var submitterAccount:AccountResponse?

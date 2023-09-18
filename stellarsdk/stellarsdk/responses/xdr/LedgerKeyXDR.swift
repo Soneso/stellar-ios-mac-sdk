@@ -13,7 +13,7 @@ public enum ConfigSettingID: Int32 {
     case contractComputeV0 = 1
     case contractLedgerCostV0 = 2
     case contractHistoricalDataV0 = 3
-    case contractMetaDataV0 = 4
+    case contractEventsV0 = 4
     case contractBandwidthV0 = 5
     case contractCostParamsCpuInstructions = 6
     case contractCostParamsMemoryBytes = 7
@@ -22,6 +22,7 @@ public enum ConfigSettingID: Int32 {
     case stateExpiration = 10
     case contractExecutionLanes = 11
     case bucketListSizeWindow = 12
+    case evictionIterator = 13
 }
 
 public enum LedgerKeyXDR: XDRCodable {
@@ -34,6 +35,7 @@ public enum LedgerKeyXDR: XDRCodable {
     case contractData(LedgerKeyContractDataXDR)
     case contractCode(LedgerKeyContractCodeXDR)
     case configSetting(Int32)
+    case expiration(LedgerKeyExpirationXDR)
     
     
     public init(from decoder: Decoder) throws {
@@ -69,6 +71,9 @@ public enum LedgerKeyXDR: XDRCodable {
         case LedgerEntryType.configSetting.rawValue:
             let configSettingId = try container.decode(Int32.self)
             self = .configSetting (configSettingId)
+        case LedgerEntryType.expiration.rawValue:
+            let expiration = try container.decode(LedgerKeyExpirationXDR.self)
+            self = .expiration (expiration)
         default:
             let acc = try container.decode(LedgerKeyAccountXDR.self)
             self = .account(acc)
@@ -86,6 +91,7 @@ public enum LedgerKeyXDR: XDRCodable {
         case .contractData: return LedgerEntryType.contractData.rawValue
         case .contractCode: return LedgerEntryType.contractCode.rawValue
         case .configSetting: return LedgerEntryType.configSetting.rawValue
+        case .expiration: return LedgerEntryType.expiration.rawValue
         }
     }
     
@@ -112,6 +118,8 @@ public enum LedgerKeyXDR: XDRCodable {
             try container.encode(value)
         case .configSetting (let configSettingId):
             try container.encode(configSettingId)
+        case .expiration (let value):
+            try container.encode(value)
         }
     }
 }
@@ -134,15 +142,6 @@ public struct LiquidityPoolIDXDR: XDRCodable {
     }
 }
 
-public enum ContractEntryBodyType: Int32 {
-    case dataEntry = 0
-    case expirationExtension = 1
-}
-
-public enum ContractDataFlags: Int32 {
-    case noAutobump = 0x1
-}
-
 public enum ContractDataDurability: Int32 {
     case temporary = 0
     case persistent = 1
@@ -153,13 +152,11 @@ public struct LedgerKeyContractDataXDR: XDRCodable {
     public var contract:SCAddressXDR
     public var key:SCValXDR
     public var durability:ContractDataDurability
-    public var bodyType:ContractEntryBodyType
     
-    public init(contract: SCAddressXDR, key: SCValXDR, durability: ContractDataDurability, bodyType: ContractEntryBodyType) {
+    public init(contract: SCAddressXDR, key: SCValXDR, durability: ContractDataDurability) {
         self.contract = contract
         self.key = key
         self.durability = durability
-        self.bodyType = bodyType
     }
     
     public init(from decoder: Decoder) throws {
@@ -173,13 +170,6 @@ public struct LedgerKeyContractDataXDR: XDRCodable {
             default:
                 durability = ContractDataDurability.persistent
         }
-        let bodyTypeVal = try container.decode(Int32.self)
-        switch bodyTypeVal {
-            case ContractEntryBodyType.dataEntry.rawValue:
-                bodyType = ContractEntryBodyType.dataEntry
-            default:
-                bodyType = ContractEntryBodyType.expirationExtension
-        }
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -187,40 +177,46 @@ public struct LedgerKeyContractDataXDR: XDRCodable {
         try container.encode(contract)
         try container.encode(key)
         try container.encode(durability.rawValue)
-        try container.encode(bodyType.rawValue)
     }
 }
 
 public struct LedgerKeyContractCodeXDR: XDRCodable {
     public var hash:WrappedData32
-    public var bodyType:ContractEntryBodyType
     
-    public init(hash: WrappedData32, bodyType: ContractEntryBodyType) {
+    public init(hash: WrappedData32) {
         self.hash = hash
-        self.bodyType = bodyType
     }
     
-    public init(wasmId: String, bodyType: ContractEntryBodyType) {
+    public init(wasmId: String) {
         self.hash = wasmId.wrappedData32FromHex()
-        self.bodyType = bodyType
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         hash = try container.decode(WrappedData32.self)
-        let bodyTypeVal = try container.decode(Int32.self)
-        switch bodyTypeVal {
-            case ContractEntryBodyType.dataEntry.rawValue:
-                bodyType = ContractEntryBodyType.dataEntry
-            default:
-                bodyType = ContractEntryBodyType.expirationExtension
-        }
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(hash)
-        try container.encode(bodyType.rawValue)
+    }
+}
+
+public struct LedgerKeyExpirationXDR: XDRCodable {
+    public var keyHash:WrappedData32
+    
+    public init(keyHash: WrappedData32) {
+        self.keyHash = keyHash
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        keyHash = try container.decode(WrappedData32.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(keyHash)
     }
 }
 
