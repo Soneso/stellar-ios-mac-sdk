@@ -66,6 +66,8 @@ public enum EffectType: Int {
     case liquidityPoolCreated = 93
     case liquidityPoolRemoved = 94
     case liquidityPoolRevoked = 95
+    case contractCredited = 96
+    case contractDebited = 97
 }
 
 /// Represents an account effect response. Superclass for all other effect response classes.

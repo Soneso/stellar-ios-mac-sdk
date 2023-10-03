@@ -12,9 +12,9 @@ import stellarsdk
 
 class SorobanAuthTest: XCTestCase {
 
-    let sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org:443")
-    let sdk = StellarSDK.futureNet()
-    let network = Network.futurenet
+    let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
+    let sdk = StellarSDK.testNet()
+    let network = Network.testnet
     var invokerKeyPair = try! KeyPair.generateRandomKeyPair()
     var senderKeyPair = try! KeyPair.generateRandomKeyPair()
     var installTransactionId:String?
@@ -30,15 +30,14 @@ class SorobanAuthTest: XCTestCase {
         super.setUp()
         let expectation = XCTestExpectation(description: "account prepared for tests")
         sorobanServer.enableLogging = true
-        sorobanServer.acknowledgeExperimental = true
          
         let invokerId = invokerKeyPair.accountId
         let senderId = senderKeyPair.accountId
         
-        sdk.accounts.createFutureNetTestAccount(accountId: invokerId) { (response) -> (Void) in
+        sdk.accounts.createTestAccount(accountId: invokerId) { (response) -> (Void) in
             switch response {
             case .success(_):
-                self.sdk.accounts.createFutureNetTestAccount(accountId: senderId) { (response) -> (Void) in
+                self.sdk.accounts.createTestAccount(accountId: senderId) { (response) -> (Void) in
                     switch response {
                     case .success(_):
                         expectation.fulfill()
@@ -294,7 +293,7 @@ class SorobanAuthTest: XCTestCase {
                     var sorobanAuth = simulateResponse.sorobanAuth!
                     for i in sorobanAuth.indices {
                         try! sorobanAuth[i].sign(signer: self.invokerKeyPair,
-                                            network: Network.futurenet,
+                                            network: Network.testnet,
                                             signatureExpirationLedger: self.latestLedger! + 10)
                     }
                     transaction.setSorobanAuth(auth: sorobanAuth)

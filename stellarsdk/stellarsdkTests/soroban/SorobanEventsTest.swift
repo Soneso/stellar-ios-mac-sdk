@@ -12,9 +12,9 @@ import stellarsdk
 
 class SorobanEventsTest: XCTestCase {
 
-    let sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org:443")
-    let sdk = StellarSDK.futureNet()
-    let network = Network.futurenet
+    let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
+    let sdk = StellarSDK.testNet()
+    let network = Network.testnet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
     var uploadTransactionId:String? = nil
     var wasmId:String? = nil
@@ -31,10 +31,9 @@ class SorobanEventsTest: XCTestCase {
         super.setUp()
         let expectation = XCTestExpectation(description: "account prepared for tests")
         sorobanServer.enableLogging = true
-        sorobanServer.acknowledgeExperimental = true
         let accountAId = submitterKeyPair.accountId
 
-        sdk.accounts.createFutureNetTestAccount(accountId: accountAId) { (response) -> (Void) in
+        sdk.accounts.createTestAccount(accountId: accountAId) { (response) -> (Void) in
             switch response {
             case .success(_):
                 expectation.fulfill()

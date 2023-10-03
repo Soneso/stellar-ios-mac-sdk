@@ -45,6 +45,9 @@ public class AssetResponse: NSObject, Decodable {
     /// A paging token suitable for use as the cursor parameter to assets collection resources.
     public var pagingToken:String
     
+    public var numLiquidityPools:Int
+    public var liquidityPoolsAmount:String
+    
     // soroban
     public var numContracts:Int?
     public var contractsAmount:String?
@@ -63,6 +66,8 @@ public class AssetResponse: NSObject, Decodable {
         case numberOfAccounts = "num_accounts"
         case flags
         case pagingToken = "paging_token"
+        case numLiquidityPools = "num_liquidity_pools"
+        case liquidityPoolsAmount = "liquidity_pools_amount"
         case numContracts = "num_contracts"
         case contractsAmount = "contract_amount"
     }
@@ -88,6 +93,8 @@ public class AssetResponse: NSObject, Decodable {
         numberOfAccounts = try values.decode(Int.self, forKey: .numberOfAccounts)
         flags = try values.decode(AccountFlagsResponse.self, forKey: .flags)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
+        numLiquidityPools = try values.decode(Int.self, forKey: .numLiquidityPools)
+        liquidityPoolsAmount = try values.decode(String.self, forKey: .liquidityPoolsAmount)
         numContracts = try values.decodeIfPresent(Int.self, forKey: .numContracts)
         contractsAmount = try values.decodeIfPresent(String.self, forKey: .contractsAmount)
     }

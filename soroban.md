@@ -2,15 +2,11 @@
 ## [Stellar SDK for iOS](https://github.com/Soneso/stellar-ios-mac-sdk) 
 ## Soroban support
 
-The following shows you how to use the iOS SDK to start **experimenting** with Soroban smart contracts. 
-
-**Please note, that both, Soroban itself and the iOS SDK support for Soroban are still under development, so breaking changes may occur.**
-
 **Supported version: Soroban Preview 11.**
 
 ### Quick Start
 
-iOS SDK Soroban support allows you to deploy and to invoke smart contracts on Futurenet. Futurenet is a special test network provided by Stellar.
+iOS SDK Soroban support allows you to deploy and to invoke smart contracts.
 
 To deploy and/or invoke smart contracts with the iOS SDK use the ```SorobanServer``` class. It connects to a given local or remote Soroban-RPC Server.
 
@@ -27,12 +23,6 @@ Provide the url to the endpoint of the Soroban-RPC server to connect to:
 
 ```swift
 let sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org:443")
-```
-
-Set the experimental flag to true. Otherwise it will not work.
-
-```swift
-sorobanServer.acknowledgeExperimental = true
 ```
 
 #### General node health check

@@ -697,6 +697,10 @@
 		8320AA05251E876B002FE6FA /* CreateClaimableBalanceOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8320AA03251E876B002FE6FA /* CreateClaimableBalanceOperationResponse.swift */; };
 		8320AA0E251E87A4002FE6FA /* ClaimClaimableBalanceOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8320AA0D251E87A4002FE6FA /* ClaimClaimableBalanceOperationResponse.swift */; };
 		8320AA0F251E87A4002FE6FA /* ClaimClaimableBalanceOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8320AA0D251E87A4002FE6FA /* ClaimClaimableBalanceOperationResponse.swift */; };
+		83293CA32ACC24BF0023A302 /* ContractCreditedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83293CA22ACC24BF0023A302 /* ContractCreditedEffectResponse.swift */; };
+		83293CA42ACC24BF0023A302 /* ContractCreditedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83293CA22ACC24BF0023A302 /* ContractCreditedEffectResponse.swift */; };
+		83293CA62ACC325B0023A302 /* ContractDebitedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83293CA52ACC325B0023A302 /* ContractDebitedEffectResponse.swift */; };
+		83293CA72ACC325B0023A302 /* ContractDebitedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83293CA52ACC325B0023A302 /* ContractDebitedEffectResponse.swift */; };
 		832ADEBD262B94DA00571D46 /* ClawbackOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832ADEBC262B94DA00571D46 /* ClawbackOpXDR.swift */; };
 		832ADEBE262B94DA00571D46 /* ClawbackOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832ADEBC262B94DA00571D46 /* ClawbackOpXDR.swift */; };
 		832ADED8262B960900571D46 /* ClawbackClaimableBalanceOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832ADED7262B960900571D46 /* ClawbackClaimableBalanceOpXDR.swift */; };
@@ -1510,6 +1514,8 @@
 		8320A9F9251E7080002FE6FA /* ClaimClaimableBalanceResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimClaimableBalanceResultXDR.swift; sourceTree = "<group>"; };
 		8320AA03251E876B002FE6FA /* CreateClaimableBalanceOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateClaimableBalanceOperationResponse.swift; sourceTree = "<group>"; };
 		8320AA0D251E87A4002FE6FA /* ClaimClaimableBalanceOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimClaimableBalanceOperationResponse.swift; sourceTree = "<group>"; };
+		83293CA22ACC24BF0023A302 /* ContractCreditedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractCreditedEffectResponse.swift; sourceTree = "<group>"; };
+		83293CA52ACC325B0023A302 /* ContractDebitedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractDebitedEffectResponse.swift; sourceTree = "<group>"; };
 		832ADEBC262B94DA00571D46 /* ClawbackOpXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClawbackOpXDR.swift; sourceTree = "<group>"; };
 		832ADED7262B960900571D46 /* ClawbackClaimableBalanceOpXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClawbackClaimableBalanceOpXDR.swift; sourceTree = "<group>"; };
 		832ADEE1262B96C600571D46 /* SetTrustLineFlagsOpXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetTrustLineFlagsOpXDR.swift; sourceTree = "<group>"; };
@@ -2637,6 +2643,8 @@
 				83DF819526EDF60600AF72CD /* LiquidityPoolRemovedEffectResponse.swift */,
 				83DF819826EDF62C00AF72CD /* LiquidityPoolRevokedEffectResponse.swift */,
 				83DF819E26EF684F00AF72CD /* LiquidityPoolEffectResponse.swift */,
+				83293CA22ACC24BF0023A302 /* ContractCreditedEffectResponse.swift */,
+				83293CA52ACC325B0023A302 /* ContractDebitedEffectResponse.swift */,
 			);
 			path = effects_responses;
 			sourceTree = "<group>";
@@ -3603,6 +3611,7 @@
 				DDE2DCDB26667E9C00F238F4 /* OffersStreamItem.swift in Sources */,
 				832ADEE3262B96C600571D46 /* SetTrustLineFlagsOpXDR.swift in Sources */,
 				8395F953246B529000B04E11 /* FeeBumpTransactionEnvelopeXDR.swift in Sources */,
+				83293CA42ACC24BF0023A302 /* ContractCreditedEffectResponse.swift in Sources */,
 				DDE2DCD52664EAD700F238F4 /* TradesStreamItem.swift in Sources */,
 				8395F954246B529000B04E11 /* FeeBumpTransactionXDR.swift in Sources */,
 				83379C282280BE2A00BD5F8E /* ManageSellOfferOperation.swift in Sources */,
@@ -3674,6 +3683,7 @@
 				8345D40E251DF33000E3F6DA /* ClaimantXDR.swift in Sources */,
 				74DD3E152086621C0057775C /* StringExtension.swift in Sources */,
 				835F0D0229770CA700793708 /* GetTransactionResponse.swift in Sources */,
+				83293CA72ACC325B0023A302 /* ContractDebitedEffectResponse.swift in Sources */,
 				832ADED9262B960900571D46 /* ClawbackClaimableBalanceOpXDR.swift in Sources */,
 				745DF5292052FFC3000D3660 /* TransactionsService.swift in Sources */,
 				745DF52A2052FFC3000D3660 /* TradesService.swift in Sources */,
@@ -4226,6 +4236,7 @@
 				DDE2DCDA266674BB00F238F4 /* OffersStreamItem.swift in Sources */,
 				832ADEE2262B96C600571D46 /* SetTrustLineFlagsOpXDR.swift in Sources */,
 				745F2BB6202C2E88008763F1 /* TransactionResponse.swift in Sources */,
+				83293CA32ACC24BF0023A302 /* ContractCreditedEffectResponse.swift in Sources */,
 				DDE2DCD42664EA5E00F238F4 /* TradesStreamItem.swift in Sources */,
 				744A84C021440CD40086B8FC /* AnchorTransactionsRequest.swift in Sources */,
 				833CBFB8203354FB00C23CFE /* LedgerKeyDataXDR.swift in Sources */,
@@ -4297,6 +4308,7 @@
 				8345D40D251DF33000E3F6DA /* ClaimantXDR.swift in Sources */,
 				833CBFA4203353AE00C23CFE /* AllowTrustOperationXDR.swift in Sources */,
 				835F0D0129770CA700793708 /* GetTransactionResponse.swift in Sources */,
+				83293CA62ACC325B0023A302 /* ContractDebitedEffectResponse.swift in Sources */,
 				832ADED8262B960900571D46 /* ClawbackClaimableBalanceOpXDR.swift in Sources */,
 				EC34A14920503CC5000FB042 /* PBKDF1.swift in Sources */,
 				7481B5482024CA47000A783E /* EffectsFactory.swift in Sources */,

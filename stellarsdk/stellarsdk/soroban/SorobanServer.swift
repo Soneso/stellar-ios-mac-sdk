@@ -116,7 +116,6 @@ public class SorobanServer {
     }()
     
     public var enableLogging = false
-    public var acknowledgeExperimental = false
     
     /// Init a SorobanServer instance
     ///
@@ -462,10 +461,6 @@ public class SorobanServer {
     
     
     private func request(body: Data?, completion: @escaping RpcResponseClosure) {
-        if !self.acknowledgeExperimental {
-            completion(.failure(error:.requestFailed(message:"Error: acknowledgeExperimental flag not set")))
-            return
-        }
         
         let url = URL(string: endpoint)!
         var urlRequest = URLRequest(url: url)

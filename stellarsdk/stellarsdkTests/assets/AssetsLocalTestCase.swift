@@ -96,6 +96,10 @@ class AssetsLocalTestCase: XCTestCase {
             XCTAssertFalse(firstAsset!.flags.authImmutable)
             XCTAssertFalse(firstAsset!.flags.authClawbackEnabled)
             XCTAssertEqual(firstAsset!.claimableBalancesAmount, 4.0)
+            XCTAssertEqual(firstAsset!.numLiquidityPools, 2)
+            XCTAssertEqual(firstAsset!.numContracts, 3)
+            XCTAssertEqual(firstAsset!.liquidityPoolsAmount, "12.0")
+            XCTAssertEqual(firstAsset!.contractsAmount, "13.0")
             
             if (limit == 2) {
                 let secondAsset = assetsResponse.records.last
@@ -179,7 +183,11 @@ class AssetsLocalTestCase: XCTestCase {
                         "auth_revocable": false,
                         "auth_immutable": false,
                         "auth_clawback_enabled": false
-                    }
+                    },
+                    "num_liquidity_pools": 2,
+                    "liquidity_pools_amount": "12.0",
+                    "num_contracts": 3,
+                    "contract_amount": "13.0"
                 }
         """
         if limit > 1 {
@@ -214,7 +222,11 @@ class AssetsLocalTestCase: XCTestCase {
                                 "auth_revocable": true,
                                 "auth_immutable": true,
                                 "auth_clawback_enabled": true
-                            }
+                            },
+                            "num_liquidity_pools": 2,
+                            "liquidity_pools_amount": "12.0",
+                            "num_contracts": 3,
+                            "contract_amount": "13.0"
                         }
             """
             accountResponseString.append(record)

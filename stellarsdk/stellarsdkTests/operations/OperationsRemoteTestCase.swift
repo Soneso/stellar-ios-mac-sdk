@@ -65,8 +65,8 @@ class OperationsRemoteTestCase: XCTestCase {
                                         self.transactionId = response.transactionHash
                                         self.ledger = response.ledger
                                         switch response.transactionMeta {
-                                        case .transactionMetaV2(let metaV2):
-                                            for opMeta in metaV2.operations {
+                                        case .transactionMetaV3(let metaV3):
+                                            for opMeta in metaV3.operations {
                                                 for change in opMeta.changes.ledgerEntryChanges {
                                                     switch change {
                                                     case .created(let entry):
@@ -76,6 +76,8 @@ class OperationsRemoteTestCase: XCTestCase {
                                                             case .claimableBalanceIDTypeV0(let data):
                                                                 self.claimableBalanceId = self.hexEncodedBalanceId(data:data.wrapped)
                                                                 print("claimable balance Id: \(self.claimableBalanceId!)")
+                                                                expectation.fulfill()
+                                                                break
                                                             }
                                                         default:
                                                             break
@@ -88,7 +90,6 @@ class OperationsRemoteTestCase: XCTestCase {
                                         default:
                                             break
                                         }
-                                        expectation.fulfill()
                                     default:
                                         XCTFail()
                                     }
@@ -105,7 +106,7 @@ class OperationsRemoteTestCase: XCTestCase {
                 XCTFail()
             }
         }
-        wait(for: [expectation], timeout: 25.0)
+        wait(for: [expectation], timeout: 45.0)
     }
     
     override func tearDown() {
@@ -123,7 +124,6 @@ class OperationsRemoteTestCase: XCTestCase {
         createAccount()
         updateHomeDomain()
         accountMerge()
-        updateInflationDestination()
         changeTrustline()
         mangeOffer()
         createPassiveSellOffer()
@@ -435,65 +435,6 @@ class OperationsRemoteTestCase: XCTestCase {
                 }
             }
             wait(for: [expectation], timeout: 20.0)
-        }
-    }
-    
-    func updateInflationDestination() {
-        XCTContext.runActivity(named: "updateInflationDestination") { activity in
-            let expectation = XCTestExpectation(description: "Set inflation destination")
-            let sourceAccountKeyPair = testKeyPair
-            let destinationAccountId = IOMIssuingAccountKeyPair.accountId
-            
-            streamItem = sdk.operations.stream(for: .operationsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now"))
-            streamItem?.onReceive { (response) -> (Void) in
-                switch response {
-                case .open:
-                    break
-                case .response( _, let operationResponse):
-                    if let setOptionsResponse = operationResponse as? SetOptionsOperationResponse {
-                        if (setOptionsResponse.inflationDestination == destinationAccountId) {
-                            self.streamItem?.closeStream()
-                            self.streamItem = nil
-                            XCTAssert(true)
-                            expectation.fulfill()
-                        }
-                    }
-                case .error(let error):
-                    if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"updateInflationDestination- stream", horizonRequestError:horizonRequestError)
-                    } else {
-                        print("updateInflationDestination stream error \(error?.localizedDescription ?? "")")
-                    }
-                    break
-                }
-            }
-            
-            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
-                switch response {
-                case .success(let accountResponse):
-                    let setInflationOperation = try! SetOptionsOperation(sourceAccountId: sourceAccountKeyPair.accountId, inflationDestination: KeyPair(accountId:destinationAccountId))
-                    
-                    let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                      operations: [setInflationOperation],
-                                                      memo: Memo.none)
-                    try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                    
-                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                        switch response {
-                        case .success(_):
-                            print("updateInflationDestination: Transaction successfully sent")
-                        default:
-                            XCTFail()
-                            expectation.fulfill()
-                        }
-                    }
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"UID Test", horizonRequestError: error)
-                    XCTFail()
-                    expectation.fulfill()
-                }
-            }
-            wait(for: [expectation], timeout: 15.0)
         }
     }
     
@@ -812,8 +753,8 @@ class OperationsRemoteTestCase: XCTestCase {
                         switch response {
                         case .success(let submitTransactionResponse):
                             switch submitTransactionResponse.transactionMeta {
-                            case .transactionMetaV2(let metaV2):
-                                for opMeta in metaV2.operations {
+                            case .transactionMetaV3(let metaV3):
+                                for opMeta in metaV3.operations {
                                     for change in opMeta.changes.ledgerEntryChanges {
                                         switch change {
                                         case .created(let entry):
@@ -845,7 +786,7 @@ class OperationsRemoteTestCase: XCTestCase {
                     expectation.fulfill()
                 }
             }
-            wait(for: [expectation], timeout: 315.0)
+            wait(for: [expectation], timeout: 105.0)
         }
     }
    

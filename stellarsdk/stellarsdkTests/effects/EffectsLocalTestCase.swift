@@ -268,6 +268,10 @@ class EffectsLocalTestCase: XCTestCase {
                         XCTAssert(false)
                     case .liquidityPoolRevoked:
                         XCTAssert(false)
+                    case .contractCredited:
+                        XCTAssert(false)
+                    case .contractDebited:
+                        XCTAssert(false)
                 }
             }
         }

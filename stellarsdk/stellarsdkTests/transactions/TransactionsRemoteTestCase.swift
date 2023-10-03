@@ -209,8 +209,8 @@ class TransactionsRemoteTestCase: XCTestCase {
                         switch response {
                         case .success(let submitTransactionResponse):
                             switch submitTransactionResponse.transactionMeta {
-                            case .transactionMetaV2(let metaV2):
-                                for opMeta in metaV2.operations {
+                            case .transactionMetaV3(let metaV3):
+                                for opMeta in metaV3.operations {
                                     for change in opMeta.changes.ledgerEntryChanges {
                                         switch change {
                                         case .created(let entry):

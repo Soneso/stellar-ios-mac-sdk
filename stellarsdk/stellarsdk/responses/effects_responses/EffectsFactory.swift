@@ -201,6 +201,12 @@ class EffectsFactory: NSObject {
             case .liquidityPoolRevoked:
                 let effect = try jsonDecoder.decode(LiquidityPoolRevokedEffectResponse.self, from: data)
                 return effect
+            case .contractCredited:
+                let effect = try jsonDecoder.decode(ContractCreditedEffectResponse.self, from: data)
+                return effect
+            case .contractDebited:
+                let effect = try jsonDecoder.decode(ContractDebitedEffectResponse.self, from: data)
+                return effect
             }
         } else {
             throw HorizonRequestError.parsingResponseFailed(message: "Unknown effect type")
