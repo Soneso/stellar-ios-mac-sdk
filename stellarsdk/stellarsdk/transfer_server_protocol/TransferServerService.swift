@@ -1,5 +1,5 @@
 //
-//  TransferObject.swift
+//  TransferServerService.swift
 //  stellarsdk
 //
 //  Created by Razvan Chelemen on 07/09/2018.
@@ -312,7 +312,7 @@ public class TransferServerService: NSObject {
     public func getTransaction(request: AnchorTransactionRequest,  completion:@escaping AnchorTransactionResponseClosure) {
         var requestPath = "/transaction?"
         
-        var first = false
+        var first = true
         if let id = request.id {
             requestPath += "id=\(id)"
             first = false

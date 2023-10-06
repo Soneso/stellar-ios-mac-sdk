@@ -1024,6 +1024,42 @@
 		83D6D2EB2A27BAD700555110 /* PutVerificationResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D6D2E92A27BAD700555110 /* PutVerificationResponseMock.swift */; };
 		83D6D2ED2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D6D2EC2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift */; };
 		83D6D2EE2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D6D2EC2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift */; };
+		83DB2ACD2ACD6265008B04D6 /* InteractiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2ACC2ACD6265008B04D6 /* InteractiveService.swift */; };
+		83DB2ACE2ACD6265008B04D6 /* InteractiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2ACC2ACD6265008B04D6 /* InteractiveService.swift */; };
+		83DB2AD12ACD661F008B04D6 /* InteractiveServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AD02ACD661F008B04D6 /* InteractiveServiceError.swift */; };
+		83DB2AD22ACD661F008B04D6 /* InteractiveServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AD02ACD661F008B04D6 /* InteractiveServiceError.swift */; };
+		83DB2AD52ACD67C0008B04D6 /* Sep24InfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AD42ACD67C0008B04D6 /* Sep24InfoResponse.swift */; };
+		83DB2AD62ACD67C0008B04D6 /* Sep24InfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AD42ACD67C0008B04D6 /* Sep24InfoResponse.swift */; };
+		83DB2AD92ACD734B008B04D6 /* Sep24FeeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AD82ACD734B008B04D6 /* Sep24FeeRequest.swift */; };
+		83DB2ADA2ACD734B008B04D6 /* Sep24FeeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AD82ACD734B008B04D6 /* Sep24FeeRequest.swift */; };
+		83DB2ADC2ACD7486008B04D6 /* Sep24FeeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2ADB2ACD7486008B04D6 /* Sep24FeeResponse.swift */; };
+		83DB2ADD2ACD7486008B04D6 /* Sep24FeeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2ADB2ACD7486008B04D6 /* Sep24FeeResponse.swift */; };
+		83DB2ADF2ACD87CD008B04D6 /* Sep24DepositRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2ADE2ACD87CD008B04D6 /* Sep24DepositRequest.swift */; };
+		83DB2AE02ACD87CD008B04D6 /* Sep24DepositRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2ADE2ACD87CD008B04D6 /* Sep24DepositRequest.swift */; };
+		83DB2AE22ACD9498008B04D6 /* Sep24InteractiveResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AE12ACD9498008B04D6 /* Sep24InteractiveResponse.swift */; };
+		83DB2AE32ACD9498008B04D6 /* Sep24InteractiveResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AE12ACD9498008B04D6 /* Sep24InteractiveResponse.swift */; };
+		83DB2AE52ACD97AB008B04D6 /* Sep24WithdrawRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AE42ACD97AB008B04D6 /* Sep24WithdrawRequest.swift */; };
+		83DB2AE62ACD97AB008B04D6 /* Sep24WithdrawRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AE42ACD97AB008B04D6 /* Sep24WithdrawRequest.swift */; };
+		83DB2AE82ACD992D008B04D6 /* Sep24TransactionsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AE72ACD992D008B04D6 /* Sep24TransactionsRequest.swift */; };
+		83DB2AE92ACD992D008B04D6 /* Sep24TransactionsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AE72ACD992D008B04D6 /* Sep24TransactionsRequest.swift */; };
+		83DB2AEB2ACD9946008B04D6 /* Sep24TransactionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AEA2ACD9946008B04D6 /* Sep24TransactionRequest.swift */; };
+		83DB2AEC2ACD9946008B04D6 /* Sep24TransactionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AEA2ACD9946008B04D6 /* Sep24TransactionRequest.swift */; };
+		83DB2AEE2ACD9FD8008B04D6 /* Sep24TransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AED2ACD9FD8008B04D6 /* Sep24TransactionResponse.swift */; };
+		83DB2AEF2ACD9FD8008B04D6 /* Sep24TransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AED2ACD9FD8008B04D6 /* Sep24TransactionResponse.swift */; };
+		83DB2AF22ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AF12ACEA98A008B04D6 /* InteractiveServiceTestCase.swift */; };
+		83DB2AF32ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AF12ACEA98A008B04D6 /* InteractiveServiceTestCase.swift */; };
+		83DB2AF52ACEACF2008B04D6 /* Sep24InfoResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AF42ACEACF2008B04D6 /* Sep24InfoResponseMock.swift */; };
+		83DB2AF62ACEACF2008B04D6 /* Sep24InfoResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AF42ACEACF2008B04D6 /* Sep24InfoResponseMock.swift */; };
+		83DB2AF82ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AF72ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift */; };
+		83DB2AF92ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AF72ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift */; };
+		83DB2AFB2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AFA2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift */; };
+		83DB2AFC2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AFA2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift */; };
+		83DB2AFE2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AFD2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift */; };
+		83DB2AFF2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AFD2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift */; };
+		83DB2B012ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2B002ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift */; };
+		83DB2B022ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2B002ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift */; };
+		83DB2B042ACED370008B04D6 /* Sep24TransactionResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2B032ACED370008B04D6 /* Sep24TransactionResponseMock.swift */; };
+		83DB2B052ACED370008B04D6 /* Sep24TransactionResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2B032ACED370008B04D6 /* Sep24TransactionResponseMock.swift */; };
 		83DD2C55202CE39C00713FEE /* AssetLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C54202CE39C00713FEE /* AssetLinksResponse.swift */; };
 		83DD2C5B202CEB0700713FEE /* LedgerLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C5A202CEB0700713FEE /* LedgerLinksResponse.swift */; };
 		83DD2C60202D0CDE00713FEE /* OperationLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C5F202D0CDE00713FEE /* OperationLinksResponse.swift */; };
@@ -1726,6 +1762,24 @@
 		83D4090D26EBB049003A9C0F /* ReserveResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReserveResponse.swift; sourceTree = "<group>"; };
 		83D6D2E92A27BAD700555110 /* PutVerificationResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PutVerificationResponseMock.swift; sourceTree = "<group>"; };
 		83D6D2EC2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PutCallbackUrlResponseMock.swift; sourceTree = "<group>"; };
+		83DB2ACC2ACD6265008B04D6 /* InteractiveService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveService.swift; sourceTree = "<group>"; };
+		83DB2AD02ACD661F008B04D6 /* InteractiveServiceError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveServiceError.swift; sourceTree = "<group>"; };
+		83DB2AD42ACD67C0008B04D6 /* Sep24InfoResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24InfoResponse.swift; sourceTree = "<group>"; };
+		83DB2AD82ACD734B008B04D6 /* Sep24FeeRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24FeeRequest.swift; sourceTree = "<group>"; };
+		83DB2ADB2ACD7486008B04D6 /* Sep24FeeResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24FeeResponse.swift; sourceTree = "<group>"; };
+		83DB2ADE2ACD87CD008B04D6 /* Sep24DepositRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24DepositRequest.swift; sourceTree = "<group>"; };
+		83DB2AE12ACD9498008B04D6 /* Sep24InteractiveResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24InteractiveResponse.swift; sourceTree = "<group>"; };
+		83DB2AE42ACD97AB008B04D6 /* Sep24WithdrawRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24WithdrawRequest.swift; sourceTree = "<group>"; };
+		83DB2AE72ACD992D008B04D6 /* Sep24TransactionsRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24TransactionsRequest.swift; sourceTree = "<group>"; };
+		83DB2AEA2ACD9946008B04D6 /* Sep24TransactionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24TransactionRequest.swift; sourceTree = "<group>"; };
+		83DB2AED2ACD9FD8008B04D6 /* Sep24TransactionResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24TransactionResponse.swift; sourceTree = "<group>"; };
+		83DB2AF12ACEA98A008B04D6 /* InteractiveServiceTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveServiceTestCase.swift; sourceTree = "<group>"; };
+		83DB2AF42ACEACF2008B04D6 /* Sep24InfoResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24InfoResponseMock.swift; sourceTree = "<group>"; };
+		83DB2AF72ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24FeeResponseMock.swift; sourceTree = "<group>"; };
+		83DB2AFA2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24DepositResponseMock.swift; sourceTree = "<group>"; };
+		83DB2AFD2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24WithdrawResponseMock.swift; sourceTree = "<group>"; };
+		83DB2B002ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24TransactionsResponseMock.swift; sourceTree = "<group>"; };
+		83DB2B032ACED370008B04D6 /* Sep24TransactionResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep24TransactionResponseMock.swift; sourceTree = "<group>"; };
 		83DD2C54202CE39C00713FEE /* AssetLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLinksResponse.swift; sourceTree = "<group>"; };
 		83DD2C5A202CEB0700713FEE /* LedgerLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerLinksResponse.swift; sourceTree = "<group>"; };
 		83DD2C5F202D0CDE00713FEE /* OperationLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationLinksResponse.swift; sourceTree = "<group>"; };
@@ -2272,6 +2326,7 @@
 				7464B723219441B40029FDC8 /* toml */,
 				C6744C1A214670F9005DE204 /* uri_scheme */,
 				7467C3EF21424D0B00412FE1 /* transfer_server_protocol */,
+				83DB2ACB2ACD622A008B04D6 /* interactive */,
 				83F4E5FF2A1E589500DD42A9 /* kyc */,
 				744FC6F2212D3EA100ADFC88 /* federation */,
 				833CBFBD20337D1600C23CFE /* sdk */,
@@ -2298,6 +2353,7 @@
 				746D78FD21959FD90008AA79 /* toml */,
 				C6C8AAA52147D8F000B06E8A /* uri_scheme */,
 				7467C40221426FAB00412FE1 /* transfer_server_protocol */,
+				83DB2AF02ACEA948008B04D6 /* interactive */,
 				83F4E61C2A27912900DD42A9 /* kyc */,
 				744FC6FE212E941F00ADFC88 /* federation */,
 				EC34A15A20504353000FB042 /* wallet */,
@@ -2951,6 +3007,62 @@
 				83DF81AA26EFC36000AF72CD /* LiquidityPoolTradesResponse.swift */,
 			);
 			path = liquidity_pool_responses;
+			sourceTree = "<group>";
+		};
+		83DB2ACB2ACD622A008B04D6 /* interactive */ = {
+			isa = PBXGroup;
+			children = (
+				83DB2AD72ACD7327008B04D6 /* requests */,
+				83DB2AD32ACD67A9008B04D6 /* responses */,
+				83DB2ACF2ACD6605008B04D6 /* errors */,
+				83DB2ACC2ACD6265008B04D6 /* InteractiveService.swift */,
+			);
+			path = interactive;
+			sourceTree = "<group>";
+		};
+		83DB2ACF2ACD6605008B04D6 /* errors */ = {
+			isa = PBXGroup;
+			children = (
+				83DB2AD02ACD661F008B04D6 /* InteractiveServiceError.swift */,
+			);
+			path = errors;
+			sourceTree = "<group>";
+		};
+		83DB2AD32ACD67A9008B04D6 /* responses */ = {
+			isa = PBXGroup;
+			children = (
+				83DB2AD42ACD67C0008B04D6 /* Sep24InfoResponse.swift */,
+				83DB2ADB2ACD7486008B04D6 /* Sep24FeeResponse.swift */,
+				83DB2AE12ACD9498008B04D6 /* Sep24InteractiveResponse.swift */,
+				83DB2AED2ACD9FD8008B04D6 /* Sep24TransactionResponse.swift */,
+			);
+			path = responses;
+			sourceTree = "<group>";
+		};
+		83DB2AD72ACD7327008B04D6 /* requests */ = {
+			isa = PBXGroup;
+			children = (
+				83DB2AD82ACD734B008B04D6 /* Sep24FeeRequest.swift */,
+				83DB2ADE2ACD87CD008B04D6 /* Sep24DepositRequest.swift */,
+				83DB2AE42ACD97AB008B04D6 /* Sep24WithdrawRequest.swift */,
+				83DB2AE72ACD992D008B04D6 /* Sep24TransactionsRequest.swift */,
+				83DB2AEA2ACD9946008B04D6 /* Sep24TransactionRequest.swift */,
+			);
+			path = requests;
+			sourceTree = "<group>";
+		};
+		83DB2AF02ACEA948008B04D6 /* interactive */ = {
+			isa = PBXGroup;
+			children = (
+				83DB2AF12ACEA98A008B04D6 /* InteractiveServiceTestCase.swift */,
+				83DB2AF42ACEACF2008B04D6 /* Sep24InfoResponseMock.swift */,
+				83DB2AF72ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift */,
+				83DB2AFA2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift */,
+				83DB2AFD2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift */,
+				83DB2B002ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift */,
+				83DB2B032ACED370008B04D6 /* Sep24TransactionResponseMock.swift */,
+			);
+			path = interactive;
 			sourceTree = "<group>";
 		};
 		83DD2C5C202D04E100713FEE /* responses */ = {
@@ -3633,6 +3745,7 @@
 				745DF5612052FFF6000D3660 /* keypair.c in Sources */,
 				745DF5622052FFF6000D3660 /* sc.c in Sources */,
 				745DF5632052FFF6000D3660 /* seed.c in Sources */,
+				83DB2AEF2ACD9FD8008B04D6 /* Sep24TransactionResponse.swift in Sources */,
 				8320A9FB251E7080002FE6FA /* ClaimClaimableBalanceResultXDR.swift in Sources */,
 				745DF5642052FFF6000D3660 /* sha512.c in Sources */,
 				83FE810F23F0752700F4A13D /* MaxFeeResponse.swift in Sources */,
@@ -3691,6 +3804,7 @@
 				745DF52B2052FFC3000D3660 /* TradeAggregationsService.swift in Sources */,
 				744FC6F8212D52D300ADFC88 /* FederationError.swift in Sources */,
 				83B4CB7A2527CEAF00EEE55E /* ClaimableBalanceClaimedEffectResponse.swift in Sources */,
+				83DB2AEC2ACD9946008B04D6 /* Sep24TransactionRequest.swift in Sources */,
 				745DF52C2052FFC3000D3660 /* OffersService.swift in Sources */,
 				745DF52D2052FFC3000D3660 /* OrderbookService.swift in Sources */,
 				83DF819726EDF60600AF72CD /* LiquidityPoolRemovedEffectResponse.swift in Sources */,
@@ -3768,6 +3882,7 @@
 				835F0CEA29770BB100793708 /* GetHealthResponse.swift in Sources */,
 				745DF44B2052FF9B000D3660 /* AccountDebitedEffectResponse.swift in Sources */,
 				745DF44C2052FF9B000D3660 /* AccountThresholdsUpdatedEffectResponse.swift in Sources */,
+				83DB2AE92ACD992D008B04D6 /* Sep24TransactionsRequest.swift in Sources */,
 				835F0CD9297583E100793708 /* InvokeHostFunctionOperation.swift in Sources */,
 				745DF44D2052FF9B000D3660 /* AccountHomeDomainUpdatedEffectResponse.swift in Sources */,
 				8345BA71246FBE9400B07A34 /* FeeBumpTransaction.swift in Sources */,
@@ -3811,6 +3926,7 @@
 				745DF45D2052FF9B000D3660 /* LedgerResponse.swift in Sources */,
 				744FC6DD212D3CCC00ADFC88 /* Tokens.swift in Sources */,
 				745DF45E2052FF9B000D3660 /* OperationsFactory.swift in Sources */,
+				83DB2ADD2ACD7486008B04D6 /* Sep24FeeResponse.swift in Sources */,
 				8310BDC426EB5023004D3EF2 /* LiquidityPoolDepositOperation.swift in Sources */,
 				7467C40B2142A81D00412FE1 /* WithdrawRequest.swift in Sources */,
 				745DF45F2052FF9B000D3660 /* OperationResponse.swift in Sources */,
@@ -3828,6 +3944,7 @@
 				830DAB3E29AD501D00ED4E66 /* TopicFilter.swift in Sources */,
 				745DF4682052FF9B000D3660 /* AccountMergeOperationResponse.swift in Sources */,
 				83852ABD266790580013EA2A /* AnchorFeeResponse.swift in Sources */,
+				83DB2AE02ACD87CD008B04D6 /* Sep24DepositRequest.swift in Sources */,
 				745DF4692052FF9B000D3660 /* InflationOperationResponse.swift in Sources */,
 				745DF46A2052FF9B000D3660 /* ManageDataOperationResponse.swift in Sources */,
 				745DF46B2052FF9B000D3660 /* TradeAggregationResponse.swift in Sources */,
@@ -3843,6 +3960,7 @@
 				7467C3FE2142546C00412FE1 /* DepositResponse.swift in Sources */,
 				830DAB4729AD545600ED4E66 /* EventInfo.swift in Sources */,
 				DDE2DCD82666329200F238F4 /* OrderbookStreamItem.swift in Sources */,
+				83DB2AD22ACD661F008B04D6 /* InteractiveServiceError.swift in Sources */,
 				836658F52A6E777800E8B8D9 /* RestoreFootprintResultXDR.swift in Sources */,
 				745DF4702052FF9B000D3660 /* PaymentResultXDR.swift in Sources */,
 				83B4CB552527308500EEE55E /* ClaimClaimableBalanceOperation.swift in Sources */,
@@ -3874,6 +3992,7 @@
 				745DF4822052FF9B000D3660 /* AllowTrustOpAssetXDR.swift in Sources */,
 				835F0CF929770C3F00793708 /* SimulateTransactionCost.swift in Sources */,
 				745DF4832052FF9C000D3660 /* AllowTrustOperationXDR.swift in Sources */,
+				83DB2ACE2ACD6265008B04D6 /* InteractiveService.swift in Sources */,
 				745DF4842052FF9C000D3660 /* ChangeTrustOperationXDR.swift in Sources */,
 				745DF4852052FF9C000D3660 /* ManageDataOperationXDR.swift in Sources */,
 				745DF4862052FF9C000D3660 /* AssetXDR.swift in Sources */,
@@ -3905,6 +4024,7 @@
 				745DF4922052FF9C000D3660 /* SignerKeyXDR.swift in Sources */,
 				745DF4932052FF9C000D3660 /* DataEntryXDR.swift in Sources */,
 				745DF4942052FF9C000D3660 /* OfferEntryXDR.swift in Sources */,
+				83DB2AE32ACD9498008B04D6 /* Sep24InteractiveResponse.swift in Sources */,
 				83FE810923F071CE00F4A13D /* FeeStatsResponse.swift in Sources */,
 				8320AA0F251E87A4002FE6FA /* ClaimClaimableBalanceOperationResponse.swift in Sources */,
 				745DF4952052FF9C000D3660 /* PriceXDR.swift in Sources */,
@@ -4027,6 +4147,7 @@
 				744FC6EB212D3CCC00ADFC88 /* Evaluator.swift in Sources */,
 				830DAB5029AD60E100ED4E66 /* GetNetworkResponse.swift in Sources */,
 				83DD714B281BE84700530C64 /* TransactionPreconditions.swift in Sources */,
+				83DB2AE62ACD97AB008B04D6 /* Sep24WithdrawRequest.swift in Sources */,
 				745DF4D82052FF9C000D3660 /* AES+Foundation.swift in Sources */,
 				745DF4D92052FF9C000D3660 /* Rabbit+Foundation.swift in Sources */,
 				745DF4DA2052FF9C000D3660 /* UInt8+Extension.swift in Sources */,
@@ -4035,6 +4156,7 @@
 				745DF4DC2052FF9C000D3660 /* BatchedCollection.swift in Sources */,
 				745DF4DD2052FF9C000D3660 /* SecureBytes.swift in Sources */,
 				745DF4DE2052FF9C000D3660 /* ZeroPadding.swift in Sources */,
+				83DB2ADA2ACD734B008B04D6 /* Sep24FeeRequest.swift in Sources */,
 				830E7D522529C1790059A4B4 /* BeginSponsoringFutureReservesOperation.swift in Sources */,
 				745DF4DF2052FF9C000D3660 /* String+Extension.swift in Sources */,
 				83DF818E26EDF5B200AF72CD /* LiquidityPoolWithdrewEffectResponse.swift in Sources */,
@@ -4066,6 +4188,7 @@
 				745DF4EB2052FF9C000D3660 /* Utils.swift in Sources */,
 				830E7DBC2529E24B0059A4B4 /* TrustlineSponsorshipUpdatedEffectResponse.swift in Sources */,
 				8320A9F1251E6ED6002FE6FA /* CreateClaimableBalanceResultXDR.swift in Sources */,
+				83DB2AD62ACD67C0008B04D6 /* Sep24InfoResponse.swift in Sources */,
 				745DF4EC2052FF9C000D3660 /* Generics.swift in Sources */,
 				745DF4ED2052FF9C000D3660 /* Checksum.swift in Sources */,
 				83DF81A926EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift in Sources */,
@@ -4133,11 +4256,13 @@
 				745DF56A205304AC000D3660 /* AccountLocalTestCase.swift in Sources */,
 				745DF56B205304AC000D3660 /* AccountResponsesMock.swift in Sources */,
 				830A8F0C29AE916300B30483 /* SorobanAtomicSwapTest.swift in Sources */,
+				83DB2AFF2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift in Sources */,
 				745DF56C205304AC000D3660 /* AccountRemoteTestCase.swift in Sources */,
 				745DF56D205304AC000D3660 /* DataForAccountLocalTestCase.swift in Sources */,
 				83C54D072945F23700CC1E8A /* QuickStartTest.swift in Sources */,
 				83FE811323F0856600F4A13D /* FeeStatsRemoteTestCase.swift in Sources */,
 				746D7905219AE2BE0008AA79 /* TomlResponseSignatureMismatchMock.swift in Sources */,
+				83DB2AF62ACEACF2008B04D6 /* Sep24InfoResponseMock.swift in Sources */,
 				745DF56E205304AC000D3660 /* DataForAccountResponsesMock.swift in Sources */,
 				745DF56F205304AC000D3660 /* DataForAccountRemoteTestCase.swift in Sources */,
 				83D6D2EE2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift in Sources */,
@@ -4182,6 +4307,8 @@
 				745DF587205304AC000D3660 /* OperationsResponsesMock.swift in Sources */,
 				745DF588205304AC000D3660 /* PaymentsTestCase.swift in Sources */,
 				746D7904219AE2BB0008AA79 /* TomlResponseMock.swift in Sources */,
+				83DB2AF92ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift in Sources */,
+				83DB2B052ACED370008B04D6 /* Sep24TransactionResponseMock.swift in Sources */,
 				835F0CE4297613EF00793708 /* SorobanTest.swift in Sources */,
 				744A84B82143F02F0086B8FC /* WithdrawResponseMock.swift in Sources */,
 				746D79002195A02C0008AA79 /* TomlTestCase.swift in Sources */,
@@ -4195,6 +4322,9 @@
 				744A84D5214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,
 				743DF4F3201F130200713DE7 /* stellarsdk_macOSTests.swift in Sources */,
 				74A504F52192D85B00A608A0 /* KeyUtils.swift in Sources */,
+				83DB2AFC2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */,
+				83DB2B022ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */,
+				83DB2AF32ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4258,6 +4388,7 @@
 				833CBFA02033536D00C23CFE /* SetOptionsOperationXDR.swift in Sources */,
 				746AD2CE20342D2500A9CF21 /* AccountMergeResultXDR.swift in Sources */,
 				43E34B6D2031E99D003104A9 /* PageResponse.swift in Sources */,
+				83DB2AEE2ACD9FD8008B04D6 /* Sep24TransactionResponse.swift in Sources */,
 				8320A9FA251E7080002FE6FA /* ClaimClaimableBalanceResultXDR.swift in Sources */,
 				83DD2C64202D21D700713FEE /* TransactionLinksResponse.swift in Sources */,
 				EC34A15220503CC5000FB042 /* CTR.swift in Sources */,
@@ -4316,6 +4447,7 @@
 				8369724A202A7F0A00398A98 /* ChangeTrustOperationResponse.swift in Sources */,
 				833CBF90203351E600C23CFE /* MemoXDR.swift in Sources */,
 				83B4CB792527CEAF00EEE55E /* ClaimableBalanceClaimedEffectResponse.swift in Sources */,
+				83DB2AEB2ACD9946008B04D6 /* Sep24TransactionRequest.swift in Sources */,
 				43E34B632031D7AF003104A9 /* OfferLinksResponse.swift in Sources */,
 				83697246202A7C4B00398A98 /* CreatePassiveOfferOperationResponse.swift in Sources */,
 				83DF819626EDF60600AF72CD /* LiquidityPoolRemovedEffectResponse.swift in Sources */,
@@ -4393,6 +4525,7 @@
 				835F0CE929770BB100793708 /* GetHealthResponse.swift in Sources */,
 				EC34A11E20503CC5000FB042 /* Bit.swift in Sources */,
 				743DF550201FBD2B00713DE7 /* AccountService.swift in Sources */,
+				83DB2AE82ACD992D008B04D6 /* Sep24TransactionsRequest.swift in Sources */,
 				835F0CD8297583E100793708 /* InvokeHostFunctionOperation.swift in Sources */,
 				743060CA2138228200E2E9F2 /* DataCreatedEffectResponse.swift in Sources */,
 				8345BA70246FBE9400B07A34 /* FeeBumpTransaction.swift in Sources */,
@@ -4436,6 +4569,7 @@
 				437D8A83202EF0770024D031 /* TradeResponse.swift in Sources */,
 				EC34A15120503CC5000FB042 /* BlockMode.swift in Sources */,
 				830EFC772032511B00607C35 /* OfferEntryXDR.swift in Sources */,
+				83DB2ADC2ACD7486008B04D6 /* Sep24FeeResponse.swift in Sources */,
 				8310BDC326EB5023004D3EF2 /* LiquidityPoolDepositOperation.swift in Sources */,
 				83DD2C60202D0CDE00713FEE /* OperationLinksResponse.swift in Sources */,
 				43E34B672031DCFB003104A9 /* OfferAssetResponse.swift in Sources */,
@@ -4453,6 +4587,7 @@
 				830DAB3D29AD501D00ED4E66 /* TopicFilter.swift in Sources */,
 				EC34A11920503CC5000FB042 /* Cryptors.swift in Sources */,
 				83852ABC266790580013EA2A /* AnchorFeeResponse.swift in Sources */,
+				83DB2ADF2ACD87CD008B04D6 /* Sep24DepositRequest.swift in Sources */,
 				833CBF8E203351B200C23CFE /* TimeBoundsXDR.swift in Sources */,
 				7481B53E20248441000A783E /* EffectsService.swift in Sources */,
 				83379C2E2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift in Sources */,
@@ -4468,6 +4603,7 @@
 				4390830920372BAF00254042 /* Memo.swift in Sources */,
 				830DAB4629AD545600ED4E66 /* EventInfo.swift in Sources */,
 				DDE2DCD726662C9700F238F4 /* OrderbookStreamItem.swift in Sources */,
+				83DB2AD12ACD661F008B04D6 /* InteractiveServiceError.swift in Sources */,
 				836658F42A6E777800E8B8D9 /* RestoreFootprintResultXDR.swift in Sources */,
 				EC34A12B20503CC5000FB042 /* Array+Foundation.swift in Sources */,
 				83B4CB542527308500EEE55E /* ClaimClaimableBalanceOperation.swift in Sources */,
@@ -4499,6 +4635,7 @@
 				744FC6E8212D3CCC00ADFC88 /* String.swift in Sources */,
 				835F0CF829770C3F00793708 /* SimulateTransactionCost.swift in Sources */,
 				833CBFE72036F7C200C23CFE /* AccountMergeOperation.swift in Sources */,
+				83DB2ACD2ACD6265008B04D6 /* InteractiveService.swift in Sources */,
 				744602E4203B22CC00D807C1 /* Network.swift in Sources */,
 				EC34A11F20503CC5000FB042 /* HMAC.swift in Sources */,
 				EC34A14F20503CC5000FB042 /* PCBC.swift in Sources */,
@@ -4530,6 +4667,7 @@
 				83FE810823F071CE00F4A13D /* FeeStatsResponse.swift in Sources */,
 				744FC6E6212D3CCC00ADFC88 /* Toml.swift in Sources */,
 				83697240202A784200398A98 /* PaymentOperationResponse.swift in Sources */,
+				83DB2AE22ACD9498008B04D6 /* Sep24InteractiveResponse.swift in Sources */,
 				EC34A14D20503CC5000FB042 /* RandomAccessBlockModeWorker.swift in Sources */,
 				8320AA0E251E87A4002FE6FA /* ClaimClaimableBalanceOperationResponse.swift in Sources */,
 				833CBFD92036F19000C23CFE /* PaymentOperation.swift in Sources */,
@@ -4652,6 +4790,7 @@
 				743DF582202053B100713DE7 /* Seed.swift in Sources */,
 				830DAB4F29AD60E100ED4E66 /* GetNetworkResponse.swift in Sources */,
 				83DD714A281BE84700530C64 /* TransactionPreconditions.swift in Sources */,
+				83DB2AE52ACD97AB008B04D6 /* Sep24WithdrawRequest.swift in Sources */,
 				8369722E2028F7A000398A98 /* OfferRemovedEffectResponse.swift in Sources */,
 				7464B725219442900029FDC8 /* AccountInformation.swift in Sources */,
 				830EFC7B203252B100607C35 /* TrustlineEntryXDR.swift in Sources */,
@@ -4660,6 +4799,7 @@
 				83697252202A80D600398A98 /* ManageDataOperationResponse.swift in Sources */,
 				EC34A0CE20503CAB000FB042 /* HDCrypto.swift in Sources */,
 				83AFD64D234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift in Sources */,
+				83DB2AD92ACD734B008B04D6 /* Sep24FeeRequest.swift in Sources */,
 				830E7D512529C1790059A4B4 /* BeginSponsoringFutureReservesOperation.swift in Sources */,
 				83AFD635234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */,
 				83DF818D26EDF5B200AF72CD /* LiquidityPoolWithdrewEffectResponse.swift in Sources */,
@@ -4691,6 +4831,7 @@
 				EC34A11A20503CC5000FB042 /* HKDF.swift in Sources */,
 				830E7DBB2529E24B0059A4B4 /* TrustlineSponsorshipUpdatedEffectResponse.swift in Sources */,
 				8320A9F0251E6ED6002FE6FA /* CreateClaimableBalanceResultXDR.swift in Sources */,
+				83DB2AD52ACD67C0008B04D6 /* Sep24InfoResponse.swift in Sources */,
 				744C4DB7202A257400B46CDE /* OperationResponse.swift in Sources */,
 				743DF56D2020530A00713DE7 /* sc.c in Sources */,
 				83DF81A826EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift in Sources */,
@@ -4748,6 +4889,7 @@
 			files = (
 				743D9C1921B57246004C56BD /* PostCallbackMock.swift in Sources */,
 				744FC700212E944500ADFC88 /* FederationTestCase.swift in Sources */,
+				83DB2AFE2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift in Sources */,
 				836971FA202548E100398A98 /* AssetsRemoteTestCase.swift in Sources */,
 				744A84D121453AA70086B8FC /* PutCustomerInfoResponseMock.swift in Sources */,
 				8369723C202A707600398A98 /* ServerMock.swift in Sources */,
@@ -4759,6 +4901,8 @@
 				C69B1CAB219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift in Sources */,
 				4367E5FE203ED15500C0AB4F /* OffersResponsesMock.swift in Sources */,
 				83AFD64E234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift in Sources */,
+				83DB2B012ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */,
+				83DB2AF22ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */,
 				7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */,
 				8357A919203B0EEE00A144A9 /* AssetsResponsesMock.swift in Sources */,
 				4367E602203EE79700C0AB4F /* TradesLocalTestCase.swift in Sources */,
@@ -4774,6 +4918,7 @@
 				83F4E6212A27ABC300DD42A9 /* GetCustomerResponseMock.swift in Sources */,
 				EC34A15C205043AB000FB042 /* MnemonicGeneration.swift in Sources */,
 				744A84BD214403480086B8FC /* AnchorInfoResponseMock.swift in Sources */,
+				83DB2B042ACED370008B04D6 /* Sep24TransactionResponseMock.swift in Sources */,
 				8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */,
 				74723343219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift in Sources */,
 				4367E604203EE7A800C0AB4F /* TradesResponsesMock.swift in Sources */,
@@ -4786,6 +4931,7 @@
 				43E24867204056FD00C83458 /* OperationXDRTestCase.swift in Sources */,
 				8357A923203B7B5100A144A9 /* EffectsResponsesMock.swift in Sources */,
 				8357A921203B7B1F00A144A9 /* EffectsLocalTestCase.swift in Sources */,
+				83DB2AF52ACEACF2008B04D6 /* Sep24InfoResponseMock.swift in Sources */,
 				745F2BC1202C4D24008763F1 /* TransactionsRemoteTestCase.swift in Sources */,
 				83FE811223F0856600F4A13D /* FeeStatsRemoteTestCase.swift in Sources */,
 				83AFD63E234FC60700A574D2 /* PathPaymentStrictSendOperation.swift in Sources */,
@@ -4796,6 +4942,7 @@
 				8357A915203B097D00A144A9 /* AssetsLocalTestCase.swift in Sources */,
 				830A8F1129AEC3F800B30483 /* SorobanEventsTest.swift in Sources */,
 				C69B1CAD219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift in Sources */,
+				83DB2AF82ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift in Sources */,
 				4367E5FA203EA65300C0AB4F /* PaymentsResponsesMock.swift in Sources */,
 				8310BDCE26EB61B0004D3EF2 /* AmmTestCase.swift in Sources */,
 				7467C4072142740C00412FE1 /* DepositResponseMock.swift in Sources */,
@@ -4819,6 +4966,7 @@
 				83D6D2ED2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift in Sources */,
 				EC34A15E20504F92000FB042 /* MnemonicKeyPairGeneration.swift in Sources */,
 				744A84D4214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,
+				83DB2AFB2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */,
 				83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */,
 				8357A917203B0AD300A144A9 /* ResponseMock.swift in Sources */,
 				74A504F42192D85B00A608A0 /* KeyUtils.swift in Sources */,
@@ -4935,7 +5083,7 @@
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdk-macOSTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -4952,7 +5100,7 @@
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdk-macOSTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -4966,6 +5114,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdkTests-Host/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -4980,6 +5129,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdkTests-Host/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -4995,6 +5145,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdkTests-HostTests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5011,6 +5162,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdkTests-HostTests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5026,6 +5178,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdkTests-HostUITests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5041,6 +5194,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdkTests-HostUITests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5223,6 +5377,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = stellarsdkTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5239,6 +5394,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = stellarsdkTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5342,6 +5498,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = stellarsdkTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5384,7 +5541,7 @@
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdk-macOSTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -5398,6 +5555,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdkTests-Host/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5413,6 +5571,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdkTests-HostTests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5428,6 +5587,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdkTests-HostUITests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5524,6 +5684,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = stellarsdkTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdkTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5566,7 +5727,7 @@
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdk-macOSTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -5580,6 +5741,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdkTests-Host/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5595,6 +5757,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdkTests-HostTests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -5610,6 +5773,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QN6AY4TH84;
 				INFOPLIST_FILE = "stellarsdkTests-HostUITests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
