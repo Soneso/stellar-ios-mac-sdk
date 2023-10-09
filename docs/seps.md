@@ -13,6 +13,7 @@ This SDK provides implementations of following SEPs:
 - [SEP-0010](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md) - Stellar Web Authentication
 - [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md) - Txrep
 - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md) - Anchor/Client customer info transfer
+- [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md) - Hosted Deposit and Withdrawal
 
 
 # Stellar Info File - SEP-0001
@@ -398,3 +399,7 @@ Txrep: human-readable low-level representation of Stellar transactions is descri
 For more details have a look to our [Txrep examples](docs/SEP-0011.md)
 
 You can find more source code examples regarding SEP-0011 in this [SDK test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/transactions/TransactionsLocalTestCase.swift) of the SDK. 
+
+# Hosted Deposit and Withdrawal
+
+see [SEP-24 - interactive](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0024.md)

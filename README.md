@@ -630,6 +630,12 @@ Txrep: human-readable low-level representation of Stellar transactions is descri
 For more details have a look to our [Txrep examples](docs/SEP-0011.md)
 
 
+### 10. Hosted Deposit and Withdrawal
+
+Helps clients to interact with anchors in a standard way defined by [SEP-0024: Hosted Deposit and Withdrawal](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md).
+
+See [SEP-0024 SDK documentation](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0024.md)
+
 ## Documentation and Examples
 
 You can find more documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.
@@ -651,6 +657,7 @@ Our SDK is also used by the [LOBSTR Wallet](https://lobstr.co).
 - [SEP-0010](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md) - Stellar Web Authentication
 - [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md) - Txrep
 - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md) - Anchor/Client customer info transfer
+- [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md) - Hosted Deposit and Withdrawal
 
 ## Soroban support
 
