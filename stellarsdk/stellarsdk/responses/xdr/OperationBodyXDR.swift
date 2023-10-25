@@ -34,7 +34,7 @@ public enum OperationBodyXDR: XDRCodable {
     case liquidityPoolDeposit(LiquidityPoolDepositOpXDR)
     case liquidityPoolWithdraw(LiquidityPoolWithdrawOpXDR)
     case invokeHostFunction(InvokeHostFunctionOpXDR)
-    case bumpFootprintExpiration(BumpFootprintExpirationOpXDR)
+    case extendFootprintTTL(ExtendFootprintTTLOpXDR)
     case restoreFootprint(RestoreFootprintOpXDR)
     
     public init(from decoder: Decoder) throws {
@@ -93,8 +93,8 @@ public enum OperationBodyXDR: XDRCodable {
                 self = .liquidityPoolWithdraw(try container.decode(LiquidityPoolWithdrawOpXDR.self))
             case OperationType.invokeHostFunction.rawValue:
                 self = .invokeHostFunction(try container.decode(InvokeHostFunctionOpXDR.self))
-            case OperationType.bumpFootprintExpiration.rawValue:
-                self = .bumpFootprintExpiration(try container.decode(BumpFootprintExpirationOpXDR.self))
+            case OperationType.extendFootprintTTL.rawValue:
+                self = .extendFootprintTTL(try container.decode(ExtendFootprintTTLOpXDR.self))
             case OperationType.restoreFootprint.rawValue:
                 self = .restoreFootprint(try container.decode(RestoreFootprintOpXDR.self))
             default:
@@ -129,7 +129,7 @@ public enum OperationBodyXDR: XDRCodable {
             case .liquidityPoolDeposit: return OperationType.liquidityPoolDeposit.rawValue
             case .liquidityPoolWithdraw: return OperationType.liquidityPoolWithdraw.rawValue
             case .invokeHostFunction: return OperationType.invokeHostFunction.rawValue
-            case .bumpFootprintExpiration: return OperationType.bumpFootprintExpiration.rawValue
+            case .extendFootprintTTL: return OperationType.extendFootprintTTL.rawValue
             case .restoreFootprint: return OperationType.restoreFootprint.rawValue
         }
     }
@@ -190,7 +190,7 @@ public enum OperationBodyXDR: XDRCodable {
             try container.encode(op)
         case .invokeHostFunction(let op):
             try container.encode(op)
-        case .bumpFootprintExpiration(let op):
+        case .extendFootprintTTL(let op):
             try container.encode(op)
         case .restoreFootprint(let op):
             try container.encode(op)

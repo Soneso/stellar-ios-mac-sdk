@@ -44,7 +44,7 @@ public enum OperationResultXDR: XDRCodable {
     case liquidityPoolDeposit(Int32, LiquidityPoolDepositResultXDR)
     case liquidityPoolWithdraw(Int32, LiquidityPoolWithdrawResultXDR)
     case invokeHostFunction(Int32, InvokeHostFunctionResultXDR)
-    case bumpFootprintExpiration(Int32, BumpFootprintExpirationResultXDR)
+    case extendFootprintTTL(Int32, ExtendFootprintTTLResultXDR)
     case restoreFootprint(Int32, RestoreFootprintResultXDR)
     case empty (Int32)
     
@@ -107,8 +107,8 @@ public enum OperationResultXDR: XDRCodable {
                     self = .liquidityPoolWithdraw(code.rawValue, try container.decode(LiquidityPoolWithdrawResultXDR.self))
                 case .invokeHostFunction:
                     self = .invokeHostFunction(code.rawValue, try container.decode(InvokeHostFunctionResultXDR.self))
-                case .bumpFootprintExpiration:
-                    self = .bumpFootprintExpiration(code.rawValue, try container.decode(BumpFootprintExpirationResultXDR.self))
+                case .extendFootprintTTL:
+                    self = .extendFootprintTTL(code.rawValue, try container.decode(ExtendFootprintTTLResultXDR.self))
                 case .restoreFootprint:
                     self = .restoreFootprint(code.rawValue, try container.decode(RestoreFootprintResultXDR.self))
             }
@@ -197,7 +197,7 @@ public enum OperationResultXDR: XDRCodable {
             case .invokeHostFunction(let code, let result):
                 try container.encode(code)
                 try container.encode(result)
-            case .bumpFootprintExpiration(let code, let result):
+            case .extendFootprintTTL(let code, let result):
                 try container.encode(code)
                 try container.encode(result)
             case .restoreFootprint(let code, let result):

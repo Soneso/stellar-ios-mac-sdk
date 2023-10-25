@@ -16,7 +16,7 @@ public enum InvokeHostFunctionResultCode: Int32 {
     case malformed = -1
     case trapped = -2
     case resourceLimitExceeded = -3
-    case entryExpired = -4
+    case entryArchived = -4
     case insufficientRefundableFee = -5
 }
 
@@ -43,7 +43,7 @@ public enum InvokeHostFunctionResultXDR: XDRCodable {
             self = .trapped
         case .resourceLimitExceeded:
             self = .resourceLimitExceeded
-        case .entryExpired:
+        case .entryArchived:
             self = .entryExpired
         default:
             self = .insufficientRefundableFee

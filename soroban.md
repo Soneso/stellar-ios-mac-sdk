@@ -227,7 +227,7 @@ sorobanServer.getTransaction(transactionHash: transactionId) { (response) -> (Vo
 
 Success!
 
-#### Get Ledger Entry
+#### Get Ledger Entries
 
 The Soroban-RPC server also provides the possibility to request values of ledger entries directly. It will allow you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry. 
 
@@ -237,7 +237,7 @@ For example, to fetch contract wasm byte-code, use the ContractCode ledger entry
 let contractCodeKey = LedgerKeyContractCodeXDR(wasmId: wasmId, bodyType: ContractEntryBodyType.dataEntry)
 let ledgerKey = LedgerKeyXDR.contractCode(contractCodeKey)
 
-sorobanServer.getLedgerEntry(base64EncodedKey:ledgerKey.xdrEncoded) { (response) -> (Void) in // ...
+sorobanServer.getLedgerEntries(base64EncodedKeys:[ledgerKey.xdrEncoded]) { (response) -> (Void) in // ...
 ```
 If you already have a contractId you can load the code as follows:
 

@@ -1,5 +1,5 @@
 //
-//  BumpFootprintExpirationOpXDR.swift
+//  ExtendFootprintTTLOpXDR.swift
 //  stellarsdk
 //
 //  Created by Christian Rogobete on 24.07.23.
@@ -8,24 +8,24 @@
 
 import Foundation
 
-public struct BumpFootprintExpirationOpXDR: XDRCodable {
+public struct ExtendFootprintTTLOpXDR: XDRCodable {
     public var ext: ExtensionPoint
-    public var ledgersToExpire: UInt32
+    public var extendTo: UInt32
     
-    public init(ext: ExtensionPoint, ledgersToExpire: UInt32) {
+    public init(ext: ExtensionPoint, extendTo: UInt32) {
         self.ext = ext
-        self.ledgersToExpire = ledgersToExpire
+        self.extendTo = extendTo
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         ext = try container.decode(ExtensionPoint.self)
-        ledgersToExpire = try container.decode(UInt32.self)
+        extendTo = try container.decode(UInt32.self)
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(ext)
-        try container.encode(ledgersToExpire)
+        try container.encode(extendTo)
     }
 }

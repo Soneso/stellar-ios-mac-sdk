@@ -171,7 +171,7 @@ class OperationsLocalTestCase: XCTestCase {
                     XCTAssert(false)
                 case .invokeHostFunction:
                     XCTAssert(false)
-                case .bumpFootprintExpiration:
+                case .extendFootprintTTL:
                     XCTAssert(false)
                 case .restoreFootprint:
                     XCTAssert(false)

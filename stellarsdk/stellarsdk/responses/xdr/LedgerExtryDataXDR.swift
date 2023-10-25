@@ -18,7 +18,7 @@ public enum LedgerEntryDataXDR: XDRCodable {
     case contractData (ContractDataEntryXDR)
     case contractCode (ContractCodeEntryXDR)
     case configSetting (ConfigSettingEntryXDR)
-    case expiration (ExpirationEntryXDR)
+    case ttl (TTLEntryXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -44,8 +44,8 @@ public enum LedgerEntryDataXDR: XDRCodable {
                 self = .contractCode(try container.decode(ContractCodeEntryXDR.self))
             case LedgerEntryType.configSetting.rawValue:
                 self = .configSetting(try container.decode(ConfigSettingEntryXDR.self))
-            case LedgerEntryType.expiration.rawValue:
-                self = .expiration(try container.decode(ExpirationEntryXDR.self))
+            case LedgerEntryType.ttl.rawValue:
+                self = .ttl(try container.decode(TTLEntryXDR.self))
             default:
                 self = .account(try container.decode(AccountEntryXDR.self))
         }
@@ -63,7 +63,7 @@ public enum LedgerEntryDataXDR: XDRCodable {
             case .contractData: return LedgerEntryType.contractData.rawValue
             case .contractCode: return LedgerEntryType.contractCode.rawValue
             case .configSetting: return LedgerEntryType.configSetting.rawValue
-            case .expiration: return LedgerEntryType.expiration.rawValue
+            case .ttl: return LedgerEntryType.ttl.rawValue
         }
     }
     
@@ -91,7 +91,7 @@ public enum LedgerEntryDataXDR: XDRCodable {
             try container.encode(contractCode)
         case .configSetting (let configSetting):
             try container.encode(configSetting)
-        case .expiration(let value):
+        case .ttl(let value):
             try container.encode(value)
         }
     }
@@ -186,9 +186,9 @@ public enum LedgerEntryDataXDR: XDRCodable {
         }
     }
     
-    public var expiration:ExpirationEntryXDR? {
+    public var ttl:TTLEntryXDR? {
         switch self {
-        case .expiration(let val):
+        case .ttl(let val):
             return val
         default:
             return nil
@@ -519,7 +519,7 @@ public enum ConfigSettingEntryXDR: XDRCodable {
     case contractCostParamsMemBytes(ContractCostParamsXDR)
     case contractDataKeySizeBytes(UInt32)
     case contractDataEntrySizeBytes(UInt32)
-    case stateExpirationSettings(StateExpirationSettingsXDR)
+    case stateArchivalSettings(StateArchivalSettingsXDR)
     case contractExecutionLanes(ConfigSettingContractExecutionLanesV0XDR)
     case bucketListSizeWindow([UInt64])
     case evictionIterator(EvictionIteratorXDR)
@@ -550,8 +550,8 @@ public enum ConfigSettingEntryXDR: XDRCodable {
                 self = .contractDataKeySizeBytes(try container.decode(UInt32.self))
             case ConfigSettingID.contractDataEntrySizeBytes.rawValue:
                 self = .contractDataEntrySizeBytes(try container.decode(UInt32.self))
-            case ConfigSettingID.stateExpiration.rawValue:
-                self = .stateExpirationSettings(try container.decode(StateExpirationSettingsXDR.self))
+            case ConfigSettingID.stateArchival.rawValue:
+                self = .stateArchivalSettings(try container.decode(StateArchivalSettingsXDR.self))
             case ConfigSettingID.contractExecutionLanes.rawValue:
                 self = .contractExecutionLanes(try container.decode(ConfigSettingContractExecutionLanesV0XDR.self))
             case ConfigSettingID.bucketListSizeWindow.rawValue:
@@ -576,7 +576,7 @@ public enum ConfigSettingEntryXDR: XDRCodable {
             case .contractCostParamsMemBytes: return ConfigSettingID.contractCostParamsMemoryBytes.rawValue
             case .contractDataKeySizeBytes: return ConfigSettingID.contractDataKeySizeBytes.rawValue
             case .contractDataEntrySizeBytes: return ConfigSettingID.contractDataEntrySizeBytes.rawValue
-            case .stateExpirationSettings: return ConfigSettingID.stateExpiration.rawValue
+            case .stateArchivalSettings: return ConfigSettingID.stateArchival.rawValue
             case .contractExecutionLanes: return ConfigSettingID.contractExecutionLanes.rawValue
             case .bucketListSizeWindow: return ConfigSettingID.bucketListSizeWindow.rawValue
             case .evictionIterator: return ConfigSettingID.evictionIterator.rawValue
@@ -609,7 +609,7 @@ public enum ConfigSettingEntryXDR: XDRCodable {
             try container.encode(val)
         case .contractDataEntrySizeBytes(let val):
             try container.encode(val)
-        case .stateExpirationSettings (let val):
+        case .stateArchivalSettings (let val):
             try container.encode(val)
         case .contractExecutionLanes (let val):
             try container.encode(val)
@@ -621,25 +621,25 @@ public enum ConfigSettingEntryXDR: XDRCodable {
     }
 }
 
-public struct StateExpirationSettingsXDR: XDRCodable {
+public struct StateArchivalSettingsXDR: XDRCodable {
 
-    public var maxEntryExpiration: UInt32
-    public var minTempEntryExpiration: UInt32
-    public var minPersistentEntryExpiration: UInt32
+    public var maxEntryTTL: UInt32
+    public var minTemporaryTTL: UInt32
+    public var minPersistentTTL: UInt32
     public var persistentRentRateDenominator: Int64
     public var tempRentRateDenominator: Int64
-    public var maxEntriesToExpire: UInt32
+    public var maxEntriesToArchive: UInt32
     public var bucketListSizeWindowSampleSize: UInt32
     public var evictionScanSize: UInt64
     public var startingEvictionScanLevel: UInt32
 
-    public init(maxEntryExpiration: UInt32, minTempEntryExpiration: UInt32, minPersistentEntryExpiration: UInt32, persistentRentRateDenominator: Int64, tempRentRateDenominator: Int64, maxEntriesToExpire: UInt32, bucketListSizeWindowSampleSize: UInt32, evictionScanSize: UInt64, startingEvictionScanLevel: UInt32) {
-        self.maxEntryExpiration = maxEntryExpiration
-        self.minTempEntryExpiration = minTempEntryExpiration
-        self.minPersistentEntryExpiration = minPersistentEntryExpiration
+    public init(maxEntryTTL: UInt32, minTemporaryTTL: UInt32, minPersistentTTL: UInt32, persistentRentRateDenominator: Int64, tempRentRateDenominator: Int64, maxEntriesToArchive: UInt32, bucketListSizeWindowSampleSize: UInt32, evictionScanSize: UInt64, startingEvictionScanLevel: UInt32) {
+        self.maxEntryTTL = maxEntryTTL
+        self.minTemporaryTTL = minTemporaryTTL
+        self.minPersistentTTL = minPersistentTTL
         self.persistentRentRateDenominator = persistentRentRateDenominator
         self.tempRentRateDenominator = tempRentRateDenominator
-        self.maxEntriesToExpire = maxEntriesToExpire
+        self.maxEntriesToArchive = maxEntriesToArchive
         self.bucketListSizeWindowSampleSize = bucketListSizeWindowSampleSize
         self.evictionScanSize = evictionScanSize
         self.startingEvictionScanLevel = startingEvictionScanLevel
@@ -647,12 +647,12 @@ public struct StateExpirationSettingsXDR: XDRCodable {
 
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        maxEntryExpiration = try container.decode(UInt32.self)
-        minTempEntryExpiration = try container.decode(UInt32.self)
-        minPersistentEntryExpiration = try container.decode(UInt32.self)
+        maxEntryTTL = try container.decode(UInt32.self)
+        minTemporaryTTL = try container.decode(UInt32.self)
+        minPersistentTTL = try container.decode(UInt32.self)
         persistentRentRateDenominator = try container.decode(Int64.self)
         tempRentRateDenominator = try container.decode(Int64.self)
-        maxEntriesToExpire = try container.decode(UInt32.self)
+        maxEntriesToArchive = try container.decode(UInt32.self)
         bucketListSizeWindowSampleSize = try container.decode(UInt32.self)
         evictionScanSize = try container.decode(UInt64.self)
         startingEvictionScanLevel = try container.decode(UInt32.self)
@@ -660,12 +660,12 @@ public struct StateExpirationSettingsXDR: XDRCodable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(maxEntryExpiration)
-        try container.encode(minTempEntryExpiration)
-        try container.encode(minPersistentEntryExpiration)
+        try container.encode(maxEntryTTL)
+        try container.encode(minTemporaryTTL)
+        try container.encode(minPersistentTTL)
         try container.encode(persistentRentRateDenominator)
         try container.encode(tempRentRateDenominator)
-        try container.encode(maxEntriesToExpire)
+        try container.encode(maxEntriesToArchive)
         try container.encode(bucketListSizeWindowSampleSize)
         try container.encode(evictionScanSize)
         try container.encode(startingEvictionScanLevel)

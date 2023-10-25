@@ -731,6 +731,10 @@
 		832AF8F1263C5AE800B7EB49 /* ClaimableBalanceClawedBackEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832AF8EF263C5AE800B7EB49 /* ClaimableBalanceClawedBackEffectResponse.swift */; };
 		832AF8FA263C5B0800B7EB49 /* TrustLineFlagsUpdatedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832AF8F9263C5B0800B7EB49 /* TrustLineFlagsUpdatedEffectResponse.swift */; };
 		832AF8FB263C5B0800B7EB49 /* TrustLineFlagsUpdatedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832AF8F9263C5B0800B7EB49 /* TrustLineFlagsUpdatedEffectResponse.swift */; };
+		832C2B1C2AE958EE005BB7B8 /* GetLedgerEntriesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B1B2AE958EE005BB7B8 /* GetLedgerEntriesResponse.swift */; };
+		832C2B1D2AE958EE005BB7B8 /* GetLedgerEntriesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B1B2AE958EE005BB7B8 /* GetLedgerEntriesResponse.swift */; };
+		832C2B1F2AE95926005BB7B8 /* LedgerEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B1E2AE95926005BB7B8 /* LedgerEntry.swift */; };
+		832C2B202AE95926005BB7B8 /* LedgerEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B1E2AE95926005BB7B8 /* LedgerEntry.swift */; };
 		8331520B203E2635007F8F84 /* TransactionsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83315209203E2634007F8F84 /* TransactionsLocalTestCase.swift */; };
 		8331520C203E2635007F8F84 /* TransactionsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8331520A203E2635007F8F84 /* TransactionsResponsesMock.swift */; };
 		833152132040CAAF007F8F84 /* StellarSDKLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833152122040CAAF007F8F84 /* StellarSDKLog.swift */; };
@@ -866,8 +870,6 @@
 		835F0CEA29770BB100793708 /* GetHealthResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CE829770BB100793708 /* GetHealthResponse.swift */; };
 		835F0CEC29770BD000793708 /* GetAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CEB29770BD000793708 /* GetAccountResponse.swift */; };
 		835F0CED29770BD000793708 /* GetAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CEB29770BD000793708 /* GetAccountResponse.swift */; };
-		835F0CEF29770BED00793708 /* GetLedgerEntryResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CEE29770BED00793708 /* GetLedgerEntryResponse.swift */; };
-		835F0CF029770BED00793708 /* GetLedgerEntryResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CEE29770BED00793708 /* GetLedgerEntryResponse.swift */; };
 		835F0CF229770C0800793708 /* SimulateTransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CF129770C0800793708 /* SimulateTransactionResponse.swift */; };
 		835F0CF329770C0800793708 /* SimulateTransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CF129770C0800793708 /* SimulateTransactionResponse.swift */; };
 		835F0CF829770C3F00793708 /* SimulateTransactionCost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CF729770C3F00793708 /* SimulateTransactionCost.swift */; };
@@ -884,20 +886,20 @@
 		835F0D0E2978295800793708 /* TransactionMetaV3XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0D0C2978295800793708 /* TransactionMetaV3XDR.swift */; };
 		835F0D1029782A9500793708 /* ContractEventXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0D0F29782A9500793708 /* ContractEventXDR.swift */; };
 		835F0D1129782A9500793708 /* ContractEventXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0D0F29782A9500793708 /* ContractEventXDR.swift */; };
-		836658EB2A6E72DA00E8B8D9 /* BumpFootprintExpirationOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658EA2A6E72DA00E8B8D9 /* BumpFootprintExpirationOpXDR.swift */; };
-		836658EC2A6E72DA00E8B8D9 /* BumpFootprintExpirationOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658EA2A6E72DA00E8B8D9 /* BumpFootprintExpirationOpXDR.swift */; };
-		836658EE2A6E73D700E8B8D9 /* BumpFootprintExpirationResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658ED2A6E73D700E8B8D9 /* BumpFootprintExpirationResultXDR.swift */; };
-		836658EF2A6E73D700E8B8D9 /* BumpFootprintExpirationResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658ED2A6E73D700E8B8D9 /* BumpFootprintExpirationResultXDR.swift */; };
+		836658EB2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658EA2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift */; };
+		836658EC2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658EA2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift */; };
+		836658EE2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658ED2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift */; };
+		836658EF2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658ED2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift */; };
 		836658F12A6E773A00E8B8D9 /* RestoreFootprintOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658F02A6E773A00E8B8D9 /* RestoreFootprintOpXDR.swift */; };
 		836658F22A6E773A00E8B8D9 /* RestoreFootprintOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658F02A6E773A00E8B8D9 /* RestoreFootprintOpXDR.swift */; };
 		836658F42A6E777800E8B8D9 /* RestoreFootprintResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658F32A6E777800E8B8D9 /* RestoreFootprintResultXDR.swift */; };
 		836658F52A6E777800E8B8D9 /* RestoreFootprintResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658F32A6E777800E8B8D9 /* RestoreFootprintResultXDR.swift */; };
-		836658F72A6ECB9700E8B8D9 /* BumpFootprintExpirationOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658F62A6ECB9700E8B8D9 /* BumpFootprintExpirationOperation.swift */; };
-		836658F82A6ECB9700E8B8D9 /* BumpFootprintExpirationOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658F62A6ECB9700E8B8D9 /* BumpFootprintExpirationOperation.swift */; };
+		836658F72A6ECB9700E8B8D9 /* ExtendFootprintTTLOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658F62A6ECB9700E8B8D9 /* ExtendFootprintTTLOperation.swift */; };
+		836658F82A6ECB9700E8B8D9 /* ExtendFootprintTTLOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658F62A6ECB9700E8B8D9 /* ExtendFootprintTTLOperation.swift */; };
 		836658FA2A6ECEFD00E8B8D9 /* RestoreFootprintOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658F92A6ECEFD00E8B8D9 /* RestoreFootprintOperation.swift */; };
 		836658FB2A6ECEFD00E8B8D9 /* RestoreFootprintOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658F92A6ECEFD00E8B8D9 /* RestoreFootprintOperation.swift */; };
-		836658FD2A6ECFE900E8B8D9 /* BumpFootprintExpirationOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FC2A6ECFE900E8B8D9 /* BumpFootprintExpirationOperationResponse.swift */; };
-		836658FE2A6ECFE900E8B8D9 /* BumpFootprintExpirationOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FC2A6ECFE900E8B8D9 /* BumpFootprintExpirationOperationResponse.swift */; };
+		836658FD2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FC2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift */; };
+		836658FE2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FC2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift */; };
 		836659002A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FF2A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift */; };
 		836659012A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FF2A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift */; };
 		836659052A6EFE3000E8B8D9 /* soroban_auth_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 836659022A6EFE3000E8B8D9 /* soroban_auth_contract.wasm */; };
@@ -1567,6 +1569,8 @@
 		832AF8E5263BE8E500B7EB49 /* ClawbackTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClawbackTestCase.swift; sourceTree = "<group>"; };
 		832AF8EF263C5AE800B7EB49 /* ClaimableBalanceClawedBackEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimableBalanceClawedBackEffectResponse.swift; sourceTree = "<group>"; };
 		832AF8F9263C5B0800B7EB49 /* TrustLineFlagsUpdatedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrustLineFlagsUpdatedEffectResponse.swift; sourceTree = "<group>"; };
+		832C2B1B2AE958EE005BB7B8 /* GetLedgerEntriesResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetLedgerEntriesResponse.swift; sourceTree = "<group>"; };
+		832C2B1E2AE95926005BB7B8 /* LedgerEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerEntry.swift; sourceTree = "<group>"; };
 		83315209203E2634007F8F84 /* TransactionsLocalTestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionsLocalTestCase.swift; sourceTree = "<group>"; };
 		8331520A203E2635007F8F84 /* TransactionsResponsesMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionsResponsesMock.swift; sourceTree = "<group>"; };
 		833152122040CAAF007F8F84 /* StellarSDKLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StellarSDKLog.swift; sourceTree = "<group>"; };
@@ -1663,7 +1667,6 @@
 		835F0CE529770B8B00793708 /* SorobanRpcRequestError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SorobanRpcRequestError.swift; sourceTree = "<group>"; };
 		835F0CE829770BB100793708 /* GetHealthResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetHealthResponse.swift; sourceTree = "<group>"; };
 		835F0CEB29770BD000793708 /* GetAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetAccountResponse.swift; sourceTree = "<group>"; };
-		835F0CEE29770BED00793708 /* GetLedgerEntryResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetLedgerEntryResponse.swift; sourceTree = "<group>"; };
 		835F0CF129770C0800793708 /* SimulateTransactionResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulateTransactionResponse.swift; sourceTree = "<group>"; };
 		835F0CF729770C3F00793708 /* SimulateTransactionCost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulateTransactionCost.swift; sourceTree = "<group>"; };
 		835F0CFA29770C6E00793708 /* Footprint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Footprint.swift; sourceTree = "<group>"; };
@@ -1672,13 +1675,13 @@
 		835F0D092977F11400793708 /* TransactionStatusError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionStatusError.swift; sourceTree = "<group>"; };
 		835F0D0C2978295800793708 /* TransactionMetaV3XDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMetaV3XDR.swift; sourceTree = "<group>"; };
 		835F0D0F29782A9500793708 /* ContractEventXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractEventXDR.swift; sourceTree = "<group>"; };
-		836658EA2A6E72DA00E8B8D9 /* BumpFootprintExpirationOpXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BumpFootprintExpirationOpXDR.swift; sourceTree = "<group>"; };
-		836658ED2A6E73D700E8B8D9 /* BumpFootprintExpirationResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BumpFootprintExpirationResultXDR.swift; sourceTree = "<group>"; };
+		836658EA2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendFootprintTTLOpXDR.swift; sourceTree = "<group>"; };
+		836658ED2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendFootprintTTLResultXDR.swift; sourceTree = "<group>"; };
 		836658F02A6E773A00E8B8D9 /* RestoreFootprintOpXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreFootprintOpXDR.swift; sourceTree = "<group>"; };
 		836658F32A6E777800E8B8D9 /* RestoreFootprintResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreFootprintResultXDR.swift; sourceTree = "<group>"; };
-		836658F62A6ECB9700E8B8D9 /* BumpFootprintExpirationOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BumpFootprintExpirationOperation.swift; sourceTree = "<group>"; };
+		836658F62A6ECB9700E8B8D9 /* ExtendFootprintTTLOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendFootprintTTLOperation.swift; sourceTree = "<group>"; };
 		836658F92A6ECEFD00E8B8D9 /* RestoreFootprintOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreFootprintOperation.swift; sourceTree = "<group>"; };
-		836658FC2A6ECFE900E8B8D9 /* BumpFootprintExpirationOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BumpFootprintExpirationOperationResponse.swift; sourceTree = "<group>"; };
+		836658FC2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendFootprintTTLOperationResponse.swift; sourceTree = "<group>"; };
 		836658FF2A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreFootprintOperationResponse.swift; sourceTree = "<group>"; };
 		836659022A6EFE3000E8B8D9 /* soroban_auth_contract.wasm */ = {isa = PBXFileReference; lastKnownFileType = file; path = soroban_auth_contract.wasm; sourceTree = "<group>"; };
 		836659032A6EFE3000E8B8D9 /* soroban_events_contract.wasm */ = {isa = PBXFileReference; lastKnownFileType = file; path = soroban_events_contract.wasm; sourceTree = "<group>"; };
@@ -2410,7 +2413,7 @@
 				83438A0826E8CF03009116D0 /* LiquidityPoolDepostOperationResponse.swift */,
 				83438A1226E8CF2C009116D0 /* LiquidityPoolWithdrawOperationResponse.swift */,
 				835F0CDA2975FCB400793708 /* InvokeHostFunctionOperationResponse.swift */,
-				836658FC2A6ECFE900E8B8D9 /* BumpFootprintExpirationOperationResponse.swift */,
+				836658FC2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift */,
 				836658FF2A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift */,
 			);
 			path = operations_responses;
@@ -2713,7 +2716,6 @@
 				835F0D0029770CA700793708 /* GetTransactionResponse.swift */,
 				835F0D092977F11400793708 /* TransactionStatusError.swift */,
 				835F0CE529770B8B00793708 /* SorobanRpcRequestError.swift */,
-				835F0CEE29770BED00793708 /* GetLedgerEntryResponse.swift */,
 				83DDEEDD29E3EFC20052EE8D /* GetLatestLedgerResponse.swift */,
 				835F0CF129770C0800793708 /* SimulateTransactionResponse.swift */,
 				835F0CF729770C3F00793708 /* SimulateTransactionCost.swift */,
@@ -2723,6 +2725,8 @@
 				830DAB4529AD545600ED4E66 /* EventInfo.swift */,
 				830DAB4829AD56F300ED4E66 /* EventInfoValue.swift */,
 				830DAB4E29AD60E100ED4E66 /* GetNetworkResponse.swift */,
+				832C2B1B2AE958EE005BB7B8 /* GetLedgerEntriesResponse.swift */,
+				832C2B1E2AE95926005BB7B8 /* LedgerEntry.swift */,
 			);
 			path = responses;
 			sourceTree = "<group>";
@@ -2830,8 +2834,8 @@
 				835F0CD429757FFB00793708 /* InvokeHostFunctionResultXDR.swift */,
 				835F0D0C2978295800793708 /* TransactionMetaV3XDR.swift */,
 				835F0D0F29782A9500793708 /* ContractEventXDR.swift */,
-				836658EA2A6E72DA00E8B8D9 /* BumpFootprintExpirationOpXDR.swift */,
-				836658ED2A6E73D700E8B8D9 /* BumpFootprintExpirationResultXDR.swift */,
+				836658EA2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift */,
+				836658ED2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift */,
 				836658F02A6E773A00E8B8D9 /* RestoreFootprintOpXDR.swift */,
 				836658F32A6E777800E8B8D9 /* RestoreFootprintResultXDR.swift */,
 			);
@@ -2892,7 +2896,7 @@
 				83DD7149281BE84700530C64 /* TransactionPreconditions.swift */,
 				83DD714C281BE9A400530C64 /* LedgerBounds.swift */,
 				835F0CD7297583E100793708 /* InvokeHostFunctionOperation.swift */,
-				836658F62A6ECB9700E8B8D9 /* BumpFootprintExpirationOperation.swift */,
+				836658F62A6ECB9700E8B8D9 /* ExtendFootprintTTLOperation.swift */,
 				836658F92A6ECEFD00E8B8D9 /* RestoreFootprintOperation.swift */,
 			);
 			path = sdk;
@@ -3719,7 +3723,7 @@
 				8395F94F246B529000B04E11 /* TransactionV0XDR.swift in Sources */,
 				8395F951246B529000B04E11 /* TransactionV1EnvelopeXDR.swift in Sources */,
 				8395F952246B529000B04E11 /* MuxedAccountXDR.swift in Sources */,
-				836658FE2A6ECFE900E8B8D9 /* BumpFootprintExpirationOperationResponse.swift in Sources */,
+				836658FE2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift in Sources */,
 				DDE2DCDB26667E9C00F238F4 /* OffersStreamItem.swift in Sources */,
 				832ADEE3262B96C600571D46 /* SetTrustLineFlagsOpXDR.swift in Sources */,
 				8395F953246B529000B04E11 /* FeeBumpTransactionEnvelopeXDR.swift in Sources */,
@@ -3906,7 +3910,6 @@
 				83FE810C23F0750600F4A13D /* FeeChargedResponse.swift in Sources */,
 				745DF4542052FF9B000D3660 /* TrustlineCreatedEffectResponse.swift in Sources */,
 				744FC6F1212D3CCD00ADFC88 /* Helpers.swift in Sources */,
-				835F0CF029770BED00793708 /* GetLedgerEntryResponse.swift in Sources */,
 				745DF4552052FF9B000D3660 /* TrustlineRemovedEffectResponse.swift in Sources */,
 				83FE810523F0713E00F4A13D /* FeeStatsService.swift in Sources */,
 				830E7D5C2529C1930059A4B4 /* EndSponsoringFutureReservesOperation.swift in Sources */,
@@ -3916,7 +3919,7 @@
 				745DF4572052FF9B000D3660 /* TrustlineAuthorizedEffectResponse.swift in Sources */,
 				745DF4582052FF9B000D3660 /* TrustlineDeauthorizedEffectResponse.swift in Sources */,
 				745DF4592052FF9B000D3660 /* OfferCreatedEffectResponse.swift in Sources */,
-				836658EF2A6E73D700E8B8D9 /* BumpFootprintExpirationResultXDR.swift in Sources */,
+				836658EF2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift in Sources */,
 				74BC3960211DA69C00EAF8A4 /* AccountInflationDestinationUpdatedEffectResponse.swift in Sources */,
 				745DF45A2052FF9B000D3660 /* OfferRemovedEffectResponse.swift in Sources */,
 				7467C3F221424D9E00412FE1 /* TransferServerService.swift in Sources */,
@@ -4009,6 +4012,7 @@
 				745DF48C2052FF9C000D3660 /* LedgerKeyAccountXDR.swift in Sources */,
 				83DF81A326EF822000AF72CD /* LiquidityPoolPriceResponse.swift in Sources */,
 				745DF48D2052FF9C000D3660 /* LedgerKeyTrustlineXDR.swift in Sources */,
+				832C2B202AE95926005BB7B8 /* LedgerEntry.swift in Sources */,
 				83AFD63F234FC60700A574D2 /* PathPaymentStrictSendOperation.swift in Sources */,
 				745DF48E2052FF9C000D3660 /* LedgerKeyOfferXDR.swift in Sources */,
 				7464B72C219442E90029FDC8 /* PointOfContactDocumentation.swift in Sources */,
@@ -4063,6 +4067,7 @@
 				744FC6E5212D3CCC00ADFC88 /* Date.swift in Sources */,
 				7467C40E2142AA3C00412FE1 /* WithdrawResponse.swift in Sources */,
 				834389C226E8B32F009116D0 /* LiquidityPoolWithdrawOpXDR.swift in Sources */,
+				832C2B1D2AE958EE005BB7B8 /* GetLedgerEntriesResponse.swift in Sources */,
 				745DF4A52052FF9C000D3660 /* BadRequestErrorResponse.swift in Sources */,
 				745DF4A62052FF9C000D3660 /* BeforeHistoryErrorResponse.swift in Sources */,
 				83FE811923F1C5FC00F4A13D /* TransactionMetaV2XDR.swift in Sources */,
@@ -4143,7 +4148,7 @@
 				745DF4D72052FF9C000D3660 /* Array+Foundation.swift in Sources */,
 				835F0CE02976017A00793708 /* SorobanServer.swift in Sources */,
 				835F0CED29770BD000793708 /* GetAccountResponse.swift in Sources */,
-				836658F82A6ECB9700E8B8D9 /* BumpFootprintExpirationOperation.swift in Sources */,
+				836658F82A6ECB9700E8B8D9 /* ExtendFootprintTTLOperation.swift in Sources */,
 				744FC6EB212D3CCC00ADFC88 /* Evaluator.swift in Sources */,
 				830DAB5029AD60E100ED4E66 /* GetNetworkResponse.swift in Sources */,
 				83DD714B281BE84700530C64 /* TransactionPreconditions.swift in Sources */,
@@ -4166,7 +4171,7 @@
 				745DF4E02052FF9C000D3660 /* Authenticator.swift in Sources */,
 				74723337219D983500343E25 /* WebAuthenticator.swift in Sources */,
 				7468CDD42136DBB5002A538D /* BumpSequenceResultXDR.swift in Sources */,
-				836658EC2A6E72DA00E8B8D9 /* BumpFootprintExpirationOpXDR.swift in Sources */,
+				836658EC2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift in Sources */,
 				C67811B52148E30C001525D8 /* URISchemeEnums.swift in Sources */,
 				745DF4E12052FF9C000D3660 /* SHA3.swift in Sources */,
 				7468CDD72136F72C002A538D /* TransactionMetaV1XDR.swift in Sources */,
@@ -4362,7 +4367,7 @@
 				83DD2C6D202DE47300713FEE /* RateLimitExceededErrorResponse.swift in Sources */,
 				830EFC632032437000607C35 /* LedgerEntryXDR.swift in Sources */,
 				7467C4162142B69800412FE1 /* CustomerInformationStatus.swift in Sources */,
-				836658FD2A6ECFE900E8B8D9 /* BumpFootprintExpirationOperationResponse.swift in Sources */,
+				836658FD2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift in Sources */,
 				DDE2DCDA266674BB00F238F4 /* OffersStreamItem.swift in Sources */,
 				832ADEE2262B96C600571D46 /* SetTrustLineFlagsOpXDR.swift in Sources */,
 				745F2BB6202C2E88008763F1 /* TransactionResponse.swift in Sources */,
@@ -4549,7 +4554,6 @@
 				833CBFE12036F4CF00C23CFE /* SetOptionsOperation.swift in Sources */,
 				EC34A0CC20503CAB000FB042 /* BigInt+Extension.swift in Sources */,
 				83697259202CB88300398A98 /* EffectLinksResponse.swift in Sources */,
-				835F0CEF29770BED00793708 /* GetLedgerEntryResponse.swift in Sources */,
 				745F2BB3202C287A008763F1 /* XDREncoder.swift in Sources */,
 				83DD2C71202DE8AD00713FEE /* NotFoundErrorResponse.swift in Sources */,
 				830E7D5B2529C1930059A4B4 /* EndSponsoringFutureReservesOperation.swift in Sources */,
@@ -4559,7 +4563,7 @@
 				836972222028F5EA00398A98 /* TrustlineEffectResponse.swift in Sources */,
 				8369720120255AB800398A98 /* LedgersService.swift in Sources */,
 				833CBFAC2033542D00C23CFE /* LedgerEntryChangesXDR.swift in Sources */,
-				836658EE2A6E73D700E8B8D9 /* BumpFootprintExpirationResultXDR.swift in Sources */,
+				836658EE2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift in Sources */,
 				437D8A8F202F14A00024D031 /* TradeAggregationsService.swift in Sources */,
 				833CBFB4203354BE00C23CFE /* LedgerKeyTrustlineXDR.swift in Sources */,
 				430BE2EB2035B4D400E6AB97 /* TimeBounds.swift in Sources */,
@@ -4652,6 +4656,7 @@
 				83DD2C98202F249800713FEE /* PaymentsService.swift in Sources */,
 				83DF81A226EF822000AF72CD /* LiquidityPoolPriceResponse.swift in Sources */,
 				83379C212280ABA600BD5F8E /* ManageBuyOfferOperation.swift in Sources */,
+				832C2B1F2AE95926005BB7B8 /* LedgerEntry.swift in Sources */,
 				7467C3F121424D9E00412FE1 /* TransferServerService.swift in Sources */,
 				744FC6FC212D545C00ADFC88 /* ResolveAddressResponse.swift in Sources */,
 				EC34A12020503CC5000FB042 /* UInt16+Extension.swift in Sources */,
@@ -4706,6 +4711,7 @@
 				833CBFC92034741300C23CFE /* Asset.swift in Sources */,
 				83FE811823F1C5FC00F4A13D /* TransactionMetaV2XDR.swift in Sources */,
 				834389C126E8B32F009116D0 /* LiquidityPoolWithdrawOpXDR.swift in Sources */,
+				832C2B1C2AE958EE005BB7B8 /* GetLedgerEntriesResponse.swift in Sources */,
 				830EFC752032508E00607C35 /* DataEntryXDR.swift in Sources */,
 				833CBFB02033548A00C23CFE /* LedgerKeyXDR.swift in Sources */,
 				EC34A13D20503CC5000FB042 /* Blowfish.swift in Sources */,
@@ -4786,7 +4792,7 @@
 				437D8A8D202F0B980024D031 /* TradesService.swift in Sources */,
 				835F0CDF2976017A00793708 /* SorobanServer.swift in Sources */,
 				835F0CEC29770BD000793708 /* GetAccountResponse.swift in Sources */,
-				836658F72A6ECB9700E8B8D9 /* BumpFootprintExpirationOperation.swift in Sources */,
+				836658F72A6ECB9700E8B8D9 /* ExtendFootprintTTLOperation.swift in Sources */,
 				743DF582202053B100713DE7 /* Seed.swift in Sources */,
 				830DAB4F29AD60E100ED4E66 /* GetNetworkResponse.swift in Sources */,
 				83DD714A281BE84700530C64 /* TransactionPreconditions.swift in Sources */,
@@ -4809,7 +4815,7 @@
 				743DF5762020530A00713DE7 /* keypair.c in Sources */,
 				C694DABE21478E8100D6D63F /* URISchemeEnums.swift in Sources */,
 				EC34A0CF20503CAB000FB042 /* DataConvertable.swift in Sources */,
-				836658EB2A6E72DA00E8B8D9 /* BumpFootprintExpirationOpXDR.swift in Sources */,
+				836658EB2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift in Sources */,
 				EC34A15720503CE7000FB042 /* Wallet.swift in Sources */,
 				746AD2CA20342D0500A9CF21 /* ChangeTrustResultXDR.swift in Sources */,
 				EC34A13E20503CC5000FB042 /* DigestType.swift in Sources */,

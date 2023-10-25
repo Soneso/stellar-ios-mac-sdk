@@ -61,33 +61,28 @@ public enum SCErrorCode: Int32 {
 
 public enum ContractCostType: Int32 {
     case wasmInsnExec = 0
-    case wasmMemAlloc = 1
-    case hostMemAlloc = 2
-    case hostMemCpy = 3
-    case hostMemCmp = 4
-    case dispatchHostFunction = 5
-    case visitObject = 6
-    case valSer = 7
-    case valDeser = 8
-    case computeSha256Hash = 9
-    case computeEd25519PubKey = 10
-    case mapEntry = 11
-    case vecEntry = 12
-    case verifyEd25519Sig = 13
-    case vmMemRead = 14
-    case vmMemWrite = 15
-    case vmInstantiation = 16
-    case vmCachedInstantiation = 17
-    case invokeVmFunction = 18
-    case computeKeccak256Hash = 19
-    case computeEcdsaSecp256k1Key = 20
-    case computeEcdsaSecp256k1Sig = 21
-    case recoverEcdsaSecp256k1Key = 22
-    case int256AddSub = 23
-    case int256Mul = 24
-    case int256Div = 25
-    case int256Pow = 26
-    case int256Shift = 27
+    case memAlloc = 1
+    case memCpy = 2
+    case memCmp = 3
+    case dispatchHostFunction = 4
+    case visitObject = 5
+    case valSer = 6
+    case valDeser = 7
+    case computeSha256Hash = 8
+    case computeEd25519PubKey = 9
+    case verifyEd25519Sig = 10
+    case vmInstantiation = 11
+    case vmCachedInstantiation = 12
+    case invokeVmFunction = 13
+    case computeKeccak256Hash = 14
+    case computeEcdsaSecp256k1Sig = 15
+    case recoverEcdsaSecp256k1Key = 16
+    case int256AddSub = 17
+    case int256Mul = 18
+    case int256Div = 19
+    case int256Pow = 20
+    case int256Shift = 21
+    case ChaCha20DrawBytes = 22
 }
 
 public enum SCErrorXDR: XDRCodable {
@@ -787,7 +782,7 @@ public struct SCMapEntryXDR: XDRCodable {
 
 public enum ContractExecutableType: Int32 {
     case wasm = 0
-    case token = 1
+    case stellarAsset = 1
 }
 
 public enum ContractExecutableXDR: XDRCodable {
@@ -803,7 +798,7 @@ public enum ContractExecutableXDR: XDRCodable {
         case .wasm:
             let wasmHash = try container.decode(WrappedData32.self)
             self = .wasm(wasmHash)
-        case .token:
+        case .stellarAsset:
             self = .token
         }
     }
@@ -811,7 +806,7 @@ public enum ContractExecutableXDR: XDRCodable {
     public func type() -> Int32 {
         switch self {
         case .wasm: return ContractExecutableType.wasm.rawValue
-        case .token: return ContractExecutableType.token.rawValue
+        case .token: return ContractExecutableType.stellarAsset.rawValue
         }
     }
     
@@ -840,8 +835,8 @@ public enum ContractExecutableXDR: XDRCodable {
         }
     }
     
-    public var isToken:Bool? {
-        return type() == ContractExecutableType.token.rawValue
+    public var isStellarAsset:Bool? {
+        return type() == ContractExecutableType.stellarAsset.rawValue
     }
 }
 

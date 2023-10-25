@@ -656,19 +656,19 @@ public struct SorobanResourcesXDR: XDRCodable {
 public struct SorobanTransactionDataXDR: XDRCodable {
     public var ext: ExtensionPoint
     public var resources: SorobanResourcesXDR;
-    public var refundableFee: Int64
+    public var resourceFee: Int64
 
-    public init(ext: ExtensionPoint = ExtensionPoint.void, resources: SorobanResourcesXDR, refundableFee: Int64 = 0) {
+    public init(ext: ExtensionPoint = ExtensionPoint.void, resources: SorobanResourcesXDR, resourceFee: Int64 = 0) {
         self.ext = ext
         self.resources = resources
-        self.refundableFee = refundableFee
+        self.resourceFee = resourceFee
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         ext = try container.decode(ExtensionPoint.self)
         resources = try container.decode(SorobanResourcesXDR.self)
-        refundableFee = try container.decode(Int64.self)
+        resourceFee = try container.decode(Int64.self)
     }
     
     public init(fromBase64 xdr:String) throws {
@@ -680,7 +680,7 @@ public struct SorobanTransactionDataXDR: XDRCodable {
         var container = encoder.unkeyedContainer()
         try container.encode(ext)
         try container.encode(resources)
-        try container.encode(refundableFee)
+        try container.encode(resourceFee)
     }
 }
 

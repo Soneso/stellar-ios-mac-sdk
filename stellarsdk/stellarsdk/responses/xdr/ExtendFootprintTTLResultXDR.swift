@@ -1,5 +1,5 @@
 //
-//  BumpFootprintExpirationResultXDR.swift
+//  ExtendFootprintTTLResultXDR.swift
 //  stellarsdk
 //
 //  Created by Christian Rogobete on 24.07.23.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum BumpFootprintExpirationResultCode: Int32 {
+public enum ExtendFootprintTTLResultCode: Int32 {
     // codes considered as "success" for the operation
     case success = 0 // success
     
@@ -18,7 +18,7 @@ public enum BumpFootprintExpirationResultCode: Int32 {
     case insufficientRefundableFee = -3
 }
 
-public enum BumpFootprintExpirationResultXDR: XDRCodable {
+public enum ExtendFootprintTTLResultXDR: XDRCodable {
     case success
     case malformed
     case resourceLimitExceeded
@@ -27,7 +27,7 @@ public enum BumpFootprintExpirationResultXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let code = BumpFootprintExpirationResultCode(rawValue: discriminant)!
+        let code = ExtendFootprintTTLResultCode(rawValue: discriminant)!
         
         switch code {
         case .success:

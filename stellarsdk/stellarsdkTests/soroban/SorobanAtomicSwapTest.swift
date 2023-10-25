@@ -19,11 +19,11 @@ class SorobanAtomicSwapTest: XCTestCase {
     let sdk = StellarSDK.testNet()
     let network = Network.testnet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
-    let aliceKeyPair = try! KeyPair(secretSeed: "SDXGSRXCUVH4L772WSNXACUIBVNUCU6R7IOSDJZUS3ESD2ZRU465MVFI") // GCIJ765J63P63XLTEWJ7CA7UYTRMXIHJDF4CFOM5U7K6E3IIBJXUPMLU
-    let bobKeyPair = try! KeyPair(secretSeed: "SAU6I4TI23H5YEG5UKQOXPHW3U64YG7M6NCXILKJSEFNYXYVT34IETHJ") // GB6CEY6UITFHT7RFESNUSQLVUEMNVVSQTLAWPDJ2ZOFYYV2S5OHSHPI5
-    let atomicSwapContractId = "eda29c1546a9f96bb09aa1bc91142febcc66be52ae3b8c9b823e38d4d320fd88"
-    let tokenAId  = "d8193f2ff0f99a64a208f869f0b8f8f0f7355c803d191b7a7b3a137801f104f4"
-    let tokenBId = "d03fffb9c1fb44fed52e1f7cf3e8f5b779b9e3998dbc7df4a62af4f6fc6ce3f1"
+    let aliceKeyPair = try! KeyPair(secretSeed: "SBQ3VVOF262CJ7J5QVVWLTLCOJNM7RHLLOVMHLIVRHVWFJYKTEU72RXA") // GCUIT7MT25K2I4FWELTGRJ5POGBBL6K3DTECDTUS74WI23H3HOVIMPOG
+    let bobKeyPair = try! KeyPair(secretSeed: "SDCKIFJDDMBXJCTIXRKYUA5PW6UDDEBLL73MSUAR5QSYT7UTTVLIKJLH") // GD4Y6DEB36GMSRSBQ52W3BA4HQVFGVAZUKI7UFMTNUXXZZLFO7T2UNX5
+    let atomicSwapContractId = "70ba893eab48e73e0e2857ea3c50ed753f841a4384618971f59fe41330f19e84"
+    let tokenAId  = "5ddaada121ce9bcdd8c7c0fa95a7cbd7d9e1fa0315189efbc2920c899a0e8c49"
+    let tokenBId = "5ec51e0643c0a74c0dbf1d4f3df4d7fd1bf1c3995dc2e784f061a5a54ad47c57"
     let swapFunctionName = "swap"
     var invokeTransactionId:String?
     var submitterAccount:AccountResponse?

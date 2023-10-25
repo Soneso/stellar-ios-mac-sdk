@@ -19,7 +19,7 @@ public enum ConfigSettingID: Int32 {
     case contractCostParamsMemoryBytes = 7
     case contractDataKeySizeBytes = 8
     case contractDataEntrySizeBytes = 9
-    case stateExpiration = 10
+    case stateArchival = 10
     case contractExecutionLanes = 11
     case bucketListSizeWindow = 12
     case evictionIterator = 13
@@ -35,7 +35,7 @@ public enum LedgerKeyXDR: XDRCodable {
     case contractData(LedgerKeyContractDataXDR)
     case contractCode(LedgerKeyContractCodeXDR)
     case configSetting(Int32)
-    case expiration(LedgerKeyExpirationXDR)
+    case ttl(LedgerKeyTTLXDR)
     
     
     public init(from decoder: Decoder) throws {
@@ -71,9 +71,9 @@ public enum LedgerKeyXDR: XDRCodable {
         case LedgerEntryType.configSetting.rawValue:
             let configSettingId = try container.decode(Int32.self)
             self = .configSetting (configSettingId)
-        case LedgerEntryType.expiration.rawValue:
-            let expiration = try container.decode(LedgerKeyExpirationXDR.self)
-            self = .expiration (expiration)
+        case LedgerEntryType.ttl.rawValue:
+            let ttl = try container.decode(LedgerKeyTTLXDR.self)
+            self = .ttl (ttl)
         default:
             let acc = try container.decode(LedgerKeyAccountXDR.self)
             self = .account(acc)
@@ -91,7 +91,7 @@ public enum LedgerKeyXDR: XDRCodable {
         case .contractData: return LedgerEntryType.contractData.rawValue
         case .contractCode: return LedgerEntryType.contractCode.rawValue
         case .configSetting: return LedgerEntryType.configSetting.rawValue
-        case .expiration: return LedgerEntryType.expiration.rawValue
+        case .ttl: return LedgerEntryType.ttl.rawValue
         }
     }
     
@@ -118,7 +118,7 @@ public enum LedgerKeyXDR: XDRCodable {
             try container.encode(value)
         case .configSetting (let configSettingId):
             try container.encode(configSettingId)
-        case .expiration (let value):
+        case .ttl (let value):
             try container.encode(value)
         }
     }
@@ -202,7 +202,7 @@ public struct LedgerKeyContractCodeXDR: XDRCodable {
     }
 }
 
-public struct LedgerKeyExpirationXDR: XDRCodable {
+public struct LedgerKeyTTLXDR: XDRCodable {
     public var keyHash:WrappedData32
     
     public init(keyHash: WrappedData32) {

@@ -33,8 +33,8 @@ public class EventInfo: NSObject, Decodable {
     /// List containing the topic this event was emitted with. [XdrSCVal as base64|]
     public var topic:[String]
     
-    /// List containing the topic this event was emitted with
-    public var value:EventInfoValue
+    /// The emitted body value of the event (serialized in a base64 string - XdrSCVal).
+    public var value:String
     
     private enum CodingKeys: String, CodingKey {
         case ledger
@@ -56,7 +56,12 @@ public class EventInfo: NSObject, Decodable {
         inSuccessfulContractCall = try values.decode(Bool.self, forKey: .inSuccessfulContractCall)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         topic = try values.decode([String].self, forKey: .topic)
-        value = try values.decode(EventInfoValue.self, forKey: .value)
+        if let val = try? values.decodeIfPresent(String.self, forKey: .value) {
+            value = val
+        } else {
+            let valueXdr = try values.decode(EventInfoValue.self, forKey: .value)
+            value = valueXdr.xdr
+        }
     }
 }
 

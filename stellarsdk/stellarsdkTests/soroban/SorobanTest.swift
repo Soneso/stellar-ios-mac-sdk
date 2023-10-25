@@ -107,7 +107,7 @@ class SorobanTest: XCTestCase {
         // test bump contract code footprint
         // see: https://soroban.stellar.org/docs/fundamentals-and-concepts/state-expiration
         refreshSubmitterAccount()
-        bumpContractCodeFootprint(wasmId: self.wasmId!, ledgersToExpire: 10000)
+        extendContractCodeFootprintTTL(wasmId: self.wasmId!, extendTo: 10000)
         checkTransactionStatusSuccess(transactionId: self.bumpTransactionId!)
         // this is currently not testable because horizon returns status 500
         //getTransactionDetails(transactionHash: self.bumpTransactionId!, type:"bump_footprint_expiration")
@@ -404,14 +404,14 @@ class SorobanTest: XCTestCase {
         }
     }
     
-    func bumpContractCodeFootprint(wasmId: String, ledgersToExpire: UInt32) {
-        XCTContext.runActivity(named: "bumpContractCodeFootprint") { activity in
+    func extendContractCodeFootprintTTL(wasmId: String, extendTo: UInt32) {
+        XCTContext.runActivity(named: "extendContractCodeFootprintTTL") { activity in
             let expectation = XCTestExpectation(description: "footprint sucessfully bumped")
             
-            let bumpOperation = BumpFootprintExpirationOperation(ledgersToExpire: ledgersToExpire)
+            let extendOperation = ExtendFootprintTTLOperation(ledgersToExpire: extendTo)
             
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
-                                               operations: [bumpOperation], memo: Memo.none)
+                                               operations: [extendOperation], memo: Memo.none)
             
             
             let ledgerKeyContractCode = LedgerKeyContractCodeXDR(wasmId:wasmId)
@@ -477,7 +477,7 @@ class SorobanTest: XCTestCase {
                                     XCTAssertEqual(op.function, type)
                                 } else if let op = response.records.first! as? RestoreFootprintOperationResponse {
                                     XCTAssertEqual(op.operationTypeString, type)
-                                } else if let op = response.records.first! as? BumpFootprintExpirationOperationResponse {
+                                } else if let op = response.records.first! as? ExtendFootprintTTLOperationResponse {
                                     XCTAssertEqual(op.operationTypeString, type)
                                 } else {
                                     XCTFail()
@@ -605,11 +605,11 @@ class SorobanTest: XCTestCase {
             let expectation = XCTestExpectation(description: "get ledger entryies for the created contract")
             let contractCodeKey = createContractFootprint?.contractCodeLedgerKey
             let contractDataKey = createContractFootprint?.contractDataLedgerKey
-            self.sorobanServer.getLedgerEntry(base64EncodedKey:contractCodeKey!) { (response) -> (Void) in
+            self.sorobanServer.getLedgerEntries(base64EncodedKeys:[contractCodeKey!]) { (response) -> (Void) in
                 switch response {
                 case .success(let response):
                     XCTAssert(Int(response.latestLedger)! > 0)
-                    self.sorobanServer.getLedgerEntry(base64EncodedKey:contractDataKey!) { (response) -> (Void) in
+                    self.sorobanServer.getLedgerEntries(base64EncodedKeys:[contractDataKey!]) { (response) -> (Void) in
                         switch response {
                         case .success(let ledgerResponse):
                             XCTAssert(Int(ledgerResponse.latestLedger)! > 0)
@@ -831,7 +831,7 @@ class SorobanTest: XCTestCase {
         XCTContext.runActivity(named: "getSACWithSALedgerEntries") { activity in
             let expectation = XCTestExpectation(description: "get ledger entryies for the deployed token contract with source account")
             let contractDataKey = deploySAFootprint?.contractDataLedgerKey
-            self.sorobanServer.getLedgerEntry(base64EncodedKey:contractDataKey!) { (response) -> (Void) in
+            self.sorobanServer.getLedgerEntries(base64EncodedKeys:[contractDataKey!]) { (response) -> (Void) in
                 switch response {
                 case .success(let ledgerResponse):
                     XCTAssert(Int(ledgerResponse.latestLedger)! > 0)
@@ -930,7 +930,7 @@ class SorobanTest: XCTestCase {
         XCTContext.runActivity(named: "getSACWithAssetLedgerEntries") { activity in
             let expectation = XCTestExpectation(description: "get ledger entryies for the deployed token contract with asset")
             let contractDataKey = deployWithAssetFootprint?.contractDataLedgerKey
-            self.sorobanServer.getLedgerEntry(base64EncodedKey:contractDataKey!) { (response) -> (Void) in
+            self.sorobanServer.getLedgerEntries(base64EncodedKeys:[contractDataKey!]) { (response) -> (Void) in
                 switch response {
                 case .success(let ledgerResponse):
                     XCTAssert(Int(ledgerResponse.latestLedger)! > 0)

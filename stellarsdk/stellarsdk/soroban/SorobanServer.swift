@@ -19,8 +19,8 @@ public enum GetNetworkResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
-public enum GetLedgerEntryResponseEnum {
-    case success(response: GetLedgerEntryResponse)
+public enum GetLedgerEntriesResponseEnum {
+    case success(response: GetLedgerEntriesResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -63,7 +63,7 @@ public enum GetContractCodeResponseEnum {
 /// A closure to be called with the response from a post challenge request.
 public typealias GetHealthResponseClosure = (_ response:GetHealthResponseEnum) -> (Void)
 public typealias GetNetworkResponseClosure = (_ response:GetNetworkResponseEnum) -> (Void)
-public typealias GetLedgerEntryResponseClosure = (_ response:GetLedgerEntryResponseEnum) -> (Void)
+public typealias GetLedgerEntriesResponseClosure = (_ response:GetLedgerEntriesResponseEnum) -> (Void)
 public typealias GetLatestLedgerResponseClosure = (_ response:GetLatestLedgerResponseEnum) -> (Void)
 public typealias SimulateTransactionResponseClosure = (_ response:SimulateTransactionResponseEnum) -> (Void)
 public typealias SendTransactionResponseClosure = (_ response:SendTransactionResponseEnum) -> (Void)
@@ -186,16 +186,16 @@ public class SorobanServer {
     /// For reading the current value of ledger entries directly. Allows you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry.
     /// This is a backup way to access your contract data which may not be available via events or simulateTransaction.
     /// To fetch contract wasm byte-code, use the ContractCode ledger entry key.
-    /// See: https://soroban.stellar.org/api/methods/getLedgerEntry
-    public func getLedgerEntry(base64EncodedKey: String, completion:@escaping GetLedgerEntryResponseClosure) {
+    /// See: https://soroban.stellar.org/api/methods/getLedgerEntries
+    public func getLedgerEntries(base64EncodedKeys: [String], completion:@escaping GetLedgerEntriesResponseClosure) {
         
-        request(body: try? buildRequestJson(method: "getLedgerEntry", args: ["key" : base64EncodedKey])) { (result) -> (Void) in
+        request(body: try? buildRequestJson(method: "getLedgerEntries", args: ["keys" : base64EncodedKeys])) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     if let result = response["result"] as? [String: Any] {
                         do {
-                            let decoded = try self.jsonDecoder.decode(GetLedgerEntryResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                            let decoded = try self.jsonDecoder.decode(GetLedgerEntriesResponse.self, from: JSONSerialization.data(withJSONObject: result))
                             completion(.success(response: decoded))
                         } catch {
                             completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
@@ -248,10 +248,10 @@ public class SorobanServer {
         let contractCodeKey = LedgerKeyContractCodeXDR(wasmId: wasmId)
         let ledgerKey = LedgerKeyXDR.contractCode(contractCodeKey)
         if let ledgerKeyBase64 = ledgerKey.xdrEncoded {
-            self.getLedgerEntry(base64EncodedKey:ledgerKeyBase64) { (response) -> (Void) in
+            self.getLedgerEntries(base64EncodedKeys:[ledgerKeyBase64]) { (response) -> (Void) in
                 switch response {
                 case .success(let response):
-                    let data = try? LedgerEntryDataXDR(fromBase64: response.ledgerEntryData)
+                    let data = try? LedgerEntryDataXDR(fromBase64: response.entries[0].xdr)
                     if let contractCode = data?.contractCode {
                         completion(.success(response: contractCode))
                     }
@@ -274,10 +274,10 @@ public class SorobanServer {
                                                        durability: ContractDataDurability.persistent)
         let ledgerKey = LedgerKeyXDR.contractData(contractDataKey)
         if let ledgerKeyBase64 = ledgerKey.xdrEncoded {
-            self.getLedgerEntry(base64EncodedKey:ledgerKeyBase64) { (response) -> (Void) in
+            self.getLedgerEntries(base64EncodedKeys:[ledgerKeyBase64]) { (response) -> (Void) in
                 switch response {
                 case .success(let response):
-                    let data = try? LedgerEntryDataXDR(fromBase64: response.ledgerEntryData)
+                    let data = try? LedgerEntryDataXDR(fromBase64: response.entries[0].xdr)
                     if let contractData = data?.contractData, let wasmId = contractData.val.contractInstance?.executable.wasm?.wrapped.hexEncodedString() {
                         self.getContractCodeForWasmId(wasmId: wasmId) { (response) -> (Void) in
                             switch response {

@@ -325,7 +325,7 @@ class SorobanEventsTest: XCTestCase {
                     let cId = try! eventsResponse.events[0].contractId.decodeContractIdHex()
                     XCTAssert(self.contractId! == cId)
                     XCTAssert("AAAADwAAAAdDT1VOVEVSAA==" == eventsResponse.events[0].topic[0])
-                    XCTAssert("AAAAAwAAAAE=" == eventsResponse.events[0].value.xdr)
+                    XCTAssert("AAAAAwAAAAE=" == eventsResponse.events[0].value)
                     expectation.fulfill()
                 case .failure(let error):
                     self.printError(error: error)

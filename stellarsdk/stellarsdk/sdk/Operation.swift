@@ -110,8 +110,8 @@ public class Operation {
             return LiquidityPoolWithdrawOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         case .invokeHostFunction(let data):
             return try InvokeHostFunctionOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
-        case .bumpFootprintExpiration(let data):
-            return BumpFootprintExpirationOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
+        case .extendFootprintTTL(let data):
+            return ExtendFootprintTTLOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         case .restoreFootprint(let data):
             return RestoreFootprintOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         default:

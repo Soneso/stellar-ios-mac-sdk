@@ -3522,8 +3522,8 @@ public class TxRep: NSObject {
             return "liquidityPoolWithdrawOp"
         case .invokeHostFunction(_):
             return "invokeHostFunctionOp"
-        case .bumpFootprintExpiration(_):
-            return "bumpFootprintExpirationOp"
+        case .extendFootprintTTL(_):
+            return "extendFootprintTTLOp"
         case .restoreFootprint(_):
             return "restoreFootprintOp"
         }
@@ -3580,7 +3580,7 @@ public class TxRep: NSObject {
             return "LIQUIDITY_POOL_WITHDRAW"
         case .invokeHostFunction(_):
             return "INVOKE_HOST_FUNCTION"
-        case .bumpFootprintExpiration(_):
+        case .extendFootprintTTL(_):
             return "BUMP_FOOTPRINT_EXPIRATION"
         case .restoreFootprint(_):
             return "RESTORE_FOOTPRINT"

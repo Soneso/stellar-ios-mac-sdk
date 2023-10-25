@@ -1,5 +1,5 @@
 //
-//  BumpFootprintExpirationOperationResponse.swift
+//  ExtendFootprintTTLOperationResponse.swift
 //  stellarsdk
 //
 //  Created by Christian Rogobete on 24.07.23.
@@ -8,19 +8,24 @@
 
 import Foundation
 
-public class BumpFootprintExpirationOperationResponse: OperationResponse {
+public class ExtendFootprintTTLOperationResponse: OperationResponse {
     
-    public var ledgersToExpire:Int
+    public var extendTo:Int
 
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case ledgersToExpire = "ledgers_to_expire"
+        case extendTo = "extend_to"
     }
     
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        ledgersToExpire = try values.decode(Int.self, forKey: .ledgersToExpire)
+        if let exTo = try values.decodeIfPresent(Int.self, forKey: .extendTo) {
+            extendTo = exTo
+        } else {
+            extendTo = try values.decode(Int.self, forKey: .ledgersToExpire)
+        }
         try super.init(from: decoder)
     }
 }

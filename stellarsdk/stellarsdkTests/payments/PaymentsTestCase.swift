@@ -294,7 +294,7 @@ class PaymentsTestCase: XCTestCase {
                                                                 asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                                                 amount: 1.5)
                         
-                        let lb = LedgerBounds(minLedger: 0, maxLedger: 1892052)
+                        let lb = LedgerBounds(minLedger: 0, maxLedger: 4892052)
                         let tb = TimeBounds(minTime: 1652110741, maxTime: 1752110741)
                         
                         let precond = TransactionPreconditions(ledgerBounds: lb, timeBounds: tb, minSeqNumber: accountResponse.sequenceNumber, minSeqAge: 1, minSeqLedgerGap: 1)

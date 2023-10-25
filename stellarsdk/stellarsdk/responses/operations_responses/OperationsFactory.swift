@@ -103,8 +103,8 @@ class OperationsFactory: NSObject {
                 return try jsonDecoder.decode(LiquidityPoolWithdrawOperationResponse.self, from: data)
             case .invokeHostFunction:
                 return try jsonDecoder.decode(InvokeHostFunctionOperationResponse.self, from: data)
-            case .bumpFootprintExpiration:
-                return try jsonDecoder.decode(BumpFootprintExpirationOperationResponse.self, from: data)
+            case .extendFootprintTTL:
+                return try jsonDecoder.decode(ExtendFootprintTTLOperationResponse.self, from: data)
             case .restoreFootprint:
                 return try jsonDecoder.decode(RestoreFootprintOperationResponse.self, from: data)
             }
