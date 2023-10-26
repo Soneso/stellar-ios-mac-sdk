@@ -20,14 +20,14 @@ public class LedgerEntry: NSObject, Decodable {
     public var lastModifiedLedgerSeq:String
     
     /// The ledger sequence number after which the ledger entry would expire. This field exists only for ContractCodeEntry and ContractDataEntry ledger entries (optional).
-    public var expirationLedgerSeq:String?
+    public var liveUntilLedgerSeq:String?
     
     
     private enum CodingKeys: String, CodingKey {
         case key
         case xdr
         case lastModifiedLedgerSeq
-        case expirationLedgerSeq
+        case liveUntilLedgerSeq
     }
 
     public required init(from decoder: Decoder) throws {
@@ -35,6 +35,6 @@ public class LedgerEntry: NSObject, Decodable {
         key = try values.decode(String.self, forKey: .key)
         xdr = try values.decode(String.self, forKey: .xdr)
         lastModifiedLedgerSeq = try values.decode(String.self, forKey: .lastModifiedLedgerSeq)
-        expirationLedgerSeq = try values.decodeIfPresent(String.self, forKey: .expirationLedgerSeq)
+        liveUntilLedgerSeq = try values.decodeIfPresent(String.self, forKey: .liveUntilLedgerSeq)
     }
 }
