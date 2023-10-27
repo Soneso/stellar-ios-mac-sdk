@@ -19,7 +19,7 @@ To integrate stellar SDK into your Xcode project using CocoaPods, specify it in 
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk', '~> 2.4.8'
+    pod 'stellar-ios-mac-sdk', '~> 2.4.9'
 end
 ```
 
@@ -44,7 +44,7 @@ $ brew install carthage
 To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 2.4.8
+github "soneso/stellar-ios-mac-sdk" ~> 2.4.9
 ```
 
 Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.
@@ -52,7 +52,7 @@ Run `carthage update` to build the framework and drag the build `stellar-ios-mac
 ### Swift Package Manager
 
 ```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "2.4.8"),
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "2.4.9"),
 ```
 
 ### Manual
@@ -636,6 +636,13 @@ Helps clients to interact with anchors in a standard way defined by [SEP-0024: H
 
 See [SEP-0024 SDK documentation](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0024.md)
 
+### 11. Account recovery
+
+Enables an individual (e.g., a user or wallet) to regain access to a Stellar account as defined by 
+[SEP-0030: Account Recovery](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md).
+
+See [SEP-0030: Account Recovery](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0030.md)
+
 ## Documentation and Examples
 
 You can find more documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.
@@ -646,7 +653,7 @@ Our SDK is used by the open source [LOBSTR Vault](https://vault.lobstr.co). You 
 
 Our SDK is also used by the [LOBSTR Wallet](https://lobstr.co).
 
-## Stellar Ecosystem Proposals (SEPs) implemented
+## Stellar Ecosystem Proposals (SEPs) supported
 
 - [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md) - Stellar Info File (Toml)
 - [SEP-0002](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md) - Federation protocol
@@ -658,10 +665,11 @@ Our SDK is also used by the [LOBSTR Wallet](https://lobstr.co).
 - [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md) - Txrep
 - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md) - Anchor/Client customer info transfer
 - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md) - Hosted Deposit and Withdrawal
+- [SEP-0030](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md) - Account Recovery
 
 ## Soroban support
 
-This SDK provides experimental [support for Soroban](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/soroban.md). 
+This SDK provides [support for Soroban](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/soroban.md). 
 
 ## How to contribute
 

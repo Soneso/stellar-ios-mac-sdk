@@ -98,7 +98,7 @@ class ServiceHelper: NSObject {
         }
         return baseURL + path
     }
-    /// Performs a get request to the spcified path.
+    /// Performs a get request to the specified path.
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
@@ -108,7 +108,7 @@ class ServiceHelper: NSObject {
         requestFromUrl(url: requestUrl, method:.get, jwtToken:jwtToken, completion:completion)
     }
 
-    /// Performs a get request to the spcified path.
+    /// Performs a get request to the specified path.
     ///
     /// - parameter path:  A URL for the request. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
@@ -117,7 +117,7 @@ class ServiceHelper: NSObject {
         requestFromUrl(url: url, method:.get, jwtToken:jwtToken, completion:completion)
     }
     
-    /// Performs a post request to the spcified path.
+    /// Performs a post request to the specified path.
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
@@ -129,7 +129,19 @@ class ServiceHelper: NSObject {
         requestFromUrl(url: requestUrl, method:.post, contentType:contentType, jwtToken:jwtToken, body:body, completion:completion)
     }
     
-    /// Performs a patch request to the spcified path.
+    /// Performs a put request to the specified path.
+    ///
+    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
+    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
+    /// - parameter body:  An optional parameter with the data that should be contained in the request body
+    /// - parameter contentType:  An optional parameter with the content type to set
+    /// - parameter response:   The closure to be called upon response.
+    open func PUTRequestWithPath(path: String, jwtToken:String? = nil, body:Data? = nil, contentType:String? = nil, completion: @escaping ResponseClosure) {
+        let requestUrl = requestUrlWithPath(path: path)
+        requestFromUrl(url: requestUrl, method:.put, contentType:contentType, jwtToken:jwtToken, body:body, completion:completion)
+    }
+    
+    /// Performs a patch request to the specified path.
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
@@ -141,7 +153,7 @@ class ServiceHelper: NSObject {
         requestFromUrl(url: requestUrl, method:.patch, jwtToken:jwtToken, body:body, completion:completion)
     }
     
-    /// Performs a post request to the spcified path.
+    /// Performs a post request to the specified path.
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
@@ -151,7 +163,7 @@ class ServiceHelper: NSObject {
         multipartRequestWithPath(path: path, parameters: parameters, method:.post, jwtToken:jwtToken, completion: completion)
     }
     
-    /// Performs a put request to the spcified path.
+    /// Performs a put request to the specified path.
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
@@ -161,7 +173,7 @@ class ServiceHelper: NSObject {
         multipartRequestWithPath(path: path, parameters: parameters, method:.put, jwtToken:jwtToken, completion: completion)
     }
     
-    /// Performs a multipart request to the spcified path using the passed http method
+    /// Performs a multipart request to the specified path using the passed http method
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
@@ -204,7 +216,7 @@ class ServiceHelper: NSObject {
         requestFromUrl(url: requestUrl, method:method, contentType: contentType, jwtToken: jwtToken, body:httpBody, completion:completion)
     }
     
-    /// Performs a delete request to the spcified path.
+    /// Performs a delete request to the specified path.
     ///
     /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
     /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
