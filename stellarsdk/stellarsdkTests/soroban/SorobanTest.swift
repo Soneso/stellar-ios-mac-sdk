@@ -195,7 +195,7 @@ class SorobanTest: XCTestCase {
             sorobanServer.getNetwork() { (response) -> (Void) in
                 switch response {
                 case .success(let networkResponse):
-                    XCTAssertEqual("https://friendbot-testnet.stellar.org/", networkResponse.friendbotUrl)
+                    XCTAssertEqual("https://friendbot.stellar.org/", networkResponse.friendbotUrl)
                     XCTAssertEqual("Test SDF Network ; September 2015", networkResponse.passphrase)
                 case .failure(let error):
                     self.printError(error: error)
