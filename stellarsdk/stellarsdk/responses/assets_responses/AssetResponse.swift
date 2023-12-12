@@ -51,6 +51,8 @@ public class AssetResponse: NSObject, Decodable {
     // soroban
     public var numContracts:Int?
     public var contractsAmount:String?
+    public var numArchivedContracts:Int?
+    public var archivedContractsAmount:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -70,6 +72,8 @@ public class AssetResponse: NSObject, Decodable {
         case liquidityPoolsAmount = "liquidity_pools_amount"
         case numContracts = "num_contracts"
         case contractsAmount = "contract_amount"
+        case numArchivedContracts = "num_archived_contracts"
+        case archivedContractsAmount = "archived_contracts_amount"
     }
     
     /**
@@ -97,6 +101,8 @@ public class AssetResponse: NSObject, Decodable {
         liquidityPoolsAmount = try values.decode(String.self, forKey: .liquidityPoolsAmount)
         numContracts = try values.decodeIfPresent(Int.self, forKey: .numContracts)
         contractsAmount = try values.decodeIfPresent(String.self, forKey: .contractsAmount)
+        numArchivedContracts = try values.decodeIfPresent(Int.self, forKey: .numArchivedContracts)
+        archivedContractsAmount = try values.decodeIfPresent(String.self, forKey: .archivedContractsAmount)
     }
 }
 

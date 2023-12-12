@@ -395,7 +395,7 @@ public class SorobanServer {
     /// If making multiple requests, clients should deduplicate any events received, based on the event's unique id field. This prevents double-processing in the case of duplicate events being received.
     /// By default soroban-rpc retains the most recent 24 hours of events.
     /// See: https://soroban.stellar.org/api/methods/getEvents
-    public func getEvents(startLedger:String, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
+    public func getEvents(startLedger:Int, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
         
         request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, eventFilters: eventFilters, paginationOptions: paginationOptions))) { (result) -> (Void) in
             switch result {
@@ -422,7 +422,7 @@ public class SorobanServer {
         }
     }
     
-    private func buildEventsRequestParams(startLedger:String, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
+    private func buildEventsRequestParams(startLedger:Int, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
         var result: [String : Any] = [
             "startLedger": startLedger
         ]

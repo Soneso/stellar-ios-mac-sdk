@@ -18,7 +18,7 @@ public class GetLedgerEntriesResponse: NSObject, Decodable {
     public var entries:[LedgerEntry]
     
     /// The current latest ledger observed by the node when this response was generated.
-    public var latestLedger:String
+    public var latestLedger:Int
     
     private enum CodingKeys: String, CodingKey {
         case entries
@@ -28,6 +28,6 @@ public class GetLedgerEntriesResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         entries = try values.decode([LedgerEntry].self, forKey: .entries)
-        latestLedger = try values.decode(String.self, forKey: .latestLedger)
+        latestLedger = try values.decode(Int.self, forKey: .latestLedger)
     }
 }

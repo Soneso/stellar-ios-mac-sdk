@@ -11,9 +11,9 @@ import stellarsdk
 
 class SorobanTest: XCTestCase {
 
-    let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
-    let sdk = StellarSDK.testNet()
-    let network = Network.testnet
+    let sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    let sdk = StellarSDK.futureNet()
+    let network = Network.futurenet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
     let accountBKeyPair = try! KeyPair.generateRandomKeyPair()
     var uploadTransactionId:String? = nil
@@ -45,10 +45,10 @@ class SorobanTest: XCTestCase {
         let changeTrustOp = ChangeTrustOperation(sourceAccountId:accountAId, asset:asset, limit: 100000000)
         let payOp = try! PaymentOperation(sourceAccountId: accountBId, destinationAccountId: accountAId, asset: asset, amount: 50000)
         
-        sdk.accounts.createTestAccount(accountId: accountAId) { (response) -> (Void) in
+        sdk.accounts.createFutureNetTestAccount(accountId: accountAId) { (response) -> (Void) in
             switch response {
             case .success(_):
-                self.sdk.accounts.createTestAccount(accountId: accountBId) { (response) -> (Void) in
+                self.sdk.accounts.createFutureNetTestAccount(accountId: accountBId) { (response) -> (Void) in
                     switch response {
                     case .success(_):
                         self.sdk.accounts.getAccountDetails(accountId: accountBId) { (response) -> (Void) in
@@ -57,8 +57,8 @@ class SorobanTest: XCTestCase {
                                 let transaction = try! Transaction(sourceAccount: accountResponse,
                                                                   operations: [changeTrustOp, payOp],
                                                                   memo: Memo.none)
-                                try! transaction.sign(keyPair: self.submitterKeyPair, network: Network.testnet)
-                                try! transaction.sign(keyPair: self.accountBKeyPair, network: Network.testnet)
+                                try! transaction.sign(keyPair: self.submitterKeyPair, network: Network.futurenet)
+                                try! transaction.sign(keyPair: self.accountBKeyPair, network: Network.futurenet)
                                 try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
                                     switch response {
                                     case .success(let response):
@@ -195,8 +195,8 @@ class SorobanTest: XCTestCase {
             sorobanServer.getNetwork() { (response) -> (Void) in
                 switch response {
                 case .success(let networkResponse):
-                    XCTAssertEqual("https://friendbot.stellar.org/", networkResponse.friendbotUrl)
-                    XCTAssertEqual("Test SDF Network ; September 2015", networkResponse.passphrase)
+                    XCTAssertEqual("https://friendbot-futurenet.stellar.org/", networkResponse.friendbotUrl)
+                    XCTAssertEqual("Test SDF Future Network ; October 2022", networkResponse.passphrase)
                 case .failure(let error):
                     self.printError(error: error)
                     XCTFail()
@@ -608,11 +608,11 @@ class SorobanTest: XCTestCase {
             self.sorobanServer.getLedgerEntries(base64EncodedKeys:[contractCodeKey!]) { (response) -> (Void) in
                 switch response {
                 case .success(let response):
-                    XCTAssert(Int(response.latestLedger)! > 0)
+                    XCTAssert(Int(exactly: response.latestLedger)! > 0)
                     self.sorobanServer.getLedgerEntries(base64EncodedKeys:[contractDataKey!]) { (response) -> (Void) in
                         switch response {
                         case .success(let ledgerResponse):
-                            XCTAssert(Int(ledgerResponse.latestLedger)! > 0)
+                            XCTAssert(Int(exactly:ledgerResponse.latestLedger)! > 0)
                         case .failure(let error):
                             self.printError(error: error)
                             XCTFail()
@@ -834,7 +834,7 @@ class SorobanTest: XCTestCase {
             self.sorobanServer.getLedgerEntries(base64EncodedKeys:[contractDataKey!]) { (response) -> (Void) in
                 switch response {
                 case .success(let ledgerResponse):
-                    XCTAssert(Int(ledgerResponse.latestLedger)! > 0)
+                    XCTAssert(Int(exactly: ledgerResponse.latestLedger)! > 0)
                 case .failure(let error):
                     self.printError(error: error)
                     XCTFail()
@@ -933,7 +933,7 @@ class SorobanTest: XCTestCase {
             self.sorobanServer.getLedgerEntries(base64EncodedKeys:[contractDataKey!]) { (response) -> (Void) in
                 switch response {
                 case .success(let ledgerResponse):
-                    XCTAssert(Int(ledgerResponse.latestLedger)! > 0)
+                    XCTAssert(Int(exactly: ledgerResponse.latestLedger)! > 0)
                 case .failure(let error):
                     self.printError(error: error)
                     XCTFail()

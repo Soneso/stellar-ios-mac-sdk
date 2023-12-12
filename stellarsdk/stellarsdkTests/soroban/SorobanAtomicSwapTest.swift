@@ -15,15 +15,15 @@ class SorobanAtomicSwapTest: XCTestCase {
     // See https://soroban.stellar.org/docs/learn/authorization
     // See https://github.com/StellarCN/py-stellar-base/blob/soroban/examples/soroban_auth_atomic_swap.py
     
-    let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
-    let sdk = StellarSDK.testNet()
-    let network = Network.testnet
+    let sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    let sdk = StellarSDK.futureNet()
+    let network = Network.futurenet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
-    let aliceKeyPair = try! KeyPair(secretSeed: "SB5GPOK3JBNUIZQQF7Y4DB2WLA3KJH2GOLUPOFXXFNOHPAMG6GU4SJV5") // GB3CVEMS6JWO4NBGSWVLOV4SAH23D7JBO4OFVS5BDFCN3ILIB4XXHYK6
-    let bobKeyPair = try! KeyPair(secretSeed: "SDAHXYSHWC45AAWF7TC26APVTVOHNW7MBDCAEQ5W5S27CAVAVDLKU6XT") // GD3VRIUP36VUXFESW2KW5K6S6NFJIEFIRKZONSJRWG7MLNTM6ISEBCAN
-    let atomicSwapContractId = "92f78bfe59fefda7ced836c3903fb80feb9a1548f7743b092cc3dc1bbff9d5ca"
-    let tokenAId  = "2a381554187731110f6210756115b2a7d818a5b65640ca8fe283ac999b625f71"
-    let tokenBId = "f99c5a2a92e393436f4bd69efdd992a0807790cd4ac5c47f66efe43b67889be3"
+    let aliceKeyPair = try! KeyPair(secretSeed: "SB72NH3NPKLNLQ6GDTUDIOFBNOEKOEM3FWBVHG27OJDWZSTEVNP36VM4") // GDQ72TJZNXUH2FNEYTVTNBTJPLTH37IPSMOF2QMBC5DGT6ICD45ARUTC
+    let bobKeyPair = try! KeyPair(secretSeed: "SCJIEP6MCBQXQPUJ74EDWGAMMLP7B24JS3QOQVBLKIIGLEAAWEYGSKCZ") // GDQQWKGKHUB5KWW4XEWI2JFKLIUGZMDY5LQNTNJTSMARMECZD3SDZFUC
+    let atomicSwapContractId = "25ecbd01910729eef19070c3297506d92ff62e6d9728d7dabeed269b889b4c52"
+    let tokenAId  = "330ca94cb5f6452d87681f9773d98070e4708a63dd7a162661eeb610ae6cd7a1"
+    let tokenBId = "3e12f8c084e2c209b4344d3d1e9ec2cb359295304d2a020dfb9d71763fb1f2f1"
     let swapFunctionName = "swap"
     var invokeTransactionId:String?
     var submitterAccount:AccountResponse?
@@ -33,7 +33,7 @@ class SorobanAtomicSwapTest: XCTestCase {
         super.setUp()
         let expectation = XCTestExpectation(description: "account prepared for tests")
         sorobanServer.enableLogging = true
-        StellarSDK.testNet().accounts.createTestAccount(accountId: submitterKeyPair.accountId) { (response) -> (Void) in
+        StellarSDK.futureNet().accounts.createFutureNetTestAccount(accountId: submitterKeyPair.accountId) { (response) -> (Void) in
             switch response {
             case .success(_):
                 expectation.fulfill()
@@ -128,7 +128,7 @@ class SorobanAtomicSwapTest: XCTestCase {
                     XCTAssertNotNil(simulateResponse.minResourceFee)
                     
                     transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
-                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee! + 1005000)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     
                     let bobAccountId = self.bobKeyPair.accountId
                     let aliceAccountId = self.aliceKeyPair.accountId
@@ -138,12 +138,12 @@ class SorobanAtomicSwapTest: XCTestCase {
                     for var a in simulateResponse.sorobanAuth! {
                         if (a.credentials.address?.address.accountId == bobAccountId) {
                             try! a.sign(signer: self.bobKeyPair,
-                                        network: Network.testnet,
+                                        network: Network.futurenet,
                                         signatureExpirationLedger: self.latestLedger! + 10)
                         }
                         if (a.credentials.address?.address.accountId == aliceAccountId) {
                             try! a.sign(signer: self.aliceKeyPair,
-                                        network: Network.testnet,
+                                        network: Network.futurenet,
                                         signatureExpirationLedger: self.latestLedger! + 10)
                         }
                         sorobanAuth.append(a)

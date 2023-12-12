@@ -17,10 +17,10 @@ public class LedgerEntry: NSObject, Decodable {
     public var xdr:String
     
     /// The ledger sequence number of the last time this entry was updated.
-    public var lastModifiedLedgerSeq:String
+    public var lastModifiedLedgerSeq:Int
     
     /// The ledger sequence number after which the ledger entry would expire. This field exists only for ContractCodeEntry and ContractDataEntry ledger entries (optional).
-    public var liveUntilLedgerSeq:String?
+    public var liveUntilLedgerSeq:Int?
     
     
     private enum CodingKeys: String, CodingKey {
@@ -34,7 +34,7 @@ public class LedgerEntry: NSObject, Decodable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         key = try values.decode(String.self, forKey: .key)
         xdr = try values.decode(String.self, forKey: .xdr)
-        lastModifiedLedgerSeq = try values.decode(String.self, forKey: .lastModifiedLedgerSeq)
-        liveUntilLedgerSeq = try values.decodeIfPresent(String.self, forKey: .liveUntilLedgerSeq)
+        lastModifiedLedgerSeq = try values.decode(Int.self, forKey: .lastModifiedLedgerSeq)
+        liveUntilLedgerSeq = try values.decodeIfPresent(Int.self, forKey: .liveUntilLedgerSeq)
     }
 }

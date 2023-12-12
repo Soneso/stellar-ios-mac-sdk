@@ -19,7 +19,7 @@ public class GetNetworkResponse: NSObject, Decodable {
     public var passphrase:String
     
     /// Protocol version of the latest ledger
-    public var protocolVersion:String
+    public var protocolVersion:Int
     
     private enum CodingKeys: String, CodingKey {
         case friendbotUrl
@@ -31,6 +31,6 @@ public class GetNetworkResponse: NSObject, Decodable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         friendbotUrl = try values.decodeIfPresent(String.self, forKey: .friendbotUrl)
         passphrase = try values.decode(String.self, forKey: .passphrase)
-        protocolVersion = try values.decode(String.self, forKey: .protocolVersion)
+        protocolVersion = try values.decode(Int.self, forKey: .protocolVersion)
     }
 }

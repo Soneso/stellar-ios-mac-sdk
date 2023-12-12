@@ -12,9 +12,9 @@ import stellarsdk
 
 class SorobanAuthTest: XCTestCase {
 
-    let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
-    let sdk = StellarSDK.testNet()
-    let network = Network.testnet
+    let sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    let sdk = StellarSDK.futureNet()
+    let network = Network.futurenet
     var invokerKeyPair = try! KeyPair.generateRandomKeyPair()
     var senderKeyPair = try! KeyPair.generateRandomKeyPair()
     var installTransactionId:String?
@@ -34,10 +34,10 @@ class SorobanAuthTest: XCTestCase {
         let invokerId = invokerKeyPair.accountId
         let senderId = senderKeyPair.accountId
         
-        sdk.accounts.createTestAccount(accountId: invokerId) { (response) -> (Void) in
+        sdk.accounts.createFutureNetTestAccount(accountId: invokerId) { (response) -> (Void) in
             switch response {
             case .success(_):
-                self.sdk.accounts.createTestAccount(accountId: senderId) { (response) -> (Void) in
+                self.sdk.accounts.createFutureNetTestAccount(accountId: senderId) { (response) -> (Void) in
                     switch response {
                     case .success(_):
                         expectation.fulfill()
@@ -280,20 +280,14 @@ class SorobanAuthTest: XCTestCase {
                     XCTAssertNotNil(simulateResponse.transactionData)
                     XCTAssertNotNil(simulateResponse.minResourceFee)
                     
-                    // this is because since preview 9 the fee calculation from the simulation is not always accurate
-                    // see: https://discord.com/channels/897514728459468821/1112853306881081354
-                    var transactionData = simulateResponse.transactionData!
-                    transactionData.resources.instructions += transactionData.resources.instructions / 4
-                    let resourceFee = simulateResponse.minResourceFee! + 6000;
-                    
-                    transaction.setSorobanTransactionData(data: transactionData)
-                    transaction.addResourceFee(resourceFee: resourceFee)
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     
                     // sign auth and set it to the transaction
                     var sorobanAuth = simulateResponse.sorobanAuth!
                     for i in sorobanAuth.indices {
                         try! sorobanAuth[i].sign(signer: self.invokerKeyPair,
-                                            network: Network.testnet,
+                                            network: Network.futurenet,
                                             signatureExpirationLedger: self.latestLedger! + 10)
                     }
                     transaction.setSorobanAuth(auth: sorobanAuth)
@@ -370,14 +364,8 @@ class SorobanAuthTest: XCTestCase {
                     XCTAssertNotNil(simulateResponse.transactionData)
                     XCTAssertNotNil(simulateResponse.minResourceFee)
                     
-                    // this is because since preview 9 the fee calculation from the simulation is not always accurate
-                    // see: https://discord.com/channels/897514728459468821/1112853306881081354
-                    var transactionData = simulateResponse.transactionData!
-                    transactionData.resources.instructions += transactionData.resources.instructions / 4
-                    let resourceFee = simulateResponse.minResourceFee! + 6000;
-                    
-                    transaction.setSorobanTransactionData(data: transactionData)
-                    transaction.addResourceFee(resourceFee: resourceFee)
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     // no need to sign soroban auth
                     transaction.setSorobanAuth(auth: simulateResponse.sorobanAuth!)
                     

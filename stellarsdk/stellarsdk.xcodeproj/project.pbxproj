@@ -926,12 +926,6 @@
 		836658FE2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FC2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift */; };
 		836659002A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FF2A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift */; };
 		836659012A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FF2A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift */; };
-		836659052A6EFE3000E8B8D9 /* soroban_auth_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 836659022A6EFE3000E8B8D9 /* soroban_auth_contract.wasm */; };
-		836659062A6EFE3000E8B8D9 /* soroban_auth_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 836659022A6EFE3000E8B8D9 /* soroban_auth_contract.wasm */; };
-		836659072A6EFE3000E8B8D9 /* soroban_events_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 836659032A6EFE3000E8B8D9 /* soroban_events_contract.wasm */; };
-		836659082A6EFE3000E8B8D9 /* soroban_events_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 836659032A6EFE3000E8B8D9 /* soroban_events_contract.wasm */; };
-		836659092A6EFE3000E8B8D9 /* soroban_hello_world_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 836659042A6EFE3000E8B8D9 /* soroban_hello_world_contract.wasm */; };
-		8366590A2A6EFE3000E8B8D9 /* soroban_hello_world_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 836659042A6EFE3000E8B8D9 /* soroban_hello_world_contract.wasm */; };
 		836971DF2024A71B00398A98 /* AccountFlagsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */; };
 		836971E42024C47300398A98 /* LinkResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E32024C47300398A98 /* LinkResponse.swift */; };
 		836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E52024F58E00398A98 /* DataForAccountResponse.swift */; };
@@ -1032,6 +1026,12 @@
 		83B4CBB8252883D000EEE55E /* ClaimantPredicateResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CBB6252883D000EEE55E /* ClaimantPredicateResponse.swift */; };
 		83B4CBC8252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */; };
 		83B4CBC9252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */; };
+		83B827772B28E3930064D7CB /* soroban_hello_world_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83B827742B28E3930064D7CB /* soroban_hello_world_contract.wasm */; };
+		83B827782B28E3930064D7CB /* soroban_hello_world_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83B827742B28E3930064D7CB /* soroban_hello_world_contract.wasm */; };
+		83B827792B28E3930064D7CB /* soroban_auth_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83B827752B28E3930064D7CB /* soroban_auth_contract.wasm */; };
+		83B8277A2B28E3930064D7CB /* soroban_auth_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83B827752B28E3930064D7CB /* soroban_auth_contract.wasm */; };
+		83B8277B2B28E3930064D7CB /* soroban_events_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83B827762B28E3930064D7CB /* soroban_events_contract.wasm */; };
+		83B8277C2B28E3930064D7CB /* soroban_events_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83B827762B28E3930064D7CB /* soroban_events_contract.wasm */; };
 		83BD1EE82949F67D00F6C041 /* IssueAssetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BD1EE72949F67D00F6C041 /* IssueAssetTest.swift */; };
 		83BD1EE92949F67D00F6C041 /* IssueAssetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BD1EE72949F67D00F6C041 /* IssueAssetTest.swift */; };
 		83C54D062945F23700CC1E8A /* QuickStartTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C54D052945F23700CC1E8A /* QuickStartTest.swift */; };
@@ -1719,9 +1719,6 @@
 		836658F92A6ECEFD00E8B8D9 /* RestoreFootprintOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreFootprintOperation.swift; sourceTree = "<group>"; };
 		836658FC2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendFootprintTTLOperationResponse.swift; sourceTree = "<group>"; };
 		836658FF2A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreFootprintOperationResponse.swift; sourceTree = "<group>"; };
-		836659022A6EFE3000E8B8D9 /* soroban_auth_contract.wasm */ = {isa = PBXFileReference; lastKnownFileType = file; path = soroban_auth_contract.wasm; sourceTree = "<group>"; };
-		836659032A6EFE3000E8B8D9 /* soroban_events_contract.wasm */ = {isa = PBXFileReference; lastKnownFileType = file; path = soroban_events_contract.wasm; sourceTree = "<group>"; };
-		836659042A6EFE3000E8B8D9 /* soroban_hello_world_contract.wasm */ = {isa = PBXFileReference; lastKnownFileType = file; path = soroban_hello_world_contract.wasm; sourceTree = "<group>"; };
 		836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFlagsResponse.swift; sourceTree = "<group>"; };
 		836971E32024C47300398A98 /* LinkResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkResponse.swift; sourceTree = "<group>"; };
 		836971E52024F58E00398A98 /* DataForAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountResponse.swift; sourceTree = "<group>"; };
@@ -1792,6 +1789,9 @@
 		83B4CBAC2528839500EEE55E /* ClaimantResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimantResponse.swift; sourceTree = "<group>"; };
 		83B4CBB6252883D000EEE55E /* ClaimantPredicateResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimantPredicateResponse.swift; sourceTree = "<group>"; };
 		83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaimableBalanceLinksResponse.swift; sourceTree = "<group>"; };
+		83B827742B28E3930064D7CB /* soroban_hello_world_contract.wasm */ = {isa = PBXFileReference; lastKnownFileType = file; path = soroban_hello_world_contract.wasm; sourceTree = "<group>"; };
+		83B827752B28E3930064D7CB /* soroban_auth_contract.wasm */ = {isa = PBXFileReference; lastKnownFileType = file; path = soroban_auth_contract.wasm; sourceTree = "<group>"; };
+		83B827762B28E3930064D7CB /* soroban_events_contract.wasm */ = {isa = PBXFileReference; lastKnownFileType = file; path = soroban_events_contract.wasm; sourceTree = "<group>"; };
 		83BD1EE72949F67D00F6C041 /* IssueAssetTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueAssetTest.swift; sourceTree = "<group>"; };
 		83C54D052945F23700CC1E8A /* QuickStartTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickStartTest.swift; sourceTree = "<group>"; };
 		83CFD7A626F1375A001043B5 /* TradePrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradePrice.swift; sourceTree = "<group>"; };
@@ -3006,9 +3006,9 @@
 		835F0CE1297613C900793708 /* soroban */ = {
 			isa = PBXGroup;
 			children = (
-				836659022A6EFE3000E8B8D9 /* soroban_auth_contract.wasm */,
-				836659032A6EFE3000E8B8D9 /* soroban_events_contract.wasm */,
-				836659042A6EFE3000E8B8D9 /* soroban_hello_world_contract.wasm */,
+				83B827752B28E3930064D7CB /* soroban_auth_contract.wasm */,
+				83B827762B28E3930064D7CB /* soroban_events_contract.wasm */,
+				83B827742B28E3930064D7CB /* soroban_hello_world_contract.wasm */,
 				835F0CE2297613EF00793708 /* SorobanTest.swift */,
 				830DAB5D29AE5AD400ED4E66 /* SorobanAuthTest.swift */,
 				830A8F0A29AE916300B30483 /* SorobanAtomicSwapTest.swift */,
@@ -3730,9 +3730,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				836659062A6EFE3000E8B8D9 /* soroban_auth_contract.wasm in Resources */,
-				836659082A6EFE3000E8B8D9 /* soroban_events_contract.wasm in Resources */,
-				8366590A2A6EFE3000E8B8D9 /* soroban_hello_world_contract.wasm in Resources */,
+				83B8277A2B28E3930064D7CB /* soroban_auth_contract.wasm in Resources */,
+				83B827782B28E3930064D7CB /* soroban_hello_world_contract.wasm in Resources */,
+				83B8277C2B28E3930064D7CB /* soroban_events_contract.wasm in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3772,9 +3772,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				836659052A6EFE3000E8B8D9 /* soroban_auth_contract.wasm in Resources */,
-				836659072A6EFE3000E8B8D9 /* soroban_events_contract.wasm in Resources */,
-				836659092A6EFE3000E8B8D9 /* soroban_hello_world_contract.wasm in Resources */,
+				83B827792B28E3930064D7CB /* soroban_auth_contract.wasm in Resources */,
+				83B827772B28E3930064D7CB /* soroban_hello_world_contract.wasm in Resources */,
+				83B8277B2B28E3930064D7CB /* soroban_events_contract.wasm in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -12,9 +12,9 @@ import stellarsdk
 
 class SorobanEventsTest: XCTestCase {
 
-    let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
-    let sdk = StellarSDK.testNet()
-    let network = Network.testnet
+    let sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    let sdk = StellarSDK.futureNet()
+    let network = Network.futurenet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
     var uploadTransactionId:String? = nil
     var wasmId:String? = nil
@@ -33,7 +33,7 @@ class SorobanEventsTest: XCTestCase {
         sorobanServer.enableLogging = true
         let accountAId = submitterKeyPair.accountId
 
-        sdk.accounts.createTestAccount(accountId: accountAId) { (response) -> (Void) in
+        sdk.accounts.createFutureNetTestAccount(accountId: accountAId) { (response) -> (Void) in
             switch response {
             case .success(_):
                 expectation.fulfill()
@@ -312,7 +312,7 @@ class SorobanEventsTest: XCTestCase {
     func getEvents() {
         XCTContext.runActivity(named: "getEvents") { activity in
             let expectation = XCTestExpectation(description: "successfully get events")
-            let ledger = String(self.transactionLedger!)
+            let ledger = self.transactionLedger!
             // seams that position of the topic in the filter must match event topics ...
             let topicFilter = TopicFilter(segmentMatchers:["*", SCValXDR.symbol("increment").xdrEncoded!])
             //let topicFilter = TopicFilter(segmentMatchers:[SCValXDR.symbol("COUNTER").xdrEncoded!, "*"])

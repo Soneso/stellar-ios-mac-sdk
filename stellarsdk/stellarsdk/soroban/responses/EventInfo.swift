@@ -13,7 +13,7 @@ import Foundation
 public class EventInfo: NSObject, Decodable {
     
     /// String-ified sequence number of the ledger.
-    public var ledger:String
+    public var ledger:Int
     
     ///  ISO8601 timestamp of the ledger closing time.
     public var ledgerClosedAt:String
@@ -49,7 +49,7 @@ public class EventInfo: NSObject, Decodable {
 
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        ledger = try values.decode(String.self, forKey: .ledger)
+        ledger = try values.decode(Int.self, forKey: .ledger)
         ledgerClosedAt = try values.decode(String.self, forKey: .ledgerClosedAt)
         contractId = try values.decode(String.self, forKey: .contractId)
         id = try values.decode(String.self, forKey: .id)
