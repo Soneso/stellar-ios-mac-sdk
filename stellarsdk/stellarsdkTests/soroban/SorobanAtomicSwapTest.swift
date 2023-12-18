@@ -15,15 +15,15 @@ class SorobanAtomicSwapTest: XCTestCase {
     // See https://soroban.stellar.org/docs/learn/authorization
     // See https://github.com/StellarCN/py-stellar-base/blob/soroban/examples/soroban_auth_atomic_swap.py
     
-    let sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
-    let sdk = StellarSDK.futureNet()
-    let network = Network.futurenet
+    let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
+    let sdk = StellarSDK.testNet()
+    let network = Network.testnet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
-    let aliceKeyPair = try! KeyPair(secretSeed: "SB72NH3NPKLNLQ6GDTUDIOFBNOEKOEM3FWBVHG27OJDWZSTEVNP36VM4") // GDQ72TJZNXUH2FNEYTVTNBTJPLTH37IPSMOF2QMBC5DGT6ICD45ARUTC
-    let bobKeyPair = try! KeyPair(secretSeed: "SCJIEP6MCBQXQPUJ74EDWGAMMLP7B24JS3QOQVBLKIIGLEAAWEYGSKCZ") // GDQQWKGKHUB5KWW4XEWI2JFKLIUGZMDY5LQNTNJTSMARMECZD3SDZFUC
-    let atomicSwapContractId = "25ecbd01910729eef19070c3297506d92ff62e6d9728d7dabeed269b889b4c52"
-    let tokenAId  = "330ca94cb5f6452d87681f9773d98070e4708a63dd7a162661eeb610ae6cd7a1"
-    let tokenBId = "3e12f8c084e2c209b4344d3d1e9ec2cb359295304d2a020dfb9d71763fb1f2f1"
+    let aliceKeyPair = try! KeyPair(secretSeed: "SAA5STOJXSTYU5EONKI6WCNYXTGRNOZK4Z4KFTMCCQ3YI2WPZPKQPECK") // GDTI4BTSECIIXAUHENKEDTTQBJADZGOJSSPYTTX4H76OQWNLXFM3X4BH
+    let bobKeyPair = try! KeyPair(secretSeed: "SAHZ37UVWQJKT4SITMEBXIBF76N2BWHEBX7NJZPHQ3OEKK3NZG3ZZG32") // GA7DGBRT5U4U5AV5V3PC6XPMMGODFKYYIGES27EBQ5RYF2PJ3KYA5XJU
+    let atomicSwapContractId = "63b454c1e5fafe65b13f5173fdec557611df29cd21a1882cdec3cefbf5af0ddb"
+    let tokenAId  = "47ed98e8deb59eaf8d5becf83130a97da55a13aaf3aa36247f36573e2192eca0"
+    let tokenBId = "3cc029dc4cf07923e5eb634b4ff29edabdfd14ba9556044d39cb7bdf82a02b42"
     let swapFunctionName = "swap"
     var invokeTransactionId:String?
     var submitterAccount:AccountResponse?
@@ -33,7 +33,7 @@ class SorobanAtomicSwapTest: XCTestCase {
         super.setUp()
         let expectation = XCTestExpectation(description: "account prepared for tests")
         sorobanServer.enableLogging = true
-        StellarSDK.futureNet().accounts.createFutureNetTestAccount(accountId: submitterKeyPair.accountId) { (response) -> (Void) in
+        StellarSDK.testNet().accounts.createTestAccount(accountId: submitterKeyPair.accountId) { (response) -> (Void) in
             switch response {
             case .success(_):
                 expectation.fulfill()
@@ -139,12 +139,12 @@ class SorobanAtomicSwapTest: XCTestCase {
                     for var a in simulateResponse.sorobanAuth! {
                         if (a.credentials.address?.address.accountId == bobAccountId) {
                             try! a.sign(signer: self.bobKeyPair,
-                                        network: Network.futurenet,
+                                        network: Network.testnet,
                                         signatureExpirationLedger: self.latestLedger! + 10)
                         }
                         if (a.credentials.address?.address.accountId == aliceAccountId) {
                             try! a.sign(signer: self.aliceKeyPair,
-                                        network: Network.futurenet,
+                                        network: Network.testnet,
                                         signatureExpirationLedger: self.latestLedger! + 10)
                         }
                         sorobanAuth.append(a)
