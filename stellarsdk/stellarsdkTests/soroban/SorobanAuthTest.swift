@@ -108,7 +108,8 @@ class SorobanAuthTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: senderAccount!,
                                                operations: [installOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
@@ -176,7 +177,8 @@ class SorobanAuthTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: senderAccount!,
                                                operations: [createOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
@@ -273,7 +275,8 @@ class SorobanAuthTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: senderAccount!,
                                                operations: [invokeOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
@@ -357,7 +360,8 @@ class SorobanAuthTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: invokerAccount!,
                                                operations: [invokeOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)

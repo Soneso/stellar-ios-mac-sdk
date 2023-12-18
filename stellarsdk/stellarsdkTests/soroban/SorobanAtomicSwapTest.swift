@@ -120,7 +120,8 @@ class SorobanAtomicSwapTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [invokeOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)

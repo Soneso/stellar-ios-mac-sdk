@@ -302,9 +302,9 @@ public class SorobanServer {
     
     /// Submit a trial contract invocation to get back return values, expected ledger footprint, and expected costs.
     /// See: https://soroban.stellar.org/api/methods/simulateTransaction
-    public func simulateTransaction(transaction: Transaction, completion:@escaping SimulateTransactionResponseClosure) {
+    public func simulateTransaction(simulateTxRequest: SimulateTransactionRequest, completion:@escaping SimulateTransactionResponseClosure) {
         
-        request(body: try? buildRequestJson(method: "simulateTransaction", args: [transaction.encodedEnvelope()])) { (result) -> (Void) in
+        request(body: try? buildRequestJson(method: "simulateTransaction", args: simulateTxRequest.buildRequestParams())) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {

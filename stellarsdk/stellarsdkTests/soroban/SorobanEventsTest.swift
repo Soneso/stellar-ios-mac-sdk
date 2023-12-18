@@ -95,7 +95,8 @@ class SorobanEventsTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [installOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            var simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
@@ -165,7 +166,8 @@ class SorobanEventsTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [createOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            var simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
@@ -233,7 +235,8 @@ class SorobanEventsTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [invokeOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            var simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.transactionData)

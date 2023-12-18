@@ -107,7 +107,7 @@ class SorobanTest: XCTestCase {
         // test bump contract code footprint
         // see: https://soroban.stellar.org/docs/fundamentals-and-concepts/state-expiration
         refreshSubmitterAccount()
-        extendContractCodeFootprintTTL(wasmId: self.wasmId!, extendTo: 10000)
+        extendContractCodeFootprintTTL(wasmId: self.wasmId!, ledgersToExpire: 10000)
         checkTransactionStatusSuccess(transactionId: self.bumpTransactionId!)
         // this is currently not testable because horizon returns status 500
         //getTransactionDetails(transactionHash: self.bumpTransactionId!, type:"bump_footprint_expiration")
@@ -224,8 +224,9 @@ class SorobanTest: XCTestCase {
             var transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [uploadOperation], memo: Memo.none)
             
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
             // simulate with contract code to obtain the footprint (including wasmId)
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.transactionData)
@@ -245,7 +246,8 @@ class SorobanTest: XCTestCase {
                     transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     
                     // simulate first to obtain the transaction data + resource fee
-                    self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+                    let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+                    self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                         switch response {
                         case .success(let simulateResponse):
                             XCTAssertNotNil(simulateResponse.transactionData)
@@ -310,7 +312,8 @@ class SorobanTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [installOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
@@ -404,11 +407,11 @@ class SorobanTest: XCTestCase {
         }
     }
     
-    func extendContractCodeFootprintTTL(wasmId: String, extendTo: UInt32) {
+    func extendContractCodeFootprintTTL(wasmId: String, ledgersToExpire: UInt32) {
         XCTContext.runActivity(named: "extendContractCodeFootprintTTL") { activity in
             let expectation = XCTestExpectation(description: "footprint sucessfully bumped")
             
-            let extendOperation = ExtendFootprintTTLOperation(ledgersToExpire: extendTo)
+            let extendOperation = ExtendFootprintTTLOperation(ledgersToExpire: ledgersToExpire)
             
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [extendOperation], memo: Memo.none)
@@ -423,7 +426,9 @@ class SorobanTest: XCTestCase {
             transaction.setSorobanTransactionData(data: transactionData)
             
             // simulate first to obtain the transaction data + resource fee
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let resourceConfig = ResourceConfig(instructionLeeway: 3000000)
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction, resourceConfig: resourceConfig);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.transactionData)
@@ -531,7 +536,8 @@ class SorobanTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [createOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
@@ -675,7 +681,8 @@ class SorobanTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [invokeOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
@@ -763,7 +770,8 @@ class SorobanTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [deployOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
@@ -858,7 +866,8 @@ class SorobanTest: XCTestCase {
                     let transaction = try! Transaction(sourceAccount: accountResponse,
                                                        operations: [deployOperation], memo: Memo.none)
                     
-                    self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+                    let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+                    self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                         switch response {
                         case .success(let simulateResponse):
                             XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)

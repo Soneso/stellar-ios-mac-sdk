@@ -2,7 +2,7 @@
 ## [Stellar SDK for iOS](https://github.com/Soneso/stellar-ios-mac-sdk) 
 ## Soroban support
 
-**Supported version: Soroban Preview 11.**
+The following shows you how to use the PHP SDK to interact with Soroban. 
 
 ### Quick Start
 
@@ -22,7 +22,7 @@ The Soroban-RPC API is described [here](https://soroban.stellar.org/api/methods)
 Provide the url to the endpoint of the Soroban-RPC server to connect to:
 
 ```swift
-let sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org:443")
+let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
 ```
 
 #### General node health check
@@ -47,7 +47,7 @@ You first need an account on Futurenet. You can fund it like this:
 let accountKeyPair = try KeyPair.generateRandomKeyPair()
 let accountId = accountKeyPair.accountId
 
-sdk.accounts.createFutureNetTestAccount(accountId: accountId) { (response) -> (Void) in //...
+sdk.accounts.createTestAccount(accountId: accountId) { (response) -> (Void) in //...
 ```
 
 Next you can fetch current information about your Stellar account using the ```iOS SDK```:
@@ -65,9 +65,9 @@ sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
 
 #### Deploy your contract
 
-If you want to create a smart contract for testing, you can easily build one with our [AssemblyScript Soroban SDK](https://github.com/Soneso/as-soroban-sdk) or with the [official Stellar Rust SDK](https://soroban.stellar.org/docs/examples/hello-world). Here you can find [examples](https://github.com/Soneso/as-soroban-examples) to be build with the AssemblyScript SDK.
+If you want to create a smart contract for testing, you can find the official examples [here](https://github.com/stellar/soroban-examples).
+You can also create smart contracts with our AssemblyScript Soroban SDK. Examples can be found [here](https://github.com/Soneso/as-soroban-examples).
 
-There are two main steps involved in the process of deploying a contract. First you need to **upload** the **contract code** and then to **create** the **contract**.
 
 To **upload** the **contract code**, first build a transaction containing the corresponding operation:
 
@@ -85,7 +85,8 @@ Next we need to **simulate** the transaction to obtain the **soroban transaction
 
 ```swift
 // Simulate first to obtain the transaction data and ressource fee
-sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
     switch response {
     case .success(let simulateResponse):
         let transactionData = simulateResponse.transactionData
@@ -105,7 +106,7 @@ Next we need to set the **soroban transaction data** to our transaction, add the
 ```swift
 transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
 transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
-try transaction.sign(keyPair: accountKeyPair, network: Network.futurenet)
+try transaction.sign(keyPair: accountKeyPair, network: Network.testnet)
 
 // send transaction to soroban rpc server
 sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
@@ -166,7 +167,8 @@ Next we need to **simulate** the transaction to obtain the resources needed for 
 
 ```swift
 // Simulate first to obtain the transaction data, fee and soroban auth
-sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
     switch response {
     case .success(let simulateResponse):
         let transactionData = simulateResponse.transactionData
@@ -186,7 +188,7 @@ Next we need to set the resources to our transaction and  **sign** the transacti
 transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
 transaction.setSorobanAuth(auth: simulateResponse.sorobanAuth)
 transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
-try transaction.sign(keyPair: accountKeyPair, network: Network.futurenet)
+try transaction.sign(keyPair: accountKeyPair, network: Network.testnet)
 
 // send transaction to soroban rpc server
 sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
@@ -300,7 +302,8 @@ Next we need to **simulate** the transaction to obtain the **transaction data** 
 
 ```swift
 // Simulate first to obtain the footprint
-sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
     switch response {
     case .success(let simulateResponse):
         let transactionData = simulateResponse.transactionData
@@ -318,7 +321,7 @@ Next we need to set the **soroban transaction data** to our transaction, to add 
 ```swift
 transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
 transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
-try transaction.sign(keyPair: accountKeyPair, network: Network.futurenet)
+try transaction.sign(keyPair: accountKeyPair, network: Network.testnet)
 
 // send transaction to soroban rpc server
 sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
@@ -417,7 +420,7 @@ If the entries need to be signed you can do it as follows:
 var sorobanAuth = simulateResponse.sorobanAuth!
 for i in sorobanAuth.indices {
     try sorobanAuth[i].sign(signer: invokerKeyPair,
-                        network: Network.futurenet,
+                        network: Network.testnet,
                         signatureExpirationLedger: latestLedger + 10)
 }
 transaction.setSorobanAuth(auth: sorobanAuth)             
@@ -429,19 +432,6 @@ self.sorobanServer.getLatestLedger() { (response) -> (Void) in // ...
 ```
 
 You can find multiple examples in the [Soroban Auth Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanAuthTest.swift) and in the [Atomic Swap Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanAtomicSwapTest.swift) of the SDK.
-
-Hint: Resource values and fees have been added in the new soroban preview 9 version. The calculation of the minimum resource values and fee by the simulation (preflight) is not always accurate, because it does not consider signatures. This may result in a failing transaction because of insufficient resources. In this case one can experiment and increase the resources values within the soroban transaction data before signing and submitting the transaction. E.g.:
-
-```swift
-var transactionData = simulateResponse.transactionData!
-transactionData.resources.instructions += transactionData.resources.instructions / 4
-let resourceFee = simulateResponse.minResourceFee! + 3000;
-
-transaction.setSorobanTransactionData(data: transactionData)
-transaction.addResourceFee(resourceFee: resourceFee)
-try transaction.sign(keyPair: accountKeyPair, network: Network.futurenet)
-```
-See also: https://discord.com/channels/897514728459468821/1112853306881081354
 
 #### Get Events
 
