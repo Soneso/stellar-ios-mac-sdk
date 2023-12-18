@@ -17,8 +17,8 @@ public class SimulateTransactionResponse: NSObject, Decodable {
     /// Information about the fees expected, instructions used, etc.
     public var cost:SimulateTransactionCost
     
-    /// Stringified-number of the current latest ledger observed by the node when this response was generated.
-    public var latestLedger:String
+    /// number of the current latest ledger observed by the node when this response was generated.
+    public var latestLedger:Int
     
     /// The recommended Soroban Transaction Data to use when submitting the simulated transaction. This data contains the refundable fee and resource usage information such as the ledger footprint and IO access data.
     public var transactionData:SorobanTransactionDataXDR?
@@ -51,7 +51,7 @@ public class SimulateTransactionResponse: NSObject, Decodable {
 
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        latestLedger = try values.decode(String.self, forKey: .latestLedger)
+        latestLedger = try values.decode(Int.self, forKey: .latestLedger)
         cost = try values.decode(SimulateTransactionCost.self, forKey: .cost)
         if let transactionDataXdrString = try values.decodeIfPresent(String.self, forKey: .transactionData) {
             transactionData = try SorobanTransactionDataXDR(fromBase64: transactionDataXdrString)

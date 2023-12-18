@@ -24,7 +24,7 @@ public class SendTransactionResponse: NSObject, Decodable {
     public var status:String
     
     /// The latest ledger known to Soroban-RPC at the time it handled the sendTransaction() request.
-    public var latestLedger:String
+    public var latestLedger:Int
     
     /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the sendTransaction() request.
     public var latestLedgerCloseTime:String
@@ -44,7 +44,7 @@ public class SendTransactionResponse: NSObject, Decodable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         transactionId = try values.decode(String.self, forKey: .transactionId)
         status = try values.decode(String.self, forKey: .status)
-        latestLedger = try values.decode(String.self, forKey: .latestLedger)
+        latestLedger = try values.decode(Int.self, forKey: .latestLedger)
         latestLedgerCloseTime = try values.decode(String.self, forKey: .latestLedgerCloseTime)
         error = try values.decodeIfPresent(TransactionStatusError.self, forKey: .error)
     }

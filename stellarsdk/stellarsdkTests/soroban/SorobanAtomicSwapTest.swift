@@ -19,11 +19,11 @@ class SorobanAtomicSwapTest: XCTestCase {
     let sdk = StellarSDK.testNet()
     let network = Network.testnet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
-    let aliceKeyPair = try! KeyPair(secretSeed: "SB5GPOK3JBNUIZQQF7Y4DB2WLA3KJH2GOLUPOFXXFNOHPAMG6GU4SJV5") // GB3CVEMS6JWO4NBGSWVLOV4SAH23D7JBO4OFVS5BDFCN3ILIB4XXHYK6
-    let bobKeyPair = try! KeyPair(secretSeed: "SDAHXYSHWC45AAWF7TC26APVTVOHNW7MBDCAEQ5W5S27CAVAVDLKU6XT") // GD3VRIUP36VUXFESW2KW5K6S6NFJIEFIRKZONSJRWG7MLNTM6ISEBCAN
-    let atomicSwapContractId = "92f78bfe59fefda7ced836c3903fb80feb9a1548f7743b092cc3dc1bbff9d5ca"
-    let tokenAId  = "2a381554187731110f6210756115b2a7d818a5b65640ca8fe283ac999b625f71"
-    let tokenBId = "f99c5a2a92e393436f4bd69efdd992a0807790cd4ac5c47f66efe43b67889be3"
+    let aliceKeyPair = try! KeyPair(secretSeed: "SAA5STOJXSTYU5EONKI6WCNYXTGRNOZK4Z4KFTMCCQ3YI2WPZPKQPECK") // GDTI4BTSECIIXAUHENKEDTTQBJADZGOJSSPYTTX4H76OQWNLXFM3X4BH
+    let bobKeyPair = try! KeyPair(secretSeed: "SAHZ37UVWQJKT4SITMEBXIBF76N2BWHEBX7NJZPHQ3OEKK3NZG3ZZG32") // GA7DGBRT5U4U5AV5V3PC6XPMMGODFKYYIGES27EBQ5RYF2PJ3KYA5XJU
+    let atomicSwapContractId = "63b454c1e5fafe65b13f5173fdec557611df29cd21a1882cdec3cefbf5af0ddb"
+    let tokenAId  = "47ed98e8deb59eaf8d5becf83130a97da55a13aaf3aa36247f36573e2192eca0"
+    let tokenBId = "3cc029dc4cf07923e5eb634b4ff29edabdfd14ba9556044d39cb7bdf82a02b42"
     let swapFunctionName = "swap"
     var invokeTransactionId:String?
     var submitterAccount:AccountResponse?
@@ -120,7 +120,8 @@ class SorobanAtomicSwapTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [invokeOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
@@ -128,7 +129,7 @@ class SorobanAtomicSwapTest: XCTestCase {
                     XCTAssertNotNil(simulateResponse.minResourceFee)
                     
                     transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
-                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee! + 1005000)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     
                     let bobAccountId = self.bobKeyPair.accountId
                     let aliceAccountId = self.aliceKeyPair.accountId

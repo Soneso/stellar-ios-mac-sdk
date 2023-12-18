@@ -108,7 +108,8 @@ class SorobanAuthTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: senderAccount!,
                                                operations: [installOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
@@ -176,7 +177,8 @@ class SorobanAuthTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: senderAccount!,
                                                operations: [createOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
@@ -273,21 +275,16 @@ class SorobanAuthTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: senderAccount!,
                                                operations: [invokeOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
                     XCTAssertNotNil(simulateResponse.transactionData)
                     XCTAssertNotNil(simulateResponse.minResourceFee)
                     
-                    // this is because since preview 9 the fee calculation from the simulation is not always accurate
-                    // see: https://discord.com/channels/897514728459468821/1112853306881081354
-                    var transactionData = simulateResponse.transactionData!
-                    transactionData.resources.instructions += transactionData.resources.instructions / 4
-                    let resourceFee = simulateResponse.minResourceFee! + 6000;
-                    
-                    transaction.setSorobanTransactionData(data: transactionData)
-                    transaction.addResourceFee(resourceFee: resourceFee)
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     
                     // sign auth and set it to the transaction
                     var sorobanAuth = simulateResponse.sorobanAuth!
@@ -363,21 +360,16 @@ class SorobanAuthTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: invokerAccount!,
                                                operations: [invokeOperation], memo: Memo.none)
             
-            self.sorobanServer.simulateTransaction(transaction: transaction) { (response) -> (Void) in
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
                     XCTAssertNotNil(simulateResponse.footprint)
                     XCTAssertNotNil(simulateResponse.transactionData)
                     XCTAssertNotNil(simulateResponse.minResourceFee)
                     
-                    // this is because since preview 9 the fee calculation from the simulation is not always accurate
-                    // see: https://discord.com/channels/897514728459468821/1112853306881081354
-                    var transactionData = simulateResponse.transactionData!
-                    transactionData.resources.instructions += transactionData.resources.instructions / 4
-                    let resourceFee = simulateResponse.minResourceFee! + 6000;
-                    
-                    transaction.setSorobanTransactionData(data: transactionData)
-                    transaction.addResourceFee(resourceFee: resourceFee)
+                    transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
+                    transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
                     // no need to sign soroban auth
                     transaction.setSorobanAuth(auth: simulateResponse.sorobanAuth!)
                     

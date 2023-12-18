@@ -21,16 +21,16 @@ public class GetTransactionResponse: NSObject, Decodable {
     public var status:String
     
     /// The latest ledger known to Soroban-RPC at the time it handled the getTransaction() request.
-    public var latestLedger:String
+    public var latestLedger:Int
     
     /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the getTransaction() request.
     public var latestLedgerCloseTime:String
     
     /// The oldest ledger ingested by Soroban-RPC at the time it handled the getTransaction() request.
-    public var oldestLedger:String
+    public var oldestLedger:Int
     
     /// (optional) The sequence of the ledger which included the transaction. This field is only present if status is SUCCESS or FAILED.
-    public var ledger:String?
+    public var ledger:Int?
     
     /// (optional) The unix timestamp of when the transaction was included in the ledger. This field is only present if status is SUCCESS or FAILED.
     public var createdAt:String?
@@ -71,10 +71,10 @@ public class GetTransactionResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         status = try values.decode(String.self, forKey: .status)
-        latestLedger = try values.decode(String.self, forKey: .latestLedger)
+        latestLedger = try values.decode(Int.self, forKey: .latestLedger)
         latestLedgerCloseTime = try values.decode(String.self, forKey: .latestLedgerCloseTime)
-        oldestLedger = try values.decode(String.self, forKey: .oldestLedger)
-        ledger = try values.decodeIfPresent(String.self, forKey: .ledger)
+        oldestLedger = try values.decode(Int.self, forKey: .oldestLedger)
+        ledger = try values.decodeIfPresent(Int.self, forKey: .ledger)
         createdAt = try values.decodeIfPresent(String.self, forKey: .createdAt)
         applicationOrder = try values.decodeIfPresent(Int.self, forKey: .applicationOrder)
         feeBump = try values.decodeIfPresent(Bool.self, forKey: .feeBump)

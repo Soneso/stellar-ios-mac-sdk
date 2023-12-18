@@ -302,9 +302,9 @@ public class SorobanServer {
     
     /// Submit a trial contract invocation to get back return values, expected ledger footprint, and expected costs.
     /// See: https://soroban.stellar.org/api/methods/simulateTransaction
-    public func simulateTransaction(transaction: Transaction, completion:@escaping SimulateTransactionResponseClosure) {
+    public func simulateTransaction(simulateTxRequest: SimulateTransactionRequest, completion:@escaping SimulateTransactionResponseClosure) {
         
-        request(body: try? buildRequestJson(method: "simulateTransaction", args: [transaction.encodedEnvelope()])) { (result) -> (Void) in
+        request(body: try? buildRequestJson(method: "simulateTransaction", args: simulateTxRequest.buildRequestParams())) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
@@ -395,7 +395,7 @@ public class SorobanServer {
     /// If making multiple requests, clients should deduplicate any events received, based on the event's unique id field. This prevents double-processing in the case of duplicate events being received.
     /// By default soroban-rpc retains the most recent 24 hours of events.
     /// See: https://soroban.stellar.org/api/methods/getEvents
-    public func getEvents(startLedger:String, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
+    public func getEvents(startLedger:Int, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
         
         request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, eventFilters: eventFilters, paginationOptions: paginationOptions))) { (result) -> (Void) in
             switch result {
@@ -422,7 +422,7 @@ public class SorobanServer {
         }
     }
     
-    private func buildEventsRequestParams(startLedger:String, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
+    private func buildEventsRequestParams(startLedger:Int, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
         var result: [String : Any] = [
             "startLedger": startLedger
         ]

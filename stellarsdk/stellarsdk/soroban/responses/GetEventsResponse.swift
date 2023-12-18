@@ -12,7 +12,7 @@ public class GetEventsResponse: NSObject, Decodable {
     
     public var events:[EventInfo]
     /// The ledger number of the last time this entry was updated (optional)
-    public var latestLedger:String
+    public var latestLedger:Int
     
     private enum CodingKeys: String, CodingKey {
         case events
@@ -22,6 +22,6 @@ public class GetEventsResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         events = try values.decode([EventInfo].self, forKey: .events)
-        latestLedger = try values.decode(String.self, forKey: .latestLedger)
+        latestLedger = try values.decode(Int.self, forKey: .latestLedger)
     }
 }

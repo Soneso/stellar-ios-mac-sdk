@@ -148,12 +148,12 @@ class PaymentsTestCase: XCTestCase {
         XCTContext.runActivity(named: "getPaymentsForLedger") { activity in
             let expectation = XCTestExpectation(description: "Get payments for ledger")
             
-            sdk.payments.getPayments(forLedger: "194461", includeFailed:true, join:"transactions") { (response) -> (Void) in
+            sdk.payments.getPayments(forLedger: "275", includeFailed:true, join:"transactions") { (response) -> (Void) in
                 switch response {
                 case .success(_):
                     XCTAssert(true)
                 case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetPaymentsForLedgert", horizonRequestError: error)
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetPaymentsForLedger", horizonRequestError: error)
                     XCTFail()
                 }
                 expectation.fulfill()
