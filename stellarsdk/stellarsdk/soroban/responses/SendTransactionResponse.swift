@@ -32,12 +32,15 @@ public class SendTransactionResponse: NSObject, Decodable {
     /// (optional) If the transaction was rejected immediately, this will be an error object.
     public var error:TransactionStatusError?
     
+    public var diagnosticEvents:[DiagnosticEventXDR]?
+    
     private enum CodingKeys: String, CodingKey {
         case transactionId = "hash"
         case status
         case latestLedger
         case latestLedgerCloseTime
         case error
+        case diagnosticEventsXdr
     }
 
     public required init(from decoder: Decoder) throws {
@@ -47,5 +50,13 @@ public class SendTransactionResponse: NSObject, Decodable {
         latestLedger = try values.decode(Int.self, forKey: .latestLedger)
         latestLedgerCloseTime = try values.decode(String.self, forKey: .latestLedgerCloseTime)
         error = try values.decodeIfPresent(TransactionStatusError.self, forKey: .error)
+        
+        let diagnosticEventsXdr = try values.decodeIfPresent([String].self, forKey: .diagnosticEventsXdr)
+        if let xdrEntries = diagnosticEventsXdr {
+            diagnosticEvents = []
+            for xdrEntry in xdrEntries {
+                diagnosticEvents!.append(try DiagnosticEventXDR(fromBase64: xdrEntry))
+            }
+        }
     }
 }
