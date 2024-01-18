@@ -88,8 +88,14 @@ public struct AnchorTransaction: Decodable {
     /// (optional) Amount received by anchor at start of transaction as a string with up to 7 decimals. Excludes any fees charged before the anchor received the funds.
     public var amountIn:String?
     
+    /// (optional) The asset received or to be received by the Anchor. Must be present if the deposit/withdraw was made using quotes. The value must be in SEP-38 Asset Identification Format.
+    public var amountInAsset:String?
+    
     /// (optional) Amount sent by anchor to user at end of transaction as a string with up to 7 decimals. Excludes amount converted to XLM to fund account and any external fees
     public var amountOut:String?
+    
+    /// (optional) The asset delivered or to be delivered to the user. Must be present if the deposit/withdraw was made using quotes. The value must be in SEP-38 Asset Identification Format.
+    public var amountOutAsset:String?
     
     /// (optional) Amount of fee charged by anchor
     public var amountFee:String?
@@ -156,7 +162,9 @@ public struct AnchorTransaction: Decodable {
         case statusEta = "status_eta"
         case moreInfoUrl = "more_info_url"
         case amountIn = "amount_in"
+        case amountInAsset = "amount_in_asset"
         case amountOut = "amount_out"
+        case amountOutAsset = "amount_out_asset"
         case amountFee = "amount_fee"
         case from
         case to
@@ -191,7 +199,9 @@ public struct AnchorTransaction: Decodable {
         statusEta = try values.decodeIfPresent(Int.self, forKey: .statusEta)
         moreInfoUrl = try values.decodeIfPresent(String.self, forKey: .moreInfoUrl)
         amountIn = try values.decodeIfPresent(String.self, forKey: .amountIn)
+        amountInAsset = try values.decodeIfPresent(String.self, forKey: .amountInAsset)
         amountOut = try values.decodeIfPresent(String.self, forKey: .amountOut)
+        amountOutAsset = try values.decodeIfPresent(String.self, forKey: .amountOutAsset)
         amountFee = try values.decodeIfPresent(String.self, forKey: .amountFee)
         from = try values.decodeIfPresent(String.self, forKey: .from)
         to = try values.decodeIfPresent(String.self, forKey: .to)
