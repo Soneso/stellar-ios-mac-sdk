@@ -131,9 +131,9 @@ class InteractiveServiceTestCase: XCTestCase {
         var req = Sep24DepositRequest(jwt: "test", assetCode: "USD")
         req.customFields = [String:String]()
         req.customFields!["have"] = "fun"
-        req.kycFields = [KYCAMLFieldsEnum.firstName("John"),
-                         KYCAMLFieldsEnum.lastName("Doe"),
-                         KYCAMLFieldsEnum.emailAddress("john.doe@gmail.com"),];
+        req.kycFields = [KYCNaturalPersonFieldsEnum.firstName("John"),
+                         KYCNaturalPersonFieldsEnum.lastName("Doe"),
+                         KYCNaturalPersonFieldsEnum.emailAddress("john.doe@gmail.com"),];
         
         interactiveService.deposit(request: req) { (response) -> (Void) in
             switch response {
@@ -156,9 +156,9 @@ class InteractiveServiceTestCase: XCTestCase {
         var req = Sep24WithdrawRequest(jwt: "test", assetCode: "USD")
         req.customFields = [String:String]()
         req.customFields!["have"] = "fun"
-        req.kycFields = [KYCAMLFieldsEnum.firstName("John"),
-                         KYCAMLFieldsEnum.lastName("Doe"),
-                         KYCAMLFieldsEnum.emailAddress("john.doe@gmail.com"),];
+        req.kycFields = [KYCNaturalPersonFieldsEnum.firstName("John"),
+                         KYCNaturalPersonFieldsEnum.lastName("Doe"),
+                         KYCNaturalPersonFieldsEnum.emailAddress("john.doe@gmail.com"),];
         
         interactiveService.withdraw(request: req) { (response) -> (Void) in
             switch response {

@@ -45,7 +45,7 @@ final class KycServerTestCase: XCTestCase {
     
     func testPutCustomerInfoSuccess() {
         var request = PutCustomerInfoRequest(jwt: "200_jwt")
-        request.fields = [KYCAMLFieldsEnum.firstName("John"), KYCAMLFieldsEnum.lastName("Doe")];
+        request.fields = [KYCNaturalPersonFieldsEnum.firstName("John"), KYCNaturalPersonFieldsEnum.lastName("Doe")];
         let expectation = XCTestExpectation(description: "Test put customer info success")
         
         kycService.putCustomerInfo(request: request) { (response) -> (Void) in
@@ -64,7 +64,7 @@ final class KycServerTestCase: XCTestCase {
     
     func testPutCustomerInfoNotFound() {
         var request = PutCustomerInfoRequest(jwt: "404_jwt")
-        request.fields = [KYCAMLFieldsEnum.firstName("Max"), KYCAMLFieldsEnum.lastName("Man")];
+        request.fields = [KYCNaturalPersonFieldsEnum.firstName("Max"), KYCNaturalPersonFieldsEnum.lastName("Man")];
         let expectation = XCTestExpectation(description: "Test put customer info not found")
         
         kycService.putCustomerInfo(request: request) { (response) -> (Void) in
@@ -88,7 +88,7 @@ final class KycServerTestCase: XCTestCase {
     
     func testPutCustomerInfoBadData() {
         var request = PutCustomerInfoRequest(jwt: "400_jwt")
-        request.fields = [KYCAMLFieldsEnum.photoIdFront("Face".data(using: .utf8)!)];
+        request.fields = [KYCNaturalPersonFieldsEnum.photoIdFront("Face".data(using: .utf8)!)];
         let expectation = XCTestExpectation(description: "Test put customer info bad data")
         
         kycService.putCustomerInfo(request: request) { (response) -> (Void) in

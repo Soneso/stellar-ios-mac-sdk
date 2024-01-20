@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum KYCAMLFieldKey {
+public enum KYCNaturalPersonFieldKey {
     static let lastName = "last_name"
     static let firstName = "first_name"
     static let additionalName = "additional_name"
@@ -22,12 +22,6 @@ public enum KYCAMLFieldKey {
     static let birthDate = "birth_date"
     static let birthPlace = "birth_place"
     static let birthCountryCode = "birth_country_code"
-    static let bankAccountNumber = "bank_account_number"
-    static let bankAccountType = "bank_account_type"
-    static let bankNumber = "bank_number"
-    static let bankPhoneNumber = "bank_phone_number"
-    static let bankBranchNumber = "bank_branch_number"
-    static let clabeNumber = "clabe_number"
     static let taxId = "tax_id"
     static let taxIdName = "tax_id_name"
     static let occupation = "occupation"
@@ -47,11 +41,10 @@ public enum KYCAMLFieldKey {
     static let sex = "sex"
     static let proofOfIncome = "proof_of_income"
     static let proofOfLiveness = "proof_of_liveness"
-    static let cbuNumber = "cbu_number"
-    static let cbuAlias = "cbu_alias"
+    static let referralId = "referral_id"
 }
 
-public enum KYCAMLFieldsEnum {
+public enum KYCNaturalPersonFieldsEnum {
     /// Family or last name
     case lastName(String)
     /// Given or first name
@@ -78,18 +71,6 @@ public enum KYCAMLFieldsEnum {
     case birthPlace(Date)
     /// ISO Code of country of birth
     case birthCountryCode(String)
-    /// Number identifying bank account
-    case bankAccountNumber(String)
-    /// "checking" or "savings"
-    case bankAccountType(String)
-    /// Number identifying bank (routing number in US)
-    case bankNumber(String)
-    /// Phone number with country code for bank
-    case bankPhoneNumber(String)
-    /// Number identifying bank branch
-    case bankBranchNumber(String)
-    /// Bank account number for Mexico
-    case clabeNumber(String)
     /// Tax identifier of user in their country (social security number in US)
     case taxId(String)
     /// Name of the tax ID (SSN or ITIN in the US)
@@ -128,100 +109,148 @@ public enum KYCAMLFieldsEnum {
     case proofOfIncome(Data)
     /// video or image file of user as a liveness proof
     case proofOfLiveness(Data)
-    /// Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU). The unique key for every bank account in Argentina used for receiving deposits.
-    case cbuNumber(String)
-    /// The alias for a Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU).
-    case cbuAlias(String)
+    /// video or image file of user as a liveness proof
+    case referralId(Data)
     
     var parameter:(String, Data) {
         get {
             switch self {
             case .lastName(let value):
-                return (KYCAMLFieldKey.lastName, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.lastName, value.data(using: .utf8)!)
             case .firstName(let value):
-                return (KYCAMLFieldKey.firstName, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.firstName, value.data(using: .utf8)!)
             case .additionalName(let value):
-                return (KYCAMLFieldKey.additionalName, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.additionalName, value.data(using: .utf8)!)
             case .addressCountryCode(let value):
-                return (KYCAMLFieldKey.addressCountryCode, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.addressCountryCode, value.data(using: .utf8)!)
             case .stateOrProvince(let value):
-                return (KYCAMLFieldKey.stateOrProvince, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.stateOrProvince, value.data(using: .utf8)!)
             case .city(let value):
-                return (KYCAMLFieldKey.city, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.city, value.data(using: .utf8)!)
             case .postalCode(let value):
-                return (KYCAMLFieldKey.postalCode, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.postalCode, value.data(using: .utf8)!)
             case .address(let value):
-                return (KYCAMLFieldKey.address, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.address, value.data(using: .utf8)!)
             case .mobileNumber(let value):
-                return (KYCAMLFieldKey.mobileNumber, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.mobileNumber, value.data(using: .utf8)!)
             case .emailAddress(let value):
-                return (KYCAMLFieldKey.emailAddress, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.emailAddress, value.data(using: .utf8)!)
             case .birthDate(let value):
-                return (KYCAMLFieldKey.birthDate, DateFormatter.iso8601.string(from: value).data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.birthDate, DateFormatter.iso8601.string(from: value).data(using: .utf8)!)
             case .birthPlace(let value):
-                return (KYCAMLFieldKey.birthPlace, DateFormatter.iso8601.string(from: value).data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.birthPlace, DateFormatter.iso8601.string(from: value).data(using: .utf8)!)
             case .birthCountryCode(let value):
-                return (KYCAMLFieldKey.birthCountryCode, value.data(using: .utf8)!)
-            case .bankAccountNumber(let value):
-                return (KYCAMLFieldKey.bankAccountNumber, value.data(using: .utf8)!)
-            case .bankAccountType(let value):
-                return (KYCAMLFieldKey.bankAccountType, value.data(using: .utf8)!)
-            case .bankNumber(let value):
-                return (KYCAMLFieldKey.bankNumber, value.data(using: .utf8)!)
-            case .bankPhoneNumber(let value):
-                return (KYCAMLFieldKey.bankPhoneNumber, value.data(using: .utf8)!)
-            case .bankBranchNumber(let value):
-                return (KYCAMLFieldKey.bankBranchNumber, value.data(using: .utf8)!)
-            case .clabeNumber(let value):
-                return (KYCAMLFieldKey.clabeNumber, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.birthCountryCode, value.data(using: .utf8)!)
             case .taxId(let value):
-                return (KYCAMLFieldKey.taxId, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.taxId, value.data(using: .utf8)!)
             case .taxIdName(let value):
-                return (KYCAMLFieldKey.taxIdName, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.taxIdName, value.data(using: .utf8)!)
             case .occupation(var value):
-                return (KYCAMLFieldKey.occupation, Data(bytes: &value, count: MemoryLayout.size(ofValue: value)))
+                return (KYCNaturalPersonFieldKey.occupation, Data(bytes: &value, count: MemoryLayout.size(ofValue: value)))
             case .employerName(let value):
-                return (KYCAMLFieldKey.employerName, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.employerName, value.data(using: .utf8)!)
             case .employerAddress(let value):
-                return (KYCAMLFieldKey.employerAddress, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.employerAddress, value.data(using: .utf8)!)
             case .languageCode(let value):
-                return (KYCAMLFieldKey.languageCode, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.languageCode, value.data(using: .utf8)!)
             case .idType(let value):
-                return (KYCAMLFieldKey.idType, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.idType, value.data(using: .utf8)!)
             case .idCountryCode(let value):
-                return (KYCAMLFieldKey.idCountryCode, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.idCountryCode, value.data(using: .utf8)!)
             case .idIssueDate(let value):
-                return (KYCAMLFieldKey.idIssueDate, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.idIssueDate, value.data(using: .utf8)!)
             case .idExpirationDate(let value):
-                return (KYCAMLFieldKey.idExpirationDate, value)
+                return (KYCNaturalPersonFieldKey.idExpirationDate, value)
             case .idNumber(let value):
-                return (KYCAMLFieldKey.idNumber, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.idNumber, value.data(using: .utf8)!)
             case .photoIdFront(let value):
-                return (KYCAMLFieldKey.photoIdFront, value)
+                return (KYCNaturalPersonFieldKey.photoIdFront, value)
             case .photoIdBack(let value):
-                return (KYCAMLFieldKey.photoIdBack, value)
+                return (KYCNaturalPersonFieldKey.photoIdBack, value)
             case .notaryApprovalOfPhotoId(let value):
-                return (KYCAMLFieldKey.notaryApprovalOfPhotoId, value)
+                return (KYCNaturalPersonFieldKey.notaryApprovalOfPhotoId, value)
             case .ipAddress(let value):
-                return (KYCAMLFieldKey.ipAddress, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.ipAddress, value.data(using: .utf8)!)
             case .photoProofResidence(let value):
-                return (KYCAMLFieldKey.photoProofResidence, value)
+                return (KYCNaturalPersonFieldKey.photoProofResidence, value)
             case .sex(let value):
-                return (KYCAMLFieldKey.sex, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.sex, value.data(using: .utf8)!)
             case .proofOfIncome(let value):
-                return (KYCAMLFieldKey.proofOfIncome, value)
+                return (KYCNaturalPersonFieldKey.proofOfIncome, value)
             case .proofOfLiveness(let value):
-                return (KYCAMLFieldKey.proofOfLiveness, value)
-            case .cbuNumber(let value):
-                return (KYCAMLFieldKey.cbuNumber, value.data(using: .utf8)!)
-            case .cbuAlias(let value):
-                return (KYCAMLFieldKey.cbuAlias, value.data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.proofOfLiveness, value)
+            case .referralId(let value):
+                return (KYCNaturalPersonFieldKey.referralId, value)
             }
         }
     }
 }
 
-public enum KYCAMLOrganizationFieldKey {
+public enum KYCFinancialAccountFieldKey {
+    static let bankAccountType = "bank_account_type"
+    static let bankAccountNumber = "bank_account_number"
+    static let bankNumber = "bank_number"
+    static let bankPhoneNumber = "bank_phone_number"
+    static let bankBranchNumber = "bank_branch_number"
+    static let clabeNumber = "clabe_number"
+    static let cbuNumber = "cbu_number"
+    static let cbuAlias = "cbu_alias"
+    static let cryptoAddress = "crypto_address"
+    static let cryptoMemo = "crypto_memo"
+
+}
+
+public enum KYCFinancialAccountFieldsEnum {
+    /// "checking" or "savings"
+    case bankAccountType(String)
+    /// Number identifying bank account
+    case bankAccountNumber(String)
+    /// Number identifying bank (routing number in US)
+    case bankNumber(String)
+    /// Phone number with country code for bank
+    case bankPhoneNumber(String)
+    /// Number identifying bank branch
+    case bankBranchNumber(String)
+    /// Bank account number for Mexico
+    case clabeNumber(String)
+    /// Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU). The unique key for every bank account in Argentina used for receiving deposits.
+    case cbuNumber(String)
+    /// The alias for a Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU).
+    case cbuAlias(String)
+    /// Address for a cryptocurrency account
+    case cryptoAddress(String)
+    /// A destination tag/memo used to identify a transaction
+    case cryptoMemo(String)
+    
+    var parameter:(String, Data) {
+        get {
+            switch self {
+            case .bankAccountType(let value):
+                return (KYCFinancialAccountFieldKey.bankAccountType, value.data(using: .utf8)!)
+            case .bankAccountNumber(let value):
+                return (KYCFinancialAccountFieldKey.bankAccountNumber, value.data(using: .utf8)!)
+            case .bankNumber(let value):
+                return (KYCFinancialAccountFieldKey.bankNumber, value.data(using: .utf8)!)
+            case .bankPhoneNumber(let value):
+                return (KYCFinancialAccountFieldKey.bankPhoneNumber, value.data(using: .utf8)!)
+            case .bankBranchNumber(let value):
+                return (KYCFinancialAccountFieldKey.bankBranchNumber, value.data(using: .utf8)!)
+            case .clabeNumber(let value):
+                return (KYCFinancialAccountFieldKey.clabeNumber, value.data(using: .utf8)!)
+            case .cbuNumber(let value):
+                return (KYCFinancialAccountFieldKey.cbuNumber, value.data(using: .utf8)!)
+            case .cbuAlias(let value):
+                return (KYCFinancialAccountFieldKey.cbuAlias, value.data(using: .utf8)!)
+            case .cryptoAddress(let value):
+                return (KYCFinancialAccountFieldKey.cryptoAddress, value.data(using: .utf8)!)
+            case .cryptoMemo(let value):
+                return (KYCFinancialAccountFieldKey.cryptoMemo, value.data(using: .utf8)!)
+            }
+        }
+    }
+}
+
+public enum KYCOrganizationFieldKey {
     static let name = "organization.name"
     static let VATNumber = "organization.VAT_number"
     static let registrationNumber = "organization.registration_number"
@@ -241,7 +270,7 @@ public enum KYCAMLOrganizationFieldKey {
     static let phone = "organization.phone"
 }
 
-public enum KYCAMLOrganizationFieldsEnum {
+public enum KYCOrganizationFieldsEnum {
     /// Full organiation name as on the incorporation papers
     case name(String)
     /// Organization VAT number
@@ -281,39 +310,39 @@ public enum KYCAMLOrganizationFieldsEnum {
         get {
             switch self {
             case .name(let value):
-                return (KYCAMLOrganizationFieldKey.name, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.name, value.data(using: .utf8)!)
             case .VATNumber(let value):
-                return (KYCAMLOrganizationFieldKey.VATNumber, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.VATNumber, value.data(using: .utf8)!)
             case .registrationNumber(let value):
-                return (KYCAMLOrganizationFieldKey.registrationNumber, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.registrationNumber, value.data(using: .utf8)!)
             case .registrationDate(let value):
-                return (KYCAMLOrganizationFieldKey.registrationDate, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.registrationDate, value.data(using: .utf8)!)
             case .registeredAddress(let value):
-                return (KYCAMLOrganizationFieldKey.registeredAddress, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.registeredAddress, value.data(using: .utf8)!)
             case .numberOfShareholders(var value):
-                return (KYCAMLOrganizationFieldKey.numberOfShareholders, Data(bytes: &value, count: MemoryLayout.size(ofValue: value)))
+                return (KYCOrganizationFieldKey.numberOfShareholders, Data(bytes: &value, count: MemoryLayout.size(ofValue: value)))
             case .shareholderName(let value):
-                return (KYCAMLOrganizationFieldKey.shareholderName, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.shareholderName, value.data(using: .utf8)!)
             case .photoIncorporationDoc(let value):
-                return (KYCAMLOrganizationFieldKey.photoIncorporationDoc, value)
+                return (KYCOrganizationFieldKey.photoIncorporationDoc, value)
             case .photoProofAddress(let value):
-                return (KYCAMLOrganizationFieldKey.photoProofAddress, value)
+                return (KYCOrganizationFieldKey.photoProofAddress, value)
             case .addressCountryCode(let value):
-                return (KYCAMLOrganizationFieldKey.addressCountryCode, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.addressCountryCode, value.data(using: .utf8)!)
             case .stateOrProvice(let value):
-                return (KYCAMLOrganizationFieldKey.stateOrProvice, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.stateOrProvice, value.data(using: .utf8)!)
             case .city(let value):
-                return (KYCAMLOrganizationFieldKey.city, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.city, value.data(using: .utf8)!)
             case .postalCode(let value):
-                return (KYCAMLOrganizationFieldKey.postalCode, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.postalCode, value.data(using: .utf8)!)
             case .directorName(let value):
-                return (KYCAMLOrganizationFieldKey.directorName, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.directorName, value.data(using: .utf8)!)
             case .website(let value):
-                return (KYCAMLOrganizationFieldKey.website, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.website, value.data(using: .utf8)!)
             case .email(let value):
-                return (KYCAMLOrganizationFieldKey.email, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.email, value.data(using: .utf8)!)
             case .phone(let value):
-                return (KYCAMLOrganizationFieldKey.phone, value.data(using: .utf8)!)
+                return (KYCOrganizationFieldKey.phone, value.data(using: .utf8)!)
             }
         }
     }

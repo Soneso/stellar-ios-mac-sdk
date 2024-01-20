@@ -63,10 +63,13 @@ public struct Sep24WithdrawRequest {
     public var refundMemoType:String?
     
     /// one or more of the fields listed in SEP-9
-    public var kycFields:[KYCAMLFieldsEnum]?
+    public var kycFields:[KYCNaturalPersonFieldsEnum]?
     
     /// one or more of the fields listed in SEP-9
-    public var kycOrganizationFields:[KYCAMLOrganizationFieldsEnum]?
+    public var kycOrganizationFields:[KYCOrganizationFieldsEnum]?
+    
+    /// one or more of the fields listed in SEP-9
+    public var kycFinancialAccountFields:[KYCFinancialAccountFieldsEnum]?
     
     // additional custom fields to be added
     public var customFields:[String:String]?
@@ -139,6 +142,12 @@ public struct Sep24WithdrawRequest {
             }
         }
         if let fields = kycOrganizationFields {
+            for field in fields {
+                parameters[field.parameter.0] = field.parameter.1
+            }
+        }
+        
+        if let fields = kycFinancialAccountFields {
             for field in fields {
                 parameters[field.parameter.0] = field.parameter.1
             }

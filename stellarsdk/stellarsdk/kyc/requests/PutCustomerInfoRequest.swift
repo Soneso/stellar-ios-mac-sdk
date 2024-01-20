@@ -30,10 +30,13 @@ public struct PutCustomerInfoRequest {
     public var type:String?
     
     /// one or more of the fields listed in SEP-9
-    public var fields:[KYCAMLFieldsEnum]?
+    public var fields:[KYCNaturalPersonFieldsEnum]?
     
     /// one or more of the fields listed in SEP-9
-    public var organizationFields:[KYCAMLOrganizationFieldsEnum]?
+    public var organizationFields:[KYCOrganizationFieldsEnum]?
+    
+    /// one or more of the fields listed in SEP-9
+    public var financialAccountFields:[KYCFinancialAccountFieldsEnum]?
     
     public init(jwt:String) {
         self.jwt = jwt
@@ -62,6 +65,11 @@ public struct PutCustomerInfoRequest {
             }
         }
         if let fields = organizationFields {
+            for field in fields {
+                parameters[field.parameter.0] = field.parameter.1
+            }
+        }
+        if let fields = financialAccountFields {
             for field in fields {
                 parameters[field.parameter.0] = field.parameter.1
             }
