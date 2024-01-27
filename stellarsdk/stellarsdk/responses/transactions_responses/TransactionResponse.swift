@@ -61,7 +61,7 @@ public class TransactionResponse: NSObject, Decodable {
     
     public var transactionEnvelope: TransactionEnvelopeXDR
     public var transactionResult: TransactionResultXDR
-    public var transactionMeta: TransactionMetaXDR
+    public var transactionMeta: TransactionMetaXDR?
     public var feeMeta: LedgerEntryChangesXDR?
     
     public var feeBumpTransactionResponse:FeeBumpTransactionResponse?
@@ -159,9 +159,10 @@ public class TransactionResponse: NSObject, Decodable {
         let resultData = Data(base64Encoded: encodedResult)!
         transactionResult = try XDRDecoder.decode(TransactionResultXDR.self, data:resultData)
         
-        let encodedMeta = try values.decode(String.self, forKey: .transactionMeta)
-        let metaData = Data(base64Encoded: encodedMeta)!
-        transactionMeta = try XDRDecoder.decode(TransactionMetaXDR.self, data:metaData)
+        let encodedMeta = try values.decodeIfPresent(String.self, forKey: .transactionMeta)
+        if let eMeta = encodedMeta, let metaData = Data(base64Encoded: eMeta) {
+            transactionMeta = try? XDRDecoder.decode(TransactionMetaXDR.self, data:metaData)
+        }
         
         let encodedFeeMeta = try values.decodeIfPresent(String.self, forKey: .feeMeta)
         if let feeMetaXdrStr = encodedFeeMeta {
