@@ -14,7 +14,8 @@ This SDK provides implementations of following SEPs:
 - [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md) - Txrep
 - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md) - Anchor/Client customer info transfer
 - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md) - Hosted Deposit and Withdrawal
-
+- [SEP-0030](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md) - Account Recovery
+- [SEP-0038](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md) - Anchor RFQ API (Quotes)
 
 # Stellar Info File - SEP-0001
 
@@ -403,3 +404,11 @@ You can find more source code examples regarding SEP-0011 in this [SDK test case
 # Hosted Deposit and Withdrawal
 
 see [SEP-24 - interactive](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0024.md)
+
+#  Account Recovery
+
+see [SEP-30 - Account Recovery](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0030.md)
+
+#  Quotes
+
+see [SEP-38 - Anchor RFQ API](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0038.md)

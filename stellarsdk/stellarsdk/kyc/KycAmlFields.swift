@@ -68,7 +68,7 @@ public enum KYCNaturalPersonFieldsEnum {
     /// Date of birth, e.g. 1976-07-04
     case birthDate(Date)
     /// Place of birth (city, state, country; as on passport)
-    case birthPlace(Date)
+    case birthPlace(String)
     /// ISO Code of country of birth
     case birthCountryCode(String)
     /// Tax identifier of user in their country (social security number in US)
@@ -138,7 +138,7 @@ public enum KYCNaturalPersonFieldsEnum {
             case .birthDate(let value):
                 return (KYCNaturalPersonFieldKey.birthDate, DateFormatter.iso8601.string(from: value).data(using: .utf8)!)
             case .birthPlace(let value):
-                return (KYCNaturalPersonFieldKey.birthPlace, DateFormatter.iso8601.string(from: value).data(using: .utf8)!)
+                return (KYCNaturalPersonFieldKey.birthPlace, value.data(using: .utf8)!)
             case .birthCountryCode(let value):
                 return (KYCNaturalPersonFieldKey.birthCountryCode, value.data(using: .utf8)!)
             case .taxId(let value):

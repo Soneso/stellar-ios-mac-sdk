@@ -19,7 +19,7 @@ To integrate stellar SDK into your Xcode project using CocoaPods, specify it in 
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk', '~> 2.5.3'
+    pod 'stellar-ios-mac-sdk', '~> 2.5.4'
 end
 ```
 
@@ -44,7 +44,7 @@ $ brew install carthage
 To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 2.5.3
+github "soneso/stellar-ios-mac-sdk" ~> 2.5.4
 ```
 
 Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.
@@ -52,7 +52,7 @@ Run `carthage update` to build the framework and drag the build `stellar-ios-mac
 ### Swift Package Manager
 
 ```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "2.5.3"),
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "2.5.4"),
 ```
 
 ### Manual
@@ -666,6 +666,7 @@ Our SDK is also used by the [LOBSTR Wallet](https://lobstr.co).
 - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md) - Anchor/Client customer info transfer
 - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md) - Hosted Deposit and Withdrawal
 - [SEP-0030](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md) - Account Recovery
+- [SEP-0038](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md) - Anchor RFQ API
 
 ## Soroban support
 
