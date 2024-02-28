@@ -16,7 +16,7 @@ public struct FeeRequest {
     /// (optional) Type of deposit or withdrawal (SEPA, bank_account, cash, etc...).
     public var type:String?
     
-    /// Asset code.
+    /// Stellar asset code.
     public var assetCode:String
     
     /// Amount of the asset that will be deposited/withdrawn.

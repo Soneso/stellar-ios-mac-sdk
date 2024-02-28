@@ -1,5 +1,5 @@
 //
-//  WithdrawServerMock.swift
+//  WithdrawResponseMock.swift
 //  stellarsdk
 //
 //  Created by Razvan Chelemen on 08/09/2018.
@@ -23,7 +23,7 @@ class WithdrawResponseMock: ResponsesMock {
             if let key = mock.variables["dest"] {
                 if key == "GDIODQRBHD32QZWTGOHO2MRZQY2TRG5KTI2NNTFYH2JDYZGMU3NJVAUI" {
                     mock.statusCode = 200
-                    return self?.depositSuccess
+                    return self?.withdrawSuccess
                 } else if key == "GBTMF7Y4S7S3ZMYLIU5MLVEECJETO7FYIZ5OH3GBDD7W3Z4A6556RTMC" {
                     mock.statusCode = 400
                     return nil
@@ -42,7 +42,8 @@ class WithdrawResponseMock: ResponsesMock {
                 }
             }
             
-            return self?.depositSuccess
+            mock.statusCode = 400
+            return nil
         }
         
         return RequestMock(host: address,
@@ -51,11 +52,12 @@ class WithdrawResponseMock: ResponsesMock {
                            mockHandler: handler)
     }
     
-    let depositSuccess = """
+    let withdrawSuccess = """
     {
-        "account_id": "GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ",
-        "memo_type": "id",
-        "memo": "123"
+      "account_id": "GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ",
+      "memo_type": "id",
+      "memo": "123",
+      "id": "9421871e-0623-4356-b7b5-5996da122f3e"
     }
     """
     

@@ -10,13 +10,13 @@ import Foundation
 
 public struct WithdrawResponse: Decodable {
 
-    /// The account the user should send its token back to.
-    public var accountId:String
+    /// (optional) The account the user should send its token back to. This field can be omitted if the anchor cannot provide this information at the time of the request.
+    public var accountId:String?
     
     /// (optional) type of memo to attach to transaction, one of text, id or hash
     public var memoType:String?
     
-    /// (optional) value of memo to attach to transaction, for hash this should be base64-encoded.
+    /// (optional) Value of memo to attach to transaction, for hash this should be base64-encoded. The anchor should use this memo to match the Stellar transaction with the database entry associated created to represent it.
     public var memo:String?
     
     /// (optional) The anchor's ID for this withdrawal. The wallet will use this ID to query the /transaction endpoint to check status of the request.
@@ -25,20 +25,20 @@ public struct WithdrawResponse: Decodable {
     /// (optional) Estimate of how long the withdrawal will take to credit in seconds.
     public var eta:Int?
     
-    /// (optional) Minimum amount of an asset that a user can deposit.
+    /// (optional) Minimum amount of an asset that a user can withdraw.
     public var minAmount:Double?
     
-    /// (optional) Maximum amount of asset that a user can deposit.
+    /// (optional) Maximum amount of asset that a user can withdraw.
     public var maxAmount:Double?
     
-    /// (optional) Fixed fee (if any). In units of the deposited asset.
+    /// (optional) If there is a fee for withdraw. In units of the withdrawn asset.
     public var feeFixed:Double?
     
-    /// (optional) Percentage fee (if any). In units of percentage points.
+    /// (optional) If there is a percent fee for withdraw.
     public var feePercent:Double?
     
-    /// (optional) Any additional data needed as an input for this deposit, example: Bank Name
-    public var extraInfo:[String:Any]?
+    /// (optional) Any additional data needed as an input for this withdraw, example: Bank Name.
+    public var extraInfo:ExtraInfo?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -61,7 +61,7 @@ public struct WithdrawResponse: Decodable {
      */
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        accountId = try values.decode(String.self, forKey: .accountId)
+        accountId = try values.decodeIfPresent(String.self, forKey: .accountId)
         memoType = try values.decodeIfPresent(String.self, forKey: .memoType)
         memo = try values.decodeIfPresent(String.self, forKey: .memo)
         id = try values.decodeIfPresent(String.self, forKey: .id)
@@ -70,7 +70,7 @@ public struct WithdrawResponse: Decodable {
         maxAmount = try values.decodeIfPresent(Double.self, forKey: .maxAmount)
         feeFixed = try values.decodeIfPresent(Double.self, forKey: .feeFixed)
         feePercent = try values.decodeIfPresent(Double.self, forKey: .feePercent)
-        extraInfo = try values.decodeIfPresent([String:Any].self, forKey: .extraInfo)
+        extraInfo = try values.decodeIfPresent(ExtraInfo.self, forKey: .extraInfo)
     }
     
 }

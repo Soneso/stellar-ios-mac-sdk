@@ -10,8 +10,12 @@ import Foundation
 
 public struct DepositResponse: Decodable {
 
-    /// Instructions for how to deposit the asset. In the case of cryptocurrency it is just an address to which the deposit should be sent.
+    /// (Deprecated, use instructions instead) Terse but complete instructions for how to deposit the asset. In the case of most cryptocurrencies it is just an address to which the deposit should be sent.
     public var how:String
+    
+    /// (optional) JSON object containing the SEP-9 financial account fields that describe how to complete the off-chain deposit.
+    /// If the anchor cannot provide this information in the response, the wallet should query the /transaction endpoint to get this asynchonously.
+    public var instructions:[String:DepositInstruction]?
     
     /// (optional) The anchor's ID for this deposit. The wallet will use this ID to query the /transaction endpoint to check status of the request.
     public var id:String?
@@ -32,8 +36,8 @@ public struct DepositResponse: Decodable {
     public var feePercent:Double?
     
     /// (optional) Any additional data needed as an input for this deposit, example: Bank Name
-    public var extraInfo:[String:Any]?
-    
+    public var extraInfo:ExtraInfo?
+        
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case how = "how"
@@ -44,6 +48,7 @@ public struct DepositResponse: Decodable {
         case feeFixed = "fee_fixed"
         case feePercent = "fee_percent"
         case extraInfo = "extra_info"
+        case instructions
     }
     
     /**
@@ -60,7 +65,60 @@ public struct DepositResponse: Decodable {
         maxAmount = try values.decodeIfPresent(Double.self, forKey: .maxAmount)
         feeFixed = try values.decodeIfPresent(Double.self, forKey: .feeFixed)
         feePercent = try values.decodeIfPresent(Double.self, forKey: .feePercent)
-        extraInfo = try values.decodeIfPresent([String:Any].self, forKey: .extraInfo)
+        extraInfo = try values.decodeIfPresent(ExtraInfo.self, forKey: .extraInfo)
+        instructions = try values.decodeIfPresent([String:DepositInstruction].self, forKey: .instructions)
     }
     
+}
+
+public struct DepositInstruction: Decodable {
+
+    /// The value of the field.
+    public var value:String
+    
+    /// A human-readable description of the field. This can be used by an anchor
+    /// to provide any additional information about fields that are not defined
+    /// in the SEP-9 standard.
+    public var description:String
+    
+
+    /// Properties to encode and decode
+    private enum CodingKeys: String, CodingKey {
+        case value
+        case description
+    }
+    
+    /**
+     Initializer - creates a new instance by decoding from the given decoder.
+     
+     - Parameter decoder: The decoder containing the data
+     */
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        value = try values.decode(String.self, forKey: .value)
+        description = try values.decode(String.self, forKey: .description)
+    }
+}
+
+
+public struct ExtraInfo: Decodable {
+
+    /// (optional) Additional details about the deposit process.
+    public var message:String?
+    
+
+    /// Properties to encode and decode
+    private enum CodingKeys: String, CodingKey {
+        case message
+    }
+    
+    /**
+     Initializer - creates a new instance by decoding from the given decoder.
+     
+     - Parameter decoder: The decoder containing the data
+     */
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        message = try values.decodeIfPresent(String.self, forKey: .message)
+    }
 }

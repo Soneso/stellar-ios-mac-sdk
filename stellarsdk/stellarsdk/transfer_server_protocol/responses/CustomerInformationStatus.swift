@@ -16,10 +16,10 @@ public struct CustomerInformationStatus: Decodable {
     /// Status of customer information processing. One of: pending, denied
     public var status:String
     
-    /// (optional) A URL the user can visit if they want more information about their account / status.
+    /// (optional) A URL the user can visit if they want more information about their account / status. If lang was passed in the request, a lang query parameter should be added to the URL with the same value.
     public var moreInfoUrl:String?
     
-    /// (optional) Estimated number of seconds until the deposit status will update.
+    /// (optional) Estimated number of seconds until the customer information status will update.
     public var eta:Int?
     
     /// Properties to encode and decode

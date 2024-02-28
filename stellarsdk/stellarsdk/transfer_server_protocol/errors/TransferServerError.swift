@@ -10,7 +10,6 @@ import Foundation
 
 public enum InformationNeededEnum {
     case nonInteractive(info:CustomerInformationNeededNonInteractive)
-    case interactive(info:CustomerInformationNeededInteractive)
     case status(info:CustomerInformationStatus)
 }
 
