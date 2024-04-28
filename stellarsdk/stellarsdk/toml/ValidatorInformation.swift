@@ -20,23 +20,23 @@ public class ValidatorInformation {
     
     /// string
     /// A name for display in stellar-core configs that conforms to ^[a-z0-9-]{2,16}$
-    public let alias: String?
+    public var alias: String?
     
     /// string
     /// A human-readable name for display in quorum explorers and other interfaces
-    public let displayName: String?
+    public var displayName: String?
     
     /// G... string
     /// The Stellar account associated with the node
-    public let publicKey: String?
+    public var publicKey: String?
     
     /// G... string
     /// The IP:port or domain:port peers can use to connect to the node
-    public let host: String?
+    public var host: String?
     
     /// uri
     /// The location of the history archive published by this validator
-    public let history: String?
+    public var history: String?
     
     public init(fromToml toml:Toml) {
         alias = toml.string(Keys.alias.rawValue)

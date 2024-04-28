@@ -14,7 +14,7 @@ public enum Network {
     case `public`
     case testnet
     case futurenet
-    case custom(networkId: String)
+    case custom(passphrase: String)
 }
 
 // MARK: Network Id

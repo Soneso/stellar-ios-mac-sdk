@@ -22,28 +22,28 @@ public class PointOfContactDocumentation {
     }
     
     /// Full legal name
-    public let name: String?
+    public var name: String?
     
     /// Business email address for the principal
-    public let email: String?
+    public var email: String?
     
     /// Personal Keybase account. Should include proof of ownership for other online accounts, as well as the organization's domain.
-    public let keybase: String?
+    public var keybase: String?
     
     /// Personal Telegram account
-    public let telegram: String?
+    public var telegram: String?
     
     /// Personal Twitter account
-    public let twitter: String?
+    public var twitter: String?
     
     /// Personal Github account
-    public let github: String?
+    public var github: String?
     
     /// SHA-256 hash of a photo of the principal's government-issued photo ID
-    public let idPhotoHash: String?
+    public var idPhotoHash: String?
     
     /// SHA-256 hash of a verification photo of principal. Should be well-lit and contain: principal holding ID card and signed, dated, hand-written message stating I, $NAME, am a principal of $ORG_NAME, a Stellar token issuer with address $ISSUER_ADDRESS.
-    public let verificationPhotoHash: String?
+    public var verificationPhotoHash: String?
     
     public init(fromToml toml:Toml) {
         name = toml.string(Keys.name.rawValue)

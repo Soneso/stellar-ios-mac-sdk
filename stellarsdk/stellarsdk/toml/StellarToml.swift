@@ -41,8 +41,8 @@ public typealias TomlCurrencyFromUrlClosure = (_ response:TomlCurrencyFromUrlEnu
 /// Supported version: 2.5.0
 public class StellarToml {
 
-    public let accountInformation: AccountInformation
-    public let issuerDocumentation: IssuerDocumentation
+    public var accountInformation: AccountInformation
+    public var issuerDocumentation: IssuerDocumentation
     public var pointsOfContact: [PointOfContactDocumentation] = []
     public var currenciesDocumentation: [CurrencyDocumentation] = []
     public var validatorsInformation: [ValidatorInformation] = []

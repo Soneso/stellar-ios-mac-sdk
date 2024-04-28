@@ -940,6 +940,26 @@
 		835F0D0E2978295800793708 /* TransactionMetaV3XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0D0C2978295800793708 /* TransactionMetaV3XDR.swift */; };
 		835F0D1029782A9500793708 /* ContractEventXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0D0F29782A9500793708 /* ContractEventXDR.swift */; };
 		835F0D1129782A9500793708 /* ContractEventXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0D0F29782A9500793708 /* ContractEventXDR.swift */; };
+		8365137D2BDBCD4600A99085 /* RegulatedAssetsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365137C2BDBCD4600A99085 /* RegulatedAssetsService.swift */; };
+		8365137E2BDBCD4600A99085 /* RegulatedAssetsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365137C2BDBCD4600A99085 /* RegulatedAssetsService.swift */; };
+		836513812BDEAD8900A99085 /* RegulatedAssetsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513802BDEAD8900A99085 /* RegulatedAssetsTestCase.swift */; };
+		836513822BDEAD8900A99085 /* RegulatedAssetsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513802BDEAD8900A99085 /* RegulatedAssetsTestCase.swift */; };
+		836513842BDED35B00A99085 /* Sep08PostSuccessMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513832BDED35B00A99085 /* Sep08PostSuccessMock.swift */; };
+		836513852BDED35B00A99085 /* Sep08PostSuccessMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513832BDED35B00A99085 /* Sep08PostSuccessMock.swift */; };
+		836513872BDED41800A99085 /* Sep08PostTestRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513862BDED41800A99085 /* Sep08PostTestRequest.swift */; };
+		836513882BDED41800A99085 /* Sep08PostTestRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513862BDED41800A99085 /* Sep08PostTestRequest.swift */; };
+		8365138A2BDEDD4E00A99085 /* Sep08PostPendingMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513892BDEDD4E00A99085 /* Sep08PostPendingMock.swift */; };
+		8365138B2BDEDD4E00A99085 /* Sep08PostPendingMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513892BDEDD4E00A99085 /* Sep08PostPendingMock.swift */; };
+		8365138D2BDEDE6500A99085 /* Sep08PostRevisedMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365138C2BDEDE6500A99085 /* Sep08PostRevisedMock.swift */; };
+		8365138E2BDEDE6500A99085 /* Sep08PostRevisedMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365138C2BDEDE6500A99085 /* Sep08PostRevisedMock.swift */; };
+		836513902BDEE00400A99085 /* Sep08PostRejectedMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365138F2BDEE00400A99085 /* Sep08PostRejectedMock.swift */; };
+		836513912BDEE00400A99085 /* Sep08PostRejectedMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365138F2BDEE00400A99085 /* Sep08PostRejectedMock.swift */; };
+		836513932BDEE81800A99085 /* Sep08PostActionRequiredMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513922BDEE81800A99085 /* Sep08PostActionRequiredMock.swift */; };
+		836513942BDEE81800A99085 /* Sep08PostActionRequiredMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513922BDEE81800A99085 /* Sep08PostActionRequiredMock.swift */; };
+		836513962BDEEA0E00A99085 /* Sep08FollowNextMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513952BDEEA0E00A99085 /* Sep08FollowNextMock.swift */; };
+		836513972BDEEA0E00A99085 /* Sep08FollowNextMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513952BDEEA0E00A99085 /* Sep08FollowNextMock.swift */; };
+		836513992BDEEBFA00A99085 /* Sep08ActionDoneMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513982BDEEBFA00A99085 /* Sep08ActionDoneMock.swift */; };
+		8365139A2BDEEBFA00A99085 /* Sep08ActionDoneMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513982BDEEBFA00A99085 /* Sep08ActionDoneMock.swift */; };
 		836658EB2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658EA2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift */; };
 		836658EC2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658EA2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift */; };
 		836658EE2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658ED2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift */; };
@@ -1760,6 +1780,16 @@
 		835F0D092977F11400793708 /* TransactionStatusError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionStatusError.swift; sourceTree = "<group>"; };
 		835F0D0C2978295800793708 /* TransactionMetaV3XDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMetaV3XDR.swift; sourceTree = "<group>"; };
 		835F0D0F29782A9500793708 /* ContractEventXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractEventXDR.swift; sourceTree = "<group>"; };
+		8365137C2BDBCD4600A99085 /* RegulatedAssetsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegulatedAssetsService.swift; sourceTree = "<group>"; };
+		836513802BDEAD8900A99085 /* RegulatedAssetsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegulatedAssetsTestCase.swift; sourceTree = "<group>"; };
+		836513832BDED35B00A99085 /* Sep08PostSuccessMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep08PostSuccessMock.swift; sourceTree = "<group>"; };
+		836513862BDED41800A99085 /* Sep08PostTestRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep08PostTestRequest.swift; sourceTree = "<group>"; };
+		836513892BDEDD4E00A99085 /* Sep08PostPendingMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep08PostPendingMock.swift; sourceTree = "<group>"; };
+		8365138C2BDEDE6500A99085 /* Sep08PostRevisedMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep08PostRevisedMock.swift; sourceTree = "<group>"; };
+		8365138F2BDEE00400A99085 /* Sep08PostRejectedMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep08PostRejectedMock.swift; sourceTree = "<group>"; };
+		836513922BDEE81800A99085 /* Sep08PostActionRequiredMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep08PostActionRequiredMock.swift; sourceTree = "<group>"; };
+		836513952BDEEA0E00A99085 /* Sep08FollowNextMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep08FollowNextMock.swift; sourceTree = "<group>"; };
+		836513982BDEEBFA00A99085 /* Sep08ActionDoneMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep08ActionDoneMock.swift; sourceTree = "<group>"; };
 		836658EA2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendFootprintTTLOpXDR.swift; sourceTree = "<group>"; };
 		836658ED2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendFootprintTTLResultXDR.swift; sourceTree = "<group>"; };
 		836658F02A6E773A00E8B8D9 /* RestoreFootprintOpXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreFootprintOpXDR.swift; sourceTree = "<group>"; };
@@ -2410,6 +2440,7 @@
 		7445E9FE201B106500470E0A /* stellarsdk */ = {
 			isa = PBXGroup;
 			children = (
+				8365137B2BDBCD0B00A99085 /* regulated_assets */,
 				833C67262B84C82800E034C6 /* quote */,
 				835F0CDD2976016000793708 /* soroban */,
 				8398C40724D8CA6500D6916C /* txrep */,
@@ -2448,6 +2479,7 @@
 				83DB2AF02ACEA948008B04D6 /* interactive */,
 				832C2B312AEC1097005BB7B8 /* recovery */,
 				833C67362B84E34400E034C6 /* quote */,
+				8365137F2BDEAD4600A99085 /* regulated_assets */,
 				83F4E61C2A27912900DD42A9 /* kyc */,
 				744FC6FE212E941F00ADFC88 /* federation */,
 				EC34A15A20504353000FB042 /* wallet */,
@@ -3123,6 +3155,30 @@
 				830A8F1029AEC3F800B30483 /* SorobanEventsTest.swift */,
 			);
 			path = soroban;
+			sourceTree = "<group>";
+		};
+		8365137B2BDBCD0B00A99085 /* regulated_assets */ = {
+			isa = PBXGroup;
+			children = (
+				8365137C2BDBCD4600A99085 /* RegulatedAssetsService.swift */,
+			);
+			path = regulated_assets;
+			sourceTree = "<group>";
+		};
+		8365137F2BDEAD4600A99085 /* regulated_assets */ = {
+			isa = PBXGroup;
+			children = (
+				836513802BDEAD8900A99085 /* RegulatedAssetsTestCase.swift */,
+				836513832BDED35B00A99085 /* Sep08PostSuccessMock.swift */,
+				836513862BDED41800A99085 /* Sep08PostTestRequest.swift */,
+				836513892BDEDD4E00A99085 /* Sep08PostPendingMock.swift */,
+				8365138C2BDEDE6500A99085 /* Sep08PostRevisedMock.swift */,
+				8365138F2BDEE00400A99085 /* Sep08PostRejectedMock.swift */,
+				836513922BDEE81800A99085 /* Sep08PostActionRequiredMock.swift */,
+				836513952BDEEA0E00A99085 /* Sep08FollowNextMock.swift */,
+				836513982BDEEBFA00A99085 /* Sep08ActionDoneMock.swift */,
+			);
+			path = regulated_assets;
 			sourceTree = "<group>";
 		};
 		836971E92025055200398A98 /* assets_responses */ = {
@@ -4170,6 +4226,7 @@
 				83B4CB552527308500EEE55E /* ClaimClaimableBalanceOperation.swift in Sources */,
 				745DF4712052FF9B000D3660 /* OperationResultXDR.swift in Sources */,
 				745DF4722052FF9B000D3660 /* CreateAccountResultXDR.swift in Sources */,
+				8365137E2BDBCD4600A99085 /* RegulatedAssetsService.swift in Sources */,
 				745DF4732052FF9B000D3660 /* TransactionEnvelopeXDR.swift in Sources */,
 				745DF4742052FF9B000D3660 /* TransactionMetaXDR.swift in Sources */,
 				745DF4752052FF9B000D3660 /* TransactionXDR.swift in Sources */,
@@ -4465,6 +4522,7 @@
 				745DF567205304AC000D3660 /* MnemonicGeneration.swift in Sources */,
 				744A84D221453AA70086B8FC /* PutCustomerInfoResponseMock.swift in Sources */,
 				745DF568205304AC000D3660 /* MnemonicKeyPairGeneration.swift in Sources */,
+				836513912BDEE00400A99085 /* Sep08PostRejectedMock.swift in Sources */,
 				745DF569205304AC000D3660 /* MemoRemoteTestCase.swift in Sources */,
 				832C2B402AEC2334005BB7B8 /* Sep30SignTransactionResponseMock.swift in Sources */,
 				7472333E219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift in Sources */,
@@ -4473,6 +4531,7 @@
 				830A8F0C29AE916300B30483 /* SorobanAtomicSwapTest.swift in Sources */,
 				83DB2AFF2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift in Sources */,
 				745DF56C205304AC000D3660 /* AccountRemoteTestCase.swift in Sources */,
+				8365139A2BDEEBFA00A99085 /* Sep08ActionDoneMock.swift in Sources */,
 				833C675A2B8F77F200E034C6 /* TransactionResponseMock.swift in Sources */,
 				745DF56D205304AC000D3660 /* DataForAccountLocalTestCase.swift in Sources */,
 				833C673C2B84E54E00E034C6 /* Sep38InfoResponseMock.swift in Sources */,
@@ -4480,11 +4539,14 @@
 				83FE811323F0856600F4A13D /* FeeStatsRemoteTestCase.swift in Sources */,
 				746D7905219AE2BE0008AA79 /* TomlResponseSignatureMismatchMock.swift in Sources */,
 				83DB2AF62ACEACF2008B04D6 /* Sep24InfoResponseMock.swift in Sources */,
+				836513822BDEAD8900A99085 /* RegulatedAssetsTestCase.swift in Sources */,
 				745DF56E205304AC000D3660 /* DataForAccountResponsesMock.swift in Sources */,
+				836513972BDEEA0E00A99085 /* Sep08FollowNextMock.swift in Sources */,
 				745DF56F205304AC000D3660 /* DataForAccountRemoteTestCase.swift in Sources */,
 				83D6D2EE2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift in Sources */,
 				745DF570205304AC000D3660 /* AssetsLocalTestCase.swift in Sources */,
 				745DF571205304AC000D3660 /* AssetsResponsesMock.swift in Sources */,
+				836513942BDEE81800A99085 /* Sep08PostActionRequiredMock.swift in Sources */,
 				74723347219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift in Sources */,
 				745DF572205304AC000D3660 /* AssetsRemoteTestCase.swift in Sources */,
 				745DF573205304AC000D3660 /* EffectsLocalTestCase.swift in Sources */,
@@ -4507,6 +4569,7 @@
 				745DF57A205304AC000D3660 /* PaymentPathsTestCase.swift in Sources */,
 				745DF57C205304AC000D3660 /* OffersLocalTestCase.swift in Sources */,
 				745DF57D205304AC000D3660 /* OffersResponsesMock.swift in Sources */,
+				8365138B2BDEDD4E00A99085 /* Sep08PostPendingMock.swift in Sources */,
 				744A84C721441A100086B8FC /* AnchorTransactionsResponseMock.swift in Sources */,
 				832AF8E7263BE8E500B7EB49 /* ClawbackTestCase.swift in Sources */,
 				830A8F1229AEC3F800B30483 /* SorobanEventsTest.swift in Sources */,
@@ -4538,15 +4601,18 @@
 				744A84B82143F02F0086B8FC /* WithdrawResponseMock.swift in Sources */,
 				746D79002195A02C0008AA79 /* TomlTestCase.swift in Sources */,
 				832C2B3A2AEC1CA8005BB7B8 /* Sep30ErrResponseMock.swift in Sources */,
+				836513852BDED35B00A99085 /* Sep08PostSuccessMock.swift in Sources */,
 				832C2B3D2AEC21CE005BB7B8 /* Sep30UpdateIdentitiesResponseMock.swift in Sources */,
 				833C67512B8F66F000E034C6 /* DepositExchangeResponseMock.swift in Sources */,
 				745DF589205304AC000D3660 /* PaymentsResponsesMock.swift in Sources */,
 				745DF58A205304AC000D3660 /* PaymentsLocalTestCase.swift in Sources */,
+				836513882BDED41800A99085 /* Sep08PostTestRequest.swift in Sources */,
 				833C67482B8517E200E034C6 /* Sep38GetQuoteResponseMock.swift in Sources */,
 				745DF58B205304AC000D3660 /* TradesTestCase.swift in Sources */,
 				745DF58C205304AC000D3660 /* TradesLocalTestCase.swift in Sources */,
 				833C673F2B84EE0200E034C6 /* Sep38PricesResponseMock.swift in Sources */,
 				83707A9D2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift in Sources */,
+				8365138E2BDEDE6500A99085 /* Sep08PostRevisedMock.swift in Sources */,
 				83BD1EE92949F67D00F6C041 /* IssueAssetTest.swift in Sources */,
 				745DF58D205304AC000D3660 /* TradesResponsesMock.swift in Sources */,
 				744A84D5214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,
@@ -4843,6 +4909,7 @@
 				83DD2C6B202DE3DF00713FEE /* ErrorResponse.swift in Sources */,
 				43D35B0D20348AEA00C8BDBC /* PaymentPathsService.swift in Sources */,
 				83DD2C55202CE39C00713FEE /* AssetLinksResponse.swift in Sources */,
+				8365137D2BDBCD4600A99085 /* RegulatedAssetsService.swift in Sources */,
 				EC34A14820503CC5000FB042 /* PBKDF2.swift in Sources */,
 				744A84CB21451F560086B8FC /* URLRequest+MultipartFormData.swift in Sources */,
 				83B4CB4A2527291A00EEE55E /* CreateClaimableBalanceOperation.swift in Sources */,
@@ -5131,6 +5198,7 @@
 			files = (
 				832C2B3F2AEC2334005BB7B8 /* Sep30SignTransactionResponseMock.swift in Sources */,
 				743D9C1921B57246004C56BD /* PostCallbackMock.swift in Sources */,
+				836513992BDEEBFA00A99085 /* Sep08ActionDoneMock.swift in Sources */,
 				744FC700212E944500ADFC88 /* FederationTestCase.swift in Sources */,
 				83DB2AFE2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift in Sources */,
 				836971FA202548E100398A98 /* AssetsRemoteTestCase.swift in Sources */,
@@ -5160,13 +5228,16 @@
 				83AFD636234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */,
 				C62F97E52199BE5B000A835A /* URISchemeTestCase.swift in Sources */,
 				83BD1EE82949F67D00F6C041 /* IssueAssetTest.swift in Sources */,
+				836513962BDEEA0E00A99085 /* Sep08FollowNextMock.swift in Sources */,
 				833C673B2B84E54E00E034C6 /* Sep38InfoResponseMock.swift in Sources */,
 				7472333A219EE40200343E25 /* WebAuthenticatorTestCase.swift in Sources */,
 				83F4E6212A27ABC300DD42A9 /* GetCustomerResponseMock.swift in Sources */,
 				EC34A15C205043AB000FB042 /* MnemonicGeneration.swift in Sources */,
 				833C67472B8517E200E034C6 /* Sep38GetQuoteResponseMock.swift in Sources */,
+				836513812BDEAD8900A99085 /* RegulatedAssetsTestCase.swift in Sources */,
 				833C67592B8F77F200E034C6 /* TransactionResponseMock.swift in Sources */,
 				744A84BD214403480086B8FC /* AnchorInfoResponseMock.swift in Sources */,
+				836513842BDED35B00A99085 /* Sep08PostSuccessMock.swift in Sources */,
 				83DB2B042ACED370008B04D6 /* Sep24TransactionResponseMock.swift in Sources */,
 				8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */,
 				74723343219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift in Sources */,
@@ -5176,6 +5247,7 @@
 				744A84C821441CC50086B8FC /* Date.swift in Sources */,
 				832C2B332AEC10C0005BB7B8 /* RecoveryServiceTestCase.swift in Sources */,
 				833C67502B8F66F000E034C6 /* DepositExchangeResponseMock.swift in Sources */,
+				836513902BDEE00400A99085 /* Sep08PostRejectedMock.swift in Sources */,
 				7467C40421426FF700412FE1 /* TransferServerTestCase.swift in Sources */,
 				833C673E2B84EE0200E034C6 /* Sep38PricesResponseMock.swift in Sources */,
 				4367E600203ED42D00C0AB4F /* OffersLocalTestCase.swift in Sources */,
@@ -5202,6 +5274,7 @@
 				832C2B3C2AEC21CE005BB7B8 /* Sep30UpdateIdentitiesResponseMock.swift in Sources */,
 				83DB2AF82ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift in Sources */,
 				4367E5FA203EA65300C0AB4F /* PaymentsResponsesMock.swift in Sources */,
+				8365138A2BDEDD4E00A99085 /* Sep08PostPendingMock.swift in Sources */,
 				8310BDCE26EB61B0004D3EF2 /* AmmTestCase.swift in Sources */,
 				7467C4072142740C00412FE1 /* DepositResponseMock.swift in Sources */,
 				8357A91D203B6F8500A144A9 /* DataForAccountResponsesMock.swift in Sources */,
@@ -5218,6 +5291,7 @@
 				832C2B482AEC2AC7005BB7B8 /* Sep30ListAccountsResponseMock.swift in Sources */,
 				83AFD656234FD49000A574D2 /* PathPaymentStrictSendOperationResponse.swift in Sources */,
 				746D78FF2195A02C0008AA79 /* TomlTestCase.swift in Sources */,
+				836513932BDEE81800A99085 /* Sep08PostActionRequiredMock.swift in Sources */,
 				4300C1832032FBE500DC5E49 /* OffersRemoteTestCase.swift in Sources */,
 				8331520C203E2635007F8F84 /* TransactionsResponsesMock.swift in Sources */,
 				8357A91B203B6F6100A144A9 /* DataForAccountLocalTestCase.swift in Sources */,
@@ -5225,12 +5299,14 @@
 				83D6D2ED2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift in Sources */,
 				EC34A15E20504F92000FB042 /* MnemonicKeyPairGeneration.swift in Sources */,
 				744A84D4214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,
+				8365138D2BDEDE6500A99085 /* Sep08PostRevisedMock.swift in Sources */,
 				83DB2AFB2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */,
 				83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */,
 				832C2B452AEC28C7005BB7B8 /* Sep30DeleteAccountResponseMock.swift in Sources */,
 				8357A917203B0AD300A144A9 /* ResponseMock.swift in Sources */,
 				74A504F42192D85B00A608A0 /* KeyUtils.swift in Sources */,
 				83707A9C2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift in Sources */,
+				836513872BDED41800A99085 /* Sep08PostTestRequest.swift in Sources */,
 				83D6D2EA2A27BAD700555110 /* PutVerificationResponseMock.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

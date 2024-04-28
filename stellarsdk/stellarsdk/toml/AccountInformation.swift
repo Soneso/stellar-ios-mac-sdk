@@ -30,56 +30,56 @@ public class AccountInformation {
     
     /// string
     /// The version of SEP-1 your stellar.toml adheres to. This helps parsers know which fields to expect.
-    public let version: String?
+    public var version: String?
     
     /// string
     /// The passphrase for the specific Stellar network this infrastructure operates on
-    public let networkPassphrase: String?
+    public var networkPassphrase: String?
     
     /// uses https:
     /// The endpoint for clients to resolve stellar addresses for users on your domain via SEP-2 federation protocol
-    public let federationServer: String?
+    public var federationServer: String?
     
     /// uses https:
     /// The endpoint used for SEP-3 Compliance Protocol
-    public let authServer: String?
+    public var authServer: String?
     
     /// uses https:
     /// The server used for SEP-6 Anchor/Client interoperability
-    public let transferServer: String?
+    public var transferServer: String?
     
     /// uses https:
     /// The server used for SEP-24 Anchor/Client interoperability
-    public let transferServerSep24: String?
+    public var transferServerSep24: String?
     
     /// uses https:
     /// The server used for SEP-12 Anchor/Client customer info transfer
-    public let kycServer: String?
+    public var kycServer: String?
     
     /// uses https:
     /// The endpoint used for SEP-10 Web Authentication
-    public let webAuthEndpoint: String?
+    public var webAuthEndpoint: String?
     
     /// Stellar public key
     /// The signing key is used for SEP-3 Compliance Protocol (deprecated) and SEP-10 Authentication Protocol
-    public let signingKey: String?
+    public var signingKey: String?
     
     /// url
     /// Location of public-facing Horizon instance (if one is offered)
-    public let horizonUrl: String?
+    public var horizonUrl: String?
     
     /// list of G... strings
     /// A list of Stellar accounts that are controlled by this domain.
-    public let accounts: [String]
+    public var accounts: [String]
     
     /// The signing key is used for SEP-7 delegated signing
-    public let uriRequestSigningKey: String?
+    public var uriRequestSigningKey: String?
     
     /// The server used for receiving SEP-31 direct fiat-to-fiat payments. Requires SEP-12 and hence a KYC_SERVER TOML attribute.
-    public let directPaymentServer: String?
+    public var directPaymentServer: String?
     
     /// The server used for receiving SEP-38 requests.
-    public let anchorQuoteServer: String?
+    public var anchorQuoteServer: String?
     
     public init(fromToml toml:Toml) {
         version = toml.string(Keys.version.rawValue)

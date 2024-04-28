@@ -38,80 +38,80 @@ public class CurrencyDocumentation {
 
     /// string (<= 12 char)
     /// Token code
-    public let code: String?
+    public var code: String?
     
     /// string (<= 12 char)
     /// A pattern with ? as a single character wildcard. Allows a [[CURRENCIES]] entry to apply to multiple assets that share the same info. An example is futures, where the only difference between issues is the date of the contract. E.g. CORN???????? to match codes such as CORN20180604.
-    public let codeTemplate: String?
+    public var codeTemplate: String?
     
     /// G... string
     /// Token issuer Stellar public key
-    public let issuer: String?
+    public var issuer: String?
     
     /// Alternately, stellar.toml can link out to a separate TOML file for each currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
-    public let toml: String?
+    public var toml: String?
     
     /// Status of token. One of live, dead, test, or private. Allows issuer to mark whether token is dead/for testing/for private use or is live and should be listed in live exchanges.
-    public let status: String?
+    public var status: String?
     
     /// int (0 to 7)
     /// Preference for number of decimals to show when a client displays currency balance
-    public let displayDecimals: Int?
+    public var displayDecimals: Int?
     
     /// string (<= 20 char)
     /// A short name for the token
-    public let name: String?
+    public var name: String?
     
     /// Description of token and what it represents
-    public let desc: String?
+    public var desc: String?
     
     /// Conditions on token
-    public let conditions: String?
+    public var conditions: String?
     
     /// URL to image representing token
-    public let image: String?
+    public var image: String?
     
     /// Fixed number of tokens, if the number of tokens issued will never change
-    public let fixedNumber: Int?
+    public var fixedNumber: Int?
     
     /// Max number of tokens, if there will never be more than max_number tokens
-    public let maxNumber: Int?
+    public var maxNumber: Int?
     
     /// The number of tokens is dilutable at the issuer's discretion
-    public let isUnlimited: Bool?
+    public var isUnlimited: Bool?
     
     /// true if token can be redeemed for underlying asset, otherwise false
-    public let isAssetAnchored: Bool?
+    public var isAssetAnchored: Bool?
     
     /// Type of asset anchored. Can be fiat, crypto, nft, stock, bond, commodity, realestate, or other.
-    public let anchorAssetType: String?
+    public var anchorAssetType: String?
     
     /// If anchored token, asset that token is anchored to. E.g. USD, BTC, SBUX, Address of real-estate investment property.
-    public let anchorAsset: String?
+    public var anchorAsset: String?
     
     /// If anchored token, these are instructions to redeem the underlying asset from tokens.
-    public let redemptionInstructions: String?
+    public var redemptionInstructions: String?
     
     /// list of crypto address strings
     /// If this is an anchored crypto token, list of one or more public addresses that hold the assets for which you are issuing tokens.
-    public let collateralAddresses: [String]
+    public var collateralAddresses: [String]
     
     /// list of message strings
     /// Messages stating that funds in the collateral_addresses list are reserved to back the issued asset. See below for details.
-    public let collateralAddressMessages: [String]
+    public var collateralAddressMessages: [String]
     
     /// list of signature strings
     /// These prove you control the collateral_addresses. For each address you list, sign the entry in collateral_address_messages with the address's private key and add the resulting string to this list as a base64-encoded raw signature.
-    public let collateralAddressSignatures: [String]
+    public var collateralAddressSignatures: [String]
     
     /// indicates whether or not this is a sep0008 regulated asset. If missing, false is assumed.
-    public let regulated: Bool?
+    public var regulated: Bool?
     
     /// url of a sep0008 compliant approval service that signs validated transactions.
-    public let approvalServer: String?
+    public var approvalServer: String?
     
     /// a human readable string that explains the issuer's requirements for approving transactions.
-    public let approvalCriteria: String?
+    public var approvalCriteria: String?
     
     public init(fromToml toml:Toml) {
         code = toml.string(Keys.code.rawValue)
