@@ -335,7 +335,7 @@ public class SorobanServer {
     /// See: https://soroban.stellar.org/api/methods/sendTransaction
     public func sendTransaction(transaction: Transaction, completion:@escaping SendTransactionResponseClosure) {
         
-        request(body: try? buildRequestJson(method: "sendTransaction", args: [transaction.encodedEnvelope()])) { (result) -> (Void) in
+        request(body: try? buildRequestJson(method: "sendTransaction", args: ["transaction": transaction.encodedEnvelope()])) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
@@ -364,7 +364,7 @@ public class SorobanServer {
     /// See: https://soroban.stellar.org/api/methods/getTransaction
     public func getTransaction(transactionHash:String, completion:@escaping GetTransactionResponseClosure) {
         
-        request(body: try? buildRequestJson(method: "getTransaction", args: [transactionHash])) { (result) -> (Void) in
+        request(body: try? buildRequestJson(method: "getTransaction", args: ["hash": transactionHash])) { (result) -> (Void) in
             switch result {
             case .success(let data):
                 if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
