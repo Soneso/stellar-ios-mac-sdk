@@ -544,6 +544,14 @@ Enables an individual (e.g., a user or wallet) to regain access to a Stellar acc
 
 See [SEP-0030: Account Recovery](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0030.md)
 
+### 12. Quotes
+
+see [SEP-38 - Anchor RFQ API](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0038.md)
+
+### 13. Regulated Assets 
+
+see [SEP-08 - Regulated Assets](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0008.md)
+
 ## Documentation and Examples
 
 You can find more documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.
@@ -561,6 +569,7 @@ Our SDK is also used by the [LOBSTR Wallet](https://lobstr.co).
 - [SEP-0005](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md) - Key Derivation Methods for Stellar Accounts
 - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md) - Anchor/Client interoperability
 - [SEP-0007](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md) - URI Scheme to facilitate delegated signing
+- [SEP-0008](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md) - Regulated Assets
 - [SEP-0009](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md) - Standard KYC / AML fields
 - [SEP-0010](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md) - Stellar Web Authentication
 - [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md) - Txrep

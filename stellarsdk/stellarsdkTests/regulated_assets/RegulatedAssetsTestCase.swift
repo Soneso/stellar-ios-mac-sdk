@@ -78,13 +78,27 @@ class RegulatedAssetsTestCase: XCTestCase {
         self.stellarToml.currenciesDocumentation.last?.issuer = asset2IssuerKp.accountId
         service = try! RegulatedAssetsService(tomlData: self.stellarToml)
         let goatAsset = service.regulatedAssets.first!
-        let authOp = SetTrustlineFlagsOperation(sourceAccountId: goatAsset.isserId, asset: goatAsset, trustorAccountId: accountAKp.accountId, setFlags: TrustLineFlags.AUTHORIZED_FLAG, clearFlags: 0)
-        let buyOp = ManageBuyOfferOperation(sourceAccountId: accountAKp.accountId, selling: Asset(type: AssetType.ASSET_TYPE_NATIVE)!, buying: goatAsset, amount: 10, price: Price.fromString(price: "0.1"), offerId: 0)
-        let maintainOp = SetTrustlineFlagsOperation(sourceAccountId: goatAsset.isserId, asset: goatAsset, trustorAccountId: accountAKp.accountId, setFlags: TrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG, clearFlags: 0)
+        let authOp = SetTrustlineFlagsOperation(sourceAccountId: goatAsset.issuerId,
+                                                asset: goatAsset,
+                                                trustorAccountId: accountAKp.accountId,
+                                                setFlags: TrustLineFlags.AUTHORIZED_FLAG,
+                                                clearFlags: 0)
+        let buyOp = ManageBuyOfferOperation(sourceAccountId: accountAKp.accountId,
+                                            selling: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                            buying: goatAsset,
+                                            amount: 10,
+                                            price: Price.fromString(price: "0.1"),
+                                            offerId: 0)
+        let maintainOp = SetTrustlineFlagsOperation(sourceAccountId: goatAsset.issuerId, 
+                                                    asset: goatAsset,
+                                                    trustorAccountId: accountAKp.accountId,
+                                                    setFlags: TrustLineFlags.AUTHORIZED_TO_MAINTAIN_LIABILITIES_FLAG,
+                                                    clearFlags: 0)
         
         let tx = try! Transaction(sourceAccount: Account(keyPair: accountAKp, sequenceNumber: 0),
                                   operations: [authOp, buyOp, maintainOp],
                                   memo: Memo.none)
+        
         try! tx.sign(keyPair: self.accountAKp, network: self.network)
         self.txB64Xdr = try! tx.encodedEnvelope()
         

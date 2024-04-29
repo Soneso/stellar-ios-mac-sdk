@@ -118,7 +118,7 @@ public class RegulatedAssetsService: NSObject {
     
     public func authorizationRequired(asset: RegulatedAsset, completion:@escaping AuthorizationRequiredClosure) {
         
-        sdk.accounts.getAccountDetails(accountId: asset.isserId) { (response) -> (Void) in
+        sdk.accounts.getAccountDetails(accountId: asset.issuerId) { (response) -> (Void) in
             switch response {
             case .success(let accountDetails):
                 var required = false
@@ -211,7 +211,7 @@ public class RegulatedAssetsService: NSObject {
 
 public class RegulatedAsset:Asset {
     public var assetCode:String
-    public var isserId:String
+    public var issuerId:String
     public var approvalServer:String
     public var approvalCriteria:String?
     
@@ -219,7 +219,7 @@ public class RegulatedAsset:Asset {
         self.approvalServer = approvalServer
         self.approvalCriteria = approvalCriteria
         self.assetCode = assetCode
-        self.isserId = issuerId
+        self.issuerId = issuerId
         super.init(type: type, code: assetCode, issuer: try KeyPair(accountId: issuerId))
     }
 }

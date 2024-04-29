@@ -9,6 +9,7 @@ This SDK provides implementations of following SEPs:
 - [SEP-0005](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md) - Key Derivation Methods for Stellar Accounts
 - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md) - Anchor/Client interoperability
 - [SEP-0007](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md) - URI Scheme to facilitate delegated signing
+- [SEP-0008](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md) - Regulated Assets
 - [SEP-0009](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md) - Standard KYC / AML fields
 - [SEP-0010](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md) - Stellar Web Authentication
 - [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md) - Txrep
@@ -248,6 +249,10 @@ uriBuilder.signTransaction(forURL: uri, signerKeyPair: keyPair, transactionConfi
 
 You can find more source code examples regarding SEP-0007 in the [Uri scheme test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/uri_scheme/URISchemeTestCase.swift) of the SDK. 
 
+#  Regulated Assets - SEP-0008
+
+see [SEP-08 - Regulated Assets](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0008.md)
+
 # Standard KYC / AML fields - SEP-0009
 
 This SEP defines a list of standard KYC and AML fields for use in Stellar ecosystem protocols. Issuers, banks, and other entities on Stellar should use these fields when sending or requesting KYC / AML information with other parties on Stellar. See [SEP-0009](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md) for more details.
@@ -310,3 +315,4 @@ see [SEP-30 - Account Recovery](https://github.com/Soneso/stellar-ios-mac-sdk/tr
 #  Quotes
 
 see [SEP-38 - Anchor RFQ API](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0038.md)
+
