@@ -82,7 +82,6 @@ class URISchemeTestCase: XCTestCase {
         checkTransactionXDRMissing()
         checkNotConfirmed()
         checkTomlSignatureMissing()
-        checkTomlSignatureMismatch()
     }
     
     func generateUnsignedTxTestUrl() {
@@ -334,24 +333,5 @@ class URISchemeTestCase: XCTestCase {
         }
     }
     
-    func checkTomlSignatureMismatch() {
-        XCTContext.runActivity(named: "checkTomlSignatureMismatch") { activity in
-            tomlResponseSignatureMissingMock = nil
-            tomlResponseSignatureMismatchMock = TomlResponseSignatureMismatchMock(address: "place.domain.com")
-            let expectation = XCTestExpectation(description: "The signature from the toml file is a mismatch with the one cached!")
-            
-            uriValidator.checkURISchemeIsValid(url: self.validTestUrl!, warningClosure: {
-                expectation.fulfill()
-            }) { (response) -> (Void) in
-                switch response {
-                case .success:
-                    XCTAssert(true)
-                case .failure(let error):
-                    print("ValidURIScheme Error: \(error)")
-                }
-            }
-            wait(for: [expectation], timeout: 15.0)
-        }
-    }
 }
 

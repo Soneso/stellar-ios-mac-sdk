@@ -43,10 +43,9 @@ public class URISchemeValidator: NSObject {
     /// Checks if the URL is valid; signature and domain must be present and correct for the signer's keypair.
     ///
     /// - Parameter url: the URL to check.
-    /// - Parameter warningClosure: A closure that will be called before the completion to let the user know there is a mismatch between the cached and the current URI_REQUEST_SIGNING_KEY.
     /// - Parameter completion: Closure to be called with the response of the check
     ///
-    public func checkURISchemeIsValid(url: String, warningClosure: (() -> ())? = nil, completion: @escaping URISchemeIsValidClosure) {
+    public func checkURISchemeIsValid(url: String, completion: @escaping URISchemeIsValidClosure) {
         if let originDomain = getOriginDomain(forURL: url) {
             if originDomain.isFullyQualifiedDomainName {
                 /// Get stellarToml from the origin_domain: https://<origin_domain>/.well-known/stellar.toml
@@ -55,9 +54,6 @@ public class URISchemeValidator: NSObject {
                     case .success(response: let stellarToml):
                         /// extract URI_REQUEST_SIGNING_KEY field from tomlFile
                         if let uriRequestSigningKey = stellarToml.accountInformation.uriRequestSigningKey {
-                            if self.uriRequestSigningKeyChanged(uriRequestSigningKey: uriRequestSigningKey, originDomain: originDomain) {
-                                warningClosure?()
-                            }
                             
                             /// check if the signature is valid for the url
                             if let signerPublicKey = try? PublicKey(accountId: uriRequestSigningKey) {
@@ -90,25 +86,6 @@ public class URISchemeValidator: NSObject {
         } else {
             completion(.failure(.missingOriginDomain))
         }
-    }
-    
-    private func uriRequestSigningKeyChanged(uriRequestSigningKey:String, originDomain:String) -> Bool {
-        var previousOriginDomainSignature: String
-        
-        /// get or set the cached uriRequestSigningKey
-        if let originDomainSignatureFromSettings = UserDefaults.standard.string(forKey: originDomain) {
-            previousOriginDomainSignature = originDomainSignatureFromSettings
-        } else {
-            previousOriginDomainSignature = uriRequestSigningKey
-        }
-        UserDefaults.standard.set(uriRequestSigningKey, forKey: originDomain)
-
-        /// compare the new uriRequestSigningKey with the saved value in user default
-        if previousOriginDomainSignature != uriRequestSigningKey {
-            return true
-        }
-        
-        return false
     }
     
     /// Returns the signature value from the url.
