@@ -238,11 +238,11 @@ public struct ContractDataEntryXDR: XDRCodable {
 }
 
 public struct ContractCodeEntryXDR: XDRCodable {
-    public var ext: ExtensionPoint
+    public var ext: ContractCodeEntryExt
     public var hash: WrappedData32
     public var code: Data
     
-    public init(ext: ExtensionPoint, hash: WrappedData32, code:Data) {
+    public init(ext: ContractCodeEntryExt, hash: WrappedData32, code:Data) {
         self.ext = ext
         self.hash = hash
         self.code = code
@@ -250,7 +250,7 @@ public struct ContractCodeEntryXDR: XDRCodable {
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        ext = try container.decode(ExtensionPoint.self)
+        ext = try container.decode(ContractCodeEntryExt.self)
         hash = try container.decode(WrappedData32.self)
         code = try container.decode(Data.self)
     }
@@ -261,6 +261,126 @@ public struct ContractCodeEntryXDR: XDRCodable {
         try container.encode(ext)
         try container.encode(hash)
         try container.encode(code)
+    }
+}
+
+public struct ContractCodeCostInputsXDR: XDRCodable {
+    public var ext:ExtensionPoint
+    public var nInstructions: UInt32
+    public var nFunctions: UInt32
+    public var nGlobals: UInt32
+    public var nTableEntries: UInt32
+    public var nTypes: UInt32
+    public var nDataSegments: UInt32
+    public var nElemSegments: UInt32
+    public var nImports: UInt32
+    public var nExports: UInt32
+    public var nDataSegmentBytes: UInt32
+    
+    public init(ext: ExtensionPoint, nInstructions: UInt32, nFunctions: UInt32, nGlobals: UInt32, nTableEntries: UInt32, nTypes: UInt32, nDataSegments: UInt32, nElemSegments: UInt32, nImports: UInt32, nExports: UInt32, nDataSegmentBytes: UInt32) {
+        self.ext = ext
+        self.nInstructions = nInstructions
+        self.nFunctions = nFunctions
+        self.nGlobals = nGlobals
+        self.nTableEntries = nTableEntries
+        self.nTypes = nTypes
+        self.nDataSegments = nDataSegments
+        self.nElemSegments = nElemSegments
+        self.nImports = nImports
+        self.nExports = nExports
+        self.nDataSegmentBytes = nDataSegmentBytes
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        ext = try container.decode(ExtensionPoint.self)
+        nInstructions = try container.decode(UInt32.self)
+        nFunctions = try container.decode(UInt32.self)
+        nGlobals = try container.decode(UInt32.self)
+        nTableEntries = try container.decode(UInt32.self)
+        nTypes = try container.decode(UInt32.self)
+        nDataSegments = try container.decode(UInt32.self)
+        nElemSegments = try container.decode(UInt32.self)
+        nImports = try container.decode(UInt32.self)
+        nExports = try container.decode(UInt32.self)
+        nDataSegmentBytes = try container.decode(UInt32.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(ext)
+        try container.encode(nInstructions)
+        try container.encode(nFunctions)
+        try container.encode(nGlobals)
+        try container.encode(nTypes)
+        try container.encode(nDataSegments)
+        try container.encode(nElemSegments)
+        try container.encode(nImports)
+        try container.encode(nExports)
+        try container.encode(nInstructions)
+        try container.encode(nDataSegmentBytes)
+        
+    }
+}
+
+public struct ContractCodeEntryExtV1: XDRCodable {
+    public var ext:ExtensionPoint
+    public var costInputs: ContractCodeCostInputsXDR
+    
+    public init(ext: ExtensionPoint, costInputs: ContractCodeCostInputsXDR) {
+        self.ext = ext
+        self.costInputs = costInputs
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        ext = try container.decode(ExtensionPoint.self)
+        costInputs = try container.decode(ContractCodeCostInputsXDR.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(ext)
+        try container.encode(costInputs)
+    }
+}
+
+public enum ContractCodeEntryExt: XDRCodable {
+    case void
+    case v1 (ContractCodeEntryExtV1)
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        let code = try container.decode(Int32.self)
+        
+        switch code {
+        case 0:
+            self = .void
+        case 1:
+            self = .v1(try ContractCodeEntryExtV1(from: decoder))
+        default:
+            self = .void
+        }
+    }
+    
+    private func type() -> Int32 {
+        switch self {
+        case .void: return 0
+        case .v1: return 1
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(type())
+        
+        switch self {
+        case .void:
+            return
+        case .v1(let extV1):
+            try container.encode(extV1)
+        }
     }
 }
 
@@ -630,10 +750,11 @@ public struct StateArchivalSettingsXDR: XDRCodable {
     public var tempRentRateDenominator: Int64
     public var maxEntriesToArchive: UInt32
     public var bucketListSizeWindowSampleSize: UInt32
-    public var evictionScanSize: UInt64
+    public var bucketListWindowSamplePeriod: UInt32
+    public var evictionScanSize: UInt32
     public var startingEvictionScanLevel: UInt32
 
-    public init(maxEntryTTL: UInt32, minTemporaryTTL: UInt32, minPersistentTTL: UInt32, persistentRentRateDenominator: Int64, tempRentRateDenominator: Int64, maxEntriesToArchive: UInt32, bucketListSizeWindowSampleSize: UInt32, evictionScanSize: UInt64, startingEvictionScanLevel: UInt32) {
+    public init(maxEntryTTL: UInt32, minTemporaryTTL: UInt32, minPersistentTTL: UInt32, persistentRentRateDenominator: Int64, tempRentRateDenominator: Int64, maxEntriesToArchive: UInt32, bucketListSizeWindowSampleSize: UInt32, bucketListWindowSamplePeriod: UInt32, evictionScanSize: UInt32, startingEvictionScanLevel: UInt32) {
         self.maxEntryTTL = maxEntryTTL
         self.minTemporaryTTL = minTemporaryTTL
         self.minPersistentTTL = minPersistentTTL
@@ -641,6 +762,7 @@ public struct StateArchivalSettingsXDR: XDRCodable {
         self.tempRentRateDenominator = tempRentRateDenominator
         self.maxEntriesToArchive = maxEntriesToArchive
         self.bucketListSizeWindowSampleSize = bucketListSizeWindowSampleSize
+        self.bucketListWindowSamplePeriod = bucketListWindowSamplePeriod
         self.evictionScanSize = evictionScanSize
         self.startingEvictionScanLevel = startingEvictionScanLevel
     }
@@ -654,7 +776,8 @@ public struct StateArchivalSettingsXDR: XDRCodable {
         tempRentRateDenominator = try container.decode(Int64.self)
         maxEntriesToArchive = try container.decode(UInt32.self)
         bucketListSizeWindowSampleSize = try container.decode(UInt32.self)
-        evictionScanSize = try container.decode(UInt64.self)
+        bucketListWindowSamplePeriod = try container.decode(UInt32.self)
+        evictionScanSize = try container.decode(UInt32.self)
         startingEvictionScanLevel = try container.decode(UInt32.self)
     }
     
@@ -667,6 +790,7 @@ public struct StateArchivalSettingsXDR: XDRCodable {
         try container.encode(tempRentRateDenominator)
         try container.encode(maxEntriesToArchive)
         try container.encode(bucketListSizeWindowSampleSize)
+        try container.encode(bucketListWindowSamplePeriod)
         try container.encode(evictionScanSize)
         try container.encode(startingEvictionScanLevel)
     }

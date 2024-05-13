@@ -50,12 +50,12 @@ public struct TransactionMetaV3XDR: XDRCodable {
 }
 
 public struct SorobanTransactionMetaXDR: XDRCodable {
-    public var ext: ExtensionPoint
+    public var ext: SorobanTransactionMetaExt
     public var events:[ContractEventXDR]
     public var returnValue: SCValXDR
     public var diagnosticEvents: [DiagnosticEventXDR]
 
-    public init(ext: ExtensionPoint, events: [ContractEventXDR], returnValue: SCValXDR, diagnosticEvents: [DiagnosticEventXDR]) {
+    public init(ext: SorobanTransactionMetaExt, events: [ContractEventXDR], returnValue: SCValXDR, diagnosticEvents: [DiagnosticEventXDR]) {
         self.ext = ext
         self.events = events
         self.returnValue = returnValue
@@ -65,7 +65,7 @@ public struct SorobanTransactionMetaXDR: XDRCodable {
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        ext = try container.decode(ExtensionPoint.self)
+        ext = try container.decode(SorobanTransactionMetaExt.self)
         events = try decodeArray(type: ContractEventXDR.self, dec: decoder)
         returnValue = try container.decode(SCValXDR.self)
         diagnosticEvents = try decodeArray(type: DiagnosticEventXDR.self, dec: decoder)
@@ -77,5 +77,74 @@ public struct SorobanTransactionMetaXDR: XDRCodable {
         try container.encode(events)
         try container.encode(returnValue)
         try container.encode(diagnosticEvents)
+    }
+}
+
+public enum SorobanTransactionMetaExt: XDRCodable {
+    case void
+    case v1 (SorobanTransactionMetaExtV1)
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        let code = try container.decode(Int32.self)
+        
+        switch code {
+        case 0:
+            self = .void
+        case 1:
+            self = .v1(try SorobanTransactionMetaExtV1(from: decoder))
+        default:
+            self = .void
+        }
+    }
+    
+    private func type() -> Int32 {
+        switch self {
+        case .void: return 0
+        case .v1: return 1
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(type())
+        
+        switch self {
+        case .void:
+            return
+        case .v1(let extV1):
+            try container.encode(extV1)
+        }
+    }
+}
+
+public struct SorobanTransactionMetaExtV1: XDRCodable {
+    public var ext:ExtensionPoint
+    public var totalNonRefundableResourceFeeCharged: Int64
+    public var totalRefundableResourceFeeCharged: Int64
+    public var rentFeeCharged: Int64
+    
+    public init(ext: ExtensionPoint, totalNonRefundableResourceFeeCharged: Int64, totalRefundableResourceFeeCharged: Int64, rentFeeCharged: Int64) {
+        self.ext = ext
+        self.totalNonRefundableResourceFeeCharged = totalNonRefundableResourceFeeCharged
+        self.totalRefundableResourceFeeCharged = totalRefundableResourceFeeCharged
+        self.rentFeeCharged = rentFeeCharged
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        ext = try container.decode(ExtensionPoint.self)
+        totalNonRefundableResourceFeeCharged = try container.decode(Int64.self)
+        totalRefundableResourceFeeCharged = try container.decode(Int64.self)
+        rentFeeCharged = try container.decode(Int64.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(ext)
+        try container.encode(totalNonRefundableResourceFeeCharged)
+        try container.encode(totalRefundableResourceFeeCharged)
+        try container.encode(rentFeeCharged)
     }
 }

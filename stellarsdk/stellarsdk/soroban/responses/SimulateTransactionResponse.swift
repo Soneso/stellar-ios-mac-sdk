@@ -38,6 +38,9 @@ public class SimulateTransactionResponse: NSObject, Decodable {
     /// be used to construct the transaction containing the RestoreFootprint
     public var restorePreamble:RestorePreamble?
     
+    /// If present, it indicates how the state (ledger entries) will change as a result of the transaction execution.
+    public var stateChanges:[LedgerEntryChange]?
+    
     private enum CodingKeys: String, CodingKey {
         case results
         case cost
@@ -47,6 +50,7 @@ public class SimulateTransactionResponse: NSObject, Decodable {
         case events
         case error
         case restorePreamble
+        case stateChanges
     }
 
     public required init(from decoder: Decoder) throws {
@@ -65,6 +69,7 @@ public class SimulateTransactionResponse: NSObject, Decodable {
             results = try values.decodeIfPresent([SimulateTransactionResult].self, forKey: .results)
         }
         restorePreamble = try values.decodeIfPresent(RestorePreamble.self, forKey: .restorePreamble)
+        stateChanges = try values.decodeIfPresent([LedgerEntryChange].self, forKey: .stateChanges)
     }
     
     public var footprint:Footprint? {
@@ -115,6 +120,37 @@ public class RestorePreamble: NSObject, Decodable {
         transactionData = try SorobanTransactionDataXDR(fromBase64: transactionDataXdrString)
         let resStr = try values.decode(String.self, forKey: .minResourceFee)
         minResourceFee = UInt32(resStr)
+    }
+}
+
+public class LedgerEntryChange: NSObject, Decodable {
+    
+    public var type:String
+    public var key:LedgerKeyXDR
+    public var before:LedgerEntryXDR?
+    public var after:LedgerEntryXDR?
+
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case key
+        case before
+        case after
+    }
+    
+    public required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        type = try values.decode(String.self, forKey: .type)
+        
+        let keyXdrString = try values.decode(String.self, forKey: .key)
+        key = try LedgerKeyXDR(fromBase64: keyXdrString)
+        
+        if let beforeXdrString = try values.decodeIfPresent(String.self, forKey: .before) {
+            before = try LedgerEntryXDR(fromBase64: beforeXdrString)
+        }
+        
+        if let afterXdrString = try values.decodeIfPresent(String.self, forKey: .after) {
+            after = try LedgerEntryXDR(fromBase64: afterXdrString)
+        }
     }
 }
 

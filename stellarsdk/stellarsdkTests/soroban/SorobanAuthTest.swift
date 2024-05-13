@@ -12,9 +12,9 @@ import stellarsdk
 
 class SorobanAuthTest: XCTestCase {
 
-    let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
-    let sdk = StellarSDK.testNet()
-    let network = Network.testnet
+    let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org") // SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    let sdk =  StellarSDK.testNet()  // StellarSDK.futureNet()
+    let network = Network.testnet  // Network.futurenet
     var invokerKeyPair = try! KeyPair.generateRandomKeyPair()
     var senderKeyPair = try! KeyPair.generateRandomKeyPair()
     var installTransactionId:String?
@@ -34,9 +34,11 @@ class SorobanAuthTest: XCTestCase {
         let invokerId = invokerKeyPair.accountId
         let senderId = senderKeyPair.accountId
         
+        //sdk.accounts.createFutureNetTestAccount(accountId: invokerId) { (response) -> (Void) in
         sdk.accounts.createTestAccount(accountId: invokerId) { (response) -> (Void) in
             switch response {
             case .success(_):
+                //self.sdk.accounts.createFutureNetTestAccount(accountId: senderId) { (response) -> (Void) in
                 self.sdk.accounts.createTestAccount(accountId: senderId) { (response) -> (Void) in
                     switch response {
                     case .success(_):
@@ -290,7 +292,7 @@ class SorobanAuthTest: XCTestCase {
                     var sorobanAuth = simulateResponse.sorobanAuth!
                     for i in sorobanAuth.indices {
                         try! sorobanAuth[i].sign(signer: self.invokerKeyPair,
-                                            network: Network.testnet,
+                                                 network: self.network,
                                             signatureExpirationLedger: self.latestLedger! + 10)
                     }
                     transaction.setSorobanAuth(auth: sorobanAuth)

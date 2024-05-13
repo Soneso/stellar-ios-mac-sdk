@@ -13,14 +13,18 @@ public class GetHealthResponse: NSObject, Decodable {
     
     /// Health status e.g. "healthy"
     public var status:String
+    public var ledgerRetentionWindow:Int?
     
     private enum CodingKeys: String, CodingKey {
         case status
+        case ledgerRetentionWindow
+        
     }
 
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         status = try values.decode(String.self, forKey: .status)
+        ledgerRetentionWindow = try values.decodeIfPresent(Int.self, forKey: .ledgerRetentionWindow)
     }
 }
 

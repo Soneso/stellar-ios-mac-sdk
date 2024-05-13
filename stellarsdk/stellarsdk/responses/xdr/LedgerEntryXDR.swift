@@ -63,6 +63,11 @@ public struct LedgerEntryXDR: XDRCodable {
         reserved  = try container.decode(LedgerEntryExtXDR.self)
     }
     
+    public init(fromBase64 xdr:String) throws {
+        let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: xdr))
+        self = try LedgerEntryXDR(from: xdrDecoder)
+    }
+    
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(lastModifiedLedgerSeq)

@@ -75,14 +75,58 @@ public enum ContractCostType: Int32 {
     case vmCachedInstantiation = 12
     case invokeVmFunction = 13
     case computeKeccak256Hash = 14
-    case computeEcdsaSecp256k1Sig = 15
+    case decodeEcdsaCurve256Sig = 15
     case recoverEcdsaSecp256k1Key = 16
     case int256AddSub = 17
     case int256Mul = 18
     case int256Div = 19
     case int256Pow = 20
     case int256Shift = 21
-    case ChaCha20DrawBytes = 22
+    case chaCha20DrawBytes = 22
+    case parseWasmInstructions = 23
+    // Cost of parsing a known number of wasm functions.
+    case parseWasmFunctions = 24
+    // Cost of parsing a known number of wasm globals.
+    case parseWasmGlobals = 25
+    // Cost of parsing a known number of wasm table entries.
+    case parseWasmTableEntries = 26
+    // Cost of parsing a known number of wasm types.
+    case parseWasmTypes = 27
+    // Cost of parsing a known number of wasm data segments.
+    case parseWasmDataSegments = 28
+    // Cost of parsing a known number of wasm element segments.
+    case parseWasmElemSegments = 29
+    // Cost of parsing a known number of wasm imports.
+    case parseWasmImports = 30
+    // Cost of parsing a known number of wasm exports.
+    case parseWasmExports = 31
+    // Cost of parsing a known number of data segment bytes.
+    case parseWasmDataSegmentBytes = 32
+    // Cost of instantiating wasm bytes that only encode instructions.
+    case instantiateWasmInstructions = 33
+    // Cost of instantiating a known number of wasm functions.
+    case instantiateWasmFunctions = 34
+    // Cost of instantiating a known number of wasm globals.
+    case instantiateWasmGlobals = 35
+    // Cost of instantiating a known number of wasm table entries.
+    case instantiateWasmTableEntries = 36
+    // Cost of instantiating a known number of wasm types.
+    case instantiateWasmTypes = 37
+    // Cost of instantiating a known number of wasm data segments.
+    case instantiateWasmDataSegments = 38
+    // Cost of instantiating a known number of wasm element segments.
+    case instantiateWasmElemSegments = 39
+    // Cost of instantiating a known number of wasm imports.
+    case instantiateWasmImports = 40
+    // Cost of instantiating a known number of wasm exports.
+    case instantiateWasmExports = 41
+    // Cost of instantiating a known number of data segment bytes.
+    case instantiateWasmDataSegmentBytes = 42
+    // Cost of decoding a bytes array representing an uncompressed SEC-1 encoded
+    // point on a 256-bit elliptic curve
+    case sec1DecodePointUncompressed = 43
+    // Cost of verifying an ECDSA Secp256r1 signature
+    case verifyEcdsaSecp256r1Sig = 44
 }
 
 public enum SCErrorXDR: XDRCodable {
@@ -188,7 +232,11 @@ public enum SCAddressXDR: XDRCodable {
     }
     
     public init(contractId: String) throws {
-        if let contractIdData = contractId.data(using: .hexadecimal) {
+        var contractIdHex = contractId
+        if contractId.hasPrefix("C") {
+            contractIdHex = try contractId.decodeContractIdHex()
+        }
+        if let contractIdData = contractIdHex.data(using: .hexadecimal) {
             self = .contract(WrappedData32(contractIdData))
         } else {
             throw StellarSDKError.encodingError(message: "error xdr encoding invoke host function operation, invalid contract id")
