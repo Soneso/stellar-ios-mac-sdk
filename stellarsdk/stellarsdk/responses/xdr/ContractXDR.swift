@@ -436,7 +436,7 @@ public enum SCValXDR: XDRCodable {
     public func type() -> Int32 {
         switch self {
         case .bool: return SCValType.bool.rawValue
-        case .void: return SCValType.bool.rawValue
+        case .void: return SCValType.void.rawValue
         case .error: return SCValType.error.rawValue
         case .u32: return SCValType.u32.rawValue
         case .i32: return SCValType.i32.rawValue
