@@ -8,13 +8,13 @@
 
 import Foundation
 
-/// Information about the fees expected, instructions used, etc.
+/// The cost object is legacy, inaccurate, and will be deprecated in future RPC releases. Please decode transactionData XDR to retrieve the correct resources.
 public class SimulateTransactionCost: NSObject, Decodable {
     
-    /// Stringified-number of the total cpu instructions consumed by this transaction
+    /// Stringified number - Total cpu instructions consumed by this transaction
     public var cpuInsns:String
     
-    /// Stringified-number of the total memory bytes allocated by this transaction
+    /// Stringified number - Total memory bytes allocated by this transaction
     public var memBytes:String
     
     private enum CodingKeys: String, CodingKey {

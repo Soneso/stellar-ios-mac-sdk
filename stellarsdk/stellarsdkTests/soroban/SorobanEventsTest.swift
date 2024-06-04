@@ -12,9 +12,9 @@ import stellarsdk
 
 class SorobanEventsTest: XCTestCase {
 
-    let sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
-    let sdk = StellarSDK.futureNet()
-    let network = Network.futurenet
+    var sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org") // SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    var sdk = StellarSDK.testNet() // StellarSDK.futureNet()
+    var network = Network.testnet // Network.futurenet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
     var uploadTransactionId:String? = nil
     var wasmId:String? = nil
@@ -33,7 +33,8 @@ class SorobanEventsTest: XCTestCase {
         sorobanServer.enableLogging = true
         let accountAId = submitterKeyPair.accountId
 
-        sdk.accounts.createFutureNetTestAccount(accountId: accountAId) { (response) -> (Void) in
+        //sdk.accounts.createFutureNetTestAccount(accountId: accountAId) { (response) -> (Void) in
+        sdk.accounts.createTestAccount(accountId: accountAId) { (response) -> (Void) in
             switch response {
             case .success(_):
                 expectation.fulfill()
@@ -95,7 +96,7 @@ class SorobanEventsTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [installOperation], memo: Memo.none)
             
-            var simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
             self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
@@ -166,7 +167,7 @@ class SorobanEventsTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [createOperation], memo: Memo.none)
             
-            var simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
             self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
@@ -235,7 +236,7 @@ class SorobanEventsTest: XCTestCase {
             let transaction = try! Transaction(sourceAccount: submitterAccount!,
                                                operations: [invokeOperation], memo: Memo.none)
             
-            var simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+            let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
             self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
@@ -325,10 +326,14 @@ class SorobanEventsTest: XCTestCase {
                 switch response {
                 case .success(let eventsResponse):
                     XCTAssert(eventsResponse.events.count > 0)
-                    let cId = try! eventsResponse.events[0].contractId.decodeContractIdHex()
+                    let event = eventsResponse.events.first!
+                    let cId = try! event.contractId.decodeContractIdHex()
                     XCTAssert(self.contractId! == cId)
-                    XCTAssert("AAAADwAAAAdDT1VOVEVSAA==" == eventsResponse.events[0].topic[0])
-                    XCTAssert("AAAAAwAAAAE=" == eventsResponse.events[0].value)
+                    XCTAssert("AAAADwAAAAdDT1VOVEVSAA==" == event.topic[0])
+                    XCTAssert("AAAAAwAAAAE=" == event.value)
+                    XCTAssert("contract" == event.type)
+                    XCTAssert(event.id == event.pagingToken)
+                    XCTAssertTrue(event.inSuccessfulContractCall)
                     expectation.fulfill()
                 case .failure(let error):
                     self.printError(error: error)

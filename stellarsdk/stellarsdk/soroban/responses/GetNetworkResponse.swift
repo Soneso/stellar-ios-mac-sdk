@@ -9,7 +9,7 @@
 import Foundation
 
 /// General info about the currently configured network.
-/// See: https://soroban.stellar.org/api/methods/getNetwork
+/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getNetwork
 public class GetNetworkResponse: NSObject, Decodable {
     
     ///  (optional) - The URL of this network's "friendbot" faucet

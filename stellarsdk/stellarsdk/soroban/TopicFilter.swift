@@ -9,7 +9,7 @@
 import Foundation
 
 /// part of the get Events request
-/// See: https://soroban.stellar.org/api/methods/getEvents
+/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
 public class TopicFilter {
     
     public let segmentMatchers: [String]

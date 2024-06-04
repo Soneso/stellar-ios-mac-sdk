@@ -11,7 +11,8 @@ import Foundation
 public class GetEventsResponse: NSObject, Decodable {
     
     public var events:[EventInfo]
-    /// The ledger number of the last time this entry was updated (optional)
+    
+    /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
     public var latestLedger:Int
     
     private enum CodingKeys: String, CodingKey {

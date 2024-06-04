@@ -37,4 +37,14 @@ public class LedgerEntry: NSObject, Decodable {
         lastModifiedLedgerSeq = try values.decode(Int.self, forKey: .lastModifiedLedgerSeq)
         liveUntilLedgerSeq = try values.decodeIfPresent(Int.self, forKey: .liveUntilLedgerSeq)
     }
+    
+    /// Converst the key to a SCValXDR if valid.
+    public var keyXdrValue: SCValXDR? {
+        return try? SCValXDR.fromXdr(base64: key)
+    }
+    
+    /// Converst the valzue to a LedgerEntryDataXDR if valid
+    public var valueXdr: LedgerEntryDataXDR? {
+        return try? LedgerEntryDataXDR(fromBase64: xdr)
+    }
 }

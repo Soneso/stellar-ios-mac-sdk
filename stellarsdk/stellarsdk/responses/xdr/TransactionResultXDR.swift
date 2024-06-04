@@ -160,6 +160,11 @@ public struct TransactionResultXDR: XDRCodable {
         
     }
     
+    public static func fromXdr(base64:String) throws -> TransactionResultXDR {
+        let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: base64))
+        return try TransactionResultXDR(from: xdrDecoder)
+    }
+    
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(feeCharged)

@@ -10,7 +10,7 @@ import Foundation
 
 /// Response when polling the rpc server to find out if a transaction has been
 /// completed.
-/// See: https://soroban.stellar.org/api/methods/getTransaction
+/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getTransaction
 public class GetTransactionResponse: NSObject, Decodable {
     
     public static let STATUS_SUCCESS = "SUCCESS"
@@ -20,16 +20,16 @@ public class GetTransactionResponse: NSObject, Decodable {
     /// The current status of the transaction by hash, one of: SUCCESS, NOT_FOUND, FAILED
     public var status:String
     
-    /// The latest ledger known to Soroban-RPC at the time it handled the getTransaction() request.
+    /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
     public var latestLedger:Int
     
-    /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the getTransaction() request.
+    /// The unix timestamp of the close time of the oldest ledger ingested by Soroban RPC at the time it handled the request.
     public var latestLedgerCloseTime:String
     
-    /// The oldest ledger ingested by Soroban-RPC at the time it handled the getTransaction() request.
+    /// The sequence number of the oldest ledger ingested by Soroban RPC at the time it handled the request.
     public var oldestLedger:Int
     
-    /// (optional) The sequence of the ledger which included the transaction. This field is only present if status is SUCCESS or FAILED.
+    /// (optional) The sequence number of the ledger which included the transaction. This field is only present if status is SUCCESS or FAILED
     public var ledger:Int?
     
     /// (optional) The unix timestamp of when the transaction was included in the ledger. This field is only present if status is SUCCESS or FAILED.
@@ -42,13 +42,13 @@ public class GetTransactionResponse: NSObject, Decodable {
     public var feeBump:Bool?
     
     /// (optional) A base64 encoded string of the raw TransactionEnvelope XDR struct for this transaction.
-    public var envelopeXdr:String? // TransactionEnvelope
+    public var envelopeXdr:String?
     
     /// (optional) A base64 encoded string of the raw TransactionResult XDR struct for this transaction. This field is only present if status is SUCCESS or FAILED.
-    public var resultXdr:String? // TransactionResult
+    public var resultXdr:String?
     
-    /// (optional) A base64 encoded string of the raw TransactionResultMeta XDR struct for this transaction.
-    public var resultMetaXdr:String? // TransactionResultMeta
+    /// (optional) A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
+    public var resultMetaXdr:String?
     
     /// (optional) Will be present on failed transactions.
     public var error:TransactionStatusError?
@@ -67,7 +67,7 @@ public class GetTransactionResponse: NSObject, Decodable {
         case resultMetaXdr
         case error
     }
-
+    
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         status = try values.decode(String.self, forKey: .status)
@@ -91,6 +91,30 @@ public class GetTransactionResponse: NSObject, Decodable {
         }
         let meta = try? TransactionMetaXDR(fromBase64: resultMetaXdr!)
         return meta?.transactionMetaV3?.sorobanMeta?.returnValue
+    }
+    
+    /// Converts the envelopeXdr value to a TransactionEnvelopeXDR if present and valid
+    public var transactionEnvelope:TransactionEnvelopeXDR? {
+        if (error != nil || envelopeXdr == nil) {
+            return nil
+        }
+        return try? TransactionEnvelopeXDR(fromBase64: envelopeXdr!)
+    }
+    
+    /// Converts the resultXdr value to a TransactionResultXDR if present and valid
+    public var transactionResult: TransactionResultXDR? {
+        if (error != nil || resultXdr == nil) {
+            return nil
+        }
+        return try? TransactionResultXDR.fromXdr(base64: resultXdr!)
+    }
+    
+    /// Converts the resultMetaXdr value to a TransactionMetaXDR if present and valid
+    public var transactionMeta: TransactionMetaXDR? {
+        if (error != nil || resultMetaXdr == nil) {
+            return nil
+        }
+        return try? TransactionMetaXDR(fromBase64: resultMetaXdr!)
     }
     
     /// Extracts the wasm id from the response if the transaction installed a contract

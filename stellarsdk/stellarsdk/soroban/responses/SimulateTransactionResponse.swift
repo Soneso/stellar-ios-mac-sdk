@@ -11,19 +11,19 @@ import Foundation
 /// Response that will be received when submitting a trial contract invocation.
 public class SimulateTransactionResponse: NSObject, Decodable {
     
-    /// If error is present then results will not be in the response
+    /// (optional) - This array will only have one element: the result for the Host Function invocation. Only present on successful simulation (i.e. no error) of InvokeHostFunction operations.
     public var results:[SimulateTransactionResult]?
     
-    /// Information about the fees expected, instructions used, etc.
-    public var cost:SimulateTransactionCost
+    /// (deprecated, optional) - The cost object is legacy, inaccurate, and will be deprecated in future RPC releases. Please decode transactionData XDR to retrieve the correct resources.
+    public var cost:SimulateTransactionCost?
     
-    /// number of the current latest ledger observed by the node when this response was generated.
+    /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
     public var latestLedger:Int
     
-    /// The recommended Soroban Transaction Data to use when submitting the simulated transaction. This data contains the refundable fee and resource usage information such as the ledger footprint and IO access data.
+    /// The recommended Soroban Transaction Data to use when submitting the simulated transaction. This data contains the refundable fee and resource usage information such as the ledger footprint and IO access data.  Not present in case of error.
     public var transactionData:SorobanTransactionDataXDR?
     
-    /// Recommended minimum resource fee to add when submitting the transaction. This fee is to be added on top of the Stellar network fee.
+    /// Recommended minimum resource fee to add when submitting the transaction. This fee is to be added on top of the Stellar network fee. Not present in case of error.
     public var minResourceFee:UInt32?
     
     /// Array of the events emitted during the contract invocation(s). The events are ordered by their emission time. (an array of serialized base64 strings - DiagnosticEventXdr)
@@ -39,7 +39,7 @@ public class SimulateTransactionResponse: NSObject, Decodable {
     public var restorePreamble:RestorePreamble?
     
     /// If present, it indicates how the state (ledger entries) will change as a result of the transaction execution.
-    public var stateChanges:[LedgerEntryChange]?
+    public var stateChanges:[LedgerEntryChange]? // only available from protocol 21 on
     
     private enum CodingKeys: String, CodingKey {
         case results
@@ -56,7 +56,7 @@ public class SimulateTransactionResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         latestLedger = try values.decode(Int.self, forKey: .latestLedger)
-        cost = try values.decode(SimulateTransactionCost.self, forKey: .cost)
+        cost = try values.decodeIfPresent(SimulateTransactionCost.self, forKey: .cost)
         if let transactionDataXdrString = try values.decodeIfPresent(String.self, forKey: .transactionData) {
             transactionData = try SorobanTransactionDataXDR(fromBase64: transactionDataXdrString)
         }
@@ -79,18 +79,18 @@ public class SimulateTransactionResponse: NSObject, Decodable {
         return nil;
     }
     
+    /// The soroban authorization entries if available.
     public var sorobanAuth:[SorobanAuthorizationEntryXDR]? {
         if(results != nil && results!.count > 0) {
-            if let auth = results![0].auth {
-                do {
-                    var res:[SorobanAuthorizationEntryXDR] = []
-                    for base64Xdr in auth {
-                        res.append(try SorobanAuthorizationEntryXDR(fromBase64: base64Xdr))
-                    }
-                    return res
-                } catch {
-                    return nil
+            let auth = results![0].auth
+            do {
+                var res:[SorobanAuthorizationEntryXDR] = []
+                for base64Xdr in auth {
+                    res.append(try SorobanAuthorizationEntryXDR(fromBase64: base64Xdr))
                 }
+                return res
+            } catch {
+                return nil
             }
         }
         return nil;
@@ -104,10 +104,10 @@ public class SimulateTransactionResponse: NSObject, Decodable {
 public class RestorePreamble: NSObject, Decodable {
     
     /// The recommended Soroban Transaction Data to use when submitting the RestoreFootprint operation.
-    public var transactionData:SorobanTransactionDataXDR?
+    public var transactionData:SorobanTransactionDataXDR
     
     ///  Recommended minimum resource fee to add when submitting the RestoreFootprint operation. This fee is to be added on top of the Stellar network fee.
-    public var minResourceFee:UInt32?
+    public var minResourceFee:UInt32
 
     private enum CodingKeys: String, CodingKey {
         case transactionData
@@ -119,7 +119,11 @@ public class RestorePreamble: NSObject, Decodable {
         let transactionDataXdrString = try values.decode(String.self, forKey: .transactionData)
         transactionData = try SorobanTransactionDataXDR(fromBase64: transactionDataXdrString)
         let resStr = try values.decode(String.self, forKey: .minResourceFee)
-        minResourceFee = UInt32(resStr)
+        if let mrf = UInt32(resStr) {
+            minResourceFee = mrf
+        } else {
+            throw StellarSDKError.decodingError(message: "min ressource fee must be a positive integer")
+        }
     }
 }
 

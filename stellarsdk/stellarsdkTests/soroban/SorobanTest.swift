@@ -160,12 +160,9 @@ class SorobanTest: XCTestCase {
                 switch response {
                 case .success(let healthResponse):
                     XCTAssertEqual(HealthStatus.HEALTHY, healthResponse.status)
-                    switch self.network {
-                    case.futurenet:
-                        XCTAssertNotNil(healthResponse.ledgerRetentionWindow)
-                    default:
-                        break
-                    }
+                    XCTAssertNotNil(healthResponse.ledgerRetentionWindow)
+                    XCTAssertNotNil(healthResponse.latestLedger)
+                    XCTAssertNotNil(healthResponse.oldestLedger)
                 case .failure(let error):
                     self.printError(error: error)
                     XCTFail()
@@ -331,8 +328,11 @@ class SorobanTest: XCTestCase {
             self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
-                    XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
-                    XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
+                    if let cost = simulateResponse.cost {
+                        XCTAssert(Int(cost.cpuInsns)! > 0)
+                        XCTAssert(Int(cost.memBytes)! > 0)
+                    }
+
                     XCTAssertNotNil(simulateResponse.results)
                     XCTAssert(simulateResponse.results!.count > 0)
                     XCTAssertNotNil(simulateResponse.footprint)
@@ -555,8 +555,10 @@ class SorobanTest: XCTestCase {
             self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
-                    XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
-                    XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
+                    if let cost = simulateResponse.cost {
+                        XCTAssert(Int(cost.cpuInsns)! > 0)
+                        XCTAssert(Int(cost.memBytes)! > 0)
+                    }
                     XCTAssertNotNil(simulateResponse.results)
                     XCTAssert(simulateResponse.results!.count > 0)
                     self.createContractFootprint = simulateResponse.footprint
@@ -634,6 +636,8 @@ class SorobanTest: XCTestCase {
                         switch response {
                         case .success(let ledgerResponse):
                             XCTAssert(Int(exactly:ledgerResponse.latestLedger)! > 0)
+                            XCTAssertNotNil(ledgerResponse.entries.first?.keyXdrValue)
+                            XCTAssertNotNil(ledgerResponse.entries.first?.valueXdr)
                         case .failure(let error):
                             self.printError(error: error)
                             XCTFail()
@@ -700,8 +704,10 @@ class SorobanTest: XCTestCase {
             self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
-                    XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
-                    XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
+                    if let cost = simulateResponse.cost {
+                        XCTAssert(Int(cost.cpuInsns)! > 0)
+                        XCTAssert(Int(cost.memBytes)! > 0)
+                    }
                     XCTAssertNotNil(simulateResponse.results)
                     XCTAssert(simulateResponse.results!.count > 0)
                     XCTAssertNotNil(simulateResponse.footprint)
@@ -789,8 +795,10 @@ class SorobanTest: XCTestCase {
             self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                 switch response {
                 case .success(let simulateResponse):
-                    XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
-                    XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
+                    if let cost = simulateResponse.cost {
+                        XCTAssert(Int(cost.cpuInsns)! > 0)
+                        XCTAssert(Int(cost.memBytes)! > 0)
+                    }
                     XCTAssertNotNil(simulateResponse.results)
                     XCTAssert(simulateResponse.results!.count > 0)
                     XCTAssertNotNil(simulateResponse.footprint)
@@ -894,8 +902,10 @@ class SorobanTest: XCTestCase {
                     self.sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
                         switch response {
                         case .success(let simulateResponse):
-                            XCTAssert(Int(simulateResponse.cost.cpuInsns)! > 0)
-                            XCTAssert(Int(simulateResponse.cost.memBytes)! > 0)
+                            if let cost = simulateResponse.cost {
+                                XCTAssert(Int(cost.cpuInsns)! > 0)
+                                XCTAssert(Int(cost.memBytes)! > 0)
+                            }
                             XCTAssertNotNil(simulateResponse.results)
                             XCTAssert(simulateResponse.results!.count > 0)
                             XCTAssertNotNil(simulateResponse.footprint)

@@ -9,7 +9,7 @@
 import Foundation
 
 /// Part of the getEvents request
-/// See: https://soroban.stellar.org/api/methods/getEvents
+/// https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
 public class EventFilter {
     
     /// (optional) A comma separated list of event types (system, contract, or diagnostic) used to filter events. If omitted, all event types are included.

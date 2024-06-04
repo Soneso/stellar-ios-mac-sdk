@@ -9,22 +9,25 @@
 import Foundation
 
 /// Part of the getEvents respopnse
-/// See https://soroban.stellar.org/api/methods/getEvents
+/// See https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
 public class EventInfo: NSObject, Decodable {
     
-    /// String-ified sequence number of the ledger.
+    /// The type of event emission. Possible values: contract, diagnostic,  system
+    public var type:String
+    
+    /// Sequence number of the ledger in which this event was emitted.
     public var ledger:Int
     
     ///  ISO8601 timestamp of the ledger closing time.
     public var ledgerClosedAt:String
     
-    /// ID of the emitting contract.
+    /// StrKey representation of the contract address that emitted this event.
     public var contractId:String
     
     /// Unique identifier for this event.
     public var id:String
     
-    ///  Duplicate of id field, but in the standard place for pagination tokens.
+    /// Duplicate of id field, but in the standard place for pagination tokens.
     public var pagingToken:String
     
     /// If true the event was emitted during a successful contract call.
@@ -36,7 +39,14 @@ public class EventInfo: NSObject, Decodable {
     /// The emitted body value of the event (serialized in a base64 string - XdrSCVal).
     public var value:String
     
+    /// The emitted body value of the event as XdrSCVal
+    public var valueXdr:SCValXDR
+    
+    /// The transaction which triggered this event.
+    public var txHash:String
+    
     private enum CodingKeys: String, CodingKey {
+        case type
         case ledger
         case ledgerClosedAt
         case contractId
@@ -45,10 +55,12 @@ public class EventInfo: NSObject, Decodable {
         case inSuccessfulContractCall
         case topic
         case value
+        case txHash
     }
 
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
+        type = try values.decode(String.self, forKey: .type)
         ledger = try values.decode(Int.self, forKey: .ledger)
         ledgerClosedAt = try values.decode(String.self, forKey: .ledgerClosedAt)
         contractId = try values.decode(String.self, forKey: .contractId)
@@ -56,12 +68,9 @@ public class EventInfo: NSObject, Decodable {
         inSuccessfulContractCall = try values.decode(Bool.self, forKey: .inSuccessfulContractCall)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         topic = try values.decode([String].self, forKey: .topic)
-        if let val = try? values.decodeIfPresent(String.self, forKey: .value) {
-            value = val
-        } else {
-            let valueXdr = try values.decode(EventInfoValue.self, forKey: .value)
-            value = valueXdr.xdr
-        }
+        value = try values.decode(String.self, forKey: .value)
+        valueXdr = try SCValXDR.fromXdr(base64: value)
+        txHash = try values.decode(String.self, forKey: .txHash)
     }
 }
 

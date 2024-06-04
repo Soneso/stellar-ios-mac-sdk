@@ -9,7 +9,7 @@
 import Foundation
 
 /// Response when submitting a real transaction to the stellar network.
-/// See:  https://soroban.stellar.org/api/methods/sendTransaction
+/// See:  https://developers.stellar.org/network/soroban-rpc/api-reference/methods/sendTransaction
 public class SendTransactionResponse: NSObject, Decodable {
     
     public static let STATUS_PENDING = "PENDING"
@@ -32,6 +32,10 @@ public class SendTransactionResponse: NSObject, Decodable {
     /// (optional) If the transaction was rejected immediately, this will be an error object.
     public var error:TransactionStatusError?
     
+    /// (optional) If the transaction status is ERROR, this will be the raw TransactionResult XDR struct containing details on why stellar-core rejected the transaction.
+    public var errorResult:TransactionResultXDR?
+    
+    /// (optional) If the transaction status is ERROR, this field may be present. Each entry is a raw DiagnosticEvent XDR struct containing details on why stellar-core rejected the transaction.
     public var diagnosticEvents:[DiagnosticEventXDR]?
     
     private enum CodingKeys: String, CodingKey {
@@ -40,6 +44,7 @@ public class SendTransactionResponse: NSObject, Decodable {
         case latestLedger
         case latestLedgerCloseTime
         case error
+        case errorResultXdr
         case diagnosticEventsXdr
     }
 
@@ -50,6 +55,9 @@ public class SendTransactionResponse: NSObject, Decodable {
         latestLedger = try values.decode(Int.self, forKey: .latestLedger)
         latestLedgerCloseTime = try values.decode(String.self, forKey: .latestLedgerCloseTime)
         error = try values.decodeIfPresent(TransactionStatusError.self, forKey: .error)
+        if let errorResultXdrStr = try values.decodeIfPresent(String.self, forKey: .errorResultXdr) {
+            errorResult = try? TransactionResultXDR.fromXdr(base64: errorResultXdrStr)
+        }
         
         let diagnosticEventsXdr = try values.decodeIfPresent([String].self, forKey: .diagnosticEventsXdr)
         if let xdrEntries = diagnosticEventsXdr {
