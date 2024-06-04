@@ -32,7 +32,7 @@ class SorobanTest: XCTestCase {
     var asset:Asset? = nil
     var deployWithAssetTransactionId:String? = nil
     var deployWithAssetFootprint:Footprint? = nil
-    var submitterAccount:AccountResponse?
+    var submitterAccount:Account?
     
     override func setUp() {
         super.setUp()
@@ -93,7 +93,7 @@ class SorobanTest: XCTestCase {
         refreshSubmitterAccount()
         
         // test restore contract code footprint
-        // see: https://soroban.stellar.org/docs/fundamentals-and-concepts/state-expiration
+        // see: https://developers.stellar.org/docs/learn/smart-contract-internals/state-archival
         restoreContractCodeFootprint(fileName: "soroban_hello_world_contract")
         checkTransactionStatusSuccess(transactionId: self.restoreTransactionId!)
         getTransactionDetails(transactionHash: self.restoreTransactionId!, type:"restore_footprint")
@@ -108,7 +108,7 @@ class SorobanTest: XCTestCase {
         getTransactionStatusError()
         
         // test bump contract code footprint
-        // see: https://soroban.stellar.org/docs/fundamentals-and-concepts/state-expiration
+        // see: https://developers.stellar.org/docs/learn/smart-contract-internals/state-archival
         refreshSubmitterAccount()
         extendContractCodeFootprintTTL(wasmId: self.wasmId!, ledgersToExpire: 10000)
         checkTransactionStatusSuccess(transactionId: self.bumpTransactionId!)
@@ -132,6 +132,7 @@ class SorobanTest: XCTestCase {
         invokeContract()
         getInvokeTransactionStatus()
         getTransactionDetails(transactionHash: self.invokeTransactionId!, type:"HostFunctionTypeHostFunctionTypeInvokeContract")
+        getContractData()
         
         // test SAC with source account
         refreshSubmitterAccount()
@@ -179,17 +180,16 @@ class SorobanTest: XCTestCase {
             let expectation = XCTestExpectation(description: "current account data received")
             
             let accountId = submitterKeyPair.accountId
-            sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+            sorobanServer.getAccount(accountId: accountId) { (response) -> (Void) in
                 switch response {
-                case .success(let accResponse):
-                    XCTAssertEqual(accountId, accResponse.accountId)
-                    self.submitterAccount = accResponse
+                case .success(let account):
+                    XCTAssertEqual(accountId, account.accountId)
+                    self.submitterAccount = account
                     expectation.fulfill()
                 case .failure(_):
                     XCTFail()
                 }
             }
-            
             wait(for: [expectation], timeout: 10.0)
         }
     }
@@ -780,6 +780,25 @@ class SorobanTest: XCTestCase {
                 }
             })
             wait(for: [expectation], timeout: 20.0)
+        }
+    }
+    
+    func getContractData() {
+        XCTContext.runActivity(named: "getContractData") { activity in
+            let expectation = XCTestExpectation(description: "get ledger data")
+            // wait a couple of seconds before checking the status
+            self.sorobanServer.getContractData(contractId: self.contractId!, key: SCValXDR.ledgerKeyContractInstance,
+                                               durability: ContractDataDurability.persistent) { (response) -> (Void) in
+                switch response {
+                case .success(let response):
+                    expectation.fulfill()
+                case .failure(let error):
+                    self.printError(error: error)
+                    XCTFail()
+                }
+                expectation.fulfill()
+            }
+            wait(for: [expectation], timeout: 10.0)
         }
     }
     

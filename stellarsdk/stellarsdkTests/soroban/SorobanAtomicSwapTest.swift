@@ -11,9 +11,8 @@ import XCTest
 import stellarsdk
 
 class SorobanAtomicSwapTest: XCTestCase {
-    // See https://soroban.stellar.org/docs/how-to-guides/atomic-swap
-    // See https://soroban.stellar.org/docs/learn/authorization
-    // See https://github.com/StellarCN/py-stellar-base/blob/soroban/examples/soroban_auth_atomic_swap.py
+    // See https://developers.stellar.org/docs/smart-contracts/example-contracts/atomic-swap
+    // See https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
     
     let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org") // SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
     let sdk = StellarSDK.testNet() // StellarSDK.futureNet()
@@ -26,7 +25,7 @@ class SorobanAtomicSwapTest: XCTestCase {
     let tokenBId = "b6d208a3bf0b08ca12d4e1d2a39525caa9e866a0ba396ebe60307f9fbafd451f"
     let swapFunctionName = "swap"
     var invokeTransactionId:String?
-    var submitterAccount:AccountResponse?
+    var submitterAccount:Account?
     var latestLedger:UInt32?
     
     override func setUp() {
@@ -57,11 +56,11 @@ class SorobanAtomicSwapTest: XCTestCase {
             let expectation = XCTestExpectation(description: "get account response received")
             
             let accountId = submitterKeyPair.accountId
-            sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+            sorobanServer.getAccount(accountId: accountId) { (response) -> (Void) in
                 switch response {
-                case .success(let accResponse):
-                    XCTAssertEqual(accountId, accResponse.accountId)
-                    self.submitterAccount = accResponse
+                case .success(let account):
+                    XCTAssertEqual(accountId, account.accountId)
+                    self.submitterAccount = account
                     expectation.fulfill()
                 case .failure(_):
                     XCTFail()

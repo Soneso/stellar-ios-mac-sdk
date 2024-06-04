@@ -60,6 +60,16 @@ public enum GetContractCodeResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
+public enum GetAccountResponseEnum {
+    case success(response: Account)
+    case failure(error: SorobanRpcRequestError)
+}
+
+public enum GetContractDataResponseEnum {
+    case success(response: LedgerEntry)
+    case failure(error: SorobanRpcRequestError)
+}
+
 /// A closure to be called with the response from a post challenge request.
 public typealias GetHealthResponseClosure = (_ response:GetHealthResponseEnum) -> (Void)
 public typealias GetNetworkResponseClosure = (_ response:GetNetworkResponseEnum) -> (Void)
@@ -71,6 +81,8 @@ public typealias GetTransactionResponseClosure = (_ response:GetTransactionRespo
 public typealias GetEventsResponseClosure = (_ response:GetEventsResponseEnum) -> (Void)
 public typealias GetNonceResponseClosure = (_ response:GetNonceResponseEnum) -> (Void)
 public typealias GetContractCodeResponseClosure = (_ response:GetContractCodeResponseEnum) -> (Void)
+public typealias GetAccountResponseClosure = (_ response:GetAccountResponseEnum) -> (Void)
+public typealias GetContractDataResponseClosure = (_ response:GetContractDataResponseEnum) -> (Void)
 
 /// An enum to diferentiate between succesful and failed responses
 private enum RpcResult {
@@ -297,6 +309,63 @@ public class SorobanServer {
             }
         } else {
             completion(.failure(error: .requestFailed(message: "could not create ledger key")))
+        }
+    }
+    
+    /// Fetches a minimal set of current info about a Stellar account. Needed to get the current sequence
+    /// number for the account, so you can build a successful transaction. Fails if the account was not found or accountiId is invalid
+    public func getAccount(accountId:String, completion:@escaping GetAccountResponseClosure) {
+        if let publicKey = try? PublicKey(accountId: accountId) {
+            let accountKey = LedgerKeyXDR.account(LedgerKeyAccountXDR(accountID: publicKey))
+            if let ledgerKeyBase64 = accountKey.xdrEncoded {
+                self.getLedgerEntries(base64EncodedKeys:[ledgerKeyBase64]) { (response) -> (Void) in
+                    switch response {
+                    case .success(let response):
+                        let data = try? LedgerEntryDataXDR(fromBase64: response.entries[0].xdr)
+                        if let accountData = data?.account {
+                            let account = Account(keyPair: KeyPair(publicKey: accountData.accountID), sequenceNumber: accountData.sequenceNumber);
+                            completion(.success(response: account))
+                        }
+                        else {
+                            completion(.failure(error: .requestFailed(message: "could not find account")))
+                        }
+                    case .failure(let error):
+                        completion(.failure(error: error))
+                    }
+                }
+            } else {
+                completion(.failure(error: .requestFailed(message: "could not create ledger key")))
+            }
+        } else {
+            completion(.failure(error: .requestFailed(message: "invalid accountId")))
+        }
+        
+    }
+    
+    /// Reads the current value of contract data ledger entries directly.
+    public func getContractData(contractId: String, key: SCValXDR, durability: ContractDataDurability, completion:@escaping GetContractDataResponseClosure) {
+        if let contractAddress = try? SCAddressXDR.init(contractId: contractId) {
+            let contractDataKey = LedgerKeyContractDataXDR(contract: contractAddress, key: key, durability: durability)
+            let ledgerKey = LedgerKeyXDR.contractData(contractDataKey)
+            if let ledgerKeyBase64 = ledgerKey.xdrEncoded {
+                self.getLedgerEntries(base64EncodedKeys:[ledgerKeyBase64]) { (response) -> (Void) in
+                    switch response {
+                    case .success(let response):
+                        if let result = response.entries.first {
+                            completion(.success(response: result))
+                        }
+                        else {
+                            completion(.failure(error: .requestFailed(message: "could not find contract data")))
+                        }
+                    case .failure(let error):
+                        completion(.failure(error: error))
+                    }
+                }
+            } else {
+                completion(.failure(error: .requestFailed(message: "could not create ledger key")))
+            }
+        } else {
+            completion(.failure(error: .requestFailed(message: "invalid contractId")))
         }
     }
     

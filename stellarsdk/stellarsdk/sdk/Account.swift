@@ -24,6 +24,11 @@ public class Account: TransactionAccount
         self.sequenceNumber = sequenceNumber
     }
     
+    public init(accountId: String, sequenceNumber: Int64) throws {
+        self.keyPair = try KeyPair(accountId: accountId)
+        self.sequenceNumber = sequenceNumber
+    }
+    
     ///  Returns sequence number incremented by one, but does not increment internal counter.
     public func incrementedSequenceNumber() -> Int64 {
         return sequenceNumber + 1
@@ -36,5 +41,9 @@ public class Account: TransactionAccount
     
     public func decrementSequenceNumber() {
         sequenceNumber -= 1
+    }
+    
+    public var accountId:String {
+        return keyPair.accountId
     }
 }

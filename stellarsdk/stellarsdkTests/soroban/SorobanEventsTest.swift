@@ -24,7 +24,7 @@ class SorobanEventsTest: XCTestCase {
     var createContractFootprint:Footprint? = nil
     var invokeTransactionId:String? = nil
     var invokeContractFootprint:Footprint? = nil
-    var submitterAccount:AccountResponse?
+    var submitterAccount:Account?
     var transactionLedger:Int? = nil
     
     override func setUp() {
@@ -64,11 +64,11 @@ class SorobanEventsTest: XCTestCase {
             let expectation = XCTestExpectation(description: "current account data received")
             
             let accountId = submitterKeyPair.accountId
-            sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+            sorobanServer.getAccount(accountId: accountId) { (response) -> (Void) in
                 switch response {
-                case .success(let accResponse):
-                    XCTAssertEqual(accountId, accResponse.accountId)
-                    self.submitterAccount = accResponse
+                case .success(let account):
+                    XCTAssertEqual(accountId, account.accountId)
+                    self.submitterAccount = account
                     expectation.fulfill()
                 case .failure(_):
                     XCTFail()

@@ -15,7 +15,7 @@ public class MuxedAccount: Account
     public private (set) var xdr: MuxedAccountXDR
     
     /// Human readable Stellar ed25519 or med25519 account ID.
-    public var accountId: String {
+    public override var accountId: String {
         get {
             return xdr.accountId
         }

@@ -22,8 +22,8 @@ class SorobanAuthTest: XCTestCase {
     var createTransactionId:String?
     var contractId:String?
     var invokeTransactionId:String?
-    var senderAccount:AccountResponse?
-    var invokerAccount:AccountResponse?
+    var senderAccount:Account?
+    var invokerAccount:Account?
     var latestLedger:UInt32?
     
     override func setUp() {
@@ -78,11 +78,11 @@ class SorobanAuthTest: XCTestCase {
             let expectation = XCTestExpectation(description: "current account data received")
             
             let accountId = senderKeyPair.accountId
-            sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+            sorobanServer.getAccount(accountId: accountId) { (response) -> (Void) in
                 switch response {
-                case .success(let accResponse):
-                    XCTAssertEqual(accountId, accResponse.accountId)
-                    self.senderAccount = accResponse
+                case .success(let account):
+                    XCTAssertEqual(accountId, account.accountId)
+                    self.senderAccount = account
                     expectation.fulfill()
                 case .failure(_):
                     XCTFail()
@@ -331,11 +331,11 @@ class SorobanAuthTest: XCTestCase {
             let expectation = XCTestExpectation(description: "current account data received")
             
             let accountId = invokerKeyPair.accountId
-            sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
+            sorobanServer.getAccount(accountId: accountId) { (response) -> (Void) in
                 switch response {
-                case .success(let accResponse):
-                    XCTAssertEqual(accountId, accResponse.accountId)
-                    self.invokerAccount = accResponse
+                case .success(let account):
+                    XCTAssertEqual(accountId, account.accountId)
+                    self.invokerAccount = account
                     expectation.fulfill()
                 case .failure(_):
                     XCTFail()
