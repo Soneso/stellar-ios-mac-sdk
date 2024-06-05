@@ -137,6 +137,10 @@ public struct LiquidityPoolIDXDR: XDRCodable {
         liquidityPoolID = try container.decode(WrappedData32.self)
     }
     
+    public init(id: WrappedData32) {
+        liquidityPoolID = id
+    }
+    
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(liquidityPoolID)

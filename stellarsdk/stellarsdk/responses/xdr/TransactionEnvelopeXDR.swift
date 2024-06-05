@@ -228,6 +228,22 @@ public enum TransactionEnvelopeXDR: XDRCodable {
         }
     }
     
+    public var txExt: TransactionExtXDR? {
+        get {
+            switch self {
+            case .v0(let tev0):
+                return nil
+            case .v1(let tev1):
+                return tev1.tx.ext
+            case .feeBump(let tevf):
+                switch tevf.tx.innerTx {
+                case .v1(let tev1):
+                    return tev1.tx.ext
+                }
+            }
+        }
+    }
+    
     public var txSignatures: [DecoratedSignatureXDR] {
         get {
             switch self {

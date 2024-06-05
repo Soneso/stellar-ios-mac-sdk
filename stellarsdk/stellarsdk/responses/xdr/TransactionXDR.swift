@@ -702,7 +702,7 @@ public enum TransactionExtXDR : XDRCodable {
         }
     }
     
-    private func type() -> Int32 {
+    public func type() -> Int32 {
         switch self {
         case .void: return 0
         case .sorobanTransactionData:return 1
