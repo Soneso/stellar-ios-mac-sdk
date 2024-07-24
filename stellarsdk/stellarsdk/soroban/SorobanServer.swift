@@ -24,6 +24,10 @@ public enum GetFeeStatsResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
+public enum GetVersionInfoResponseEnum {
+    case success(response: GetVersionInfoResponse)
+    case failure(error: SorobanRpcRequestError)
+}
 
 public enum GetLedgerEntriesResponseEnum {
     case success(response: GetLedgerEntriesResponse)
@@ -80,6 +84,7 @@ public enum GetContractDataResponseEnum {
 public typealias GetHealthResponseClosure = (_ response:GetHealthResponseEnum) -> (Void)
 public typealias GetNetworkResponseClosure = (_ response:GetNetworkResponseEnum) -> (Void)
 public typealias GetFeeStatsResponseClosure = (_ response:GetFeeStatsResponseEnum) -> (Void)
+public typealias GetVersionInfoResponseClosure = (_ response:GetVersionInfoResponseEnum) -> (Void)
 public typealias GetLedgerEntriesResponseClosure = (_ response:GetLedgerEntriesResponseEnum) -> (Void)
 public typealias GetLatestLedgerResponseClosure = (_ response:GetLatestLedgerResponseEnum) -> (Void)
 public typealias SimulateTransactionResponseClosure = (_ response:SimulateTransactionResponseEnum) -> (Void)
@@ -218,6 +223,36 @@ public class SorobanServer {
                         do {
                             let feeStats = try self.jsonDecoder.decode(GetFeeStatsResponse.self, from: JSONSerialization.data(withJSONObject: result))
                             completion(.success(response: feeStats))
+                        } catch {
+                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
+                        }
+                    } else if let error = response["error"] as? [String: Any] {
+                        completion(.failure(error: .errorResponse(errorData: error)))
+                    } else {
+                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    }
+                } else {
+                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                }
+            case .failure(let error):
+                completion(.failure(error: error))
+            }
+        }
+    }
+    
+    /// Version information about the RPC and Captive core. RPC manages its own,
+    /// pared-down version of Stellar Core optimized for its own subset of needs.
+    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getVersionInfo
+    public func getVersionInfo(completion:@escaping GetVersionInfoResponseClosure) {
+        
+        request(body: try? buildRequestJson(method: "getVersionInfo")) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    if let result = response["result"] as? [String: Any] {
+                        do {
+                            let versionInfo = try self.jsonDecoder.decode(GetVersionInfoResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                            completion(.success(response: versionInfo))
                         } catch {
                             completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
                         }

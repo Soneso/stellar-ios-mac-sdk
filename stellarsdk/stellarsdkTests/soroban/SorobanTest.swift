@@ -90,6 +90,7 @@ class SorobanTest: XCTestCase {
         getHealth()
         getNetwork()
         getFeeStats()
+        getVersionInfo()
         
         refreshSubmitterAccount()
         
@@ -225,6 +226,25 @@ class SorobanTest: XCTestCase {
             sorobanServer.getFeeStats() { (response) -> (Void) in
                 switch response {
                 case .success(let feeStatsResponse):
+                    expectation.fulfill()
+                case .failure(let error):
+                    self.printError(error: error)
+                    XCTFail()
+                    expectation.fulfill()
+                }
+            }
+            
+            wait(for: [expectation], timeout: 10.0)
+        }
+    }
+    
+    func getVersionInfo() {
+        XCTContext.runActivity(named: "getVersionInfo") { activity in
+            let expectation = XCTestExpectation(description: "get version info response from soroban server received")
+            
+            sorobanServer.getVersionInfo() { (response) -> (Void) in
+                switch response {
+                case .success(let versionInfoResponse):
                     expectation.fulfill()
                 case .failure(let error):
                     self.printError(error: error)
