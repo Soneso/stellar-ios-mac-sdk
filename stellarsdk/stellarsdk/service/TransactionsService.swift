@@ -19,6 +19,13 @@ public enum TransactionPostResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
+public enum TransactionPostAsyncResponseEnum {
+    case success(details: SubmitTransactionAsyncResponse)
+    case destinationRequiresMemo(destinationAccountId: String)
+    case failure(error: HorizonRequestError)
+}
+
+
 public enum CheckMemoRequiredResponseEnum {
     case noMemoRequired
     case memoRequired(destination: String)
@@ -34,6 +41,7 @@ public enum TransactionsChange {
 
 public typealias TransactionDetailsResponseClosure = (_ response:TransactionDetailsResponseEnum) -> (Void)
 public typealias TransactionPostResponseClosure = (_ response:TransactionPostResponseEnum) -> (Void)
+public typealias TransactionPostAsyncResponseClosure = (_ response:TransactionPostAsyncResponseEnum) -> (Void)
 public typealias CheckMemoRequiredResponseClosure = (_ response:CheckMemoRequiredResponseEnum) -> (Void)
 
 public class TransactionsService: NSObject {
@@ -97,10 +105,30 @@ public class TransactionsService: NSObject {
         postTransaction(transactionEnvelope:envelope, skipMemoRequiredCheck: skipMemoRequiredCheck, response: response)
     }
     
+    open func submitAsyncTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostAsyncResponseClosure) throws {
+        let envelope = try transaction.encodedEnvelope()
+        postTransactionAsync(transactionEnvelope:envelope, skipMemoRequiredCheck: skipMemoRequiredCheck, response: response)
+    }
+    
     open func submitFeeBumpTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostResponseClosure) throws {
         let envelope = try transaction.encodedEnvelope()
         //print(envelope)
         postTransactionCore(transactionEnvelope: envelope, response: { (result) -> (Void) in
+            switch result {
+            case .success(let transaction):
+                response(.success(details: transaction))
+            case .failure(let error):
+                response(.failure(error: error))
+            case .destinationRequiresMemo(let destinationAccountId):
+                response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
+            }
+        })
+    }
+    
+    open func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostAsyncResponseClosure) throws {
+        let envelope = try transaction.encodedEnvelope()
+        //print(envelope)
+        postTransactionAsyncCore(transactionEnvelope: envelope, response: { (result) -> (Void) in
             switch result {
             case .success(let transaction):
                 response(.success(details: transaction))
@@ -136,6 +164,42 @@ public class TransactionsService: NSObject {
             })
         } else {
             postTransactionCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
+                switch result {
+                case .success(let transaction):
+                    response(.success(details: transaction))
+                case .failure(let error):
+                    response(.failure(error: error))
+                case .destinationRequiresMemo(let destinationAccountId):
+                    response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
+                }
+            })
+        }
+    }
+    
+    open func postTransactionAsync(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostAsyncResponseClosure) {
+        
+        if !skipMemoRequiredCheck, let transaction = try? Transaction(envelopeXdr: transactionEnvelope) {
+            checkMemoRequired(transaction: transaction, response: { (result) -> (Void) in
+                switch result {
+                case .noMemoRequired:
+                    self.postTransactionAsyncCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
+                        switch result {
+                        case .success(let transaction):
+                            response(.success(details: transaction))
+                        case .failure(let error):
+                            response(.failure(error: error))
+                        case .destinationRequiresMemo(let destinationAccountId):
+                            response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
+                        }
+                    })
+                case .memoRequired(let accountId):
+                    response(.destinationRequiresMemo(destinationAccountId: accountId))
+                case .failure(let error):
+                    response(.failure(error: error))
+                }
+            })
+        } else {
+            postTransactionAsyncCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
                 switch result {
                 case .success(let transaction):
                     response(.success(details: transaction))
@@ -264,6 +328,51 @@ public class TransactionsService: NSObject {
                         response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                     }
                 case .failure(let error):
+                    response(.failure(error:error))
+                }
+            }
+        } else {
+            response(.failure(error: .parsingResponseFailed(message: "Failed to URL encode the xdr enveloper")))
+        }
+    }
+    
+    private func postTransactionAsyncCore(transactionEnvelope:String, response:@escaping TransactionPostAsyncResponseClosure) {
+        
+        let requestPath = "/transactions_async"
+        if let encoded = transactionEnvelope.urlEncoded {
+            let data = ("tx=" + encoded).data(using: .utf8)
+            
+            serviceHelper.POSTRequestWithPath(path: requestPath, body: data) { (result) -> (Void) in
+                switch result {
+                case .success(let data):
+                    do {
+                        //print("SUCCESS: " + String(data: data, encoding: .utf8)!)
+                        self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                        let transaction = try self.jsonDecoder.decode(SubmitTransactionAsyncResponse.self, from: data)
+                        response(.success(details: transaction))
+                    } catch {
+                        response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+                    }
+                case .failure(let error):
+                    var responseData:Data? = nil
+                    
+                    switch error {
+                    case .badRequest(let message, _):
+                        responseData = message.data(using: .utf8)
+                    case .duplicate(let message, _):
+                        responseData = message.data(using: .utf8)
+                    case .staleHistory(let message, _):
+                        responseData = message.data(using: .utf8)
+                    default:
+                        break
+                    }
+                    if let data = responseData {
+                        self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                        if let transaction = try? self.jsonDecoder.decode(SubmitTransactionAsyncResponse.self, from: data) {
+                            response(.success(details: transaction))
+                            return
+                        }
+                    }
                     response(.failure(error:error))
                 }
             }

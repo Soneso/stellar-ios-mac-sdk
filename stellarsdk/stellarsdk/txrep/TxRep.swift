@@ -2746,7 +2746,7 @@ public class TxRep: NSObject {
             break
         case .error(let err):
             addLine(key: prefix + "type" , value: "SCV_ERROR", lines: &lines)
-            addSCError(val: err, prefix: prefix + "error", lines: &lines)
+            addSCError(val: err, prefix: prefix + "error.", lines: &lines)
             break
         case .u32(let uInt32):
             addLine(key: prefix + "type" , value: "SCV_U32", lines: &lines)

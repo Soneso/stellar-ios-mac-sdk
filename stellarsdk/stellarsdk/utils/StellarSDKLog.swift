@@ -26,6 +26,9 @@ public final class StellarSDKLog {
         case .notFound(let message, let errorResponse):
             print("\(tag): Horizon request error of type request failed with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
+        case .duplicate(let message, let errorResponse):
+            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .notAcceptable(let message, let errorResponse):
             print("\(tag): Horizon request error of type request failed with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
@@ -54,25 +57,36 @@ public final class StellarSDKLog {
     }
     
     public static func printErrorResponse(tag: String, errorResponse: ErrorResponse?) {
-        if (errorResponse == nil) {return}
-        print("\(tag): Horizon Error response type: \(errorResponse!.type)")
-        print("\(tag): Horizon Error response tite: \(errorResponse!.title)")
-        print("\(tag): Horizon Error response httpStatusCode: \(errorResponse!.httpStatusCode)")
-        print("\(tag): Horizon Error response detail: \(errorResponse!.detail)")
-        print("\(tag): Horizon Error response instance: \(errorResponse!.instance ?? "unspecified")")
-        
-        if let transactionFailedErrorResponse = errorResponse! as? TransactionFailedErrorResponse {
-            print("\(tag): Horizon Error response envelope XDR: \(transactionFailedErrorResponse.envelopeXDR)")
-            print("\(tag): Horizon Error response result XDR: \(transactionFailedErrorResponse.resultXDR)")
-            print("\(tag): Horizon Error response transactionResultCode: \(transactionFailedErrorResponse.transactionResultCode)")
-            
-            for operationResultCode in transactionFailedErrorResponse.operationsResultCodes {
-                print("\(tag): Horizon Error response operation result code: \(operationResultCode)")
+        if let response = errorResponse {
+            print("\(tag): Horizon Error response type: \(response.type)")
+            print("\(tag): Horizon Error response tite: \(response.title)")
+            print("\(tag): Horizon Error response httpStatusCode: \(response.httpStatusCode)")
+            print("\(tag): Horizon Error response detail: \(response.detail)")
+            if let horizonInstance = response.instance {
+                print("\(tag): Horizon Error response instance: \(horizonInstance)")
             }
-        }
-        
-        if let transactionMalformedErrorResponse = errorResponse! as? TransactionMalformedErrorResponse {
-            print("\(tag): Horizon Error response envelope XDR: \(transactionMalformedErrorResponse.envelopeXDR)")
+            
+            if let extras = response.extras {
+                if let envelopeXdr = extras.envelopeXdr {
+                    print("\(tag): Horizon Error response extras.envelopeXdr : \(envelopeXdr)")
+                }
+                if let resultXdr = extras.resultXdr {
+                    print("\(tag): Horizon Error response extras.resultXdr : \(resultXdr)")
+                }
+                if let txHash = extras.txHash {
+                    print("\(tag): Horizon Error response extras.txHash : \(txHash)")
+                }
+                if let resultCodes = extras.resultCodes {
+                    if let tx = resultCodes.transaction {
+                        print("\(tag): Horizon Error response extras.resultCodes.transaction : \(tx)")
+                    }
+                    if let operations = resultCodes.operations {
+                        for code in operations {
+                            print("\(tag): Horizon Error response extras.resultCodes.operation:\(code)")
+                        }
+                    }
+                }
+            }
         }
     }
 }

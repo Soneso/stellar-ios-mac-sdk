@@ -321,6 +321,16 @@ class ServiceHelper: NSObject {
                     }
                     completion(.failure(error:.notAcceptable(message:message, horizonErrorResponse:nil)))
                     return
+                case 409: // Duplicate
+                    if let data = data {
+                        do {
+                            let duplicateErrorResponse = try self.jsonDecoder.decode(DuplicateErrorResponse.self, from: data)
+                            completion(.failure(error:.duplicate(message:message, horizonErrorResponse:duplicateErrorResponse)))
+                            return
+                        } catch {}
+                    }
+                    completion(.failure(error:.duplicate(message:message, horizonErrorResponse:nil)))
+                    return
                 case 410: // Gone
                     if let data = data {
                         do {

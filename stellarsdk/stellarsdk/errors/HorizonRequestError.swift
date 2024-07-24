@@ -15,6 +15,7 @@ public enum HorizonRequestError: Error {
     case forbidden(message:String, horizonErrorResponse:ForbiddenErrorResponse?) // HTTP Status Code 403
     case notFound(message: String, horizonErrorResponse:NotFoundErrorResponse?) //HTTP Status Code 404
     case notAcceptable(message: String, horizonErrorResponse:NotAcceptableErrorResponse?) /// HTTP Status code 406
+    case duplicate(message: String, horizonErrorResponse:DuplicateErrorResponse?) /// HTTP Status code 409
     case beforeHistory(message: String, horizonErrorResponse:BeforeHistoryErrorResponse?) // HTTP Status code 410
     case rateLimitExceeded(message: String, horizonErrorResponse:RateLimitExceededErrorResponse?) // HTTP Status code 429
     case internalServerError(message:String, horizonErrorResponse:InternalServerErrorResponse?) // HTTP Status cose 500

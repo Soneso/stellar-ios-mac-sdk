@@ -27,6 +27,8 @@ public class ErrorResponse: NSObject, Decodable {
     /// A token that uniquely identifies this request. Allows server administrators to correlate a client report with server log files.
     public var instance:String?
     
+    public var extras:ErrorResponseExtras?
+    
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case type
@@ -34,6 +36,7 @@ public class ErrorResponse: NSObject, Decodable {
         case httpStatusCode = "status"
         case detail
         case instance
+        case extras
     }
     
     /**
@@ -48,5 +51,45 @@ public class ErrorResponse: NSObject, Decodable {
         httpStatusCode = try values.decode(UInt.self, forKey: .httpStatusCode)
         detail = try values.decode(String.self, forKey: .detail)
         instance = try values.decodeIfPresent(String.self, forKey: .instance)
+        extras = try values.decodeIfPresent(ErrorResponseExtras.self, forKey: .extras)
+    }
+}
+
+public class ErrorResponseExtras: Decodable {
+    public var envelopeXdr: String?
+    public var resultXdr: String?
+    public var resultCodes: ErrorResultCodes?
+    public var txHash: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case envelopeXdr = "envelope_xdr"
+        case resultXdr = "result_xdr"
+        case resultCodes = "result_codes"
+        case txHash = "hash"
+    }
+    
+    public required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        envelopeXdr = try values.decodeIfPresent(String.self, forKey: .envelopeXdr)
+        resultXdr = try values.decodeIfPresent(String.self, forKey: .resultXdr)
+        resultCodes = try values.decodeIfPresent(ErrorResultCodes.self, forKey: .resultCodes)
+        txHash = try values.decodeIfPresent(String.self, forKey: .txHash)
+    }
+}
+
+public class ErrorResultCodes: Decodable {
+    public var transaction: String?
+    public var operations: [String]?
+    
+    private enum CodingKeys: String, CodingKey {
+        case transaction
+        case operations
+    }
+    
+    
+    public required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        transaction = try values.decodeIfPresent(String.self, forKey: .transaction)
+        operations = try values.decodeIfPresent([String].self, forKey: .operations)
     }
 }
