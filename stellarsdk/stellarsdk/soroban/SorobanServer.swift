@@ -55,6 +55,11 @@ public enum GetTransactionResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
+public enum GetTransactionsResponseEnum {
+    case success(response: GetTransactionsResponse)
+    case failure(error: SorobanRpcRequestError)
+}
+
 public enum GetEventsResponseEnum {
     case success(response: GetEventsResponse)
     case failure(error: SorobanRpcRequestError)
@@ -90,6 +95,7 @@ public typealias GetLatestLedgerResponseClosure = (_ response:GetLatestLedgerRes
 public typealias SimulateTransactionResponseClosure = (_ response:SimulateTransactionResponseEnum) -> (Void)
 public typealias SendTransactionResponseClosure = (_ response:SendTransactionResponseEnum) -> (Void)
 public typealias GetTransactionResponseClosure = (_ response:GetTransactionResponseEnum) -> (Void)
+public typealias GetTransactionsResponseClosure = (_ response:GetTransactionsResponseEnum) -> (Void)
 public typealias GetEventsResponseClosure = (_ response:GetEventsResponseEnum) -> (Void)
 public typealias GetNonceResponseClosure = (_ response:GetNonceResponseEnum) -> (Void)
 public typealias GetContractCodeResponseClosure = (_ response:GetContractCodeResponseEnum) -> (Void)
@@ -533,13 +539,44 @@ public class SorobanServer {
         }
     }
     
+    /// The getTransactions method return a detailed list of transactions starting from
+    /// the user specified starting point that you can paginate as long as the pages
+    /// fall within the history retention of their corresponding RPC provider.
+    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+    public func getTransactions(startLedger:Int? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetTransactionsResponseClosure) {
+        
+        request(body: try? buildRequestJson(method: "getTransactions", args: buildTransactionssRequestParams(startLedger: startLedger, paginationOptions: paginationOptions))) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    if let result = response["result"] as? [String: Any] {
+                        do {
+                            let decoded = try self.jsonDecoder.decode(GetTransactionsResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                            completion(.success(response: decoded))
+                        } catch {
+                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
+                        }
+                    } else if let error = response["error"] as? [String: Any] {
+                        completion(.failure(error: .errorResponse(errorData: error)))
+                    } else {
+                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    }
+                } else {
+                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                }
+            case .failure(let error):
+                completion(.failure(error: error))
+            }
+        }
+    }
+    
     /// Clients can request a filtered list of events emitted by a given ledger range.
     /// Soroban-RPC will support querying within a maximum 24 hours of recent ledgers.
     /// Note, this could be used by the client to only prompt a refresh when there is a new ledger with relevant events. It should also be used by backend Dapp components to "ingest" events into their own database for querying and serving.
     /// If making multiple requests, clients should deduplicate any events received, based on the event's unique id field. This prevents double-processing in the case of duplicate events being received.
     /// By default soroban-rpc retains the most recent 24 hours of events.
     /// See: https://soroban.stellar.org/api/methods/getEvents
-    public func getEvents(startLedger:Int, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
+    public func getEvents(startLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
         
         request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, eventFilters: eventFilters, paginationOptions: paginationOptions))) { (result) -> (Void) in
             switch result {
@@ -566,10 +603,13 @@ public class SorobanServer {
         }
     }
     
-    private func buildEventsRequestParams(startLedger:Int, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
-        var result: [String : Any] = [
-            "startLedger": startLedger
-        ]
+    private func buildEventsRequestParams(startLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
+        var result: [String : Any] = [:]
+        
+        if (startLedger != nil) {
+            result["startLedger"] = startLedger
+        }
+        
         // filters
         if (eventFilters != nil && eventFilters!.count > 0) {
             var arr:[[String : Any]] = []
@@ -577,6 +617,23 @@ public class SorobanServer {
                 arr.append(event.buildRequestParams())
             }
             result["filters"] = arr
+        }
+        
+        // pagination options
+        if (paginationOptions != nil) {
+            let params = paginationOptions!.buildRequestParams()
+            if (params != nil) {
+                result["pagination"] = params
+            }
+        }
+        return result;
+    }
+    
+    private func buildTransactionssRequestParams(startLedger:Int? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
+        var result: [String : Any] = [:]
+        
+        if (startLedger != nil) {
+            result["startLedger"] = startLedger
         }
         
         // pagination options

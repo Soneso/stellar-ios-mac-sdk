@@ -896,6 +896,8 @@
 		834D51472C5196AC007CA0AD /* GetFeeStatsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D51452C5196AC007CA0AD /* GetFeeStatsResponse.swift */; };
 		834D51492C519D4D007CA0AD /* GetVersionInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D51482C519D4D007CA0AD /* GetVersionInfoResponse.swift */; };
 		834D514A2C519D4D007CA0AD /* GetVersionInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D51482C519D4D007CA0AD /* GetVersionInfoResponse.swift */; };
+		834D514C2C519FF7007CA0AD /* GetTransactionsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D514B2C519FF7007CA0AD /* GetTransactionsResponse.swift */; };
+		834D514D2C519FF7007CA0AD /* GetTransactionsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D514B2C519FF7007CA0AD /* GetTransactionsResponse.swift */; };
 		8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */; };
 		8357A913203B004700A144A9 /* String+Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A912203B004700A144A9 /* String+Base64.swift */; };
 		8357A915203B097D00A144A9 /* AssetsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A914203B097D00A144A9 /* AssetsLocalTestCase.swift */; };
@@ -1756,6 +1758,7 @@
 		834D51422C516F94007CA0AD /* DuplicateErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateErrorResponse.swift; sourceTree = "<group>"; };
 		834D51452C5196AC007CA0AD /* GetFeeStatsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetFeeStatsResponse.swift; sourceTree = "<group>"; };
 		834D51482C519D4D007CA0AD /* GetVersionInfoResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetVersionInfoResponse.swift; sourceTree = "<group>"; };
+		834D514B2C519FF7007CA0AD /* GetTransactionsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTransactionsResponse.swift; sourceTree = "<group>"; };
 		8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountRemoteTestCase.swift; sourceTree = "<group>"; };
 		8357A912203B004700A144A9 /* String+Base64.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Base64.swift"; sourceTree = "<group>"; };
 		8357A914203B097D00A144A9 /* AssetsLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsLocalTestCase.swift; sourceTree = "<group>"; };
@@ -2860,6 +2863,7 @@
 				832C2B1E2AE95926005BB7B8 /* LedgerEntry.swift */,
 				834D51452C5196AC007CA0AD /* GetFeeStatsResponse.swift */,
 				834D51482C519D4D007CA0AD /* GetVersionInfoResponse.swift */,
+				834D514B2C519FF7007CA0AD /* GetTransactionsResponse.swift */,
 			);
 			path = responses;
 			sourceTree = "<group>";
@@ -4351,6 +4355,7 @@
 				745DF4B12052FF9C000D3660 /* OperationLinksResponse.swift in Sources */,
 				745DF4B22052FF9C000D3660 /* LedgerLinksResponse.swift in Sources */,
 				745DF4B32052FF9C000D3660 /* LinkResponse.swift in Sources */,
+				834D514D2C519FF7007CA0AD /* GetTransactionsResponse.swift in Sources */,
 				832C2B302AEC07EE005BB7B8 /* RecoveryServiceError.swift in Sources */,
 				745DF4B42052FF9C000D3660 /* PagingLinksResponse.swift in Sources */,
 				745DF4B52052FF9C000D3660 /* TradeLinksResponse.swift in Sources */,
@@ -5035,6 +5040,7 @@
 				EC34A15920503CF6000FB042 /* Ed25519Derivation.swift in Sources */,
 				74824B1F203173F000CD0270 /* OperationXDR.swift in Sources */,
 				744D458C2038194300178D04 /* EventSource.swift in Sources */,
+				834D514C2C519FF7007CA0AD /* GetTransactionsResponse.swift in Sources */,
 				743DF57A202053A400713DE7 /* Ed25519Error.swift in Sources */,
 				832C2B2F2AEC07EE005BB7B8 /* RecoveryServiceError.swift in Sources */,
 				745F2BAD202C27FF008763F1 /* XDRCodable.swift in Sources */,

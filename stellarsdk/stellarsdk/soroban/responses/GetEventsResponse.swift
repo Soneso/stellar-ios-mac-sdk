@@ -22,7 +22,11 @@ public class GetEventsResponse: NSObject, Decodable {
 
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        events = try values.decode([EventInfo].self, forKey: .events)
+        if let evs =  try? values.decode([EventInfo].self, forKey: .events) {
+            events = evs
+        } else {
+            events = []
+        }
         latestLedger = try values.decode(Int.self, forKey: .latestLedger)
     }
 }

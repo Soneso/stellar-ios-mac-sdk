@@ -322,7 +322,7 @@ class SorobanEventsTest: XCTestCase {
             //let topicFilter = TopicFilter(segmentMatchers:[SCValXDR.symbol("COUNTER").xdrEncoded!, "*"])
             let eventFilter = EventFilter(type:"contract", contractIds: [try! contractId!.encodeContractIdHex()], topics: [topicFilter])
             
-            self.sorobanServer.getEvents(startLedger: ledger, eventFilters: [eventFilter]) { (response) -> (Void) in
+            self.sorobanServer.getEvents(startLedger: ledger, eventFilters: [eventFilter], paginationOptions: PaginationOptions(limit: 2)) { (response) -> (Void) in
                 switch response {
                 case .success(let eventsResponse):
                     XCTAssert(eventsResponse.events.count > 0)

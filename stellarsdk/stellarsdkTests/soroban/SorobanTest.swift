@@ -91,6 +91,7 @@ class SorobanTest: XCTestCase {
         getNetwork()
         getFeeStats()
         getVersionInfo()
+        getTransactions()
         
         refreshSubmitterAccount()
         
@@ -225,7 +226,7 @@ class SorobanTest: XCTestCase {
             
             sorobanServer.getFeeStats() { (response) -> (Void) in
                 switch response {
-                case .success(let feeStatsResponse):
+                case .success(_):
                     expectation.fulfill()
                 case .failure(let error):
                     self.printError(error: error)
@@ -244,7 +245,7 @@ class SorobanTest: XCTestCase {
             
             sorobanServer.getVersionInfo() { (response) -> (Void) in
                 switch response {
-                case .success(let versionInfoResponse):
+                case .success(_):
                     expectation.fulfill()
                 case .failure(let error):
                     self.printError(error: error)
@@ -254,6 +255,45 @@ class SorobanTest: XCTestCase {
             }
             
             wait(for: [expectation], timeout: 10.0)
+        }
+    }
+    
+    func getTransactions() {
+        XCTContext.runActivity(named: "getTransactions") { activity in
+            let expectation = XCTestExpectation(description: "successfully get transactions")
+            self.sorobanServer.getLatestLedger() { (response) -> (Void) in
+                switch response {
+                case .success(let latestLedger):
+                    self.sorobanServer.getTransactions(startLedger: Int(latestLedger.sequence) - 20, paginationOptions: PaginationOptions(limit:2)) { (response) -> (Void) in
+                        switch response {
+                        case .success(let transactionsResponse):
+                            XCTAssert(transactionsResponse.transactions.count == 2)
+                            XCTAssertNotNil(transactionsResponse.cursor)
+                            self.sorobanServer.getTransactions(paginationOptions: PaginationOptions(cursor: transactionsResponse.cursor, limit:2)) { (response) -> (Void) in
+                                switch response {
+                                case .success(let transactionsResponse2):
+                                    XCTAssert(transactionsResponse2.transactions.count == 2)
+                                case .failure(let error):
+                                    self.printError(error: error)
+                                    XCTFail()
+                                }
+                                expectation.fulfill()
+                            }
+                        case .failure(let error):
+                            self.printError(error: error)
+                            XCTFail()
+                            expectation.fulfill()
+                        }
+                    }
+                case .failure(let error):
+                    self.printError(error: error)
+                    XCTFail()
+                    expectation.fulfill()
+                }
+            }
+            
+            
+            wait(for: [expectation], timeout: 20.0)
         }
     }
     
