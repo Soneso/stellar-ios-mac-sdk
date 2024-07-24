@@ -25,6 +25,10 @@ public struct GetCustomerInfoRequest {
     /// (optional) the type of action the customer is being KYCd for. See the Type Specification: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#type-specification
     public var type:String?
     
+    /// (optional) The transaction id with which the customer's info is associated. When information
+    /// from the customer depends on the transaction (e.g., more information is required for larger amounts)
+    public var transactionId:String?
+    
     /// (optional) Defaults to en. Language code specified using ISO 639-1. Human readable descriptions, choices, and messages should be in this language.
     public var lang:String?
     
@@ -33,15 +37,5 @@ public struct GetCustomerInfoRequest {
     
     public init(jwt:String) {
         self.jwt = jwt
-    }
-    
-    /// Properties to encode and decode
-    private enum CodingKeys: String, CodingKey {
-        case id
-        case account
-        case memoType = "memo_type"
-        case memo
-        case type
-        case lang
     }
 }

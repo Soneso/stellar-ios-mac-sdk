@@ -29,6 +29,10 @@ public struct PutCustomerInfoRequest {
     /// (optional) The type of the customer as defined in the Type Specification: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#type-specification
     public var type:String?
     
+    /// (optional) The transaction id with which the customer's info is associated. When information
+    /// from the customer depends on the transaction (e.g., more information is required for larger amounts)
+    public var transactionId:String?
+    
     /// one or more of the fields listed in SEP-9
     public var fields:[KYCNaturalPersonFieldsEnum]?
     
@@ -58,6 +62,9 @@ public struct PutCustomerInfoRequest {
         }
         if let type = type {
             parameters["type"] = type.data(using: .utf8)
+        }
+        if let transactionId = transactionId {
+            parameters["transaction_id"] = transactionId.data(using: .utf8)
         }
         if let fields = fields {
             for field in fields {

@@ -109,7 +109,9 @@ public class KycService: NSObject {
         if let type = request.type {
             requestPath += "&type=\(type)"
         }
-        
+        if let transactionId = request.transactionId {
+            requestPath += "&transaction_id=\(transactionId)"
+        }
         if let lang = request.lang {
             requestPath += "&lang=\(lang)"
         }
