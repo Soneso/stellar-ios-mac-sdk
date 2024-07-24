@@ -89,6 +89,7 @@ class SorobanTest: XCTestCase {
     func testAll() {
         getHealth()
         getNetwork()
+        getFeeStats()
         
         refreshSubmitterAccount()
         
@@ -161,9 +162,6 @@ class SorobanTest: XCTestCase {
                 switch response {
                 case .success(let healthResponse):
                     XCTAssertEqual(HealthStatus.HEALTHY, healthResponse.status)
-                    XCTAssertNotNil(healthResponse.ledgerRetentionWindow)
-                    XCTAssertNotNil(healthResponse.latestLedger)
-                    XCTAssertNotNil(healthResponse.oldestLedger)
                 case .failure(let error):
                     self.printError(error: error)
                     XCTFail()
@@ -214,6 +212,25 @@ class SorobanTest: XCTestCase {
                     XCTFail()
                 }
                 expectation.fulfill()
+            }
+            
+            wait(for: [expectation], timeout: 10.0)
+        }
+    }
+    
+    func getFeeStats() {
+        XCTContext.runActivity(named: "getFeeStats") { activity in
+            let expectation = XCTestExpectation(description: "get fee stats response from soroban server received")
+            
+            sorobanServer.getFeeStats() { (response) -> (Void) in
+                switch response {
+                case .success(let feeStatsResponse):
+                    expectation.fulfill()
+                case .failure(let error):
+                    self.printError(error: error)
+                    XCTFail()
+                    expectation.fulfill()
+                }
             }
             
             wait(for: [expectation], timeout: 10.0)

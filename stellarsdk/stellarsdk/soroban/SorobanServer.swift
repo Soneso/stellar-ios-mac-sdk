@@ -19,6 +19,12 @@ public enum GetNetworkResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
+public enum GetFeeStatsResponseEnum {
+    case success(response: GetFeeStatsResponse)
+    case failure(error: SorobanRpcRequestError)
+}
+
+
 public enum GetLedgerEntriesResponseEnum {
     case success(response: GetLedgerEntriesResponse)
     case failure(error: SorobanRpcRequestError)
@@ -73,6 +79,7 @@ public enum GetContractDataResponseEnum {
 /// A closure to be called with the response from a post challenge request.
 public typealias GetHealthResponseClosure = (_ response:GetHealthResponseEnum) -> (Void)
 public typealias GetNetworkResponseClosure = (_ response:GetNetworkResponseEnum) -> (Void)
+public typealias GetFeeStatsResponseClosure = (_ response:GetFeeStatsResponseEnum) -> (Void)
 public typealias GetLedgerEntriesResponseClosure = (_ response:GetLedgerEntriesResponseEnum) -> (Void)
 public typealias GetLatestLedgerResponseClosure = (_ response:GetLatestLedgerResponseEnum) -> (Void)
 public typealias SimulateTransactionResponseClosure = (_ response:SimulateTransactionResponseEnum) -> (Void)
@@ -178,6 +185,39 @@ public class SorobanServer {
                         do {
                             let network = try self.jsonDecoder.decode(GetNetworkResponse.self, from: JSONSerialization.data(withJSONObject: result))
                             completion(.success(response: network))
+                        } catch {
+                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
+                        }
+                    } else if let error = response["error"] as? [String: Any] {
+                        completion(.failure(error: .errorResponse(errorData: error)))
+                    } else {
+                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    }
+                } else {
+                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                }
+            case .failure(let error):
+                completion(.failure(error: error))
+            }
+        }
+    }
+    
+    /// Statistics for charged inclusion fees. The inclusion fee statistics are calculated
+    /// from the inclusion fees that were paid for the transactions to be included onto the ledger.
+    /// For Soroban transactions and Stellar transactions, they each have their own inclusion fees
+    /// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
+    /// during network traffic surge.
+    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getFeeStats
+    public func getFeeStats(completion:@escaping GetFeeStatsResponseClosure) {
+        
+        request(body: try? buildRequestJson(method: "getFeeStats")) { (result) -> (Void) in
+            switch result {
+            case .success(let data):
+                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                    if let result = response["result"] as? [String: Any] {
+                        do {
+                            let feeStats = try self.jsonDecoder.decode(GetFeeStatsResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                            completion(.success(response: feeStats))
                         } catch {
                             completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
                         }
