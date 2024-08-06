@@ -18,7 +18,7 @@ public class ClaimableBalanceResponse: NSObject, Decodable {
     public var amount:String
     public var sponsor:String
     public var lastModifiedLedger:Int
-    public var lastModifiedTime:String
+    public var lastModifiedTime:String?
     public var pagingToken:String
     public var claimants:[ClaimantResponse]
    
@@ -56,7 +56,7 @@ public class ClaimableBalanceResponse: NSObject, Decodable {
         amount = try values.decode(String.self, forKey: .amount)
         sponsor = try values.decode(String.self, forKey: .sponsor)
         lastModifiedLedger = try values.decode(Int.self, forKey: .lastModifiedLedger)
-        lastModifiedTime = try values.decode(String.self, forKey: .lastModifiedTime)
+        lastModifiedTime = try values.decodeIfPresent(String.self, forKey: .lastModifiedTime)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
     }
 }
