@@ -169,6 +169,12 @@ public struct AnchorTransaction: Decodable {
     /// (optional) completion date and time of transaction
     public var completedAt:Date?
     
+    /// (optional) The date and time by when the user action is required. In certain statuses, such as pending_user_transfer_start or incomplete, anchor waits for the user action and
+    /// user_action_required_by field should be used to show the time anchors gives for the user to make an action before transaction will automatically be moved into
+    /// a different status (such as expired or to be refunded). user_action_required_by should only be specified for statuses where user action is required, and omitted for all other.
+    /// Anchor should specify the action waited on using message or more_info_url.
+    public var userActionRequiredBy:Date?
+    
     /// (optional) transaction_id on Stellar network of the transfer that either completed the deposit or started the withdrawal
     public var stellarTransactionId:String?
     
@@ -223,6 +229,7 @@ public struct AnchorTransaction: Decodable {
         case startedAt = "started_at"
         case updatedAt = "updated_at"
         case completedAt = "completed_at"
+        case userActionRequiredBy = "user_action_required_by"
         case stellarTransactionId = "stellar_transaction_id"
         case externalTransactionId = "external_transaction_id"
         case message
@@ -266,6 +273,7 @@ public struct AnchorTransaction: Decodable {
         startedAt = try values.decodeIfPresent(Date.self, forKey: .startedAt)
         updatedAt = try values.decodeIfPresent(Date.self, forKey: .updatedAt)
         completedAt = try values.decodeIfPresent(Date.self, forKey: .completedAt)
+        userActionRequiredBy = try values.decodeIfPresent(Date.self, forKey: .userActionRequiredBy)
         stellarTransactionId = try values.decodeIfPresent(String.self, forKey: .stellarTransactionId)
         externalTransactionId = try values.decodeIfPresent(String.self, forKey: .externalTransactionId)
         message = try values.decodeIfPresent(String.self, forKey: .message)

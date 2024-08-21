@@ -571,6 +571,7 @@ class TransferServerTestCase: XCTestCase {
                 XCTAssert(transactions.transactions[0].amountOut == "18.24")
                 XCTAssert(transactions.transactions[0].amountFee == "0.1")
                 XCTAssert(transactions.transactions[0].startedAt == Date(rfc3339String: "2017-03-20T17:05:32Z", fractionalSeconds: false))
+                XCTAssert(transactions.transactions[0].userActionRequiredBy == Date(rfc3339String: "2024-03-20T17:05:32Z", fractionalSeconds: false))
                 
                 var tx = transactions.transactions[1]
                 XCTAssert(tx.id == "52fys79f63dh3v2")
