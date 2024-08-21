@@ -194,6 +194,7 @@ class InteractiveServiceTestCase: XCTestCase {
                 XCTAssertEqual("18.24", tx.amountOut)
                 XCTAssertEqual("0.1", tx.amountFee)
                 XCTAssertEqual("2017-03-20T17:05:32Z", tx.startedAt.ISO8601Format())
+                XCTAssertEqual("2024-03-20T17:05:32Z", tx.userActionRequiredBy?.ISO8601Format())
                 XCTAssertNil(tx.claimableBalanceId)
             case .failure(let err):
                 XCTFail(err.localizedDescription)

@@ -40,7 +40,8 @@ class Sep24TransactionsResponseMock: ResponsesMock {
           "amount_out": "18.24",
           "amount_fee": "0.1",
           "started_at": "2017-03-20T17:05:32Z",
-          "claimable_balance_id": null
+          "claimable_balance_id": null,
+          "user_action_required_by": "2024-03-20T17:05:32Z"
         },
         {
           "id": "82fhs729f63dh0v4",
