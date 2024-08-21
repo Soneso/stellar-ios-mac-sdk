@@ -89,7 +89,9 @@ class TransferServerTestCase: XCTestCase {
     }
     
     func testDepositBTCSuccess() {
-        let request = DepositRequest(assetCode: "BTC", account: successBTCDepositAccount)
+        var request = DepositRequest(assetCode: "BTC", account: successBTCDepositAccount)
+        request.extraFields = ["extra_field1" : "test1", "extra_field2" : "test2"];
+        
         let expectation = XCTestExpectation(description: "Test deposit btc succcess")
         
         transferServerService.deposit(request: request) { (response) -> (Void) in
@@ -271,6 +273,7 @@ class TransferServerTestCase: XCTestCase {
         var request = DepositExchangeRequest(destinationAsset: "XYZ", sourceAsset: "iso4217:USD", amount: "100", account: successBankDepositAccount)
         request.quoteId = "282837"
         request.locationId = "999"
+        request.extraFields = ["extra_field1" : "test1", "extra_field2" : "test2"];
         
         let expectation = XCTestExpectation(description: "Test deposit exchange bank succcess")
         
@@ -304,6 +307,7 @@ class TransferServerTestCase: XCTestCase {
         request.dest =  successWithdrawAccount
         request.account = "GCIBUCGPOHWMMMFPFTDWBSVHQRT4DIBJ7AD6BZJYDITBK2LCVBYW7HUQ"
         request.amount = "120"
+        request.extraFields = ["extra_field1" : "test1", "extra_field2" : "test2"];
         
         let expectation = XCTestExpectation(description: "Test withdraw succcess")
         
@@ -426,6 +430,7 @@ class TransferServerTestCase: XCTestCase {
         var request = WithdrawExchangeRequest(sourceAsset: "XYZ", destinationAsset: "iso4217:USD", amount: "700", type: "bank_account")
         request.quoteId = "282837"
         request.locationId = "120"
+        request.extraFields = ["extra_field1" : "test1", "extra_field2" : "test2"];
         
         let expectation = XCTestExpectation(description: "Test withdraw exchange succcess")
         

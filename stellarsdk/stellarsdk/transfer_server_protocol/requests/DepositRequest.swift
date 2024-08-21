@@ -55,6 +55,10 @@ public struct DepositRequest {
     /// (optional)  id of the chosen location to drop off cash
     public var locationId:String?
     
+    /// (optional) can be used to provide extra fields for the request.
+    /// E.g. required fields from the /info endpoint that are not covered by the standard parameters.
+    public var extraFields: [String : String]?
+    
     /// jwt previously received from the anchor via the SEP-10 authentication flow
     public var jwt:String?
     

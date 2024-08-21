@@ -164,6 +164,11 @@ public class TransferServerService: NSObject {
         if let locationId = request.locationId {
             requestPath += "&location_id=\(locationId)"
         }
+        if let extraFields = request.extraFields {
+            extraFields.forEach {
+                requestPath += "&\($0.key)=\($0.value)"
+            }
+        }
         
         serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
             switch result {
@@ -226,6 +231,11 @@ public class TransferServerService: NSObject {
         }
         if let locationId = request.locationId {
             requestPath += "&location_id=\(locationId)"
+        }
+        if let extraFields = request.extraFields {
+            extraFields.forEach {
+                requestPath += "&\($0.key)=\($0.value)"
+            }
         }
         
         serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
@@ -298,6 +308,11 @@ public class TransferServerService: NSObject {
         if let locationId = request.locationId {
             requestPath += "&location_id=\(locationId)"
         }
+        if let extraFields = request.extraFields {
+            extraFields.forEach {
+                requestPath += "&\($0.key)=\($0.value)"
+            }
+        }
         
         serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
             switch result {
@@ -366,6 +381,11 @@ public class TransferServerService: NSObject {
         }
         if let locationId = request.locationId {
             requestPath += "&location_id=\(locationId)"
+        }
+        if let extraFields = request.extraFields {
+            extraFields.forEach {
+                requestPath += "&\($0.key)=\($0.value)"
+            }
         }
         
         serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
