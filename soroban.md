@@ -462,7 +462,7 @@ Find the complete code in the [Soroban Events Test](https://github.com/Soneso/st
 
 You can find the working code and more in the [Soroban Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban), the [Soroban Auth Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanAuthTest.swift) and in the [Atomic Swap Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanAtomicSwapTest.swift) of the iOS SDK. The wasm byte-code files can also be found there.
 
-Because Soroban and the iOS SDK support for Soroban are in development, errors may occur. For a better understanding of an error you can enable the ```SorobanServer``` logging:
+For a better understanding of an error you can enable the ```SorobanServer``` logging:
 
 ```swift
 sorobanServer.enableLogging = true
@@ -470,4 +470,55 @@ sorobanServer.enableLogging = true
 This will log the responses received from the Soroban-RPC server.
 
 If you find any issues please report them [here](https://github.com/Soneso/stellar-ios-mac-sdk/issues). It will help us to improve the SDK.
+
+### Soroban contract parser
+
+The soroban contract parser allows you to access the contract info stored in the contract bytecode.
+You can access the environment metadata, contract spec and contract meta.
+
+The environment metadata holds the interface version that should match the version of the soroban environment host functions supported.
+
+The contract spec contains a `SCSpecEntryXDR` for every function, struct, and union exported by the contract.
+
+In the contract meta, contracts may store any metadata in the entries that can be used by applications and tooling off-network.
+
+You can access the parser directly if you have the contract bytecode:
+
+```swift
+let byteCode = FileManager.default.contents(atPath: 'path to .wasm file')
+let contractInfo = try SorobanContractParser.parseContractByteCode(byteCode: byteCode)
+```
+
+Or you can use `SorobanServer` methods to load the contract code form the network and parse it.
+
+By contract id:
+```swift
+sorobanServer.getContractInfoForContractId(contractId: contractId) { (response) -> (Void) in
+    switch response {
+    case .success(let contractInfo):
+        // ...
+    case .rpcFailure(let error):
+        // ...
+    case .parsingFailure (let error):
+        // ...
+    }
+}
+```
+
+By wasm id:
+```swift
+sorobanServer.getContractInfoForWasmId(wasmId: wasmId) { (response) -> (Void) in
+    switch response {
+    case .success(let contractInfo):
+        // ...
+    case .rpcFailure(let error):
+        // ...
+    case .parsingFailure (let error):
+        // ...
+    }
+}
+```
+
+The parser returns a `SorobanContractInfo` object containing the parsed data.
+In [SorobanParserTest.swift](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanParserTest.swift) you can find a detailed example of how you can access the parsed data.
 
