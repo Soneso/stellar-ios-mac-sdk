@@ -1048,6 +1048,12 @@
 		8395F954246B529000B04E11 /* FeeBumpTransactionXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8395F94B246B44C500B04E11 /* FeeBumpTransactionXDR.swift */; };
 		8398C40924D8CAA100D6916C /* TxRep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8398C40824D8CAA100D6916C /* TxRep.swift */; };
 		8398C40A24D8CAA100D6916C /* TxRep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8398C40824D8CAA100D6916C /* TxRep.swift */; };
+		83A421402C8777ED00737C9A /* SorobanContractParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A4213F2C8777ED00737C9A /* SorobanContractParser.swift */; };
+		83A421412C8777ED00737C9A /* SorobanContractParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A4213F2C8777ED00737C9A /* SorobanContractParser.swift */; };
+		83ACC00E2C885D9100A71CF1 /* soroban_token_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83ACC00D2C885D9100A71CF1 /* soroban_token_contract.wasm */; };
+		83ACC00F2C885D9100A71CF1 /* soroban_token_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83ACC00D2C885D9100A71CF1 /* soroban_token_contract.wasm */; };
+		83ACC0112C885DC500A71CF1 /* SorobanParserTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83ACC0102C885DC500A71CF1 /* SorobanParserTest.swift */; };
+		83ACC0122C885DC500A71CF1 /* SorobanParserTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83ACC0102C885DC500A71CF1 /* SorobanParserTest.swift */; };
 		83AFD635234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD634234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift */; };
 		83AFD636234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD634234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift */; };
 		83AFD637234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD634234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift */; };
@@ -1861,6 +1867,9 @@
 		8395F947246B3CA100B04E11 /* MuxedAccountXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuxedAccountXDR.swift; sourceTree = "<group>"; };
 		8395F94B246B44C500B04E11 /* FeeBumpTransactionXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeBumpTransactionXDR.swift; sourceTree = "<group>"; };
 		8398C40824D8CAA100D6916C /* TxRep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxRep.swift; sourceTree = "<group>"; };
+		83A4213F2C8777ED00737C9A /* SorobanContractParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SorobanContractParser.swift; sourceTree = "<group>"; };
+		83ACC00D2C885D9100A71CF1 /* soroban_token_contract.wasm */ = {isa = PBXFileReference; lastKnownFileType = file; path = soroban_token_contract.wasm; sourceTree = "<group>"; };
+		83ACC0102C885DC500A71CF1 /* SorobanParserTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SorobanParserTest.swift; sourceTree = "<group>"; };
 		83AFD634234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathPaymentStrictReceiveOperation.swift; sourceTree = "<group>"; };
 		83AFD63C234FC60700A574D2 /* PathPaymentStrictSendOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathPaymentStrictSendOperation.swift; sourceTree = "<group>"; };
 		83AFD64C234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathPaymentStrictReceiveOperationResponse.swift; sourceTree = "<group>"; };
@@ -3148,6 +3157,7 @@
 				830DAB3C29AD501D00ED4E66 /* TopicFilter.swift */,
 				830DAB3F29AD50FA00ED4E66 /* PaginationOptions.swift */,
 				83B827802B306E1F0064D7CB /* SimulateTransactionRequest.swift */,
+				83A4213F2C8777ED00737C9A /* SorobanContractParser.swift */,
 			);
 			path = soroban;
 			sourceTree = "<group>";
@@ -3155,6 +3165,7 @@
 		835F0CE1297613C900793708 /* soroban */ = {
 			isa = PBXGroup;
 			children = (
+				83ACC00D2C885D9100A71CF1 /* soroban_token_contract.wasm */,
 				83B827752B28E3930064D7CB /* soroban_auth_contract.wasm */,
 				83B827762B28E3930064D7CB /* soroban_events_contract.wasm */,
 				83B827742B28E3930064D7CB /* soroban_hello_world_contract.wasm */,
@@ -3162,6 +3173,7 @@
 				830DAB5D29AE5AD400ED4E66 /* SorobanAuthTest.swift */,
 				830A8F0A29AE916300B30483 /* SorobanAtomicSwapTest.swift */,
 				830A8F1029AEC3F800B30483 /* SorobanEventsTest.swift */,
+				83ACC0102C885DC500A71CF1 /* SorobanParserTest.swift */,
 			);
 			path = soroban;
 			sourceTree = "<group>";
@@ -3904,6 +3916,7 @@
 			files = (
 				83B8277A2B28E3930064D7CB /* soroban_auth_contract.wasm in Resources */,
 				83B827782B28E3930064D7CB /* soroban_hello_world_contract.wasm in Resources */,
+				83ACC00F2C885D9100A71CF1 /* soroban_token_contract.wasm in Resources */,
 				83B8277C2B28E3930064D7CB /* soroban_events_contract.wasm in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3946,6 +3959,7 @@
 			files = (
 				83B827792B28E3930064D7CB /* soroban_auth_contract.wasm in Resources */,
 				83B827772B28E3930064D7CB /* soroban_hello_world_contract.wasm in Resources */,
+				83ACC00E2C885D9100A71CF1 /* soroban_token_contract.wasm in Resources */,
 				83B8277B2B28E3930064D7CB /* soroban_events_contract.wasm in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4351,6 +4365,7 @@
 				745DF4AB2052FF9C000D3660 /* RateLimitExceededErrorResponse.swift in Sources */,
 				745DF4AC2052FF9C000D3660 /* InternalServerErrorResponse.swift in Sources */,
 				745DF4AD2052FF9C000D3660 /* StaleHistoryErrorResponse.swift in Sources */,
+				83A421412C8777ED00737C9A /* SorobanContractParser.swift in Sources */,
 				745DF4B02052FF9C000D3660 /* TransactionLinksResponse.swift in Sources */,
 				745DF4B12052FF9C000D3660 /* OperationLinksResponse.swift in Sources */,
 				745DF4B22052FF9C000D3660 /* LedgerLinksResponse.swift in Sources */,
@@ -4631,6 +4646,7 @@
 				83DB2AFC2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */,
 				83DB2B022ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */,
 				83DB2AF32ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */,
+				83ACC0122C885DC500A71CF1 /* SorobanParserTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5036,6 +5052,7 @@
 				437D8A7D202EEDCC0024D031 /* Dictionary+HttpParams.swift in Sources */,
 				EC34A12820503CC5000FB042 /* HMAC+Foundation.swift in Sources */,
 				4300C17F2032F5C500DC5E49 /* OffersService.swift in Sources */,
+				83A421402C8777ED00737C9A /* SorobanContractParser.swift in Sources */,
 				EC34A11B20503CC5000FB042 /* Cipher.swift in Sources */,
 				EC34A15920503CF6000FB042 /* Ed25519Derivation.swift in Sources */,
 				74824B1F203173F000CD0270 /* OperationXDR.swift in Sources */,
@@ -5222,6 +5239,7 @@
 				744E75E42028DBD500170D57 /* EffectsRemoteTestCase.swift in Sources */,
 				437D8A92202F15DC0024D031 /* TradesTestCase.swift in Sources */,
 				C69B1CAB219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift in Sources */,
+				83ACC0112C885DC500A71CF1 /* SorobanParserTest.swift in Sources */,
 				4367E5FE203ED15500C0AB4F /* OffersResponsesMock.swift in Sources */,
 				83AFD64E234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift in Sources */,
 				833C67532B8F688000E034C6 /* WithdrawExchangeResponseMock.swift in Sources */,

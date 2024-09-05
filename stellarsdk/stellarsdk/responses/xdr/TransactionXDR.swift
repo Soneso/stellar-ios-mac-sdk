@@ -150,7 +150,7 @@ public enum ContractIDPreimageXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let type = ContractIDPreimageType(rawValue: discriminant)!
+        let type = ContractIDPreimageType(rawValue: discriminant)
         
         switch type {
         case .fromAddress:
@@ -159,6 +159,8 @@ public enum ContractIDPreimageXDR: XDRCodable {
         case .fromAsset:
             let asset = try container.decode(AssetXDR.self)
             self = .fromAsset(asset)
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid ContractIDPreimageXDR discriminant")
         }
     }
     
@@ -264,7 +266,7 @@ public enum HostFunctionXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let type = HostFunctionType(rawValue: discriminant)!
+        let type = HostFunctionType(rawValue: discriminant)
         
         switch type {
         case .invokeContract:
@@ -276,6 +278,8 @@ public enum HostFunctionXDR: XDRCodable {
         case .uploadContractWasm:
             let wasm = try container.decode(Data.self)
             self = .uploadContractWasm(wasm)
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid HostFunctionXDR discriminant")
         }
     }
     
@@ -342,7 +346,7 @@ public enum SorobanAuthorizedFunctionXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let type = SorobanAuthorizedFunctionType(rawValue: discriminant)!
+        let type = SorobanAuthorizedFunctionType(rawValue: discriminant)
         
         switch type {
         case .contractFn:
@@ -351,6 +355,8 @@ public enum SorobanAuthorizedFunctionXDR: XDRCodable {
         case .contractHostFn:
             let contractHostFn = try container.decode(CreateContractArgsXDR.self)
             self = .contractHostFn(contractHostFn)
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid SorobanAuthorizedFunctionXDR discriminant")
         }
     }
     
@@ -466,7 +472,7 @@ public enum SorobanCredentialsXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let type = SorobanCredentialsType(rawValue: discriminant)!
+        let type = SorobanCredentialsType(rawValue: discriminant)
         
         switch type {
         case .sourceAccount:
@@ -474,6 +480,8 @@ public enum SorobanCredentialsXDR: XDRCodable {
         case .address:
             let address = try container.decode(SorobanAddressCredentialsXDR.self)
             self = .address(address)
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid SorobanCredentialsXDR discriminant")
         }
     }
     

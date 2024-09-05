@@ -26,15 +26,17 @@ public enum RestoreFootprintResultXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let code = RestoreFootprintResultCode(rawValue: discriminant)!
+        let code = RestoreFootprintResultCode(rawValue: discriminant)
         
         switch code {
         case .success:
             self = .success
         case .malformed:
             self = .malformed
-        default:
+        case .resourceLimitExceeded:
             self = .resourceLimitExceeded
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid RestoreFootprintResultXDR discriminant")
         }
     }
     

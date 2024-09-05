@@ -27,7 +27,7 @@ public enum ExtendFootprintTTLResultXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let code = ExtendFootprintTTLResultCode(rawValue: discriminant)!
+        let code = ExtendFootprintTTLResultCode(rawValue: discriminant)
         
         switch code {
         case .success:
@@ -36,8 +36,10 @@ public enum ExtendFootprintTTLResultXDR: XDRCodable {
             self = .malformed
         case .insufficientRefundableFee:
             self = .insufficientRefundableFee
-        default:
+        case .resourceLimitExceeded:
             self = .resourceLimitExceeded
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid ExtendFootprintTTLResultXDR discriminant")
         }
     }
     

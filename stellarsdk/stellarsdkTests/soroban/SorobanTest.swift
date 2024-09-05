@@ -128,7 +128,9 @@ class SorobanTest: XCTestCase {
         
         // test contract code loading from soroban
         loadContractCodeByWasmId()
+        loadContractInfoByWasmId()
         loadContractCodeByContractId()
+        loadContractInfoByContractId()
         
         // test invoke deployed contract
         refreshSubmitterAccount()
@@ -749,6 +751,29 @@ class SorobanTest: XCTestCase {
         }
     }
     
+    func loadContractInfoByWasmId() {
+        XCTContext.runActivity(named: "getContractInfoByWasmId") { activity in
+            let expectation = XCTestExpectation(description: "loads contract info from soroban by wasm id")
+            self.sorobanServer.getContractInfoForWasmId(wasmId: self.wasmId!) { (response) -> (Void) in
+                switch response {
+                case .success(let response):
+                    XCTAssertTrue(response.specEntries.count > 0)
+                    XCTAssertTrue(response.metaEntries.count > 0)
+                    expectation.fulfill()
+                case .rpcFailure(let error):
+                    self.printError(error: error)
+                    XCTFail()
+                    expectation.fulfill()
+                case .parsingFailure (let error):
+                    self.printParserError(error: error)
+                    XCTFail()
+                    expectation.fulfill()
+                }
+            }
+            wait(for: [expectation], timeout: 10.0)
+        }
+    }
+    
     func loadContractCodeByContractId() {
         XCTContext.runActivity(named: "getCreatedContractCode") { activity in
             let expectation = XCTestExpectation(description: "loads contract code from soroban by contract id")
@@ -759,6 +784,29 @@ class SorobanTest: XCTestCase {
                     expectation.fulfill()
                 case .failure(let error):
                     self.printError(error: error)
+                    XCTFail()
+                    expectation.fulfill()
+                }
+            }
+            wait(for: [expectation], timeout: 10.0)
+        }
+    }
+    
+    func loadContractInfoByContractId() {
+        XCTContext.runActivity(named: "getContractInfoByContractId") { activity in
+            let expectation = XCTestExpectation(description: "loads contract info from soroban by contract id")
+            try! self.sorobanServer.getContractInfoForContractId(contractId: self.contractId!) { (response) -> (Void) in
+                switch response {
+                case .success(let response):
+                    XCTAssertTrue(response.specEntries.count > 0)
+                    XCTAssertTrue(response.metaEntries.count > 0)
+                    expectation.fulfill()
+                case .rpcFailure(let error):
+                    self.printError(error: error)
+                    XCTFail()
+                    expectation.fulfill()
+                case .parsingFailure (let error):
+                    self.printParserError(error: error)
                     XCTFail()
                     expectation.fulfill()
                 }
@@ -1091,6 +1139,17 @@ class SorobanTest: XCTestCase {
             print(err)
         case .parsingResponseFailed(let message, _):
             print(message)
+        }
+    }
+    
+    func printParserError(error:SorobanContractParserError) {
+        switch error {
+        case .invalidByteCode:
+            print("Parsing faild: invalid byte code")
+        case .environmentMetaNotFound:
+            print("Parsing faild: env meta not found ")
+        case .specEntriesNotFound:
+            print("Parsing faild: spec entries not found ")
         }
     }
     

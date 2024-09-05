@@ -75,6 +75,12 @@ public enum GetContractCodeResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
+public enum GetContractInfoEnum {
+    case success(response: SorobanContractInfo)
+    case parsingFailure(error: SorobanContractParserError)
+    case rpcFailure(error: SorobanRpcRequestError)
+}
+
 public enum GetAccountResponseEnum {
     case success(response: Account)
     case failure(error: SorobanRpcRequestError)
@@ -99,6 +105,7 @@ public typealias GetTransactionsResponseClosure = (_ response:GetTransactionsRes
 public typealias GetEventsResponseClosure = (_ response:GetEventsResponseEnum) -> (Void)
 public typealias GetNonceResponseClosure = (_ response:GetNonceResponseEnum) -> (Void)
 public typealias GetContractCodeResponseClosure = (_ response:GetContractCodeResponseEnum) -> (Void)
+public typealias GetContractInfoClosure = (_ response:GetContractInfoEnum) -> (Void)
 public typealias GetAccountResponseClosure = (_ response:GetAccountResponseEnum) -> (Void)
 public typealias GetContractDataResponseClosure = (_ response:GetContractDataResponseEnum) -> (Void)
 
@@ -390,6 +397,46 @@ public class SorobanServer {
             }
         } else {
             completion(.failure(error: .requestFailed(message: "could not create ledger key")))
+        }
+    }
+    
+    /// Loads contract source byte code for the given contractId and extracts
+    /// the information (Environment Meta, Contract Spec, Contract Meta).
+    public func getContractInfoForContractId(contractId: String, completion:@escaping GetContractInfoClosure) throws {
+        try getContractCodeForContractId(contractId: contractId) { (response) -> (Void) in
+            switch response {
+            case .success(let response):
+                do {
+                    let info = try SorobanContractParser.parseContractByteCode(byteCode: response.code)
+                    completion(.success(response: info))
+                } catch let error as SorobanContractParserError {
+                    completion(.parsingFailure(error: error))
+                } catch {
+                    completion(.parsingFailure(error: SorobanContractParserError.invalidByteCode))
+                }
+            case .failure(let error):
+                completion(.rpcFailure(error: error))
+            }
+        }
+    }
+    
+    /// Loads contract source byte code for the given wasm id and extracts
+    /// the information (Environment Meta, Contract Spec, Contract Meta).
+    public func getContractInfoForWasmId(wasmId: String, completion:@escaping GetContractInfoClosure) {
+        getContractCodeForWasmId(wasmId: wasmId) { (response) -> (Void) in
+            switch response {
+            case .success(let response):
+                do {
+                    let info = try SorobanContractParser.parseContractByteCode(byteCode: response.code)
+                    completion(.success(response: info))
+                } catch let error as SorobanContractParserError {
+                    completion(.parsingFailure(error: error))
+                } catch {
+                    completion(.parsingFailure(error: SorobanContractParserError.invalidByteCode))
+                }
+            case .failure(let error):
+                completion(.rpcFailure(error: error))
+            }
         }
     }
     

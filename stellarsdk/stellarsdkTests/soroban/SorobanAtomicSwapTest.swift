@@ -18,11 +18,11 @@ class SorobanAtomicSwapTest: XCTestCase {
     let sdk = StellarSDK.testNet() // StellarSDK.futureNet()
     let network =  Network.testnet // Network.futurenet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
-    let aliceKeyPair = try! KeyPair(secretSeed: "SDQMCQCB6DKGVQSGWMYFPWGGGBXIPL4OFM7PUNYIDT4CT6EV66QPOCHN") // GBD4MKP7NBQRZZWKYFW3ZWNOVCR27JMGUJGI3AGRHJU4CXFDFZCJ3TEK
-    let bobKeyPair = try! KeyPair(secretSeed: "SB737XYM7WOAAENHA3EDOW4TK45ASHCZU5K6A7Q4HBNSCDEE5DADC73Z") // GCTARWDZGMSZQXTK6RVZM7TLFNDJ4UQYORPYAXHRUVYSYDOFEWLP3BD4
-    let atomicSwapContractId = "420f5917099e6ee2015adae949c2e2dff6492fd626fbcdeef3593cfd566fd092"
-    let tokenAId  = "d361930c186c22006a919e6e2e083c587bac4b3718cdd72cbc0366829834152c"
-    let tokenBId = "b6d208a3bf0b08ca12d4e1d2a39525caa9e866a0ba396ebe60307f9fbafd451f"
+    let aliceKeyPair = try! KeyPair(secretSeed: "SB5HSDMRVI2EQCHAJZAKAZQ3ZJPV4XE5JYWJ33INVAWZI3H22CBLCPQI") // GAJ7SO3AKJSY7ESWYCMEX36F25EEHWO44VASGCIRVGOSUQC7J5BGNUJ4
+    let bobKeyPair = try! KeyPair(secretSeed: "SB2YFAESRTAQKEWBWY3BG7ZV47SQYCBBUFCKW3P3CEF5DYITF4U2YEGD") // GAMLJPFPGKDZ2JLUEDL27KEFT6LN5HKHLVNVR6TUNM66Z4BUEKUS2O4Z
+    let atomicSwapContractId = "5cd56a3e9f0f667cbc510e6d459f9b988152a975a11176cb1ae67108dde961e1"
+    let tokenAId  = "5f75959d58c1dde770dac6143507f95e1e9d2208e696f69076f91383557e0aa7"
+    let tokenBId = "4a3839fc364af5cda44ca03419eaec74e19bce86a96537c18e455bfa6bfc2d12"
     let swapFunctionName = "swap"
     var invokeTransactionId:String?
     var submitterAccount:Account?
@@ -49,6 +49,8 @@ class SorobanAtomicSwapTest: XCTestCase {
         getLatestLedger()
         try invokeAtomicSwap()
         getInvokeTransactionStatus()
+        loadContractInfoByContractId(contractId: self.tokenBId)
+        //loadContractInfoByContractId(contractId: self.atomicSwapContractId)
     }
     
     func getSubmitterAccount() {
@@ -213,6 +215,41 @@ class SorobanAtomicSwapTest: XCTestCase {
             print(err)
         case .parsingResponseFailed(let message, _):
             print(message)
+        }
+    }
+    
+    func loadContractInfoByContractId(contractId: String) {
+        XCTContext.runActivity(named: "getContractInfoByContractId") { activity in
+            let expectation = XCTestExpectation(description: "loads contract info from soroban by contract id")
+            try! self.sorobanServer.getContractInfoForContractId(contractId: contractId) { (response) -> (Void) in
+                switch response {
+                case .success(let response):
+                    XCTAssertTrue(response.specEntries.count > 0)
+                    XCTAssertTrue(response.metaEntries.count > 0)
+                    print("SPEC ENTRIES \(response.specEntries.count)")
+                    expectation.fulfill()
+                case .rpcFailure(let error):
+                    self.printError(error: error)
+                    XCTFail()
+                    expectation.fulfill()
+                case .parsingFailure (let error):
+                    self.printParserError(error: error)
+                    XCTFail()
+                    expectation.fulfill()
+                }
+            }
+            wait(for: [expectation], timeout: 10.0)
+        }
+    }
+    
+    func printParserError(error:SorobanContractParserError) {
+        switch error {
+        case .invalidByteCode:
+            print("Parsing faild: invalid byte code")
+        case .environmentMetaNotFound:
+            print("Parsing faild: env meta not found ")
+        case .specEntriesNotFound:
+            print("Parsing faild: spec entries not found ")
         }
     }
 }

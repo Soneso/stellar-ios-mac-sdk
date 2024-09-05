@@ -31,7 +31,7 @@ public enum InvokeHostFunctionResultXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let code = InvokeHostFunctionResultCode(rawValue: discriminant)!
+        let code = InvokeHostFunctionResultCode(rawValue: discriminant)
         
         switch code {
         case .success:
@@ -45,8 +45,10 @@ public enum InvokeHostFunctionResultXDR: XDRCodable {
             self = .resourceLimitExceeded
         case .entryArchived:
             self = .entryExpired
-        default:
+        case .insufficientRefundableFee:
             self = .insufficientRefundableFee
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid InvokeHostFunctionResultXDR discriminant")
         }
     }
     

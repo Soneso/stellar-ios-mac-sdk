@@ -145,7 +145,7 @@ public enum SCErrorXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let type = SCErrorType(rawValue: discriminant)!
+        let type = SCErrorType(rawValue: discriminant)
         
         switch type {
         case .contract:
@@ -170,6 +170,8 @@ public enum SCErrorXDR: XDRCodable {
         case .auth:
             let errCode = try container.decode(Int32.self)
             self = .auth(errCode)
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid SCErrorXDR discriminant")
         }
     }
     
@@ -246,7 +248,7 @@ public enum SCAddressXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let type = SCAddressType(rawValue: discriminant)!
+        let type = SCAddressType(rawValue: discriminant)
         
         switch type {
         case .account:
@@ -255,6 +257,8 @@ public enum SCAddressXDR: XDRCodable {
         case .contract:
             let contract = try container.decode(WrappedData32.self)
             self = .contract(contract)
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid SCAddressXDR discriminant")
         }
     }
     
@@ -343,7 +347,7 @@ public enum SCValXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let type = SCValType(rawValue: discriminant)!
+        let type = SCValType(rawValue: discriminant)
         
         switch type {
         case .bool:
@@ -422,6 +426,8 @@ public enum SCValXDR: XDRCodable {
         case .ledgerKeyNonce:
             let ledgerKeyNonce = try container.decode(SCNonceKeyXDR.self)
             self = .ledgerKeyNonce(ledgerKeyNonce)
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid SCValXDR discriminant")
         }
     }
     
@@ -840,7 +846,7 @@ public enum ContractExecutableXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let type = ContractExecutableType(rawValue: discriminant)!
+        let type = ContractExecutableType(rawValue: discriminant)
         
         switch type {
         case .wasm:
@@ -848,6 +854,8 @@ public enum ContractExecutableXDR: XDRCodable {
             self = .wasm(wasmHash)
         case .stellarAsset:
             self = .token
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid ContractExecutableXDR discriminant")
         }
     }
     

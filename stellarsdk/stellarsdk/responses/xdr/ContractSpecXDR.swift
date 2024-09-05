@@ -206,7 +206,7 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let type = SCSpecType(rawValue: discriminant)!
+        let type = SCSpecType(rawValue: discriminant)
         
         switch type {
         case .bool:
@@ -264,8 +264,10 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
         case .udt:
             let udt = try container.decode(SCSpecTypeUDTXDR.self)
             self = .udt(udt)
-        default:
+        case .val:
             self = .val
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid SCSpecTypeDefXDR discriminant")
         }
     }
     
@@ -411,9 +413,9 @@ public struct SCSpecUDTUnionCaseVoidV0XDR: XDRCodable {
 public struct SCSpecUDTUnionCaseTupleV0XDR: XDRCodable {
     public let doc: String
     public let name: String
-    public let type: SCSpecTypeDefXDR
+    public let type: [SCSpecTypeDefXDR]
     
-    public init(doc: String, name:String, type:SCSpecTypeDefXDR) {
+    public init(doc: String, name:String, type:[SCSpecTypeDefXDR]) {
         self.doc = doc
         self.name = name
         self.type = type
@@ -423,7 +425,7 @@ public struct SCSpecUDTUnionCaseTupleV0XDR: XDRCodable {
         var container = try decoder.unkeyedContainer()
         doc = try container.decode(String.self)
         name = try container.decode(String.self)
-        type = try container.decode(SCSpecTypeDefXDR.self)
+        type = try decodeArray(type: SCSpecTypeDefXDR.self, dec: decoder)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -448,7 +450,7 @@ public enum SCSpecUDTUnionCaseV0XDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let kind = SCSpecUDTUnionCaseV0Kind(rawValue: discriminant)!
+        let kind = SCSpecUDTUnionCaseV0Kind(rawValue: discriminant)
         
         switch kind {
         case .voidV0:
@@ -457,6 +459,8 @@ public enum SCSpecUDTUnionCaseV0XDR: XDRCodable {
         case .tupleV0:
             let tupleV0 = try container.decode(SCSpecUDTUnionCaseTupleV0XDR.self)
             self = .tupleV0(tupleV0)
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid SCSpecUDTUnionCaseV0Kind discriminant")
         }
     }
     
@@ -673,7 +677,7 @@ public enum SCSpecEntryXDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let discriminant = try container.decode(Int32.self)
-        let kind = SCSpecEntryKind(rawValue: discriminant)!
+        let kind = SCSpecEntryKind(rawValue: discriminant)
         
         switch kind {
         case .functionV0:
@@ -691,6 +695,8 @@ public enum SCSpecEntryXDR: XDRCodable {
         case .errorEnumV0:
             let errorEnumV0 = try container.decode(SCSpecUDTErrorEnumV0XDR.self)
             self = .errorEnumV0(errorEnumV0)
+        case .none:
+            throw StellarSDKError.decodingError(message: "invaid SCSpecEntryXDR discriminant")
         }
     }
     
