@@ -42,7 +42,16 @@ public class OffersService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
+    @available(*, renamed: "getOffers(forAccount:cursor:order:limit:)")
     open func getOffers(forAccount accountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {
+        Task {
+            let result = await getOffers(forAccount: accountId, cursor: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    open func getOffers(forAccount accountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<OfferResponse>.ResponseEnum {
         var requestPath = "/accounts/" + accountId + "/offers"
         
         var params = Dictionary<String,String>()
@@ -51,11 +60,11 @@ public class OffersService: NSObject {
         if let limit = limit { params["limit"] = String(limit) }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        getOffersFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await getOffersFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
     /// People on the Stellar network can make offers to buy or sell assets. This endpoint represents all the current offers, allowing filtering by seller, selling_asset or buying_asset.
@@ -76,7 +85,16 @@ public class OffersService: NSObject {
     /// - Parameter order: Optional. The order in which to return rows, “asc” or “desc”, ordered by assetCode then by assetIssuer.
     /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
     ///
+    @available(*, renamed: "getOffers(seller:sellingAssetType:sellingAssetCode:sellingAssetIssuer:buyingAssetType:buyingAssetCode:buyingAssetIssuer:sponsor:cursor:order:limit:)")
     open func getOffers(seller:String?, sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, sponsor:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {
+        Task {
+            let result = await getOffers(seller: seller, sellingAssetType: sellingAssetType, sellingAssetCode: sellingAssetCode, sellingAssetIssuer: sellingAssetIssuer, buyingAssetType: buyingAssetType, buyingAssetCode: buyingAssetCode, buyingAssetIssuer: buyingAssetIssuer, sponsor: sponsor, cursor: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    open func getOffers(seller:String?, sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, sponsor:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<OfferResponse>.ResponseEnum {
         var requestPath = "/offers"
         
         var params = Dictionary<String,String>()
@@ -93,26 +111,34 @@ public class OffersService: NSObject {
         if let limit = limit { params["limit"] = String(limit) }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        getOffersFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await getOffersFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    @available(*, renamed: "getOffersFromUrl(url:)")
     func getOffersFromUrl(url:String, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {
-        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let trades = try self.jsonDecoder.decode(PageResponse<OfferResponse>.self, from: data)
-                    response(.success(details: trades))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
+        Task {
+            let result = await getOffersFromUrl(url: url)
+            response(result)
+        }
+    }
+    
+    
+    func getOffersFromUrl(url:String) async -> PageResponse<OfferResponse>.ResponseEnum {
+        let result = await serviceHelper.GETRequestFromUrl(url: url)
+        switch result {
+        case .success(let data):
+            do {
+                let trades = try self.jsonDecoder.decode(PageResponse<OfferResponse>.self, from: data)
+                return .success(page: trades)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
     

@@ -13,42 +13,39 @@ class DataForAccountRemoteTestCase: XCTestCase {
     let sdk = StellarSDK()
     let testKeyPair = try! KeyPair.generateRandomKeyPair()
 
-    override func setUp() {
-        super.setUp()
-        let expectation = XCTestExpectation(description: "accounts prepared for tests")
-
+    override func setUp() async throws {
+        try await super.setUp()
         let testAccountId = testKeyPair.accountId
         let manageDataOp = ManageDataOperation(sourceAccountId: testAccountId, name: "soneso", data: "is super".data(using: .utf8))
         
-        sdk.accounts.createTestAccount(accountId: testAccountId) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                self.sdk.accounts.getAccountDetails(accountId: testAccountId) { (response) -> (Void) in
-                    switch response {
-                    case .success(let accountResponse):
-                        let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                          operations: [manageDataOp],
-                                                          memo: Memo.none)
-                        try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
-                        
-                        try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(let response):
-                                print("setUp: Transaction successfully sent. Hash:\(response.transactionHash)")
-                                expectation.fulfill()
-                            default:
-                                XCTFail()
-                            }
-                        }
-                    case .failure(_):
-                        XCTFail()
-                    }
+        let response = await sdk.accounts.createTestAccount(accountId: testAccountId)
+        switch response {
+        case .success(_):
+            let accDetailsRes = await self.sdk.accounts.getAccountDetails(accountId: testAccountId);
+            switch accDetailsRes {
+            case .success(let accountResponse):
+                let transaction = try! Transaction(sourceAccount: accountResponse,
+                                                  operations: [manageDataOp],
+                                                  memo: Memo.none)
+                try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
+                let submitTxRes = await self.sdk.transactions.submitTransaction(transaction: transaction)
+                switch submitTxRes {
+                case .success(let details):
+                    XCTAssert(details.operationCount > 0)
+                case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+                    XCTFail("destination account \(destinationAccountId) requires memo")
+                case .failure(error: let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+                    XCTFail("submit transaction error")
                 }
-            case .failure(_):
-                XCTFail()
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+                XCTFail("could not load account details for test account: \(testAccountId)")
             }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create test account: \(testAccountId)")
         }
-        wait(for: [expectation], timeout: 25.0)
     }
     
     override func tearDown() {
@@ -56,19 +53,16 @@ class DataForAccountRemoteTestCase: XCTestCase {
         super.tearDown()
     }
 
-    func testGetDataForAccount() {
-        let expectation = XCTestExpectation(description: "Get data value for a given account and key")
-        sdk.accounts.getDataForAccount(accountId: testKeyPair.accountId, key:"soneso") { (response) -> (Void) in
-            switch response {
-            case .success(let dataForAccount):
-                XCTAssertEqual(dataForAccount.value.base64Decoded(), "is super")
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetDataForAccount", horizonRequestError: error)
-                XCTFail()
-            }
-            expectation.fulfill()
+    func testGetDataForAccount() async {
+        
+        let dataResponse = await sdk.accounts.getDataForAccount(accountId: testKeyPair.accountId, key:"soneso");
+        switch dataResponse {
+        case .success(let dataForAccount):
+            XCTAssertEqual(dataForAccount.value.base64Decoded(), "is super")
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetDataForAccount()", horizonRequestError: error)
+            XCTFail()
         }
-        wait(for: [expectation], timeout: 15.0)
     }
 }
 

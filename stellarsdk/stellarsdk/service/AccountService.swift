@@ -56,24 +56,32 @@ open class AccountService: NSObject {
     ///     - 'HorizonRequestError.notFound' if there is no account whose ID matches the 'accountId' parameter.
     ///     - other 'HorizonRequestError' errors depending on the error case.
     ///
+    @available(*, renamed: "getAccountDetails(accountId:)")
     open func getAccountDetails(accountId: String, response: @escaping AccountResponseClosure) {
+        Task {
+            let result = await getAccountDetails(accountId: accountId)
+            response(result)
+        }
+    }
+    
+    
+    open func getAccountDetails(accountId: String) async -> AccountResponseEnum {
         var requestPath = "/accounts/\(accountId)"
         if accountId.hasPrefix("M"), let mux = try? accountId.decodeMuxedAccount() {
             requestPath = "/accounts/\(mux.ed25519AccountId)"
         }
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let responseMessage = try self.jsonDecoder.decode(AccountResponse.self, from: data)
-                    response(.success(details:responseMessage))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                response(.failure(error:error))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let responseMessage = try self.jsonDecoder.decode(AccountResponse.self, from: data)
+                return .success(details:responseMessage)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
 
@@ -88,22 +96,30 @@ open class AccountService: NSObject {
     ///     - A 'HorizonRequestError.notFound' error if there is no account whose ID matches the 'accountId' parameter or there is no data field with a given key.
     ///     - other 'HorizonRequestError' errors depending on the error case.
     ///
+    @available(*, renamed: "getDataForAccount(accountId:key:)")
     open func getDataForAccount(accountId: String, key: String, response: @escaping DataForAccountResponseClosure) {
+        Task {
+            let result = await getDataForAccount(accountId: accountId, key: key)
+            response(result)
+        }
+    }
+    
+    
+    open func getDataForAccount(accountId: String, key: String) async -> DataForAccountResponseEnum {
         let requestPath = "/accounts/\(accountId)/data/\(key)"
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let responseMessage = try self.jsonDecoder.decode(DataForAccountResponse.self, from: data)
-                    response(.success(details:responseMessage))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                response(.failure(error:error))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let responseMessage = try self.jsonDecoder.decode(DataForAccountResponse.self, from: data)
+                return .success(details:responseMessage)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
     
@@ -118,7 +134,16 @@ open class AccountService: NSObject {
     ///
     /// - Parameter response:  The closure to be called upon response.
     ///
+    @available(*, renamed: "createTestAccount(accountId:)")
     open func createTestAccount(accountId:String, response: @escaping CreateTestAccountClosure) {
+        Task {
+            let result = await createTestAccount(accountId: accountId)
+            response(result)
+        }
+    }
+    
+    
+    open func createTestAccount(accountId:String) async -> CreateTestAccountResponseEnum {
         
         let url = URL(string: "https://horizon-testnet.stellar.org/friendbot")
         let components = NSURLComponents(url: url!, resolvingAgainstBaseURL: false)
@@ -126,21 +151,23 @@ open class AccountService: NSObject {
         components?.queryItems = [item]
         
         
-        let task = URLSession.shared.dataTask(with: components!.url!) { data, httpResponse, error in
-            guard error == nil else {
-                response(.failure(error: HorizonRequestError.requestFailed(message: error!.localizedDescription)))
-                return
-            }
-            guard let data = data else {
-                response(.failure(error: HorizonRequestError.emptyResponse))
-                return
+        return await withCheckedContinuation { continuation in
+            let task = URLSession.shared.dataTask(with: components!.url!) { data, httpResponse, error in
+                guard error == nil else {
+                    continuation.resume(returning: .failure(error: HorizonRequestError.requestFailed(message: error!.localizedDescription)))
+                    return
+                }
+                guard let data1 = data else {
+                    continuation.resume(returning: .failure(error: HorizonRequestError.emptyResponse))
+                    return
+                }
+                
+                let json = try! JSONSerialization.jsonObject(with: data1, options: [])
+                continuation.resume(returning: .success(details: json))
             }
             
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
-            response(.success(details: json))
+            task.resume()
         }
-        
-        task.resume()
     }
     
     /// Creates an account on futurenet
@@ -152,7 +179,16 @@ open class AccountService: NSObject {
     ///
     /// - Parameter response:  The closure to be called upon response.
     ///
+    @available(*, renamed: "createFutureNetTestAccount(accountId:)")
     open func createFutureNetTestAccount(accountId:String, response: @escaping CreateTestAccountClosure) {
+        Task {
+            let result = await createFutureNetTestAccount(accountId: accountId)
+            response(result)
+        }
+    }
+    
+    
+    open func createFutureNetTestAccount(accountId:String) async -> CreateTestAccountResponseEnum {
         
         let url = URL(string: "https://friendbot-futurenet.stellar.org")
         let components = NSURLComponents(url: url!, resolvingAgainstBaseURL: false)
@@ -160,21 +196,23 @@ open class AccountService: NSObject {
         components?.queryItems = [item]
         
         
-        let task = URLSession.shared.dataTask(with: components!.url!) { data, httpResponse, error in
-            guard error == nil else {
-                response(.failure(error: HorizonRequestError.requestFailed(message: error!.localizedDescription)))
-                return
-            }
-            guard let data = data else {
-                response(.failure(error: HorizonRequestError.emptyResponse))
-                return
+        return await withCheckedContinuation { continuation in
+            let task = URLSession.shared.dataTask(with: components!.url!) { data, httpResponse, error in
+                guard error == nil else {
+                    continuation.resume(returning: .failure(error: HorizonRequestError.requestFailed(message: error!.localizedDescription)))
+                    return
+                }
+                guard let data1 = data else {
+                    continuation.resume(returning: .failure(error: HorizonRequestError.emptyResponse))
+                    return
+                }
+                
+                let json = try! JSONSerialization.jsonObject(with: data1, options: [])
+                continuation.resume(returning: .success(details: json))
             }
             
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
-            response(.success(details: json))
+            task.resume()
         }
-        
-        task.resume()
     }
     
     /// This endpoint allows filtering accounts who have a given signer or have a trustline to an asset. The result is a list of accounts.
@@ -192,8 +230,16 @@ open class AccountService: NSObject {
     /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
     /// - Parameter order: Optional. The order in which to return rows, “asc” or “desc”, ordered by assetCode then by assetIssuer.
     /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
-    ///
+    @available(*, renamed: "getAccounts(signer:asset:sponsor:liquidityPoolId:cursor:order:limit:)")
     open func getAccounts(signer:String? = nil, asset:String? = nil, sponsor:String? = nil, liquidityPoolId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<AccountResponse>.ResponseClosure) {
+        Task {
+            let result = await getAccounts(signer: signer, asset: asset, sponsor: sponsor, liquidityPoolId: liquidityPoolId, cursor: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    open func getAccounts(signer:String? = nil, asset:String? = nil, sponsor:String? = nil, liquidityPoolId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<AccountResponse>.ResponseEnum {
         var requestPath = "/accounts"
         
         var params = Dictionary<String,String>()
@@ -206,30 +252,38 @@ open class AccountService: NSObject {
         if let limit = limit { params["limit"] = String(limit) }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        getAccountsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await getAccountsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
     /// Loads accounts for a given url if valid. E.g. for a "next" link from a PageResponse<AccountResponse> object.
     ///
     /// - Parameter url: The url to be used to load the accounts.
     ///
+    @available(*, renamed: "getAccountsFromUrl(url:)")
     open func getAccountsFromUrl(url:String, response:@escaping PageResponse<AccountResponse>.ResponseClosure) {
-        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let accounts = try self.jsonDecoder.decode(PageResponse<AccountResponse>.self, from: data)
-                    response(.success(details: accounts))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
+        Task {
+            let result = await getAccountsFromUrl(url: url)
+            response(result)
+        }
+    }
+    
+    
+    open func getAccountsFromUrl(url:String) async -> PageResponse<AccountResponse>.ResponseEnum {
+        let result = await serviceHelper.GETRequestFromUrl(url: url)
+        switch result {
+        case .success(let data):
+            do {
+                let accounts = try self.jsonDecoder.decode(PageResponse<AccountResponse>.self, from: data)
+                return .success(page: accounts)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
 }

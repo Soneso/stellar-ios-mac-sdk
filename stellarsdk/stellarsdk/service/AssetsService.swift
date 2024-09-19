@@ -31,7 +31,16 @@ public class AssetsService: NSObject {
     /// - Parameter order: Optional. The order in which to return rows, “asc” or “desc”, ordered by assetCode then by assetIssuer.
     /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
     ///
+    @available(*, renamed: "getAssets(for:assetIssuer:cursor:order:limit:)")
     open func getAssets(for assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<AssetResponse>.ResponseClosure) {
+        Task {
+            let result = await getAssets(for: assetCode, assetIssuer: assetIssuer, cursor: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    open func getAssets(for assetCode:String? = nil, assetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<AssetResponse>.ResponseEnum {
         var requestPath = "/assets"
         
         var params = Dictionary<String,String>()
@@ -42,30 +51,38 @@ public class AssetsService: NSObject {
         if let limit = limit { params["limit"] = String(limit) }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        getAssetsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await getAssetsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
     /// Loads assets for a given url if valid. E.g. for a "next" link from a PageResponse<AssetResponse> object.
     ///
     /// - Parameter url: The url to be used to load the assets.
     ///
+    @available(*, renamed: "getAssetsFromUrl(url:)")
     open func getAssetsFromUrl(url:String, response:@escaping PageResponse<AssetResponse>.ResponseClosure) {
-        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let assets = try self.jsonDecoder.decode(PageResponse<AssetResponse>.self, from: data)
-                    response(.success(details: assets))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
+        Task {
+            let result = await getAssetsFromUrl(url: url)
+            response(result)
+        }
+    }
+    
+    
+    open func getAssetsFromUrl(url:String) async -> PageResponse<AssetResponse>.ResponseEnum {
+        let result = await serviceHelper.GETRequestFromUrl(url: url)
+        switch result {
+        case .success(let data):
+            do {
+                let assets = try self.jsonDecoder.decode(PageResponse<AssetResponse>.self, from: data)
+                return .success(page: assets)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
 }

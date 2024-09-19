@@ -50,7 +50,7 @@ public class TradeAggregationsService: NSObject {
             case .success(let data):
                 do {
                     let tradeAggregations = try self.jsonDecoder.decode(PageResponse<TradeAggregationResponse>.self, from: data)
-                    response(.success(details: tradeAggregations))
+                    response(.success(page: tradeAggregations))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }

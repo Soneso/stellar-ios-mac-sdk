@@ -156,7 +156,7 @@ public class OperationsService: NSObject {
             case .success(let data):
                 do {
                     let operations = try self.operationsFactory.operationsFromResponseData(data: data)
-                    response(.success(details: operations))
+                    response(.success(page: operations))
                 } catch {
                     response(.failure(error: error as! HorizonRequestError))
                 }

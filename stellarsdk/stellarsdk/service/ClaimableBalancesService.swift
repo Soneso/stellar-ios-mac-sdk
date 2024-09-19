@@ -106,7 +106,7 @@ public class ClaimableBalancesService: NSObject {
                     self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
                     //print(String(data: data, encoding: .utf8)!)
                     let values = try self.jsonDecoder.decode(PageResponse<ClaimableBalanceResponse>.self, from: data)
-                    response(.success(details: values))
+                    response(.success(page: values))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }

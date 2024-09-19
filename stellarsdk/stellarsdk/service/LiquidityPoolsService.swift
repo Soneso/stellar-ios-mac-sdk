@@ -109,7 +109,7 @@ public class LiquidityPoolsService: NSObject {
                 do {
                     // print(String(data: data, encoding: .utf8)!)
                     let values = try self.jsonDecoder.decode(PageResponse<LiquidityPoolResponse>.self, from: data)
-                    response(.success(details: values))
+                    response(.success(page: values))
                 } catch {
                     response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
                 }
