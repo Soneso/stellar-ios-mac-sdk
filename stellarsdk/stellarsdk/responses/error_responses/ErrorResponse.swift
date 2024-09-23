@@ -93,3 +93,7 @@ public class ErrorResultCodes: Decodable {
         operations = try values.decodeIfPresent([String].self, forKey: .operations)
     }
 }
+
+///  Represents a timeout error response (code 504) from the horizon api, containing information related to the error
+///  See [Horizon API](https://developers.stellar.org/docs/data/horizon/api-reference/errors/http-status-codes/horizon-specific/timeout "Stale History")
+public class TimeoutErrorResponse: ErrorResponse {}

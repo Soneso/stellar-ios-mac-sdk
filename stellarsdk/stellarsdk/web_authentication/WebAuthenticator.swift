@@ -199,7 +199,7 @@ public class WebAuthenticator {
             if accountId.starts(with: "G") {
                 path.append("&memo=\(mid)");
             } else {
-                completion(.failure(error: .requestFailed(message: "memo cannot be used if accountId is a muxed account")))
+                completion(.failure(error: .requestFailed(message: "memo cannot be used if accountId is a muxed account", horizonErrorResponse: nil)))
             }
         }
         
@@ -210,7 +210,7 @@ public class WebAuthenticator {
                     if let challenge = response["transaction"] as? String {
                         completion(.success(challenge: challenge))
                     } else if let error = response["error"] as? String {
-                        completion(.failure(error: .requestFailed(message: error)))
+                        completion(.failure(error: .requestFailed(message: error, horizonErrorResponse: nil)))
                     } else {
                         completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON")))
                     }
@@ -385,7 +385,7 @@ public class WebAuthenticator {
                     if let token = response["token"] as? String {
                         completion(.success(jwtToken: token))
                     } else if let error = response["error"] as? String {
-                        completion(.failure(error: .requestFailed(message: error)))
+                        completion(.failure(error: .requestFailed(message: error, horizonErrorResponse: nil)))
                     } else {
                         completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON")))
                     }

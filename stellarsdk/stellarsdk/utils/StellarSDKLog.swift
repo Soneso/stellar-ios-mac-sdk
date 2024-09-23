@@ -16,43 +16,46 @@ public final class StellarSDKLog {
         case .requestFailed(let message):
             print("\(tag): Horizon request error of type request failed with message: \(message)")
         case .badRequest(let message, let errorResponse):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type bad request with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .unauthorized(let message):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type unauthorized with message: \(message)")
         case .forbidden(let message, let errorResponse):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type forbidden with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .notFound(let message, let errorResponse):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type not found with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .duplicate(let message, let errorResponse):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type duplicate with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .notAcceptable(let message, let errorResponse):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type not acceptable with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .beforeHistory(let message, let errorResponse):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type before history with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .rateLimitExceeded(let message, let errorResponse):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type rate limit exceeded with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .internalServerError(let message, let errorResponse):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type internal server error with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .notImplemented(let message, let errorResponse):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type not implemented with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .staleHistory(let message, let errorResponse):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type stale history with message: \(message)")
+            printErrorResponse(tag: tag, errorResponse: errorResponse)
+        case .timeout(let message, let errorResponse):
+            print("\(tag): Horizon request error of type timeout with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .emptyResponse:
             print("\(tag): Horizon request error of type empty response.")
         case .parsingResponseFailed(let message):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type parsing respomnse failed with message: \(message)")
         case .errorOnStreamReceive(let message):
-            print("\(tag): Horizon request error of type request failed with message: \(message)")
+            print("\(tag): Horizon request error of type error on stream receive with message: \(message)")
         }
     }
     

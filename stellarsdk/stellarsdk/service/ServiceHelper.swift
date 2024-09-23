@@ -399,7 +399,7 @@ class ServiceHelper: NSObject {
         return await withCheckedContinuation { continuation in
             let task = URLSession.shared.dataTask(with: urlRequest) { data, response, error in
                 if let error = error {
-                    continuation.resume(returning: .failure(error:.requestFailed(message:error.localizedDescription)))
+                    continuation.resume(returning: .failure(error:.requestFailed(message:error.localizedDescription, horizonErrorResponse: nil)))
                     return
                 }
                 
@@ -520,8 +520,25 @@ class ServiceHelper: NSObject {
                         }
                         continuation.resume(returning: .failure(error:.staleHistory(message:message, horizonErrorResponse:nil)))
                         return
+                    case 504: // Timout
+                        if let data = data {
+                            do {
+                                let timeoutErrorResponse = try self.jsonDecoder.decode(TimeoutErrorResponse.self, from: data)
+                                continuation.resume(returning: .failure(error:.timeout(message:message, horizonErrorResponse:timeoutErrorResponse)))
+                                return
+                            } catch {}
+                        }
+                        continuation.resume(returning: .failure(error:.staleHistory(message:message, horizonErrorResponse:nil)))
+                        return
                     default:
-                        continuation.resume(returning: .failure(error:.requestFailed(message:message)))
+                        if let data = data {
+                            do {
+                                let errorResponse = try self.jsonDecoder.decode(ErrorResponse.self, from: data)
+                                continuation.resume(returning: .failure(error:.requestFailed(message:message, horizonErrorResponse:errorResponse)))
+                                return
+                            } catch {}
+                        }
+                        continuation.resume(returning: .failure(error:.requestFailed(message:message, horizonErrorResponse:nil)))
                         return
                     }
                 }

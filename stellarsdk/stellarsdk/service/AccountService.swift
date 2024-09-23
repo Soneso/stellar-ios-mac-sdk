@@ -154,7 +154,7 @@ open class AccountService: NSObject {
         return await withCheckedContinuation { continuation in
             let task = URLSession.shared.dataTask(with: components!.url!) { data, httpResponse, error in
                 guard error == nil else {
-                    continuation.resume(returning: .failure(error: HorizonRequestError.requestFailed(message: error!.localizedDescription)))
+                    continuation.resume(returning: .failure(error: HorizonRequestError.requestFailed(message: error!.localizedDescription, horizonErrorResponse: nil)))
                     return
                 }
                 guard let data1 = data else {
@@ -199,7 +199,7 @@ open class AccountService: NSObject {
         return await withCheckedContinuation { continuation in
             let task = URLSession.shared.dataTask(with: components!.url!) { data, httpResponse, error in
                 guard error == nil else {
-                    continuation.resume(returning: .failure(error: HorizonRequestError.requestFailed(message: error!.localizedDescription)))
+                    continuation.resume(returning: .failure(error: HorizonRequestError.requestFailed(message: error!.localizedDescription, horizonErrorResponse: nil)))
                     return
                 }
                 guard let data1 = data else {

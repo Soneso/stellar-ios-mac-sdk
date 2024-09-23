@@ -604,7 +604,7 @@ public class TransferServerService: NSObject {
                     return .parsingResponseFailed(message: error.localizedDescription)
                 }
             }
-        case .requestFailed(let message),
+        case .requestFailed(let message, _),
              .badRequest(let message, _),
              .notFound(let message, _),
              .notAcceptable(let message, _),

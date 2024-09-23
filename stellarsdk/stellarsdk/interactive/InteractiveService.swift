@@ -265,7 +265,7 @@ public class InteractiveService: NSObject {
                     return .parsingResponseFailed(message: error.localizedDescription)
                 }
             }
-        case .requestFailed(let message),
+        case .requestFailed(let message, _),
              .badRequest(let message, _),
              .notAcceptable(let message, _),
              .beforeHistory(let message, _),

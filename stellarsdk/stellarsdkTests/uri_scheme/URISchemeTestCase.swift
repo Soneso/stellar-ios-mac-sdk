@@ -269,7 +269,7 @@ class URISchemeTestCase: XCTestCase {
                 switch response {
                 case .failure(error: let error):
                     switch error {
-                    case .requestFailed(let message):
+                    case .requestFailed(let message, _):
                         XCTAssertEqual("\(message)", "TransactionXDR missing from url!")
                     default:
                         XCTAssert(false)
@@ -294,7 +294,7 @@ class URISchemeTestCase: XCTestCase {
                 switch response {
                 case .failure(error: let error):
                     switch error {
-                    case .requestFailed(let message):
+                    case .requestFailed(let message, _):
                         XCTAssertEqual("\(message)", "Transaction was not confirmed!")
                     default:
                         XCTAssert(false)

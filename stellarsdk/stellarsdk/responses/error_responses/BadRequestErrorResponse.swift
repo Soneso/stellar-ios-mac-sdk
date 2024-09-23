@@ -8,6 +8,6 @@
 
 import Foundation
 
-///  Represents a bad request error response from the horizon api (code 400), containing information related to the error
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/errors/bad-request.html "Bad request")
+///  Represents a transaction malformed (bad request) error response from the horizon api (code 400), containing information related to the error
+///  See [Horizon API](https://developers.stellar.org/docs/data/horizon/api-reference/errors/http-status-codes/horizon-specific/transaction-malformed "Transaction malformed")
 public class BadRequestErrorResponse: ErrorResponse {}

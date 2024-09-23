@@ -546,7 +546,7 @@ class WebAuthenticatorTestCase: XCTestCase {
                     switch error {
                     case .requestError(let error):
                         switch error {
-                        case .requestFailed(let message):
+                        case .requestFailed(let message, _):
                             XCTAssert(message == "The provided transaction is not valid")
                         default:
                             XCTAssert(false)

@@ -9,5 +9,5 @@
 import Foundation
 
 ///  Represents a before history error response from the horizon api (code 410), containing information related to the error
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/errors/before-history.html "Before History")
+///  See [Horizon API](https://developers.stellar.org/docs/data/horizon/api-reference/errors/http-status-codes/horizon-specific/before-history "Before History")
 public class BeforeHistoryErrorResponse: ErrorResponse {}

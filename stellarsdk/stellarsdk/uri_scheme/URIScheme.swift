@@ -220,7 +220,7 @@ public class URIScheme: NSObject {
         
         if let transactionXDR = getTransactionXDR(fromURL: url) {
             if let isConfirmed = transactionConfirmation?(transactionXDR), !isConfirmed {
-                completion(.failure(error: HorizonRequestError.requestFailed(message: "Transaction was not confirmed!")))
+                completion(.failure(error: HorizonRequestError.requestFailed(message: "Transaction was not confirmed!", horizonErrorResponse: nil)))
                 return
             }
             var transaction = transactionXDR
@@ -230,7 +230,7 @@ public class URIScheme: NSObject {
                 completion(response)
             })
         } else {
-            completion(.failure(error: HorizonRequestError.requestFailed(message: "TransactionXDR missing from url!")))
+            completion(.failure(error: HorizonRequestError.requestFailed(message: "TransactionXDR missing from url!", horizonErrorResponse: nil)))
         }
     }
     
@@ -244,7 +244,7 @@ public class URIScheme: NSObject {
                 if let urlEncodedTransaction = transactionEncodedEnvelope.urlEncoded {
                     dataStr = String("xdr=") + urlEncodedTransaction
                 } else {
-                    completion(.failure(error: HorizonRequestError.requestFailed(message: "error while urlencoding transaction")))
+                    completion(.failure(error: HorizonRequestError.requestFailed(message: "error while urlencoding transaction", horizonErrorResponse: nil)))
                 }
                 let data = dataStr.data(using: .utf8)
                 serviceHelper.POSTRequestWithPath(path: "", body: data, contentType: "application/x-www-form-urlencoded") { (response) -> (Void) in
@@ -269,7 +269,7 @@ public class URIScheme: NSObject {
                 })
             }
         } else {
-            completion(.failure(error: HorizonRequestError.requestFailed(message: "encodedEnvelop failed!")))
+            completion(.failure(error: HorizonRequestError.requestFailed(message: "encodedEnvelop failed!", horizonErrorResponse: nil)))
         }
     }
     
