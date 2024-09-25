@@ -181,34 +181,30 @@ public class TransactionsService: NSObject {
         return await postTransactionAsync(transactionEnvelope: envelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
     }
     
-    open func submitFeeBumpTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostResponseClosure) throws {
-        let envelope = try transaction.encodedEnvelope()
-        //print(envelope)
-        postTransactionCore(transactionEnvelope: envelope, response: { (result) -> (Void) in
-            switch result {
-            case .success(let transaction):
-                response(.success(details: transaction))
-            case .failure(let error):
-                response(.failure(error: error))
-            case .destinationRequiresMemo(let destinationAccountId):
-                response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
-            }
-        })
+    @available(*, renamed: "submitFeeBumpTransaction(transaction:)")
+    open func submitFeeBumpTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostResponseClosure) {
+        Task {
+            let result = await submitFeeBumpTransaction(transaction: transaction)
+            response(result)
+        }
     }
     
-    open func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostAsyncResponseClosure) throws {
-        let envelope = try transaction.encodedEnvelope()
-        //print(envelope)
-        postTransactionAsyncCore(transactionEnvelope: envelope, response: { (result) -> (Void) in
-            switch result {
-            case .success(let transaction):
-                response(.success(details: transaction))
-            case .failure(let error):
-                response(.failure(error: error))
-            case .destinationRequiresMemo(let destinationAccountId):
-                response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
-            }
-        })
+    open func submitFeeBumpTransaction(transaction:FeeBumpTransaction) async -> TransactionPostResponseEnum {
+        let envelope = try! transaction.encodedEnvelope()
+        return await postTransactionCore(transactionEnvelope: envelope)
+    }
+    
+    @available(*, renamed: "submitFeeBumpAsyncTransaction(transaction:)")
+    open func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostAsyncResponseClosure) {
+        Task {
+            let result = await submitFeeBumpAsyncTransaction(transaction: transaction)
+            response(result)
+        }
+    }
+    
+    open func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction) async -> TransactionPostAsyncResponseEnum {
+        let envelope = try! transaction.encodedEnvelope()
+        return await postTransactionAsyncCore(transactionEnvelope: envelope)
     }
     
     @available(*, renamed: "postTransaction(transactionEnvelope:skipMemoRequiredCheck:)")
@@ -221,42 +217,18 @@ public class TransactionsService: NSObject {
     
     
     open func postTransaction(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false) async -> TransactionPostResponseEnum {
-        
         if !skipMemoRequiredCheck, let transaction = try? Transaction(envelopeXdr: transactionEnvelope) {
-            return await withCheckedContinuation { continuation in
-                checkMemoRequired(transaction: transaction, response: { (result) -> (Void) in
-                    switch result {
-                    case .noMemoRequired:
-                        self.postTransactionCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
-                            switch result {
-                            case .success(let transaction):
-                                continuation.resume(returning: .success(details: transaction))
-                            case .failure(let error):
-                                continuation.resume(returning: .failure(error: error))
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                continuation.resume(returning: .destinationRequiresMemo(destinationAccountId: destinationAccountId))
-                            }
-                        })
-                    case .memoRequired(let accountId):
-                        continuation.resume(returning: .destinationRequiresMemo(destinationAccountId: accountId))
-                    case .failure(let error):
-                        continuation.resume(returning: .failure(error: error))
-                    }
-                })
+            let checkMemoRequiredEnum = await checkMemoRequired(transaction: transaction)
+            switch checkMemoRequiredEnum {
+            case .noMemoRequired:
+                return await postTransactionCore(transactionEnvelope: transactionEnvelope)
+            case .memoRequired(let destination):
+                return .destinationRequiresMemo(destinationAccountId: destination)
+            case .failure(let error):
+                return .failure(error: error)
             }
         } else {
-            return await withCheckedContinuation { continuation in
-                postTransactionCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
-                    switch result {
-                    case .success(let transaction):
-                        continuation.resume(returning: .success(details: transaction))
-                    case .failure(let error):
-                        continuation.resume(returning: .failure(error: error))
-                    case .destinationRequiresMemo(let destinationAccountId):
-                        continuation.resume(returning: .destinationRequiresMemo(destinationAccountId: destinationAccountId))
-                    }
-                })
-            }
+            return await postTransactionCore(transactionEnvelope: transactionEnvelope)
         }
     }
     
@@ -268,44 +240,20 @@ public class TransactionsService: NSObject {
         }
     }
     
-    
     open func postTransactionAsync(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false) async -> TransactionPostAsyncResponseEnum {
         
         if !skipMemoRequiredCheck, let transaction = try? Transaction(envelopeXdr: transactionEnvelope) {
-            return await withCheckedContinuation { continuation in
-                checkMemoRequired(transaction: transaction, response: { (result) -> (Void) in
-                    switch result {
-                    case .noMemoRequired:
-                        self.postTransactionAsyncCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
-                            switch result {
-                            case .success(let transaction):
-                                continuation.resume(returning: .success(details: transaction))
-                            case .failure(let error):
-                                continuation.resume(returning: .failure(error: error))
-                            case .destinationRequiresMemo(let destinationAccountId):
-                                continuation.resume(returning: .destinationRequiresMemo(destinationAccountId: destinationAccountId))
-                            }
-                        })
-                    case .memoRequired(let accountId):
-                        continuation.resume(returning: .destinationRequiresMemo(destinationAccountId: accountId))
-                    case .failure(let error):
-                        continuation.resume(returning: .failure(error: error))
-                    }
-                })
+            let checkMemoRequiredEnum = await checkMemoRequired(transaction: transaction)
+            switch checkMemoRequiredEnum {
+            case .noMemoRequired:
+                return await postTransactionAsyncCore(transactionEnvelope: transactionEnvelope)
+            case .memoRequired(let destination):
+                return .destinationRequiresMemo(destinationAccountId: destination)
+            case .failure(let error):
+                return .failure(error: error)
             }
         } else {
-            return await withCheckedContinuation { continuation in
-                postTransactionAsyncCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
-                    switch result {
-                    case .success(let transaction):
-                        continuation.resume(returning: .success(details: transaction))
-                    case .failure(let error):
-                        continuation.resume(returning: .failure(error: error))
-                    case .destinationRequiresMemo(let destinationAccountId):
-                        continuation.resume(returning: .destinationRequiresMemo(destinationAccountId: destinationAccountId))
-                    }
-                })
-            }
+            return await postTransactionAsyncCore(transactionEnvelope: transactionEnvelope)
         }
     }
     
@@ -347,73 +295,52 @@ public class TransactionsService: NSObject {
             return .noMemoRequired
         }
         
-        return await withCheckedContinuation { continuation in
-            checkMemoRequiredForDestinations(destinations: destinations, response: { (result) -> (Void) in
-                switch result {
-                case .noMemoRequired:
-                    continuation.resume(returning: .noMemoRequired)
-                case .memoRequired(let accountId):
-                    continuation.resume(returning: .memoRequired(destination: accountId))
-                case .failure(let error):
-                    continuation.resume(returning: .failure(error: error))
-                }
-            })
+        return await checkMemoRequiredForDestinations(destinations: destinations)
+    }
+    
+    @available(*, renamed: "checkMemoRequiredForDestinations(destinations:)")
+    private func checkMemoRequiredForDestinations(destinations: [String], response:@escaping CheckMemoRequiredResponseClosure) {
+        Task {
+            let result = await checkMemoRequiredForDestinations(destinations: destinations)
+            response(result)
         }
     }
     
-    private func checkMemoRequiredForDestinations(destinations: [String], response:@escaping CheckMemoRequiredResponseClosure) {
+    
+    private func checkMemoRequiredForDestinations(destinations: [String]) async -> CheckMemoRequiredResponseEnum {
         
         var remainingDestinations = destinations
         if let firstDestination = remainingDestinations.first {
             let requestPath = "/accounts/\(firstDestination)"
             
-            serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-                switch result {
-                case .success(let data):
-                    do {
-                        let accountDetails = try self.jsonDecoder.decode(AccountResponse.self, from: data)
-                        // "MQ==" is the base64 encoding of "1".
-                        if let value = accountDetails.data["config.memo_required"], value == "MQ==" {
-                            response(.memoRequired(destination: accountDetails.accountId))
-                        } else {
-                            remainingDestinations.removeFirst()
-                            self.checkMemoRequiredForDestinations(destinations: remainingDestinations, response: { (nextResult) -> (Void) in
-                                switch nextResult {
-                                case .noMemoRequired:
-                                    response(.noMemoRequired)
-                                case .memoRequired(let accountId):
-                                    response(.memoRequired(destination: accountId))
-                                case .failure(let error):
-                                    response(.failure(error: error))
-                                }
-                            })
-                        }
-                    } catch {
-                        response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                    }
-                    
-                case .failure(let error):
-                    switch error {
-                    case .notFound( _, _):
-                        // account not found => no memo required for this account.
+            let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+            switch result {
+            case .success(let data):
+                do {
+                    let accountDetails = try self.jsonDecoder.decode(AccountResponse.self, from: data)
+                    // "MQ==" is the base64 encoding of "1".
+                    if let value = accountDetails.data["config.memo_required"], value == "MQ==" {
+                        return .memoRequired(destination: accountDetails.accountId)
+                    } else {
                         remainingDestinations.removeFirst()
-                        self.checkMemoRequiredForDestinations(destinations: remainingDestinations, response: { (nextResult) -> (Void) in
-                            switch nextResult {
-                            case .noMemoRequired:
-                                response(.noMemoRequired)
-                            case .memoRequired(let accountId):
-                                response(.memoRequired(destination: accountId))
-                            case .failure(let error):
-                                response(.failure(error: error))
-                            }
-                        })
-                    default:
-                        response(.failure(error:error))
+                        return await checkMemoRequiredForDestinations(destinations: remainingDestinations);
                     }
+                } catch {
+                    return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
+                }
+                
+            case .failure(let error):
+                switch error {
+                case .notFound( _, _):
+                    // account not found => no memo required for this account.
+                    remainingDestinations.removeFirst()
+                    return await checkMemoRequiredForDestinations(destinations: remainingDestinations);
+                default:
+                    return .failure(error:error)
                 }
             }
         } else {
-            response(.noMemoRequired)
+            return .noMemoRequired
         }
     }
     
