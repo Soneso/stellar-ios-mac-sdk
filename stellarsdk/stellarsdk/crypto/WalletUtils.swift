@@ -9,7 +9,7 @@
 import Foundation
 
 /// Generates Mnemonic with corresponding Stellar Keypair.
-public final class Wallet {
+public final class WalletUtils {
     
     /// Generates a 12 word Mnemonic.
     public static func generate12WordMnemonic(language: WordList = .english) -> String {

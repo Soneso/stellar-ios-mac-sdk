@@ -143,15 +143,15 @@ The Stellar Ecosystem Proposal [SEP-005 Key Derivation Methods for Stellar Accou
 
 Generate mnemonic
 ```swift
-let mnemonic = Wallet.generate24WordMnemonic()
+let mnemonic = WalletUtils.generate24WordMnemonic()
 print("generated 24 words mnemonic: \(mnemonic)")
 // bench hurt jump file august wise shallow faculty impulse spring exact slush thunder author capable act festival slice deposit sauce coconut afford frown better
 ```
 
 Generate key pairs
 ```swift
-let keyPair0 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 0)
-let keyPair1 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 1)
+let keyPair0 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 0)
+let keyPair1 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 1)
 
 print("key pair 0 accountId: \(keyPair0.accountId)")
 // key pair 0 accountId: GC3MMSXBWHL6CPOAVERSJITX7BH76YU252WGLUOM5CJX3E7UCYZBTPJQ
@@ -162,8 +162,8 @@ print("key pair 0 secretSeed: \(keyPair0.secretSeed!)")
 
 Generate key pairs with passphrase
 ```swift
-let keyPair0 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
-let keyPair1 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
+let keyPair0 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
+let keyPair1 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
 ``` 
 
 BIP and master key generation
