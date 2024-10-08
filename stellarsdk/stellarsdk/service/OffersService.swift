@@ -200,20 +200,28 @@ public class OffersService: NSObject {
     ///     - 'HorizonRequestError.notFound' if there is no offer whose ID matches the 'offerId' parameter.
     ///     - other 'HorizonRequestError' errors depending on the error case.
     ///
+    @available(*, renamed: "getOfferDetails(offerId:)")
     open func getOfferDetails(offerId: String, response: @escaping OfferResponseClosure) {
-        serviceHelper.GETRequestWithPath(path: "/offers/\(offerId)") { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let responseMessage = try self.jsonDecoder.decode(OfferResponse.self, from: data)
-                    response(.success(details:responseMessage))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                response(.failure(error:error))
+        Task {
+            let result = await getOfferDetails(offerId: offerId)
+            response(result)
+        }
+    }
+    
+    
+    open func getOfferDetails(offerId: String) async -> OfferResponseEnum {
+        let result = await serviceHelper.GETRequestWithPath(path: "/offers/\(offerId)")
+        switch result {
+        case .success(let data):
+            do {
+                let responseMessage = try self.jsonDecoder.decode(OfferResponse.self, from: data)
+                return .success(details:responseMessage)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
 }

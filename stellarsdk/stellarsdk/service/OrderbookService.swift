@@ -39,7 +39,16 @@ public class OrderbookService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
+    @available(*, renamed: "getOrderbook(sellingAssetType:sellingAssetCode:sellingAssetIssuer:buyingAssetType:buyingAssetCode:buyingAssetIssuer:limit:)")
     open func getOrderbook(sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, limit:Int? = nil, response:@escaping OrderbookResponseClosure) {
+        Task {
+            let result = await getOrderbook(sellingAssetType: sellingAssetType, sellingAssetCode: sellingAssetCode, sellingAssetIssuer: sellingAssetIssuer, buyingAssetType: buyingAssetType, buyingAssetCode: buyingAssetCode, buyingAssetIssuer: buyingAssetIssuer, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    open func getOrderbook(sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, limit:Int? = nil) async -> OrderbookResponseEnum {
         
         var requestPath = "/order_book"
         var params = Dictionary<String,String>()
@@ -52,26 +61,34 @@ public class OrderbookService: NSObject {
         if let limit = limit { params["limit"] = String(limit) }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        getOrderbookFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await getOrderbookFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    @available(*, renamed: "getOrderbookFromUrl(url:)")
     func getOrderbookFromUrl(url:String, response:@escaping OrderbookResponseClosure) {
-        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let orderbook = try self.jsonDecoder.decode(OrderbookResponse.self, from: data)
-                    response(.success(details: orderbook))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
+        Task {
+            let result = await getOrderbookFromUrl(url: url)
+            response(result)
+        }
+    }
+    
+    
+    func getOrderbookFromUrl(url:String) async -> OrderbookResponseEnum {
+        let result = await serviceHelper.GETRequestFromUrl(url: url)
+        switch result {
+        case .success(let data):
+            do {
+                let orderbook = try self.jsonDecoder.decode(OrderbookResponse.self, from: data)
+                return .success(details: orderbook)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
     
