@@ -53,7 +53,7 @@ public final class StellarSDKLog {
         case .emptyResponse:
             print("\(tag): Horizon request error of type empty response.")
         case .parsingResponseFailed(let message):
-            print("\(tag): Horizon request error of type parsing respomnse failed with message: \(message)")
+            print("\(tag): Horizon request error of type parsing response failed with message: \(message)")
         case .errorOnStreamReceive(let message):
             print("\(tag): Horizon request error of type error on stream receive with message: \(message)")
         }

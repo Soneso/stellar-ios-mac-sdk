@@ -15,9 +15,7 @@ class QuickStartTest: XCTestCase {
     let sdk = StellarSDK()
     
 
-    func testFriendbotExample() {
-        
-        let expectation = XCTestExpectation(description: "friendbot creates account by using the code from quickstart guide")
+    func testFriendbotExample() async {
         
         // prepare
         let keyPair = try! KeyPair.generateRandomKeyPair()
@@ -25,201 +23,176 @@ class QuickStartTest: XCTestCase {
         print("Secret Seed: " + keyPair.secretSeed)
         
         // EXAMPLE CODE START
-        sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Void) in
-            switch response {
-            case .success(let details):
-                print(details)
-                expectation.fulfill()
-            case .failure(let error):
-                print(error.localizedDescription)
-                XCTFail()
-            }
+        let response = await sdk.accounts.createTestAccount(accountId: keyPair.accountId)
+        switch response {
+        case .success(let details):
+            print(details)
+        case .failure(let error):
+            print(error.localizedDescription)
+            XCTFail()
         }
         // EXAMPLE CODE END
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testCreateAccountExample() {
-        
-        let expectation = XCTestExpectation(description: "creates account by using the code from quickstart guide")
-        
+    func testCreateAccountExample() async {
+    
         // prepare
         let sourceAccountKeyPair = try! KeyPair.generateRandomKeyPair()
-        let sourceAccountId = sourceAccountKeyPair.accountId
         let destinationAccountKeyPair = try! KeyPair.generateRandomKeyPair()
         let destinationAccountId = destinationAccountKeyPair.accountId
         
-        sdk.accounts.createTestAccount(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                
-                self.sdk.accounts.getAccountDetails(accountId: sourceAccountId) { (response) -> (Void) in
-                switch response {
-                case .success(let accountResponse):
-                    do {
-                        // EXAMPLE CODE START
-                        // build the operation
-                        let createAccount = try CreateAccountOperation(sourceAccountId: nil,
-                                                                   destinationAccountId: destinationAccountId,
-                                                                   startBalance: 2.0)
-
-                        // build the transaction
-                        let transaction = try Transaction(sourceAccount: accountResponse,
-                                                             operations: [createAccount],
-                                                             memo: Memo.none)
-                                                             
-                        // sign the transaction
-                        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                                                
-                        // submit the transaction
-                        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                            switch response {
-                            case .success(let result):
-                                print(result.transactionHash)
-                                expectation.fulfill()
-                            case .destinationRequiresMemo(_):
-                                XCTFail()
-                            case .failure(let error):
-                                print(error.localizedDescription)
-                                XCTFail()
-                            }
-                        }
-                        // EXAMPLE CODE END
-                    } catch {
-                        XCTFail()
-                    }
-                case .failure(let error):
-                    print(error.localizedDescription)
-                    XCTFail()
-                }
-            }
-            case .failure(let error):
-                print(error.localizedDescription)
-                XCTFail()
-            }
+        let responseEnum = await sdk.accounts.createTestAccount(accountId: sourceAccountKeyPair.accountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create test account: \(sourceAccountKeyPair.accountId)")
         }
         
-        wait(for: [expectation], timeout: 15.0)
+        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
+        switch accDetailsResEnum {
+        case .success(let accountResponse):
+            do {
+                // EXAMPLE CODE START
+                // build the operation
+                let createAccount = try CreateAccountOperation(sourceAccountId: nil,
+                                                           destinationAccountId: destinationAccountId,
+                                                           startBalance: 2.0)
+
+                // build the transaction
+                let transaction = try Transaction(sourceAccount: accountResponse,
+                                                     operations: [createAccount],
+                                                     memo: Memo.none)
+                                                     
+                // sign the transaction
+                try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                
+                let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+                switch submitTxResponse {
+                case .success(let details):
+                    XCTAssert(details.operationCount > 0)
+                    print(details.transactionHash)
+                case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+                    XCTFail("destination account \(destinationAccountId) requires memo")
+                case .failure(error: let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+                    XCTFail("submit transaction error")
+                }
+                // EXAMPLE CODE END
+            } catch {
+                XCTFail()
+            }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testCreateAccountExample()", horizonRequestError: error)
+            XCTFail("could not load account details")
+        }
     }
     
-    func testCheckAccountExample() {
-        let expectation = XCTestExpectation(description: "fatches the account details by using the code from quickstart guide")
-        
+    func testCheckAccountExample() async {
         // prepare
         let keyPair = try! KeyPair.generateRandomKeyPair()
         
-        sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                // EXAMPLE CODE START
-                self.sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
-                    switch response {
-                    case .success(let accountDetails):
-                        
-                        // You can check the `balance`, `sequence`, `flags`, `signers`, `data` etc.
-                        
-                        for balance in accountDetails.balances {
-                            switch balance.assetType {
-                            case AssetTypeAsString.NATIVE:
-                                print("balance: \(balance.balance) XLM")
-                            default:
-                                print("balance: \(balance.balance) \(balance.assetCode!) issuer: \(balance.assetIssuer!)")
-                            }
-                        }
-
-                        print("sequence number: \(accountDetails.sequenceNumber)")
-
-                        for signer in accountDetails.signers {
-                            print("signer public key: \(signer.key)")
-                        }
-
-                        print("auth required: \(accountDetails.flags.authRequired)")
-                        print("auth revocable: \(accountDetails.flags.authRevocable)")
-
-                        for (key, value) in accountDetails.data {
-                            print("data key: \(key) value: \(value.base64Decoded() ?? "")")
-                        }
-                        expectation.fulfill()
-                    case .failure(let error):
-                        print(error.localizedDescription)
-                    }
-                }
-                // EXAMPLE CODE END
-            case .failure(let error):
-                print(error.localizedDescription)
-                XCTFail()
-            }
+        let responseEnum = await sdk.accounts.createTestAccount(accountId: keyPair.accountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create test account: \(keyPair.accountId)")
         }
-    
-        wait(for: [expectation], timeout: 25.0)
-    }
-    
-    func testCheckPaymentsExample() {
-        let expectation = XCTestExpectation(description: "fatches payments by using the code from quickstart guide")
         
         // EXAMPLE CODE START
-        sdk.payments.getPayments(order:Order.descending, limit:10) { response in
-            switch response {
-            case .success(let paymentsResponse):
-                for payment in paymentsResponse.records {
-                    if let nextPayment = payment as? PaymentOperationResponse {
-                        if (nextPayment.assetType == AssetTypeAsString.NATIVE) {
-                            print("received: \(nextPayment.amount) lumen" )
-                        } else {
-                            print("received: \(nextPayment.amount) \(nextPayment.assetCode!)" )
-                        }
-                        print("from: \(nextPayment.from)" )
-                    }
-                    else if let nextPayment = payment as? AccountCreatedOperationResponse {
-                        print("account \(nextPayment.account) created by \(nextPayment.funder)" )
-                    }
+        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: keyPair.accountId);
+        switch accDetailsResEnum {
+        case .success(let accountDetails):
+            // You can check the `balance`, `sequence`, `flags`, `signers`, `data` etc.
+            
+            for balance in accountDetails.balances {
+                switch balance.assetType {
+                case AssetTypeAsString.NATIVE:
+                    print("balance: \(balance.balance) XLM")
+                default:
+                    print("balance: \(balance.balance) \(balance.assetCode!) issuer: \(balance.assetIssuer!)")
                 }
-                expectation.fulfill()
-            case .failure(let error):
-                print(error.localizedDescription)
             }
+
+            print("sequence number: \(accountDetails.sequenceNumber)")
+
+            for signer in accountDetails.signers {
+                print("signer public key: \(signer.key)")
+            }
+
+            print("auth required: \(accountDetails.flags.authRequired)")
+            print("auth revocable: \(accountDetails.flags.authRevocable)")
+
+            for (key, value) in accountDetails.data {
+                print("data key: \(key) value: \(value.base64Decoded() ?? "")")
+            }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testCheckAccountExample()", horizonRequestError: error)
+            XCTFail("could not load account details")
         }
         // EXAMPLE CODE END
-    
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testCheckPaymentsForAccountExample() {
-        let expectation = XCTestExpectation(description: "fatches the account payments by using the code from quickstart guide")
+    func testCheckPaymentsExample() async {
+
+        // EXAMPLE CODE START
+        let responseEnum = await sdk.payments.getPayments(order:Order.descending, limit:10)
+        switch responseEnum {
+        case .success(let page):
+            for payment in page.records {
+                if let nextPayment = payment as? PaymentOperationResponse {
+                    if (nextPayment.assetType == AssetTypeAsString.NATIVE) {
+                        print("received: \(nextPayment.amount) lumen" )
+                    } else {
+                        print("received: \(nextPayment.amount) \(nextPayment.assetCode!)" )
+                    }
+                    print("from: \(nextPayment.from)" )
+                }
+                else if let nextPayment = payment as? AccountCreatedOperationResponse {
+                    print("account \(nextPayment.account) created by \(nextPayment.funder)" )
+                }
+            }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testCheckPaymentsExample()", horizonRequestError: error)
+            XCTFail("could not load payments")
+        }
+        // EXAMPLE CODE END
+    }
+    
+    func testCheckPaymentsForAccountExample() async {
         
         // prepare
         let keyPair = try! KeyPair.generateRandomKeyPair()
         
-        sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                // EXAMPLE CODE START
-                self.sdk.payments.getPayments(forAccount:keyPair.accountId, order:Order.descending, limit:10) { response in
-                // EXAMPLE CODE END
-                    switch response {
-                    case .success(let paymentsResponse):
-                        for payment in paymentsResponse.records {
-                            if let nextPayment = payment as? AccountCreatedOperationResponse {
-                                print("account \(nextPayment.account) created by \(nextPayment.funder)" )
-                            }
-                        }
-                        expectation.fulfill()
-                    case .failure(let error):
-                        print(error.localizedDescription)
-                    }
-                }
-                // EXAMPLE CODE END
-            case .failure(let error):
-                print(error.localizedDescription)
-                XCTFail()
-            }
+        let responseEnum = await sdk.accounts.createTestAccount(accountId: keyPair.accountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create test account: \(keyPair.accountId)")
         }
-    
-        wait(for: [expectation], timeout: 15.0)
+        
+        // EXAMPLE CODE START
+        let response = await sdk.payments.getPayments(forAccount:keyPair.accountId, order:Order.descending, limit:10)
+        switch response {
+        case .success(let page):
+            for payment in page.records {
+                if let nextPayment = payment as? AccountCreatedOperationResponse {
+                    print("account \(nextPayment.account) created by \(nextPayment.funder)" )
+                }
+            }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testCheckPaymentsForAccountExample()", horizonRequestError: error)
+            XCTFail("could not load payments")
+        }
+        // EXAMPLE CODE END
     }
     
-    func testStreamPaymentsForAccountExample() {
+    func testStreamPaymentsForAccountExample() async {
         let expectation = XCTestExpectation(description: "streams payments for account by using the code from quickstart guide")
         
         let sourceAccountKeyPair = try! KeyPair.generateRandomKeyPair()
@@ -250,110 +223,114 @@ class QuickStartTest: XCTestCase {
         }
         // EXAMPLE CODE END
         
-        sdk.accounts.createTestAccount(accountId: sourceAccountId) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                self.sdk.accounts.createTestAccount(accountId: destinationAccountId) { (response) -> (Void) in
-                    switch response {
-                    case .success(_):
-                        self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
-                            switch response {
-                            case .success(let accountResponse):
-                                
-                                let paymentOperation = try! PaymentOperation(sourceAccountId: sourceAccountId,
-                                                                        destinationAccountId: destinationAccountId,
-                                                                        asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
-                                                                        amount: 1.5)
-                                
-                                let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                                  operations: [paymentOperation],
-                                                                  memo: Memo.init(text: "test"))
-                                try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                                
-                                try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                                    switch response {
-                                    case .success(let response):
-                                        print("testSendAndReceiveNativePayment: Transaction successfully sent. Hash \(response.transactionHash)")
-                                    default:
-                                        XCTFail()
-                                    }
-                                }
-                            case .failure(_):
-                                XCTFail()
-                            }
-                        }
-                    case .failure(let error):
-                        print(error.localizedDescription)
-                        XCTFail()
-                    }
-                }
-            case .failure(let error):
-                print(error.localizedDescription)
-                XCTFail()
-            }
+        var responseEnum = await sdk.accounts.createTestAccount(accountId: sourceAccountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create source account: \(sourceAccountId)")
         }
         
-        wait(for: [expectation], timeout: 25.0)
+        responseEnum = await sdk.accounts.createTestAccount(accountId: destinationAccountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create destination account: \(destinationAccountId)")
+        }
+        
+        let accDetailsEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountId)
+        switch accDetailsEnum {
+        case .success(let accountResponse):
+            let paymentOperation = try! PaymentOperation(sourceAccountId: sourceAccountId,
+                                                    destinationAccountId: destinationAccountId,
+                                                    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                    amount: 1.5)
+            
+            let transaction = try! Transaction(sourceAccount: accountResponse,
+                                              operations: [paymentOperation],
+                                              memo: Memo.init(text: "test"))
+            try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+            let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
+            switch submitTxResultEnum {
+            case .success(let result):
+                XCTAssertTrue(result.operationCount > 0)
+                print("testSendAndReceiveNativePayment: Transaction successfully sent. Hash \(result.transactionHash)")
+            case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+                XCTFail("destination account \(destinationAccountId) requires memo")
+            case .failure(error: let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"testStreamPaymentsForAccountExample()", horizonRequestError: error)
+                XCTFail("submit transaction error")
+            }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testStreamPaymentsForAccountExample()", horizonRequestError: error)
+            XCTFail("could not load account details for \(sourceAccountId)")
+        }
+        
+        await fulfillment(of: [expectation], timeout: 15.0)
     }
     
-    func testSendPaymentExample() {
-        let expectation = XCTestExpectation(description: "sends a payment by using the code from quickstart guide")
+    func testSendPaymentExample() async {
         
         let sourceAccountKeyPair = try! KeyPair.generateRandomKeyPair()
         let sourceAccountId = sourceAccountKeyPair.accountId
         let destinationAccountKeyPair = try! KeyPair.generateRandomKeyPair()
         let destinationAccountId = destinationAccountKeyPair.accountId
         
-        sdk.accounts.createTestAccount(accountId: sourceAccountId) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                self.sdk.accounts.createTestAccount(accountId: destinationAccountId) { (response) -> (Void) in
-                    switch response {
-                    case .success(_):
-                        self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
-                            switch response {
-                            case .success(let accountResponse):
-                                do {
-                                    // EXAMPLE CODE STARTS HERE
-                                    let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountId,
-                                                                            destinationAccountId: destinationAccountId,
-                                                                            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
-                                                                            amount: 1.5)
-                                    
-                                    let transaction = try Transaction(sourceAccount: accountResponse,
-                                                                      operations: [paymentOperation],
-                                                                      memo: Memo.none)
-                                    try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                                    
-                                    try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                                        switch response {
-                                        case .success(let response):
-                                            print("Transaction successfully sent. Hash \(response.transactionHash)")
-                                            expectation.fulfill()
-                                        default:
-                                            XCTFail()
-                                        }
-                                    }
-                                    // EXAMPLE CODE ENDS HERE
-                                } catch {
-                                    XCTFail()
-                                }
-                            case .failure(_):
-                                XCTFail()
-                            }
-                        }
-                    case .failure(let error):
-                        print(error.localizedDescription)
-                        XCTFail()
-                    }
-                }
-            case .failure(let error):
-                print(error.localizedDescription)
-                XCTFail()
-            }
+        var responseEnum = await sdk.accounts.createTestAccount(accountId: sourceAccountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create source account: \(sourceAccountId)")
         }
         
-        wait(for: [expectation], timeout: 25.0)
+        responseEnum = await sdk.accounts.createTestAccount(accountId: destinationAccountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create destination account: \(destinationAccountId)")
+        }
+        
+        let accDetailsEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountId)
+        switch accDetailsEnum {
+        case .success(let accountResponse):
+            do {
+                // EXAMPLE CODE STARTS HERE
+                let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountId,
+                                                            destinationAccountId: destinationAccountId,
+                                                            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                            amount: 1.5)
+                
+                let transaction = try Transaction(sourceAccount: accountResponse,
+                                                  operations: [paymentOperation],
+                                                  memo: Memo.none)
+                try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+                let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
+                switch submitTxResultEnum {
+                case .success(let result):
+                    XCTAssertTrue(result.operationCount > 0)
+                    print("testSendAndReceiveNativePayment: Transaction successfully sent. Hash \(result.transactionHash)")
+                case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+                    XCTFail("destination account \(destinationAccountId) requires memo")
+                case .failure(error: let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"testSendPaymentExample()", horizonRequestError: error)
+                    XCTFail("submit transaction error")
+                }
+                // EXAMPLE CODE ENDS HERE
+            } catch {
+                XCTFail()
+            }
+            
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testSendPaymentExample()", horizonRequestError: error)
+            XCTFail("could not load account details for \(sourceAccountId)")
+        }
     }
     
     func testTransactionEnvelopeFromXDRExample() {
@@ -369,56 +346,54 @@ class QuickStartTest: XCTestCase {
         }
     }
     
-    func testGenerateURIForSignTransaction() {
-        let expectation = XCTestExpectation(description: "generates uri for sign transaction using the code from quickstart guide")
-        
+    func testGenerateURIForSignTransaction() async {
+    
         // prepare
         let sourceAccountKeyPair = try! KeyPair.generateRandomKeyPair()
         let sourceAccountId = sourceAccountKeyPair.accountId
         let destinationAccountKeyPair = try! KeyPair.generateRandomKeyPair()
         let destinationAccountId = destinationAccountKeyPair.accountId
         
-        sdk.accounts.createTestAccount(accountId: sourceAccountId) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                self.sdk.accounts.getAccountDetails(accountId: sourceAccountId) { (response) -> (Void) in
-                    switch response {
-                    case .success(let accountResponse):
-                        do {
-                            // EXAMPLE CODE START
-                            // create the payment operation
-                            let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountId,
-                                                                    destinationAccountId: destinationAccountId,
-                                                                    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
-                                                                    amount: 1.5)
-                            
-                            // create the transaction containing the payment operation
-                            let transaction = try Transaction(sourceAccount: accountResponse,
-                                                              operations: [paymentOperation],
-                                                              memo: Memo.none)
-                            // create the URIScheme object
-                            let uriSchemeBuilder = URIScheme()
-                            
-                            // get the URI with your transactionXDR
-                            // more params can be added to the url, check method definition
-                            let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction.transactionXDR, callBack: "your_callback_api.com")
-                            print (uriScheme);
-                            // EXAMPLE CODE END
-                            expectation.fulfill()
-                        } catch {
-                            XCTFail()
-                        }
-                    case .failure(let error):
-                        print(error.localizedDescription)
-                    }
-                }
-            case .failure(let error):
-                print(error.localizedDescription)
+        let responseEnum = await sdk.accounts.createTestAccount(accountId: sourceAccountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create source account: \(sourceAccountId)")
+        }
+        
+        let accDetailsEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountId)
+        switch accDetailsEnum {
+        case .success(let accountResponse):
+            do {
+                // EXAMPLE CODE START
+                // create the payment operation
+                let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountId,
+                                                        destinationAccountId: destinationAccountId,
+                                                        asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                        amount: 1.5)
+                
+                // create the transaction containing the payment operation
+                let transaction = try Transaction(sourceAccount: accountResponse,
+                                                  operations: [paymentOperation],
+                                                  memo: Memo.none)
+                // create the URIScheme object
+                let uriSchemeBuilder = URIScheme()
+                
+                // get the URI with your transactionXDR
+                // more params can be added to the url, check method definition
+                let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction.transactionXDR, callBack: "your_callback_api.com")
+                print (uriScheme);
+                // EXAMPLE CODE END
+            } catch {
                 XCTFail()
             }
+            
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGenerateURIForSignTransaction()", horizonRequestError: error)
+            XCTFail("could not load account details for \(sourceAccountId)")
         }
-    
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testGenerateURIForPayment() {
