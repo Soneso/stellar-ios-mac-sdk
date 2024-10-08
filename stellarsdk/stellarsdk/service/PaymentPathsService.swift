@@ -28,7 +28,16 @@ public class PaymentPathsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
+    @available(*, renamed: "findPaymentPaths(destinationAccount:destinationAssetType:destinationAssetCode:destinationAssetIssuer:destinationAmount:sourceAccount:)")
     open func findPaymentPaths(destinationAccount:String, destinationAssetType:String, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String, sourceAccount:String, response:@escaping FindPaymentPathsResponseClosure) {
+        Task {
+            let result = await findPaymentPaths(destinationAccount: destinationAccount, destinationAssetType: destinationAssetType, destinationAssetCode: destinationAssetCode, destinationAssetIssuer: destinationAssetIssuer, destinationAmount: destinationAmount, sourceAccount: sourceAccount)
+            response(result)
+        }
+    }
+    
+    
+    open func findPaymentPaths(destinationAccount:String, destinationAssetType:String, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String, sourceAccount:String) async -> PaymentPathsResponseEnum {
         
         var requestPath = "/paths"
         var params = Dictionary<String,String>()
@@ -40,11 +49,11 @@ public class PaymentPathsService: NSObject {
         params["source_account"] = sourceAccount
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        findPaymentPathsFrom(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await findPaymentPathsFrom(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
     /// The Stellar Network allows payments to be made across assets through path payments. A path payment specifies a series of assets to route a payment through, from source asset (the asset debited from the payer) to destination asset (the asset credited to the payee).
@@ -68,7 +77,16 @@ public class PaymentPathsService: NSObject {
     ///
     /// XLM should be represented as "native". Issued assets should be represented as "Code:IssuerAccountID". "Code" must consist of alphanumeric ASCII characters.
     /// This endpoint responds with a page of path resources
+    @available(*, renamed: "strictReceive(sourceAccount:sourceAssets:destinationAccount:destinationAssetType:destinationAssetCode:destinationAssetIssuer:destinationAmount:)")
     open func strictReceive(sourceAccount:String? = nil, sourceAssets:String? = nil, destinationAccount:String? = nil, destinationAssetType:String? = nil, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String? = nil, response:@escaping FindPaymentPathsResponseClosure) {
+        Task {
+            let result = await strictReceive(sourceAccount: sourceAccount, sourceAssets: sourceAssets, destinationAccount: destinationAccount, destinationAssetType: destinationAssetType, destinationAssetCode: destinationAssetCode, destinationAssetIssuer: destinationAssetIssuer, destinationAmount: destinationAmount)
+            response(result)
+        }
+    }
+    
+    
+    open func strictReceive(sourceAccount:String? = nil, sourceAssets:String? = nil, destinationAccount:String? = nil, destinationAssetType:String? = nil, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String? = nil) async -> PaymentPathsResponseEnum {
         
         var requestPath = "/paths/strict-receive"
         var params = Dictionary<String,String>()
@@ -82,11 +100,11 @@ public class PaymentPathsService: NSObject {
         
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        findPaymentPathsFrom(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await findPaymentPathsFrom(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
     /// The Stellar Network allows payments to be made across assets through path payments. A path payment specifies a series of assets to route a payment through, from source asset (the asset debited from the payer) to destination asset (the asset credited to the payee).
@@ -112,7 +130,16 @@ public class PaymentPathsService: NSObject {
     /// XLM should be represented as "native". Issued assets should be represented as "Code:IssuerAccountID". "Code" must consist of alphanumeric ASCII characters.
     ///
     /// This endpoint responds with a page of path resources
+    @available(*, renamed: "strictSend(sourceAmount:sourceAssetType:sourceAssetCode:sourceAssetIssuer:destinationAccount:destinationAssets:)")
     open func strictSend(sourceAmount:String? = nil, sourceAssetType:String? = nil, sourceAssetCode:String? = nil, sourceAssetIssuer:String? = nil, destinationAccount:String? = nil, destinationAssets:String? = nil, response:@escaping FindPaymentPathsResponseClosure) {
+        Task {
+            let result = await strictSend(sourceAmount: sourceAmount, sourceAssetType: sourceAssetType, sourceAssetCode: sourceAssetCode, sourceAssetIssuer: sourceAssetIssuer, destinationAccount: destinationAccount, destinationAssets: destinationAssets)
+            response(result)
+        }
+    }
+    
+    
+    open func strictSend(sourceAmount:String? = nil, sourceAssetType:String? = nil, sourceAssetCode:String? = nil, sourceAssetIssuer:String? = nil, destinationAccount:String? = nil, destinationAssets:String? = nil) async -> PaymentPathsResponseEnum {
         
         var requestPath = "/paths/strict-send"
         var params = Dictionary<String,String>()
@@ -125,26 +152,34 @@ public class PaymentPathsService: NSObject {
         
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        findPaymentPathsFrom(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await findPaymentPathsFrom(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    @available(*, renamed: "findPaymentPathsFrom(url:)")
     func findPaymentPathsFrom(url:String, response:@escaping FindPaymentPathsResponseClosure) {
-        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let findPaymentPaths = try self.jsonDecoder.decode(FindPaymentPathsResponse.self, from: data)
-                    response(.success(details: findPaymentPaths))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
+        Task {
+            let result = await findPaymentPathsFrom(url: url)
+            response(result)
+        }
+    }
+    
+    
+    func findPaymentPathsFrom(url:String) async -> PaymentPathsResponseEnum {
+        let result = await serviceHelper.GETRequestFromUrl(url: url)
+        switch result {
+        case .success(let data):
+            do {
+                let findPaymentPaths = try self.jsonDecoder.decode(FindPaymentPathsResponse.self, from: data)
+                return .success(details: findPaymentPaths)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
 }
