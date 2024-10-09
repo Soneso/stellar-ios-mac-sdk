@@ -28,36 +28,26 @@ class URISchemeTestCase: XCTestCase {
     var tomlResponseSignatureMissingMock: TomlResponseSignatureMissingMock!
     var postCallbackMock: PostCallbackMock!
     
-    override func setUp() {
-        super.setUp()
-        
-        let expectation = XCTestExpectation(description: "account prepared for tests")
+    override func setUp() async throws {
+        try await super.setUp()
         
         URLProtocol.registerClass(ServerMock.self)
         postCallbackMock = PostCallbackMock(address: "examplePost.com")
         
-        sdk.accounts.getAccountDetails(accountId: accountID) { (response) -> (Void) in
-            switch response {
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: accountID);
+        switch accDetailsResEnum {
+        case .success(let accountResponse):
+            return
+        case .failure(_):
+            let responseEnum = await sdk.accounts.createTestAccount(accountId: accountID)
+            switch responseEnum {
             case .success(_):
-                expectation.fulfill()
-                break
-            case .failure(error: let error):
-                switch error {
-                case .notFound:
-                    self.sdk.accounts.createTestAccount(accountId: self.accountID) { (response) -> (Void) in
-                        switch response {
-                        case .success(_):
-                            expectation.fulfill()
-                        case .failure(_):
-                            XCTFail()
-                        }
-                    }
-                default:
-                    break
-                }
+                return
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+                XCTFail("could not create test account: \(accountID)")
             }
         }
-        wait(for: [expectation], timeout: 25.0)
     }
     
     override func tearDown() {
@@ -68,268 +58,181 @@ class URISchemeTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testAll() {
-        generateUnsignedTxTestUrl()
+    func testAll() async {
+        await generateUnsignedTxTestUrl()
         generatePaymentOperationURIScheme()
-        checkMissingSignatureFromURIScheme()
-        checkMissingDomainFromURIScheme()
+        await checkMissingSignatureFromURIScheme()
+        await checkMissingDomainFromURIScheme()
         generateSignedTxTestUrl()
-        validateTestUrl()
-        signAndSubmitTransaction()
-        generateUnsignedTxTestUrl()
+        await validateTestUrl()
+        await signAndSubmitTransaction()
+        
+        await generateUnsignedTxTestUrl()
         generateSignedCallbackTxTestUrl()
-        signAndSubmitCallbackTxUrl()
-        checkTransactionXDRMissing()
-        checkNotConfirmed()
-        checkTomlSignatureMissing()
+        await signAndSubmitCallbackTxUrl()
+        await checkTransactionXDRMissing()
+        await checkNotConfirmed()
+        await checkTomlSignatureMissing()
     }
     
-    func generateUnsignedTxTestUrl() {
-        XCTContext.runActivity(named: "generateUnsignedTxTestUrl") { activity in
-            let expectation = XCTestExpectation(description: "unsigned test url created")
-            let keyPair = try! KeyPair(secretSeed: secretSeed)
-            sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
-                switch response {
-                case .success(let data):
-                    let op = try! SetOptionsOperation(sourceAccountId: keyPair.accountId, homeDomain: "www.soneso.com")
-                    let transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, cond: PreconditionsXDR.none, memo: .none, operations: [try! op.toXDR()])
-                    let uriSchemeBuilder = URIScheme()
-                    let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction)
-                    XCTAssert(uriScheme.hasPrefix("web+stellar:tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9O"))
-                    self.signedTestUrl = uriScheme
-                    self.unsignedTestUrl = uriScheme + self.originDomainParam
-                    XCTAssert(true)
-                    expectation.fulfill()
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"createPoolShareTrustlineNotNative", horizonRequestError:error)
-                    XCTAssert(false)
-                }
-            }
-            wait(for: [expectation], timeout: 15.0)
+    func generateUnsignedTxTestUrl() async {
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: keyPair.accountId);
+        switch accDetailsResEnum {
+        case .success(let data):
+            let op = try! SetOptionsOperation(sourceAccountId: keyPair.accountId, homeDomain: "www.soneso.com")
+            let transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, cond: PreconditionsXDR.none, memo: .none, operations: [try! op.toXDR()])
+            let uriSchemeBuilder = URIScheme()
+            let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transaction)
+            XCTAssert(uriScheme.hasPrefix("web+stellar:tx?xdr=AAAAAgAAAADNQvJCahsRijRFXMHgyGXdar95Wya9O"))
+            self.signedTestUrl = uriScheme
+            self.unsignedTestUrl = uriScheme + self.originDomainParam
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"generateUnsignedTxTestUrl()", horizonRequestError: error)
+            XCTFail("could not load account details")
         }
     }
     
     func generatePaymentOperationURIScheme() {
-        XCTContext.runActivity(named: "generatePaymentOperationURIScheme") { activity in
-            let expectation = XCTestExpectation(description: "URL Returned.")
-            let keyPair = try! KeyPair(secretSeed: secretSeed)
-            let uriSchemeBuilder = URIScheme()
-            let uriScheme = uriSchemeBuilder.getPayOperationURI(destination: keyPair.accountId, amount: 123.21,assetCode: "ANA", assetIssuer: "GC4HC3AXQDNAMURMHVGMLFGLQELEQBCE4GI7IOKEAWAKBXY7SXXWBTLV")
-            XCTAssertEqual("web+stellar:pay?destination=GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV&amount=123.21&asset_code=ANA&asset_issuer=GC4HC3AXQDNAMURMHVGMLFGLQELEQBCE4GI7IOKEAWAKBXY7SXXWBTLV", uriScheme)
-            expectation.fulfill()
-        }
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
+        let uriSchemeBuilder = URIScheme()
+        let uriScheme = uriSchemeBuilder.getPayOperationURI(destination: keyPair.accountId, amount: 123.21,assetCode: "ANA", assetIssuer: "GC4HC3AXQDNAMURMHVGMLFGLQELEQBCE4GI7IOKEAWAKBXY7SXXWBTLV")
+        XCTAssertEqual("web+stellar:pay?destination=GDGUF4SCNINRDCRUIVOMDYGIMXOWVP3ZLMTL2OGQIWMFDDSECZSFQMQV&amount=123.21&asset_code=ANA&asset_issuer=GC4HC3AXQDNAMURMHVGMLFGLQELEQBCE4GI7IOKEAWAKBXY7SXXWBTLV", uriScheme)
     }
     
-    func checkMissingSignatureFromURIScheme() {
-        XCTContext.runActivity(named: "checkMissingSignatureFromURIScheme") { activity in
-            let expectation = XCTestExpectation(description: "Missing signature failure.")
-            tomlResponseMock = TomlResponseMock(address: "place.domain.com")
-            uriValidator.checkURISchemeIsValid(url: self.unsignedTestUrl!) { (response) -> (Void) in
-                switch response {
-                case .failure(let error):
-                    if error == URISchemeErrors.missingSignature {
-                        XCTAssert(true)
-                    } else {
-                        XCTAssert(false)
-                    }
-                default:
-                    XCTAssert(false)
-                }
-                expectation.fulfill()
-            }
-            wait(for: [expectation], timeout: 15)
+    func checkMissingSignatureFromURIScheme() async {
+        tomlResponseMock = TomlResponseMock(address: "place.domain.com")
+        let responseEnum = await uriValidator.checkURISchemeIsValid(url: self.unsignedTestUrl!)
+        switch responseEnum {
+        case .success:
+            XCTFail()
+        case .failure(let error):
+            XCTAssertEqual(URISchemeErrors.missingSignature, error)
         }
     }
 
-    func checkMissingDomainFromURIScheme() {
-        XCTContext.runActivity(named: "checkMissingSignatureFromURIScheme") { activity in
-            let expectation = XCTestExpectation(description: "Missing origin domain failure.")
-            
-            uriValidator.checkURISchemeIsValid(url: self.signedTestUrl!) { (response) -> (Void) in
-                switch response {
-                case .failure(let error):
-                    if error == URISchemeErrors.missingOriginDomain{
-                        XCTAssert(true)
-                    } else {
-                        XCTAssert(false)
-                    }
-                default:
-                    XCTAssert(false)
-                }
-                expectation.fulfill()
-            }
-            wait(for: [expectation], timeout: 15)
+    func checkMissingDomainFromURIScheme() async {
+        let responseEnum = await uriValidator.checkURISchemeIsValid(url: self.signedTestUrl!)
+        switch responseEnum {
+        case .success:
+            XCTFail()
+        case .failure(let error):
+            XCTAssertEqual(URISchemeErrors.missingOriginDomain, error)
         }
     }
     
     func generateSignedTxTestUrl() {
-        XCTContext.runActivity(named: "generateSignedTxTestUrl") { activity in
-            let expectation = XCTestExpectation(description: "Signed URL returned.")
-            let keyPair = try! KeyPair(secretSeed: secretSeed)
-            let result = uriValidator.signURI(url: self.unsignedTestUrl!, signerKeyPair: keyPair)
-            switch result {
-                case .success(signedURL: let signedURL):
-                    self.validTestUrl = signedURL
-                    XCTAssert(true)
-                case .failure:
-                    XCTAssert(false)
-            }
-            expectation.fulfill()
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
+        let responseEnum = uriValidator.signURI(url: self.unsignedTestUrl!, signerKeyPair: keyPair)
+        switch responseEnum {
+        case .success(let signedURL):
+            self.validTestUrl = signedURL
+        case .failure(let uRISchemeErrors):
+            XCTFail()
         }
     }
 
-    func validateTestUrl() {
-        XCTContext.runActivity(named: "validateTestUrl") { activity in
-            let expectation = XCTestExpectation(description: "URL is valid.")
-            uriValidator.checkURISchemeIsValid(url: self.validTestUrl!) { (response) -> (Void) in
-                switch response {
-                    case .success:
-                        XCTAssert(true)
-                    case .failure(let error):
-                        print("ValidURIScheme Error: \(error)")
-                        XCTAssert(false)
-                }
-
-                expectation.fulfill()
-            }
-            
-            wait(for: [expectation], timeout: 15.0)
+    func validateTestUrl() async {
+        let responseEnum = await uriValidator.checkURISchemeIsValid(url: self.validTestUrl!)
+        switch responseEnum {
+        case .success:
+            return
+        case .failure(let error):
+            XCTFail()
         }
     }
     
-    func signAndSubmitTransaction() {
-        XCTContext.runActivity(named: "signTransaction") { activity in
-            let expectation = XCTestExpectation(description: "The transaction is signed and sent to the stellar network")
-            let uriBuilder = URIScheme()
-            let keyPair = try! KeyPair(secretSeed: secretSeed)
-            uriBuilder.signAndSubmitTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair) { (response) -> (Void) in
-                switch response {
-                case .success:
-                    XCTAssert(true)
-                case .destinationRequiresMemo(let destinationAccountId):
-                    print("Destination requires memo \(destinationAccountId)")
-                    XCTAssert(false)
-                case .failure(error: let error):
-                    XCTAssert(false)
-                    print("Transaction signing failed! Error: \(error)")
-                }
-                
-                expectation.fulfill()
-            }
-            wait(for: [expectation], timeout: 15)
+    func signAndSubmitTransaction() async {
+        let uriBuilder = URIScheme()
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
+        let responseEnum = await uriBuilder.signAndSubmitTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair)
+        switch responseEnum {
+        case .success:
+            return
+        case .destinationRequiresMemo(let destinationAccountId):
+            print("Destination requires memo \(destinationAccountId)")
+            XCTFail()
+        case .failure(let error):
+            print("Transaction signing failed! Error: \(error)")
+            XCTFail()
         }
     }
     
     func generateSignedCallbackTxTestUrl() {
-        XCTContext.runActivity(named: "generateSignedTxTestUrl") { activity in
-            let expectation = XCTestExpectation(description: "Signed URL returned.")
-            let keyPair = try! KeyPair(secretSeed: secretSeed)
-            let result = uriValidator.signURI(url: self.unsignedTestUrl!, signerKeyPair: keyPair)
-            switch result {
-                case .success(signedURL: let signedURL):
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
+        let result = uriValidator.signURI(url: self.unsignedTestUrl!, signerKeyPair: keyPair)
+        switch result {
+            case .success(signedURL: let signedURL):
                 self.validCallbackTestUrl = signedURL + self.callbackParam
-                    XCTAssert(true)
-                case .failure:
-                    XCTAssert(false)
-            }
-            expectation.fulfill()
+            case .failure:
+                XCTFail()
         }
     }
     
-    func signAndSubmitCallbackTxUrl() {
-         XCTContext.runActivity(named: "signAndSubmitCallbackTxUrl") { activity in
-             let expectation = XCTestExpectation(description: "The transaction is signed and sent to the callback")
-             let uriBuilder = URIScheme()
-             let keyPair = try! KeyPair(secretSeed: secretSeed)
-             uriBuilder.signAndSubmitTransaction(forURL: self.validCallbackTestUrl!, signerKeyPair: keyPair) { (response) -> (Void) in
-                 switch response {
-                 case .success:
-                     XCTAssert(true)
-                 case .destinationRequiresMemo(let destinationAccountId):
-                     print("Destination requires memo \(destinationAccountId)")
-                     XCTAssert(false)
-                 case .failure(error: let error):
-                     XCTAssert(false)
-                     print("Transaction signing failed! Error: \(error)")
-                 }
-                 
-                 expectation.fulfill()
-             }
-             wait(for: [expectation], timeout: 15)
-         }
-    }
-    
-    func checkTransactionXDRMissing() {
-        XCTContext.runActivity(named: "checkTransactionXDRMissing") { activity in
-            let expectation = XCTestExpectation(description: "The transaction is missing from the url!")
-            let uriBuilder = URIScheme()
-            let keyPair = try! KeyPair(secretSeed: secretSeed)
-            let url = "web+stellar:tx?xdr=asdasdsadsadsa"
-            uriBuilder.signAndSubmitTransaction(forURL: url, signerKeyPair: keyPair) { (response) -> (Void) in
-                switch response {
-                case .failure(error: let error):
-                    switch error {
-                    case .requestFailed(let message, _):
-                        XCTAssertEqual("\(message)", "TransactionXDR missing from url!")
-                    default:
-                        XCTAssert(false)
-                    }
-                default:
-                    XCTAssert(false)
-                }
-                expectation.fulfill()
-            }
-            wait(for: [expectation], timeout: 15)
+    func signAndSubmitCallbackTxUrl() async {
+        let uriBuilder = URIScheme()
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
+        let responseEnum = await uriBuilder.signAndSubmitTransaction(forURL: self.validCallbackTestUrl!, signerKeyPair: keyPair)
+        switch responseEnum {
+        case .success:
+            return
+        case .destinationRequiresMemo(let destinationAccountId):
+            print("Destination requires memo \(destinationAccountId)")
+            XCTFail()
+        case .failure(let error):
+            print("Transaction signing failed! Error: \(error)")
+            XCTFail()
         }
     }
     
-    func checkNotConfirmed() {
-        XCTContext.runActivity(named: "checkTransactionXDRMissing") { activity in
-            let expectation = XCTestExpectation(description: "The transaction is going to be canceled by not confirming it!")
-            let uriBuilder = URIScheme()
-            let keyPair = try! KeyPair(secretSeed: secretSeed)
-            uriBuilder.signAndSubmitTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair, transactionConfirmation: { (transaction) -> (Bool) in
-                return false
-            }) { (response) -> (Void) in
-                switch response {
-                case .failure(error: let error):
-                    switch error {
-                    case .requestFailed(let message, _):
-                        XCTAssertEqual("\(message)", "Transaction was not confirmed!")
-                    default:
-                        XCTAssert(false)
-                    }
-                default:
-                    XCTAssert(false)
-                }
-                expectation.fulfill()
+    func checkTransactionXDRMissing() async {
+        let uriBuilder = URIScheme()
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
+        let url = "web+stellar:tx?xdr=asdasdsadsadsa"
+        let responseEnum = await uriBuilder.signAndSubmitTransaction(forURL: url, signerKeyPair: keyPair)
+        switch responseEnum {
+        case .failure(let error):
+            switch error {
+            case .requestFailed(let message, _):
+                XCTAssertEqual("TransactionXDR missing from url!", message)
+            default:
+                XCTFail()
             }
-            wait(for: [expectation], timeout: 15)
+        default:
+            XCTFail()
         }
     }
     
-    func checkTomlSignatureMissing() {
-        XCTContext.runActivity(named: "checkTomlSignatureMissing") { activity in
-            let expectation = XCTestExpectation(description: "The signature field is missing from the toml file!")
-            tomlResponseMock = nil
-            tomlResponseSignatureMissingMock = TomlResponseSignatureMissingMock(address: "place.domain.com")
-            
-            uriValidator.checkURISchemeIsValid(url: self.validTestUrl!) { (response) -> (Void) in
-                switch response {
-                case .success:
-                    XCTAssert(false)
-                case .failure(let error):
-                    if error == URISchemeErrors.tomlSignatureMissing {
-                        XCTAssert(true)
-                    } else {
-                        XCTAssert(false)
-                    }
-                }
-                
-                expectation.fulfill()
+    func checkNotConfirmed() async {
+        let uriBuilder = URIScheme()
+        let keyPair = try! KeyPair(secretSeed: secretSeed)
+        let url = "web+stellar:tx?xdr=asdasdsadsadsa"
+        let responseEnum = await uriBuilder.signAndSubmitTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair, transactionConfirmation: { (transaction) -> (Bool) in
+            return false
+        })
+        switch responseEnum {
+        case .failure(let error):
+            switch error {
+            case .requestFailed(let message, _):
+                XCTAssertEqual("Transaction was not confirmed!", message)
+            default:
+                XCTFail()
             }
-            
-            wait(for: [expectation], timeout: 15.0)
+        default:
+            XCTFail()
+        }
+    }
+    
+    func checkTomlSignatureMissing() async {
+        tomlResponseMock = nil
+        tomlResponseSignatureMissingMock = TomlResponseSignatureMissingMock(address: "place.domain.com")
+        
+        let responseEnum = await uriValidator.checkURISchemeIsValid(url: self.validTestUrl!)
+        switch responseEnum {
+        case .success:
+            XCTFail()
+        case .failure(let error):
+            XCTAssertEqual(URISchemeErrors.tomlSignatureMissing, error)
         }
     }
     
