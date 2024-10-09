@@ -47,8 +47,21 @@ public class StellarToml {
     public var currenciesDocumentation: [CurrencyDocumentation] = []
     public var validatorsInformation: [ValidatorInformation] = []
     
+    /**
+        Parse the string `fromString`
+
+        - Parameter fromString: A string with TOML document
+
+        - Throws: `TomlFileError.invalidToml` if the string is invalid
+    */
     public init(fromString string:String) throws {
-        let toml = try Toml(withString: string)
+        var parsedToml:Toml? = nil
+        do {
+            parsedToml = try Toml(withString: string)
+        } catch {
+            throw TomlFileError.invalidToml
+        }
+        let toml = parsedToml!
         accountInformation = AccountInformation(fromToml: toml)
         
         if let documentation = toml.table("DOCUMENTATION"){
@@ -82,39 +95,51 @@ public class StellarToml {
         
     }
     
-    public static func from(domain: String, secure: Bool = true, completion:@escaping TomlFileClosure) throws {
+    @available(*, renamed: "from(domain:secure:)")
+    public static func from(domain: String, secure: Bool = true, completion:@escaping TomlFileClosure) {
+        Task {
+            let result = await from(domain: domain, secure: secure)
+            completion(result)
+        }
+    }
+    
+    
+    public static func from(domain: String, secure: Bool = true) async -> TomlForDomainEnum {
         guard let url = URL(string: "\(secure ? "https://" : "http://")\(domain)/.well-known/stellar.toml") else {
-            completion(.failure(error: .invalidDomain))
-            return
+            return .failure(error: .invalidDomain)
         }
         
-        DispatchQueue.global().async {
-            do {
-                let tomlString = try String(contentsOf: url, encoding: .utf8)
-                let stellarToml = try StellarToml(fromString: tomlString)
-                completion(.success(response: stellarToml))
-            } catch {
-                completion(.failure(error: .invalidToml))
-            }
+        do {
+            let tomlString = try String(contentsOf: url, encoding: .utf8)
+            let stellarToml = try StellarToml(fromString: tomlString)
+            return .success(response: stellarToml)
+        } catch {
+            return .failure(error: .invalidToml)
         }
     }
     
     /// Alternately to specifying a currency in its content, stellar.toml can link out to a separate TOML file for the currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
-    public static func currencyFrom(url: String, completion:@escaping TomlCurrencyFromUrlClosure) throws {
-        guard let url = URL(string:url) else {
-            completion(.failure(error: .invalidUrl))
-            return
+    @available(*, renamed: "currencyFrom(url:)")
+    public static func currencyFrom(url: String, completion:@escaping TomlCurrencyFromUrlClosure) {
+        Task {
+            let result = await currencyFrom(url: url)
+            completion(result)
+        }
+    }
+    
+    
+    public static func currencyFrom(url: String) async -> TomlCurrencyFromUrlEnum {
+        guard let url1 = URL(string:url) else {
+            return .failure(error: .invalidUrl)
         }
         
-        DispatchQueue.global().async {
-            do {
-                let tomlString = try String(contentsOf: url, encoding: .utf8)
-                let toml = try Toml(withString: tomlString)
-                let currency = CurrencyDocumentation(fromToml: toml)
-                completion(.success(response: currency))
-            } catch {
-                completion(.failure(error: .invalidToml))
-            }
+        do {
+            let tomlString = try String(contentsOf: url1, encoding: .utf8)
+            let toml = try Toml(withString: tomlString)
+            let currency = CurrencyDocumentation(fromToml: toml)
+            return .success(response: currency)
+        } catch {
+            return .failure(error: .invalidToml)
         }
     }
 }
