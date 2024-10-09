@@ -66,177 +66,127 @@ class RecoveryServiceTestCase: XCTestCase {
     }
     
     
-    func testRegisterAccount() {
-        let expectation = XCTestExpectation(description: "Test sep30 register account")
+    func testRegisterAccount() async {
         
         let request = Sep30Request(identities: [senderIdentity, receiverIdentity])
-        recoveryService.registerAccount(address: addressA, request: request, jwt: jwtToken) { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                XCTAssertEqual(self.addressA, response.address)
-                XCTAssertEqual(2, response.identities.count)
-                XCTAssertEqual(1, response.signers.count)
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            }
-            expectation.fulfill()
+        let responseEnum = await recoveryService.registerAccount(address: addressA, request: request, jwt: jwtToken)
+        switch responseEnum {
+        case .success(let response):
+            XCTAssertEqual(self.addressA, response.address)
+            XCTAssertEqual(2, response.identities.count)
+            XCTAssertEqual(1, response.signers.count)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testUpdateIdentities() {
-        let expectation = XCTestExpectation(description: "Test sep30 update identities")
+    func testUpdateIdentities() async {
         
         let request = Sep30Request(identities: [senderIdentity, receiverIdentity])
-        recoveryService.updateIdentitiesForAccount(address: addressA, request: request, jwt: jwtToken) { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                XCTAssertEqual(self.addressA, response.address)
-                XCTAssertEqual(2, response.identities.count)
-                XCTAssertEqual(1, response.signers.count)
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            }
-            expectation.fulfill()
+        let responseEnum = await recoveryService.updateIdentitiesForAccount(address: addressA, request: request, jwt: jwtToken)
+        switch responseEnum {
+        case .success(let response):
+            XCTAssertEqual(self.addressA, response.address)
+            XCTAssertEqual(2, response.identities.count)
+            XCTAssertEqual(1, response.signers.count)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testSignTransaction() {
-        let expectation = XCTestExpectation(description: "Test sep30 sign transaction")
-        
-        recoveryService.signTransaction(address: addressA, signingAddress: signingAddress, transaction:transaction, jwt: jwtToken) { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                XCTAssertEqual(self.signature, response.signature)
-                XCTAssertEqual(self.networkPassphrase, response.networkPassphrase)
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            }
-            expectation.fulfill()
+    func testSignTransaction() async {
+        let responseEnum = await recoveryService.signTransaction(address: addressA, signingAddress: signingAddress, transaction:transaction, jwt: jwtToken)
+        switch responseEnum {
+        case .success(let response):
+            XCTAssertEqual(self.signature, response.signature)
+            XCTAssertEqual(self.networkPassphrase, response.networkPassphrase)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testAccountDetails() {
-        let expectation = XCTestExpectation(description: "Test sep30 account details")
-        
-        recoveryService.accountDetails(address: addressA, jwt: jwtToken) { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                XCTAssertEqual(self.addressA, response.address)
-                XCTAssertEqual(2, response.identities.count)
-                XCTAssertEqual(1, response.signers.count)
-                XCTAssertTrue(response.identities[0].authenticated!)
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            }
-            expectation.fulfill()
+    func testAccountDetails() async {
+        let responseEnum = await recoveryService.accountDetails(address: addressA, jwt: jwtToken)
+        switch responseEnum {
+        case .success(let response):
+            XCTAssertEqual(self.addressA, response.address)
+            XCTAssertEqual(2, response.identities.count)
+            XCTAssertEqual(1, response.signers.count)
+            XCTAssertTrue(response.identities[0].authenticated!)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testDeleteAccount() {
-        let expectation = XCTestExpectation(description: "Test sep30 delete account")
-        
-        recoveryService.deleteAccount(address: addressA, jwt: jwtToken) { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                XCTAssertEqual(self.addressA, response.address)
-                XCTAssertEqual(2, response.identities.count)
-                XCTAssertEqual(1, response.signers.count)
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            }
-            expectation.fulfill()
+    func testDeleteAccount() async {
+        let responseEnum = await recoveryService.deleteAccount(address: addressA, jwt: jwtToken)
+        switch responseEnum {
+        case .success(let response):
+            XCTAssertEqual(self.addressA, response.address)
+            XCTAssertEqual(2, response.identities.count)
+            XCTAssertEqual(1, response.signers.count)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testListAccounts() {
-        let expectation = XCTestExpectation(description: "Test sep30 list accounts")
-        
-        recoveryService.accounts(jwt: jwtToken, after: after) { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                XCTAssertEqual(3, response.accounts.count)
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            }
-            expectation.fulfill()
+    func testListAccounts() async {
+        let responseEnum = await recoveryService.accounts(jwt: jwtToken, after: after)
+        switch responseEnum {
+        case .success(let response):
+            XCTAssertEqual(3, response.accounts.count)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testBadReqErr() {
-        let expectation = XCTestExpectation(description: "Test sep30 bad request")
+    func testBadReqErr() async {
+        let request = Sep30Request(identities: [senderIdentity, receiverIdentity])
+        let responseEnum = await recoveryService.registerAccount(address: "BAD_REQ", request: request, jwt: jwtToken)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let err):
+            switch err {
+            case .badRequest(let message):
+                XCTAssertEqual("bad request", message)
+            default:
+                XCTFail()
+            }
+        }
+    }
+    
+    func testUnauthorizedErr() async {
         
         let request = Sep30Request(identities: [senderIdentity, receiverIdentity])
-        recoveryService.registerAccount(address: "BAD_REQ", request: request, jwt: jwtToken) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTFail("should not succeed")
-            case .failure(let err):
-                switch err{
-                case .badRequest(let message):
-                    XCTAssertEqual("bad request", message)
-                default:
-                    XCTFail()
-                }
+        let responseEnum = await recoveryService.registerAccount(address: "UNAUTH", request: request, jwt: jwtToken)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let err):
+            switch err {
+            case .unauthorized(let message):
+                XCTAssertEqual("unauthorized", message)
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testUnauthorizedErr() {
-        let expectation = XCTestExpectation(description: "Test sep30 unauthorized")
+    func testNotFoundErr() async {
         
         let request = Sep30Request(identities: [senderIdentity, receiverIdentity])
-        recoveryService.registerAccount(address: "UNAUTH", request: request, jwt: jwtToken) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTFail("should not succeed")
-            case .failure(let err):
-                switch err{
-                case .unauthorized(let message):
-                    XCTAssertEqual("unauthorized", message)
-                default:
-                    XCTFail()
-                }
+        let responseEnum = await recoveryService.registerAccount(address: "NOT_FOUND", request: request, jwt: jwtToken)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let err):
+            switch err {
+            case .notFound(let message):
+                XCTAssertEqual("not found", message)
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
-    }
-    
-    func testNotFoundErr() {
-        let expectation = XCTestExpectation(description: "Test sep30 not found")
-        
-        let request = Sep30Request(identities: [senderIdentity, receiverIdentity])
-        recoveryService.registerAccount(address: "NOT_FOUND", request: request, jwt: jwtToken) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTFail("should not succeed")
-            case .failure(let err):
-                switch err{
-                case .notFound(let message):
-                    XCTAssertEqual("not found", message)
-                default:
-                    XCTFail()
-                }
-            }
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
 }
