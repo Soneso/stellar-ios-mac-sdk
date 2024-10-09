@@ -37,371 +37,248 @@ final class KycServerTestCase: XCTestCase {
         kycService = KycService(kycServiceAddress: "http://\(kycServer)")
     }
     
-    override func tearDown() {
-        
-        
-        super.tearDown()
-    }
-    
-    func testPutCustomerInfoSuccess() {
+    func testPutCustomerInfoSuccess() async {
         var request = PutCustomerInfoRequest(jwt: "200_jwt")
         request.fields = [KYCNaturalPersonFieldsEnum.firstName("John"), KYCNaturalPersonFieldsEnum.lastName("Doe")];
-        let expectation = XCTestExpectation(description: "Test put customer info success")
-        
-        kycService.putCustomerInfo(request: request) { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(true)
-            case .failure(_):
-                XCTAssert(false)
-            }
-            expectation.fulfill()
+        let responseEnum = await kycService.putCustomerInfo(request: request)
+        switch responseEnum {
+        case .success(_):
+            return
+        case .failure(_):
+            XCTFail()
         }
-
-        wait(for: [expectation], timeout: 15.0)
     }
     
     
-    func testPutCustomerInfoNotFound() {
+    func testPutCustomerInfoNotFound() async {
         var request = PutCustomerInfoRequest(jwt: "404_jwt")
         request.fields = [KYCNaturalPersonFieldsEnum.firstName("Max"), KYCNaturalPersonFieldsEnum.lastName("Man")];
-        let expectation = XCTestExpectation(description: "Test put customer info not found")
-        
-        kycService.putCustomerInfo(request: request) { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .notFound(let message):
-                    XCTAssert(message == "customer with `id` not found")
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+        let responseEnum = await kycService.putCustomerInfo(request: request)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .notFound(let message):
+                XCTAssertEqual("customer with `id` not found", message)
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testPutCustomerInfoBadData() {
+    func testPutCustomerInfoBadData() async {
         var request = PutCustomerInfoRequest(jwt: "400_jwt")
         request.fields = [KYCNaturalPersonFieldsEnum.photoIdFront("Face".data(using: .utf8)!)];
-        let expectation = XCTestExpectation(description: "Test put customer info bad data")
-        
-        kycService.putCustomerInfo(request: request) { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .badRequest(let message):
-                    XCTAssert(message == "'photo_id_front' cannot be decoded. Must be jpg or png.")
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+        let responseEnum = await kycService.putCustomerInfo(request: request)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .badRequest(let message):
+                XCTAssertEqual("'photo_id_front' cannot be decoded. Must be jpg or png.", message)
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testPutCustomerInfoUnauthorized() {
+    func testPutCustomerInfoUnauthorized() async {
         let request = PutCustomerInfoRequest(jwt: "x_jwt")
-        let expectation = XCTestExpectation(description: "Test put customer info bad data")
-        
-        kycService.putCustomerInfo(request: request) { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .unauthorized(_):
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+        let responseEnum = await kycService.putCustomerInfo(request: request)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .unauthorized(_):
+                return
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetCustomerInfoAccepted() {
+    func testGetCustomerInfoAccepted() async {
         let request = GetCustomerInfoRequest(jwt: "accepted_jwt")
-        let expectation = XCTestExpectation(description: "Test get customer accepted response")
-        
-        kycService.getCustomerInfo(request: request) { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                XCTAssertEqual(response.status, "ACCEPTED")
-                XCTAssert(true)
-            case .failure(_):
-                XCTAssert(false)
-            }
-            expectation.fulfill()
+        let responseEnum = await kycService.getCustomerInfo(request: request)
+        switch responseEnum {
+        case .success(let response):
+            XCTAssertEqual("ACCEPTED", response.status)
+        case .failure(_):
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetCustomerSomeInfoNeeded() {
+    func testGetCustomerSomeInfoNeeded() async {
         let request = GetCustomerInfoRequest(jwt: "some_info_jwt")
-        let expectation = XCTestExpectation(description: "Test get customer some info needed response")
-        
-        kycService.getCustomerInfo(request: request) { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                XCTAssertEqual(response.status, "NEEDS_INFO")
-                XCTAssert(true)
-            case .failure(_):
-                XCTAssert(false)
-            }
-            expectation.fulfill()
+        let responseEnum = await kycService.getCustomerInfo(request: request)
+        switch responseEnum {
+        case .success(let response):
+            XCTAssertEqual("NEEDS_INFO", response.status)
+        case .failure(_):
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetCustomerNotFound() {
+    func testGetCustomerNotFound() async {
         let request = GetCustomerInfoRequest(jwt: "404_jwt")
-        let expectation = XCTestExpectation(description: "Test get customer not found")
-        
-        kycService.getCustomerInfo(request: request) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .notFound(let message):
-                    XCTAssert(message == "customer not found for id: 7e285e7d-d984-412c-97bc-909d0e399fbf")
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+        let responseEnum = await kycService.getCustomerInfo(request: request)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .notFound(let message):
+                XCTAssertEqual("customer not found for id: 7e285e7d-d984-412c-97bc-909d0e399fbf", message)
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetCustomerBadData() {
+    func testGetCustomerBadData() async {
         var request = GetCustomerInfoRequest(jwt: "400_jwt")
         request.type = "BUY_DATA"
-        let expectation = XCTestExpectation(description: "Test get customer bad data")
-        
-        kycService.getCustomerInfo(request: request) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .badRequest(let message):
-                    XCTAssert(message == "unrecognized 'type' value. see valid values in the /info response")
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+        let responseEnum = await kycService.getCustomerInfo(request: request)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .badRequest(let message):
+                XCTAssertEqual("unrecognized 'type' value. see valid values in the /info response", message)
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testPutVerificationSuccess() {
+    func testPutVerificationSuccess() async {
         let request = PutCustomerVerificationRequest(id: "391fb415-c223-4608-b2f5-dd1e91e3a986", fields: ["mobile_number_verification": "2735021", "email_verification": "T32U1"], jwt: "200_jwt")
-
-        let expectation = XCTestExpectation(description: "Test put verification success")
-        
-        kycService.putCustomerVerification(request: request) { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                XCTAssertEqual(response.status, "ACCEPTED")
-                XCTAssert(true)
-            case .failure(_):
-                XCTAssert(false)
-            }
-            expectation.fulfill()
+        let responseEnum = await kycService.putCustomerVerification(request: request)
+        switch responseEnum {
+        case .success(let response):
+            XCTAssertEqual("ACCEPTED", response.status)
+        case .failure(_):
+            XCTFail()
         }
-
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testPutVerificationBadData() {
+    func testPutVerificationBadData() async {
         let request = PutCustomerVerificationRequest(id: "391fb415-c223-4608-b2f5-dd1e91e3a986", fields: ["mobile_number_verification": "1871287"], jwt: "400_jwt")
-
-        let expectation = XCTestExpectation(description: "Test put verification bad data")
-        
-        kycService.putCustomerVerification(request: request) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .badRequest(let message):
-                    XCTAssert(message == "The provided confirmation code was invalid.")
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+        let responseEnum = await kycService.putCustomerVerification(request: request)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .badRequest(let message):
+                XCTAssertEqual("The provided confirmation code was invalid.", message)
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testPutVerificationNotFound() {
+    func testPutVerificationNotFound() async {
         let request = PutCustomerVerificationRequest(id: "391fb415-c223-4608-b2f5-dd1e91e3a986", fields: ["mobile_number_verification": "1871287"], jwt: "404_jwt")
-
-        let expectation = XCTestExpectation(description: "Test put verification customer not found")
-        
-        kycService.putCustomerVerification(request: request) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .notFound(let message):
-                    XCTAssert(message == "customer with `id` not found")
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+        let responseEnum = await kycService.putCustomerVerification(request: request)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .notFound(let message):
+                XCTAssertEqual("customer with `id` not found", message)
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testDeleteCustomerInfoSuccess() {
-        let expectation = XCTestExpectation(description: "Test delete customer info success")
-        
-        kycService.deleteCustomerInfo(account: successAccount, jwt: "200_jwt") { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(true)
-            case .failure(_):
-                XCTAssert(false)
-            }
-            expectation.fulfill()
+    func testDeleteCustomerInfoSuccess() async {
+        let responseEnum = await kycService.deleteCustomerInfo(account: successAccount, jwt: "200_jwt")
+        switch responseEnum {
+        case .success:
+            return
+        case .failure(_):
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testDeleteCustomerInfoUnauthorized() {
-        let expectation = XCTestExpectation(description: "Test delete customer info unauthorized")
-        
-        kycService.deleteCustomerInfo(account: unauthorizedCustomerAccount, jwt: "x_jwt") { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .unauthorized(_):
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+    func testDeleteCustomerInfoUnauthorized() async {
+        let responseEnum = await kycService.deleteCustomerInfo(account: unauthorizedCustomerAccount, jwt: "x_jwt")
+        switch responseEnum {
+        case .success:
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .unauthorized(_):
+                return
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testDeleteCustomerInfoNotFound() {
-        let expectation = XCTestExpectation(description: "Test delete customer info not found")
-        
-        kycService.deleteCustomerInfo(account: errorAccount, jwt: "x_jwt") { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .notFound(let message):
-                    XCTAssert(message == "customer with `id` not found")
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+    func testDeleteCustomerInfoNotFound() async {
+        let responseEnum = await kycService.deleteCustomerInfo(account: errorAccount, jwt: "x_jwt")
+        switch responseEnum {
+        case .success:
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .notFound(let message):
+                XCTAssertEqual("customer with `id` not found", message)
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testPutCallbackUrlSuccess() {
+    func testPutCallbackUrlSuccess() async {
         let request = PutCustomerCallbackRequest(url: "https://test.com/cb", jwt: "200_jwt")
-        let expectation = XCTestExpectation(description: "Test put callback success")
-        
-        kycService.putCustomerCallback(request: request) { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(true)
-            case .failure(_):
-                XCTAssert(false)
-            }
-            expectation.fulfill()
+        let responseEnum = await kycService.putCustomerCallback(request: request)
+        switch responseEnum {
+        case .success:
+            return
+        case .failure(_):
+            XCTFail()
         }
-
-        wait(for: [expectation], timeout: 15.0)
     }
     
     
-    func testPutCallbackNotFound() {
+    func testPutCallbackNotFound() async {
         let request = PutCustomerCallbackRequest(url: "https://test.com/cb", jwt: "404_jwt")
-        let expectation = XCTestExpectation(description: "Test put callback not found")
-        
-        kycService.putCustomerCallback(request: request) { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .notFound(let message):
-                    XCTAssert(message == "customer with `id` not found")
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+        let responseEnum = await kycService.putCustomerCallback(request: request)
+        switch responseEnum {
+        case .success:
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .notFound(let message):
+                XCTAssertEqual("customer with `id` not found", message)
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testPutCallbackBadData() {
+    func testPutCallbackBadData() async {
         let request = PutCustomerCallbackRequest(url: "parrot", jwt: "400_jwt")
-        let expectation = XCTestExpectation(description: "Test put callback bad data")
-        
-        kycService.putCustomerCallback(request: request) { (response) -> (Void) in
-            switch response {
-            case .success:
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .badRequest(let message):
-                    XCTAssert(message == "invalid url")
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+        let responseEnum = await kycService.putCustomerCallback(request: request)
+        switch responseEnum {
+        case .success:
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .badRequest(let message):
+                XCTAssertEqual("invalid url", message)
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-
-        wait(for: [expectation], timeout: 15.0)
     }
 }

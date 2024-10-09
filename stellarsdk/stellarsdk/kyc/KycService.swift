@@ -59,29 +59,35 @@ public class KycService: NSObject {
     }
     
     /// Creates a KycService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    @available(*, renamed: "forDomain(domain:)")
     public static func forDomain(domain:String, completion:@escaping KycServiceClosure) {
+        Task {
+            let result = await forDomain(domain: domain)
+            completion(result)
+        }
+    }
+    
+    /// Creates a KycService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    public static func forDomain(domain:String) async -> KycServiceForDomainEnum {
         let kycServerKey = "KYC_SERVER"
         let transferServerKey = "TRANSFER_SERVER"
         
         guard let url = URL(string: "\(domain)/.well-known/stellar.toml") else {
-            completion(.failure(error: .invalidDomain))
-            return
+            return .failure(error: .invalidDomain)
         }
         
-        DispatchQueue.global().async {
-            do {
-                let tomlString = try String(contentsOf: url, encoding: .utf8)
-                let toml = try Toml(withString: tomlString)
-                if let kycServerAddress = toml.string(kycServerKey) != nil ? toml.string(kycServerKey) : toml.string(transferServerKey) {
-                    let kycService = KycService(kycServiceAddress: kycServerAddress)
-                    completion(.success(response: kycService))
-                } else {
-                    completion(.failure(error: .noKycOrTransferServerSet))
-                }
-                
-            } catch {
-                completion(.failure(error: .invalidToml))
+        do {
+            let tomlString = try String(contentsOf: url, encoding: .utf8)
+            let toml = try Toml(withString: tomlString)
+            if let kycServerAddress = toml.string(kycServerKey) != nil ? toml.string(kycServerKey) : toml.string(transferServerKey) {
+                let kycService = KycService(kycServiceAddress: kycServerAddress)
+                return .success(response: kycService)
+            } else {
+                return .failure(error: .noKycOrTransferServerSet)
             }
+            
+        } catch {
+            return .failure(error: .invalidToml)
         }
     }
     
@@ -91,7 +97,21 @@ public class KycService: NSObject {
      2 .Check the status of a customer that may already be registered
      See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-get
      */
+    @available(*, renamed: "getCustomerInfo(request:)")
     public func getCustomerInfo(request: GetCustomerInfoRequest, completion:@escaping GetCustomerInfoResponseClosure) {
+        Task {
+            let result = await getCustomerInfo(request: request)
+            completion(result)
+        }
+    }
+    
+    /**
+     This allows you to:
+     1. Fetch the fields the server requires in order to register a new customer via a PUT /customer request
+     2 .Check the status of a customer that may already be registered
+     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-get
+     */
+    public func getCustomerInfo(request: GetCustomerInfoRequest) async -> GetCustomerInfoResponseEnum {
         var requestPath = "/customer"
         
         if let id = request.id {
@@ -120,19 +140,18 @@ public class KycService: NSObject {
             requestPath = requestPath.replacingCharacters(in: range, with: "?")
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(GetCustomerInfoResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(GetCustomerInfoResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -140,21 +159,32 @@ public class KycService: NSObject {
      Upload customer information to an anchor in an authenticated and idempotent fashion.
      See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put
      */
+    @available(*, renamed: "putCustomerInfo(request:)")
     public func putCustomerInfo(request: PutCustomerInfoRequest,  completion:@escaping PutCustomerInfoResponseClosure) {
+        Task {
+            let result = await putCustomerInfo(request: request)
+            completion(result)
+        }
+    }
+    
+    /**
+     Upload customer information to an anchor in an authenticated and idempotent fashion.
+     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put
+     */
+    public func putCustomerInfo(request: PutCustomerInfoRequest) async -> PutCustomerInfoResponseEnum {
         let requestPath = "/customer"
         
-        serviceHelper.PUTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters(), jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(PutCustomerInfoResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.PUTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters(), jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(PutCustomerInfoResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -162,37 +192,58 @@ public class KycService: NSObject {
      This endpoint allows servers to accept data values, usually confirmation codes, that verify a previously provided field via PUT /customer, such as mobile_number or email_address.
      See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
      */
+    @available(*, renamed: "putCustomerVerification(request:)")
     public func putCustomerVerification(request: PutCustomerVerificationRequest,  completion:@escaping GetCustomerInfoResponseClosure) {
+        Task {
+            let result = await putCustomerVerification(request: request)
+            completion(result)
+        }
+    }
+    
+    /**
+     This endpoint allows servers to accept data values, usually confirmation codes, that verify a previously provided field via PUT /customer, such as mobile_number or email_address.
+     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
+     */
+    public func putCustomerVerification(request: PutCustomerVerificationRequest) async -> GetCustomerInfoResponseEnum {
         let requestPath = "/customer/verification"
         
-        serviceHelper.PUTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters(), jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(GetCustomerInfoResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.PUTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters(), jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(GetCustomerInfoResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
     /**
      Delete all personal information that the anchor has stored about a given customer. [account] is the Stellar account ID (G...) of the customer to delete. This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted.
      */
+    @available(*, renamed: "deleteCustomerInfo(account:jwt:)")
     public func deleteCustomerInfo(account: String, jwt:String, completion:@escaping DeleteCustomerResponseClosure) {
+        Task {
+            let result = await deleteCustomerInfo(account: account, jwt: jwt)
+            completion(result)
+        }
+    }
+    
+    /**
+     Delete all personal information that the anchor has stored about a given customer. [account] is the Stellar account ID (G...) of the customer to delete. This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted.
+     */
+    public func deleteCustomerInfo(account: String, jwt:String) async -> DeleteCustomerResponseEnum {
         let requestPath = "/customer/\(account)"
         
-        serviceHelper.DELETERequestWithPath(path: requestPath, jwtToken: jwt) { (result) -> (Void) in
-            switch result {
-            case .success(_):
-                completion(.success)
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
-            }
+        let result = await serviceHelper.DELETERequestWithPath(path: requestPath, jwtToken: jwt)
+        switch result {
+        case .success(_):
+            return .success
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -200,16 +251,27 @@ public class KycService: NSObject {
      Allow the wallet to provide a callback URL to the anchor. The provided callback URL will replace (and supercede) any previously-set callback URL for this account.
      See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-callback-put
      */
+    @available(*, renamed: "putCustomerCallback(request:)")
     public func putCustomerCallback(request: PutCustomerCallbackRequest,  completion:@escaping PutCustomerCallbackResponseClosure) {
+        Task {
+            let result = await putCustomerCallback(request: request)
+            completion(result)
+        }
+    }
+    
+    /**
+     Allow the wallet to provide a callback URL to the anchor. The provided callback URL will replace (and supercede) any previously-set callback URL for this account.
+     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-callback-put
+     */
+    public func putCustomerCallback(request: PutCustomerCallbackRequest) async -> PutCustomerCallbackResponseEnum {
         let requestPath = "/customer/callback"
         
-        serviceHelper.PUTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters(), jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(_):
-                completion(.success)
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
-            }
+        let result = await serviceHelper.PUTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters(), jwtToken: request.jwt)
+        switch result {
+        case .success(_):
+            return .success
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
