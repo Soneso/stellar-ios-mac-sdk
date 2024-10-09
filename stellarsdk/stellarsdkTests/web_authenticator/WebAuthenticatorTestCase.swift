@@ -91,664 +91,408 @@ class WebAuthenticatorTestCase: XCTestCase {
         sendChallengeServerMock = WebAuthenticatorSendChallengeResponseMock(address: "api.stellar.org")
     }
 
-    func testWebAuthenticatorFromDomainSuccess() {
-        let expectation = XCTestExpectation(description: "WebAuthenticator is created with success.")
-        try? WebAuthenticator.from(domain: domain, network: .testnet) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTAssert(true)
-            case .failure(_):
-                XCTAssert(false)
-            }
-            expectation.fulfill()
+    func testWebAuthenticatorFromDomainSuccess() async {
+        let responseEnum = await WebAuthenticator.from(domain: domain, network: .testnet)
+        switch responseEnum {
+        case .success(_):
+            return
+        case .failure(_):
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
 
-    func testWebAuthenticatorFromDomainFailure() {
-        let expectation = XCTestExpectation(description: "WebAuthenticator call fails.")
-        try? WebAuthenticator.from(domain: failureDomain, network: .testnet) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTAssert(false)
-            case .failure(_):
-                XCTAssert(true)
-            }
-            expectation.fulfill()
+    func testWebAuthenticatorFromDomainFailure() async {
+        let responseEnum = await WebAuthenticator.from(domain: failureDomain, network: .testnet)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(_):
+            return
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetJWTSuccess() {
-        let expectation = XCTestExpectation(description: "JWT is received with success.")
-        
+    func testGetJWTSuccess() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: clientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(true)
-                case .failure(_):
-                    XCTAssert(false)
-                }
-                expectation.fulfill()
-            }
+        let keyPair = try! KeyPair(secretSeed: clientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            return
+        case .failure(_):
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeFailure() {
-        let expectation = XCTestExpectation(description: "A request error is received.")
+    func testGetChallengeFailure() async {
         
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: challengeFailClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .requestError(_):
-                        XCTAssert(true)
-                    default:
-                        XCTAssert(false)
-                    }
-                    
-                }
-                expectation.fulfill()
+        let keyPair = try! KeyPair(secretSeed: challengeFailClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .requestError(_):
+                return
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidSequenceNumber() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
+    func testGetChallengeInvalidSequenceNumber() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidSeqClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .sequenceNumberNot0 {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: invalidSeqClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .sequenceNumberNot0 {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidSourceAccount() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
+    func testGetChallengeInvalidSourceAccount() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidSourceAccClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .invalidSourceAccount {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: invalidSourceAccClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .invalidSourceAccount {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeValidSecondOperation() {
-        let expectation = XCTestExpectation(description: "JWT is received with success.")
-        
+    func testGetChallengeValidSecondOperation() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: validSecondOperationClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(true)
-                case .failure(_):
-                    XCTAssert(false)
-                }
-                expectation.fulfill()
-            }
+        let keyPair = try! KeyPair(secretSeed: validSecondOperationClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            return
+        case .failure(_):
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidSecondOperation() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
+    
+    func testGetChallengeInvalidSecondSourceAccount() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidSecondOperationClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .invalidSourceAccount {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: invalidSecondOperationClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .invalidSourceAccount {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidSecondSourceAccount() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
+    func testGetChallengeInvalidOperationType() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidSecondOperationClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .invalidSourceAccount {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: invalidOperationClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .invalidOperationType {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidOperationType() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
+    func testGetChallengeInvalidOperationCount() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidOperationClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .invalidOperationType {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: invalidOperationCountClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .invalidOperationCount {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidOperationCount() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
+    func testGetChallengeInvalidHomeDomain() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidOperationCountClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .invalidOperationCount {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: invalidHomeDomainClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .invalidHomeDomain {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidHomeDomain() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
+    func testGetChallengeInvalidWebAuthDomain() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidHomeDomainClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .invalidHomeDomain {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: invalidWebAuthDomainClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .invalidWebAuthDomain {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidWebAuthDomain() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
+    func testGetChallengeInvalidTimebounds() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidWebAuthDomainClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .invalidWebAuthDomain {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: invalidTimeboundsClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .invalidTimeBounds {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidTimebounds() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
+    func testGetChallengeInvalidSignature() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidTimeboundsClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .invalidTimeBounds {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: invalidSignatureClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .invalidSignature {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidSignature() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
+    func testGetChallengeSignatureNotFound() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidSignatureClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .invalidSignature {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: notFoundSignatureClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .signatureNotFound {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeSignatureNotFound() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
+    func testSendChallengeInvalidSignature() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: notFoundSignatureClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .signatureNotFound {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: invalidClientSignatureClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .requestError(let error):
+                switch error {
+                case .requestFailed(let message, _):
+                    XCTAssertEqual("The provided transaction is not valid", message)
+                default:
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testSendChallengeInvalidSignature() {
-        let expectation = XCTestExpectation(description: "A server error for invalid signature.")
-        
+    func testGetChallengeInvalidClientDomainOpSourceAccount() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidClientSignatureClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .requestError(let error):
-                        switch error {
-                        case .requestFailed(let message, _):
-                            XCTAssert(message == "The provided transaction is not valid")
-                        default:
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: invalidCliendDomainOpSourceAccountClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .invalidSourceAccount {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidClientDomainOpSourceAccount() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
-        
+    func testGetChallengeValidClientDomainOpSourceAccount() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidCliendDomainOpSourceAccountClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            let clientDomain = "domain.client.com"
-            let clientDomainAccountKey = try! KeyPair.generateRandomKeyPair()
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers, clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKey) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .invalidSourceAccount {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
-                }
-                expectation.fulfill()
-            }
+        let keyPair = try! KeyPair(secretSeed: invalidCliendDomainOpSourceAccountClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let clientDomain = "domain.client.com"
+        let clientDomainAccountKey = try! KeyPair(secretSeed: "SBE64KCQLJXJPMYLF22YCUSTH7WXJ7VZSCTPHXY3VDSIF3QUHJDBE6R6")
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair], clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKey)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(_):
+            return
         }
+    }
         
-        wait(for: [expectation], timeout: 15.0)
+    func testGetJWTMemoSuccess() async {
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        let keyPair = try! KeyPair(secretSeed: challengeMuxedAccountSeed)
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: challengeMuxedAccountIdG, memo: challengeMuxedAccountIdGMemo, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            return
+        case .failure(_):
+            XCTFail()
+        }
     }
     
-    func testGetChallengeValidClientDomainOpSourceAccount() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
-        
+    func testGetJWTMuxedNoMemoSuccess() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: validCliendDomainOpSourceAccountClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            let clientDomain = "domain.client.com"
-            let clientDomainAccountKey = try! KeyPair(secretSeed: "SBE64KCQLJXJPMYLF22YCUSTH7WXJ7VZSCTPHXY3VDSIF3QUHJDBE6R6")
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers, clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKey) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(true)
-                case .failure(let error):
-                    print(error)
-                    XCTAssert(false)
-                }
-                expectation.fulfill()
-            }
+        let keyPair = try! KeyPair(secretSeed: challengeMuxedAccountSeed)
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: challengeMuxedAccountIdM, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            return
+        case .failure(_):
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 65.0)
-    }
-        
-    func testGetJWTMemoSuccess() {
-        let expectation = XCTestExpectation(description: "JWT is received with success.")
-        
-        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: challengeMuxedAccountSeed) {
-            let userAccountId = challengeMuxedAccountIdG
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, memo: challengeMuxedAccountIdGMemo, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(true)
-                case .failure(_):
-                    XCTAssert(false)
-                }
-                expectation.fulfill()
-            }
-        }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetJWTMuxedNoMemoSuccess() {
-        let expectation = XCTestExpectation(description: "JWT is received with success.")
-        
+    func testGetJWTMuxedAndMemoFail() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: challengeMuxedAccountSeed) {
-            let userAccountId = challengeMuxedAccountIdM
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(true)
-                case .failure(_):
-                    XCTAssert(false)
-                }
-                expectation.fulfill()
+        let keyPair = try! KeyPair(secretSeed: challengeMuxedAccountSeed)
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: challengeMuxedAccountIdM, memo:challengeMuxedAccountIdGMemo, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .requestError(_):
+                return
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetJWTMuxedAndMemoFail() {
-        let expectation = XCTestExpectation(description: "Fails because one can not pass muxed account + memo.")
-        
+    func testGetChallengeInvalidMemoType() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: challengeMuxedAccountSeed) {
-            let userAccountId = challengeMuxedAccountIdM
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, memo:challengeMuxedAccountIdGMemo, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .requestError(_):
-                        XCTAssert(true)
-                    default:
-                        XCTAssert(false)
-                    }
+        let keyPair = try! KeyPair(secretSeed: invalidMemoTypeClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, memo: 12345, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .invalidMemoType {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetChallengeInvalidMemoType() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
+    func testGetChallengeInvalidMemoValue() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidMemoTypeClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, memo: 12345, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .invalidMemoType {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
+        let keyPair = try! KeyPair(secretSeed: invalidMemoValueClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, memo: 12345, signers: [keyPair])
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .validationErrorError(let error):
+                if error != .invalidMemoValue {
+                    XCTFail()
                 }
-                expectation.fulfill()
+            default:
+                XCTFail()
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
-    }
-    
-    func testGetChallengeInvalidMemoValue() {
-        let expectation = XCTestExpectation(description: "A validation error is received.")
-        
-        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        if let keyPair = try? KeyPair(secretSeed: invalidMemoValueClientPrivateKey) {
-            let userAccountId = keyPair.accountId
-            let signers = [keyPair]
-            webAuthenticator.jwtToken(forUserAccount: userAccountId, memo: 12345, signers: signers) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(false)
-                case .failure(let error):
-                    switch error {
-                    case .validationErrorError(let error):
-                        if error == .invalidMemoValue {
-                            XCTAssert(true)
-                        } else {
-                            XCTAssert(false)
-                        }
-                    default:
-                        XCTAssert(false)
-                    }
-                    
-                }
-                expectation.fulfill()
-            }
-        }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
 }

@@ -86,12 +86,12 @@ public typealias SendChallengeResponseClosure = (_ response:SendChallengeRespons
 public typealias GetJWTTokenResponseClosure = (_ response:GetJWTTokenResponseEnum) -> (Void)
 
 public class WebAuthenticator {
-    private let authEndpoint: String
-    private let serverSigningKey: String
+    public let authEndpoint: String
+    public let serverSigningKey: String
     private let serviceHelper: ServiceHelper
-    private let network: Network
-    private let serverHomeDomain: String
-    private let gracePeriod:UInt64 = 60 * 5
+    public let network: Network
+    public let serverHomeDomain: String
+    public let gracePeriod:UInt64 = 60 * 5
     
     /// Get a WebAuthenticator instange from a domain
     ///
@@ -99,27 +99,37 @@ public class WebAuthenticator {
     /// - Parameter network: The network used.
     /// - Parameter secure: The protocol used (http or https).
     ///
-    /// - Throws:
-    ///     - A WebAuthenticatorError describing the error.
+    @available(*, renamed: "from(domain:network:secure:)")
+    public static func from(domain: String, network:Network, secure: Bool = true, completion:@escaping WebAuthenticatorClosure) {
+        Task {
+            let result = await from(domain: domain, network: network, secure: secure)
+            completion(result)
+        }
+    }
+    
+    /// Get a WebAuthenticator instange from a domain
     ///
-    public static func from(domain: String, network:Network, secure: Bool = true, completion:@escaping WebAuthenticatorClosure) throws {
-        try? StellarToml.from(domain: domain, secure: secure, completion: { (result) -> (Void) in
-            switch result {
-            case .success(let toml):
-                if let authEndpoint = toml.accountInformation.webAuthEndpoint, let serverSigningKey = toml.accountInformation.signingKey {
-                    completion(.success(response: WebAuthenticator(authEndpoint: authEndpoint, network: network, serverSigningKey: serverSigningKey, serverHomeDomain: domain)))
-                } else {
-                    completion(.failure(error: .noAuthEndpoint))
-                }
-            case .failure(let error):
-                switch error {
-                case .invalidDomain:
-                    completion(.failure(error: .invalidToml))
-                case .invalidToml:
-                    completion(.failure(error: .invalidDomain))
-                }
+    /// - Parameter domain: The domain from which to get the stellar information
+    /// - Parameter network: The network used.
+    /// - Parameter secure: The protocol used (http or https).
+    ///
+    public static func from(domain: String, network:Network, secure: Bool = true) async -> WebAuthenticatorForDomainEnum {
+        let result = await StellarToml.from(domain: domain, secure: secure)
+        switch result {
+        case .success(let toml):
+            if let authEndpoint = toml.accountInformation.webAuthEndpoint, let serverSigningKey = toml.accountInformation.signingKey {
+                return .success(response: WebAuthenticator(authEndpoint: authEndpoint, network: network, serverSigningKey: serverSigningKey, serverHomeDomain: domain))
+            } else {
+                return .failure(error: .noAuthEndpoint)
             }
-        })
+        case .failure(let error):
+            switch error {
+            case .invalidDomain:
+                return .failure(error: .invalidToml)
+            case .invalidToml:
+                return .failure(error: .invalidDomain)
+            }
+        }
     }
     
     /// Init a WebAuthenticator instange
@@ -145,49 +155,72 @@ public class WebAuthenticator {
     /// - Parameter homeDomain: domain of the server hosting it's stellar.toml
     /// - Parameter clientDomain: domain of the client hosting it's stellar.toml
     /// - Parameter clientDomainAccountKeyPair: Keypair of the client domain account including the seed (used for signing the transaction if client domain is provided)
+    @available(*, renamed: "jwtToken(forUserAccount:memo:signers:homeDomain:clientDomain:clientDomainAccountKeyPair:)")
     public func jwtToken(forUserAccount accountId:String, memo:UInt64? = nil, signers:[KeyPair], homeDomain:String? = nil, clientDomain:String? = nil, clientDomainAccountKeyPair:KeyPair? = nil, completion:@escaping GetJWTTokenResponseClosure) {
-        getChallenge(forAccount: accountId, memo:memo, homeDomain: homeDomain, clientDomain: clientDomain) { (response) -> (Void) in
-            switch response {
-            case .success(let challenge):
-                do {
-                    let transactionEnvelope = try TransactionEnvelopeXDR(xdr: challenge)
-                    var clientDomainAccount:String?
-                    if let cdakp = clientDomainAccountKeyPair {
-                        clientDomainAccount = cdakp.accountId
-                    }
-                    let challengeValid = self.isValidChallenge(transactionEnvelopeXDR: transactionEnvelope, userAccountId: accountId, memo:memo, serverSigningKey: self.serverSigningKey, clientDomainAccount: clientDomainAccount, timeBoundsGracePeriod: self.gracePeriod)
-                    switch challengeValid {
-                    case .success:
-                        var keyPairs:[KeyPair] = [KeyPair]()
-                        keyPairs.append(contentsOf: signers)
-                        if let cdakp = clientDomainAccountKeyPair {
-                            keyPairs.append(cdakp)
-                        }
-                        if let signedTransaction = self.signTransaction(transactionEnvelopeXDR: transactionEnvelope, keyPairs: keyPairs) {
-                            self.sendCompletedChallenge(base64EnvelopeXDR: signedTransaction, completion: { (response) -> (Void) in
-                                switch response {
-                                case .success(let jwtToken):
-                                    completion(.success(jwtToken: jwtToken))
-                                case .failure(let error):
-                                    completion(.failure(error: .requestError(error)))
-                                }
-                            })
-                        } else {
-                            completion(.failure(error: .signingError))
-                        }
-                    case .failure(let error):
-                        completion(.failure(error: .validationErrorError(error)))
-                    }
-                } catch let error {
-                    completion(.failure(error: .parsingError(error)))
-                }
-            case .failure(let error):
-                completion(.failure(error: .requestError(error)))
-            }
+        Task {
+            let result = await jwtToken(forUserAccount: accountId, memo: memo, signers: signers, homeDomain: homeDomain, clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKeyPair)
+            completion(result)
         }
     }
     
+    /// Get JWT token for wallet
+    ///
+    /// - Parameter forUserAccount: account id of the user
+    /// - Parameter memo: ID memo of the client account if muxed and accountId starts with G
+    /// - Parameter signers: list of signers (keypairs including secret seed) of the client account
+    /// - Parameter homeDomain: domain of the server hosting it's stellar.toml
+    /// - Parameter clientDomain: domain of the client hosting it's stellar.toml
+    /// - Parameter clientDomainAccountKeyPair: Keypair of the client domain account including the seed (used for signing the transaction if client domain is provided)
+    public func jwtToken(forUserAccount accountId:String, memo:UInt64? = nil, signers:[KeyPair], homeDomain:String? = nil, clientDomain:String? = nil, clientDomainAccountKeyPair:KeyPair? = nil) async -> GetJWTTokenResponseEnum {
+        let response = await getChallenge(forAccount: accountId, memo: memo, homeDomain: homeDomain, clientDomain: clientDomain)
+        switch response {
+        case .success(let challenge):
+            do {
+                let transactionEnvelope = try TransactionEnvelopeXDR(xdr: challenge)
+                var clientDomainAccount:String?
+                if let cdakp = clientDomainAccountKeyPair {
+                    clientDomainAccount = cdakp.accountId
+                }
+                let challengeValid = self.isValidChallenge(transactionEnvelopeXDR: transactionEnvelope, userAccountId: accountId, memo:memo, serverSigningKey: self.serverSigningKey, clientDomainAccount: clientDomainAccount, timeBoundsGracePeriod: self.gracePeriod)
+                switch challengeValid {
+                case .success:
+                    var keyPairs:[KeyPair] = [KeyPair]()
+                    keyPairs.append(contentsOf: signers)
+                    if let cdakp = clientDomainAccountKeyPair {
+                        keyPairs.append(cdakp)
+                    }
+                    if let signedTransaction = self.signTransaction(transactionEnvelopeXDR: transactionEnvelope, keyPairs: keyPairs) {
+                        let response = await self.sendCompletedChallenge(base64EnvelopeXDR: signedTransaction)
+                        switch response {
+                        case .success(let jwtToken):
+                            return .success(jwtToken: jwtToken)
+                        case .failure(let error):
+                            return .failure(error: .requestError(error))
+                        }
+                    } else {
+                        return .failure(error: .signingError)
+                    }
+                case .failure(let error):
+                    return .failure(error: .validationErrorError(error))
+                }
+            } catch let error {
+                return .failure(error: .parsingError(error))
+            }
+        case .failure(let error):
+            return .failure(error: .requestError(error))
+        }
+    }
+    
+    @available(*, renamed: "getChallenge(forAccount:memo:homeDomain:clientDomain:)")
     public func getChallenge(forAccount accountId:String, memo:UInt64? = nil, homeDomain:String? = nil, clientDomain:String? = nil, completion:@escaping ChallengeResponseClosure) {
+        Task {
+            let result = await getChallenge(forAccount: accountId, memo: memo, homeDomain: homeDomain, clientDomain: clientDomain)
+            completion(result)
+        }
+    }
+    
+    
+    public func getChallenge(forAccount accountId:String, memo:UInt64? = nil, homeDomain:String? = nil, clientDomain:String? = nil) async -> ChallengeResponseEnum {
         
         var path = (homeDomain != nil) ? "?account=\(accountId)&home_domain=\(homeDomain!)" : "?account=\(accountId)"
         
@@ -199,27 +232,26 @@ public class WebAuthenticator {
             if accountId.starts(with: "G") {
                 path.append("&memo=\(mid)");
             } else {
-                completion(.failure(error: .requestFailed(message: "memo cannot be used if accountId is a muxed account", horizonErrorResponse: nil)))
+                return .failure(error: .requestFailed(message: "memo cannot be used if accountId is a muxed account", horizonErrorResponse: nil))
             }
         }
         
-        serviceHelper.GETRequestWithPath(path: path) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let challenge = response["transaction"] as? String {
-                        completion(.success(challenge: challenge))
-                    } else if let error = response["error"] as? String {
-                        completion(.failure(error: .requestFailed(message: error, horizonErrorResponse: nil)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON")))
-                    }
+        let result = await serviceHelper.GETRequestWithPath(path: path)
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let challenge = response["transaction"] as? String {
+                    return .success(challenge: challenge)
+                } else if let error = response["error"] as? String {
+                    return .failure(error: .requestFailed(message: error, horizonErrorResponse: nil))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON")))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON"))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON"))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
@@ -374,27 +406,35 @@ public class WebAuthenticator {
         }
     }
     
+    @available(*, renamed: "sendCompletedChallenge(base64EnvelopeXDR:)")
     public func sendCompletedChallenge(base64EnvelopeXDR: String, completion:@escaping SendChallengeResponseClosure) {
+        Task {
+            let result = await sendCompletedChallenge(base64EnvelopeXDR: base64EnvelopeXDR)
+            completion(result)
+        }
+    }
+    
+    
+    public func sendCompletedChallenge(base64EnvelopeXDR: String) async -> SendChallengeResponseEnum {
         let json = ["transaction": base64EnvelopeXDR]
         let jsonData = try? JSONSerialization.data(withJSONObject: json)
         
-        serviceHelper.POSTRequestWithPath(path: "", body: jsonData, contentType: "application/json") { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let token = response["token"] as? String {
-                        completion(.success(jwtToken: token))
-                    } else if let error = response["error"] as? String {
-                        completion(.failure(error: .requestFailed(message: error, horizonErrorResponse: nil)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON")))
-                    }
+        let result = await serviceHelper.POSTRequestWithPath(path: "", body: jsonData, contentType: "application/json")
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let token = response["token"] as? String {
+                    return .success(jwtToken: token)
+                } else if let error = response["error"] as? String {
+                    return .failure(error: .requestFailed(message: error, horizonErrorResponse: nil))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON")))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON"))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON"))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
 }
