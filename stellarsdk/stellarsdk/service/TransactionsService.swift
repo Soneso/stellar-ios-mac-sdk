@@ -163,8 +163,13 @@ public class TransactionsService: NSObject {
     
     
     open func submitTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostResponseEnum {
-        let envelope = try! transaction.encodedEnvelope()
-        return await postTransaction(transactionEnvelope: envelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
+        var envelope:String? = nil
+        do {
+            envelope = try transaction.encodedEnvelope()
+        } catch {
+            return .failure(error: .requestFailed(message: "could not encode transaction", horizonErrorResponse: nil))
+        }
+        return await postTransaction(transactionEnvelope: envelope!, skipMemoRequiredCheck: skipMemoRequiredCheck)
     }
     
     @available(*, renamed: "submitAsyncTransaction(transaction:skipMemoRequiredCheck:)")
@@ -203,8 +208,13 @@ public class TransactionsService: NSObject {
     }
     
     open func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction) async -> TransactionPostAsyncResponseEnum {
-        let envelope = try! transaction.encodedEnvelope()
-        return await postTransactionAsyncCore(transactionEnvelope: envelope)
+        var envelope:String? = nil
+        do {
+            envelope = try transaction.encodedEnvelope()
+        } catch {
+            return .failure(error: .requestFailed(message: "could not encode transaction", horizonErrorResponse: nil))
+        }
+        return await postTransactionAsyncCore(transactionEnvelope: envelope!)
     }
     
     @available(*, renamed: "postTransaction(transactionEnvelope:skipMemoRequiredCheck:)")
