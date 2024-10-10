@@ -40,13 +40,13 @@ class AssetsLocalTestCase: XCTestCase {
         let response = await sdk.assets.getAssets(limit: 1)
         switch response {
         case .success(let assetsResponse):
-            checkResult(assetsResponse:assetsResponse, limit:1)
+            await checkResult(assetsResponse:assetsResponse, limit:1)
         case .failure(let error):
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetAssets()", horizonRequestError: error)
             XCTFail()
         }
         
-        func checkResult(assetsResponse:PageResponse<AssetResponse>, limit:Int) {
+        func checkResult(assetsResponse:PageResponse<AssetResponse>, limit:Int) async {
             
             XCTAssertNotNil(assetsResponse.links)
             XCTAssertNotNil(assetsResponse.links.selflink)
@@ -116,14 +116,13 @@ class AssetsLocalTestCase: XCTestCase {
                 XCTAssertTrue(secondAsset!.flags.authClawbackEnabled)
                 
             } else {
-                sdk.assets.getAssets(limit: 2) { (response) -> (Void) in
-                    switch response {
-                    case .success(let assetsResponse):
-                        checkResult(assetsResponse:assetsResponse, limit:2)
-                    case .failure(let error):
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GA Test", horizonRequestError: error)
-                        XCTFail()
-                    }
+                let responseEnum = await sdk.assets.getAssets(limit: 2)
+                switch responseEnum {
+                case .success(let assetsResponse):
+                    await checkResult(assetsResponse:assetsResponse, limit:2)
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"GA Test", horizonRequestError: error)
+                    XCTFail()
                 }
             }
         }

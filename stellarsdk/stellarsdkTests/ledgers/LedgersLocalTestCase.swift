@@ -41,13 +41,13 @@ class LedgersLocalTestCase: XCTestCase {
         let ledgersResponseEnum = await sdk.ledgers.getLedgers(limit: 1)
         switch ledgersResponseEnum {
         case .success(let page):
-            checkResult(ledgersResponse:page, limit:1)
+            await checkResult(ledgersResponse:page, limit:1)
         case .failure(let error):
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetLedgers()", horizonRequestError: error)
             XCTFail("failed to load ledgers")
         }
         
-        func checkResult(ledgersResponse:PageResponse<LedgerResponse>, limit:Int) {
+        func checkResult(ledgersResponse:PageResponse<LedgerResponse>, limit:Int) async {
             
             XCTAssertNotNil(ledgersResponse.links)
             XCTAssertNotNil(ledgersResponse.links.selflink)
@@ -160,14 +160,13 @@ class LedgersLocalTestCase: XCTestCase {
                 XCTAssertEqual(firstLedger?.headerXdr, "AAAAAdy3Lr5Tev4ZYxKMei6LWkNgcQaWhEQWlPvuxqAYEUSST/2WLmbNl35twoFs78799llnNyPHs8u5xPtPvzoq9KEAAAAAVg4WeQAAAAAAAAAA3z9hmASpL9tAVxktxD3XSOp3itxSvEmM6AUkwBS4ERkHVi1wPY+0ie6g6YCletq0h1OSHiaWAqDQKJxtKEtlSAAAWsAN4r8dMwM+/wAAABDxA9f6AAAAAwAAAAAAAAAAAAAAZAX14QAAAAH0B1YtcD2PtInuoOmApXratIdTkh4mlgKg0CicbShLZUibK4xTjWYpfADpjyadb48ZEs52+TAOiCYDUIxrs+NjEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
                 
             } else {
-                sdk.ledgers.getLedgers(limit: 2) { (response) -> (Void) in
-                    switch response {
-                    case .success(let ledgersResponse):
-                        checkResult(ledgersResponse:ledgersResponse, limit:2)
-                    case .failure(let error):
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load ledgers testcase", horizonRequestError: error)
-                        XCTFail()
-                    }
+                let responseEnum = await sdk.ledgers.getLedgers(limit: 2)
+                switch responseEnum {
+                case .success(let ledgersResponse):
+                    await checkResult(ledgersResponse:ledgersResponse, limit:2)
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load ledgers testcase", horizonRequestError: error)
+                    XCTFail()
                 }
             }
         }

@@ -13,8 +13,9 @@ public final class StellarSDKLog {
     
     public static func printHorizonRequestErrorMessage(tag: String, horizonRequestError: HorizonRequestError) {
         switch horizonRequestError {
-        case .requestFailed(let message):
+        case .requestFailed(let message, let errorResponse):
             print("\(tag): Horizon request error of type request failed with message: \(message)")
+            printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .badRequest(let message, let errorResponse):
             print("\(tag): Horizon request error of type bad request with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)

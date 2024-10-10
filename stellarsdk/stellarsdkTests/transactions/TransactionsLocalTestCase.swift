@@ -807,13 +807,13 @@ class TransactionsLocalTestCase: XCTestCase {
         let responseEnum = await sdk.transactions.getTransactions(limit: 1)
         switch responseEnum {
         case .success(let transactionsResponse):
-            checkResult(transactionsResponse:transactionsResponse, limit:1)
+            await checkResult(transactionsResponse:transactionsResponse, limit:1)
         case .failure(let error):
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetTransactions()", horizonRequestError: error)
             XCTFail()
         }
     
-        func checkResult(transactionsResponse:PageResponse<TransactionResponse>, limit:Int) {
+        func checkResult(transactionsResponse:PageResponse<TransactionResponse>, limit:Int) async {
             
             XCTAssertNotNil(transactionsResponse.links)
             XCTAssertNotNil(transactionsResponse.links.selflink)
@@ -924,14 +924,13 @@ class TransactionsLocalTestCase: XCTestCase {
                 XCTAssertEqual(secondTransaction?.signatures.first, "9mofj/v3nFoJpHpImh/lmmV6C3zm0IISI62arI1MurcDkDzo43iR6pNBtPGxHlcYd1ZhOHWyaWGfFrYTsxarAA==")
 
             } else {
-                sdk.transactions.getTransactions(limit: 2) { (response) -> (Void) in
-                    switch response {
-                    case .success(let transactionsResponse):
-                        checkResult(transactionsResponse:transactionsResponse, limit:2)
-                    case .failure(let error):
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
-                        XCTFail()
-                    }
+                let responseEnum = await sdk.transactions.getTransactions(limit: 2)
+                switch responseEnum {
+                case .success(let transactionsResponse):
+                    await checkResult(transactionsResponse:transactionsResponse, limit:2)
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
+                    XCTFail()
                 }
             }
         }
