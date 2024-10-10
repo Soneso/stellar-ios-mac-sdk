@@ -32,18 +32,15 @@ class OperationsLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetOperations() {
-        let expectation = XCTestExpectation(description: "Get operations and parse their details")
-        
-        sdk.operations.getOperations(limit: 19) { (response) -> (Void) in
-            switch response {
-            case .success(let operationsResponse):
-                validateResult(operationsResponse:operationsResponse)
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GO Test", horizonRequestError: error)
-                XCTAssert(false)
-            }
-            expectation.fulfill()
+    func testGetOperations() async {
+
+        let responseEnum = await sdk.operations.getOperations(limit: 19)
+        switch responseEnum {
+        case .success(let operationsResponse):
+            validateResult(operationsResponse:operationsResponse)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetOperations()", horizonRequestError: error)
+            XCTFail()
         }
         
         func validateResult(operationsResponse:PageResponse<OperationResponse>) {
@@ -69,112 +66,112 @@ class OperationsLocalTestCase: XCTestCase {
                     if record is AccountCreatedOperationResponse {
                         validateAccountCreatedOperationResponse(operationResponse: record as! AccountCreatedOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .payment:
                     if record is PaymentOperationResponse {
                         validatePaymentOperationResponse(operationResponse: record as! PaymentOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .pathPayment:
                     if record is PathPaymentStrictReceiveOperationResponse {
                         validatePathPaymentStrictReceiveOperationResponse(operationResponse: record as! PathPaymentStrictReceiveOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .pathPaymentStrictSend:
                     if record is PathPaymentStrictSendOperationResponse {
                         validatePathPaymentStrictSendOperationResponse(operationResponse: record as! PathPaymentStrictSendOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .manageSellOffer:
                     if record is ManageSellOfferOperationResponse {
                         validateManageSellOfferOperationResponse(operationResponse: record as! ManageSellOfferOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .manageBuyOffer:
                     if record is ManageBuyOfferOperationResponse {
                         validateManageBuyOfferOperationResponse(operationResponse: record as! ManageBuyOfferOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .createPassiveSellOffer:
                     if record is CreatePassiveSellOfferOperationResponse {
                         validateCreatePassiveSellOfferOperationResponse(operationResponse: record as! CreatePassiveSellOfferOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .setOptions:
                     if record is SetOptionsOperationResponse {
                         validateSetOptionsOperationResponse(operationResponse: record as! SetOptionsOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .changeTrust:
                     if record is ChangeTrustOperationResponse {
                         validateChangeTrustOperationResponse(operationResponse: record as! ChangeTrustOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .allowTrust:
                     if record is AllowTrustOperationResponse {
                         validateAllowTrustOperationResponse(operationResponse: record as! AllowTrustOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .accountMerge:
                     if record is AccountMergeOperationResponse {
                         validateAccountMergeOperationResponse(operationResponse: record as! AccountMergeOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .inflation:
                     if record is InflationOperationResponse {
                         validateInflationOperationResponse(operationResponse: record as! InflationOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .manageData:
                     if record is ManageDataOperationResponse {
                         validateManageDataOperationResponse(operationResponse: record as! ManageDataOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .bumpSequence:
                     if record is BumpSequenceOperationResponse {
                         validateBumpSequenceOperationResponse(operationResponse: record as! BumpSequenceOperationResponse)
                     } else {
-                        XCTAssert(false)
+                        XCTFail()
                     }
                 case .createClaimableBalance:
-                    XCTAssert(false)
+                    XCTFail()
                 case .claimClaimableBalance:
-                    XCTAssert(false)
+                    XCTFail()
                 case .beginSponsoringFutureReserves:
-                    XCTAssert(false)
+                    XCTFail()
                 case .endSponsoringFutureReserves:
-                    XCTAssert(false)
+                    XCTFail()
                 case .revokeSponsorship:
-                    XCTAssert(false)
+                    XCTFail()
                 case .clawback:
-                    XCTAssert(false)
+                    XCTFail()
                 case .clawbackClaimableBalance:
-                    XCTAssert(false)
+                    XCTFail()
                 case .setTrustLineFlags:
-                    XCTAssert(false)
+                    XCTFail()
                 case .liquidityPoolDeposit:
-                    XCTAssert(false)
+                    XCTFail()
                 case .liquidityPoolWithdraw:
-                    XCTAssert(false)
+                    XCTFail()
                 case .invokeHostFunction:
-                    XCTAssert(false)
+                    XCTFail()
                 case .extendFootprintTTL:
-                    XCTAssert(false)
+                    XCTFail()
                 case .restoreFootprint:
-                    XCTAssert(false)
+                    XCTFail()
                 }
             }
         }
@@ -721,8 +718,6 @@ class OperationsLocalTestCase: XCTestCase {
             XCTAssertEqual(operationResponse.operationType, OperationType.bumpSequence)
             XCTAssertEqual(operationResponse.bumpTo, "1273737228")
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func successResponse() -> String {

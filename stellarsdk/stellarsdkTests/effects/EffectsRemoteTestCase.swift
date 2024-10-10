@@ -16,188 +16,137 @@ class EffectsRemoteTestCase: XCTestCase {
     var transactionHash:String? = nil
     var ledger:Int? = nil
     
-    override func setUp() {
-        super.setUp()
-        let expectation = XCTestExpectation(description: "accounts prepared for tests")
-
+    override func setUp() async throws {
+        try await super.setUp()
+        
         let testAccountId = testKeyPair.accountId
         let manageDataOp = ManageDataOperation(sourceAccountId: testAccountId, name: "soneso", data: "is super".data(using: .utf8))
 
-        self.sdk.accounts.createTestAccount(accountId: testAccountId) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                self.sdk.accounts.getAccountDetails(accountId: testAccountId) { (response) -> (Void) in
-                switch response {
-                case .success(let accountResponse):
-                    let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                      operations: [manageDataOp],
-                                                      memo: Memo.none)
-                    try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
-                    
-                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                        switch response {
-                        case .success(let response):
-                            print("setUp: Transaction successfully sent. Hash:\(response.transactionHash)")
-                            self.transactionHash = response.transactionHash
-                            self.ledger = response.ledger
-                            expectation.fulfill()
-                        default:
-                            XCTFail()
-                        }
-                    }
-                case .failure(_):
-                    XCTFail()
-                }
-            }
-            case .failure(_):
-                XCTFail()
-            }
+        let responseEnum = await sdk.accounts.createTestAccount(accountId: testAccountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create test account: \(testAccountId)")
         }
-        wait(for: [expectation], timeout: 25.0)
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: testAccountId);
+        switch accDetailsResEnum {
+        case .success(let accountResponse):
+            let transaction = try! Transaction(sourceAccount: accountResponse,
+                                              operations: [manageDataOp],
+                                              memo: Memo.none)
+            try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
+            
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
+            switch submitTxResponse {
+            case .success(let details):
+                XCTAssert(details.operationCount > 0)
+                self.transactionHash = details.transactionHash
+                self.ledger = details.ledger
+            case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+                XCTFail("destination account \(destinationAccountId) requires memo")
+            case .failure(error: let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+                XCTFail("submit transaction error")
+            }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not load account details")
+        }
     }
     
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
-    
-    func testAll() {
-        getEffects()
-        getEffectsForAccount()
-        getEffectsForOperation()
-        getEffectsForLedger()
-        getEffectsForTransaction()
+    func testAll() async {
+        await getEffects()
+        await getEffectsForAccount()
+        await getEffectsForOperation()
+        await getEffectsForLedger()
+        await getEffectsForTransaction()
     }
         
     
-    func getEffects() {
-        XCTContext.runActivity(named: "getEffects") { activity in
-            let expectation = XCTestExpectation(description: "Get effects and parse their details successfully")
-            
-            sdk.effects.getEffects { (response) -> (Void) in
-                switch response {
-                case .success(let effectsResponse):
-                    // load next page
-                    effectsResponse.getNextPage(){ (response) -> (Void) in
-                        switch response {
-                        case .success(let nextEffectsResponse):
-                            // load previous page, should contain the same effects as the first page
-                            nextEffectsResponse.getPreviousPage(){ (response) -> (Void) in
-                                switch response {
-                                case .success(let prevEffectsResponse):
-                                    let effect1 = effectsResponse.records.first
-                                    let effect2 = prevEffectsResponse.records.last // because ordering is asc now.
-                                    XCTAssertTrue(effect1?.id == effect2?.id)
-                                    XCTAssertTrue(effect1?.account == effect2?.account)
-                                    XCTAssertTrue(effect1?.effectType == effect2?.effectType)
-                                    XCTAssertTrue(effect1?.effectTypeString == effect2?.effectTypeString)
-                                    XCTAssert(true)
-                                    expectation.fulfill()
-                                case .failure(let error):
-                                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"GE Test", horizonRequestError: error)
-                                    XCTAssert(false)
-                                }
-                            }
-                        case .failure(let error):
-                            StellarSDKLog.printHorizonRequestErrorMessage(tag:"GE Test", horizonRequestError: error)
-                            XCTAssert(false)
-                        }
-                    }
+    func getEffects() async {
+        let effetcsResponseEnum = await sdk.effects.getEffects();
+        switch effetcsResponseEnum {
+        case .success(let firstPage):
+            let nextPageResult = await firstPage.getNextPage()
+            switch nextPageResult {
+            case .success(let nextPage):
+                let prevPageResult = await nextPage.getPreviousPage()
+                switch prevPageResult {
+                case .success(let page):
+                    XCTAssertTrue(page.records.count > 0)
+                    XCTAssertTrue(firstPage.records.count > 0)
+                    let effect1 = firstPage.records.first!
+                    let effect2 = page.records.last! // because ordering is asc now.
+                    XCTAssertTrue(effect1.id == effect2.id)
+                    XCTAssertTrue(effect1.account == effect2.account)
+                    XCTAssertTrue(effect1.effectType == effect2.effectType)
+                    XCTAssertTrue(effect1.effectTypeString == effect2.effectTypeString)
                 case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"GE Test", horizonRequestError: error)
-                    XCTAssert(false)
-                    expectation.fulfill()
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getEffects()", horizonRequestError: error)
+                    XCTFail("failed to load prev page")
                 }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"getEffects()", horizonRequestError: error)
+                XCTFail("failed to load next page")
             }
-            wait(for: [expectation], timeout: 15.0)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"getEffects()", horizonRequestError: error)
+            XCTFail("failed to load effects")
         }
     }
     
-    func getEffectsForAccount() {
-        XCTContext.runActivity(named: "getEffectsForAccount") { activity in
-            let expectation = XCTestExpectation(description: "Get effects for account and parse their details successfuly")
-            
-            sdk.effects.getEffects(forAccount: testKeyPair.accountId, order:Order.descending) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(true)
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"GEFA Test", horizonRequestError: error)
-                    XCTAssert(false)
-                }
-                
-                expectation.fulfill()
-            }
-            wait(for: [expectation], timeout: 15.0)
+    func getEffectsForAccount() async {
+        
+        let response = await sdk.effects.getEffects(forAccount: testKeyPair.accountId, order:Order.descending)
+        switch response {
+        case .success(let page):
+            XCTAssertFalse(page.records.isEmpty)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"GEFA Test", horizonRequestError: error)
+            XCTFail()
         }
     }
     
-    func getEffectsForOperation() {
-        XCTContext.runActivity(named: "getEffectsForOperation") { activity in
-            let expectation = XCTestExpectation(description: "Get effects for operation")
-            sdk.operations.getOperations(forAccount: testKeyPair.accountId, from: nil, order: Order.descending, includeFailed: true, join: "transactions") { (response) -> (Void) in
-                switch response {
-                case .success(let operations):
-                    XCTAssertNotNil(operations.records.first)
-                    if let operation = operations.records.first {
-                        self.sdk.effects.getEffects(forOperation: operation.id) { (response) -> (Void) in
-                            switch response {
-                            case .success(_):
-                                XCTAssert(true)
-                                expectation.fulfill()
-                            case .failure(let error):
-                                StellarSDKLog.printHorizonRequestErrorMessage(tag:"getEffectsForOperation", horizonRequestError: error)
-                                XCTAssert(false)
-                            }
-                            expectation.fulfill()
-                        }
-                    }
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getEffectsForOperation", horizonRequestError: error)
-                    XCTAssert(false)
-                }
+    func getEffectsForOperation() async {
+        let opResponseEnum = await sdk.operations.getOperations(forAccount: testKeyPair.accountId, from: nil, order: Order.descending, includeFailed: true, join: "transactions");
+        switch opResponseEnum {
+        case .success(let page):
+            XCTAssertNotNil(page.records.first)
+            let effectsReponseEnum = await sdk.effects.getEffects(forOperation: page.records.first!.id)
+            switch effectsReponseEnum {
+            case .success(let effectsPage):
+                XCTAssertFalse(effectsPage.records.isEmpty)
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"getEffectsForOperation", horizonRequestError: error)
+                XCTFail()
             }
-            wait(for: [expectation], timeout: 15.0)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"getEffectsForOperation", horizonRequestError: error)
+            XCTFail()
         }
     }
     
-    func getEffectsForLedger() {
-        XCTContext.runActivity(named: "getEffectsForLedger") { activity in
-            let expectation = XCTestExpectation(description: "Get effects for ledger")
-            
-            sdk.effects.getEffects(forLedger: String(self.ledger!)) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(true)
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getEffectsForLedger", horizonRequestError: error)
-                    XCTAssert(false)
-                }
-                
-                expectation.fulfill()
-            }
-            
-            wait(for: [expectation], timeout: 15.0)
+    func getEffectsForLedger() async {
+        let response = await sdk.effects.getEffects(forLedger: String(self.ledger!))
+        switch response {
+        case .success(let page):
+            XCTAssertFalse(page.records.isEmpty)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"getEffectsForLedger", horizonRequestError: error)
+            XCTFail()
         }
     }
     
-    func getEffectsForTransaction() {
-        XCTContext.runActivity(named: "getEffectsForTransaction") { activity in
-            let expectation = XCTestExpectation(description: "Get effects for transaction")
-            
-            sdk.effects.getEffects(forTransaction: self.transactionHash!) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTAssert(true)
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getEffectsForTransaction", horizonRequestError: error)
-                    XCTAssert(false)
-                }
-                
-                expectation.fulfill()
-            }
-            
-            wait(for: [expectation], timeout: 15.0)
+    func getEffectsForTransaction() async {
+        let response = await sdk.effects.getEffects(forTransaction: self.transactionHash!)
+        switch response {
+        case .success(let page):
+            XCTAssertFalse(page.records.isEmpty)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"getEffectsForTransaction", horizonRequestError: error)
+            XCTFail()
         }
     }
 }

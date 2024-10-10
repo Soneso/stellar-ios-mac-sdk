@@ -38,127 +38,168 @@ public class Federation: NSObject {
     }
     
     /// Resolves a given stellar address
+    @available(*, renamed: "resolve(stellarAddress:secure:)")
     public static func resolve(stellarAddress:String, secure:Bool = true, completion:@escaping ResolveClosure) {
-        let components = stellarAddress.components(separatedBy: "*")
-        guard components.count == 2 else {
-            completion(.failure(error: .invalidAddress))
-            return
+        Task {
+            let result = await resolve(stellarAddress: stellarAddress, secure: secure)
+            completion(result)
         }
-        let domain = components[1]
-        Federation.forDomain(domain:domain, secure:secure) { (response) -> (Void) in
-            switch response {
-            case .success(let federation):
-                federation.resolve(address: stellarAddress, completion: completion)
-            case .failure(let error):
-                completion(.failure(error: error))
-            }
+    }
+    
+    /// Resolves a given stellar address
+    public static func resolve(stellarAddress:String, secure:Bool = true) async -> ResolveResponseEnum {
+        let components1 = stellarAddress.components(separatedBy: "*")
+        guard components1.count == 2 else {
+            return .failure(error: .invalidAddress)
+        }
+        let domain = components1[1]
+        let response = await Federation.forDomain(domain: domain, secure: secure)
+        switch response {
+        case .success(let federation):
+            return await federation.resolve(address: stellarAddress)
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
     /// Creates a Federation instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    @available(*, renamed: "forDomain(domain:secure:)")
     public static func forDomain(domain:String, secure:Bool = true, completion:@escaping FederationClosure) {
+        Task {
+            let result = await forDomain(domain: domain, secure: secure)
+            completion(result)
+        }
+    }
     
-        DispatchQueue.global().async {
-            do {
-                try StellarToml.from(domain: domain, secure: secure) { (result) -> (Void) in
-                    switch result {
-                    case .success(response: let stellarToml):
-                        if let federationServer = stellarToml.accountInformation.federationServer {
-                            let federation = Federation(federationAddress: federationServer)
-                            completion(.success(response: federation))
-                        } else {
-                            completion(.failure(error: .noFederationSet))
-                        }
-                    case .failure(error: let stellarTomlError):
-                        switch stellarTomlError {
-                        case .invalidDomain:
-                            completion(.failure(error: .invalidTomlDomain))
-                        case .invalidToml:
-                            completion(.failure(error: .invalidToml))
-                        }
-                    }
-                }
-            } catch {
-                completion(.failure(error: .invalidToml))
+    /// Creates a Federation instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    public static func forDomain(domain:String, secure:Bool = true) async -> FederationForDomainEnum {
+        
+        let result = await StellarToml.from(domain: domain, secure: secure)
+        switch result {
+        case .success(response: let stellarToml):
+            if let federationServer = stellarToml.accountInformation.federationServer {
+                let federation = Federation(federationAddress: federationServer)
+                return .success(response: federation)
+            } else {
+                return .failure(error: .noFederationSet)
+            }
+        case .failure(error: let stellarTomlError):
+            switch stellarTomlError {
+            case .invalidDomain:
+                return .failure(error: .invalidTomlDomain)
+            case .invalidToml:
+                return .failure(error: .invalidToml)
             }
         }
     }
     
     /// Resolves the given address to federation record if the user was found for a given Stellar address.
+    @available(*, renamed: "resolve(address:)")
     public func resolve(address: String, completion:@escaping ResolveClosure) {
+        Task {
+            let result = await resolve(address: address)
+            completion(result)
+        }
+    }
+    
+    /// Resolves the given address to federation record if the user was found for a given Stellar address.
+    public func resolve(address: String) async -> ResolveResponseEnum {
         guard let _ = address.firstIndex(of: "*") else {
-            completion(.failure(error: .invalidAddress))
-            return
+            return .failure(error: .invalidAddress)
         }
         
         let requestPath = "?q=\(address)&type=name"
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(ResolveAddressResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error:.horizonError(error: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(ResolveAddressResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error:.horizonError(error: error))
         }
     }
     
     /// Resolves the given account id to federation address if the user was found for a given Stellar address.
+    @available(*, renamed: "resolve(account_id:)")
     public func resolve(account_id: String, completion:@escaping ResolveClosure) {
+        Task {
+            let result = await resolve(account_id: account_id)
+            completion(result)
+        }
+    }
+    
+    /// Resolves the given account id to federation address if the user was found for a given Stellar address.
+    public func resolve(account_id: String) async -> ResolveResponseEnum {
         do {
             let _ = try PublicKey(accountId: account_id)
         } catch {
-            completion(.failure(error: .invalidAccountId))
-            return
+            return .failure(error: .invalidAccountId)
         }
         
         let requestPath = "?q=\(account_id)&type=id"
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(ResolveAddressResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error:.horizonError(error: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(ResolveAddressResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error:.horizonError(error: error))
         }
     }
     
     /// Resolves the given transaction id to federation address if the user was found for a given Stellar address.
+    @available(*, renamed: "resolve(transaction_id:)")
     public func resolve(transaction_id: String, completion:@escaping ResolveClosure) {
+        Task {
+            let result = await resolve(transaction_id: transaction_id)
+            completion(result)
+        }
+    }
+    
+    /// Resolves the given transaction id to federation address if the user was found for a given Stellar address.
+    public func resolve(transaction_id: String) async -> ResolveResponseEnum {
         let requestPath = "?q=\(transaction_id)&type=txid"
-
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(ResolveAddressResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error:.horizonError(error: error)))
+        
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(ResolveAddressResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error:.horizonError(error: error))
         }
     }
     
     /// Used for forwarding the payment on to a different network or different financial institution.
     /// The forwardParams of the query will vary depending on what kind of institution is the ultimate destination of the payment and what they as the forwarding anchor support.
+    @available(*, renamed: "resolve(forwardParams:)")
     public func resolve(forwardParams: Dictionary<String,String>, completion:@escaping ResolveClosure) {
+        Task {
+            let result = await resolve(forwardParams: forwardParams)
+            completion(result)
+        }
+    }
+    
+    /// Used for forwarding the payment on to a different network or different financial institution.
+    /// The forwardParams of the query will vary depending on what kind of institution is the ultimate destination of the payment and what they as the forwarding anchor support.
+    public func resolve(forwardParams: Dictionary<String,String>) async -> ResolveResponseEnum {
         var requestPath = "?type=forward"
         
         if let pathParams = forwardParams.stringFromHttpParameters() {
@@ -166,19 +207,18 @@ public class Federation: NSObject {
         }
         
         //print(requestPath)
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(ResolveAddressResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error:.horizonError(error: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(ResolveAddressResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error:.horizonError(error: error))
         }
     }
 }

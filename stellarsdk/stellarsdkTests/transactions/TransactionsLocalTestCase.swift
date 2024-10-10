@@ -98,10 +98,9 @@ class TransactionsLocalTestCase: XCTestCase {
             let keyPairC = try! KeyPair.generateRandomKeyPair()
             let feeBump = try FeeBumpTransaction(sourceAccount: MuxedAccount(accountId: keyPairC.accountId), fee: 101, innerTransaction: transaction)
             try feeBump.sign(keyPair: keyPairC, network: Network.testnet)
-            print(try! TxRep.toTxRep(transactionEnvelope: feeBump.encodedEnvelope()));
-            XCTAssert(true)
+            // print(try TxRep.toTxRep(transactionEnvelope: feeBump.encodedEnvelope()));
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -129,21 +128,20 @@ class TransactionsLocalTestCase: XCTestCase {
         """
 
         let envelope = try TxRep.fromTxRep(txRep:txRep);
-        print(envelope)
+        // print(envelope)
         
         let xdr = "AAAAAgAAAAArFkuQQ4QuQY6SkLc5xxSdwpFOvl7VqKVvrfkPSqB+0AAAAGQApSmNAAAAAQAAAAEAAAAAW4nJgAAAAABdav0AAAAAAQAAABZFbmpveSB0aGlzIHRyYW5zYWN0aW9uAAAAAAABAAAAAAAAAAEAAAAAQF827djPIu+/gHK5hbakwBVRw03TjBN6yNQNQCzR97QAAAABVVNEAAAAAAAyUlQyIZKfbs+tUWuvK7N0nGSCII0/Go1/CpHXNW3tCwAAAAAX15OgAAAAAAAAAAFKoH7QAAAAQN77Tx+tHCeTJ7Va8YT9zd9z9Peoy0Dn5TSnHXOgUSS6Np23ptMbR8r9EYWSJGqFdebCSauU7Ddo3ttikiIc5Qw="
-        XCTAssert (xdr == envelope)
-        
-        XCTAssert(true)
+        XCTAssertEqual(xdr, envelope)
+
     }
     
     func testTransactionToTxRep2() {
         let xdr = "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"
         
         let txrep = try! TxRep.toTxRep(transactionEnvelope: xdr)
-        print(txrep)
+        // print(txrep)
         let xdr2 = try! TxRep.fromTxRep(txRep: txrep)
-        XCTAssert (xdr == xdr2)
+        XCTAssertEqual(xdr, xdr2)
     }
     
     func testTransactionToTxRepSoroban() {
@@ -152,46 +150,46 @@ class TransactionsLocalTestCase: XCTestCase {
         var txrep = try! TxRep.toTxRep(transactionEnvelope: invokeXdr)
         //print(txrep)
         var xdr = try! TxRep.fromTxRep(txRep: txrep)
-        XCTAssert (invokeXdr == xdr)
+        XCTAssertEqual(invokeXdr, xdr)
 
         let uploadContractXdr = "AAAAAgAAAABIX3Dc+6c1k4NV9BfTH6V5dracuPihPEgfi738DuxO1AABDGUAHd+JAAAAAgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAgAAAhsAYXNtAQAAAAEPA2ACfn4BfmABfgF+YAAAAgcBAXYBZwAAAwMCAQIFAwEAEAYZA38BQYCAwAALfwBBgIDAAAt/AEGAgMAACwcxBQZtZW1vcnkCAAVoZWxsbwABAV8AAgpfX2RhdGFfZW5kAwELX19oZWFwX2Jhc2UDAgrIAQLCAQECfyOAgICAAEEgayIBJICAgIAAAkACQCAAp0H/AXEiAkEORg0AIAJBygBHDQELIAEgADcDCCABQo7o8di6AjcDAEEAIQIDQAJAIAJBEEcNAEEAIQICQANAIAJBEEYNASABQRBqIAJqIAEgAmopAwA3AwAgAkEIaiECDAALCyABQRBqrUIghkIEhEKEgICAIBCAgICAACEAIAFBIGokgICAgAAgAA8LIAFBEGogAmpCAjcDACACQQhqIQIMAAsLAAALAgALAEMOY29udHJhY3RzcGVjdjAAAAAAAAAAAAAAAAVoZWxsbwAAAAAAAAEAAAAAAAAAAnRvAAAAAAARAAAAAQAAA+oAAAARAB4RY29udHJhY3RlbnZtZXRhdjAAAAAAAAAAFAAAAAAAbw5jb250cmFjdG1ldGF2MAAAAAAAAAAFcnN2ZXIAAAAAAAAGMS43NC4xAAAAAAAAAAAACHJzc2RrdmVyAAAALzIwLjAuMCM4MjJjZTZjYzNlNDYxY2NjOTI1Mjc1YjQ3MmQ3N2I2Y2EzNWIyY2Q5AAAAAAAAAAAAAQAAAAAAAAABAAAAB8GmUFBvfCDI9NFqrnP4lPMCzQEdfvM63vVy8gs092U+AAAAAAAX8g8AAAKAAAAAAAAAAAAAAQwBAAAAAQ7sTtQAAABAxNCu+lC8Xuee36jeGsz7YXNEBvg3Eq6Wqd0ZQ6qnLv8LpxbubpDOzFo86rcpAAWzO70Wdyl3op2ZRSHzsnaRDg=="
         
         txrep = try! TxRep.toTxRep(transactionEnvelope: uploadContractXdr)
         //print(txrep)
         xdr = try! TxRep.fromTxRep(txRep: txrep)
-        XCTAssert (uploadContractXdr == xdr)
+        XCTAssertEqual(uploadContractXdr, xdr)
         
         let createContractXdr = "AAAAAgAAAABIX3Dc+6c1k4NV9BfTH6V5dracuPihPEgfi738DuxO1AAWOa0AHd+JAAAABAAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAAAAAAAAAAAAAEhfcNz7pzWTg1X0F9MfpXl2tpy4+KE8SB+LvfwO7E7Uim0WqDBGeseONDCj0peIZwJ4EOMpvMrpcR5GXffg4AkAAAAAwaZQUG98IMj00Wquc/iU8wLNAR1+8zre9XLyCzT3ZT4AAAABAAAAAAAAAAEAAAAAAAAAAAAAAABIX3Dc+6c1k4NV9BfTH6V5dracuPihPEgfi738DuxO1IptFqgwRnrHjjQwo9KXiGcCeBDjKbzK6XEeRl334OAJAAAAAMGmUFBvfCDI9NFqrnP4lPMCzQEdfvM63vVy8gs092U+AAAAAAAAAAEAAAAAAAAAAQAAAAfBplBQb3wgyPTRaq5z+JTzAs0BHX7zOt71cvILNPdlPgAAAAEAAAAGAAAAAXw9vhysdvciUg3nErv76mvhqOiPxqaxaUhacQTpSiicAAAAFAAAAAEAAlNNAAACgAAAAGgAAAAAABY5SQAAAAEO7E7UAAAAQN4uzM1B4G60lKSmytQbCS8zfwyi274rFhotmwBZN6qBb5ksBbVqC5r2q4QqxeJgxdXD5IjysZbFuUmTDbeS/QQ="
         
         txrep = try! TxRep.toTxRep(transactionEnvelope: createContractXdr)
         //print(txrep)
         xdr = try! TxRep.fromTxRep(txRep: txrep)
-        XCTAssert (createContractXdr == xdr)
+        XCTAssertEqual(createContractXdr, xdr)
         
         let restoreFootprintXdr = "AAAAAgAAAAC+5AsLKJXPTGnveUAhL2cjFaOe6mneuq0bWVUbZttrKQAB1kkAHeCGAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAaAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC2XAAAAAFm22spAAAAQPvw3PtxT3tzS15GMDjNUa0i7bykd0BJbr4O43QqrujSYe8RBv3Z6pj6e5dfQST6nz2BfUKB1bzXavNUPdDpTA8="
         txrep = try! TxRep.toTxRep(transactionEnvelope: restoreFootprintXdr)
         //print(txrep)
         xdr = try! TxRep.fromTxRep(txRep: txrep)
-        XCTAssert (restoreFootprintXdr == xdr)
+        XCTAssertEqual(restoreFootprintXdr, xdr)
         
         let extendFootprintXdr = "AAAAAgAAAAC+5AsLKJXPTGnveUAhL2cjFaOe6mneuq0bWVUbZttrKQAAtwUAHeCGAAAAAwAAAAAAAAAAAAAAAQAAAAAAAAAZAAAAAAAAJxAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAtqEAAAABZttrKQAAAEAeae7iCVUwUOWlG1ai0z9GfswZstfWW8x0iC+bvtqWvYvrkIFA4Hy6ZpCsvWgPcljuDN5X8oiy2WT15egFcFUB"
         txrep = try! TxRep.toTxRep(transactionEnvelope: extendFootprintXdr)
         //print(txrep)
         xdr = try! TxRep.fromTxRep(txRep: txrep)
-        XCTAssert (extendFootprintXdr == xdr)
+        XCTAssertEqual(extendFootprintXdr, xdr)
         
         let deploySacWithAssetXdr = "AAAAAgAAAABxW9E8HvJ8y/Uo60YQVQRdVxbZXkyyqJC//cKccViIQgBivo0AHeDLAAAAAgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAAEAAAACU09ORVNPAAAAAAAAAAAAAHFb0Twe8nzL9SjrRhBVBF1XFtleTLKokL/9wpxxWIhCAAAAAQAAAAAAAAABAAAAAAAAAAAAAAABAAAABgAAAAF2AfJVgDq1MvSnUdklLI+KInZbJj/1BbL2GfVMBtwTKQAAABQAAAABAAK6lgAAAAAAAAHoAAAAAABivikAAAABcViIQgAAAEBSslktJS0iD3ObWkvXUQetp459tfnQyL3acMFhdl9H7wmUCj6UWzvZmt/X5mt/wmJlxnsyHBX6TkQv4jFkIWcG"
         txrep = try! TxRep.toTxRep(transactionEnvelope: deploySacWithAssetXdr)
         //print(txrep)
         xdr = try! TxRep.fromTxRep(txRep: txrep)
-        XCTAssert (deploySacWithAssetXdr == xdr)
+        XCTAssertEqual(deploySacWithAssetXdr, xdr)
         
         let deploySacWithSrcAccXdr = "AAAAAgAAAAAbabUDd9S4GOPKgqESpn8By1G0TregWA0BWOfVFU66bAAPsTsAHeDKAAAABgAAAAAAAAAAAAAAAQAAAAAAAAAYAAAAAQAAAAAAAAAAAAAAABtptQN31LgY48qCoRKmfwHLUbROt6BYDQFY59UVTrpsvNipWcbiYhu2d8eo1jDinP914WszeL5g2tae6RwdHB4AAAABAAAAAQAAAAAAAAABAAAAAAAAAAAAAAAAG2m1A3fUuBjjyoKhEqZ/ActRtE63oFgNAVjn1RVOumy82KlZxuJiG7Z3x6jWMOKc/3XhazN4vmDa1p7pHB0cHgAAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAYAAAABPTcI9wETxIwLcM+S1/4yEsjMC/JU6l/Td2jwUvEQx4kAAAAUAAAAAQABuoEAAAAAAAAASAAAAAAAD7DXAAAAARVOumwAAABAZ8jZ2vKUTeuPjyeQBkj+pGJdzWATUXoSAlzo+5BeXhZsv5WizK+2kdEX4aeJULBnF/H+6AL9YLCqMjkmhvJ5BQ=="
         
         txrep = try! TxRep.toTxRep(transactionEnvelope: deploySacWithSrcAccXdr)
-        print(txrep)
+        // print(txrep)
         xdr = try! TxRep.fromTxRep(txRep: txrep)
-        XCTAssert (deploySacWithSrcAccXdr == xdr)
+        XCTAssertEqual(deploySacWithSrcAccXdr, xdr)
         
     }
     
@@ -199,26 +197,26 @@ class TransactionsLocalTestCase: XCTestCase {
         let xdr = "AAAABQAAAQAAAAAAAAGtsD8/FH+dFPlYE5MFbyASyOKXeyAgiwIQkKmtO9nJxYUQAAAAAAAABesAAAACAAAAAHy4Iefn+hFj5f9rSl1eCVquRnjgvrho48cHnnm9Kpg4AAAFeAAAAQDKFqQSAAAAAQAAAABfFhPAAAAAAF8WGiAAAAABAAAAFkVuam95IHRoaXMgdHJhbnNhY3Rpb24AAAAAAA4AAAAAAAAAAAAAAABX+odH8TG6dCxdT3P+pgXSGwwqhT3lMVaNoo9h7SxLygAAAAAAAABkAAAAAQAAAAB8uCHn5/oRY+X/a0pdXglarkZ44L64aOPHB555vSqYOAAAAAEAAAAAV/qHR/ExunQsXU9z/qYF0hsMKoU95TFWjaKPYe0sS8oAAAAAAAAAAAAAAMgAAAABAAAAAHy4Iefn+hFj5f9rSl1eCVquRnjgvrho48cHnnm9Kpg4AAAAAQAAAABX+odH8TG6dCxdT3P+pgXSGwwqhT3lMVaNoo9h7SxLygAAAAFVU0QAAAAAADJSVDIhkp9uz61Ra68rs3ScZIIgjT8ajX8Kkdc1be0LAAAAAAAAASwAAAAAAAAAAgAAAAFJT00AAAAAAHy4Iefn+hFj5f9rSl1eCVquRnjgvrho48cHnnm9Kpg4AAAAAAExLQAAAAAAV/qHR/ExunQsXU9z/qYF0hsMKoU95TFWjaKPYe0sS8oAAAABTU9PTgAAAAB8uCHn5/oRY+X/a0pdXglarkZ44L64aOPHB555vSqYOAAAAAAExLQAAAAAAgAAAAFFQ08AAAAAAHy4Iefn+hFj5f9rSl1eCVquRnjgvrho48cHnnm9Kpg4AAAAAkFTVFJPAAAAAAAAAAAAAAB8uCHn5/oRY+X/a0pdXglarkZ44L64aOPHB555vSqYOAAAAAAAAAANAAAAAUlPTQAAAAAAfLgh5+f6EWPl/2tKXV4JWq5GeOC+uGjjxweeeb0qmDgAAAAA7msoAAAAAABX+odH8TG6dCxdT3P+pgXSGwwqhT3lMVaNoo9h7SxLygAAAAFNT09OAAAAAHy4Iefn+hFj5f9rSl1eCVquRnjgvrho48cHnnm9Kpg4AAAAAstBeAAAAAACAAAAAUVDTwAAAAAAfLgh5+f6EWPl/2tKXV4JWq5GeOC+uGjjxweeeb0qmDgAAAACQVNUUk8AAAAAAAAAAAAAAHy4Iefn+hFj5f9rSl1eCVquRnjgvrho48cHnnm9Kpg4AAAAAAAAAAUAAAABAAAAAFf6h0fxMbp0LF1Pc/6mBdIbDCqFPeUxVo2ij2HtLEvKAAAAAQAAAAIAAAABAAAABAAAAAEAAAB6AAAAAQAAAAoAAAABAAAAMgAAAAEAAAB6AAAAAQAAAB5odHRwczovL3d3dy5zb25lc28uY29tL2JsdWJiZXIAAAAAAAEAAAAAV/qHR/ExunQsXU9z/qYF0hsMKoU95TFWjaKPYe0sS8oAAAAyAAAAAAAAAAMAAAABRUNPAAAAAAB8uCHn5/oRY+X/a0pdXglarkZ44L64aOPHB555vSqYOAAAAAAAAAATSHTpAAAAAAcAAAAKAAAIdO3F5n0AAAAAAAAABAAAAAJBU1RSTwAAAAAAAAAAAAAAfLgh5+f6EWPl/2tKXV4JWq5GeOC+uGjjxweeeb0qmDgAAAABTU9PTgAAAAB8uCHn5/oRY+X/a0pdXglarkZ44L64aOPHB555vSqYOAAAAAaVno4AAAAAAQAAAAIAAAAAAAAABgAAAAJBU1RSTwAAAAAAAAAAAAAAfLgh5+f6EWPl/2tKXV4JWq5GeOC+uGjjxweeeb0qmDgAAAAXSHboAAAAAAAAAAAHAAAAAFf6h0fxMbp0LF1Pc/6mBdIbDCqFPeUxVo2ij2HtLEvKAAAAAU1PT04AAAABAAAAAAAAAAgAAAEAAAAAADwzjFZX+odH8TG6dCxdT3P+pgXSGwwqhT3lMVaNoo9h7SxLygAAAAAAAAAKAAAABlNvbW1lcgAAAAAAAQAAABREaWUgTfZiZWwgc2luZCBoZWnfIQAAAAAAAAALAAABAMoWpBsAAAAAAAAADAAAAAFNT09OAAAAAHy4Iefn+hFj5f9rSl1eCVquRnjgvrho48cHnnm9Kpg4AAAAAUVDTwAAAAAAfLgh5+f6EWPl/2tKXV4JWq5GeOC+uGjjxweeeb0qmDgAAAAABycOAAAAAAEAAAAFAAAAADH4uQsAAAAAAAAAAb0qmDgAAABAN8tsOXVZY0CrGNH1o8KCEkJPr/ybCY4aitT+EXarAf9E+x6+xRxEM3M1gtzQUcwMHXRxLKuaeUbWqe4I5rYsDQAAAAAAAAABycWFEAAAAEDJtz0IV8EITW9nc6b7qHw1RMOkdDObyQaI0Q/awjYTeBBkviAsJjIATI/re56X1r88omWMtPUrfNE4+r8HyYoH"
         
         let txrep = try! TxRep.toTxRep(transactionEnvelope: xdr)
-        print(txrep)
+        // print(txrep)
         let xdr2 = try! TxRep.fromTxRep(txRep: txrep)
-        XCTAssert (xdr == xdr2)
+        XCTAssertEqual(xdr, xdr2)
     }
     
     func testPreconditionsTxRep1() {
         let xdr = "AAAAAgAAAQAAAAAAABODoXOW2Y6q7AdenusH1X8NBxVPFXEW+/PQFDiBQV05qf4DAAAAZAAKAJMAAAACAAAAAgAAAAEAAAAAYnk1lQAAAABobxaVAAAAAQANnJQAHN7UAAAAAQAKAJMAAAABAAAAAAAAAAEAAAABAAAAAgAAAACUkeBPpCcGYCoqeszK1YjZ1Ww1qY6fRI02d2hKG1nqvwAAAAHW9EEhELfDtkfmtBrXuEgEpTBlO8E/iQ2ZI/uNXLDV9AAAAAEAAAAEdGVzdAAAAAEAAAABAAABAAAAAAAAE4Ohc5bZjqrsB16e6wfVfw0HFU8VcRb789AUOIFBXTmp/gMAAAABAAABAAAAAAJPOttvlJHgT6QnBmAqKnrMytWI2dVsNamOn0SNNndoShtZ6r8AAAAAAAAAAADk4cAAAAAAAAAAATmp/gMAAABAvm+8CxO9sj4KEDwSS6hDxZAiUGdpIN2l+KOxTIkdI2joBFjT9B1U9YaORVDx4LTrLd4QM2taUuzXB51QtDQYDA=="
         
         let txrep = try! TxRep.toTxRep(transactionEnvelope: xdr)
-        print(txrep)
+        //print(txrep)
         let xdr2 = try! TxRep.fromTxRep(txRep: txrep)
-        print(xdr2)
-        XCTAssert (xdr == xdr2)
+        //print(xdr2)
+        XCTAssertEqual(xdr, xdr2)
     }
     
     func testPreconditionsTxRep2() {
         let xdr = "AAAAAgAAAQAAAAAAABODoa9e0m5apwHpUf3/HzJOJeQ5q7+CwSWrnHXENS8XoAfmAAAAZAAJ/s4AAAACAAAAAgAAAAEAAAAAYnk1lQAAAABobxaVAAAAAQANnJQAHN7UAAAAAQAJ/s4AAAABAAAAAAAAAAEAAAABAAAAAgAAAAJulGoyRpAB8JhKT+ffEiXh8Kgd8qrEXfiG3aK69JgQlAAAAAM/DDS/k60NmXHQTMyQ9wVRHIOKrZc0pKL7DXoD/H/omgAAACABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fIAAAAAEAAAAEdGVzdAAAAAEAAAABAAABAAAAAAAAE4Ohr17SblqnAelR/f8fMk4l5Dmrv4LBJaucdcQ1LxegB+YAAAABAAABAAAAAAJPOttvipEw04NyfzwAhgQlf2S77YVGYbytcXKVNuM46+sMNAYAAAAAAAAAAADk4cAAAAAAAAAAARegB+YAAABAJG8wTpECV0rpq3TV9d26UL0MULmDxXKXGmKSJLiy9NCNJW3WMcrvrA6wiBsLHuCN7sIurD3o1/AKgntagup3Cw=="
         
-        let txrep = try! TxRep.toTxRep(transactionEnvelope: xdr)
-        print(txrep)
+        let _ = try! TxRep.toTxRep(transactionEnvelope: xdr)
+        //print(txrep)
     }
     
     func testPreconditionsTxRep3() {
@@ -242,12 +240,10 @@ class TransactionsLocalTestCase: XCTestCase {
         """
 
         let envelope = try? TxRep.fromTxRep(txRep:txRep);
-        print(envelope!)
+        //print(envelope!)
         
         let xdr = "AAAAAgAAAABNk18Wvn3bhHyHKTcxA7xz2/XJM0XeIgFcno0MYe1MXAAAF3AAE/8IAAAAIgAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAPu8jIcsH411oS+a8eCA6i15S6XDFw2AngIMB3+3gr8kAAAAAAAAAAAF9eEAAAAAAAAAAAFh7UxcAAAAQL0zuN5spDVNZTMp5M/S8BKjwVXIFryoJ1chvYAd77hoZC4s1JMw6QTS3ycLSiyVNZU2uoHu2XdcWYLkEaycOQk="
-        XCTAssert (xdr == envelope)
-        
-        XCTAssert(true)
+        XCTAssertEqual(xdr, envelope)
     }
     
     func testCreateClaimableBalanceTxRep() {
@@ -311,11 +307,11 @@ class TransactionsLocalTestCase: XCTestCase {
         let expected = "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAGQAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAADgAAAAAAAAAArNp9AAAAAAYAAAAAAAAAAAuiOmFFq87cZuu1CSK3h1T0eIlAF1Mj9Suv8jRtR5zQAAAAAAAAAAAAAAAAqET7C4FsSbQXWhmw7q34kok311muYZ4Dqu08ZcM0jxQAAAAFAAAAAAAAAZAAAAAAAAAAAK1e2JNktxHrOaF/LbYPJVgrhE4bK/Yh1McHtUfet8AlAAAABAAAAABkW5NcAAAAAAAAAABcA+HyrRa1LPxzCSMDoTZmrfyYI/NUaAckvLA2YkUeUwAAAAEAAAACAAAAAwAAAAEAAAAFAAAAAAAAAlgAAAAEAAAAAGRbk1wAAAAAAAAAANwOUwiGwf5aZ4cCDvs/L9tPl3yz9KcbB68pd+p9jepMAAAAAgAAAAIAAAAEAAAAAGInALMAAAAEAAAAAGIXvoUAAAAAAAAAAEWdKiVhvoNSQZnvNL90W3U1cLsgMSqyXb8YtztjnpckAAAAAwAAAAEAAAAFAAAAAAAAH0AAAAAAAAAAAezRl+8AAABAmPMpskA3TYmM/LAXGzf0lcSI2xq9DikMBngpbm2wnXc+bnPxSlGgF4CFhNHE2uExieRTn0r4uBtsyDD8Q+nVAA==";
 
         let xdr = try! TxRep.fromTxRep(txRep: txrep)
-        print(xdr)
-        XCTAssert (xdr == expected)
+        // print(xdr)
+        XCTAssertEqual(expected, xdr)
         let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
-        print(txRepRes)
-        XCTAssert (txRepRes == txrep)
+        //print(txRepRes)
+        XCTAssertEqual(txRepRes, txrep)
     }
     
     func testClaimClaimableBalanceTxRep() {
@@ -342,11 +338,11 @@ class TransactionsLocalTestCase: XCTestCase {
         let expected = "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAGQAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAADwAAAADOqxTuu9v+JaGDDjnjEcIYCEbfdJR7oko4a4MUzLpmIgAAAAAAAAAB7NGX7wAAAECUdb7ymUWLsQX2OsWN9CAQZNYPfP2P/sisj9NBmLlOJ5olf5t7rn8uOnWSaGErVlBD2ston333yZzVXZ1RuwsG";
 
         let xdr = try! TxRep.fromTxRep(txRep: txrep)
-        print(xdr)
-        XCTAssert (xdr == expected)
+        // print(xdr)
+        XCTAssertEqual(expected, xdr)
         let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
-        print(txRepRes)
-        XCTAssert (txRepRes == txrep)
+        // print(txRepRes)
+        XCTAssertEqual(txRepRes, txrep)
     }
     
     func testSponsorshipTxRep() {
@@ -376,11 +372,11 @@ class TransactionsLocalTestCase: XCTestCase {
         let expected = "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAMgAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAABAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAAEAAAAADbHJLwEAV1t5NsuESCNIKyafzjpx/eXHqVyNeyMcSzcwAAAAEAAAAARJW9RyahO88Zbk3lbcGLzpOAM9MN5KwMZ0rgROzRl+8AAAARAAAAAAAAAAHs0ZfvAAAAQBlKli0vUa4a8cS/o+juynqitmVKhKwD3jfRc4Fx5D+OziEB/mvUTKzZ8L8QyTYWzfzwRjlyegjKhDOfremQ1A4=";
 
         let xdr = try! TxRep.fromTxRep(txRep: txrep)
-        print(xdr)
-        XCTAssert (xdr == expected)
+        //print(xdr)
+        XCTAssertEqual(expected, xdr)
         let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
-        print(txRepRes)
-        XCTAssert (txRepRes == txrep)
+        //print(txRepRes)
+        XCTAssertEqual(txRepRes, txrep)
     }
     
     func testRevokeSponsorshipTxRep() {
@@ -448,11 +444,11 @@ class TransactionsLocalTestCase: XCTestCase {
         let expected = "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAyAAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAEgAAAAAAAAAAAAAAANsckvAQBXW3k2y4RII0grJp/OOnH95cepXI17IxxLNzAAAAAAAAABIAAAAAAAAAAQAAAADbHJLwEAV1t5NsuESCNIKyafzjpx/eXHqVyNeyMcSzcwAAAAFBQ0MAAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAAAAAAABIAAAAAAAAAAgAAAADbHJLwEAV1t5NsuESCNIKyafzjpx/eXHqVyNeyMcSzcwAAAAAABHwFAAAAAAAAABIAAAAAAAAAAwAAAADbHJLwEAV1t5NsuESCNIKyafzjpx/eXHqVyNeyMcSzcwAAAAZTb25lc28AAAAAAAAAAAASAAAAAAAAAAQAAAAAzqsU7rvb/iWhgw454xHCGAhG33SUe6JKOGuDFMy6ZiIAAAABAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAAEgAAAAEAAAAA2xyS8BAFdbeTbLhEgjSCsmn846cf3lx6lcjXsjHEs3MAAAAARJW9RyahO88Zbk3lbcGLzpOAM9MN5KwMZ0rgROzRl+8AAAAAAAAAEgAAAAEAAAAA2xyS8BAFdbeTbLhEgjSCsmn846cf3lx6lcjXsjHEs3MAAAAC9p2LswC4UVkKsvnV7z5ZNqVx2djbsAtiAThz4QatuToAAAAAAAAAEgAAAAEAAAAA2xyS8BAFdbeTbLhEgjSCsmn846cf3lx6lcjXsjHEs3MAAAAB9p2LswC4UVkKsvnV7z5ZNqVx2djbsAtiAThz4QatuToAAAAAAAAAAezRl+8AAABAc8Ij+Fw08TmemvMyKmOKiHeYdyRWfkUheanysVmpah3U5jz7jFTngDqi83h0kvJVaY6lNgcPw+Otn4fjag5mDA==";
 
         let xdr = try! TxRep.fromTxRep(txRep: txrep)
-        print(xdr)
-        XCTAssert (xdr == expected)
+        //print(xdr)
+        XCTAssertEqual(expected, xdr)
         let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
-        print(txRepRes)
-        XCTAssert (txRepRes == txrep)
+        //print(txRepRes)
+        XCTAssertEqual(txRepRes, txrep)
     }
     
     func testClawbackTxRep() {
@@ -481,11 +477,11 @@ class TransactionsLocalTestCase: XCTestCase {
         let expected = "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAGQAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAAEwAAAAFBQ0MAAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAAANsckvAQBXW3k2y4RII0grJp/OOnH95cepXI17IxxLNzAAAAAIrg+oAAAAAAAAAAAezRl+8AAABAM2mYeFt4FarEZHidBHNdBtBCHF+S0TB6nRZOJw+hohTTDT8AJgFGqAo7sDGMkgWMBfbeB1ibEXLEtqtjDGKMBA==";
 
         let xdr = try! TxRep.fromTxRep(txRep: txrep)
-        print(xdr)
-        XCTAssert (xdr == expected)
+        //print(xdr)
+        XCTAssertEqual(expected, xdr)
         let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
-        print(txRepRes)
-        XCTAssert (txRepRes == txrep)
+        //print(txRepRes)
+        XCTAssertEqual(txRepRes, txrep)
     }
     
     func testClawbackClamableBalanceTxRep() {
@@ -512,11 +508,11 @@ class TransactionsLocalTestCase: XCTestCase {
         let expected = "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAGQAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAFAAAAAD2nYuzALhRWQqy+dXvPlk2pXHZ2NuwC2IBOHPhBq25OgAAAAAAAAAB7NGX7wAAAEBttbn/jonCEDlxVQpIV1QobR94Kqf6wX4lU7uuyas5aXlND9W6bQtFdbnHXBxGQzf+4bTlWS63eHe3pySHrLkJ"
 
         let xdr = try! TxRep.fromTxRep(txRep: txrep)
-        print(xdr)
-        XCTAssert (xdr == expected)
+        //print(xdr)
+        XCTAssertEqual(expected, xdr)
         let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
-        print(txRepRes)
-        XCTAssert (txRepRes == txrep)
+        //print(txRepRes)
+        XCTAssertEqual(txRepRes, txrep)
     }
     
     func testSetTrustlineFlagsTxRep() {
@@ -553,11 +549,11 @@ class TransactionsLocalTestCase: XCTestCase {
         
 
         let xdr = try! TxRep.fromTxRep(txRep: txrep)
-        print(xdr)
-        XCTAssert (xdr == expected)
+        //print(xdr)
+        XCTAssertEqual(expected, xdr)
         let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
-        print(txRepRes)
-        XCTAssert (txRepRes == txrep)
+        //print(txRepRes)
+        XCTAssertEqual(txRepRes, txrep)
     }
     
     func testLiquidityPool() {
@@ -596,11 +592,11 @@ class TransactionsLocalTestCase: XCTestCase {
         let expected = "AAAAAgAAAABElb1HJqE7zxluTeVtwYvOk4Az0w3krAxnSuBE7NGX7wAAAMgAClykAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAABAAAAAESVvUcmoTvPGW5N5W3Bi86TgDPTDeSsDGdK4ETs0ZfvAAAAFvadi7MAuFFZCrL51e8+WTalcdnY27ALYgE4c+EGrbk6AAAAADuaygAAAAAAdzWUAAAAABQAAAABAAAAHgAAAAEAAAAAAAAAF86rFO672/4loYMOOeMRwhgIRt90lHuiSjhrgxTMumYiAAAAAhhxGgAAAAAAdzWUAAAAAADuaygAAAAAAAAAAAHs0ZfvAAAAQO2X0NAYpnHFqRShU0bBs4kS1mldHRUv/pdrjJaJzi53cLDmzIiJxKJCMyOJiwh+X79DMG735jp1Nmvv0+KpvQM=";
         
         let xdr = try! TxRep.fromTxRep(txRep: txrep)
-        print(xdr)
-        XCTAssert (xdr == expected)
+        //print(xdr)
+        XCTAssertEqual(expected, xdr)
         let txRepRes = try! TxRep.toTxRep(transactionEnvelope: xdr);
-        print(txRepRes)
-        XCTAssert (txRepRes == txrep)
+        //print(txRepRes)
+        XCTAssertEqual(txRepRes, txrep)
     }
     
     func testTransactionEnvelopeXDRStringInit() {
@@ -636,7 +632,7 @@ class TransactionsLocalTestCase: XCTestCase {
             XCTAssert("GBSX5FBTIRMJG5QWDGEWMCXLHG4ODBMGAXZUPPUFZY6M7IUYQUGE3EYH" == envelope.txSourceAccountId)
             
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -650,7 +646,7 @@ class TransactionsLocalTestCase: XCTestCase {
             let transactionXDRString = transaction.xdrEncoded
             XCTAssertTrue(xdrString == transactionXDRString)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -664,7 +660,7 @@ class TransactionsLocalTestCase: XCTestCase {
             XCTAssertTrue(pc?.ledgerBounds?.minLedger == 892052)
             XCTAssertTrue(pc?.ledgerBounds?.maxLedger == 1892052)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -675,7 +671,7 @@ class TransactionsLocalTestCase: XCTestCase {
             let envelopeString = envelope.xdrEncoded
             XCTAssertTrue(xdrString == envelopeString)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -695,7 +691,7 @@ class TransactionsLocalTestCase: XCTestCase {
             XCTAssertTrue(tx2.preconditions?.timeBounds?.minTime == 0)
             XCTAssertTrue(tx2.preconditions?.timeBounds?.maxTime == 120)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -715,7 +711,7 @@ class TransactionsLocalTestCase: XCTestCase {
             XCTAssertTrue(tx2.preconditions?.ledgerBounds?.minLedger == 1)
             XCTAssertTrue(tx2.preconditions?.ledgerBounds?.maxLedger == 2)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -737,7 +733,7 @@ class TransactionsLocalTestCase: XCTestCase {
             XCTAssertTrue(tx2.preconditions?.minSeqAge == 19999)
             XCTAssertTrue(tx2.preconditions?.minSeqLedgerGap == 199)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -759,7 +755,7 @@ class TransactionsLocalTestCase: XCTestCase {
                 XCTAssertTrue(try payload.publicKey().accountId == accId)
                 XCTAssertTrue(payload.payload.base16EncodedString() == dataStr)
             default:
-                XCTAssertTrue(false)
+                XCTFail()
             }
             try transaction.sign(keyPair: kp, network: Network.testnet)
             let envelopeString = try transaction.encodedEnvelope()
@@ -771,10 +767,10 @@ class TransactionsLocalTestCase: XCTestCase {
                 XCTAssertTrue(try payload.publicKey().accountId == accId)
                 XCTAssertTrue(payload.payload.base16EncodedString() == dataStr)
             default:
-                XCTAssertTrue(false)
+                XCTFail()
             }
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -800,28 +796,24 @@ class TransactionsLocalTestCase: XCTestCase {
                 XCTAssertTrue(v2.operations.count == 2)
                 break
             default:
-                XCTAssertTrue(false)
+                XCTFail()
             }
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
-    func testGetTransactions() {
-        let expectation = XCTestExpectation(description: "Get transactions and parse their details successfully")
-        
-        sdk.transactions.getTransactions(limit: 1) { (response) -> (Void) in
-            switch response {
-            case .success(let transactionsResponse):
-                checkResult(transactionsResponse:transactionsResponse, limit:1)
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
-                XCTAssert(false)
-                expectation.fulfill()
-            }
+    func testGetTransactions() async {
+        let responseEnum = await sdk.transactions.getTransactions(limit: 1)
+        switch responseEnum {
+        case .success(let transactionsResponse):
+            await checkResult(transactionsResponse:transactionsResponse, limit:1)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetTransactions()", horizonRequestError: error)
+            XCTFail()
         }
-        
-        func checkResult(transactionsResponse:PageResponse<TransactionResponse>, limit:Int) {
+    
+        func checkResult(transactionsResponse:PageResponse<TransactionResponse>, limit:Int) async {
             
             XCTAssertNotNil(transactionsResponse.links)
             XCTAssertNotNil(transactionsResponse.links.selflink)
@@ -930,23 +922,18 @@ class TransactionsLocalTestCase: XCTestCase {
                 XCTAssertEqual(secondTransaction?.memo, Memo.hash(Data(base64Encoded:"UQQWROg9ashoyElBi2OS3b6d9T8AAAAAAAAAAAAAAAA=")!))
                 XCTAssertNotNil(secondTransaction?.signatures.first)
                 XCTAssertEqual(secondTransaction?.signatures.first, "9mofj/v3nFoJpHpImh/lmmV6C3zm0IISI62arI1MurcDkDzo43iR6pNBtPGxHlcYd1ZhOHWyaWGfFrYTsxarAA==")
-                
-                expectation.fulfill()
+
             } else {
-                sdk.transactions.getTransactions(limit: 2) { (response) -> (Void) in
-                    switch response {
-                    case .success(let transactionsResponse):
-                        checkResult(transactionsResponse:transactionsResponse, limit:2)
-                    case .failure(let error):
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
-                        XCTAssert(false)
-                        expectation.fulfill()
-                    }
+                let responseEnum = await sdk.transactions.getTransactions(limit: 2)
+                switch responseEnum {
+                case .success(let transactionsResponse):
+                    await checkResult(transactionsResponse:transactionsResponse, limit:2)
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
+                    XCTFail()
                 }
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     public func successResponse(limit:Int) -> String {
@@ -1095,7 +1082,7 @@ class TransactionsLocalTestCase: XCTestCase {
             let transaction2 = try! Transaction(envelopeXdr: envelopeXdrBase64)
             XCTAssertEqual(transaction.sourceAccount.keyPair.accountId, transaction2.sourceAccount.keyPair.accountId)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
 }

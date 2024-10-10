@@ -35,24 +35,41 @@ public class LiquidityPoolsService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
+    @available(*, renamed: "getLiquidityPool(poolId:)")
     open func getLiquidityPool(poolId:String, response:@escaping LiquidityPoolDetailsResponseClosure) {
-        let requestPath = "/liquidity_pools/" + poolId
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let value = try self.jsonDecoder.decode(LiquidityPoolResponse.self, from: data)
-                    response(.success(details: value))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
-            }
+        Task {
+            let result = await getLiquidityPool(poolId: poolId)
+            response(result)
         }
     }
     
+    
+    open func getLiquidityPool(poolId:String) async -> LiquidityPoolDetailsResponseEnum {
+        let requestPath = "/liquidity_pools/" + poolId
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let value = try self.jsonDecoder.decode(LiquidityPoolResponse.self, from: data)
+                return .success(details: value)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
+            }
+        case .failure(let error):
+            return .failure(error:error)
+        }
+    }
+    
+    @available(*, renamed: "getLiquidityPools(cursor:order:limit:)")
     open func getLiquidityPools(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
+        Task {
+            let result = await getLiquidityPools(cursor: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    open func getLiquidityPools(cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<LiquidityPoolResponse>.ResponseEnum {
         var requestPath = "/liquidity_pools"
         
         var params = Dictionary<String,String>()
@@ -61,14 +78,23 @@ public class LiquidityPoolsService: NSObject {
         if let limit = limit { params["limit"] = String(limit) }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        getLiquidityPoolsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await getLiquidityPoolsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    @available(*, renamed: "getLiquidityPools(reserveAssetA:reserveAssetB:cursor:order:limit:)")
     open func getLiquidityPools(reserveAssetA:Asset, reserveAssetB:Asset, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
+        Task {
+            let result = await getLiquidityPools(reserveAssetA: reserveAssetA, reserveAssetB: reserveAssetB, cursor: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    open func getLiquidityPools(reserveAssetA:Asset, reserveAssetB:Asset, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<LiquidityPoolResponse>.ResponseEnum {
         var requestPath = "/liquidity_pools"
         
         var params = Dictionary<String,String>()
@@ -78,44 +104,60 @@ public class LiquidityPoolsService: NSObject {
         if let limit = limit { params["limit"] = String(limit) }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        getLiquidityPoolsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await getLiquidityPoolsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    @available(*, renamed: "getLiquidityPoolTrades(poolId:)")
     open func getLiquidityPoolTrades(poolId:String, response:@escaping LiquidityPoolTradesResponseClosure) {
-        let requestPath = "/liquidity_pools/" + poolId + "/trades"
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let value = try self.jsonDecoder.decode(LiquidityPoolTradesResponse.self, from: data)
-                    response(.success(details: value))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
-            }
+        Task {
+            let result = await getLiquidityPoolTrades(poolId: poolId)
+            response(result)
         }
     }
     
-    open func getLiquidityPoolsFromUrl(url:String, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
-        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    // print(String(data: data, encoding: .utf8)!)
-                    let values = try self.jsonDecoder.decode(PageResponse<LiquidityPoolResponse>.self, from: data)
-                    response(.success(details: values))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
+    
+    open func getLiquidityPoolTrades(poolId:String) async -> LiquidityPoolTradesResponseEnum {
+        let requestPath = "/liquidity_pools/" + poolId + "/trades"
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let value = try self.jsonDecoder.decode(LiquidityPoolTradesResponse.self, from: data)
+                return .success(details: value)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error:error)
+        }
+    }
+    
+    @available(*, renamed: "getLiquidityPoolsFromUrl(url:)")
+    open func getLiquidityPoolsFromUrl(url:String, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
+        Task {
+            let result = await getLiquidityPoolsFromUrl(url: url)
+            response(result)
+        }
+    }
+    
+    
+    open func getLiquidityPoolsFromUrl(url:String) async -> PageResponse<LiquidityPoolResponse>.ResponseEnum {
+        let result = await serviceHelper.GETRequestFromUrl(url: url)
+        switch result {
+        case .success(let data):
+            do {
+                // print(String(data: data, encoding: .utf8)!)
+                let values = try self.jsonDecoder.decode(PageResponse<LiquidityPoolResponse>.self, from: data)
+                return .success(page: values)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
+            }
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
 }

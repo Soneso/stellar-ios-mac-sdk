@@ -35,25 +35,34 @@ open class FeeStatsService: NSObject {
     ///
     /// - Parameter response: The closure to be called upon response.
     ///
-    /// - Throws:
-    ///     - other 'HorizonRequestError' errors depending on the error case.
-    ///
+    @available(*, renamed: "getFeeStats()")
     open func getFeeStats(response: @escaping FeeStatsResponseClosure) {
+        Task {
+            let result = await getFeeStats()
+            response(result)
+        }
+    }
+    
+    /// This endpoint gives useful information about per-operation fee stats in the last 5 ledgers. It can be used to predict a fee set on the transaction that will be submitted to the network.
+    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/fee-stats.html "Fee stats")
+    ///
+    /// - Parameter response: The closure to be called upon response.
+    ///
+    open func getFeeStats() async -> FeeStatsResponseEnum {
         let requestPath = "/fee_stats"
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let responseMessage = try self.jsonDecoder.decode(FeeStatsResponse.self, from: data)
-                    response(.success(details:responseMessage))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                response(.failure(error:error))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let responseMessage = try self.jsonDecoder.decode(FeeStatsResponse.self, from: data)
+                return .success(details:responseMessage)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
 }

@@ -34,18 +34,15 @@ class TradesLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetTrades() {
-        let expectation = XCTestExpectation(description: "Get trades and parse their details successfully")
-        
-        sdk.trades.getTrades(limit: limit) { response in
-            switch response {
-            case .success(let tradesResponse):
-                checkResult(response: tradesResponse)
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
-                XCTAssert(false)
-                expectation.fulfill()
-            }
+    func testGetTrades() async {
+
+        let responseEnum = await sdk.trades.getTrades(limit: limit)
+        switch responseEnum {
+        case .success(let tradesResponse):
+            checkResult(response: tradesResponse)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"GT Test", horizonRequestError: error)
+            XCTFail()
         }
         
         func checkResult(response:PageResponse<TradeResponse>) {
@@ -94,10 +91,7 @@ class TradesLocalTestCase: XCTestCase {
                 XCTAssertEqual(trade.price.n, "10000000")
                 XCTAssertEqual(trade.price.d, "108837")
             }
-            expectation.fulfill()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     public func successResponse(limit:Int) -> String {

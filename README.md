@@ -73,16 +73,14 @@ Add the SDK project as a subproject, and having the SDK as a target dependencies
 #### 1.1 Random generation
 
 ```swift
-
 // create a completely new and unique pair of keys.
 let keyPair = try! KeyPair.generateRandomKeyPair()
 
-print("Account Id: " + keyPair.accountId)
+print("Account Id: \(keyPair.accountId)")
 // GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB
 
-print("Secret Seed: " + keyPair.secretSeed)
+print("Secret Seed: \(keyPair.secretSeed!)")
 // SAV76USXIJOBMEQXPANUOQM6F5LIOTLPDIDVRJBFFE2MDJXG24TAPUU7
- 
 ```
 
 #### 1.2 Deterministic generation
@@ -91,15 +89,15 @@ The Stellar Ecosystem Proposal [SEP-005 Key Derivation Methods for Stellar Accou
 
 Generate mnemonic
 ```swift
-let mnemonic = Wallet.generate24WordMnemonic()
+let mnemonic = WalletUtils.generate24WordMnemonic()
 print("generated 24 words mnemonic: \(mnemonic)")
 // bench hurt jump file august wise shallow faculty impulse spring exact slush thunder author capable act festival slice deposit sauce coconut afford frown better
 ```
 
 Generate key pairs
 ```swift
-let keyPair0 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 0)
-let keyPair1 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 1)
+let keyPair0 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 0)
+let keyPair1 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 1)
 
 print("key pair 0 accountId: \(keyPair0.accountId)")
 // key pair 0 accountId: GC3MMSXBWHL6CPOAVERSJITX7BH76YU252WGLUOM5CJX3E7UCYZBTPJQ
@@ -110,8 +108,8 @@ print("key pair 0 secretSeed: \(keyPair0.secretSeed!)")
 
 Generate key pairs with passphrase
 ```swift
-let keyPair0 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
-let keyPair1 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
+let keyPair0 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
+let keyPair1 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 1)
 ``` 
 
 BIP and master key generation
@@ -139,13 +137,12 @@ If you want to play in the Stellar test network, the sdk can ask Friendbot to cr
 
 ```swift
 // To create a test account, sdk.accounts.createTestAccount will send Friendbot the public key you created
-sdk.accounts.createTestAccount(accountId: keyPair.accountId) { (response) -> (Void) in
-    switch response {
-        case .success(let details):
-                print(details)
-        case .failure(let error):
-                print(error.localizedDescription)
-     }
+let responseEnum = await sdk.accounts.createTestAccount(accountId: keyPair.accountId)
+switch responseEnum {
+case .success(let details):
+    print(details)
+case .failure(let error):
+    StellarSDKLog.printHorizonRequestErrorMessage(tag:"createTestAccount", horizonRequestError: error)
 }
 ```
 
@@ -156,7 +153,6 @@ See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/
 On the other hand, if you would like to create an account in the public net, you should buy some Stellar Lumens from an exchange. See [Stellar's lumen buying guide](https://www.stellar.org/lumens/exchanges). When you withdraw the Lumens into your new account, the exchange will automatically create the account for you. However, if you want to create an account from another account of your own, you may run the following code:
 
 ```swift
-
 // build the operation
 let createAccount = try CreateAccountOperation(sourceAccountId: nil,
                                            destinationAccountId: destinationAccountId,
@@ -171,17 +167,18 @@ let transaction = try Transaction(sourceAccount: accountResponse,
 try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
                         
 // submit the transaction
-try sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-    switch response {
-    case .success(_):
-        //...
-    case .failure(let error):
-       // ...
-    }
+let responseEnum = await sdk.transactions.submitTransaction(transaction: transaction)
+switch responseEnum {
+case .success(let details):
+    //...
+case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+    print("destination account \(destinationAccountId) requires memo")
+case .failure(error: let error):
+    StellarSDKLog.printHorizonRequestErrorMessage(tag:"submitTransaction", horizonRequestError: error)
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L43)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L37)
 
 ### 3. Check account
 #### 3.1 Basic info
@@ -189,68 +186,71 @@ See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/
 After creating the account, we may check the basic information of the account.
 
 ```swift
-sdk.accounts.getAccountDetails(accountId: keyPair.accountId) { (response) -> (Void) in
-    switch response {
-    case .success(let accountDetails):
-        
-        // You can check the `balance`, `sequence`, `flags`, `signers`, `data` etc.
-        
-        for balance in accountDetails.balances {
-            switch balance.assetType {
-            case AssetTypeAsString.NATIVE:
-                print("balance: \(balance.balance) XLM")
-            default:
-                print("balance: \(balance.balance) \(balance.assetCode!) issuer: \(balance.assetIssuer!)")
-            }
+let responseEnum = await sdk.accounts.getAccountDetails(accountId: keyPair.accountId)
+
+switch responseEnum {
+case .success(let accountDetails):
+    // You can check the `balance`, `sequence`, `flags`, `signers`, `data` etc.
+    
+    for balance in accountDetails.balances {
+        switch balance.assetType {
+        case AssetTypeAsString.NATIVE:
+            print("balance: \(balance.balance) XLM")
+        default:
+            print("balance: \(balance.balance) \(balance.assetCode!) issuer: \(balance.assetIssuer!)")
         }
-
-        print("sequence number: \(accountDetails.sequenceNumber)")
-
-        for signer in accountDetails.signers {
-            print("signer public key: \(signer.key)")
-        }
-
-        print("auth required: \(accountDetails.flags.authRequired)")
-        print("auth revocable: \(accountDetails.flags.authRevocable)")
-
-        for (key, value) in accountDetails.data {
-            print("data key: \(key) value: \(value.base64Decoded() ?? "")")
-        }
-    case .failure(let error):
-        print(error.localizedDescription)
     }
+
+    print("sequence number: \(accountDetails.sequenceNumber)")
+
+    for signer in accountDetails.signers {
+        print("signer public key: \(signer.key)")
+    }
+
+    print("auth required: \(accountDetails.flags.authRequired)")
+    print("auth revocable: \(accountDetails.flags.authRevocable)")
+
+    for (key, value) in accountDetails.data {
+        print("data key: \(key) value: \(value.base64Decoded() ?? "")")
+    }
+case .failure(let error):
+    StellarSDKLog.printHorizonRequestErrorMessage(tag:"account details", horizonRequestError: error)
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L106)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L92)
 
 #### 3.2 Check payments
 
 You can check the most recent payments by:
 
 ```swift
-sdk.payments.getPayments(order:Order.descending, limit:10) { response in
-    switch response {
-    case .success(let paymentsResponse):
-        for payment in paymentsResponse.records {
-            if let nextPayment = payment as? PaymentOperationResponse {
-                if (nextPayment.assetType == AssetTypeAsString.NATIVE) {
-                    print("received: \(nextPayment.amount) lumen" )
-                } else {
-                    print("received: \(nextPayment.amount) \(nextPayment.assetCode!)" )
-                }
-                print("from: \(nextPayment.from)" )
+let responseEnum = await sdk.payments.getPayments(order:Order.descending, limit:10)
+
+switch responseEnum {
+case .success(let page):
+    for payment in page.records {
+        if let nextPayment = payment as? PaymentOperationResponse {
+            if (nextPayment.assetType == AssetTypeAsString.NATIVE) {
+                print("received: \(nextPayment.amount) lumen" )
+            } else {
+                print("received: \(nextPayment.amount) \(nextPayment.assetCode!)" )
             }
-            else if let nextPayment = payment as? AccountCreatedOperationResponse {
-                //...
-            }
+            print("from: \(nextPayment.from)" )
         }
-    case .failure(let error):
-        print(error.localizedDescription)
+        else if let nextPayment = payment as? AccountCreatedOperationResponse {
+            //...
+        }
+        else if let nextPayment = payment as? PathPaymentStrictSendOperationResponse {
+            //...
+        }
+        // ...
     }
+case .failure(let error):
+    // ...
 }
 ```
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L158)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L139)
 
 You can use the parameters:`limit`, `order`, and `cursor` to customize the query. You can also get most recent payments for accounts, ledgers and transactions. 
 
@@ -260,7 +260,7 @@ For example get payments for account:
 sdk.payments.getPayments(forAccount:keyPair.accountId, order:Order.descending, limit:10)
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L188)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L171)
 
 Horizon has SSE support for push data. You can use it like this:
 
@@ -298,7 +298,7 @@ later you can close the stream item:
 streamItem.close()
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L222)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L201)
 
 #### 3.3 Check others
 
@@ -333,17 +333,16 @@ let transaction = try Transaction(sourceAccount: accountResponse,
 try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
 
 // submit the transaction
-try sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-    switch response {
-      case .success(_):
-          // ...
-      default:
-          // ...
-    }
+let responseEnum = await sdk.transactions.submitTransaction(transaction: transaction)
+switch responseEnum {
+case .success(let result):
+    // ...
+default:
+    // ...
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L299)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L281)
 
 Get a transaction envelope from an XDR string:
 
@@ -356,7 +355,7 @@ do {
     print("Invalid xdr string")
 }
 ```
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L359)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L342)
 
 Get a transaction object from an XDR string:
 
@@ -389,13 +388,12 @@ Stellar addresses provide an easy way for users to share payment details by usin
 Get the federation of your domain:
 
 ```swift
-Federation.forDomain(domain: "https://YOUR_DOMAIN") { (response) -> (Void) in
-    switch response {
-    case .success(let federation):
-        //use the federation object to map your infos
-    case .failure(_):
-        //something went wrong
-    }
+let responseEnum = await Federation.forDomain(domain: domain, secure: secure)
+switch responseEnum {
+case .success(let federation):
+    //use the federation object to map your infos
+case .failure(let error):
+    //something went wrong
 }
 ```
 
@@ -405,17 +403,16 @@ Resolve your addresses:
 
 ```swift
 let federation = Federation(federationAddress: "https://YOUR_FEDERATION_SERVER")
-federation.resolve(address: "bob*YOUR_DOMAIN") { (response) -> (Void) in
-    switch response {
-    case .success(let federationResponse):
-        if let accountId = federationResponse.accountId {
-            // use the account id
-        } else {
-            // there is no account id corresponding to the given address
-        }
-    case .failure(_):
-        // something went wrong
+let responseEnum = await federation.resolve(address: "bob*YOUR_DOMAIN")
+switch responseEnum {
+case .success(let federationResponse):
+    if let accountId = federationResponse.accountId {
+        // use the account id
+    } else {
+        // there is no account id corresponding to the given address
     }
+case .failure(_):
+    // something went wrong
 }
 ```
 
@@ -471,15 +468,16 @@ See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/
 Signs a transaction from a URI and sends it to the callback url if present or to the stellar network otherwise.
 
 ```swift
-uriBuilder.signTransaction(forURL: uri, signerKeyPair: keyPair, transactionConfirmation: { (transaction) -> (Bool) in
+let responseEnum = await uriBuilder.signAndSubmitTransaction(forURL: uri, signerKeyPair: keyPair, transactionConfirmation: { (transaction) -> (Bool) in
     // here the transaction from the uri can be checked and confirmed if the signing should continue
-    return true
-}) { (response) -> (Void) in
-    switch response {
-    case .success:
-    // the transaction was successfully signed
-    case .failure(error: let error):
-        // the transaction wasn't valid or it didn't pass the confirmation
+    return false
+})
+
+switch responseEnum {
+case .success:
+    // the transaction was successfully signed and sent
+case .failure(error: let error):
+    // the transaction wasn't valid or it didn't pass the confirmation
 }
 ```
 
@@ -503,13 +501,13 @@ let webAuth = WebAuthenticator(authEndpoint: authEndpoint, network: .testnet,
                                 serverSigningKey: serverSigningKey, serverHomeDomain: serverHomeDomain)
 
 let signers = [try! KeyPair(secretSeed: self.userSeed)]
-webAuth.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -> (Void) in
-    switch response {
-    case .success(let jwtToken):
-        print("JWT received: \(jwtToken)")
-    case .failure(let error):
-        print("Error: \(error)")
-    }
+
+let responseEnum = await webAuth.jwtToken(forUserAccount: userAccountId, signers: signers)
+switch responseEnum {
+case .success(let jwtToken):
+    print("JWT received: \(jwtToken)")
+case .failure(let error):
+    // ...
 }
 ```
 
@@ -518,8 +516,13 @@ webAuth.jwtToken(forUserAccount: userAccountId, signers: signers) { (response) -
 Creates the WebAuthenticator by loading the web auth endpoint and the server signing key from the stellar.toml file of the given domain.
 
 ```swift
-
-let webAuth = WebAuthenticator.from(domain:"yourserverhomedomain.com", network: .testnet)
+let responseEnum = await WebAuthenticator.from(domain:"yourserverhomedomain.com", network: .testnet)
+switch responseEnum {
+case .success(let webAuth):
+    // use the web auth object
+case .failure(let error):
+    //...
+}
 
 ```
 The Web Authenticator can now be used to get the JWT token (see: 8.1)

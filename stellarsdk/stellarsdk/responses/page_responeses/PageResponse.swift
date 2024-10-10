@@ -12,7 +12,7 @@ import Foundation
 public struct PageResponse<Element:Decodable>: Decodable {
     
     public enum ResponseEnum {
-        case success(details: PageResponse)
+        case success(page: PageResponse)
         case failure(error: HorizonRequestError)
     }
     
@@ -87,11 +87,20 @@ public struct PageResponse<Element:Decodable>: Decodable {
      
      - Parameter response:   The closure to be called upon response.
      */
+    @available(*, renamed: "getNextPage()")
     public func getNextPage(response:@escaping ResponseClosure) {
+        Task {
+            let result = await getNextPage()
+            response(result)
+        }
+    }
+    
+    
+    public func getNextPage() async -> PageResponse<Element>.ResponseEnum {
         if let url = links.next?.href {
-            getRecordsFrom(url: url, response: response)
+            return await getRecordsFrom(url: url)
         } else {
-            response(.failure(error: .notFound(message: "next page not found", horizonErrorResponse: nil)))
+            return .failure(error: .notFound(message: "next page not found", horizonErrorResponse: nil))
         }
     }
     
@@ -100,14 +109,107 @@ public struct PageResponse<Element:Decodable>: Decodable {
      
      - Parameter response:   The closure to be called upon response.
      */
+    @available(*, renamed: "getPreviousPage()")
     public func getPreviousPage(response:@escaping ResponseClosure) {
-        if let url = links.prev?.href {
-            getRecordsFrom(url: url, response: response)
-        } else {
-            response(.failure(error: .notFound(message: "previous page not found", horizonErrorResponse: nil)))
+        Task {
+            let result = await getPreviousPage()
+            response(result)
         }
     }
     
+    /**
+     Provides the previous page if available. Before calling this, make sure there is a prevoius page available by calling 'hasPreviousPage'. If there is no prevoius page available this fuction will respond with a 'HorizonRequestError.notFound" error.
+     
+     - Parameter response:   The closure to be called upon response.
+     */
+    public func getPreviousPage() async -> PageResponse<Element>.ResponseEnum {
+        if let url = links.prev?.href {
+            return await getRecordsFrom(url: url)
+        } else {
+            return .failure(error: .notFound(message: "previous page not found", horizonErrorResponse: nil))
+        }
+    }
+    
+    private func getRecordsFrom(url:String) async -> PageResponse<Element>.ResponseEnum {
+        switch Element.self {
+            case is AssetResponse.Type:
+                let service = AssetsService(baseURL:"")
+                let res =  await service.getAssetsFromUrl(url:url)
+                switch res {
+                case .success(let details):
+                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                case .failure(let error):
+                    return .failure(error: error)
+                }
+            case is AccountResponse.Type:
+                let service = AccountService(baseURL:"")
+                let res = await service.getAccountsFromUrl(url:url)
+                switch res {
+                case .success(let details):
+                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                case .failure(let error):
+                    return .failure(error: error)
+                }
+            case is TradeResponse.Type:
+                let service = TradesService(baseURL:"")
+                let res = await service.getTradesFromUrl(url:url)
+                switch res {
+                case .success(let details):
+                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                case .failure(let error):
+                    return .failure(error: error)
+                }
+            case is OfferResponse.Type:
+                let service = OffersService(baseURL:"")
+                let res = await service.getOffersFromUrl(url:url)
+                switch res {
+                case .success(let details):
+                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                case .failure(let error):
+                    return .failure(error: error)
+                }
+            case is LedgerResponse.Type:
+                let service = LedgersService(baseURL:"")
+                let res = await service.getLedgersFromUrl(url:url)
+                switch res {
+                case .success(let details):
+                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                case .failure(let error):
+                    return .failure(error: error)
+                }
+            case is OperationResponse.Type:
+                let service = PaymentsService(baseURL:"")
+                let res = await service.getPaymentsFromUrl(url:url)
+                switch res {
+                case .success(let details):
+                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                case .failure(let error):
+                    return .failure(error: error)
+                }
+            case is TransactionResponse.Type:
+                let service = TransactionsService(baseURL:"")
+                let res = await service.getTransactionsFromUrl(url:url)
+                switch res {
+                case .success(let details):
+                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                case .failure(let error):
+                    return .failure(error: error)
+                }
+            case is EffectResponse.Type:
+                let service = EffectsService(baseURL:"")
+                let res = await service.getEffectsFromUrl(url:url)
+                switch res {
+                case .success(let details):
+                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                case .failure(let error):
+                    return .failure(error: error)
+                }
+            default:
+                return .failure(error: HorizonRequestError.notImplemented(message: "Page record type not implemented in SDK", horizonErrorResponse: nil))
+        }
+    }
+    
+    @available(*, renamed: "getRecordsFrom(url:)")
     private func getRecordsFrom(url:String, response:@escaping ResponseClosure) {
         switch Element.self {
             case is AssetResponse.Type:

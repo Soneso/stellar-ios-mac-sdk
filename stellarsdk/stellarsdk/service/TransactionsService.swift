@@ -56,167 +56,230 @@ public class TransactionsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
+    @available(*, renamed: "getTransactions(cursor:order:limit:)")
     open func getTransactions(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
+        Task {
+            let result = await getTransactions(cursor: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    open func getTransactions(cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
         let path = "/transactions"
-        getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
     
+    @available(*, renamed: "getTransactions(forAccount:from:order:limit:)")
     open func getTransactions(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
+        Task {
+            let result = await getTransactions(forAccount: accountId, from: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    open func getTransactions(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum
+    {
         let path = "/accounts/" + accountId + "/transactions"
-        getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
     
+    @available(*, renamed: "getTransactions(forClaimableBalance:from:order:limit:)")
     open func getTransactions(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
+        Task {
+            let result = await getTransactions(forClaimableBalance: claimableBalanceId, from: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    open func getTransactions(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
         let path = "/claimable_balances/" + claimableBalanceId + "/transactions"
-        getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
     
+    @available(*, renamed: "getTransactions(forLiquidityPool:from:order:limit:)")
     open func getTransactions(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
+        Task {
+            let result = await getTransactions(forLiquidityPool: liquidityPoolId, from: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    open func getTransactions(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
         let path = "/liquidity_pools/" + liquidityPoolId + "/transactions"
-        getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
     
+    @available(*, renamed: "getTransactions(forLedger:from:order:limit:)")
     open func getTransactions(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
-        let path = "/ledgers/" + ledger + "/transactions"
-        getTransactions(onPath: path, from:cursor, order:order, limit:limit, response:response)
+        Task {
+            let result = await getTransactions(forLedger: ledger, from: cursor, order: order, limit: limit)
+            response(result)
+        }
     }
     
+    
+    open func getTransactions(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
+        let path = "/ledgers/" + ledger + "/transactions"
+        return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
+    }
+    
+    @available(*, renamed: "getTransactionDetails(transactionHash:)")
     open func getTransactionDetails(transactionHash:String, response:@escaping TransactionDetailsResponseClosure) {
+        Task {
+            let result = await getTransactionDetails(transactionHash: transactionHash)
+            response(result)
+        }
+    }
+    
+    
+    open func getTransactionDetails(transactionHash:String) async -> TransactionDetailsResponseEnum {
         let requestPath = "/transactions/" + transactionHash
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
-                    let transaction = try self.jsonDecoder.decode(TransactionResponse.self, from: data)
-                    response(.success(details: transaction))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                let transaction = try self.jsonDecoder.decode(TransactionResponse.self, from: data)
+                return .success(details: transaction)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
     
-    open func submitTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostResponseClosure) throws {
-        let envelope = try transaction.encodedEnvelope()
-        postTransaction(transactionEnvelope:envelope, skipMemoRequiredCheck: skipMemoRequiredCheck, response: response)
+    @available(*, renamed: "submitTransaction(transaction:skipMemoRequiredCheck:)")
+    open func submitTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostResponseClosure) {
+        Task {
+            let result = await submitTransaction(transaction: transaction, skipMemoRequiredCheck: skipMemoRequiredCheck)
+            response(result)
+        }
     }
     
-    open func submitAsyncTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostAsyncResponseClosure) throws {
-        let envelope = try transaction.encodedEnvelope()
-        postTransactionAsync(transactionEnvelope:envelope, skipMemoRequiredCheck: skipMemoRequiredCheck, response: response)
+    
+    open func submitTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostResponseEnum {
+        var envelope:String? = nil
+        do {
+            envelope = try transaction.encodedEnvelope()
+        } catch {
+            return .failure(error: .requestFailed(message: "could not encode transaction", horizonErrorResponse: nil))
+        }
+        return await postTransaction(transactionEnvelope: envelope!, skipMemoRequiredCheck: skipMemoRequiredCheck)
     }
     
-    open func submitFeeBumpTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostResponseClosure) throws {
-        let envelope = try transaction.encodedEnvelope()
-        //print(envelope)
-        postTransactionCore(transactionEnvelope: envelope, response: { (result) -> (Void) in
-            switch result {
-            case .success(let transaction):
-                response(.success(details: transaction))
-            case .failure(let error):
-                response(.failure(error: error))
-            case .destinationRequiresMemo(let destinationAccountId):
-                response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
-            }
-        })
+    @available(*, renamed: "submitAsyncTransaction(transaction:skipMemoRequiredCheck:)")
+    open func submitAsyncTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostAsyncResponseClosure) {
+        Task {
+            let result = await submitAsyncTransaction(transaction: transaction, skipMemoRequiredCheck: skipMemoRequiredCheck)
+            response(result)
+        }
     }
     
-    open func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostAsyncResponseClosure) throws {
-        let envelope = try transaction.encodedEnvelope()
-        //print(envelope)
-        postTransactionAsyncCore(transactionEnvelope: envelope, response: { (result) -> (Void) in
-            switch result {
-            case .success(let transaction):
-                response(.success(details: transaction))
-            case .failure(let error):
-                response(.failure(error: error))
-            case .destinationRequiresMemo(let destinationAccountId):
-                response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
-            }
-        })
+    
+    open func submitAsyncTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostAsyncResponseEnum {
+        let envelope = try! transaction.encodedEnvelope()
+        return await postTransactionAsync(transactionEnvelope: envelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
     }
     
+    @available(*, renamed: "submitFeeBumpTransaction(transaction:)")
+    open func submitFeeBumpTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostResponseClosure) {
+        Task {
+            let result = await submitFeeBumpTransaction(transaction: transaction)
+            response(result)
+        }
+    }
+    
+    open func submitFeeBumpTransaction(transaction:FeeBumpTransaction) async -> TransactionPostResponseEnum {
+        let envelope = try! transaction.encodedEnvelope()
+        return await postTransactionCore(transactionEnvelope: envelope)
+    }
+    
+    @available(*, renamed: "submitFeeBumpAsyncTransaction(transaction:)")
+    open func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostAsyncResponseClosure) {
+        Task {
+            let result = await submitFeeBumpAsyncTransaction(transaction: transaction)
+            response(result)
+        }
+    }
+    
+    open func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction) async -> TransactionPostAsyncResponseEnum {
+        var envelope:String? = nil
+        do {
+            envelope = try transaction.encodedEnvelope()
+        } catch {
+            return .failure(error: .requestFailed(message: "could not encode transaction", horizonErrorResponse: nil))
+        }
+        return await postTransactionAsyncCore(transactionEnvelope: envelope!)
+    }
+    
+    @available(*, renamed: "postTransaction(transactionEnvelope:skipMemoRequiredCheck:)")
     open func postTransaction(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostResponseClosure) {
-        
-        if !skipMemoRequiredCheck, let transaction = try? Transaction(envelopeXdr: transactionEnvelope) {
-            checkMemoRequired(transaction: transaction, response: { (result) -> (Void) in
-                switch result {
-                case .noMemoRequired:
-                    self.postTransactionCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
-                        switch result {
-                        case .success(let transaction):
-                            response(.success(details: transaction))
-                        case .failure(let error):
-                            response(.failure(error: error))
-                        case .destinationRequiresMemo(let destinationAccountId):
-                            response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
-                        }
-                    })
-                case .memoRequired(let accountId):
-                    response(.destinationRequiresMemo(destinationAccountId: accountId))
-                case .failure(let error):
-                    response(.failure(error: error))
-                }
-            })
-        } else {
-            postTransactionCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
-                switch result {
-                case .success(let transaction):
-                    response(.success(details: transaction))
-                case .failure(let error):
-                    response(.failure(error: error))
-                case .destinationRequiresMemo(let destinationAccountId):
-                    response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
-                }
-            })
+        Task {
+            let result = await postTransaction(transactionEnvelope: transactionEnvelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
+            response(result)
         }
     }
     
+    
+    open func postTransaction(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false) async -> TransactionPostResponseEnum {
+        if !skipMemoRequiredCheck, let transaction = try? Transaction(envelopeXdr: transactionEnvelope) {
+            let checkMemoRequiredEnum = await checkMemoRequired(transaction: transaction)
+            switch checkMemoRequiredEnum {
+            case .noMemoRequired:
+                return await postTransactionCore(transactionEnvelope: transactionEnvelope)
+            case .memoRequired(let destination):
+                return .destinationRequiresMemo(destinationAccountId: destination)
+            case .failure(let error):
+                return .failure(error: error)
+            }
+        } else {
+            return await postTransactionCore(transactionEnvelope: transactionEnvelope)
+        }
+    }
+    
+    @available(*, renamed: "postTransactionAsync(transactionEnvelope:skipMemoRequiredCheck:)")
     open func postTransactionAsync(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostAsyncResponseClosure) {
+        Task {
+            let result = await postTransactionAsync(transactionEnvelope: transactionEnvelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
+            response(result)
+        }
+    }
+    
+    open func postTransactionAsync(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false) async -> TransactionPostAsyncResponseEnum {
         
         if !skipMemoRequiredCheck, let transaction = try? Transaction(envelopeXdr: transactionEnvelope) {
-            checkMemoRequired(transaction: transaction, response: { (result) -> (Void) in
-                switch result {
-                case .noMemoRequired:
-                    self.postTransactionAsyncCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
-                        switch result {
-                        case .success(let transaction):
-                            response(.success(details: transaction))
-                        case .failure(let error):
-                            response(.failure(error: error))
-                        case .destinationRequiresMemo(let destinationAccountId):
-                            response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
-                        }
-                    })
-                case .memoRequired(let accountId):
-                    response(.destinationRequiresMemo(destinationAccountId: accountId))
-                case .failure(let error):
-                    response(.failure(error: error))
-                }
-            })
+            let checkMemoRequiredEnum = await checkMemoRequired(transaction: transaction)
+            switch checkMemoRequiredEnum {
+            case .noMemoRequired:
+                return await postTransactionAsyncCore(transactionEnvelope: transactionEnvelope)
+            case .memoRequired(let destination):
+                return .destinationRequiresMemo(destinationAccountId: destination)
+            case .failure(let error):
+                return .failure(error: error)
+            }
         } else {
-            postTransactionAsyncCore(transactionEnvelope: transactionEnvelope, response: { (result) -> (Void) in
-                switch result {
-                case .success(let transaction):
-                    response(.success(details: transaction))
-                case .failure(let error):
-                    response(.failure(error: error))
-                case .destinationRequiresMemo(let destinationAccountId):
-                    response(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
-                }
-            })
+            return await postTransactionAsyncCore(transactionEnvelope: transactionEnvelope)
         }
     }
     
     
+    @available(*, renamed: "checkMemoRequired(transaction:)")
     private func checkMemoRequired(transaction: Transaction, response:@escaping CheckMemoRequiredResponseClosure) {
+        Task {
+            let result = await checkMemoRequired(transaction: transaction)
+            response(result)
+        }
+    }
+    
+    
+    private func checkMemoRequired(transaction: Transaction) async -> CheckMemoRequiredResponseEnum {
         if transaction.memo != Memo.none {
-            response(.noMemoRequired)
-            return
+            return .noMemoRequired
         }
         
         var destinations = [String]()
@@ -239,145 +302,141 @@ public class TransactionsService: NSObject {
         }
         
         if (destinations.count == 0) {
-            response(.noMemoRequired)
-            return
+            return .noMemoRequired
         }
         
-        checkMemoRequiredForDestinations(destinations: destinations, response: { (result) -> (Void) in
-            switch result {
-            case .noMemoRequired:
-                response(.noMemoRequired)
-            case .memoRequired(let accountId):
-                response(.memoRequired(destination: accountId))
-            case .failure(let error):
-                response(.failure(error: error))
-            }
-        })
+        return await checkMemoRequiredForDestinations(destinations: destinations)
     }
     
+    @available(*, renamed: "checkMemoRequiredForDestinations(destinations:)")
     private func checkMemoRequiredForDestinations(destinations: [String], response:@escaping CheckMemoRequiredResponseClosure) {
+        Task {
+            let result = await checkMemoRequiredForDestinations(destinations: destinations)
+            response(result)
+        }
+    }
+    
+    
+    private func checkMemoRequiredForDestinations(destinations: [String]) async -> CheckMemoRequiredResponseEnum {
         
         var remainingDestinations = destinations
         if let firstDestination = remainingDestinations.first {
             let requestPath = "/accounts/\(firstDestination)"
             
-            serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-                switch result {
-                case .success(let data):
-                    do {
-                        let accountDetails = try self.jsonDecoder.decode(AccountResponse.self, from: data)
-                        // "MQ==" is the base64 encoding of "1".
-                        if let value = accountDetails.data["config.memo_required"], value == "MQ==" {
-                            response(.memoRequired(destination: accountDetails.accountId))
-                        } else {
-                            remainingDestinations.removeFirst()
-                            self.checkMemoRequiredForDestinations(destinations: remainingDestinations, response: { (nextResult) -> (Void) in
-                                switch nextResult {
-                                case .noMemoRequired:
-                                    response(.noMemoRequired)
-                                case .memoRequired(let accountId):
-                                    response(.memoRequired(destination: accountId))
-                                case .failure(let error):
-                                    response(.failure(error: error))
-                                }
-                            })
-                        }
-                    } catch {
-                        response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                    }
-                    
-                case .failure(let error):
-                    switch error {
-                    case .notFound( _, _):
-                        // account not found => no memo required for this account.
+            let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+            switch result {
+            case .success(let data):
+                do {
+                    let accountDetails = try self.jsonDecoder.decode(AccountResponse.self, from: data)
+                    // "MQ==" is the base64 encoding of "1".
+                    if let value = accountDetails.data["config.memo_required"], value == "MQ==" {
+                        return .memoRequired(destination: accountDetails.accountId)
+                    } else {
                         remainingDestinations.removeFirst()
-                        self.checkMemoRequiredForDestinations(destinations: remainingDestinations, response: { (nextResult) -> (Void) in
-                            switch nextResult {
-                            case .noMemoRequired:
-                                response(.noMemoRequired)
-                            case .memoRequired(let accountId):
-                                response(.memoRequired(destination: accountId))
-                            case .failure(let error):
-                                response(.failure(error: error))
-                            }
-                        })
-                    default:
-                        response(.failure(error:error))
+                        return await checkMemoRequiredForDestinations(destinations: remainingDestinations);
                     }
+                } catch {
+                    return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
+                }
+                
+            case .failure(let error):
+                switch error {
+                case .notFound( _, _):
+                    // account not found => no memo required for this account.
+                    remainingDestinations.removeFirst()
+                    return await checkMemoRequiredForDestinations(destinations: remainingDestinations);
+                default:
+                    return .failure(error:error)
                 }
             }
         } else {
-            response(.noMemoRequired)
-        }
-    }
-    private func postTransactionCore(transactionEnvelope:String, response:@escaping TransactionPostResponseClosure) {
-        
-        let requestPath = "/transactions"
-        if let encoded = transactionEnvelope.urlEncoded {
-            let data = ("tx=" + encoded).data(using: .utf8)
-            
-            serviceHelper.POSTRequestWithPath(path: requestPath, body: data) { (result) -> (Void) in
-                switch result {
-                case .success(let data):
-                    do {
-                        //print("SUCCESS: " + String(data: data, encoding: .utf8)!)
-                        self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
-                        let transaction = try self.jsonDecoder.decode(SubmitTransactionResponse.self, from: data)
-                        response(.success(details: transaction))
-                    } catch {
-                        response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                    }
-                case .failure(let error):
-                    response(.failure(error:error))
-                }
-            }
-        } else {
-            response(.failure(error: .parsingResponseFailed(message: "Failed to URL encode the xdr enveloper")))
+            return .noMemoRequired
         }
     }
     
+    @available(*, renamed: "postTransactionCore(transactionEnvelope:)")
+    private func postTransactionCore(transactionEnvelope:String, response:@escaping TransactionPostResponseClosure) {
+        Task {
+            let result = await postTransactionCore(transactionEnvelope: transactionEnvelope)
+            response(result)
+        }
+    }
+    
+    
+    private func postTransactionCore(transactionEnvelope:String) async -> TransactionPostResponseEnum {
+        
+        let requestPath = "/transactions"
+        if let encoded = transactionEnvelope.urlEncoded {
+            let data1 = ("tx=" + encoded).data(using: .utf8)
+            
+            let result = await serviceHelper.POSTRequestWithPath(path: requestPath, body: data1)
+            switch result {
+            case .success(let data):
+                do {
+                    //print("SUCCESS: " + String(data: data, encoding: .utf8)!)
+                    self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                    let transaction = try self.jsonDecoder.decode(SubmitTransactionResponse.self, from: data)
+                    return .success(details: transaction)
+                } catch {
+                    return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
+                }
+            case .failure(let error):
+                return .failure(error:error)
+            }
+        } else {
+            return .failure(error: .parsingResponseFailed(message: "Failed to URL encode the xdr enveloper"))
+        }
+    }
+    
+    @available(*, renamed: "postTransactionAsyncCore(transactionEnvelope:)")
     private func postTransactionAsyncCore(transactionEnvelope:String, response:@escaping TransactionPostAsyncResponseClosure) {
+        Task {
+            let result = await postTransactionAsyncCore(transactionEnvelope: transactionEnvelope)
+            response(result)
+        }
+    }
+    
+    
+    private func postTransactionAsyncCore(transactionEnvelope:String) async -> TransactionPostAsyncResponseEnum {
         
         let requestPath = "/transactions_async"
         if let encoded = transactionEnvelope.urlEncoded {
-            let data = ("tx=" + encoded).data(using: .utf8)
+            let data1 = ("tx=" + encoded).data(using: .utf8)
             
-            serviceHelper.POSTRequestWithPath(path: requestPath, body: data) { (result) -> (Void) in
-                switch result {
-                case .success(let data):
-                    do {
-                        //print("SUCCESS: " + String(data: data, encoding: .utf8)!)
-                        self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
-                        let transaction = try self.jsonDecoder.decode(SubmitTransactionAsyncResponse.self, from: data)
-                        response(.success(details: transaction))
-                    } catch {
-                        response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                    }
-                case .failure(let error):
-                    var responseData:Data? = nil
-                    
-                    switch error {
-                    case .badRequest(let message, _):
-                        responseData = message.data(using: .utf8)
-                    case .duplicate(let message, _):
-                        responseData = message.data(using: .utf8)
-                    case .staleHistory(let message, _):
-                        responseData = message.data(using: .utf8)
-                    default:
-                        break
-                    }
-                    if let data = responseData {
-                        self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
-                        if let transaction = try? self.jsonDecoder.decode(SubmitTransactionAsyncResponse.self, from: data) {
-                            response(.success(details: transaction))
-                            return
-                        }
-                    }
-                    response(.failure(error:error))
+            let result = await serviceHelper.POSTRequestWithPath(path: requestPath, body: data1)
+            switch result {
+            case .success(let data):
+                do {
+                    //print("SUCCESS: " + String(data: data, encoding: .utf8)!)
+                    self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                    let transaction = try self.jsonDecoder.decode(SubmitTransactionAsyncResponse.self, from: data)
+                    return .success(details: transaction)
+                } catch {
+                    return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
                 }
+            case .failure(let error):
+                var responseData:Data? = nil
+                
+                switch error {
+                case .badRequest(let message, _):
+                    responseData = message.data(using: .utf8)
+                case .duplicate(let message, _):
+                    responseData = message.data(using: .utf8)
+                case .staleHistory(let message, _):
+                    responseData = message.data(using: .utf8)
+                default:
+                    break
+                }
+                if let data = responseData {
+                    self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                    if let transaction = try? self.jsonDecoder.decode(SubmitTransactionAsyncResponse.self, from: data) {
+                        return .success(details: transaction)
+                    }
+                }
+                return .failure(error:error)
             }
         } else {
-            response(.failure(error: .parsingResponseFailed(message: "Failed to URL encode the xdr enveloper")))
+            return .failure(error: .parsingResponseFailed(message: "Failed to URL encode the xdr enveloper"))
         }
     }
     
@@ -410,7 +469,16 @@ public class TransactionsService: NSObject {
         return streamItem
     }
     
+    @available(*, renamed: "getTransactions(onPath:from:order:limit:)")
     private func getTransactions(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
+        Task {
+            let result = await getTransactions(onPath: path, from: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    private func getTransactions(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
         var requestPath = path
         
         var params = Dictionary<String,String>()
@@ -419,27 +487,35 @@ public class TransactionsService: NSObject {
         if let limit = limit { params["limit"] = String(limit) }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        getTransactionsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await getTransactionsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    @available(*, renamed: "getTransactionsFromUrl(url:)")
     open func getTransactionsFromUrl(url:String, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
-        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
-                    let transactions = try self.jsonDecoder.decode(PageResponse<TransactionResponse>.self, from: data)
-                    response(.success(details: transactions))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
+        Task {
+            let result = await getTransactionsFromUrl(url: url)
+            response(result)
+        }
+    }
+    
+    
+    open func getTransactionsFromUrl(url:String) async -> PageResponse<TransactionResponse>.ResponseEnum {
+        let result = await serviceHelper.GETRequestFromUrl(url: url)
+        switch result {
+        case .success(let data):
+            do {
+                self.jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                let transactions = try self.jsonDecoder.decode(PageResponse<TransactionResponse>.self, from: data)
+                return .success(page: transactions)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
 }

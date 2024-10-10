@@ -37,9 +37,26 @@ public class PaymentsService: NSObject {
     /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
     /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
     ///
+    @available(*, renamed: "getPayments(from:order:limit:includeFailed:join:)")
     open func getPayments(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        Task {
+            let result = await getPayments(from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
+            response(result)
+        }
+    }
+    
+    /// This function responds with all payment operations that are part of validated transactions.
+    /// See [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-all.html "All Payments")
+    ///
+    /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
+    /// - Parameter order: The order in which to return rows, “asc” or “desc”.
+    /// - Parameter limit: Maximum number of records to return default 10
+    /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
+    /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
+    ///
+    open func getPayments(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/payments"
-        getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+        return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
     
     /// This function responds with a collection of payment operations where the given account was either the sender or receiver.
@@ -52,9 +69,27 @@ public class PaymentsService: NSObject {
     /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
     /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
     ///
+    @available(*, renamed: "getPayments(forAccount:from:order:limit:includeFailed:join:)")
     open func getPayments(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        Task {
+            let result = await getPayments(forAccount: accountId, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
+            response(result)
+        }
+    }
+    
+    /// This function responds with a collection of payment operations where the given account was either the sender or receiver.
+    /// See [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-account.html "Payments for Account")
+    ///
+    /// - Parameter accountId: The Stellar account ID of the account used to constrain results.
+    /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
+    /// - Parameter order: The order in which to return rows, “asc” or “desc”.
+    /// - Parameter limit: Maximum number of records to return default 10
+    /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
+    /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
+    ///
+    open func getPayments(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/accounts/" + accountId + "/payments"
-        getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+        return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
     
     /// This function responds with all payment operations that are part of a valid transactions in a given ledger.
@@ -67,9 +102,27 @@ public class PaymentsService: NSObject {
     /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
     /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
     ///
+    @available(*, renamed: "getPayments(forLedger:from:order:limit:includeFailed:join:)")
     open func getPayments(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        Task {
+            let result = await getPayments(forLedger: ledger, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
+            response(result)
+        }
+    }
+    
+    /// This function responds with all payment operations that are part of a valid transactions in a given ledger.
+    /// See also [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-ledger.html "Payments for Ledger")
+    ///
+    /// - Parameter accountId: The ledger id of the ledger used to constrain results.
+    /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
+    /// - Parameter order: The order in which to return rows, “asc” or “desc”.
+    /// - Parameter limit: Maximum number of records to return default 10
+    /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
+    /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
+    ///
+    open func getPayments(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/ledgers/" + ledger + "/payments"
-        getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+        return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
     
     /// This function responds with all payment operations that are part of a given transaction.
@@ -82,12 +135,39 @@ public class PaymentsService: NSObject {
     /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
     /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
     ///
+    @available(*, renamed: "getPayments(forTransaction:from:order:limit:includeFailed:join:)")
     open func getPayments(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
-        let path = "/transactions/" + hash + "/payments"
-        getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+        Task {
+            let result = await getPayments(forTransaction: hash, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
+            response(result)
+        }
     }
     
+    /// This function responds with all payment operations that are part of a given transaction.
+    /// See [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-transaction.html "Payments for Transaction")
+    ///
+    /// - Parameter hash: A transaction hash, hex-encoded.
+    /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
+    /// - Parameter order: The order in which to return rows, “asc” or “desc”.
+    /// - Parameter limit: Maximum number of records to return default 10
+    /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
+    /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
+    ///
+    open func getPayments(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
+        let path = "/transactions/" + hash + "/payments"
+        return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
+    }
+    
+    @available(*, renamed: "getPayments(onPath:from:order:limit:includeFailed:join:)")
     private func getPayments(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        Task {
+            let result = await getPayments(onPath: path, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
+            response(result)
+        }
+    }
+    
+    
+    private func getPayments(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         var requestPath = path
         
         var params = Dictionary<String,String>()
@@ -98,30 +178,41 @@ public class PaymentsService: NSObject {
         if let join = join { params["join"] = join }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        getPaymentsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await getPaymentsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
     /// Loads payments for a given url if valid. E.g. for a "next" link from a PageResponse<OperationResponse> object where the operation response is of type payment.
     ///
     /// - Parameter url: The url to be used to load the payments.
     ///
+    @available(*, renamed: "getPaymentsFromUrl(url:)")
     open func getPaymentsFromUrl(url:String, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
-        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let operations = try self.operationsFactory.operationsFromResponseData(data: data)
-                    response(.success(details: operations))
-                } catch {
-                    response(.failure(error: error as! HorizonRequestError))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
+        Task {
+            let result = await getPaymentsFromUrl(url: url)
+            response(result)
+        }
+    }
+    
+    /// Loads payments for a given url if valid. E.g. for a "next" link from a PageResponse<OperationResponse> object where the operation response is of type payment.
+    ///
+    /// - Parameter url: The url to be used to load the payments.
+    ///
+    open func getPaymentsFromUrl(url:String) async -> PageResponse<OperationResponse>.ResponseEnum {
+        let result = await serviceHelper.GETRequestFromUrl(url: url)
+        switch result {
+        case .success(let data):
+            do {
+                let operations = try self.operationsFactory.operationsFromResponseData(data: data)
+                return .success(page: operations)
+            } catch {
+                return .failure(error: error as! HorizonRequestError)
             }
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
     

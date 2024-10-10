@@ -209,33 +209,54 @@ public class URIScheme: NSObject {
     /// - Parameter signerKeyPair: The KeyPair of the signer account.
     /// - Parameter transactionConfirmation: A closure to be used to confirm the transactionXDR it's valid.
     ///
-    /// - Throws:
-    ///     - A 'HorizonRequestError' error depending on the error case.
-    ///
+    @available(*, renamed: "signAndSubmitTransaction(forURL:signerKeyPair:network:transactionConfirmation:)")
     public func signAndSubmitTransaction(forURL url: String,
                                 signerKeyPair keyPair: KeyPair,
                                 network: Network = .public,
                                 transactionConfirmation: TransactionConfirmationClosure? = nil,
-                                completion: @escaping SubmitTransactionClosure) {
-        
-        if let transactionXDR = getTransactionXDR(fromURL: url) {
-            if let isConfirmed = transactionConfirmation?(transactionXDR), !isConfirmed {
-                completion(.failure(error: HorizonRequestError.requestFailed(message: "Transaction was not confirmed!")))
-                return
-            }
-            var transaction = transactionXDR
-            try? transaction.sign(keyPair: keyPair, network: .testnet)
-            let callback = self.getValue(forParam: .callback, fromURL: url)
-            self.submitTransaction(transactionXDR: transaction, callback: callback, keyPair: keyPair, completion: { (response) -> (Void) in
-                completion(response)
-            })
-        } else {
-            completion(.failure(error: HorizonRequestError.requestFailed(message: "TransactionXDR missing from url!")))
+                                         completion: @escaping SubmitTransactionClosure) {
+        Task {
+            let result = await signAndSubmitTransaction(forURL: url, signerKeyPair: keyPair, network: network, transactionConfirmation: transactionConfirmation)
+            completion(result)
         }
     }
     
-    /// Sends the transaction to the network.
+    /// This function signs the transaction and sends it to the network. It throws a 'HorizonRequestError' on validation error.
+    ///
+    /// - Parameter forURL: A URIScheme compliant URL that was generated for the sign operation.
+    /// - Parameter signerKeyPair: The KeyPair of the signer account.
+    /// - Parameter transactionConfirmation: A closure to be used to confirm the transactionXDR it's valid.
+    ///
+    public func signAndSubmitTransaction(forURL url: String,
+                                         signerKeyPair keyPair: KeyPair,
+                                         network: Network = .public,
+                                         transactionConfirmation: TransactionConfirmationClosure? = nil) async -> SubmitTransactionEnum {
+        
+        if let transactionXDR = getTransactionXDR(fromURL: url) {
+            if let isConfirmed = transactionConfirmation?(transactionXDR), !isConfirmed {
+                return .failure(error: HorizonRequestError.requestFailed(message: "Transaction was not confirmed!", horizonErrorResponse: nil))
+            }
+            var transaction = transactionXDR
+            try? transaction.sign(keyPair: keyPair, network: .testnet)
+            let callback1 = self.getValue(forParam: .callback, fromURL: url)
+            let response = await self.submitTransaction(transactionXDR: transaction, callback: callback1, keyPair: keyPair)
+            return response
+        } else {
+            return .failure(error: HorizonRequestError.requestFailed(message: "TransactionXDR missing from url!", horizonErrorResponse: nil))
+        }
+    }
+    
+    /// Sends the transaction to the callback url or to the stellar network if callback url is not set
+    @available(*, renamed: "submitTransaction(transactionXDR:callback:keyPair:skipMemoRequiredCheck:)")
     private func submitTransaction(transactionXDR: TransactionXDR?, callback: String? = nil, keyPair: KeyPair, skipMemoRequiredCheck:Bool = false, completion: @escaping SubmitTransactionClosure) {
+        Task {
+            let result = await submitTransaction(transactionXDR: transactionXDR, callback: callback, keyPair: keyPair, skipMemoRequiredCheck: skipMemoRequiredCheck)
+            completion(result)
+        }
+    }
+    
+    /// Sends the transaction to the callback url or to the stellar network if callback url is not set
+    private func submitTransaction(transactionXDR: TransactionXDR?, callback: String? = nil, keyPair: KeyPair, skipMemoRequiredCheck:Bool = false) async -> SubmitTransactionEnum {
         if let transactionEncodedEnvelope = try? transactionXDR?.encodedEnvelope() {
             if var callback = callback, callback.hasPrefix("url:") {
                 callback = String(callback.dropFirst(4))
@@ -244,32 +265,30 @@ public class URIScheme: NSObject {
                 if let urlEncodedTransaction = transactionEncodedEnvelope.urlEncoded {
                     dataStr = String("xdr=") + urlEncodedTransaction
                 } else {
-                    completion(.failure(error: HorizonRequestError.requestFailed(message: "error while urlencoding transaction")))
+                    return .failure(error: HorizonRequestError.requestFailed(message: "error while urlencoding transaction", horizonErrorResponse: nil))
                 }
-                let data = dataStr.data(using: .utf8)
-                serviceHelper.POSTRequestWithPath(path: "", body: data, contentType: "application/x-www-form-urlencoded") { (response) -> (Void) in
-                    let _ = serviceHelper
-                    switch response {
-                    case .success(_):
-                        completion(.success)
-                    case .failure(let error):
-                        completion(.failure(error: error))
-                    }
+                let data1 = dataStr.data(using: .utf8)
+                let response = await serviceHelper.POSTRequestWithPath(path: "", body: data1, contentType: "application/x-www-form-urlencoded")
+                let _ = serviceHelper
+                switch response {
+                case .success(_):
+                    return .success
+                case .failure(let error):
+                    return .failure(error: error)
                 }
             } else {
-                self.sdk.transactions.postTransaction(transactionEnvelope: transactionEncodedEnvelope, skipMemoRequiredCheck: skipMemoRequiredCheck, response: { (response) -> (Void) in
-                    switch response {
-                    case .success(_):
-                        completion(.success)
-                    case .destinationRequiresMemo(let destinationAccountId):
-                        completion(.destinationRequiresMemo(destinationAccountId: destinationAccountId))
-                    case .failure(let error):
-                        completion(.failure(error: error))
-                    }
-                })
+                let response = await self.sdk.transactions.postTransaction(transactionEnvelope: transactionEncodedEnvelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
+                switch response {
+                case .success(_):
+                    return .success
+                case .destinationRequiresMemo(let destinationAccountId):
+                    return .destinationRequiresMemo(destinationAccountId: destinationAccountId)
+                case .failure(let error):
+                    return .failure(error: error)
+                }
             }
         } else {
-            completion(.failure(error: HorizonRequestError.requestFailed(message: "encodedEnvelop failed!")))
+            return .failure(error: HorizonRequestError.requestFailed(message: "encodedEnvelop failed!", horizonErrorResponse: nil))
         }
     }
     

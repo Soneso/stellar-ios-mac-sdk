@@ -35,7 +35,16 @@ public class TradesService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
+    @available(*, renamed: "getTrades(baseAssetType:baseAssetCode:baseAssetIssuer:counterAssetType:counterAssetCode:counterAssetIssuer:offerId:tradeType:cursor:order:limit:)")
     open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, tradeType:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
+        Task {
+            let result = await getTrades(baseAssetType: baseAssetType, baseAssetCode: baseAssetCode, baseAssetIssuer: baseAssetIssuer, counterAssetType: counterAssetType, counterAssetCode: counterAssetCode, counterAssetIssuer: counterAssetIssuer, offerId: offerId, tradeType: tradeType, cursor: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, tradeType:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
         
         var requestPath = "/trades"
         var params = Dictionary<String,String>()
@@ -52,14 +61,23 @@ public class TradesService: NSObject {
         if let limit = limit { params["limit"] = String(limit) }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        getTradesFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await getTradesFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    @available(*, renamed: "getTrades(forAccount:from:order:limit:)")
     open func getTrades(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
+        Task {
+            let result = await getTrades(forAccount: accountId, from: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+    
+    
+    open func getTrades(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
         var requestPath = "/accounts/" + accountId + "/trades"
         
         var params = Dictionary<String,String>()
@@ -68,26 +86,34 @@ public class TradesService: NSObject {
         if let limit = limit { params["limit"] = String(limit) }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        getTradesFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath), response: response)
+        return await getTradesFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    @available(*, renamed: "getTradesFromUrl(url:)")
     func getTradesFromUrl(url:String, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
-        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let trades = try self.jsonDecoder.decode(PageResponse<TradeResponse>.self, from: data)
-                    response(.success(details: trades))
-                } catch {
-                    response(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
+        Task {
+            let result = await getTradesFromUrl(url: url)
+            response(result)
+        }
+    }
+    
+    
+    func getTradesFromUrl(url:String) async -> PageResponse<TradeResponse>.ResponseEnum {
+        let result = await serviceHelper.GETRequestFromUrl(url: url)
+        switch result {
+        case .success(let data):
+            do {
+                let trades = try self.jsonDecoder.decode(PageResponse<TradeResponse>.self, from: data)
+                return .success(page: trades)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
     

@@ -22,37 +22,31 @@ Parameters:
  
  
 ```swift
-
-sdk.assets.getAssets(order:Order.descending, limit:5) { (response) -> (Void) in
-    switch response {
-    case .success(let pageResponse): // PageResponse<AssetResponse>
-        for nextAssetResponse in pageResponse.records {
-            print("Asset code: \(nextAssetResponse.assetCode!)")
-            print("Asset issuer: \(nextAssetResponse.assetIssuer!)")
-        }
-    case .failure(let error):
-        StellarSDKLog.printHorizonRequestErrorMessage(tag:"Get assets", horizonRequestError: error)
+let responseEnum = await sdk.assets.getAssets(order:Order.descending, limit:5)
+switch responseEnum {
+case .success(let page): // PageResponse<AssetResponse>
+    for nextAssetResponse in page.records {
+        print("Asset code: \(nextAssetResponse.assetCode!)")
+        print("Asset issuer: \(nextAssetResponse.assetIssuer!)")
     }
+case .failure(let error):
+    StellarSDKLog.printHorizonRequestErrorMessage(tag:"get assets", horizonRequestError: error)
 }
- 
 ```
 
 You can request the next or previous page like this:
 
 ```swift
-
-pageResponse.getNextPage(){ (response) -> (Void) in
-    switch response {
-    case .success(let nextPageResponse):
-        for assetResponse in nextPageResponse.records {
-            print("Asset code: \(assetResponse.assetCode!)")
-            print("Asset issuer: \(assetResponse.assetIssuer!)")
-        }
-    case .failure(let error):
-        StellarSDKLog.printHorizonRequestErrorMessage(tag:"get next page", horizonRequestError: error)
+let responseEnum = await page.getNextPage()
+switch responseEnum {
+case .success(let nextPage):
+    for assetResponse in nextPage.records {
+        print("Asset code: \(assetResponse.assetCode!)")
+        print("Asset issuer: \(assetResponse.assetIssuer!)")
     }
+case .failure(let error):
+    StellarSDKLog.printHorizonRequestErrorMessage(tag:"get next page", horizonRequestError: error)
 }
-
 ```
 
 ## Trusting an asset issuer
@@ -76,36 +70,36 @@ let IOM = ChangeTrustAsset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "I
 let trustingAccountKeyPair = try KeyPair(secretSeed: "SA3XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXUM2YJ")
 
 // load our accounts details to be sure that we have the current sequence number.
-sdk.accounts.getAccountDetails(accountId: trustingAccountKeyPair.accountId) { (response) -> (Void) in
-    switch response {
-    case .success(let accountResponse):
-    do {
-        // build a change trust operation.
-        let changeTrustOp = ChangeTrustOperation(asset:IOM!, limit: 100000000)
+let responseEnum = await sdk.accounts.getAccountDetails(accountId: trustingAccountKeyPair.accountId)
+switch responseEnum {
+case .success(let accountResponse):
+do {
+    // build a change trust operation.
+    let changeTrustOp = ChangeTrustOperation(asset:IOM!, limit: 100000000)
 
-        // build the transaction containing our operation
-        let transaction = try Transaction(sourceAccount: accountResponse,
-                                          operations: [changeTrustOp],
-                                          memo: Memo.none,
-                                          timeBounds:nil)
-		// sign the transaction                        
-        try transaction.sign(keyPair: trustingAccountKeyPair, network: Network.testnet)
-        
-        // sublit the transaction
-        try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                print("Success")
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"Trust error", horizonRequestError:error)
-            }
-        }
-    } catch {
-        //...
+    // build the transaction containing our operation
+    let transaction = try Transaction(sourceAccount: accountResponse,
+                                        operations: [changeTrustOp],
+                                        memo: Memo.none,
+                                        timeBounds:nil)
+    // sign the transaction                        
+    try transaction.sign(keyPair: trustingAccountKeyPair, network: Network.testnet)
+    
+    // submit the transaction
+    let txResponseEnum = await sdk.transactions.submitTransaction(transaction: transaction)
+    switch txResponseEnum {
+    case .success(_):
+        print("Success")
+    case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+        print("destination account \(destinationAccountId) requires memo")
+    case .failure(error: let error):
+        StellarSDKLog.printHorizonRequestErrorMessage(tag:"trust error", horizonRequestError: error)
     }
-    case .failure(let error):
-        StellarSDKLog.printHorizonRequestErrorMessage(tag:"Get account error", horizonRequestError:error)
-    }
+} catch {
+    //...
+}
+case .failure(let error):
+    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Get account error", horizonRequestError:error)
 }
 
 ```

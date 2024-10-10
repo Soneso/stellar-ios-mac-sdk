@@ -35,31 +35,30 @@ This SDK provides tools to load Stellar Info Files and read data from them.
 From domain:
 
 ```swift
-try? StellarToml.from(domain: "soneso.com") { (result) -> (Void) in
-    switch result {
-    case .success(response: let stellarToml):
-    
-        // ex. read federation server url
-        if let federationServer = stellarToml.accountInformation.federationServer {
-            print(federationServer)
-        } else {
-            print("Toml contains no federation server url")
-        }
-        
-        // read other data
-        // stellarToml.accountInformation...
-        // stellarToml.issuerDocumentation ...
-        // stellarToml.pointsOfContact...
-        // stellarToml.currenciesDocumentation...
-        // stellarToml.validatorInformation...
+let responseEnum = await StellarToml.from(domain: "soneso.com")
+switch responseEnum {
+case .success(response: let stellarToml):
 
-    case .failure(let error):
-        switch error {
-        case .invalidDomain:
-            // do something
-        case .invalidToml:
-            // do something
-        }
+    // ex. read federation server url
+    if let federationServer = stellarToml.accountInformation.federationServer {
+        print(federationServer)
+    } else {
+        print("Toml contains no federation server url")
+    }
+    
+    // read other data
+    // stellarToml.accountInformation...
+    // stellarToml.issuerDocumentation ...
+    // stellarToml.pointsOfContact...
+    // stellarToml.currenciesDocumentation...
+    // stellarToml.validatorInformation...
+
+case .failure(let error):
+    switch error {
+    case .invalidDomain:
+        // do something
+    case .invalidToml:
+        // do something
     }
 }
 ```
@@ -104,13 +103,12 @@ Stellar addresses provide an easy way for users to share payment details by usin
 Get the federation of your domain:
 
 ```swift
-Federation.forDomain(domain: "https://YOUR_DOMAIN") { (response) -> (Void) in
-    switch response {
-    case .success(let federation):
-        //use the federation object to map your infos
-    case .failure(_):
-        //something went wrong
-    }
+let responseEnum = await Federation.forDomain(domain: "https://YOUR_DOMAIN")
+switch responseEnum {
+case .success(let federation):
+    //use the federation object to map your infos
+case .failure(_):
+    //something went wrong
 }
 ```
 
@@ -120,17 +118,16 @@ Resolve your addresses:
 
 ```swift
 let federation = Federation(federationAddress: "https://YOUR_FEDERATION_SERVER")
-federation.resolve(address: "bob*YOUR_DOMAIN") { (response) -> (Void) in
-    switch response {
-    case .success(let federationResponse):
-        if let accountId = federationResponse.accountId {
-            // use the account id
-        } else {
-            // there is no account id corresponding to the given address
-        }
-    case .failure(_):
-        // something went wrong
+let responseEnum = await federation.resolve(address: "bob*YOUR_DOMAIN")
+switch responseEnum {
+case .success(let federationResponse):
+    if let accountId = federationResponse.accountId {
+        // use the account id
+    } else {
+        // there is no account id corresponding to the given address
     }
+case .failure(_):
+    // something went wrong
 }
 ```
 
@@ -143,15 +140,15 @@ The Stellar Ecosystem Proposal [SEP-005 Key Derivation Methods for Stellar Accou
 
 Generate mnemonic
 ```swift
-let mnemonic = Wallet.generate24WordMnemonic()
+let mnemonic = WalletUtils.generate24WordMnemonic()
 print("generated 24 words mnemonic: \(mnemonic)")
 // bench hurt jump file august wise shallow faculty impulse spring exact slush thunder author capable act festival slice deposit sauce coconut afford frown better
 ```
 
 Generate key pairs
 ```swift
-let keyPair0 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 0)
-let keyPair1 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 1)
+let keyPair0 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 0)
+let keyPair1 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: nil, index: 1)
 
 print("key pair 0 accountId: \(keyPair0.accountId)")
 // key pair 0 accountId: GC3MMSXBWHL6CPOAVERSJITX7BH76YU252WGLUOM5CJX3E7UCYZBTPJQ
@@ -162,8 +159,8 @@ print("key pair 0 secretSeed: \(keyPair0.secretSeed!)")
 
 Generate key pairs with passphrase
 ```swift
-let keyPair0 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
-let keyPair1 = try! Wallet.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
+let keyPair0 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
+let keyPair1 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
 ``` 
 
 BIP and master key generation
@@ -269,16 +266,17 @@ Authenticate with a server and get a JWT token.
 
 ```swift
 // Hold a strong reference to this to avoid being deallocated
-let webAuthenticator = WebAuthenticator(authEndpoint: "http://your_api.stellar.org/auth", network: .testnet, serverSigningKey: "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP", serverHomeDomain: "yourserverhomedomain.com" )
-    if let keyPair = try? KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX") {
-        webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
-            switch response {
-            case .success(let jwtToken):
-                // use the token to do your calls
-            case .failure(let error):
-                // handle the error
-            }
-        }
+let webAuthenticator = WebAuthenticator(authEndpoint: "http://your_api.stellar.org/auth", 
+                                        network: .testnet, 
+                                        serverSigningKey: "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP", 
+                                        serverHomeDomain: "yourserverhomedomain.com" )
+if let keyPair = try? KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX") {
+    let responseEnum = await webAuthenticator.jwtToken(forKeyPair: keyPair)
+    switch responseEnum {
+    case .success(let jwtToken):
+        // use the token to do your calls
+    case .failure(let error):
+        // handle the error
     }
 }
 ```

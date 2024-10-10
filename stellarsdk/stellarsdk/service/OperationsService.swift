@@ -36,37 +36,100 @@ public class OperationsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
+    @available(*, renamed: "getOperations(from:order:limit:includeFailed:join:)")
     open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        Task {
+            let result = await getOperations(from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
+            response(result)
+        }
+    }
+    
+    
+    open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/operations"
-        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+        return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
     
+    @available(*, renamed: "getOperations(forAccount:from:order:limit:includeFailed:join:)")
     open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        Task {
+            let result = await getOperations(forAccount: accountId, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
+            response(result)
+        }
+    }
+    
+    
+    open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/accounts/" + accountId + "/operations"
-        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+        return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
     
+    @available(*, renamed: "getOperations(forClaimableBalance:from:order:limit:includeFailed:join:)")
     open func getOperations(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        Task {
+            let result = await getOperations(forClaimableBalance: claimableBalanceId, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
+            response(result)
+        }
+    }
+    
+    
+    open func getOperations(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/claimable_balances/" + claimableBalanceId + "/operations"
-        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+        return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
     
+    @available(*, renamed: "getOperations(forLedger:from:order:limit:includeFailed:join:)")
     open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        Task {
+            let result = await getOperations(forLedger: ledger, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
+            response(result)
+        }
+    }
+    
+    
+    open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/ledgers/" + ledger + "/operations"
-        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+        return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
     
+    @available(*, renamed: "getOperations(forTransaction:from:order:limit:includeFailed:join:)")
     open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        Task {
+            let result = await getOperations(forTransaction: hash, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
+            response(result)
+        }
+    }
+    
+    
+    open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/transactions/" + hash + "/operations"
-        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+        return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
     
+    @available(*, renamed: "getOperations(forLiquidityPool:from:order:limit:includeFailed:join:)")
     open func getOperations(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
-        let path = "/liquidity_pools/" + liquidityPoolId + "/operations"
-        getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join, response:response)
+        Task {
+            let result = await getOperations(forLiquidityPool: liquidityPoolId, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
+            response(result)
+        }
     }
     
+    
+    open func getOperations(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
+        let path = "/liquidity_pools/" + liquidityPoolId + "/operations"
+        return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
+    }
+    
+    @available(*, renamed: "getOperationDetails(operationId:includeFailed:join:)")
     open func getOperationDetails(operationId:String, includeFailed:Bool? = nil, join:String? = nil, response:@escaping OperationDetailsResponseClosure) {
+        Task {
+            let result = await getOperationDetails(operationId: operationId, includeFailed: includeFailed, join: join)
+            response(result)
+        }
+    }
+    
+    
+    open func getOperationDetails(operationId:String, includeFailed:Bool? = nil, join:String? = nil) async -> OperationDetailsResponseEnum {
         var requestPath = "/operations/" + operationId
         
         var params = Dictionary<String,String>()
@@ -74,22 +137,21 @@ public class OperationsService: NSObject {
         if let join = join { params["join"] = join }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let operation = try self.operationsFactory.operationFromData(data: data)
-                    response(.success(details: operation))
-                } catch {
-                    response(.failure(error: error as! HorizonRequestError))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let operation = try self.operationsFactory.operationFromData(data: data)
+                return .success(details: operation)
+            } catch {
+                return .failure(error: error as! HorizonRequestError)
             }
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
     
@@ -132,7 +194,16 @@ public class OperationsService: NSObject {
         return streamItem
     }
     
+    @available(*, renamed: "getOperations(onPath:from:order:limit:includeFailed:join:)")
     private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
+        Task {
+            let result = await getOperations(onPath: path, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
+            response(result)
+        }
+    }
+    
+    
+    private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         var requestPath = path
         
         var params = Dictionary<String,String>()
@@ -143,26 +214,34 @@ public class OperationsService: NSObject {
         if let join = join { params["join"] = join }
         
         if let pathParams = params.stringFromHttpParameters(),
-            pathParams.count > 0 {
+           pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
         
-        getOperationsFromUrl(url:serviceHelper.requestUrlWithPath(path: requestPath), response:response)
+        return await getOperationsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    @available(*, renamed: "getOperationsFromUrl(url:)")
     open func getOperationsFromUrl(url:String, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
-        serviceHelper.GETRequestFromUrl(url: url) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let operations = try self.operationsFactory.operationsFromResponseData(data: data)
-                    response(.success(details: operations))
-                } catch {
-                    response(.failure(error: error as! HorizonRequestError))
-                }
-            case .failure(let error):
-                response(.failure(error:error))
+        Task {
+            let result = await getOperationsFromUrl(url: url)
+            response(result)
+        }
+    }
+    
+    
+    open func getOperationsFromUrl(url:String) async -> PageResponse<OperationResponse>.ResponseEnum {
+        let result = await serviceHelper.GETRequestFromUrl(url: url)
+        switch result {
+        case .success(let data):
+            do {
+                let operations = try self.operationsFactory.operationsFromResponseData(data: data)
+                return .success(page: operations)
+            } catch {
+                return .failure(error: error as! HorizonRequestError)
             }
+        case .failure(let error):
+            return .failure(error:error)
         }
     }
 }

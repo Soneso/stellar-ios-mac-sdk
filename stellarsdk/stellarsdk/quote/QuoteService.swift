@@ -55,20 +55,57 @@ public class QuoteService: NSObject {
      See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-info
      - Parameter jwt: optional jwt token obtained before with SEP-0010.
      */
+    @available(*, renamed: "info(jwt:)")
     public func info(jwt:String? = nil, completion:@escaping Sep38InfoResponseClosure) {
+        Task {
+            let result = await info(jwt: jwt)
+            completion(result)
+        }
+    }
+    
+    /**
+     This endpoint returns the supported Stellar assets and off-chain assets available for trading.
+     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-info
+     - Parameter jwt: optional jwt token obtained before with SEP-0010.
+     */
+    public func info(jwt:String? = nil) async -> Sep38InfoResponseEnum {
         
-        serviceHelper.GETRequestWithPath(path: "/info", jwtToken: jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(Sep38InfoResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: "/info", jwtToken: jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(Sep38InfoResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
+        }
+    }
+    
+    /**
+     This endpoint can be used to fetch the indicative prices of available off-chain assets in exchange for a Stellar asset and vice versa.
+     See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-prices" target="_blank">GET prices</a>
+     
+     - Parameter sellAsset: The asset you want to sell, using the Asset Identification Format.
+     - Parameter sellAmount: The amount of sell_asset the client would exchange for each of the buy_assets.
+     - Parameter sellDeliveryMethod: Optional, one of the name values specified by the sell_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user is delivering an off-chain asset to the anchor but is not strictly required.
+     - Parameter buyDeliveryMethod: Optional, one of the name values specified by the buy_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user intends to receive an off-chain asset from the anchor but is not strictly required.
+     - Parameter countryCode: Optional, The ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
+     - Parameter jwt: optional jwt token obtained before with SEP-0010.
+     */
+    @available(*, renamed: "prices(sellAsset:sellAmount:sellDeliveryMethod:buyDeliveryMethod:countryCode:jwt:)")
+    public func prices(sellAsset:String,
+                       sellAmount:String,
+                       sellDeliveryMethod:String? = nil,
+                       buyDeliveryMethod:String? = nil,
+                       countryCode:String? = nil,
+                       jwt:String? = nil,
+                       completion:@escaping Sep38PricesResponseClosure) {
+        Task {
+            let result = await prices(sellAsset: sellAsset, sellAmount: sellAmount, sellDeliveryMethod: sellDeliveryMethod, buyDeliveryMethod: buyDeliveryMethod, countryCode: countryCode, jwt: jwt)
+            completion(result)
         }
     }
     
@@ -88,8 +125,7 @@ public class QuoteService: NSObject {
                        sellDeliveryMethod:String? = nil,
                        buyDeliveryMethod:String? = nil,
                        countryCode:String? = nil,
-                       jwt:String? = nil,
-                       completion:@escaping Sep38PricesResponseClosure) {
+                       jwt:String? = nil) async -> Sep38PricesResponseEnum {
         
         var requestPath = "/prices?sell_asset=\(sellAsset)&sell_amount=\(sellAmount)"
         if let value = sellDeliveryMethod {
@@ -102,18 +138,17 @@ public class QuoteService: NSObject {
             requestPath += "&country_code=\(value)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(Sep38PricesResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(Sep38PricesResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -131,6 +166,7 @@ public class QuoteService: NSObject {
      - Parameter countryCode: optional, The ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
      - Parameter jwt: optional jwt token obtained before with SEP-0010.
      */
+    @available(*, renamed: "price(context:sellAsset:buyAsset:sellAmount:buyAmount:sellDeliveryMethod:buyDeliveryMethod:countryCode:jwt:)")
     public func price(context:String, 
                       sellAsset:String,
                       buyAsset:String,
@@ -141,11 +177,39 @@ public class QuoteService: NSObject {
                       countryCode:String? = nil,
                       jwt:String? = nil,
                       completion:@escaping Sep38PriceResponseClosure) {
+        Task {
+            let result = await price(context: context, sellAsset: sellAsset, buyAsset: buyAsset, sellAmount: sellAmount, buyAmount: buyAmount, sellDeliveryMethod: sellDeliveryMethod, buyDeliveryMethod: buyDeliveryMethod, countryCode: countryCode, jwt: jwt)
+            completion(result)
+        }
+    }
+    
+    /**
+     This endpoint can be used to fetch the indicative price for a given asset pair.
+     See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-price" target="_blank">GET price</a>
+     
+     - Parameter context: The context for what this quote will be used for. Must be one of 'sep6' or 'sep31'.
+     - Parameter sellAsset: The asset the client would like to sell. Ex. stellar:USDC:G..., iso4217:ARS
+     - Parameter buyAsset: The asset the client would like to exchange for sellAsset.
+     - Parameter sellAmount: optional, the amount of sellAsset the client would like to exchange for buyAsset.
+     - Parameter buyAmount: optional, the amount of buyAsset the client would like to exchange for sellAsset.
+     - Parameter sellDeliveryMethod: optional, one of the name values specified by the sell_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user is delivering an off-chain asset to the anchor but is not strictly required.
+     - Parameter buyDeliveryMethod: optional, one of the name values specified by the buy_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user intends to receive an off-chain asset from the anchor but is not strictly required.
+     - Parameter countryCode: optional, The ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
+     - Parameter jwt: optional jwt token obtained before with SEP-0010.
+     */
+    public func price(context:String,
+                      sellAsset:String,
+                      buyAsset:String,
+                      sellAmount:String? = nil,
+                      buyAmount:String? = nil, 
+                      sellDeliveryMethod:String? = nil,
+                      buyDeliveryMethod:String? = nil,
+                      countryCode:String? = nil,
+                      jwt:String? = nil) async -> Sep38PriceResponseEnum {
         
         // The caller must provide either sellAmount or buyAmount, but not both.
         if ((sellAmount != nil && buyAmount != nil) || (sellAmount == nil && buyAmount == nil)) {
-            completion(.failure(error: .invalidArgument(message: "The caller must provide either sellAmount or buyAmount, but not both")))
-            return
+            return .failure(error: .invalidArgument(message: "The caller must provide either sellAmount or buyAmount, but not both"))
         }
         
         var requestPath = "/price?sell_asset=\(sellAsset)&buy_asset=\(buyAsset)&context=\(context)"
@@ -165,18 +229,17 @@ public class QuoteService: NSObject {
             requestPath += "&country_code=\(value)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(Sep38PriceResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(Sep38PriceResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -187,28 +250,41 @@ public class QuoteService: NSObject {
      - Parameter request: the request data.
      - Parameter jwt: jwt token obtained before with SEP-0010.
      */
+    @available(*, renamed: "postQuote(request:jwt:)")
     public func postQuote(request: Sep38PostQuoteRequest, jwt:String, completion:@escaping Sep38QuoteResponseClosure) {
+        Task {
+            let result = await postQuote(request: request, jwt: jwt)
+            completion(result)
+        }
+    }
+    
+    /**
+     This endpoint can be used to request a firm quote for a Stellar asset and off-chain asset pair.
+     See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#post-quote" target="_blank">POST quote</a>
+     
+     - Parameter request: the request data.
+     - Parameter jwt: jwt token obtained before with SEP-0010.
+     */
+    public func postQuote(request: Sep38PostQuoteRequest, jwt:String) async -> Sep38QuoteResponseEnum {
         
         // The caller must provide either sellAmount or buyAmount, but not both.
         if ((request.sellAmount != nil && request.buyAmount != nil) ||
             (request.sellAmount == nil && request.buyAmount == nil)) {
-            completion(.failure(error: .invalidArgument(message: "The caller must provide either sellAmount or buyAmount, but not both")))
-            return
+            return .failure(error: .invalidArgument(message: "The caller must provide either sellAmount or buyAmount, but not both"))
         }
         
         let requestData = try! JSONSerialization.data(withJSONObject: request.toJson())
-        serviceHelper.POSTRequestWithPath(path: "/quote", jwtToken: jwt, body: requestData, contentType: "application/json") { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(Sep38QuoteResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.POSTRequestWithPath(path: "/quote", jwtToken: jwt, body: requestData, contentType: "application/json")
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(Sep38QuoteResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -219,22 +295,36 @@ public class QuoteService: NSObject {
      - Parameter id: the id of the quote.
      - Parameter jwt: jwt token obtained before with SEP-0010.
      */
+    @available(*, renamed: "getQuote(id:jwt:)")
     public func getQuote(id:String, jwt:String? = nil, completion:@escaping Sep38QuoteResponseClosure) {
+        Task {
+            let result = await getQuote(id: id, jwt: jwt)
+            completion(result)
+        }
+    }
     
+    /**
+     This endpoint can be used to fetch a previously-provided firm quote by id.
+     See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-quote" target="_blank">GET quote</a>
+     
+     - Parameter id: the id of the quote.
+     - Parameter jwt: jwt token obtained before with SEP-0010.
+     */
+    public func getQuote(id:String, jwt:String? = nil) async -> Sep38QuoteResponseEnum {
+        
         let requestPath = "/quote/\(id)"
         
-        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(Sep38QuoteResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(Sep38QuoteResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     

@@ -16,100 +16,93 @@ class MemoRemoteTestCase: XCTestCase {
     let sourceKeyPair = try! KeyPair.generateRandomKeyPair()
     let destinationKeyPair = try! KeyPair.generateRandomKeyPair()
     
-    override func setUp() {
-        super.setUp()
-        let expectation = XCTestExpectation(description: "accounts prepared for tests")
+    override func setUp()  async throws {
+        try await super.setUp()
+
         let sourceAccountId = sourceKeyPair.accountId
         let destinationAccountId = destinationKeyPair.accountId
         
-        sdk.accounts.createTestAccount(accountId: sourceAccountId) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                self.sdk.accounts.createTestAccount(accountId: destinationAccountId) { (response) -> (Void) in
-                    switch response {
-                    case .success(_):
-                        expectation.fulfill()
-                    case .failure(_):
-                        XCTFail()
-                    }
-                }
-            case .failure(_):
-                XCTFail()
-            }
+        var responseEnum = await sdk.accounts.createTestAccount(accountId: sourceAccountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create test account: \(sourceAccountId)")
         }
-        wait(for: [expectation], timeout: 25.0)
+        
+        responseEnum = await sdk.accounts.createTestAccount(accountId: destinationAccountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create test account: \(destinationAccountId)")
+        }
+
     }
     
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
-    
-    func testAll() {
-        memoWithPaymentTransaction(memo: Memo.none)
-        memoWithPaymentTransaction(memo: Memo.id(12345678))
-        memoWithPaymentTransaction(memo: try! Memo(text: "Memo text test")!)
+    func testAll() async {
+        await memoWithPaymentTransaction(memo: Memo.none)
+        await memoWithPaymentTransaction(memo: Memo.id(12345678))
+        await memoWithPaymentTransaction(memo: try! Memo(text: "Memo text test")!)
         maxLengthMemoText()
     }
     
-    func memoWithPaymentTransaction(memo: Memo) {
-        XCTContext.runActivity(named: "memoWithPaymentTransaction" + memo.type()) { activity in
-            let expectation = XCTestExpectation(description: "Memo with payment transaction sent and received")
-            
-            let sourceAccountKeyPair = sourceKeyPair
-            let destinationAccountKeyPair = destinationKeyPair
-            
-            streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now"))
-            streamItem?.onReceive { (response) -> (Void) in
-                switch response {
-                case .open:
-                    break
-                case .response(_, let response):
-                    if response.memoType == memo.type(), response.memo == memo {
-                        XCTAssert(true)
-                        self.streamItem?.closeStream()
-                        self.streamItem = nil
-                        expectation.fulfill()
-                    }
-                case .error(let error):
-                    if let horizonRequestError = error as? HorizonRequestError {
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"memoWithPaymentTransaction", horizonRequestError:horizonRequestError)
-                    } else {
-                        print("Error \(error?.localizedDescription ?? "")")
-                    }
-                }
-            }
-            
-            sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
-                switch response {
-                case .success(let accountResponse):
-                    let paymentOperation = try! PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
-                                                            destinationAccountId: destinationAccountKeyPair.accountId,
-                                                            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
-                                                            amount: 1.5)
-                    let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                      operations: [paymentOperation],
-                                                      memo: memo)
-                    try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                    
-                    try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                        switch response {
-                        case .success(let response):
-                            XCTAssertNotNil(response)
-                        default:
-                            XCTFail()
-                            expectation.fulfill()
-                        }
-                    }
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"memoWithPaymentTransaction", horizonRequestError:error)
-                    XCTFail()
+    func memoWithPaymentTransaction(memo: Memo) async {
+        let sourceAccountKeyPair = sourceKeyPair
+        let destinationAccountKeyPair = destinationKeyPair
+        let expectation = XCTestExpectation(description: "memo set correctly")
+        
+        streamItem = sdk.transactions.stream(for: .transactionsForAccount(account: sourceAccountKeyPair.accountId, cursor: "now"))
+        streamItem?.onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response(_, let response):
+                if response.memoType == memo.type(), response.memo == memo {
+                    XCTAssert(true)
+                    self.streamItem?.closeStream()
+                    self.streamItem = nil
                     expectation.fulfill()
                 }
+            case .error(let error):
+                if let horizonRequestError = error as? HorizonRequestError {
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"memoWithPaymentTransaction", horizonRequestError:horizonRequestError)
+                } else {
+                    print("Error \(error?.localizedDescription ?? "")")
+                }
             }
-            
-            wait(for: [expectation], timeout: 15.0)
         }
+        
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
+        switch accDetailsResEnum {
+        case .success(let accountResponse):
+            let paymentOperation = try! PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
+                                                    destinationAccountId: destinationAccountKeyPair.accountId,
+                                                    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                    amount: 1.5)
+            let transaction = try! Transaction(sourceAccount: accountResponse,
+                                              operations: [paymentOperation],
+                                              memo: memo)
+            try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+            
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
+            switch submitTxResponse {
+            case .success(let details):
+                XCTAssert(details.operationCount > 0)
+            case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+                XCTFail("destination account \(destinationAccountId) requires memo")
+            case .failure(error: let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+                XCTFail("submit transaction error")
+            }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not load account details")
+        }
+        
+        await fulfillment(of: [expectation], timeout: 15.0)
     }
 
     func maxLengthMemoText() {

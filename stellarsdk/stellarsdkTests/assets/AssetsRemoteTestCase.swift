@@ -15,8 +15,8 @@ class AssetsRemoteTestCase: XCTestCase {
     let testKeyPair = try! KeyPair.generateRandomKeyPair()
     let IOMIssuingAccountKeyPair = try! KeyPair.generateRandomKeyPair()
     
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         let expectation = XCTestExpectation(description: "accounts prepared for tests")
 
         let testAccountId = testKeyPair.accountId
@@ -26,131 +26,105 @@ class AssetsRemoteTestCase: XCTestCase {
         let changeTrustOp = ChangeTrustOperation(sourceAccountId:testAccountId, asset:IOMAsset, limit: 100000000)
         let paymentOp = try! PaymentOperation(sourceAccountId: issuingAccountId, destinationAccountId: testAccountId, asset: IOMAsset, amount: 20000.0)
 
-        sdk.accounts.createTestAccount(accountId: testAccountId) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                self.sdk.accounts.createTestAccount(accountId: issuingAccountId) { (response) -> (Void) in
-                    switch response {
-                    case .success(_):
-                        self.sdk.accounts.getAccountDetails(accountId: testAccountId) { (response) -> (Void) in
-                        switch response {
-                        case .success(let accountResponse):
-                            let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                              operations: [changeTrustOp, paymentOp],
-                                                              memo: Memo.none)
-                            try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
-                            try! transaction.sign(keyPair: self.IOMIssuingAccountKeyPair, network: Network.testnet)
-                            
-                            try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                                switch response {
-                                case .success(let response):
-                                    print("setUp: Transaction successfully sent. Hash:\(response.transactionHash)")
-                                    expectation.fulfill()
-                                default:
-                                    XCTFail()
-                                }
-                            }
-                        case .failure(_):
-                            XCTFail()
-                        }
-                    }
-                    case .failure(_):
-                        XCTFail()
-                    }
-                }
-            case .failure(_):
-                XCTFail()
-            }
+        var responseEnum = await sdk.accounts.createTestAccount(accountId: testAccountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create test account: \(testAccountId)")
         }
-        wait(for: [expectation], timeout: 55.0)
+        responseEnum = await sdk.accounts.createTestAccount(accountId: issuingAccountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create test account: \(issuingAccountId)")
+        }
+        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: testAccountId);
+        switch accDetailsResEnum {
+        case .success(let accountResponse):
+            let transaction = try! Transaction(sourceAccount: accountResponse,
+                                              operations: [changeTrustOp, paymentOp],
+                                              memo: Memo.none)
+            try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: self.IOMIssuingAccountKeyPair, network: Network.testnet)
+            
+            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            switch submitTxResponse {
+            case .success(let details):
+                XCTAssert(details.operationCount > 0)
+            case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+                XCTFail("destination account \(destinationAccountId) requires memo")
+            case .failure(error: let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+                XCTFail("submit transaction error")
+            }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not load account details")
+        }
     }
     
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
-    
-    func testAll() {
-        getAssets()
-        getAssetAccountsAndBalances()
+    func testAll() async {
+        await getAssets()
+        await getAssetAccountsAndBalances()
     }
         
-    func getAssets() {
-        XCTContext.runActivity(named: "getAssets") { activity in
-            let expectation = XCTestExpectation(description: "Get assets and parse their details successfully")
-            
-            sdk.assets.getAssets(order:Order.descending, limit:2) { (response) -> (Void) in
-                switch response {
-                case .success(let assetsResponse):
-                    // load next page
-                    assetsResponse.getNextPage(){ (response) -> (Void) in
-                        switch response {
-                        case .success(let nextAssetsResponse):
-                            // load previous page, should contain the same assets as the first page
-                            nextAssetsResponse.getPreviousPage(){ (response) -> (Void) in
-                                switch response {
-                                case .success(let prevAssetsResponse):
-                                    let asset1 = assetsResponse.records.first
-                                    let asset2 = prevAssetsResponse.records.last // because ordering is asc now.
-                                    XCTAssertTrue(asset1?.amount == asset2?.amount)
-                                    XCTAssertTrue(asset1?.assetType == asset2?.assetType)
-                                    if (asset1?.assetType != AssetTypeAsString.NATIVE) {
-                                        XCTAssertTrue(asset1?.assetCode == asset2?.assetCode)
-                                        XCTAssertTrue(asset1?.assetIssuer == asset2?.assetIssuer)
-                                    }
-                                    XCTAssert(true)
-                                    expectation.fulfill()
-                                case .failure(let error):
-                                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load assets testcase", horizonRequestError: error)
-                                    XCTFail()
-                                }
-                            }
-                        case .failure(let error):
-                            StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load assets testcase", horizonRequestError: error)
-                            XCTFail()
-                        }
+    func getAssets() async {
+        let assetsResponseEnum = await sdk.assets.getAssets(order:Order.descending, limit:2)
+        switch assetsResponseEnum {
+        case .success(let firstPage):
+            let nextPageResult = await firstPage.getNextPage()
+            switch nextPageResult {
+            case .success(let nextPage):
+                let prevPageResult = await nextPage.getPreviousPage()
+                switch prevPageResult {
+                case .success(let page):
+                    let asset1 = firstPage.records.first!
+                    let asset2 = page.records.last! // because ordering is asc now.
+                    XCTAssertTrue(asset1.amount == asset2.amount)
+                    XCTAssertTrue(asset1.assetType == asset2.assetType)
+                    if (asset1.assetType != AssetTypeAsString.NATIVE) {
+                        XCTAssertTrue(asset1.assetCode == asset2.assetCode)
+                        XCTAssertTrue(asset1.assetIssuer == asset2.assetIssuer)
                     }
                 case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load assets testcase", horizonRequestError: error)
-                    XCTFail()
-                    expectation.fulfill()
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"getTransactions()", horizonRequestError: error)
+                    XCTFail("failed to load prev page")
                 }
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"getTransactions()", horizonRequestError: error)
+                XCTFail("failed to load next page")
             }
-            wait(for: [expectation], timeout: 15.0)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"getTransactions()", horizonRequestError: error)
+            XCTFail("failed to load assets")
         }
     }
     
-    func getAssetAccountsAndBalances() {
-        XCTContext.runActivity(named: "getAssetAccountsAndBalances") { activity in
-            let expectation = XCTestExpectation(description: "Get asset details successfully")
-            
-            sdk.assets.getAssets(for: "IOM", assetIssuer: IOMIssuingAccountKeyPair.accountId) { (response) -> (Void) in
-                switch response {
-                case .success(let assetsResponse):
-                    if let asset = assetsResponse.records.first {
-                        let accounts = asset.accounts
-                        XCTAssert(accounts.authorized == 1)
-                        XCTAssert(accounts.authorizedToMaintainLiabilities == 0)
-                        XCTAssert(accounts.unauthorized == 0)
-                        XCTAssert(asset.numberOfAccounts == 1)
-                        XCTAssert(asset.numClaimableBalances == 0)
-                        XCTAssert(asset.claimableBalancesAmount == 0.0)
-                        XCTAssert(asset.amount == 20000.0)
-                        let balances = asset.balances
-                        XCTAssert(balances.authorized == 20000.0)
-                        
-                    } else {
-                        XCTFail()
-                    }
-                    expectation.fulfill()
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load assets testcase", horizonRequestError: error)
-                    XCTFail()
-                    expectation.fulfill()
-                }
+    func getAssetAccountsAndBalances() async {
+        let response = await sdk.assets.getAssets(for: "IOM", assetIssuer: IOMIssuingAccountKeyPair.accountId)
+        switch response {
+        case .success(let assetsResponse):
+            if let asset = assetsResponse.records.first {
+                let accounts = asset.accounts
+                XCTAssert(accounts.authorized == 1)
+                XCTAssert(accounts.authorizedToMaintainLiabilities == 0)
+                XCTAssert(accounts.unauthorized == 0)
+                XCTAssert(asset.numberOfAccounts == 1)
+                XCTAssert(asset.numClaimableBalances == 0)
+                XCTAssert(asset.claimableBalancesAmount == 0.0)
+                XCTAssert(asset.amount == 20000.0)
+                let balances = asset.balances
+                XCTAssert(balances.authorized == 20000.0)
+            } else {
+                XCTFail()
             }
-            wait(for: [expectation], timeout: 15.0)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"Load assets testcase", horizonRequestError: error)
+            XCTFail()
         }
     }
 }

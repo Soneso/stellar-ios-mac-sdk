@@ -23,7 +23,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func test12WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate12WordMnemonic()
+        let mnemonic = WalletUtils.generate12WordMnemonic()
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 12)
@@ -31,7 +31,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func test24WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate24WordMnemonic()
+        let mnemonic = WalletUtils.generate24WordMnemonic()
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 24)
@@ -39,7 +39,7 @@ class MnemonicGeneration: XCTestCase {
     }
 
     func testChineseSimplified12WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate12WordMnemonic(language: .chineseSimplified)
+        let mnemonic = WalletUtils.generate12WordMnemonic(language: .chineseSimplified)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 12)
@@ -47,7 +47,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testChineseSimplified24WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate24WordMnemonic(language: .chineseSimplified)
+        let mnemonic = WalletUtils.generate24WordMnemonic(language: .chineseSimplified)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 24)
@@ -55,7 +55,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testChineseTraditional12WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate12WordMnemonic(language: .chineseTraditional)
+        let mnemonic = WalletUtils.generate12WordMnemonic(language: .chineseTraditional)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 12)
@@ -63,7 +63,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testChineseTraditional24WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate24WordMnemonic(language: .chineseTraditional)
+        let mnemonic = WalletUtils.generate24WordMnemonic(language: .chineseTraditional)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 24)
@@ -71,7 +71,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testFrench12WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate12WordMnemonic(language: .french)
+        let mnemonic = WalletUtils.generate12WordMnemonic(language: .french)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 12)
@@ -79,7 +79,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testFrench24WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate24WordMnemonic(language: .french)
+        let mnemonic = WalletUtils.generate24WordMnemonic(language: .french)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 24)
@@ -87,7 +87,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testItalian12WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate12WordMnemonic(language: .italian)
+        let mnemonic = WalletUtils.generate12WordMnemonic(language: .italian)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 12)
@@ -95,7 +95,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testItalian24WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate24WordMnemonic(language: .italian)
+        let mnemonic = WalletUtils.generate24WordMnemonic(language: .italian)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 24)
@@ -103,7 +103,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testJapanese12WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate12WordMnemonic(language: .japanese)
+        let mnemonic = WalletUtils.generate12WordMnemonic(language: .japanese)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 12)
@@ -111,7 +111,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testJapanese24WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate24WordMnemonic(language: .japanese)
+        let mnemonic = WalletUtils.generate24WordMnemonic(language: .japanese)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 24)
@@ -119,7 +119,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testKorean12WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate12WordMnemonic(language: .korean)
+        let mnemonic = WalletUtils.generate12WordMnemonic(language: .korean)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 12)
@@ -127,7 +127,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testKorean24WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate24WordMnemonic(language: .korean)
+        let mnemonic = WalletUtils.generate24WordMnemonic(language: .korean)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 24)
@@ -135,7 +135,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testSpanish12WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate12WordMnemonic(language: .spanish)
+        let mnemonic = WalletUtils.generate12WordMnemonic(language: .spanish)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 12)
@@ -143,7 +143,7 @@ class MnemonicGeneration: XCTestCase {
     }
     
     func testSpanish24WordMnemonicGeneration() {
-        let mnemonic = Wallet.generate24WordMnemonic(language: .spanish)
+        let mnemonic = WalletUtils.generate24WordMnemonic(language: .spanish)
         let mnemonicSet = Set(mnemonic.components(separatedBy: " "))
         
         XCTAssertEqual(mnemonic.components(separatedBy: " ").count, 24)

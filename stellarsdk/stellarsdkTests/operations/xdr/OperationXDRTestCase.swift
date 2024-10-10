@@ -12,39 +12,25 @@ import stellarsdk
 class OperationXDRTestCase: XCTestCase {
     let sdk = StellarSDK()
     
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
-    
-    func testGetTransactionXdr() {
-        let expectation = XCTestExpectation(description: "Get transaction xdr")
-        
-        sdk.transactions.getTransactions(limit:1) { (response) -> (Void) in
-            switch response {
-            case .success(let transactionsResponse):
-                if let response = transactionsResponse.records.first {
-                    if let resultBody = response.transactionResult.resultBody {
-                        switch resultBody {
-                        case .success(let operations):
-                            self.validateOperation(operationXDR: operations.first!)
-                            expectation.fulfill()
-                        default:
-                            XCTAssert(false)
-                        }
-                    }
+    func testGetTransactionXdr() async {
+        let responseEnum = await sdk.transactions.getTransactions(limit:1)
+        switch responseEnum {
+        case .success(let transactionsResponse):
+            if let response = transactionsResponse.records.first {
+                guard let resultBody = response.transactionResult.resultBody else {
+                    XCTFail()
+                    return
                 }
-            case .failure(_):
-                XCTAssert(false)
+                switch resultBody {
+                case .success(let operations):
+                    self.validateOperation(operationXDR: operations.first!)
+                default:
+                    XCTFail()
+                }
             }
+        case .failure(_):
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func validateOperation(operationXDR: OperationResultXDR) {
@@ -110,8 +96,6 @@ class OperationXDRTestCase: XCTestCase {
     }
     
     func testCreateAccountOperation() {
-        let expectation = XCTestExpectation(description: "Create account operation")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -136,18 +120,12 @@ class OperationXDRTestCase: XCTestCase {
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAAAAAAA7eBSYbzcL5UKo7oXO24y1ckX+XuCtkDsyNHOp1n1bxAAAAACVAvkAA==", base64)
             
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testPaymentOperation() {
-        let expectation = XCTestExpectation(description: "Payment operation")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -173,19 +151,12 @@ class OperationXDRTestCase: XCTestCase {
             
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAEAAAAA7eBSYbzcL5UKo7oXO24y1ckX+XuCtkDsyNHOp1n1bxAAAAAAAAAAAlQL5AA=", base64)
-            
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testPathPaymentOperation() {
-        let expectation = XCTestExpectation(description: "Path Payment operation")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -228,19 +199,12 @@ class OperationXDRTestCase: XCTestCase {
             
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAIAAAAAAAAAAAAAA+gAAAAA7eBSYbzcL5UKo7oXO24y1ckX+XuCtkDsyNHOp1n1bxAAAAABVVNEAAAAAACNlYd30HdCuLI54eyYjyX/fDyH9IJWIr/hKDcXKQbq1QAAAAAAAAPoAAAAAgAAAAFVU0QAAAAAACoIKnpnw8rtrfxa276dFZo1C19mDqWXtG4ufhWrLUd1AAAAAlRFU1RURVNUAAAAAAAAAABE/ttVl8BLV0csW/xgXtbXOVf1lMyDluMiafl0IDVFIg==", base64)
-            
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testPathPaymentEmptyPathOperation() {
-        let expectation = XCTestExpectation(description: "Path Payment empty path operation")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -278,18 +242,12 @@ class OperationXDRTestCase: XCTestCase {
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAIAAAAAAAAAAAAAA+gAAAAA7eBSYbzcL5UKo7oXO24y1ckX+XuCtkDsyNHOp1n1bxAAAAABVVNEAAAAAACNlYd30HdCuLI54eyYjyX/fDyH9IJWIr/hKDcXKQbq1QAAAAAAAAPoAAAAAA==", base64)
             
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testChangeTrustOperation() {
-        let expectation = XCTestExpectation(description: "Change trust operation")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -337,20 +295,13 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertTrue(parsedOperation.asset.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM12)
             XCTAssertTrue(parsedOperation.asset.code == "IOMIOM")
             XCTAssertTrue(parsedOperation.asset.issuer?.accountId == issuingAccountKeyPair.accountId)
-        
-            
-            expectation.fulfill()
+
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testAllowTrustOperation() {
-        let expectation = XCTestExpectation(description: "Allow trust operation")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -378,19 +329,12 @@ class OperationXDRTestCase: XCTestCase {
             
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAcAAAAA7eBSYbzcL5UKo7oXO24y1ckX+XuCtkDsyNHOp1n1bxAAAAABVVNEQQAAAAE=", base64)
-            
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testAllowTrustOperationAssetCodeBuffer() {
-        let expectation = XCTestExpectation(description: "Allow trust operation code buffer")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -406,19 +350,12 @@ class OperationXDRTestCase: XCTestCase {
             
             let parsedAssetCode = parsedOperation.assetCode
             XCTAssertEqual(assetCode, parsedAssetCode)
-            
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testSetOptionsOperation() {
-        let expectation = XCTestExpectation(description: "Set options operation")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -452,22 +389,12 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertEqual(homeDomain, parsedOperation.homeDomain)
             XCTAssertEqual(signer, parsedOperation.signer)
             XCTAssertEqual(signerWeight, parsedOperation.signerWeight)
-            
-            //let base64 = try operation.toXDRBase64()
-            //XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAUAAAABAAAAAO3gUmG83C+VCqO6FztuMtXJF/l7grZA7MjRzqdZ9W8QAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAIAAAABAAAAAwAAAAEAAAAEAAAAAQAAAAtzdGVsbGFyLm9yZwAAAAABAAAAAET+21WXwEtXRyxb/GBe1tc5V/WUzIOW4yJp+XQgNUUiAAAAAQ==", base64)
-            
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testSetOptionsOperationSingleField() {
-        let expectation = XCTestExpectation(description: "Set options operation single field")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -492,19 +419,12 @@ class OperationXDRTestCase: XCTestCase {
             
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAtzdGVsbGFyLm9yZwAAAAAA", base64)
-            
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testSetOptionsOperationSignerSha256() {
-        let expectation = XCTestExpectation(description: "Set options operation signer sha256")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -528,19 +448,12 @@ class OperationXDRTestCase: XCTestCase {
             
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAACbpRqMkaQAfCYSk/n3xIl4fCoHfKqxF34ht2iuvSYEJQAAAAK", base64)
-            
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testSetOptionsOperationPreAuthTxSigner() {
-        let expectation = XCTestExpectation(description: "Set options operation pre auth tx")
-        
         do {
             // GBPMKIRA2OQW2XZZQUCQILI5TMVZ6JNRKM423BSAISDM7ZFWQ6KWEBC4
             let source = try KeyPair(secretSeed: "SCH27VUZZ6UAKB67BDNF6FA42YMBMQCBKXWGMFD5TZ6S5ZZCZFLRXKHS")
@@ -573,22 +486,12 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertNil(parsedOperation.homeDomain)
             XCTAssertEqual(signer, parsedOperation.signer)
             XCTAssertEqual(10, parsedOperation.signerWeight)
-            
-//            let base64 = try operation.toXDRBase64()
-//            XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAB1vRBIRC3w7ZH5rQa17hIBKUwZTvBP4kNmSP7jVyw1fQAAAAK", base64)
-            
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testManageOfferOperation() {
-        let expectation = XCTestExpectation(description: "Manage offer operation")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -616,7 +519,6 @@ class OperationXDRTestCase: XCTestCase {
             XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertTrue(parsedOperation.selling.type == AssetType.ASSET_TYPE_NATIVE)
             XCTAssertTrue(parsedOperation.buying.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
-//            XCTAssertEqual(parsedOperation.buying, buying)
             XCTAssertEqual(amount, parsedOperation.amount)
             XCTAssertEqual(price, parsedOperation.price)
             XCTAssertEqual(offerId, parsedOperation.offerId)
@@ -625,19 +527,13 @@ class OperationXDRTestCase: XCTestCase {
             
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAMAAAAAAAAAAVVTRAAAAAAARP7bVZfAS1dHLFv8YF7W1zlX9ZTMg5bjImn5dCA1RSIAAAAAAAAAZABRYZcAX14QAAAAAAAAAAE=", base64)
-            
-            expectation.fulfill()
+
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testCreatePassiveOfferOperation() {
-        let expectation = XCTestExpectation(description: "Create passive offer operation")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -672,19 +568,13 @@ class OperationXDRTestCase: XCTestCase {
             
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAQAAAAAAAAAAVVTRAAAAAAARP7bVZfAS1dHLFv8YF7W1zlX9ZTMg5bjImn5dCA1RSIAAAAAAAAAZAIweX0Avrwg", base64)
-            
-            expectation.fulfill()
+
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testAccountMergeOperation() {
-        let expectation = XCTestExpectation(description: "Account merge operation")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -701,18 +591,12 @@ class OperationXDRTestCase: XCTestCase {
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAgAAAAA7eBSYbzcL5UKo7oXO24y1ckX+XuCtkDsyNHOp1n1bxA=", base64)
             
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testManageDataOperation() {
-        let expectation = XCTestExpectation(description: "Manage data operation")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -729,19 +613,12 @@ class OperationXDRTestCase: XCTestCase {
             
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAoAAAAEdGVzdAAAAAEAAAAFAAECAwQAAAA=", base64)
-            
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testManageDataOperationEmptyValue() {
-        let expectation = XCTestExpectation(description: "Manage data operation empty value")
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -757,18 +634,12 @@ class OperationXDRTestCase: XCTestCase {
             
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAoAAAAEdGVzdAAAAAA=", base64)
-            
-            expectation.fulfill()
         } catch {
-            XCTAssert(false)
-            expectation.fulfill()
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     func testBumpSequenceOperation() {
-        
         do {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
@@ -784,7 +655,7 @@ class OperationXDRTestCase: XCTestCase {
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAsAAAAAAJiWfw==", base64)
         } catch {
-            XCTAssert(false)
+            XCTFail()
         }
     }
 }

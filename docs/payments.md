@@ -16,41 +16,38 @@ Stellar stores and communicates transaction data in a binary format called XDR. 
 
 
 ```swift
+let responseEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId)
+switch responseEnum {
+case .success(let accountResponse):
+    do {
+        // build the payment operation
+        let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
+                                                destinationAccountId: destinationAccountId,
+                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                amount: 10.5)
+        
+        // build the transaction containing our payment operation.
+        let transaction = try Transaction(sourceAccount: accountResponse,
+                                            operations: [paymentOperation],
+                                            memo: Memo.none)
+        // sign the transaction
+        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
 
-self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
-    switch response {
-        case .success(let accountResponse):
-        do {
-            // build the payment operation
-            let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
-                                                    destinationAccountId: destinationAccountId,
-                                                    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
-                                                    amount: 10.5)
-            
-            // build the transaction containing our payment operation.
-            let transaction = try Transaction(sourceAccount: accountResponse,
-                                                operations: [paymentOperation],
-                                                memo: Memo.none)
-            // sign the transaction
-            try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-
-            // submit the transaction.
-            try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    print("Success")
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Test", horizonRequestError:error)
-                case .destinationRequiresMemo(let destinationAccountId):
-                    print("Destination account \(destinationAccountId) requires memo.")
-                }
-            }
-        } catch {
-            //...
-        }
+        // submit the transaction.
+        let txResponseEnum = await sdk.transactions.submitTransaction(transaction: transaction)
+        switch txResponseEnum {
+        case .success(_):
+            print("Success")
         case .failure(let error):
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"Test", horizonRequestError:error)
+        case .destinationRequiresMemo(let destinationAccountId):
+            print("Destination account \(destinationAccountId) requires memo.")
+        }
+    } catch {
+        //...
     }
+case .failure(let error):
+    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Test", horizonRequestError:error)
 }
 ```
 
@@ -108,25 +105,24 @@ See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/
 You can also "manually" check the most recent payments by:
 
 ```swift
-sdk.payments.getPayments(order:Order.descending, limit:10) { response in
-    switch response {
-    case .success(let paymentsResponse):
-        for payment in paymentsResponse.records {
-            if let nextPayment = payment as? PaymentOperationResponse {
-                if (nextPayment.assetType == AssetTypeAsString.NATIVE) {
-                    print("received: \(nextPayment.amount) lumen" )
-                } else {
-                    print("received: \(nextPayment.amount) \(nextPayment.assetCode!)" )
-                }
-                print("from: \(nextPayment.from)" )
+let responseEnum = await sdk.payments.getPayments(order:Order.descending, limit:10)
+switch responseEnum {
+case .success(let paymentsResponse):
+    for payment in paymentsResponse.records {
+        if let nextPayment = payment as? PaymentOperationResponse {
+            if (nextPayment.assetType == AssetTypeAsString.NATIVE) {
+                print("received: \(nextPayment.amount) lumen" )
+            } else {
+                print("received: \(nextPayment.amount) \(nextPayment.assetCode!)" )
             }
-            else if let nextPayment = payment as? AccountCreatedOperationResponse {
-                //...
-            }
+            print("from: \(nextPayment.from)" )
         }
-    case .failure(let error):
-        print(error.localizedDescription)
+        else if let nextPayment = payment as? AccountCreatedOperationResponse {
+            //...
+        }
     }
+case .failure(let error):
+    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Test", horizonRequestError:error)
 }
 ```
 See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L158)

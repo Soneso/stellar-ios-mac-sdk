@@ -9,7 +9,7 @@
 import Foundation
 
 public enum HorizonRequestError: Error {
-    case requestFailed(message: String)
+    case requestFailed(message: String, horizonErrorResponse:ErrorResponse?)
     case badRequest(message:String, horizonErrorResponse:BadRequestErrorResponse?) // HTTP Status Code 400
     case unauthorized(message:String) // HTTP Status Code 401
     case forbidden(message:String, horizonErrorResponse:ForbiddenErrorResponse?) // HTTP Status Code 403
@@ -21,6 +21,7 @@ public enum HorizonRequestError: Error {
     case internalServerError(message:String, horizonErrorResponse:InternalServerErrorResponse?) // HTTP Status cose 500
     case notImplemented(message:String, horizonErrorResponse:NotImplementedErrorResponse?) // HTTP Status code 501
     case staleHistory(message:String, horizonErrorResponse:StaleHistoryErrorResponse?) // HTTP Status code 503
+    case timeout(message:String, horizonErrorResponse:TimeoutErrorResponse?) // HTTP Status code 504
     case emptyResponse
     case parsingResponseFailed(message:String)
     case errorOnStreamReceive(message:String)

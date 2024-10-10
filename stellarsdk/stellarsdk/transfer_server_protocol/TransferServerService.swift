@@ -91,28 +91,34 @@ public class TransferServerService: NSObject {
     }
     
     /// Creates a TransferServerService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    @available(*, renamed: "forDomain(domain:)")
     public static func forDomain(domain:String, completion:@escaping TransferServerServiceClosure) {
+        Task {
+            let result = await forDomain(domain: domain)
+            completion(result)
+        }
+    }
+    
+    /// Creates a TransferServerService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    public static func forDomain(domain:String) async -> TransferServerServiceForDomainEnum {
         let transferServerKey = "TRANSFER_SERVER"
         
         guard let url = URL(string: "\(domain)/.well-known/stellar.toml") else {
-            completion(.failure(error: .invalidDomain))
-            return
+            return .failure(error: .invalidDomain)
         }
         
-        DispatchQueue.global().async {
-            do {
-                let tomlString = try String(contentsOf: url, encoding: .utf8)
-                let toml = try Toml(withString: tomlString)
-                if let transferServerAddress = toml.string(transferServerKey) {
-                    let transferServerService = TransferServerService(serviceAddress: transferServerAddress)
-                    completion(.success(response: transferServerService))
-                } else {
-                    completion(.failure(error: .noTransferServerSet))
-                }
-                
-            } catch {
-                completion(.failure(error: .invalidToml))
+        do {
+            let tomlString = try String(contentsOf: url, encoding: .utf8)
+            let toml = try Toml(withString: tomlString)
+            if let transferServerAddress = toml.string(transferServerKey) {
+                let transferServerService = TransferServerService(serviceAddress: transferServerAddress)
+                return .success(response: transferServerService)
+            } else {
+                return .failure(error: .noTransferServerSet)
             }
+            
+        } catch {
+            return .failure(error: .invalidToml)
         }
     }
     
@@ -123,7 +129,22 @@ public class TransferServerService: NSObject {
      
      The /deposit endpoint allows a wallet to get deposit information from an anchor, so a user has all the information needed to initiate a deposit. It also lets the anchor specify additional information (if desired) that the user must submit via SEP-12 to be able to deposit.
      */
+    @available(*, renamed: "deposit(request:)")
     public func deposit(request: DepositRequest, completion:@escaping DepositResponseClosure) {
+        Task {
+            let result = await deposit(request: request)
+            completion(result)
+        }
+    }
+    
+    /**
+     A deposit is when a user sends an external token (BTC via Bitcoin, USD via bank transfer, etc...) to an address held by an anchor. In turn, the anchor sends an equal amount of tokens on the Stellar network (minus fees) to the user's Stellar account.
+     
+     If the anchor supports SEP-38 quotes, it can also provide a bridge between non-equivalent tokens. For example, the anchor can receive ARS via bank transfer and in return send the equivalent value (minus fees) as USDC on the Stellar network to the user's Stellar account. That kind of deposit is covered in GET /deposit-exchange.
+     
+     The /deposit endpoint allows a wallet to get deposit information from an anchor, so a user has all the information needed to initiate a deposit. It also lets the anchor specify additional information (if desired) that the user must submit via SEP-12 to be able to deposit.
+     */
+    public func deposit(request: DepositRequest) async -> DepositResponseEnum {
         var requestPath = "/deposit?asset_code=\(request.assetCode)&account=\(request.account)"
         if let memoType = request.memoType {
             requestPath += "&memo_type=\(memoType)"
@@ -170,19 +191,18 @@ public class TransferServerService: NSObject {
             }
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(DepositResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(DepositResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -191,7 +211,20 @@ public class TransferServerService: NSObject {
 
      The /deposit-exchange endpoint allows a wallet to get deposit information from an anchor when the user intends to make a conversion between non-equivalent tokens. With this endpoint, a user has all the information needed to initiate a deposit and it also lets the anchor specify additional information (if desired) that the user must submit via SEP-12.
      */
+    @available(*, renamed: "depositExchange(request:)")
     public func depositExchange(request: DepositExchangeRequest, completion:@escaping DepositResponseClosure) {
+        Task {
+            let result = await depositExchange(request: request)
+            completion(result)
+        }
+    }
+    
+    /**
+     If the anchor supports SEP-38 quotes, it can provide a deposit that makes a bridge between non-equivalent tokens by receiving, for instance BRL via bank transfer and in return sending the equivalent value (minus fees) as USDC to the user's Stellar account.
+
+     The /deposit-exchange endpoint allows a wallet to get deposit information from an anchor when the user intends to make a conversion between non-equivalent tokens. With this endpoint, a user has all the information needed to initiate a deposit and it also lets the anchor specify additional information (if desired) that the user must submit via SEP-12.
+     */
+    public func depositExchange(request: DepositExchangeRequest) async -> DepositResponseEnum {
         var requestPath = "/deposit-exchange?destination_asset=\(request.destinationAsset)&source_asset=\(request.sourceAsset)&amount=\(request.amount)&account=\(request.account)"
         if let quoteId = request.quoteId {
             requestPath += "&quote_id=\(quoteId)"
@@ -238,19 +271,18 @@ public class TransferServerService: NSObject {
             }
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(DepositResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(DepositResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -261,7 +293,22 @@ public class TransferServerService: NSObject {
 
      The /withdraw endpoint allows a wallet to get withdrawal information from an anchor, so a user has all the information needed to initiate a withdrawal. It also lets the anchor specify additional information (if desired) that the user must submit via SEP-12 to be able to withdraw.
      */
+    @available(*, renamed: "withdraw(request:)")
     public func withdraw(request: WithdrawRequest, completion:@escaping WithdrawResponseClosure) {
+        Task {
+            let result = await withdraw(request: request)
+            completion(result)
+        }
+    }
+    
+    /**
+     A withdraw is when a user redeems an asset currently on the Stellar network for its equivalent off-chain asset via the Anchor. For instance, a user redeeming their NGNT in exchange for fiat NGN.
+
+     If the anchor supports SEP-38 quotes, it can also provide a bridge between non-equivalent tokens. For example, the anchor can receive USDC from the Stellar network and in return send the equivalent value (minus fees) as NGN to the user's bank account. That kind of withdrawal is covered in GET /withdraw-exchange.
+
+     The /withdraw endpoint allows a wallet to get withdrawal information from an anchor, so a user has all the information needed to initiate a withdrawal. It also lets the anchor specify additional information (if desired) that the user must submit via SEP-12 to be able to withdraw.
+     */
+    public func withdraw(request: WithdrawRequest) async -> WithdrawResponseEnum {
         var requestPath = "/withdraw?type=\(request.type)&asset_code=\(request.assetCode)"
         if let dest = request.dest {
             requestPath += "&dest=\(dest)"
@@ -314,19 +361,18 @@ public class TransferServerService: NSObject {
             }
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(WithdrawResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error))) 
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(WithdrawResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error)) 
         }
     }
     
@@ -335,7 +381,20 @@ public class TransferServerService: NSObject {
 
      The /withdraw-exchange endpoint allows a wallet to get withdraw information from an anchor when the user intends to make a conversion between non-equivalent tokens. With this endpoint, a user has all the information needed to initiate a withdraw and it also lets the anchor specify additional information (if desired) that the user must submit via SEP-12.
      */
+    @available(*, renamed: "withdrawExchange(request:)")
     public func withdrawExchange(request: WithdrawExchangeRequest, completion:@escaping WithdrawResponseClosure) {
+        Task {
+            let result = await withdrawExchange(request: request)
+            completion(result)
+        }
+    }
+    
+    /**
+     If the anchor supports SEP-38 quotes, it can provide a withdraw that makes a bridge between non-equivalent tokens by receiving, for instance USDC from the Stellar network and in return sending the equivalent value (minus fees) as NGN to the user's bank account.
+
+     The /withdraw-exchange endpoint allows a wallet to get withdraw information from an anchor when the user intends to make a conversion between non-equivalent tokens. With this endpoint, a user has all the information needed to initiate a withdraw and it also lets the anchor specify additional information (if desired) that the user must submit via SEP-12.
+     */
+    public func withdrawExchange(request: WithdrawExchangeRequest) async -> WithdrawResponseEnum {
         var requestPath = "/withdraw-exchange?type=\(request.type)&source_asset=\(request.sourceAsset)&destination_asset=\(request.destinationAsset)&amount=\(request.amount)"
         if let quoteId = request.quoteId {
             requestPath += "&quote_id=\(quoteId)"
@@ -388,19 +447,18 @@ public class TransferServerService: NSObject {
             }
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(WithdrawResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(WithdrawResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -409,25 +467,37 @@ public class TransferServerService: NSObject {
      
      - Parameter language: (optional) Defaults to en if not specified or if the specified language is not supported. Language code specified using RFC 4646. error fields and other human readable messages in the response should be in this language.
      */
+    @available(*, renamed: "info(language:)")
     public func info(language: String? = nil, completion:@escaping AnchorInfoResponseClosure) {
+        Task {
+            let result = await info(language: language)
+            completion(result)
+        }
+    }
+    
+    /**
+     Allows an anchor to communicate basic info about what their TRANSFER_SERVER supports to wallets and clients.
+     
+     - Parameter language: (optional) Defaults to en if not specified or if the specified language is not supported. Language code specified using RFC 4646. error fields and other human readable messages in the response should be in this language.
+     */
+    public func info(language: String? = nil) async -> AnchorInfoResponseEnum {
         var requestPath = "/info"
         if let language = language {
             requestPath += "&lang=\(language)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(AnchorInfoResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(AnchorInfoResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -440,26 +510,42 @@ public class TransferServerService: NSObject {
 
      This endpoint only reports fees expressed in units of Stellar assets. Fetching fee amounts for transactions using both on & off-chain assets (using either /deposit-exchange and /withdraw-exchange) is not supported unless fees are only dependent on the amount of the Stellar asset transacted.
      */
+    @available(*, renamed: "fee(request:)")
     public func fee(request: FeeRequest,  completion:@escaping AnchorFeeResponseClosure) {
+        Task {
+            let result = await fee(request: request)
+            completion(result)
+        }
+    }
+    
+    /**
+     This endpoint is deprecated. The SEP-38 GET /price endpoint should be used to fetch fees instead.
+     
+     The fee endpoint allows an anchor to report the fee that would be charged when using the /deposit or /withdraw endpoints.
+
+     This endpoint is important to allow an anchor to accurately report fees to a user even when the fee schedule is complex. If a fee can be fully expressed with the fee_fixed and fee_percent fields in the /info response, then an anchor should not implement this endpoint.
+
+     This endpoint only reports fees expressed in units of Stellar assets. Fetching fee amounts for transactions using both on & off-chain assets (using either /deposit-exchange and /withdraw-exchange) is not supported unless fees are only dependent on the amount of the Stellar asset transacted.
+     */
+    public func fee(request: FeeRequest) async -> AnchorFeeResponseEnum {
         var requestPath = "/fee?operation=\(request.operation)&asset_code=\(request.assetCode)&amount=\(request.amount)"
         
         if let type = request.type {
             requestPath += "&type=\(type)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(AnchorFeeResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(AnchorFeeResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -468,7 +554,20 @@ public class TransferServerService: NSObject {
 
      If the decoded JWT's sub parameter also contains a memo, the anchor must only return transactions for the user identified by a combination of the account and memo. The anchor must not return all transactions for the Stellar account because that would include transactions for other memos.
      */
+    @available(*, renamed: "getTransactions(request:)")
     public func getTransactions(request: AnchorTransactionsRequest,  completion:@escaping AnchorTransactionsResponseClosure) {
+        Task {
+            let result = await getTransactions(request: request)
+            completion(result)
+        }
+    }
+    
+    /**
+     The transaction history endpoint helps anchors enable a better experience for users using an external wallet. With it, wallets can display the status of deposits and withdrawals while they process and a history of past transactions with the anchor. It's only for transactions that are deposits to or withdrawals from the anchor.
+
+     If the decoded JWT's sub parameter also contains a memo, the anchor must only return transactions for the user identified by a combination of the account and memo. The anchor must not return all transactions for the Stellar account because that would include transactions for other memos.
+     */
+    public func getTransactions(request: AnchorTransactionsRequest) async -> AnchorTransactionsResponseEnum {
         var requestPath = "/transactions?asset_code=\(request.assetCode)&account=\(request.account)"
         if let noOlderThanDate = request.noOlderThan {
             let noOlderThan = DateFormatter.iso8601.string(from: noOlderThanDate)
@@ -487,19 +586,18 @@ public class TransferServerService: NSObject {
             requestPath += "&lang=\(lang)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(AnchorTransactionsResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(AnchorTransactionsResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -508,7 +606,20 @@ public class TransferServerService: NSObject {
 
      Anchors must ensure that the SEP-10 JWT included in the request contains the Stellar account and optional memo value used when making the original deposit or withdraw request that resulted in the transaction requested using this endpoint.
      */
+    @available(*, renamed: "getTransaction(request:)")
     public func getTransaction(request: AnchorTransactionRequest,  completion:@escaping AnchorTransactionResponseClosure) {
+        Task {
+            let result = await getTransaction(request: request)
+            completion(result)
+        }
+    }
+    
+    /**
+     The transaction endpoint enables clients to query/validate a specific transaction at an anchor.
+
+     Anchors must ensure that the SEP-10 JWT included in the request contains the Stellar account and optional memo value used when making the original deposit or withdraw request that resulted in the transaction requested using this endpoint.
+     */
+    public func getTransaction(request: AnchorTransactionRequest) async -> AnchorTransactionResponseEnum {
         var requestPath = "/transaction?"
         
         var first = true
@@ -537,19 +648,18 @@ public class TransferServerService: NSObject {
             requestPath += "lang=\(lang)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(AnchorTransactionResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(AnchorTransactionResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -563,22 +673,39 @@ public class TransferServerService: NSObject {
      - Parameter body:body of the request as described in the stellar doc
      
      */
+    @available(*, renamed: "patchTransaction(id:jwt:contentType:body:)")
     public func patchTransaction(id:String, jwt:String?, contentType:String, body:Data, completion:@escaping AnchorTransactionResponseClosure) {
-        let requestPath = "/transaction/\(id)"
+        Task {
+            let result = await patchTransaction(id: id, jwt: jwt, contentType: contentType, body: body)
+            completion(result)
+        }
+    }
     
-        serviceHelper.PATCHRequestWithPath(path: requestPath, jwtToken: jwt, contentType:contentType, body:body) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(AnchorTransactionResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+    /**
+     This endpoint should only be used when the anchor requests more info via the pending_transaction_info_update status. The required_info_updates transaction field should contain the fields required for the update. If the sender tries to update at a time when no info is requested the receiver should fail with an error response.
+     @See https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#update
+     
+     - Parameter id: id of the transaction
+     - Parameter jwt: token received via SEP-10 authentication
+     - Parameter contentType:represents  the content type of the request
+     - Parameter body:body of the request as described in the stellar doc
+     
+     */
+    public func patchTransaction(id:String, jwt:String?, contentType:String, body:Data) async -> AnchorTransactionResponseEnum {
+        let requestPath = "/transaction/\(id)"
+        
+        let result = await serviceHelper.PATCHRequestWithPath(path: requestPath, jwtToken: jwt, contentType: contentType, body: body)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(AnchorTransactionResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -604,7 +731,7 @@ public class TransferServerService: NSObject {
                     return .parsingResponseFailed(message: error.localizedDescription)
                 }
             }
-        case .requestFailed(let message),
+        case .requestFailed(let message, _),
              .badRequest(let message, _),
              .notFound(let message, _),
              .notAcceptable(let message, _),

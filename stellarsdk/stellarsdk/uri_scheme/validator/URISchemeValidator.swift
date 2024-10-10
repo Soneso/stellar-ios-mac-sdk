@@ -45,46 +45,59 @@ public class URISchemeValidator: NSObject {
     /// - Parameter url: the URL to check.
     /// - Parameter completion: Closure to be called with the response of the check
     ///
+    @available(*, renamed: "checkURISchemeIsValid(url:)")
     public func checkURISchemeIsValid(url: String, completion: @escaping URISchemeIsValidClosure) {
-        if let originDomain = getOriginDomain(forURL: url) {
-            if originDomain.isFullyQualifiedDomainName {
-                /// Get stellarToml from the origin_domain: https://<origin_domain>/.well-known/stellar.toml
-                try? StellarToml.from(domain: originDomain) { (result) -> (Void) in
-                    switch result {
-                    case .success(response: let stellarToml):
-                        /// extract URI_REQUEST_SIGNING_KEY field from tomlFile
-                        if let uriRequestSigningKey = stellarToml.accountInformation.uriRequestSigningKey {
-                            
-                            /// check if the signature is valid for the url
-                            if let signerPublicKey = try? PublicKey(accountId: uriRequestSigningKey) {
-                                if let signature = self.getSignatureField(forURL: url) {
-                                    if self.verify(forURL: url, urlEncodedBase64Signature: signature, signerPublicKey: signerPublicKey) {
-                                        completion(.success)
-                                    } else {
-                                        completion(.failure(.invalidSignature))
-                                    }
-                                } else {
-                                    completion(.failure(.missingSignature))
-                                }
-                            }
-                        } else {
-                            completion(.failure(.tomlSignatureMissing))
-                        }
-                        
-                    case .failure(error: let stellarTomlError):
-                        switch stellarTomlError {
-                        case .invalidDomain:
-                            completion(.failure(.invalidTomlDomain))
-                        case .invalidToml:
-                            completion(.failure(.invalidToml))
-                        }
-                    }
-                }
-            } else {
-                completion(.failure(.invalidOriginDomain))
+        Task {
+            let result = await checkURISchemeIsValid(url: url)
+            completion(result)
+        }
+    }
+    
+    /// Checks if the URL is valid; signature and domain must be present and correct for the signer's keypair.
+    ///
+    /// - Parameter url: the URL to check.
+    /// - Parameter completion: Closure to be called with the response of the check
+    ///
+    public func checkURISchemeIsValid(url: String) async -> URISchemeIsValidEnum {
+        guard let originDomain = getOriginDomain(forURL: url) else {
+            return .failure(.missingOriginDomain)
+        }
+        
+        guard originDomain.isFullyQualifiedDomainName else {
+            return .failure(.invalidOriginDomain)
+        }
+        
+        /// Get stellarToml from the origin_domain: https://<origin_domain>/.well-known/stellar.toml
+        let result = await StellarToml.from(domain: originDomain)
+        switch result {
+        case .success(response: let stellarToml):
+            /// extract URI_REQUEST_SIGNING_KEY field from tomlFile
+            guard let uriRequestSigningKey = stellarToml.accountInformation.uriRequestSigningKey else {
+                return .failure(.tomlSignatureMissing)
             }
-        } else {
-            completion(.failure(.missingOriginDomain))
+            
+            guard let signerPublicKey = try? PublicKey(accountId: uriRequestSigningKey) else {
+                return .failure(.missingSignature)
+            }
+            
+            /// check if the signature is valid for the url
+            guard let signature = self.getSignatureField(forURL: url) else {
+                return .failure(.missingSignature)
+            }
+            
+            if self.verify(forURL: url, urlEncodedBase64Signature: signature, signerPublicKey: signerPublicKey) {
+                return .success
+            } else {
+                return .failure(.invalidSignature)
+            }
+            
+        case .failure(error: let stellarTomlError):
+            switch stellarTomlError {
+            case .invalidDomain:
+                return .failure(.invalidTomlDomain)
+            case .invalidToml:
+                return .failure(.invalidToml)
+            }
         }
     }
     

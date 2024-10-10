@@ -38,24 +38,21 @@ For example, to query the details of an existing account you can use the `accoun
 
 let sdk = StellarSDK() // connect to testnet
 
-sdk.accounts.getAccountDetails(accountId: "GAWE7LGEFNRN3QZL5ILVLYKKKGGVYCXXDCIBUJ3RVOC2ZWW6WLGK76TJ") { (response) -> (Void) in
-    switch response {
-        case .success(let accountResponse):
-            print("Account ID: \(accountResponse.accountId)")
-            print("Account Sequence: \(accountResponse.sequenceNumber)")
-            for balance in accountResponse.balances {
-                if balance.assetType == AssetTypeAsString.NATIVE {
-                    print("Account balance: \(balance.balance) XLM")
-                } else {
-                    print("Account balance: \(balance.balance) \(balance.assetCode!) of issuer: \(balance.assetIssuer!)")
-                }
-            }
-        case .failure(let error):
-            print(error.localizedDescription)
+let responseEnum = await sdk.accounts.getAccountDetails(accountId: "GAWE7LGEFNRN3QZL5ILVLYKKKGGVYCXXDCIBUJ3RVOC2ZWW6WLGK76TJ")
+switch responseEnum {
+case .success(let accountResponse):
+    print("Account ID: \(accountResponse.accountId)")
+    print("Account Sequence: \(accountResponse.sequenceNumber)")
+    for balance in accountResponse.balances {
+        if balance.assetType == AssetTypeAsString.NATIVE {
+            print("Account balance: \(balance.balance) XLM")
+        } else {
+            print("Account balance: \(balance.balance) \(balance.assetCode!) of issuer: \(balance.assetIssuer!)")
         }
     }
+case .failure(let error):
+    StellarSDKLog.printHorizonRequestErrorMessage(tag:"account details", horizonRequestError: error)
 }
- 
 ```
 
 As you can see, you first need an account id to be able to query the account details. The account id provided in the example above may not represent an existing account at the time you are trying to test this. It is so, because the testnet is reset every 3 month. We recommend you to generate your own account first, by using a very helpful tool named [Stellar Laboratory](https://laboratory.stellar.org/#account-creator?network=test).
@@ -102,42 +99,40 @@ let destinationAccountId = "GCKECJ5DYFZUX6DMTNJFHO2M4QKTUO5OS5JZ4EIIS7C3VTLIGXNG
 // First, check to make sure that the destination account exists.
 // You could skip this, but if the account does not exist, you will be charged
 // the transaction fee when the transaction fails.
-sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId) { (response) -> (Void) in
-    switch response {
-        case .success(let accountResponse): // account exists
-            do {
-                // create the payment operation
-                let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
-                                                        destinationAccountId: destinationAccountId,
-                                                        asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
-                                                        amount: 10.0)
+let responseEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId)
 
-                // create the transaction containing the payment operation
-                let transaction = try Transaction(sourceAccount: accountResponse,
-                                                    operations: [paymentOperation],
-                                                    memo: Memo.none)
+switch responseEnum {
+case .success(let accountResponse): // account exists
+    do {
+        // create the payment operation
+        let paymentOperation = try PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
+                                                destinationAccountId: destinationAccountId,
+                                                asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                amount: 10.0)
 
-                // Sign the transaction to prove you are actually the person sending it.
-                try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                
-                // And finally, send it off to Stellar!
-                try self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                    switch response {
-                    case .success(_):
-                        print("Transaction successfully sent!")
-                    case .failure(let error):
-                        StellarSDKLog.printHorizonRequestErrorMessage(tag: "Sample", horizonRequestError:error)
-                    case .destinationRequiresMemo(let destinationAccountId):
-                        print("Destination account \(destinationAccountId) requires memo.")
-                    }
-                }
-            } catch {
-                // ...
-            }
+        // create the transaction containing the payment operation
+        let transaction = try Transaction(sourceAccount: accountResponse,
+                                            operations: [paymentOperation],
+                                            memo: Memo.none)
+
+        // Sign the transaction to prove you are actually the person sending it.
+        try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+        
+        // And finally, send it off to Stellar!
+        let txResponseEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
+        switch txResponseEnum {
+        case .success(_):
+            print("Transaction successfully sent!")
         case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"Sample", horizonRequestError:error)
-
+            StellarSDKLog.printHorizonRequestErrorMessage(tag: "Sample", horizonRequestError:error)
+        case .destinationRequiresMemo(let destinationAccountId):
+            print("Destination account \(destinationAccountId) requires memo.")
+        }
+    } catch {
+        // ...
     }
+case .failure(let error):
+    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Sample", horizonRequestError:error)
 }
 ```
 

@@ -52,28 +52,34 @@ public class InteractiveService: NSObject {
     }
     
     /// Creates an InteractiveService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    @available(*, renamed: "forDomain(domain:)")
     public static func forDomain(domain:String, completion:@escaping InteractiveServiceClosure) {
+        Task {
+            let result = await forDomain(domain: domain)
+            completion(result)
+        }
+    }
+    
+    /// Creates an InteractiveService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    public static func forDomain(domain:String) async -> InteractiveServiceForDomainEnum {
         let interactiveServerKey = "TRANSFER_SERVER_SEP0024"
         
         guard let url = URL(string: "\(domain)/.well-known/stellar.toml") else {
-            completion(.failure(error: .invalidDomain))
-            return
+            return .failure(error: .invalidDomain)
         }
         
-        DispatchQueue.global().async {
-            do {
-                let tomlString = try String(contentsOf: url, encoding: .utf8)
-                let toml = try Toml(withString: tomlString)
-                if let interactiveAddress = toml.string(interactiveServerKey) {
-                    let interactiveService = InteractiveService(serviceAddress: interactiveAddress)
-                    completion(.success(response: interactiveService))
-                } else {
-                    completion(.failure(error: .noInteractiveServerSet))
-                }
-                
-            } catch {
-                completion(.failure(error: .invalidToml))
+        do {
+            let tomlString = try String(contentsOf: url, encoding: .utf8)
+            let toml = try Toml(withString: tomlString)
+            if let interactiveAddress = toml.string(interactiveServerKey) {
+                let interactiveService = InteractiveService(serviceAddress: interactiveAddress)
+                return .success(response: interactiveService)
+            } else {
+                return .failure(error: .noInteractiveServerSet)
             }
+            
+        } catch {
+            return .failure(error: .invalidToml)
         }
     }
     
@@ -82,25 +88,36 @@ public class InteractiveService: NSObject {
      * Get the anchors basic info about what their TRANSFER_SERVER_SEP0024 support to wallets and clients.
      * - Parameter language: (optional) Language code specified using ISO 639-1. description fields in the response should be in this language. Defaults to en.
      */
+    @available(*, renamed: "info(language:)")
     public func info(language: String? = nil, completion:@escaping Sep24InfoResponseClosure) {
+        Task {
+            let result = await info(language: language)
+            completion(result)
+        }
+    }
+    
+    /**
+     * Get the anchors basic info about what their TRANSFER_SERVER_SEP0024 support to wallets and clients.
+     * - Parameter language: (optional) Language code specified using ISO 639-1. description fields in the response should be in this language. Defaults to en.
+     */
+    public func info(language: String? = nil) async -> Sep24InfoResponseEnum {
         var requestPath = "/info"
         if let language = language {
             requestPath += "?lang=\(language)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(Sep24InfoResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(Sep24InfoResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -111,66 +128,105 @@ public class InteractiveService: NSObject {
      * then an anchor will not implement this endpoint.
      * - Parameter request Sep24FeeRequest
      */
+    @available(*, renamed: "fee(request:)")
     public func fee(request: Sep24FeeRequest, completion:@escaping Sep24FeeResponseClosure) {
+        Task {
+            let result = await fee(request: request)
+            completion(result)
+        }
+    }
+    
+    /**
+     * Get the anchor's to reported fee that would be charged for a given deposit or withdraw operation.
+     * This is important to allow an anchor to accurately report fees to a user even when the fee schedule is complex.
+     * If a fee can be fully expressed with the fee_fixed, fee_percent or fee_minimum fields in the /info response,
+     * then an anchor will not implement this endpoint.
+     * - Parameter request Sep24FeeRequest
+     */
+    public func fee(request: Sep24FeeRequest) async -> Sep24FeeResponseEnum {
         var requestPath = "/fee?operation=\(request.operation)&asset_code=\(request.assetCode)&amount=\(request.amount)"
         
         if let type = request.type {
             requestPath += "&type=\(type)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(Sep24FeeResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(Sep24FeeResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
+    @available(*, renamed: "deposit(request:)")
     public func deposit(request: Sep24DepositRequest, completion:@escaping Sep24InteractiveResponseClosure) {
+        Task {
+            let result = await deposit(request: request)
+            completion(result)
+        }
+    }
+    
+    
+    public func deposit(request: Sep24DepositRequest) async -> Sep24InteractiveResponseEnum {
         let requestPath = "/transactions/deposit/interactive"
-    
-        serviceHelper.POSTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters(), jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(Sep24InteractiveResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        
+        let result = await serviceHelper.POSTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters(), jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(Sep24InteractiveResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
+    @available(*, renamed: "withdraw(request:)")
     public func withdraw(request: Sep24WithdrawRequest, completion:@escaping Sep24InteractiveResponseClosure) {
-        let requestPath = "/transactions/withdraw/interactive"
-    
-        serviceHelper.POSTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters(), jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(Sep24InteractiveResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
-            }
+        Task {
+            let result = await withdraw(request: request)
+            completion(result)
         }
     }
     
+    
+    public func withdraw(request: Sep24WithdrawRequest) async -> Sep24InteractiveResponseEnum {
+        let requestPath = "/transactions/withdraw/interactive"
+        
+        let result = await serviceHelper.POSTMultipartRequestWithPath(path: requestPath, parameters: request.toParameters(), jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(Sep24InteractiveResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
+            }
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
+        }
+    }
+    
+    @available(*, renamed: "getTransactions(request:)")
     public func getTransactions(request: Sep24TransactionsRequest,  completion:@escaping Sep24TransactionsResponseClosure) {
+        Task {
+            let result = await getTransactions(request: request)
+            completion(result)
+        }
+    }
+    
+    
+    public func getTransactions(request: Sep24TransactionsRequest) async -> Sep24TransactionsResponseEnum {
         var requestPath = "/transactions?asset_code=\(request.assetCode)"
         if let noOlderThanDate = request.noOlderThan {
             let noOlderThan = DateFormatter.iso8601.string(from: noOlderThanDate)
@@ -189,23 +245,31 @@ public class InteractiveService: NSObject {
             requestPath += "&lang=\(lang)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(Sep24TransactionsResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(Sep24TransactionsResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
+    @available(*, renamed: "getTransaction(request:)")
     public func getTransaction(request: Sep24TransactionRequest,  completion:@escaping Sep24TransactionResponseClosure) {
+        Task {
+            let result = await getTransaction(request: request)
+            completion(result)
+        }
+    }
+    
+    
+    public func getTransaction(request: Sep24TransactionRequest) async -> Sep24TransactionResponseEnum {
         var requestPath = "/transaction?"
         
         var first = true
@@ -233,19 +297,18 @@ public class InteractiveService: NSObject {
             requestPath += "lang=\(lang)"
         }
         
-        serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let response = try self.jsonDecoder.decode(Sep24TransactionResponse.self, from: data)
-                    completion(.success(response:response))
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error: self.errorFor(horizonError: error)))
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(Sep24TransactionResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
         }
     }
     
@@ -265,7 +328,7 @@ public class InteractiveService: NSObject {
                     return .parsingResponseFailed(message: error.localizedDescription)
                 }
             }
-        case .requestFailed(let message),
+        case .requestFailed(let message, _),
              .badRequest(let message, _),
              .notAcceptable(let message, _),
              .beforeHistory(let message, _),

@@ -164,59 +164,77 @@ public class SorobanServer {
     
     /// General node health check request.
     /// See: https://soroban.stellar.org/api/methods/getHealth
+    @available(*, renamed: "getHealth()")
     public func getHealth(completion:@escaping GetHealthResponseClosure) {
+        Task {
+            let result = await getHealth()
+            completion(result)
+        }
+    }
+    
+    /// General node health check request.
+    /// See: https://soroban.stellar.org/api/methods/getHealth
+    public func getHealth() async -> GetHealthResponseEnum {
         
-        request(body: try? buildRequestJson(method: "getHealth")) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let result = response["result"] as? [String: Any] {
-                        do {
-                            let health = try self.jsonDecoder.decode(GetHealthResponse.self, from: JSONSerialization.data(withJSONObject: result))
-                            completion(.success(response: health))
-                        } catch {
-                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
-                        }
-                    } else if let error = response["error"] as? [String: Any] {
-                        completion(.failure(error: .errorResponse(errorData: error)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+        let result = await request(body: try? buildRequestJson(method: "getHealth"))
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let result = response["result"] as? [String: Any] {
+                    do {
+                        let health = try self.jsonDecoder.decode(GetHealthResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                        return .success(response: health)
+                    } catch {
+                        return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
+                } else if let error = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(errorData: error))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
     /// General info about the currently configured network.
     /// See: https://soroban.stellar.org/api/methods/getNetwork
+    @available(*, renamed: "getNetwork()")
     public func getNetwork(completion:@escaping GetNetworkResponseClosure) {
+        Task {
+            let result = await getNetwork()
+            completion(result)
+        }
+    }
+    
+    /// General info about the currently configured network.
+    /// See: https://soroban.stellar.org/api/methods/getNetwork
+    public func getNetwork() async -> GetNetworkResponseEnum {
         
-        request(body: try? buildRequestJson(method: "getNetwork")) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let result = response["result"] as? [String: Any] {
-                        do {
-                            let network = try self.jsonDecoder.decode(GetNetworkResponse.self, from: JSONSerialization.data(withJSONObject: result))
-                            completion(.success(response: network))
-                        } catch {
-                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
-                        }
-                    } else if let error = response["error"] as? [String: Any] {
-                        completion(.failure(error: .errorResponse(errorData: error)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+        let result = await request(body: try? buildRequestJson(method: "getNetwork"))
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let result = response["result"] as? [String: Any] {
+                    do {
+                        let network = try self.jsonDecoder.decode(GetNetworkResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                        return .success(response: network)
+                    } catch {
+                        return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
+                } else if let error = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(errorData: error))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
@@ -226,60 +244,83 @@ public class SorobanServer {
     /// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
     /// during network traffic surge.
     /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getFeeStats
+    @available(*, renamed: "getFeeStats()")
     public func getFeeStats(completion:@escaping GetFeeStatsResponseClosure) {
+        Task {
+            let result = await getFeeStats()
+            completion(result)
+        }
+    }
+    
+    /// Statistics for charged inclusion fees. The inclusion fee statistics are calculated
+    /// from the inclusion fees that were paid for the transactions to be included onto the ledger.
+    /// For Soroban transactions and Stellar transactions, they each have their own inclusion fees
+    /// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
+    /// during network traffic surge.
+    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getFeeStats
+    public func getFeeStats() async -> GetFeeStatsResponseEnum {
         
-        request(body: try? buildRequestJson(method: "getFeeStats")) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let result = response["result"] as? [String: Any] {
-                        do {
-                            let feeStats = try self.jsonDecoder.decode(GetFeeStatsResponse.self, from: JSONSerialization.data(withJSONObject: result))
-                            completion(.success(response: feeStats))
-                        } catch {
-                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
-                        }
-                    } else if let error = response["error"] as? [String: Any] {
-                        completion(.failure(error: .errorResponse(errorData: error)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+        let result = await request(body: try? buildRequestJson(method: "getFeeStats"))
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let result = response["result"] as? [String: Any] {
+                    do {
+                        let feeStats = try self.jsonDecoder.decode(GetFeeStatsResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                        return .success(response: feeStats)
+                    } catch {
+                        return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
+                } else if let error = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(errorData: error))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
     /// Version information about the RPC and Captive core. RPC manages its own,
     /// pared-down version of Stellar Core optimized for its own subset of needs.
     /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getVersionInfo
+    @available(*, renamed: "getVersionInfo()")
     public func getVersionInfo(completion:@escaping GetVersionInfoResponseClosure) {
+        Task {
+            let result = await getVersionInfo()
+            completion(result)
+        }
+    }
+    
+    /// Version information about the RPC and Captive core. RPC manages its own,
+    /// pared-down version of Stellar Core optimized for its own subset of needs.
+    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getVersionInfo
+    public func getVersionInfo() async -> GetVersionInfoResponseEnum {
         
-        request(body: try? buildRequestJson(method: "getVersionInfo")) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let result = response["result"] as? [String: Any] {
-                        do {
-                            let versionInfo = try self.jsonDecoder.decode(GetVersionInfoResponse.self, from: JSONSerialization.data(withJSONObject: result))
-                            completion(.success(response: versionInfo))
-                        } catch {
-                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
-                        }
-                    } else if let error = response["error"] as? [String: Any] {
-                        completion(.failure(error: .errorResponse(errorData: error)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+        let result = await request(body: try? buildRequestJson(method: "getVersionInfo"))
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let result = response["result"] as? [String: Any] {
+                    do {
+                        let versionInfo = try self.jsonDecoder.decode(GetVersionInfoResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                        return .success(response: versionInfo)
+                    } catch {
+                        return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
+                } else if let error = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(errorData: error))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
@@ -287,242 +328,329 @@ public class SorobanServer {
     /// This is a backup way to access your contract data which may not be available via events or simulateTransaction.
     /// To fetch contract wasm byte-code, use the ContractCode ledger entry key.
     /// See: https://soroban.stellar.org/api/methods/getLedgerEntries
+    @available(*, renamed: "getLedgerEntries(base64EncodedKeys:)")
     public func getLedgerEntries(base64EncodedKeys: [String], completion:@escaping GetLedgerEntriesResponseClosure) {
+        Task {
+            let result = await getLedgerEntries(base64EncodedKeys: base64EncodedKeys)
+            completion(result)
+        }
+    }
+    
+    /// For reading the current value of ledger entries directly. Allows you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry.
+    /// This is a backup way to access your contract data which may not be available via events or simulateTransaction.
+    /// To fetch contract wasm byte-code, use the ContractCode ledger entry key.
+    /// See: https://soroban.stellar.org/api/methods/getLedgerEntries
+    public func getLedgerEntries(base64EncodedKeys: [String]) async -> GetLedgerEntriesResponseEnum {
         
-        request(body: try? buildRequestJson(method: "getLedgerEntries", args: ["keys" : base64EncodedKeys])) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let result = response["result"] as? [String: Any] {
-                        do {
-                            let decoded = try self.jsonDecoder.decode(GetLedgerEntriesResponse.self, from: JSONSerialization.data(withJSONObject: result))
-                            completion(.success(response: decoded))
-                        } catch {
-                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
-                        }
-                    } else if let error = response["error"] as? [String: Any] {
-                        completion(.failure(error: .errorResponse(errorData: error)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+        let result = await request(body: try? buildRequestJson(method: "getLedgerEntries", args: ["keys" : base64EncodedKeys]))
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let result = response["result"] as? [String: Any] {
+                    do {
+                        let decoded = try self.jsonDecoder.decode(GetLedgerEntriesResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                        return .success(response: decoded)
+                    } catch {
+                        return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
+                } else if let error = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(errorData: error))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
     /// For finding out the current latest known ledger of this node. This is a subset of the ledger info from Horizon.
     /// See: https://soroban.stellar.org/api/methods/getLatestLedger
+    @available(*, renamed: "getLatestLedger()")
     public func getLatestLedger(completion:@escaping GetLatestLedgerResponseClosure) {
+        Task {
+            let result = await getLatestLedger()
+            completion(result)
+        }
+    }
+    
+    /// For finding out the current latest known ledger of this node. This is a subset of the ledger info from Horizon.
+    /// See: https://soroban.stellar.org/api/methods/getLatestLedger
+    public func getLatestLedger() async -> GetLatestLedgerResponseEnum {
         
-        request(body: try? buildRequestJson(method: "getLatestLedger")) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let result = response["result"] as? [String: Any] {
-                        do {
-                            let response = try self.jsonDecoder.decode(GetLatestLedgerResponse.self, from: JSONSerialization.data(withJSONObject: result))
-                            completion(.success(response: response))
-                        } catch {
-                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
-                        }
-                    } else if let error = response["error"] as? [String: Any] {
-                        completion(.failure(error: .errorResponse(errorData: error)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+        let result = await request(body: try? buildRequestJson(method: "getLatestLedger"))
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let result = response["result"] as? [String: Any] {
+                    do {
+                        let response = try self.jsonDecoder.decode(GetLatestLedgerResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                        return .success(response: response)
+                    } catch {
+                        return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
+                } else if let error = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(errorData: error))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
     /// loads the contract code (wasm binary) for the given wasmId
+    @available(*, renamed: "getContractCodeForWasmId(wasmId:)")
     public func getContractCodeForWasmId(wasmId: String, completion:@escaping GetContractCodeResponseClosure) {
+        Task {
+            let result = await getContractCodeForWasmId(wasmId: wasmId)
+            completion(result)
+        }
+    }
+    
+    /// loads the contract code (wasm binary) for the given wasmId
+    public func getContractCodeForWasmId(wasmId: String) async -> GetContractCodeResponseEnum {
         let contractCodeKey = LedgerKeyContractCodeXDR(wasmId: wasmId)
         let ledgerKey = LedgerKeyXDR.contractCode(contractCodeKey)
         if let ledgerKeyBase64 = ledgerKey.xdrEncoded {
-            self.getLedgerEntries(base64EncodedKeys:[ledgerKeyBase64]) { (response) -> (Void) in
-                switch response {
-                case .success(let response):
-                    let data = try? LedgerEntryDataXDR(fromBase64: response.entries[0].xdr)
-                    if let contractCode = data?.contractCode {
-                        completion(.success(response: contractCode))
-                    }
-                    else {
-                        completion(.failure(error: .requestFailed(message: "could not extract code")))
-                    }
-                case .failure(let error):
-                    completion(.failure(error: error))
+            let response = await self.getLedgerEntries(base64EncodedKeys: [ledgerKeyBase64])
+            switch response {
+            case .success(let response):
+                let data = try? LedgerEntryDataXDR(fromBase64: response.entries[0].xdr)
+                if let contractCode = data?.contractCode {
+                    return .success(response: contractCode)
                 }
+                else {
+                    return .failure(error: .requestFailed(message: "could not extract code"))
+                }
+            case .failure(let error):
+                return .failure(error: error)
             }
         } else {
-            completion(.failure(error: .requestFailed(message: "could not create ledger key")))
+            return .failure(error: .requestFailed(message: "could not create ledger key"))
         }
     }
     
     /// loads the contract code (wasm binary) for the given contractId
-    public func getContractCodeForContractId(contractId: String, completion:@escaping GetContractCodeResponseClosure) throws {
-        let contractDataKey = LedgerKeyContractDataXDR(contract: try SCAddressXDR.init(contractId: contractId),
-                                                       key: SCValXDR.ledgerKeyContractInstance,
-                                                       durability: ContractDataDurability.persistent)
-        let ledgerKey = LedgerKeyXDR.contractData(contractDataKey)
+    @available(*, renamed: "getContractCodeForContractId(contractId:)")
+    public func getContractCodeForContractId(contractId: String, completion:@escaping GetContractCodeResponseClosure) {
+        Task {
+            let result = await getContractCodeForContractId(contractId: contractId)
+            completion(result)
+        }
+    }
+    
+    /// loads the contract code (wasm binary) for the given contractId
+    public func getContractCodeForContractId(contractId: String) async -> GetContractCodeResponseEnum {
+        var contractDataKey:LedgerKeyContractDataXDR? = nil
+        do {
+            contractDataKey = LedgerKeyContractDataXDR(contract: try SCAddressXDR.init(contractId: contractId),
+                                                           key: SCValXDR.ledgerKeyContractInstance,
+                                                           durability: ContractDataDurability.persistent)
+        } catch {
+            return .failure(error: .requestFailed(message: "invalid contract id"))
+        }
+        
+        let ledgerKey = LedgerKeyXDR.contractData(contractDataKey!)
         if let ledgerKeyBase64 = ledgerKey.xdrEncoded {
-            self.getLedgerEntries(base64EncodedKeys:[ledgerKeyBase64]) { (response) -> (Void) in
-                switch response {
-                case .success(let response):
-                    let data = try? LedgerEntryDataXDR(fromBase64: response.entries[0].xdr)
-                    if let contractData = data?.contractData, let wasmId = contractData.val.contractInstance?.executable.wasm?.wrapped.hexEncodedString() {
-                        self.getContractCodeForWasmId(wasmId: wasmId) { (response) -> (Void) in
-                            switch response {
-                            case .success(let response):
-                                completion(.success(response: response))
-                            case .failure(let error):
-                                completion(.failure(error: error))
-                            }
-                        }
-                    }
-                    else {
-                        completion(.failure(error: .requestFailed(message: "could not extract wasm id")))
-                    }
-                case .failure(let error):
-                    completion(.failure(error: error))
+            let response = await self.getLedgerEntries(base64EncodedKeys: [ledgerKeyBase64])
+            switch response {
+            case .success(let response):
+                if (response.entries.isEmpty) {
+                    return .failure(error: .requestFailed(message: "could not extract wasm id"))
                 }
+                let data = try? LedgerEntryDataXDR(fromBase64: response.entries.first!.xdr)
+                if let contractData = data?.contractData, let wasmId = contractData.val.contractInstance?.executable.wasm?.wrapped.hexEncodedString() {
+                    let response = await self.getContractCodeForWasmId(wasmId: wasmId)
+                    switch response {
+                    case .success(let response):
+                        return .success(response: response)
+                    case .failure(let error):
+                        return .failure(error: error)
+                    }
+                }
+                else {
+                    return .failure(error: .requestFailed(message: "could not extract wasm id"))
+                }
+            case .failure(let error):
+                return .failure(error: error)
             }
         } else {
-            completion(.failure(error: .requestFailed(message: "could not create ledger key")))
+            return .failure(error: .requestFailed(message: "could not create ledger key"))
         }
     }
     
     /// Loads contract source byte code for the given contractId and extracts
     /// the information (Environment Meta, Contract Spec, Contract Meta).
-    public func getContractInfoForContractId(contractId: String, completion:@escaping GetContractInfoClosure) throws {
-        try getContractCodeForContractId(contractId: contractId) { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                do {
-                    let info = try SorobanContractParser.parseContractByteCode(byteCode: response.code)
-                    completion(.success(response: info))
-                } catch let error as SorobanContractParserError {
-                    completion(.parsingFailure(error: error))
-                } catch {
-                    completion(.parsingFailure(error: SorobanContractParserError.invalidByteCode))
-                }
-            case .failure(let error):
-                completion(.rpcFailure(error: error))
+    @available(*, renamed: "getContractInfoForContractId(contractId:)")
+    public func getContractInfoForContractId(contractId: String, completion:@escaping GetContractInfoClosure) {
+        Task {
+            let result = await getContractInfoForContractId(contractId: contractId)
+            completion(result)
+        }
+    }
+    
+    /// Loads contract source byte code for the given contractId and extracts
+    /// the information (Environment Meta, Contract Spec, Contract Meta).
+    public func getContractInfoForContractId(contractId: String) async -> GetContractInfoEnum {
+        let response = await getContractCodeForContractId(contractId: contractId)
+        switch response {
+        case .success(let response):
+            do {
+                let info = try SorobanContractParser.parseContractByteCode(byteCode: response.code)
+                return .success(response: info)
+            } catch let error as SorobanContractParserError {
+                return .parsingFailure(error: error)
+            } catch {
+                return .parsingFailure(error: SorobanContractParserError.invalidByteCode)
             }
+        case .failure(let error):
+            return .rpcFailure(error: error)
         }
     }
     
     /// Loads contract source byte code for the given wasm id and extracts
     /// the information (Environment Meta, Contract Spec, Contract Meta).
+    @available(*, renamed: "getContractInfoForWasmId(wasmId:)")
     public func getContractInfoForWasmId(wasmId: String, completion:@escaping GetContractInfoClosure) {
-        getContractCodeForWasmId(wasmId: wasmId) { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                do {
-                    let info = try SorobanContractParser.parseContractByteCode(byteCode: response.code)
-                    completion(.success(response: info))
-                } catch let error as SorobanContractParserError {
-                    completion(.parsingFailure(error: error))
-                } catch {
-                    completion(.parsingFailure(error: SorobanContractParserError.invalidByteCode))
-                }
-            case .failure(let error):
-                completion(.rpcFailure(error: error))
+        Task {
+            let result = await getContractInfoForWasmId(wasmId: wasmId)
+            completion(result)
+        }
+    }
+    
+    /// Loads contract source byte code for the given wasm id and extracts
+    /// the information (Environment Meta, Contract Spec, Contract Meta).
+    public func getContractInfoForWasmId(wasmId: String) async -> GetContractInfoEnum {
+        let response = await getContractCodeForWasmId(wasmId: wasmId)
+        switch response {
+        case .success(let response):
+            do {
+                let info = try SorobanContractParser.parseContractByteCode(byteCode: response.code)
+                return .success(response: info)
+            } catch let error as SorobanContractParserError {
+                return .parsingFailure(error: error)
+            } catch {
+                return .parsingFailure(error: SorobanContractParserError.invalidByteCode)
             }
+        case .failure(let error):
+            return .rpcFailure(error: error)
         }
     }
     
     /// Fetches a minimal set of current info about a Stellar account. Needed to get the current sequence
     /// number for the account, so you can build a successful transaction. Fails if the account was not found or accountiId is invalid
+    @available(*, renamed: "getAccount(accountId:)")
     public func getAccount(accountId:String, completion:@escaping GetAccountResponseClosure) {
+        Task {
+            let result = await getAccount(accountId: accountId)
+            completion(result)
+        }
+    }
+    
+    /// Fetches a minimal set of current info about a Stellar account. Needed to get the current sequence
+    /// number for the account, so you can build a successful transaction. Fails if the account was not found or accountiId is invalid
+    public func getAccount(accountId:String) async -> GetAccountResponseEnum {
         if let publicKey = try? PublicKey(accountId: accountId) {
             let accountKey = LedgerKeyXDR.account(LedgerKeyAccountXDR(accountID: publicKey))
             if let ledgerKeyBase64 = accountKey.xdrEncoded {
-                self.getLedgerEntries(base64EncodedKeys:[ledgerKeyBase64]) { (response) -> (Void) in
-                    switch response {
-                    case .success(let response):
-                        let data = try? LedgerEntryDataXDR(fromBase64: response.entries[0].xdr)
-                        if let accountData = data?.account {
-                            let account = Account(keyPair: KeyPair(publicKey: accountData.accountID), sequenceNumber: accountData.sequenceNumber);
-                            completion(.success(response: account))
-                        }
-                        else {
-                            completion(.failure(error: .requestFailed(message: "could not find account")))
-                        }
-                    case .failure(let error):
-                        completion(.failure(error: error))
+                let response = await self.getLedgerEntries(base64EncodedKeys: [ledgerKeyBase64])
+                switch response {
+                case .success(let response):
+                    let data = try? LedgerEntryDataXDR(fromBase64: response.entries[0].xdr)
+                    if let accountData = data?.account {
+                        let account = Account(keyPair: KeyPair(publicKey: accountData.accountID), sequenceNumber: accountData.sequenceNumber);
+                        return .success(response: account)
                     }
+                    else {
+                        return .failure(error: .requestFailed(message: "could not find account"))
+                    }
+                case .failure(let error):
+                    return .failure(error: error)
                 }
             } else {
-                completion(.failure(error: .requestFailed(message: "could not create ledger key")))
+                return .failure(error: .requestFailed(message: "could not create ledger key"))
             }
         } else {
-            completion(.failure(error: .requestFailed(message: "invalid accountId")))
+            return .failure(error: .requestFailed(message: "invalid accountId"))
         }
-        
     }
     
     /// Reads the current value of contract data ledger entries directly.
+    @available(*, renamed: "getContractData(contractId:key:durability:)")
     public func getContractData(contractId: String, key: SCValXDR, durability: ContractDataDurability, completion:@escaping GetContractDataResponseClosure) {
+        Task {
+            let result = await getContractData(contractId: contractId, key: key, durability: durability)
+            completion(result)
+        }
+    }
+    
+    /// Reads the current value of contract data ledger entries directly.
+    public func getContractData(contractId: String, key: SCValXDR, durability: ContractDataDurability) async -> GetContractDataResponseEnum {
         if let contractAddress = try? SCAddressXDR.init(contractId: contractId) {
             let contractDataKey = LedgerKeyContractDataXDR(contract: contractAddress, key: key, durability: durability)
             let ledgerKey = LedgerKeyXDR.contractData(contractDataKey)
             if let ledgerKeyBase64 = ledgerKey.xdrEncoded {
-                self.getLedgerEntries(base64EncodedKeys:[ledgerKeyBase64]) { (response) -> (Void) in
-                    switch response {
-                    case .success(let response):
-                        if let result = response.entries.first {
-                            completion(.success(response: result))
-                        }
-                        else {
-                            completion(.failure(error: .requestFailed(message: "could not find contract data")))
-                        }
-                    case .failure(let error):
-                        completion(.failure(error: error))
+                let response = await self.getLedgerEntries(base64EncodedKeys: [ledgerKeyBase64])
+                switch response {
+                case .success(let response):
+                    if let result = response.entries.first {
+                        return .success(response: result)
                     }
+                    else {
+                        return .failure(error: .requestFailed(message: "could not find contract data"))
+                    }
+                case .failure(let error):
+                    return .failure(error: error)
                 }
             } else {
-                completion(.failure(error: .requestFailed(message: "could not create ledger key")))
+                return .failure(error: .requestFailed(message: "could not create ledger key"))
             }
         } else {
-            completion(.failure(error: .requestFailed(message: "invalid contractId")))
+            return .failure(error: .requestFailed(message: "invalid contractId"))
         }
     }
     
     /// Submit a trial contract invocation to get back return values, expected ledger footprint, and expected costs.
     /// See: https://soroban.stellar.org/api/methods/simulateTransaction
+    @available(*, renamed: "simulateTransaction(simulateTxRequest:)")
     public func simulateTransaction(simulateTxRequest: SimulateTransactionRequest, completion:@escaping SimulateTransactionResponseClosure) {
+        Task {
+            let result = await simulateTransaction(simulateTxRequest: simulateTxRequest)
+            completion(result)
+        }
+    }
+    
+    /// Submit a trial contract invocation to get back return values, expected ledger footprint, and expected costs.
+    /// See: https://soroban.stellar.org/api/methods/simulateTransaction
+    public func simulateTransaction(simulateTxRequest: SimulateTransactionRequest) async -> SimulateTransactionResponseEnum {
         
-        request(body: try? buildRequestJson(method: "simulateTransaction", args: simulateTxRequest.buildRequestParams())) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let result = response["result"] as? [String: Any] {
-                        do {
-                            let decoded = try self.jsonDecoder.decode(SimulateTransactionResponse.self, from: JSONSerialization.data(withJSONObject: result))
-                            completion(.success(response: decoded))
-                        } catch {
-                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
-                        }
-                    } else if let error = response["error"] as? [String: Any] {
-                        completion(.failure(error: .errorResponse(errorData: error)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+        let result = await request(body: try? buildRequestJson(method: "simulateTransaction", args: simulateTxRequest.buildRequestParams()))
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let result = response["result"] as? [String: Any] {
+                    do {
+                        let decoded = try self.jsonDecoder.decode(SimulateTransactionResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                        return .success(response: decoded)
+                    } catch {
+                        return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
+                } else if let error = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(errorData: error))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
@@ -530,59 +658,79 @@ public class SorobanServer {
     /// Unlike Horizon, this does not wait for transaction completion. It simply validates and enqueues the transaction.
     /// Clients should call getTransactionStatus to learn about transaction success/failure.
     /// See: https://soroban.stellar.org/api/methods/sendTransaction
+    @available(*, renamed: "sendTransaction(transaction:)")
     public func sendTransaction(transaction: Transaction, completion:@escaping SendTransactionResponseClosure) {
+        Task {
+            let result = await sendTransaction(transaction: transaction)
+            completion(result)
+        }
+    }
+    
+    /// Submit a real transaction to the stellar network. This is the only way to make changes “on-chain”.
+    /// Unlike Horizon, this does not wait for transaction completion. It simply validates and enqueues the transaction.
+    /// Clients should call getTransactionStatus to learn about transaction success/failure.
+    /// See: https://soroban.stellar.org/api/methods/sendTransaction
+    public func sendTransaction(transaction: Transaction) async -> SendTransactionResponseEnum {
         
-        request(body: try? buildRequestJson(method: "sendTransaction", args: ["transaction": transaction.encodedEnvelope()])) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let result = response["result"] as? [String: Any] {
-                        do {
-                            let decoded = try self.jsonDecoder.decode(SendTransactionResponse.self, from: JSONSerialization.data(withJSONObject: result))
-                            completion(.success(response: decoded))
-                        } catch {
-                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
-                        }
-                    } else if let error = response["error"] as? [String: Any] {
-                        completion(.failure(error: .errorResponse(errorData: error)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+        let result = await request(body: try? buildRequestJson(method: "sendTransaction", args: ["transaction": transaction.encodedEnvelope()]))
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let result = response["result"] as? [String: Any] {
+                    do {
+                        let decoded = try self.jsonDecoder.decode(SendTransactionResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                        return .success(response: decoded)
+                    } catch {
+                        return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
+                } else if let error = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(errorData: error))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
     /// Clients will poll this to tell when the transaction has been completed.
     /// See: https://soroban.stellar.org/api/methods/getTransaction
+    @available(*, renamed: "getTransaction(transactionHash:)")
     public func getTransaction(transactionHash:String, completion:@escaping GetTransactionResponseClosure) {
+        Task {
+            let result = await getTransaction(transactionHash: transactionHash)
+            completion(result)
+        }
+    }
+    
+    /// Clients will poll this to tell when the transaction has been completed.
+    /// See: https://soroban.stellar.org/api/methods/getTransaction
+    public func getTransaction(transactionHash:String) async -> GetTransactionResponseEnum {
         
-        request(body: try? buildRequestJson(method: "getTransaction", args: ["hash": transactionHash])) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let result = response["result"] as? [String: Any] {
-                        do {
-                            let decoded = try self.jsonDecoder.decode(GetTransactionResponse.self, from: JSONSerialization.data(withJSONObject: result))
-                            completion(.success(response: decoded))
-                        } catch {
-                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
-                        }
-                    } else if let error = response["error"] as? [String: Any] {
-                        completion(.failure(error: .errorResponse(errorData: error)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+        let result = await request(body: try? buildRequestJson(method: "getTransaction", args: ["hash": transactionHash]))
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let result = response["result"] as? [String: Any] {
+                    do {
+                        let decoded = try self.jsonDecoder.decode(GetTransactionResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                        return .success(response: decoded)
+                    } catch {
+                        return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
+                } else if let error = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(errorData: error))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
@@ -590,30 +738,41 @@ public class SorobanServer {
     /// the user specified starting point that you can paginate as long as the pages
     /// fall within the history retention of their corresponding RPC provider.
     /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+    @available(*, renamed: "getTransactions(startLedger:paginationOptions:)")
     public func getTransactions(startLedger:Int? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetTransactionsResponseClosure) {
+        Task {
+            let result = await getTransactions(startLedger: startLedger, paginationOptions: paginationOptions)
+            completion(result)
+        }
+    }
+    
+    /// The getTransactions method return a detailed list of transactions starting from
+    /// the user specified starting point that you can paginate as long as the pages
+    /// fall within the history retention of their corresponding RPC provider.
+    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+    public func getTransactions(startLedger:Int? = nil, paginationOptions:PaginationOptions? = nil) async -> GetTransactionsResponseEnum {
         
-        request(body: try? buildRequestJson(method: "getTransactions", args: buildTransactionssRequestParams(startLedger: startLedger, paginationOptions: paginationOptions))) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let result = response["result"] as? [String: Any] {
-                        do {
-                            let decoded = try self.jsonDecoder.decode(GetTransactionsResponse.self, from: JSONSerialization.data(withJSONObject: result))
-                            completion(.success(response: decoded))
-                        } catch {
-                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
-                        }
-                    } else if let error = response["error"] as? [String: Any] {
-                        completion(.failure(error: .errorResponse(errorData: error)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+        let result = await request(body: try? buildRequestJson(method: "getTransactions", args: buildTransactionssRequestParams(startLedger: startLedger, paginationOptions: paginationOptions)))
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let result = response["result"] as? [String: Any] {
+                    do {
+                        let decoded = try self.jsonDecoder.decode(GetTransactionsResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                        return .success(response: decoded)
+                    } catch {
+                        return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
+                } else if let error = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(errorData: error))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
@@ -623,30 +782,43 @@ public class SorobanServer {
     /// If making multiple requests, clients should deduplicate any events received, based on the event's unique id field. This prevents double-processing in the case of duplicate events being received.
     /// By default soroban-rpc retains the most recent 24 hours of events.
     /// See: https://soroban.stellar.org/api/methods/getEvents
+    @available(*, renamed: "getEvents(startLedger:eventFilters:paginationOptions:)")
     public func getEvents(startLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
+        Task {
+            let result = await getEvents(startLedger: startLedger, eventFilters: eventFilters, paginationOptions: paginationOptions)
+            completion(result)
+        }
+    }
+    
+    /// Clients can request a filtered list of events emitted by a given ledger range.
+    /// Soroban-RPC will support querying within a maximum 24 hours of recent ledgers.
+    /// Note, this could be used by the client to only prompt a refresh when there is a new ledger with relevant events. It should also be used by backend Dapp components to "ingest" events into their own database for querying and serving.
+    /// If making multiple requests, clients should deduplicate any events received, based on the event's unique id field. This prevents double-processing in the case of duplicate events being received.
+    /// By default soroban-rpc retains the most recent 24 hours of events.
+    /// See: https://soroban.stellar.org/api/methods/getEvents
+    public func getEvents(startLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) async -> GetEventsResponseEnum {
         
-        request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, eventFilters: eventFilters, paginationOptions: paginationOptions))) { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    if let result = response["result"] as? [String: Any] {
-                        do {
-                            let decoded = try self.jsonDecoder.decode(GetEventsResponse.self, from: JSONSerialization.data(withJSONObject: result))
-                            completion(.success(response: decoded))
-                        } catch {
-                            completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data)))
-                        }
-                    } else if let error = response["error"] as? [String: Any] {
-                        completion(.failure(error: .errorResponse(errorData: error)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+        let result = await request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, eventFilters: eventFilters, paginationOptions: paginationOptions)))
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let result = response["result"] as? [String: Any] {
+                    do {
+                        let decoded = try self.jsonDecoder.decode(GetEventsResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                        return .success(response: decoded)
+                    } catch {
+                        return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
+                } else if let error = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(errorData: error))
                 } else {
-                    completion(.failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data)))
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     
@@ -668,10 +840,7 @@ public class SorobanServer {
         
         // pagination options
         if (paginationOptions != nil) {
-            let params = paginationOptions!.buildRequestParams()
-            if (params != nil) {
-                result["pagination"] = params
-            }
+            result["pagination"] = paginationOptions!.buildRequestParams()
         }
         return result;
     }
@@ -685,11 +854,9 @@ public class SorobanServer {
         
         // pagination options
         if (paginationOptions != nil) {
-            let params = paginationOptions!.buildRequestParams()
-            if (params != nil) {
-                result["pagination"] = params
-            }
+            result["pagination"] = paginationOptions!.buildRequestParams()
         }
+        
         return result;
     }
     
@@ -708,11 +875,20 @@ public class SorobanServer {
     }
     
     
+    @available(*, renamed: "request(body:)")
     private func request(body: Data?, completion: @escaping RpcResponseClosure) {
+        Task {
+            let result = await request(body: body)
+            completion(result)
+        }
+    }
+    
+    
+    private func request(body: Data?) async -> RpcResult {
         
         let url = URL(string: endpoint)!
         var urlRequest = URLRequest(url: url)
-
+        
         requestHeaders.forEach {
             urlRequest.addValue($0.value, forHTTPHeaderField: $0.key)
         }
@@ -722,42 +898,44 @@ public class SorobanServer {
         if let body = body {
             urlRequest.httpBody = body
         }
-
-        let task = URLSession.shared.dataTask(with: urlRequest) { data, response, error in
-            if let error = error {
-                completion(.failure(error:.requestFailed(message:error.localizedDescription)))
-                return
-            }
-            
-            if let data = data, self.enableLogging {
-                let log = String(decoding: data, as: UTF8.self)
-                print(log)
-            }
-            
-            if let httpResponse = response as? HTTPURLResponse {
-                var message:String!
-                if let data = data {
-                    message = String(data: data, encoding: String.Encoding.utf8)
-                }
-                if message == nil {
-                    message = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
-                }
-                
-                switch httpResponse.statusCode {
-                case 200, 201, 202:
-                    break
-                default:
-                    completion(.failure(error:.requestFailed(message:message)))
+        
+        return await withCheckedContinuation { continuation in
+            let task = URLSession.shared.dataTask(with: urlRequest) { data, response, error in
+                if let error = error {
+                    continuation.resume(returning: .failure(error:.requestFailed(message:error.localizedDescription)))
                     return
                 }
+                
+                if let data = data, self.enableLogging {
+                    let log = String(decoding: data, as: UTF8.self)
+                    print(log)
+                }
+                
+                if let httpResponse = response as? HTTPURLResponse {
+                    var message:String!
+                    if let data = data {
+                        message = String(data: data, encoding: String.Encoding.utf8)
+                    }
+                    if message == nil {
+                        message = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
+                    }
+                    
+                    switch httpResponse.statusCode {
+                    case 200, 201, 202:
+                        break
+                    default:
+                        continuation.resume(returning: .failure(error:.requestFailed(message:message)))
+                        return
+                    }
+                }
+                if let data = data {
+                    continuation.resume(returning: .success(data: data))
+                } else {
+                    continuation.resume(returning: .failure(error:.requestFailed(message:"empty response")))
+                }
             }
-            if let data = data {
-                completion(.success(data: data))
-            } else {
-                completion(.failure(error:.requestFailed(message:"empty response")))
-            }
+            
+            task.resume()
         }
-        
-        task.resume()
     }
 }
