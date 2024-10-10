@@ -35,18 +35,15 @@ class OffersLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetOffersForAccount() {
-        let expectation = XCTestExpectation(description: "Get offers for account and parse their details successfully")
-        
-        sdk.offers.getOffers(forAccount: accountId, limit: limit) { response in
-            switch response {
-            case .success(let offersResponse):
-                checkResult(offersResponse: offersResponse)
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOFA Test", horizonRequestError: error)
-                XCTAssert(false)
-                expectation.fulfill()
-            }
+    func testGetOffersForAccount() async {
+
+        let response = await sdk.offers.getOffers(forAccount: accountId, limit: limit)
+        switch response {
+        case .success(let offersResponse):
+            checkResult(offersResponse: offersResponse)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetOffersForAccount()", horizonRequestError: error)
+            XCTFail()
         }
         
         func checkResult(offersResponse:PageResponse<OfferResponse>) {
@@ -90,10 +87,7 @@ class OffersLocalTestCase: XCTestCase {
                 XCTAssertEqual(offer.amount, "23.6692509")
                 XCTAssertEqual(offer.price, "7.7400000")
             }
-            expectation.fulfill()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     public func successResponse(limit:Int) -> String {

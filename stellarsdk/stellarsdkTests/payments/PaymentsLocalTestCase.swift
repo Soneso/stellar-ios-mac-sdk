@@ -44,18 +44,15 @@ class PaymentsLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetPayments() {
-        let expectation = XCTestExpectation(description: "Get payments and parse their details successfully")
+    func testGetPayments() async {
         
-        sdk.payments.getPayments(forLedger: ledgerId, limit:limit) { response in
-            switch response {
-            case .success(let paymentsResponse):
-                checkResult(paymentsResponse:paymentsResponse, ledgerId:"69859")
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GP Test", horizonRequestError: error)
-                XCTAssert(false)
-                expectation.fulfill()
-            }
+        let responseEnum = await sdk.payments.getPayments(forLedger: ledgerId, limit:limit)
+        switch responseEnum {
+        case .success(let paymentsResponse):
+            checkResult(paymentsResponse:paymentsResponse, ledgerId:"69859")
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"GP Test", horizonRequestError: error)
+            XCTFail()
         }
         
         func checkResult(paymentsResponse:PageResponse<OperationResponse>, ledgerId:String) {
@@ -115,47 +112,30 @@ class PaymentsLocalTestCase: XCTestCase {
                     XCTAssertEqual(payment.to, "GBIA4FH6TV64KSPDAJCNUQSM7PFL4ILGUVJDPCLUOPJ7ONMKBBVUQHRO")
                 }
             }
-            expectation.fulfill()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetPaymentsWithStrictReceivePathPayments() {
-        let expectation = XCTestExpectation(description: "Get payments and parse their details containing strict receive path payments successfully")
-        
-        sdk.payments.getPayments(forLedger: ledgerId2, limit:limit) { response in
-            switch response {
-            case .success(let paymentsResponse):
-                XCTAssertNotNil(paymentsResponse.links)
-                XCTAssert(true)
-                expectation.fulfill()
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GP Test", horizonRequestError: error)
-                XCTAssert(false)
-                expectation.fulfill()
-            }
+    func testGetPaymentsWithStrictReceivePathPayments() async {
+        let responseEnum = await sdk.payments.getPayments(forLedger: ledgerId2, limit:limit)
+        switch responseEnum {
+        case .success(let paymentsResponse):
+            XCTAssertNotNil(paymentsResponse.links)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetPaymentsWithStrictReceivePathPayments()", horizonRequestError: error)
+            XCTFail()
         }
-        wait(for: [expectation], timeout: 15.0)
     }
         
     
-    func testGetPaymentsWithStrictSendPathPayments() {
-        let expectation = XCTestExpectation(description: "Get payments and parse their details containing strict send path payments successfully")
-        
-        sdk.payments.getPayments(forLedger: ledgerId3, limit:limit) { response in
-            switch response {
-            case .success(let paymentsResponse):
-                XCTAssertNotNil(paymentsResponse.links)
-                XCTAssert(true)
-                expectation.fulfill()
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GP Test", horizonRequestError: error)
-                XCTAssert(false)
-                expectation.fulfill()
-            }
+    func testGetPaymentsWithStrictSendPathPayments() async {
+        let responseEnum = await sdk.payments.getPayments(forLedger: ledgerId3, limit:limit)
+        switch responseEnum {
+        case .success(let paymentsResponse):
+            XCTAssertNotNil(paymentsResponse.links)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetPaymentsWithStrictSendPathPayments()", horizonRequestError: error)
+            XCTFail()
         }
-        wait(for: [expectation], timeout: 15.0)
     }
     
     public func successResponse(limit:Int) -> String {

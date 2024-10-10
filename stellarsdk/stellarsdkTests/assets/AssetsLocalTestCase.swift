@@ -36,18 +36,14 @@ class AssetsLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetAssets() {
-        let expectation = XCTestExpectation(description: "Get assets and parse their details successfully")
-        
-        sdk.assets.getAssets(limit: 1) { (response) -> (Void) in
-            switch response {
-            case .success(let assetsResponse):
-                checkResult(assetsResponse:assetsResponse, limit:1)
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GA Test", horizonRequestError: error)
-                XCTAssert(false)
-                expectation.fulfill()
-            }
+    func testGetAssets() async {
+        let response = await sdk.assets.getAssets(limit: 1)
+        switch response {
+        case .success(let assetsResponse):
+            checkResult(assetsResponse:assetsResponse, limit:1)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetAssets()", horizonRequestError: error)
+            XCTFail()
         }
         
         func checkResult(assetsResponse:PageResponse<AssetResponse>, limit:Int) {
@@ -119,7 +115,6 @@ class AssetsLocalTestCase: XCTestCase {
                 XCTAssertTrue(secondAsset!.flags.authImmutable)
                 XCTAssertTrue(secondAsset!.flags.authClawbackEnabled)
                 
-                expectation.fulfill()
             } else {
                 sdk.assets.getAssets(limit: 2) { (response) -> (Void) in
                     switch response {
@@ -127,14 +122,11 @@ class AssetsLocalTestCase: XCTestCase {
                         checkResult(assetsResponse:assetsResponse, limit:2)
                     case .failure(let error):
                         StellarSDKLog.printHorizonRequestErrorMessage(tag:"GA Test", horizonRequestError: error)
-                        XCTAssert(false)
-                        expectation.fulfill()
+                        XCTFail()
                     }
                 }
             }
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     public func successResponse(limit:Int) -> String {
@@ -255,7 +247,7 @@ class AssetsLocalTestCase: XCTestCase {
             XCTAssertNil(parsedAsset.issuer)
             
         }catch {
-            XCTAssert(false)
+            XCTFail()
         }
     }
     
@@ -277,7 +269,7 @@ class AssetsLocalTestCase: XCTestCase {
             // TODO compare public key
             
         }catch {
-            XCTAssert(false)
+            XCTFail()
         }
     }
     
@@ -299,7 +291,7 @@ class AssetsLocalTestCase: XCTestCase {
             // TODO compare public key
             
         }catch {
-            XCTAssert(false)
+            XCTFail()
         }
     }
 }

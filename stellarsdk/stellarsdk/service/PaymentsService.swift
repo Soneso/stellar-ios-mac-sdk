@@ -45,7 +45,15 @@ public class PaymentsService: NSObject {
         }
     }
     
-    
+    /// This function responds with all payment operations that are part of validated transactions.
+    /// See [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-all.html "All Payments")
+    ///
+    /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
+    /// - Parameter order: The order in which to return rows, “asc” or “desc”.
+    /// - Parameter limit: Maximum number of records to return default 10
+    /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
+    /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
+    ///
     open func getPayments(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/payments"
         return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
@@ -69,7 +77,16 @@ public class PaymentsService: NSObject {
         }
     }
     
-    
+    /// This function responds with a collection of payment operations where the given account was either the sender or receiver.
+    /// See [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-account.html "Payments for Account")
+    ///
+    /// - Parameter accountId: The Stellar account ID of the account used to constrain results.
+    /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
+    /// - Parameter order: The order in which to return rows, “asc” or “desc”.
+    /// - Parameter limit: Maximum number of records to return default 10
+    /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
+    /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
+    ///
     open func getPayments(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/accounts/" + accountId + "/payments"
         return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
@@ -93,7 +110,16 @@ public class PaymentsService: NSObject {
         }
     }
     
-    
+    /// This function responds with all payment operations that are part of a valid transactions in a given ledger.
+    /// See also [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-ledger.html "Payments for Ledger")
+    ///
+    /// - Parameter accountId: The ledger id of the ledger used to constrain results.
+    /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
+    /// - Parameter order: The order in which to return rows, “asc” or “desc”.
+    /// - Parameter limit: Maximum number of records to return default 10
+    /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
+    /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
+    ///
     open func getPayments(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/ledgers/" + ledger + "/payments"
         return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
@@ -117,6 +143,16 @@ public class PaymentsService: NSObject {
         }
     }
     
+    /// This function responds with all payment operations that are part of a given transaction.
+    /// See [Horizon API]: (https://www.stellar.org/developers/horizon/reference/endpoints/payments-for-transaction.html "Payments for Transaction")
+    ///
+    /// - Parameter hash: A transaction hash, hex-encoded.
+    /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
+    /// - Parameter order: The order in which to return rows, “asc” or “desc”.
+    /// - Parameter limit: Maximum number of records to return default 10
+    /// - Parameter includeFailed: set to true to include payments of failed transactions in results.
+    /// - Parameter join: Currently, the only valid value for the parameter is transactions. If join=transactions is included in a request then the response will include a transaction field for each operation in the response.
+    ///
     open func getPayments(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/transactions/" + hash + "/payments"
         return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
@@ -161,7 +197,10 @@ public class PaymentsService: NSObject {
         }
     }
     
-    
+    /// Loads payments for a given url if valid. E.g. for a "next" link from a PageResponse<OperationResponse> object where the operation response is of type payment.
+    ///
+    /// - Parameter url: The url to be used to load the payments.
+    ///
     open func getPaymentsFromUrl(url:String) async -> PageResponse<OperationResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {

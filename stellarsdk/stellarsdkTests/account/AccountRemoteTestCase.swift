@@ -109,7 +109,6 @@ class AccountRemoteTestCase: XCTestCase {
             } else {
                 print("Seq Time: nil")
             }
-            XCTAssert(true)
         case .failure(let error):
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"getAccountDetails()", horizonRequestError: error)
             XCTFail()

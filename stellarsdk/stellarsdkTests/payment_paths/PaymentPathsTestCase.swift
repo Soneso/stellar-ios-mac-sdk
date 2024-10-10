@@ -42,7 +42,7 @@ class PaymentPathsTestCase: XCTestCase {
             XCTFail("could not create test account: \(sourceAccountId)")
         }
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sourceAccountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let transaction = try! Transaction(sourceAccount: accountResponse,
@@ -53,7 +53,7 @@ class PaymentPathsTestCase: XCTestCase {
             try! transaction.sign(keyPair: self.destinationKeyPair, network: Network.testnet)
             try! transaction.sign(keyPair: self.sellerKeyPair, network: Network.testnet)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)
@@ -89,7 +89,7 @@ class PaymentPathsTestCase: XCTestCase {
         let payOp3 = try! PaymentOperation(sourceAccountId: EURIssuerKeyPair.accountId, destinationAccountId: destinationKeyPair.accountId, asset: EURAsset, amount: 8000)
         let payOp4 = try! PaymentOperation(sourceAccountId: EURIssuerKeyPair.accountId, destinationAccountId: sellerKeyPair.accountId, asset: EURAsset, amount: 8000)
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: self.IOMIssuerKeyPair.accountId)
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: self.IOMIssuerKeyPair.accountId)
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let transaction = try! Transaction(sourceAccount: accountResponse,
@@ -98,7 +98,7 @@ class PaymentPathsTestCase: XCTestCase {
             try! transaction.sign(keyPair: self.IOMIssuerKeyPair, network: Network.testnet)
             try! transaction.sign(keyPair: self.EURIssuerKeyPair, network: Network.testnet)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)
@@ -119,7 +119,7 @@ class PaymentPathsTestCase: XCTestCase {
         let EURAsset = ChangeTrustAsset(canonicalForm: "EUR:" + EURIssuerKeyPair.accountId)!
         let offerOp1 = ManageOfferOperation(sourceAccountId: sellerKeyPair.accountId, selling: EURAsset, buying: IOMAsset, amount: 1000, price: Price.fromString(price: "1.0"), offerId: 0)
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sellerKeyPair.accountId)
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sellerKeyPair.accountId)
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let transaction = try! Transaction(sourceAccount: accountResponse,
@@ -127,7 +127,7 @@ class PaymentPathsTestCase: XCTestCase {
                                               memo: Memo.none)
             try! transaction.sign(keyPair: sellerKeyPair, network: Network.testnet)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)
@@ -184,7 +184,7 @@ class PaymentPathsTestCase: XCTestCase {
         let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: IOMIssuerKP)
         let EUR = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "EUR", issuer: EURIssuerKP)
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let muxDestination = try! MuxedAccount(accountId:self.destinationKeyPair.accountId, id: 12345)
@@ -196,7 +196,7 @@ class PaymentPathsTestCase: XCTestCase {
                                               memo: Memo.none)
             try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)
@@ -221,7 +221,7 @@ class PaymentPathsTestCase: XCTestCase {
         let IOM = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "IOM", issuer: IOMIssuerKP)
         let EUR = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "EUR", issuer: EURIssuerKP)
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let muxDestination = try! MuxedAccount(accountId:self.destinationKeyPair.accountId, id: 12345)
@@ -233,7 +233,7 @@ class PaymentPathsTestCase: XCTestCase {
                                               memo: Memo.none)
             try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)

@@ -33,18 +33,14 @@ class EffectsLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testGetEffects() {
-        let expectation = XCTestExpectation(description: "Get effects and parse their details succesffully")
-        
-        sdk.effects.getEffects(limit: 19) { (response) -> (Void) in
-            switch response {
-            case .success(let effectsResponse):
-                validateResult(effectsResponse:effectsResponse)
-            case .failure(let error):
-                StellarSDKLog.printHorizonRequestErrorMessage(tag:"GE Test", horizonRequestError: error)
-                XCTAssert(false)
-            }
-            expectation.fulfill()
+    func testGetEffects() async {
+        let response = await sdk.effects.getEffects(limit: 19)
+        switch response {
+        case .success(let page):
+            validateResult(effectsResponse:page)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetEffects()", horizonRequestError: error)
+            XCTFail()
         }
         
         func validateResult(effectsResponse:PageResponse<EffectResponse>) {
@@ -70,208 +66,208 @@ class EffectsLocalTestCase: XCTestCase {
                         if record is AccountCreatedEffectResponse {
                             validateAccountCreatedEffectResponse(effectResponse: record as! AccountCreatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .accountRemoved:
                         if record is AccountRemovedEffectResponse {
                             validateAccountRemovedEffectResponse(effectResponse: record as! AccountRemovedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .accountCredited:
                         if record is AccountCreditedEffectResponse {
                             validateAccountCreditedEffectResponse(effectResponse: record as! AccountCreditedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .accountDebited:
                         if record is AccountDebitedEffectResponse {
                             validateAccountDebitedEffectResponse(effectResponse: record as! AccountDebitedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .accountThresholdsUpdated:
                         if record is AccountThresholdsUpdatedEffectResponse {
                             validateAccountThresholdsUpdatedEffectResponse(effectResponse: record as! AccountThresholdsUpdatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .accountHomeDomainUpdated:
                         if record is AccountHomeDomainUpdatedEffectResponse {
                             validateAccountHomeDomainUpdatedEffectResponse(effectResponse: record as! AccountHomeDomainUpdatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .accountFlagsUpdated:
                         if record is AccountFlagsUpdatedEffectResponse {
                             validateAccountFlagsUpdatedEffectResponse(effectResponse: record as! AccountFlagsUpdatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .signerCreated:
                         if record is SignerCreatedEffectResponse {
                             validateSignerCreatedEffectResponse(effectResponse: record as! SignerCreatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .signerRemoved:
                         if record is SignerRemovedEffectResponse {
                             validateSignerRemovedEffectResponse(effectResponse: record as! SignerRemovedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .signerUpdated:
                         if record is SignerUpdatedEffectResponse {
                             validateSignerUpdatedEffectResponse(effectResponse: record as! SignerUpdatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .trustlineCreated:
                         if record is TrustlineCreatedEffectResponse {
                             validateTrustlineCreatedEffectResponse(effectResponse: record as! TrustlineCreatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .trustlineRemoved:
                         if record is TrustlineRemovedEffectResponse {
                             validateTrustlineRemovedEffectResponse(effectResponse: record as! TrustlineRemovedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .trustlineUpdated:
                         if record is TrustlineUpdatedEffectResponse {
                             validateTrustlineUpdatedEffectResponse(effectResponse: record as! TrustlineUpdatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .trustlineAuthorized:
                         if record is TrustlineAuthorizedEffectResponse {
                             validateTrustlineAuthorizedEffectResponse(effectResponse: record as! TrustlineAuthorizedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .trustlineDeauthorized:
                         if record is TrustlineDeauthorizedEffectResponse {
                             validateTrustlineDeauthorizedEffectResponse(effectResponse: record as! TrustlineDeauthorizedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                 case .trustlineAuthorizedToMaintainLiabilities:
                         if record is TrustlineAuthorizedToMaintainLiabilitiesEffecResponse {
                             XCTAssert(true)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .offerCreated:
                         if record is OfferCreatedEffectResponse {
                             validateOfferCreatedEffectResponse(effectResponse: record as! OfferCreatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .offerRemoved:
                         if record is OfferRemovedEffectResponse {
                             validateOfferRemovedEffectResponse(effectResponse: record as! OfferRemovedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .offerUpdated:
                         if record is OfferUpdatedEffectResponse {
                             validateOfferUpdatedEffectResponse(effectResponse: record as! OfferUpdatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .tradeEffect:
                         if record is TradeEffectResponse {
                             validateTradeEffectResponse(effectResponse: record as! TradeEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .accountInflationDestinationUpdated:
                         if record is AccountInflationDestinationUpdatedEffectResponse {
                             validateAccountInflationDestinationUpdatedEffectResponse(effectResponse: record as! AccountInflationDestinationUpdatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .dataCreatedEffect:
                         if record is DataCreatedEffectResponse {
                             validateDataCreatedEffectResponse(effectResponse: record as! DataCreatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .dataRemovedEffect:
                         if record is DataRemovedEffectResponse {
                             validateDataRemovedEffectResponse(effectResponse: record as! DataRemovedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .dataUpdatedEffect:
                         if record is DataUpdatedEffectResponse {
                             validateDataUpdatedEffectResponse(effectResponse: record as! DataUpdatedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .sequenceBumpedEffect:
                         if record is SequenceBumpedEffectResponse {
                             validateBumpSequenceEffectResponse(effectResponse: record as! SequenceBumpedEffectResponse)
                         } else {
-                            XCTAssert(false)
+                            XCTFail()
                         }
                     case .claimableBalanceCreatedEffect:
-                        XCTAssert(false)
+                        XCTFail()
                     case .claimableBalanceClaimantCreatedEffect:
-                        XCTAssert(false)
+                        XCTFail()
                     case .claimableBalanceClaimedEffect:
-                        XCTAssert(false)
+                        XCTFail()
                     case .accountSponsorshipCreated:
-                        XCTAssert(false)
+                        XCTFail()
                     case .accountSponsorshipUpdated:
-                        XCTAssert(false)
+                        XCTFail()
                     case .accountSponsorshipRemoved:
-                        XCTAssert(false)
+                        XCTFail()
                     case .trustlineSponsorshipCreated:
-                        XCTAssert(false)
+                        XCTFail()
                     case .trustlineSponsorshipUpdated:
-                        XCTAssert(false)
+                        XCTFail()
                     case .trustlineSponsorshipRemoved:
-                        XCTAssert(false)
+                        XCTFail()
                     case .dataSponsorshipCreated:
-                        XCTAssert(false)
+                        XCTFail()
                     case .dataSponsorshipUpdated:
-                        XCTAssert(false)
+                        XCTFail()
                     case .dataSponsorshipRemoved:
-                        XCTAssert(false)
+                        XCTFail()
                     case .claimableBalanceSponsorshipCreated:
-                        XCTAssert(false)
+                        XCTFail()
                     case .claimableBalanceSponsorshipUpdated:
-                        XCTAssert(false)
+                        XCTFail()
                     case .claimableBalanceSponsorshipRemoved:
-                        XCTAssert(false)
+                        XCTFail()
                     case .signerBalanceSponsorshipCreated:
-                        XCTAssert(false)
+                        XCTFail()
                     case .signerBalanceSponsorshipUpdated:
-                        XCTAssert(false)
+                        XCTFail()
                     case .signerBalanceSponsorshipRemoved:
-                        XCTAssert(false)
+                        XCTFail()
                     case .claimablaBalanceClawedBack:
-                        XCTAssert(false)
+                        XCTFail()
                     case .trustlineFlagsUpdated:
-                        XCTAssert(false)
+                        XCTFail()
                     case .liquidityPoolDeposited:
-                        XCTAssert(false)
+                        XCTFail()
                     case .liquidityPoolWithdrew:
-                        XCTAssert(false)
+                        XCTFail()
                     case .liquidityPoolTrade:
-                        XCTAssert(false)
+                        XCTFail()
                     case .liquidityPoolCreated:
-                        XCTAssert(false)
+                        XCTFail()
                     case .liquidityPoolRemoved:
-                        XCTAssert(false)
+                        XCTFail()
                     case .liquidityPoolRevoked:
-                        XCTAssert(false)
+                        XCTFail()
                     case .contractCredited:
-                        XCTAssert(false)
+                        XCTFail()
                     case .contractDebited:
-                        XCTAssert(false)
+                        XCTFail()
                 }
             }
         }
@@ -848,8 +844,6 @@ class EffectsLocalTestCase: XCTestCase {
             XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.BUMP_SEQUENCE)
             XCTAssertEqual(effectResponse.effectType, EffectType.sequenceBumpedEffect)
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
     private func successResponse() -> String {

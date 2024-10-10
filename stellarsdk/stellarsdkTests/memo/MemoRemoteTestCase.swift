@@ -75,7 +75,7 @@ class MemoRemoteTestCase: XCTestCase {
             }
         }
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let paymentOperation = try! PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
@@ -87,7 +87,7 @@ class MemoRemoteTestCase: XCTestCase {
                                               memo: memo)
             try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)

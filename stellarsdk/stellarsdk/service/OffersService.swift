@@ -68,9 +68,9 @@ public class OffersService: NSObject {
     }
     
     /// People on the Stellar network can make offers to buy or sell assets. This endpoint represents all the current offers, allowing filtering by seller, selling_asset or buying_asset.
-    
+    ///
     /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/offers.html "Offers")
-    
+    ///
     /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
     /// - Parameter seller: Optional. Account ID of the offer creator.
@@ -93,7 +93,24 @@ public class OffersService: NSObject {
         }
     }
     
-    
+    /// People on the Stellar network can make offers to buy or sell assets. This endpoint represents all the current offers, allowing filtering by seller, selling_asset or buying_asset.
+    ///
+    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/offers.html "Offers")
+    ///
+    /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
+    ///
+    /// - Parameter seller: Optional. Account ID of the offer creator.
+    /// - Parameter sellingAssetType: Required. Type of the Asset being sold e.g."native" or "credit_alphanum4" or "credit_alphanum12"
+    /// - Parameter sellingAssetCode: Required if selling_asset_type is not "native".
+    /// - Parameter sellingAssetIssuer: Required if selling_asset_type is not "native".
+    /// - Parameter buyingAssetType: Required. Type of the Asset being bought e.g."native" or "credit_alphanum4" or "credit_alphanum12"
+    /// - Parameter buyingAssetCode: Required if buying_asset_type is not "native".
+    /// - Parameter buyingAssetIssuer: Required if buying_asset_type is not "native".
+    /// - Parameter sponsor: Optional. Account ID of the sponsor.
+    /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
+    /// - Parameter order: Optional. The order in which to return rows, “asc” or “desc”, ordered by assetCode then by assetIssuer.
+    /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
+    ///
     open func getOffers(seller:String?, sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, sponsor:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<OfferResponse>.ResponseEnum {
         var requestPath = "/offers"
         
@@ -196,10 +213,6 @@ public class OffersService: NSObject {
     /// - Parameter offerId: The ID of the Offer
     /// - Parameter response: The closure to be called upon response.
     ///
-    /// - Throws:
-    ///     - 'HorizonRequestError.notFound' if there is no offer whose ID matches the 'offerId' parameter.
-    ///     - other 'HorizonRequestError' errors depending on the error case.
-    ///
     @available(*, renamed: "getOfferDetails(offerId:)")
     open func getOfferDetails(offerId: String, response: @escaping OfferResponseClosure) {
         Task {
@@ -208,7 +221,12 @@ public class OffersService: NSObject {
         }
     }
     
-    
+    /// Provides information and links relating to a single offer.
+    /// See [Horizon API] (https://developers.stellar.org/api/resources/offers/single/ "Offer Details")
+    ///
+    /// - Parameter offerId: The ID of the Offer
+    /// - Parameter response: The closure to be called upon response.
+    ///
     open func getOfferDetails(offerId: String) async -> OfferResponseEnum {
         let result = await serviceHelper.GETRequestWithPath(path: "/offers/\(offerId)")
         switch result {

@@ -53,7 +53,11 @@ public class URISchemeValidator: NSObject {
         }
     }
     
-    
+    /// Checks if the URL is valid; signature and domain must be present and correct for the signer's keypair.
+    ///
+    /// - Parameter url: the URL to check.
+    /// - Parameter completion: Closure to be called with the response of the check
+    ///
     public func checkURISchemeIsValid(url: String) async -> URISchemeIsValidEnum {
         guard let originDomain = getOriginDomain(forURL: url) else {
             return .failure(.missingOriginDomain)

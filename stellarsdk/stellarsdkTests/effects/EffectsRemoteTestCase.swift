@@ -30,7 +30,7 @@ class EffectsRemoteTestCase: XCTestCase {
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
             XCTFail("could not create test account: \(testAccountId)")
         }
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: testAccountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: testAccountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let transaction = try! Transaction(sourceAccount: accountResponse,
@@ -38,7 +38,7 @@ class EffectsRemoteTestCase: XCTestCase {
                                               memo: Memo.none)
             try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)
@@ -114,7 +114,7 @@ class EffectsRemoteTestCase: XCTestCase {
         switch opResponseEnum {
         case .success(let page):
             XCTAssertNotNil(page.records.first)
-            let effectsReponseEnum = await self.sdk.effects.getEffects(forOperation: page.records.first!.id)
+            let effectsReponseEnum = await sdk.effects.getEffects(forOperation: page.records.first!.id)
             switch effectsReponseEnum {
             case .success(let effectsPage):
                 XCTAssertFalse(effectsPage.records.isEmpty)

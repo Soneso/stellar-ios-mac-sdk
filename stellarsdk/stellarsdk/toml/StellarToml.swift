@@ -127,7 +127,7 @@ public class StellarToml {
         }
     }
     
-    
+    /// Alternately to specifying a currency in its content, stellar.toml can link out to a separate TOML file for the currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
     public static func currencyFrom(url: String) async -> TomlCurrencyFromUrlEnum {
         guard let url1 = URL(string:url) else {
             return .failure(error: .invalidUrl)

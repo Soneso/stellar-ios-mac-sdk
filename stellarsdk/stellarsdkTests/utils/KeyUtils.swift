@@ -11,14 +11,6 @@ import stellarsdk
 
 class KeyUtils: XCTestCase {
 
-    override func setUp() {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
-
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
     func testKeyUtilsPublicKey() {
         let publicKey = "GAYYAL2XJKSQHQ7RJG7MXHTXPZFPUWPCV46UZLBEEF7FAHIQ36FT7ATA"
    
@@ -28,7 +20,7 @@ class KeyUtils: XCTestCase {
             
             XCTAssertTrue(publicKey == encodedKey)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -43,7 +35,7 @@ class KeyUtils: XCTestCase {
             
             XCTAssertTrue(accountId == muxId)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
 
@@ -57,7 +49,7 @@ class KeyUtils: XCTestCase {
             let muxId = try muxData.encodeMuxedAccount()
             XCTAssertTrue(accountId == muxId)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -70,7 +62,7 @@ class KeyUtils: XCTestCase {
             
             XCTAssertTrue(publicKey == encodedKey)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -89,7 +81,7 @@ class KeyUtils: XCTestCase {
             let ddata = signedPayload.payload.base16EncodedString()
             XCTAssertTrue(ddata == dataStr)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -108,7 +100,7 @@ class KeyUtils: XCTestCase {
             let ddata = signedPayload.payload.base16EncodedString()
             XCTAssertTrue(ddata == dataStr)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -118,9 +110,9 @@ class KeyUtils: XCTestCase {
         do {
             let data = try Data(base16Encoded: dataStr)
             let _ = try Signer.signedPayload(accountId: accountId, payload: data)
-            XCTAssertTrue(false)
+            XCTFail()
         } catch {
-            XCTAssertTrue(true)
+            return
         }
     }
     
@@ -132,9 +124,8 @@ class KeyUtils: XCTestCase {
             let sig = kp.signPayloadDecorated(payload)
             let sigHint = Data([UInt8(0xFF & 252), 65, 0, 50])
             XCTAssertTrue(sig.hint.wrapped.elementsEqual(sigHint))
-            XCTAssertTrue(true)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
     
@@ -146,9 +137,8 @@ class KeyUtils: XCTestCase {
             let sig = kp.signPayloadDecorated(payload)
             let sigHint = Data([UInt8(255), 64, 7, 55])
             XCTAssertTrue(sig.hint.wrapped.elementsEqual(sigHint))
-            XCTAssertTrue(true)
         } catch {
-            XCTAssertTrue(false)
+            XCTFail()
         }
     }
 }

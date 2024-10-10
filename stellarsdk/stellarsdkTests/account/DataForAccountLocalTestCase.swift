@@ -38,59 +38,44 @@ class DataForAccountLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
-    func testAccountNotFound() {
-        let expectation = XCTestExpectation(description: "Get error response")
-        
-        sdk.accounts.getDataForAccount(accountId: "AAAAA", key: "soneso") { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .notFound( _, _):
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+    func testAccountNotFound() async {
+        let responseEnum = await sdk.accounts.getDataForAccount(accountId: "AAAAA", key: "soneso")
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .notFound( _, _):
+                return
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testKeyNotFound() {
-        let expectation = XCTestExpectation(description: "Get error response")
-        
-        sdk.accounts.getDataForAccount(accountId: testSuccessAccountId, key: "stellar") { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                XCTAssert(false)
-            case .failure(let error):
-                switch error {
-                case .notFound( _, _):
-                    XCTAssert(true)
-                default:
-                    XCTAssert(false)
-                }
+    func testKeyNotFound() async {
+        let responseEnum = await sdk.accounts.getDataForAccount(accountId: testSuccessAccountId, key: "stellar")
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .notFound( _, _):
+                return
+            default:
+                XCTFail()
             }
-            expectation.fulfill()
         }
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func testGetDataForAccount() {
-        let expectation = XCTestExpectation(description: "Get value for a given account and key")
-        
-        sdk.accounts.getDataForAccount(accountId: testSuccessAccountId, key:"soneso") { (response) -> (Void) in
-            switch response {
-                case .success(let dataForAccount):
-                    XCTAssertEqual(dataForAccount.value.base64Decoded(), "is fun")
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"GDFA Test", horizonRequestError: error)
-                    XCTAssert(false)
-            }
-            expectation.fulfill()
+    func testGetDataForAccount() async {
+        let responseEnum = await sdk.accounts.getDataForAccount(accountId: testSuccessAccountId, key:"soneso")
+        switch responseEnum {
+        case .success(let details):
+            XCTAssertEqual(details.value.base64Decoded(), "is fun")
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testGetDataForAccount()", horizonRequestError: error)
+            XCTFail()
         }
-        wait(for: [expectation], timeout: 15.0)
     }
 }

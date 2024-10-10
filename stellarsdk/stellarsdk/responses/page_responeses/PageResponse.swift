@@ -117,7 +117,11 @@ public struct PageResponse<Element:Decodable>: Decodable {
         }
     }
     
-    
+    /**
+     Provides the previous page if available. Before calling this, make sure there is a prevoius page available by calling 'hasPreviousPage'. If there is no prevoius page available this fuction will respond with a 'HorizonRequestError.notFound" error.
+     
+     - Parameter response:   The closure to be called upon response.
+     */
     public func getPreviousPage() async -> PageResponse<Element>.ResponseEnum {
         if let url = links.prev?.href {
             return await getRecordsFrom(url: url)
