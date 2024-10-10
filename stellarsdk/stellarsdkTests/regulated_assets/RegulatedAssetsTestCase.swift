@@ -60,9 +60,8 @@ class RegulatedAssetsTestCase: XCTestCase {
     
     var txB64Xdr: String!
     
-    override func setUp() {
-        super.setUp()
-        let expectation = XCTestExpectation(description: "accounts prepared for tests")
+    override func setUp() async throws {
+        try await super.setUp()
         
         URLProtocol.registerClass(ServerMock.self)
         let host = "goat.io"
@@ -104,68 +103,71 @@ class RegulatedAssetsTestCase: XCTestCase {
         
         let setFlagsOp = try! SetOptionsOperation(sourceAccountId:asset1IssuerKp.accountId, setFlags: AccountFlags.AUTH_REQUIRED_FLAG | AccountFlags.AUTH_REVOCABLE_FLAG)
         
-        sdk.accounts.createTestAccount(accountId: self.asset1IssuerKp.accountId) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                self.sdk.accounts.createTestAccount(accountId: self.asset2IssuerKp.accountId) { (response) -> (Void) in
-                    switch response {
-                    case .success(_):
-                        self.sdk.accounts.createTestAccount(accountId: self.accountAKp.accountId) { (response) -> (Void) in
-                            switch response {
-                            case .success(_):
-                                self.sdk.accounts.getAccountDetails(accountId: self.asset1IssuerKp.accountId) { (response) -> (Void) in
-                                    switch response {
-                                    case .success(let accountResponse):
-                                        
-        
-                                        let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                                          operations: [setFlagsOp],
-                                                                          memo: Memo.none)
-                                        try! transaction.sign(keyPair: self.asset1IssuerKp, network: Network.testnet)
-                                        try! self.sdk.transactions.submitTransaction(transaction: transaction) { (response) -> (Void) in
-                                            switch response {
-                                            case .success(let response):
-                                                print("setUp: Transaction successfully sent. Hash:\(response.transactionHash)")
-                                                expectation.fulfill()
-                                            default:
-                                                XCTFail()
-                                            }
-                                        }
-                                    case .failure(_):
-                                        XCTFail()
-                                    }
-                                }
-                            case .failure(_):
-                                XCTFail()
-                            }
-                        }
-                    case .failure(_):
-                        XCTFail()
-                    }
-                }
-            case .failure(_):
-                XCTFail()
-            }
+        var responseEnum = await sdk.accounts.createTestAccount(accountId: asset1IssuerKp.accountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create asset1Issuer account: \(asset1IssuerKp.accountId)")
         }
-        wait(for: [expectation], timeout: 55.0)
+        
+        responseEnum = await sdk.accounts.createTestAccount(accountId: asset2IssuerKp.accountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create asset2Issuer account: \(asset2IssuerKp.accountId)")
+        }
+        
+        responseEnum = await sdk.accounts.createTestAccount(accountId: accountAKp.accountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create accountA account: \(accountAKp.accountId)")
+        }
+        
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: asset1IssuerKp.accountId);
+        switch accDetailsResEnum {
+        case .success(let accountResponse):
+            let transaction = try! Transaction(sourceAccount: accountResponse,
+                                              operations: [setFlagsOp],
+                                              memo: Memo.none)
+            try! transaction.sign(keyPair: self.asset1IssuerKp, network: Network.testnet)
+            
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
+            switch submitTxResponse {
+            case .success(let details):
+                XCTAssert(details.operationCount > 0)
+            case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+                XCTFail("destination account \(destinationAccountId) requires memo")
+            case .failure(error: let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+                XCTFail("submit transaction error")
+            }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not load account details")
+        }
     }
     
     
-    func testAll() {
+    func testAll() async {
         regulatedAssestParsed()
-        authRequired()
-        postTransactionSuccess()
-        postTransactionPending()
-        postTransactionRevised()
-        postTransactionRejected()
-        postTransactionActionRequired()
-        postActionFollowNext()
-        postActionDone()
+        await authRequired()
+        await postTransactionSuccess()
+        await postTransactionPending()
+        await postTransactionRevised()
+        await postTransactionRejected()
+        await postTransactionActionRequired()
+        await postActionFollowNext()
+        await postActionDone()
     }
     
     func regulatedAssestParsed() {
-        let expectation = XCTestExpectation(description: "Test sep08 support")
-        
         let regulatedAssets = service.regulatedAssets
         XCTAssertTrue(regulatedAssets.count == 2)
         
@@ -176,175 +178,123 @@ class RegulatedAssetsTestCase: XCTestCase {
         let jackAsset = regulatedAssets.last!
         XCTAssertEqual("https://jack.io/tx_approve", jackAsset.approvalServer)
         XCTAssertEqual("The jack approval server will ensure that transactions are compliant with NFO regulation", jackAsset.approvalCriteria)
-        
-        expectation.fulfill()
-        wait(for: [expectation], timeout: 15.0)
     }
     
     
-    func authRequired() {
-        let expectation = XCTestExpectation(description: "Test sep08 authorization required")
-        
-        service.authorizationRequired(asset: service.regulatedAssets.first!) { (response) -> (Void) in
-            switch response {
-            case .success(let required):
-                XCTAssertTrue(required)
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            }
-            self.service.authorizationRequired(asset: self.service.regulatedAssets.last!) { (response) -> (Void) in
-                switch response {
-                case .success(let required):
-                    XCTAssertFalse(required)
-                case .failure(let err):
-                    XCTFail(err.localizedDescription)
-                }
-                expectation.fulfill()
-            }
+    func authRequired() async {
+        var responseEnum = await service.authorizationRequired(asset: service.regulatedAssets.first!)
+        switch responseEnum {
+        case .success(let required):
+            XCTAssertTrue(required)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
         }
         
-        wait(for: [expectation], timeout: 15.0)
+        responseEnum = await service.authorizationRequired(asset: service.regulatedAssets.last!)
+        switch responseEnum {
+        case .success(let required):
+            XCTAssertFalse(required)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
+        }
     }
     
-    func postTransactionSuccess() {
-        let expectation = XCTestExpectation(description: "Test sep08 post tx success")
+    func postTransactionSuccess() async {
         let goatAsset = service.regulatedAssets.first!
-        
-        service.postTransaction(txB64Xdr: self.txB64Xdr, apporvalServer: goatAsset.approvalServer + "/success") { (response) -> (Void) in
-            switch response {
-            case .success(let response):
-                XCTAssertTrue(response.tx == self.txB64Xdr)
-                XCTAssertTrue(response.message == "hello")
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            default:
-                XCTFail()
-            }
-            expectation.fulfill()
+        let responseEnum = await service.postTransaction(txB64Xdr: self.txB64Xdr, apporvalServer: goatAsset.approvalServer + "/success")
+        switch responseEnum {
+        case .success(let response):
+            XCTAssertTrue(response.tx == self.txB64Xdr)
+            XCTAssertTrue(response.message == "hello")
+        case .failure(let err):
+            XCTFail(err.localizedDescription)
+        default:
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func postTransactionPending() {
-        let expectation = XCTestExpectation(description: "Test sep08 post tx pending")
+    func postTransactionPending() async {
         let goatAsset = service.regulatedAssets.first!
-        
-        service.postTransaction(txB64Xdr: self.txB64Xdr, apporvalServer: goatAsset.approvalServer + "/pending") { (response) -> (Void) in
-            switch response {
-            case .pending(let response):
-                XCTAssertTrue(response.timeout == 10)
-                XCTAssertTrue(response.message == "hello")
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            default:
-                XCTFail()
-            }
-            expectation.fulfill()
+        let responseEnum = await service.postTransaction(txB64Xdr: self.txB64Xdr, apporvalServer: goatAsset.approvalServer + "/pending")
+        switch responseEnum {
+        case .pending(let response):
+            XCTAssertTrue(response.timeout == 10)
+            XCTAssertTrue(response.message == "hello")
+        case .failure(let err):
+            XCTFail(err.localizedDescription)
+        default:
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func postTransactionRevised() {
-        let expectation = XCTestExpectation(description: "Test sep08 post tx revised")
+    func postTransactionRevised() async {
         let goatAsset = service.regulatedAssets.first!
-        
-        service.postTransaction(txB64Xdr: self.txB64Xdr, apporvalServer: goatAsset.approvalServer + "/revised") { (response) -> (Void) in
-            switch response {
-            case .revised(let response):
-                XCTAssertTrue(response.tx == self.txB64Xdr + self.txB64Xdr)
-                XCTAssertTrue(response.message == "hello")
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            default:
-                XCTFail()
-            }
-            expectation.fulfill()
+        let responseEnum = await service.postTransaction(txB64Xdr: self.txB64Xdr, apporvalServer: goatAsset.approvalServer + "/revised")
+        switch responseEnum {
+        case .revised(let response):
+            XCTAssertTrue(response.tx == self.txB64Xdr + self.txB64Xdr)
+            XCTAssertTrue(response.message == "hello")
+        case .failure(let err):
+            XCTFail(err.localizedDescription)
+        default:
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    
-    func postTransactionRejected() {
-        let expectation = XCTestExpectation(description: "Test sep08 post tx rejected")
+    func postTransactionRejected() async {
         let goatAsset = service.regulatedAssets.first!
-        
-        service.postTransaction(txB64Xdr: self.txB64Xdr, apporvalServer: goatAsset.approvalServer + "/rejected") { (response) -> (Void) in
-            switch response {
-            case .rejected(let response):
-                XCTAssertTrue(response.error == "hello")
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            default:
-                XCTFail()
-            }
-            expectation.fulfill()
+        let responseEnum = await service.postTransaction(txB64Xdr: self.txB64Xdr, apporvalServer: goatAsset.approvalServer + "/rejected")
+        switch responseEnum {
+        case .rejected(let response):
+            XCTAssertTrue(response.error == "hello")
+        case .failure(let err):
+            XCTFail(err.localizedDescription)
+        default:
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func postTransactionActionRequired() {
-        let expectation = XCTestExpectation(description: "Test sep08 post tx action required")
+    func postTransactionActionRequired() async {
         let goatAsset = service.regulatedAssets.first!
-        
-        service.postTransaction(txB64Xdr: self.txB64Xdr, apporvalServer: goatAsset.approvalServer + "/action_required") { (response) -> (Void) in
-            switch response {
-            case .actionRequired(let response):
-                XCTAssertTrue(response.message == "hello")
-                XCTAssertTrue(response.actionUrl == "http://goat.io/action")
-                XCTAssertTrue(response.actionMethod == "POST")
-                XCTAssertTrue(response.actionFields!.count == 2)
-                XCTAssertTrue(response.actionFields!.first == "email_address")
-                XCTAssertTrue(response.actionFields!.last == "mobile_number")
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            default:
-                XCTFail()
-            }
-            expectation.fulfill()
+        let responseEnum = await service.postTransaction(txB64Xdr: self.txB64Xdr, apporvalServer: goatAsset.approvalServer + "/action_required")
+        switch responseEnum {
+        case .actionRequired(let response):
+            XCTAssertTrue(response.message == "hello")
+            XCTAssertTrue(response.actionUrl == "http://goat.io/action")
+            XCTAssertTrue(response.actionMethod == "POST")
+            XCTAssertTrue(response.actionFields!.count == 2)
+            XCTAssertTrue(response.actionFields!.first == "email_address")
+            XCTAssertTrue(response.actionFields!.last == "mobile_number")
+        case .failure(let err):
+            XCTFail(err.localizedDescription)
+        default:
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func postActionFollowNext() {
-        let expectation = XCTestExpectation(description: "Test sep08 post action follow next")
-        
-        service.postAction(url: "http://goat.io/action/next", actionFields: ["email_addres" : "test@gmail.com"]) { (response) -> (Void) in
-            switch response {
-            case .nextUrl(let response):
-                XCTAssertTrue(response.message == "Please submit mobile number")
-                XCTAssertTrue(response.nextUrl == "http://goat.io/action")
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            default:
-                XCTFail()
-            }
-            expectation.fulfill()
+    func postActionFollowNext() async {
+        let responseEnum = await service.postAction(url: "http://goat.io/action/next", actionFields: ["email_addres" : "test@gmail.com"])
+        switch responseEnum {
+        case .nextUrl(let response):
+            XCTAssertTrue(response.message == "Please submit mobile number")
+            XCTAssertTrue(response.nextUrl == "http://goat.io/action")
+        case .failure(let err):
+            XCTFail(err.localizedDescription)
+        default:
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
     
-    func postActionDone() {
-        let expectation = XCTestExpectation(description: "Test sep08 post action done")
-        
-        service.postAction(url: "http://goat.io/action/done", actionFields: ["mobile_number" : "+347282983922"]) { (response) -> (Void) in
-            switch response {
-            case .done:
-                expectation.fulfill()
-            case .failure(let err):
-                XCTFail(err.localizedDescription)
-            default:
-                XCTFail()
-            }
-            expectation.fulfill()
+    func postActionDone() async {
+        let responseEnum = await service.postAction(url: "http://goat.io/action/done", actionFields: ["mobile_number" : "+347282983922"])
+        switch responseEnum {
+        case .done:
+            return
+        case .failure(let err):
+            XCTFail(err.localizedDescription)
+        default:
+            XCTFail()
         }
-        
-        wait(for: [expectation], timeout: 15.0)
     }
 }
 

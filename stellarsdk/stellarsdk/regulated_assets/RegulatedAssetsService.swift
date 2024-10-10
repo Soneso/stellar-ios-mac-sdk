@@ -95,115 +95,145 @@ public class RegulatedAssetsService: NSObject {
     }
     
     /// Creates a RegulatedAssetsService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    @available(*, renamed: "forDomain(domain:horizonUrl:network:)")
     public static func forDomain(domain:String,  horizonUrl: String? = nil, network:Network? = nil, completion:@escaping RegulatedAssetsServiceClosure) {
-        
-        guard let url = URL(string: "\(domain)/.well-known/stellar.toml") else {
-            completion(.failure(error: .invalidDomain))
-            return
-        }
-        
-        DispatchQueue.global().async {
-            do {
-                let tomlString = try String(contentsOf: url, encoding: .utf8)
-                let toml = try StellarToml(fromString: tomlString)
-                
-                let service =  try RegulatedAssetsService(tomlData: toml, horizonUrl: horizonUrl, network: network)
-                completion(.success(response: service))
-                
-            } catch {
-                completion(.failure(error: .invalidToml))
-            }
+        Task {
+            let result = await forDomain(domain: domain, horizonUrl: horizonUrl, network: network)
+            completion(result)
         }
     }
     
-    public func authorizationRequired(asset: RegulatedAsset, completion:@escaping AuthorizationRequiredClosure) {
+    /// Creates a RegulatedAssetsService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    public static func forDomain(domain:String,  horizonUrl: String? = nil, network:Network? = nil) async -> RegulatedAssetsServiceForDomainEnum {
         
-        sdk.accounts.getAccountDetails(accountId: asset.issuerId) { (response) -> (Void) in
-            switch response {
-            case .success(let accountDetails):
-                var required = false
-                if accountDetails.flags.authRequired && accountDetails.flags.authRevocable {
-                    required = true
-                }
-                completion(.success(required: required))
-            case .failure(let error):
-                completion(.failure(error: error))
+        guard let url = URL(string: "\(domain)/.well-known/stellar.toml") else {
+            return .failure(error: .invalidDomain)
+        }
+        
+        do {
+            let tomlString = try String(contentsOf: url, encoding: .utf8)
+            let toml = try StellarToml(fromString: tomlString)
+            
+            let service =  try RegulatedAssetsService(tomlData: toml, horizonUrl: horizonUrl, network: network)
+            return .success(response: service)
+            
+        } catch {
+            return .failure(error: .invalidToml)
+        }
+    }
+    
+    @available(*, renamed: "authorizationRequired(asset:)")
+    public func authorizationRequired(asset: RegulatedAsset, completion:@escaping AuthorizationRequiredClosure) {
+        Task {
+            let result = await authorizationRequired(asset: asset)
+            completion(result)
+        }
+    }
+    
+    
+    public func authorizationRequired(asset: RegulatedAsset) async -> AuthorizationRequiredEnum {
+        
+        let response = await sdk.accounts.getAccountDetails(accountId: asset.issuerId)
+        switch response {
+        case .success(let accountDetails):
+            var required = false
+            if accountDetails.flags.authRequired && accountDetails.flags.authRevocable {
+                required = true
             }
+            return .success(required: required)
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
 
     /// Sends a transaction to be evaluated and signed by the approval server.
+    @available(*, renamed: "postTransaction(txB64Xdr:apporvalServer:)")
     public func postTransaction(txB64Xdr: String, apporvalServer:String, completion:@escaping PostSep08TransactionClosure) {
+        Task {
+            let result = await postTransaction(txB64Xdr: txB64Xdr, apporvalServer: apporvalServer)
+            completion(result)
+        }
+    }
+    
+    /// Sends a transaction to be evaluated and signed by the approval server.
+    public func postTransaction(txB64Xdr: String, apporvalServer:String) async -> PostSep08TransactionEnum {
         var txRequest = [String : Any]();
         txRequest["tx"] = txB64Xdr;
         
         let requestData = try! JSONSerialization.data(withJSONObject: txRequest)
         let serviceHelper = ServiceHelper(baseURL: apporvalServer)
         
-        serviceHelper.POSTRequestWithPath(path: "", body: requestData, contentType: "application/json") { (result) -> (Void) in
-            switch result {
-            case .success(let data):
+        let result = await serviceHelper.POSTRequestWithPath(path: "", body: requestData, contentType: "application/json")
+        switch result {
+        case .success(let data):
+            do {
+                let statusResponse = try self.jsonDecoder.decode(Sep08PostTransactionStatusResponse.self, from: data)
+                if "success" == statusResponse.status {
+                    return .success(response:try self.jsonDecoder.decode(Sep08PostTransactionSuccess.self, from: data))
+                } else if "revised" == statusResponse.status {
+                    return .revised(response:try self.jsonDecoder.decode(Sep08PostTransactionRevised.self, from: data))
+                } else if "pending" == statusResponse.status {
+                    return .pending(response:try self.jsonDecoder.decode(Sep08PostTransactionPending.self, from: data))
+                } else if "action_required" == statusResponse.status {
+                    return .actionRequired(response:try self.jsonDecoder.decode(Sep08PostTransactionActionRequired.self, from: data))
+                } else if "rejected" == statusResponse.status {
+                    return .rejected(response:try self.jsonDecoder.decode(Sep08PostTransactionRejected.self, from: data))
+                } else {
+                    return .failure(error: .parsingResponseFailed(message: "unknown sep08 post transaction response"))
+                }
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
+            }
+        case .failure(let reqError):
+            switch reqError {
+            case .badRequest(let message, _):
                 do {
-                    let statusResponse = try self.jsonDecoder.decode(Sep08PostTransactionStatusResponse.self, from: data)
-                    if "success" == statusResponse.status {
-                        completion(.success(response:try self.jsonDecoder.decode(Sep08PostTransactionSuccess.self, from: data)))
-                    } else if "revised" == statusResponse.status {
-                        completion(.revised(response:try self.jsonDecoder.decode(Sep08PostTransactionRevised.self, from: data)))
-                    } else if "pending" == statusResponse.status {
-                        completion(.pending(response:try self.jsonDecoder.decode(Sep08PostTransactionPending.self, from: data)))
-                    } else if "action_required" == statusResponse.status {
-                        completion(.actionRequired(response:try self.jsonDecoder.decode(Sep08PostTransactionActionRequired.self, from: data)))
-                    } else if "rejected" == statusResponse.status {
-                        completion(.rejected(response:try self.jsonDecoder.decode(Sep08PostTransactionRejected.self, from: data)))
+                    let statusResponse = try self.jsonDecoder.decode(Sep08PostTransactionStatusResponse.self, from: Data(message.utf8))
+                    if "rejected" == statusResponse.status {
+                        return .rejected(response:try self.jsonDecoder.decode(Sep08PostTransactionRejected.self, from: Data(message.utf8)))
                     } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "unknown sep08 post transaction response")))
+                        return .failure(error: reqError)
                     }
                 } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+                    return .failure(error: reqError)
                 }
-            case .failure(let reqError):
-                switch reqError {
-                case .badRequest(let message, _):
-                    do {
-                        let statusResponse = try self.jsonDecoder.decode(Sep08PostTransactionStatusResponse.self, from: Data(message.utf8))
-                        if "rejected" == statusResponse.status {
-                            completion(.rejected(response:try self.jsonDecoder.decode(Sep08PostTransactionRejected.self, from: Data(message.utf8))))
-                        } else {
-                            completion(.failure(error: reqError))
-                        }
-                    } catch {
-                        completion(.failure(error: reqError))
-                    }
-                default:
-                    completion(.failure(error: reqError))
-                }
+            default:
+                return .failure(error: reqError)
             }
         }
     }
     
+    @available(*, renamed: "postAction(url:actionFields:)")
     public func postAction(url: String, actionFields:[String : Any], completion:@escaping PostSep08ActionClosure) {
+        Task {
+            let result = await postAction(url: url, actionFields: actionFields)
+            completion(result)
+        }
+    }
+    
+    
+    public func postAction(url: String, actionFields:[String : Any]) async -> PostSep08ActionEnum {
         
         let requestData = try! JSONSerialization.data(withJSONObject: actionFields)
         let serviceHelper = ServiceHelper(baseURL: url)
         
-        serviceHelper.POSTRequestWithPath(path: "", body: requestData, contentType: "application/json") { (result) -> (Void) in
-            switch result {
-            case .success(let data):
-                do {
-                    let resultResponse = try self.jsonDecoder.decode(Sep08PostActionResultResponse.self, from: data)
-                    if "no_further_action_required" == resultResponse.result {
-                        completion(.done)
-                    } else if "follow_next_url" == resultResponse.result {
-                        completion(.nextUrl(response:try self.jsonDecoder.decode(Sep08PostActionNextUrl.self, from: data)))
-                    } else {
-                        completion(.failure(error: .parsingResponseFailed(message: "unknown sep08 post action response")))
-                    }
-                } catch {
-                    completion(.failure(error: .parsingResponseFailed(message: error.localizedDescription)))
+        let result = await serviceHelper.POSTRequestWithPath(path: "", body: requestData, contentType: "application/json")
+        switch result {
+        case .success(let data):
+            do {
+                let resultResponse = try self.jsonDecoder.decode(Sep08PostActionResultResponse.self, from: data)
+                if "no_further_action_required" == resultResponse.result {
+                    return .done
+                } else if "follow_next_url" == resultResponse.result {
+                    return .nextUrl(response:try self.jsonDecoder.decode(Sep08PostActionNextUrl.self, from: data))
+                } else {
+                    return .failure(error: .parsingResponseFailed(message: "unknown sep08 post action response"))
                 }
-            case .failure(let error):
-                completion(.failure(error: error))
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
     

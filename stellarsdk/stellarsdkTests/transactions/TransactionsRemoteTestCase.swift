@@ -44,7 +44,7 @@ class TransactionsRemoteTestCase: XCTestCase {
             XCTFail("could not create test account: \(testAccountId)")
         }
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: testAccountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: testAccountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let transaction = try! Transaction(sourceAccount: accountResponse,
@@ -52,7 +52,7 @@ class TransactionsRemoteTestCase: XCTestCase {
                                               memo: Memo.none)
             try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)
@@ -195,7 +195,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
         
         
-        let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
+        let submitTxResultEnum = await sdk.transactions.submitTransaction(transaction: transaction)
         switch submitTxResultEnum {
         case .success(let submitTransactionResponse):
             XCTAssertTrue(submitTransactionResponse.operationCount > 0)
@@ -349,7 +349,7 @@ class TransactionsRemoteTestCase: XCTestCase {
             
             XCTAssertNoThrow(try transaction.sign(keyPair: source, network: .testnet))
             XCTAssertNoThrow(try transaction.sign(keyPair: destination, network: .testnet))
-            let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
+            let submitTxResultEnum = await sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
             case .success(let result):
                 XCTAssertTrue(result.operationCount > 0)
@@ -596,7 +596,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         
         XCTAssertNoThrow(try fb.sign(keyPair: payerKeyPair, network: Network.testnet))
         
-        let submitFBEnum = await self.sdk.transactions.submitFeeBumpTransaction(transaction: fb)
+        let submitFBEnum = await sdk.transactions.submitFeeBumpTransaction(transaction: fb)
         switch submitFBEnum {
         case .success(let details):
             self.feeBumpTransactionId = details.transactionHash

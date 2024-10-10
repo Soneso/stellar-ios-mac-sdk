@@ -62,7 +62,7 @@ class AmmTestCase: XCTestCase {
             XCTFail("could not create test account: \(COOLIssuingAccountId)")
         }
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: testAccountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: testAccountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let transaction = try! Transaction(sourceAccount: accountResponse,
@@ -72,7 +72,7 @@ class AmmTestCase: XCTestCase {
             try! transaction.sign(keyPair: self.SONESOIssuingAccountKeyPair, network: Network.testnet)
             try! transaction.sign(keyPair: self.COOLIssuingAccountKeyPair, network: Network.testnet)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)
@@ -134,7 +134,7 @@ class AmmTestCase: XCTestCase {
             }
         }
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
@@ -146,7 +146,7 @@ class AmmTestCase: XCTestCase {
                                               memo: Memo.none)
             try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)
@@ -192,7 +192,7 @@ class AmmTestCase: XCTestCase {
             }
         }
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
@@ -205,7 +205,7 @@ class AmmTestCase: XCTestCase {
                                               memo: Memo.none)
             try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)
@@ -255,7 +255,7 @@ class AmmTestCase: XCTestCase {
                 break
             }
         }
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
@@ -268,7 +268,7 @@ class AmmTestCase: XCTestCase {
                                               memo: Memo.none)
             try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)
@@ -318,7 +318,7 @@ class AmmTestCase: XCTestCase {
                 break
             }
         }
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
@@ -332,7 +332,7 @@ class AmmTestCase: XCTestCase {
                                               memo: Memo.none)
             try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)
@@ -384,7 +384,7 @@ class AmmTestCase: XCTestCase {
             }
         }
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
@@ -396,7 +396,7 @@ class AmmTestCase: XCTestCase {
                                               memo: Memo.none)
             try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)
@@ -440,7 +440,7 @@ class AmmTestCase: XCTestCase {
             }
         }
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
@@ -452,7 +452,7 @@ class AmmTestCase: XCTestCase {
                                               memo: Memo.none)
             try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)

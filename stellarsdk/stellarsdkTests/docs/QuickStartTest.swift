@@ -50,7 +50,7 @@ class QuickStartTest: XCTestCase {
             XCTFail("could not create test account: \(sourceAccountKeyPair.accountId)")
         }
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             do {
@@ -68,7 +68,7 @@ class QuickStartTest: XCTestCase {
                 // sign the transaction
                 try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
                 
-                let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
+                let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
                 switch submitTxResponse {
                 case .success(let details):
                     XCTAssert(details.operationCount > 0)
@@ -103,7 +103,7 @@ class QuickStartTest: XCTestCase {
         }
         
         // EXAMPLE CODE START
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: keyPair.accountId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: keyPair.accountId);
         switch accDetailsResEnum {
         case .success(let accountDetails):
             // You can check the `balance`, `sequence`, `flags`, `signers`, `data` etc.
@@ -253,7 +253,7 @@ class QuickStartTest: XCTestCase {
                                               operations: [paymentOperation],
                                               memo: Memo.init(text: "test"))
             try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-            let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
+            let submitTxResultEnum = await sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
             case .success(let result):
                 XCTAssertTrue(result.operationCount > 0)
@@ -311,7 +311,7 @@ class QuickStartTest: XCTestCase {
                                                   operations: [paymentOperation],
                                                   memo: Memo.none)
                 try transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
-                let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
+                let submitTxResultEnum = await sdk.transactions.submitTransaction(transaction: transaction)
                 switch submitTxResultEnum {
                 case .success(let result):
                     XCTAssertTrue(result.operationCount > 0)

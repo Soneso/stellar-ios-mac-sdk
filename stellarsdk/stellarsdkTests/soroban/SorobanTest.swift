@@ -64,7 +64,7 @@ class SorobanTest: XCTestCase {
             XCTFail("could not create test account B: \(accountBId)")
         }
         
-        let accDetailsResEnum = await self.sdk.accounts.getAccountDetails(accountId: accountBId);
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: accountBId);
         switch accDetailsResEnum {
         case .success(let accountResponse):
             let transaction = try! Transaction(sourceAccount: accountResponse,
@@ -73,7 +73,7 @@ class SorobanTest: XCTestCase {
             try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
             try! transaction.sign(keyPair: self.accountBKeyPair, network: self.network)
             
-            let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction)
+            let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResponse {
             case .success(let details):
                 XCTAssert(details.operationCount > 0)

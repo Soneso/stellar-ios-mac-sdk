@@ -79,7 +79,7 @@ class IssueAssetTest: XCTestCase {
                 // sign the transaction for the payment trust operation
                 try transaction.sign(keyPair: issuerKeypair, network: Network.testnet)
                 
-                let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
+                let submitTxResultEnum = await sdk.transactions.submitTransaction(transaction: transaction)
                 switch submitTxResultEnum {
                 case .success(let result):
                     XCTAssertTrue(result.operationCount > 0)
