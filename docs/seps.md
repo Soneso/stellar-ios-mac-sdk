@@ -160,7 +160,7 @@ print("key pair 0 secretSeed: \(keyPair0.secretSeed!)")
 Generate key pairs with passphrase
 ```swift
 let keyPair0 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
-let keyPair1 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 0)
+let keyPair1 = try! WalletUtils.createKeyPair(mnemonic: mnemonic, passphrase: "p4ssphr4se", index: 1)
 ``` 
 
 BIP and master key generation

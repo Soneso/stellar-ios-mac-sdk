@@ -27,15 +27,14 @@ let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org
 
 #### General node health check
 ```swift
-sorobanServer.getHealth() { (response) -> (Void) in
-    switch response {
-    case .success(let healthResponse):
-        if(HealthStatus.HEALTHY == healthResponse.status) {
-           // ...         
-        }
-    case .failure(let error):
-        //...
+let responseEnum = await sorobanServer.getHealth()
+switch responseEnum {
+case .success(let healthResponse):
+    if(HealthStatus.HEALTHY == healthResponse.status) {
+        // ...         
     }
+case .failure(let error):
+    //...
 }
 ```
 
@@ -47,19 +46,18 @@ You first need an account on Futurenet. You can fund it like this:
 let accountKeyPair = try KeyPair.generateRandomKeyPair()
 let accountId = accountKeyPair.accountId
 
-sdk.accounts.createTestAccount(accountId: accountId) { (response) -> (Void) in //...
+await sdk.accounts.createTestAccount(accountId: accountId) //...
 ```
 
 Next you can fetch current information about your Stellar account using the ```iOS SDK```:
 
 ```swift
-sdk.accounts.getAccountDetails(accountId: accountId) { (response) -> (Void) in
-    switch response {
-    case .success(let accResponse):
-        print("Sequence: \(accResponse.sequence)")
-    case .failure(let error):
-        // ...
-    }
+let responseEnum = await sdk.accounts.getAccountDetails(accountId: accountId)
+switch responseEnum {
+case .success(let accResponse):
+    print("Sequence: \(accResponse.sequence)")
+case .failure(let error):
+    // ...
 }
 ```
 
@@ -86,15 +84,14 @@ Next we need to **simulate** the transaction to obtain the **soroban transaction
 ```swift
 // Simulate first to obtain the transaction data and ressource fee
 let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
-sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
-    switch response {
-    case .success(let simulateResponse):
-        let transactionData = simulateResponse.transactionData
-        let resourceFee = simulateResponse.minResourceFee
-        // ...
-    case .failure(let error):
-        // ...
-    }
+let responseEnum = await sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest)
+switch respresponseEnumonse {
+case .success(let simulateResponse):
+    let transactionData = simulateResponse.transactionData
+    let resourceFee = simulateResponse.minResourceFee
+    // ...
+case .failure(let error):
+    // ...
 }
 ```
 
@@ -109,15 +106,14 @@ transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
 try transaction.sign(keyPair: accountKeyPair, network: Network.testnet)
 
 // send transaction to soroban rpc server
-sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
-    switch response {
-    case .success(let sendResponse):
-        let transactionId = sendResponse.transactionId
-        let status = sendResponse.status
-        // ...
-    case .failure(let error):
-        // ...
-    }
+let responseEnum = await sorobanServer.sendTransaction(transaction: transaction)
+switch responseEnum {
+case .success(let sendResponse):
+    let transactionId = sendResponse.transactionId
+    let status = sendResponse.status
+    // ...
+case .failure(let error):
+    // ...
 }
 ```
 
@@ -132,21 +128,20 @@ The status is ```pending``` because the transaction needs to be processed by the
 
 ```swift
 // Fetch transaction status
-sorobanServer.getTransaction(transactionHash: transactionId) { (response) -> (Void) in
-    switch response {
-    case .success(let statusResponse):
-        if TransactionStatus.SUCCESS == statusResponse.status {
-            let wasmId = statusResponse.wasmId
-            // ...
-        } else if GetTransactionResponse.STATUS_SUCCESS == statusResponse.status {
-            // try again later
+let responseEnum = await sorobanServer.getTransaction(transactionHash: transactionId)
+switch responseEnum {
+case .success(let statusResponse):
+    if TransactionStatus.SUCCESS == statusResponse.status {
+        let wasmId = statusResponse.wasmId
+        // ...
+    } else if GetTransactionResponse.STATUS_SUCCESS == statusResponse.status {
+        // try again later
 
-        } else if GetTransactionResponse.ERROR == statusResponse.status {
-            // ...
-        }
-    case .failure(let error):
+    } else if GetTransactionResponse.ERROR == statusResponse.status {
         // ...
     }
+case .failure(let error):
+    // ...
 }
 ```
 
@@ -168,16 +163,15 @@ Next we need to **simulate** the transaction to obtain the resources needed for 
 ```swift
 // Simulate first to obtain the transaction data, fee and soroban auth
 let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
-sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
-    switch response {
-    case .success(let simulateResponse):
-        let transactionData = simulateResponse.transactionData
-        let resourceFee = simulateResponse.minResourceFee
-        let sorobanAuth = simulateResponse.sorobanAuth
-        // ...
-    case .failure(let error):
-        // ...
-    }
+let responseEnum = await sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest)
+switch responseEnum {
+case .success(let simulateResponse):
+    let transactionData = simulateResponse.transactionData
+    let resourceFee = simulateResponse.minResourceFee
+    let sorobanAuth = simulateResponse.sorobanAuth
+    // ...
+case .failure(let error):
+    // ...
 }
 ```
 On success, one can find the **soroban transaction data**, the **minimum resource fee** and the **soroban auth entries** in the response.
@@ -191,15 +185,14 @@ transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
 try transaction.sign(keyPair: accountKeyPair, network: Network.testnet)
 
 // send transaction to soroban rpc server
-sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
-    switch response {
-    case .success(let sendResponse):
-        let transactionId = sendResponse.transactionId
-        let status = sendResponse.status
-        // ...
-    case .failure(let error):
-        // ...
-    }
+let responseEnum = await sorobanServer.sendTransaction(transaction: transaction) 
+switch responseEnum {
+case .success(let sendResponse):
+    let transactionId = sendResponse.transactionId
+    let status = sendResponse.status
+    // ...
+case .failure(let error):
+    // ...
 }
 ```
 
@@ -214,16 +207,15 @@ The status is ```pending``` because the transaction needs to be processed by the
 
 ```swift
 // Fetch transaction status
-sorobanServer.getTransaction(transactionHash: transactionId) { (response) -> (Void) in
-    switch response {
-    case .success(let statusResponse):
-        if GetTransactionResponse.SUCCESS == statusResponse.status {
-            self.contractId = statusResponse.createdContractId // yey!
-        } 
-        // ...
-    case .failure(let error):
-        // ...
-    }
+let responseEnum = await sorobanServer.sendTransaction(transaction: transaction) 
+switch responseEnum {
+case .success(let statusResponse):
+    if GetTransactionResponse.SUCCESS == statusResponse.status {
+        self.contractId = statusResponse.createdContractId // yey!
+    } 
+    // ...
+case .failure(let error):
+    // ...
 }
 ```
 
@@ -303,15 +295,14 @@ Next we need to **simulate** the transaction to obtain the **transaction data** 
 ```swift
 // Simulate first to obtain the footprint
 let simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
-sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest) { (response) -> (Void) in
-    switch response {
-    case .success(let simulateResponse):
-        let transactionData = simulateResponse.transactionData
-        let resourceFee = simulateResponse.minResourceFee
-        // ...
-    case .failure(let error):
-        // ...
-    }
+let responseEnum = await sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest)
+switch responseEnum {
+case .success(let simulateResponse):
+    let transactionData = simulateResponse.transactionData
+    let resourceFee = simulateResponse.minResourceFee
+    // ...
+case .failure(let error):
+    // ...
 }
 ```
 On success, one can find the **transaction data** and the **resource fee** in the response. 
@@ -324,15 +315,14 @@ transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
 try transaction.sign(keyPair: accountKeyPair, network: Network.testnet)
 
 // send transaction to soroban rpc server
-sorobanServer.sendTransaction(transaction: transaction) { (response) -> (Void) in
-    switch response {
-    case .success(let sendResponse):
-        let transactionId = sendResponse.transactionId
-        let status = sendResponse.status
-        // ...
-    case .failure(let error):
-        // ...
-    }
+let responseEnum = await sorobanServer.sendTransaction(transaction: transaction)
+switch responseEnum {
+case .success(let sendResponse):
+    let transactionId = sendResponse.transactionId
+    let status = sendResponse.status
+    // ...
+case .failure(let error):
+    // ...
 }
 ```
 
@@ -347,21 +337,20 @@ The status is ```pending``` because the transaction needs to be processed by the
 
 ```swift
 // Fetch transaction status
-sorobanServer.getTransactionStatus(transactionHash: transactionId) { (response) -> (Void) in
-    switch response {
-    case .success(let statusResponse):
-        if TransactionStatus.SUCCESS == statusResponse.status {
-            let resultVal = statusResponse.resultValue
-            // ...
-        } else if TransactionStatus.PENDING == statusResponse.status {
-            // try again later
-
-        } else if TransactionStatus.ERROR == statusResponse.status {
-            let error = stausResponse.error
-        }
-    case .failure(let error):
+let responseEnum = await sorobanServer.getTransactionStatus(transactionHash: transactionId)
+switch responseEnum {
+case .success(let statusResponse):
+    if TransactionStatus.SUCCESS == statusResponse.status {
+        let resultVal = statusResponse.resultValue
         // ...
+    } else if TransactionStatus.PENDING == statusResponse.status {
+        // try again later
+
+    } else if TransactionStatus.ERROR == statusResponse.status {
+        let error = stausResponse.error
     }
+case .failure(let error):
+    // ...
 }
 ```
 
@@ -442,14 +431,13 @@ You can use the iOS SDK to request events like this:
 ```swift
 let topicFilter = TopicFilter(segmentMatchers:["*", SCValXDR.symbol("increment").xdrEncoded!])
 let eventFilter = EventFilter(type:"contract", contractIds: [contractId], topics: [topicFilter])
-            
-sorobanServer.getEvents(startLedger: ledger, eventFilters: [eventFilter]) { (response) -> (Void) in
-    switch response {
-        case .success(let eventsResponse):
-            // ...
-        case .failure(let error):
-            // ...
-    }
+
+let responseEnum = await sorobanServer.getEvents(startLedger: ledger, eventFilters: [eventFilter])           
+switch responseEnum {
+case .success(let eventsResponse):
+    // ...
+case .failure(let error):
+    // ...
 }
 ```
 
@@ -493,32 +481,29 @@ Or you can use `SorobanServer` methods to load the contract code form the networ
 
 By contract id:
 ```swift
-sorobanServer.getContractInfoForContractId(contractId: contractId) { (response) -> (Void) in
-    switch response {
-    case .success(let contractInfo):
-        // ...
-    case .rpcFailure(let error):
-        // ...
-    case .parsingFailure (let error):
-        // ...
-    }
+let responseEnum = await sorobanServer.getContractInfoForContractId(contractId: contractId)
+switch responseEnum {
+case .success(let contractInfo):
+    // ...
+case .rpcFailure(let error):
+    // ...
+case .parsingFailure (let error):
+    // ...
 }
 ```
 
 By wasm id:
 ```swift
-sorobanServer.getContractInfoForWasmId(wasmId: wasmId) { (response) -> (Void) in
-    switch response {
-    case .success(let contractInfo):
-        // ...
-    case .rpcFailure(let error):
-        // ...
-    case .parsingFailure (let error):
-        // ...
-    }
+let responseEnum = await sorobanServer.getContractInfoForWasmId(wasmId: wasmId)
+switch responseEnum {
+case .success(let contractInfo):
+    // ...
+case .rpcFailure(let error):
+    // ...
+case .parsingFailure (let error):
+    // ...
 }
 ```
 
 The parser returns a `SorobanContractInfo` object containing the parsed data.
 In [SorobanParserTest.swift](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanParserTest.swift) you can find a detailed example of how you can access the parsed data.
-
