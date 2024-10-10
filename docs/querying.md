@@ -22,27 +22,23 @@ The [StellarSDK](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stell
 For example, to query the details of an existing account you can use the `accounts` service implemented in the [AccountService](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdk/service/AccountService.swift) class of the SDK. It provides the function ```getAccountDetails``` that can be used as in following example:
 
 ```swift
-
 let sdk = StellarSDK() // connect to testnet
 
-sdk.accounts.getAccountDetails(accountId: "GAWE7LGEFNRN3QZL5ILVLYKKKGGVYCXXDCIBUJ3RVOC2ZWW6WLGK76TJ") { (response) -> (Void) in
-    switch response {
-        case .success(let accountResponse):
-            print("Account ID: \(accountResponse.accountId)")
-            print("Account Sequence: \(accountResponse.sequenceNumber)")
-            for balance in accountResponse.balances {
-                if balance.assetType == AssetTypeAsString.NATIVE {
-                    print("Account balance: \(balance.balance) XLM")
-                } else {
-                    print("Account balance: \(balance.balance) \(balance.assetCode!) of issuer: \(balance.assetIssuer!)")
-                }
-            }
-        case .failure(let error):
-            print(error.localizedDescription)
+let responseEnum = await sdk.accounts.getAccountDetails(accountId: "GAWE7LGEFNRN3QZL5ILVLYKKKGGVYCXXDCIBUJ3RVOC2ZWW6WLGK76TJ")
+switch responseEnum {
+case .success(let accountResponse):
+    print("Account ID: \(accountResponse.accountId)")
+    print("Account Sequence: \(accountResponse.sequenceNumber)")
+    for balance in accountResponse.balances {
+        if balance.assetType == AssetTypeAsString.NATIVE {
+            print("Account balance: \(balance.balance) XLM")
+        } else {
+            print("Account balance: \(balance.balance) \(balance.assetCode!) of issuer: \(balance.assetIssuer!)")
         }
     }
+case .failure(let error):
+    StellarSDKLog.printHorizonRequestErrorMessage(tag:"Test", horizonRequestError:error)
 }
- 
 ```
 
 The ```getAccountDetails``` function replies by using a completion handler. In case of success, you receive an [AccountResponse](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdk/responses/account_responses/AccountResponse.swift) object, holding the account details of the queried account. In the example above, we print it's account id, its sequence number and the balances it possesses. 

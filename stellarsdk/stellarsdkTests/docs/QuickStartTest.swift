@@ -19,8 +19,8 @@ class QuickStartTest: XCTestCase {
         
         // prepare
         let keyPair = try! KeyPair.generateRandomKeyPair()
-        print("Account Id: " + keyPair.accountId)
-        print("Secret Seed: " + keyPair.secretSeed)
+        print("Account Id: \(keyPair.accountId)")
+        print("Secret Seed: \(keyPair.secretSeed!)")
         
         // EXAMPLE CODE START
         let response = await sdk.accounts.createTestAccount(accountId: keyPair.accountId)
@@ -28,7 +28,7 @@ class QuickStartTest: XCTestCase {
         case .success(let details):
             print(details)
         case .failure(let error):
-            print(error.localizedDescription)
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testFriendbotExample()", horizonRequestError: error)
             XCTFail()
         }
         // EXAMPLE CODE END
@@ -46,7 +46,7 @@ class QuickStartTest: XCTestCase {
         case .success(_):
             break
         case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testCreateAccountExample()", horizonRequestError: error)
             XCTFail("could not create test account: \(sourceAccountKeyPair.accountId)")
         }
         
@@ -76,7 +76,7 @@ class QuickStartTest: XCTestCase {
                 case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
                     XCTFail("destination account \(destinationAccountId) requires memo")
                 case .failure(error: let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"testCreateAccountExample()", horizonRequestError: error)
                     XCTFail("submit transaction error")
                 }
                 // EXAMPLE CODE END
@@ -98,7 +98,7 @@ class QuickStartTest: XCTestCase {
         case .success(_):
             break
         case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testCheckAccountExample()", horizonRequestError: error)
             XCTFail("could not create test account: \(keyPair.accountId)")
         }
         
@@ -153,6 +153,12 @@ class QuickStartTest: XCTestCase {
                 }
                 else if let nextPayment = payment as? AccountCreatedOperationResponse {
                     print("account \(nextPayment.account) created by \(nextPayment.funder)" )
+                }
+                else if let nextPayment = payment as? PathPaymentStrictSendOperationResponse {
+                    continue
+                }
+                else if let nextPayment = payment as? PathPaymentStrictReceiveOperationResponse {
+                    continue
                 }
             }
         case .failure(let error):
@@ -228,7 +234,7 @@ class QuickStartTest: XCTestCase {
         case .success(_):
             break
         case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testStreamPaymentsForAccountExample()", horizonRequestError: error)
             XCTFail("could not create source account: \(sourceAccountId)")
         }
         
@@ -237,7 +243,7 @@ class QuickStartTest: XCTestCase {
         case .success(_):
             break
         case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testStreamPaymentsForAccountExample()", horizonRequestError: error)
             XCTFail("could not create destination account: \(destinationAccountId)")
         }
         

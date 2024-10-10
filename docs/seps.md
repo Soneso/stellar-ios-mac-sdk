@@ -35,31 +35,30 @@ This SDK provides tools to load Stellar Info Files and read data from them.
 From domain:
 
 ```swift
-try? StellarToml.from(domain: "soneso.com") { (result) -> (Void) in
-    switch result {
-    case .success(response: let stellarToml):
-    
-        // ex. read federation server url
-        if let federationServer = stellarToml.accountInformation.federationServer {
-            print(federationServer)
-        } else {
-            print("Toml contains no federation server url")
-        }
-        
-        // read other data
-        // stellarToml.accountInformation...
-        // stellarToml.issuerDocumentation ...
-        // stellarToml.pointsOfContact...
-        // stellarToml.currenciesDocumentation...
-        // stellarToml.validatorInformation...
+let responseEnum = await StellarToml.from(domain: "soneso.com")
+switch responseEnum {
+case .success(response: let stellarToml):
 
-    case .failure(let error):
-        switch error {
-        case .invalidDomain:
-            // do something
-        case .invalidToml:
-            // do something
-        }
+    // ex. read federation server url
+    if let federationServer = stellarToml.accountInformation.federationServer {
+        print(federationServer)
+    } else {
+        print("Toml contains no federation server url")
+    }
+    
+    // read other data
+    // stellarToml.accountInformation...
+    // stellarToml.issuerDocumentation ...
+    // stellarToml.pointsOfContact...
+    // stellarToml.currenciesDocumentation...
+    // stellarToml.validatorInformation...
+
+case .failure(let error):
+    switch error {
+    case .invalidDomain:
+        // do something
+    case .invalidToml:
+        // do something
     }
 }
 ```
@@ -104,13 +103,12 @@ Stellar addresses provide an easy way for users to share payment details by usin
 Get the federation of your domain:
 
 ```swift
-Federation.forDomain(domain: "https://YOUR_DOMAIN") { (response) -> (Void) in
-    switch response {
-    case .success(let federation):
-        //use the federation object to map your infos
-    case .failure(_):
-        //something went wrong
-    }
+let responseEnum = await Federation.forDomain(domain: "https://YOUR_DOMAIN")
+switch responseEnum {
+case .success(let federation):
+    //use the federation object to map your infos
+case .failure(_):
+    //something went wrong
 }
 ```
 
@@ -120,17 +118,16 @@ Resolve your addresses:
 
 ```swift
 let federation = Federation(federationAddress: "https://YOUR_FEDERATION_SERVER")
-federation.resolve(address: "bob*YOUR_DOMAIN") { (response) -> (Void) in
-    switch response {
-    case .success(let federationResponse):
-        if let accountId = federationResponse.accountId {
-            // use the account id
-        } else {
-            // there is no account id corresponding to the given address
-        }
-    case .failure(_):
-        // something went wrong
+let responseEnum = await federation.resolve(address: "bob*YOUR_DOMAIN")
+switch responseEnum {
+case .success(let federationResponse):
+    if let accountId = federationResponse.accountId {
+        // use the account id
+    } else {
+        // there is no account id corresponding to the given address
     }
+case .failure(_):
+    // something went wrong
 }
 ```
 
@@ -269,16 +266,17 @@ Authenticate with a server and get a JWT token.
 
 ```swift
 // Hold a strong reference to this to avoid being deallocated
-let webAuthenticator = WebAuthenticator(authEndpoint: "http://your_api.stellar.org/auth", network: .testnet, serverSigningKey: "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP", serverHomeDomain: "yourserverhomedomain.com" )
-    if let keyPair = try? KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX") {
-        webAuthenticator.jwtToken(forKeyPair: keyPair) { (response) -> (Void) in
-            switch response {
-            case .success(let jwtToken):
-                // use the token to do your calls
-            case .failure(let error):
-                // handle the error
-            }
-        }
+let webAuthenticator = WebAuthenticator(authEndpoint: "http://your_api.stellar.org/auth", 
+                                        network: .testnet, 
+                                        serverSigningKey: "GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP", 
+                                        serverHomeDomain: "yourserverhomedomain.com" )
+if let keyPair = try? KeyPair(secretSeed: "SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX") {
+    let responseEnum = await webAuthenticator.jwtToken(forKeyPair: keyPair)
+    switch responseEnum {
+    case .success(let jwtToken):
+        // use the token to do your calls
+    case .failure(let error):
+        // handle the error
     }
 }
 ```
