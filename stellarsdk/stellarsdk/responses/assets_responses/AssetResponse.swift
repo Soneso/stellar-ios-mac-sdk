@@ -29,12 +29,6 @@ public class AssetResponse: NSObject, Decodable {
     
     public var numClaimableBalances:Int
     
-    /// The number of units of credit issued.
-    public var amount:Decimal
-    
-    /// The number of accounts that: 1) trust this asset and 2) where if the asset has the auth_required flag then the account is authorized to hold the asset.
-    public var numberOfAccounts:Int
-    
     public var balances:AssetBalances
     
     public var claimableBalancesAmount:Decimal
@@ -62,10 +56,8 @@ public class AssetResponse: NSObject, Decodable {
         case assetIssuer = "asset_issuer"
         case accounts
         case numClaimableBalances = "num_claimable_balances"
-        case amount
         case balances
         case claimableBalancesAmount = "claimable_balances_amount"
-        case numberOfAccounts = "num_accounts"
         case flags
         case pagingToken = "paging_token"
         case numLiquidityPools = "num_liquidity_pools"
@@ -89,12 +81,9 @@ public class AssetResponse: NSObject, Decodable {
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
         accounts = try values.decode(AssetAccounts.self, forKey: .accounts)
         numClaimableBalances = try values.decode(Int.self, forKey: .numClaimableBalances)
-        let amountString = try values.decode(String.self, forKey: .amount) as String
-        amount = Decimal(string: amountString)!
         balances = try values.decode(AssetBalances.self, forKey: .balances)
         let claimableBalancesAmountString = try values.decode(String.self, forKey: .claimableBalancesAmount) as String
         claimableBalancesAmount = Decimal(string: claimableBalancesAmountString)!
-        numberOfAccounts = try values.decode(Int.self, forKey: .numberOfAccounts)
         flags = try values.decode(AccountFlagsResponse.self, forKey: .flags)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         numLiquidityPools = try values.decode(Int.self, forKey: .numLiquidityPools)
