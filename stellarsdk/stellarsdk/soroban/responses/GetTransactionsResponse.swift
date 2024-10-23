@@ -78,7 +78,7 @@ public class TransactionInfo: NSObject, Decodable {
     public var ledger:Int
     
     /// The unix timestamp of when the transaction was included in the ledger.
-    public var createdAt:Int
+    public var createdAt:String
     
     /// hex-encoded transaction hash string.
     public var txHash:String
@@ -106,7 +106,7 @@ public class TransactionInfo: NSObject, Decodable {
         resultMetaXdr = try values.decode(String.self, forKey: .resultMetaXdr)
         diagnosticEventsXdr = try values.decodeIfPresent([String].self, forKey: .diagnosticEventsXdr)
         ledger = try values.decode(Int.self, forKey: .ledger)
-        createdAt = try values.decode(Int.self, forKey: .createdAt)
+        createdAt = try values.decode(String.self, forKey: .createdAt)
         txHash = try values.decode(String.self, forKey: .txHash)
     }
 }
