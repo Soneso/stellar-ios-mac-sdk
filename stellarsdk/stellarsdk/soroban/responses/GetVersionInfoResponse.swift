@@ -27,10 +27,10 @@ public class GetVersionInfoResponse: NSObject, Decodable {
     
     private enum CodingKeys: String, CodingKey {
         case version
-        case commitHash = "commit_hash"
-        case buildTimeStamp = "build_time_stamp"
-        case captiveCoreVersion = "captive_core_version"
-        case protocolVersion = "protocol_version"
+        case commitHash = "commitHash"
+        case buildTimeStamp = "buildTimestamp"
+        case captiveCoreVersion = "captiveCoreVersion"
+        case protocolVersion = "protocolVersion"
         
     }
 
