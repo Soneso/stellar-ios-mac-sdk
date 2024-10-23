@@ -252,15 +252,43 @@ public struct CreateContractArgsXDR: XDRCodable {
     }
 }
 
+public struct CreateContractV2ArgsXDR: XDRCodable {
+    public let contractIDPreimage: ContractIDPreimageXDR
+    public let executable: ContractExecutableXDR
+    public let constructorArgs: [SCValXDR]
+    
+    public init(contractIDPreimage:ContractIDPreimageXDR, executable:ContractExecutableXDR, constructorArgs:[SCValXDR]) {
+        self.contractIDPreimage = contractIDPreimage
+        self.executable = executable
+        self.constructorArgs = constructorArgs
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        contractIDPreimage = try container.decode(ContractIDPreimageXDR.self)
+        executable = try container.decode(ContractExecutableXDR.self)
+        constructorArgs = try decodeArray(type: SCValXDR.self, dec: decoder)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(contractIDPreimage)
+        try container.encode(executable)
+        try container.encode(constructorArgs)
+    }
+}
+
 public enum HostFunctionType: Int32 {
     case invokeContract = 0
     case createContract = 1
     case uploadContractWasm = 2
+    case createContractV2 = 3
 }
 
 public enum HostFunctionXDR: XDRCodable {
     case invokeContract(InvokeContractArgsXDR)
     case createContract(CreateContractArgsXDR)
+    case createContractV2(CreateContractV2ArgsXDR)
     case uploadContractWasm(Data)
 
     public init(from decoder: Decoder) throws {
@@ -278,6 +306,9 @@ public enum HostFunctionXDR: XDRCodable {
         case .uploadContractWasm:
             let wasm = try container.decode(Data.self)
             self = .uploadContractWasm(wasm)
+        case .createContractV2:
+            let createContract = try container.decode(CreateContractV2ArgsXDR.self)
+            self = .createContractV2(createContract)
         case .none:
             throw StellarSDKError.decodingError(message: "invaid HostFunctionXDR discriminant")
         }
@@ -288,6 +319,7 @@ public enum HostFunctionXDR: XDRCodable {
         case .invokeContract: return HostFunctionType.invokeContract.rawValue
         case .createContract: return HostFunctionType.createContract.rawValue
         case .uploadContractWasm: return HostFunctionType.uploadContractWasm.rawValue
+        case .createContractV2: return HostFunctionType.createContractV2.rawValue
         }
     }
     
@@ -302,6 +334,9 @@ public enum HostFunctionXDR: XDRCodable {
             try container.encode(val)
             break
         case .uploadContractWasm (let val):
+            try container.encode(val)
+            break
+        case .createContractV2(let val):
             try container.encode(val)
             break
         }
@@ -324,9 +359,19 @@ public enum HostFunctionXDR: XDRCodable {
             return nil
         }
     }
+    
     public var uploadContractWasm:Data? {
         switch self {
         case .uploadContractWasm(let val):
+            return val
+        default:
+            return nil
+        }
+    }
+    
+    public var createContractV2:CreateContractV2ArgsXDR? {
+        switch self {
+        case .createContractV2(let val):
             return val
         default:
             return nil
@@ -336,12 +381,14 @@ public enum HostFunctionXDR: XDRCodable {
 
 public enum SorobanAuthorizedFunctionType: Int32 {
     case contractFn = 0
-    case contractHostFn = 1
+    case createContractHostFn = 1
+    case createContractV2HostFn = 2
 }
 
 public enum SorobanAuthorizedFunctionXDR: XDRCodable {
     case contractFn(InvokeContractArgsXDR)
-    case contractHostFn(CreateContractArgsXDR)
+    case createContractHostFn(CreateContractArgsXDR)
+    case createContractV2HostFn(CreateContractV2ArgsXDR)
 
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -352,9 +399,12 @@ public enum SorobanAuthorizedFunctionXDR: XDRCodable {
         case .contractFn:
             let contractFn = try container.decode(InvokeContractArgsXDR.self)
             self = .contractFn(contractFn)
-        case .contractHostFn:
+        case .createContractHostFn:
             let contractHostFn = try container.decode(CreateContractArgsXDR.self)
-            self = .contractHostFn(contractHostFn)
+            self = .createContractHostFn(contractHostFn)
+        case .createContractV2HostFn:
+            let contractV2HostFn = try container.decode(CreateContractV2ArgsXDR.self)
+            self = .createContractV2HostFn(contractV2HostFn)
         case .none:
             throw StellarSDKError.decodingError(message: "invaid SorobanAuthorizedFunctionXDR discriminant")
         }
@@ -363,7 +413,8 @@ public enum SorobanAuthorizedFunctionXDR: XDRCodable {
     public func type() -> Int32 {
         switch self {
         case .contractFn: return SorobanAuthorizedFunctionType.contractFn.rawValue
-        case .contractHostFn: return SorobanAuthorizedFunctionType.contractHostFn.rawValue
+        case .createContractHostFn: return SorobanAuthorizedFunctionType.createContractHostFn.rawValue
+        case .createContractV2HostFn: return SorobanAuthorizedFunctionType.createContractV2HostFn.rawValue
         }
     }
     
@@ -374,7 +425,10 @@ public enum SorobanAuthorizedFunctionXDR: XDRCodable {
         case .contractFn(let val):
             try container.encode(val)
             break
-        case .contractHostFn(let val):
+        case .createContractHostFn(let val):
+            try container.encode(val)
+            break
+        case .createContractV2HostFn(let val):
             try container.encode(val)
             break
         }
@@ -391,7 +445,16 @@ public enum SorobanAuthorizedFunctionXDR: XDRCodable {
     
     public var contractHostFn:CreateContractArgsXDR? {
         switch self {
-        case .contractHostFn(let val):
+        case .createContractHostFn(let val):
+            return val
+        default:
+            return nil
+        }
+    }
+    
+    public var contractV2HostFn:CreateContractV2ArgsXDR? {
+        switch self {
+        case .createContractV2HostFn(let val):
             return val
         default:
             return nil

@@ -12,9 +12,9 @@ import stellarsdk
 
 class SorobanEventsTest: XCTestCase {
 
-    var sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org") // SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
-    var sdk = StellarSDK.testNet() // StellarSDK.futureNet()
-    var network = Network.testnet // Network.futurenet
+    var sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org") // SorobanServer(endpoint: "https://soroban-testnet.stellar.org") //
+    var sdk = StellarSDK.futureNet() // StellarSDK.testNet()
+    var network = Network.futurenet // Network.testnet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
     var uploadTransactionId:String? = nil
     var wasmId:String? = nil
@@ -33,7 +33,7 @@ class SorobanEventsTest: XCTestCase {
         let accountAId = submitterKeyPair.accountId
 
         //sdk.accounts.createFutureNetTestAccount(accountId: accountAId)
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: accountAId)
+        let responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: accountAId)
         switch responseEnum {
         case .success(_):
             break

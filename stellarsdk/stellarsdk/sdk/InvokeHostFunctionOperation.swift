@@ -32,7 +32,7 @@ public class InvokeHostFunctionOperation:Operation {
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
     }
     
-    public static func forCreatingContract(wasmId:String, address: SCAddressXDR, salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+    public static func forCreatingContract(wasmId:String, address: SCAddressXDR, constructorArguments:[SCValXDR] = [], salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         var saltToSet = salt
         if saltToSet == nil {
             saltToSet = try randomSalt()
@@ -40,8 +40,8 @@ public class InvokeHostFunctionOperation:Operation {
         let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt:saltToSet!)
         let contractIDPreimage = ContractIDPreimageXDR.fromAddress(contractIdPreimageFormAddress)
         let executable = ContractExecutableXDR.wasm(wasmId.wrappedData32FromHex())
-        let createContractArgs = CreateContractArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable)
-        let hostFunction = HostFunctionXDR.createContract(createContractArgs)
+        let createContractV2Args = CreateContractV2ArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable, constructorArgs: constructorArguments)
+        let hostFunction = HostFunctionXDR.createContractV2(createContractV2Args)
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
     }
     
