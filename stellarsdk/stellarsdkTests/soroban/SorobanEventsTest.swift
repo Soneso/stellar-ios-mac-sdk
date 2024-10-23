@@ -94,11 +94,6 @@ class SorobanEventsTest: XCTestCase {
         }
         XCTAssertNotNil(simulateTxResponse)
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
-
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
         XCTAssertNotNil(simulateResponse.footprint)
@@ -158,11 +153,6 @@ class SorobanEventsTest: XCTestCase {
         }
         XCTAssertNotNil(simulateTxResponse)
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
-
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
         XCTAssertNotNil(simulateResponse.footprint)

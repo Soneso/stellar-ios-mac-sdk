@@ -932,8 +932,6 @@
 		835F0CEA29770BB100793708 /* GetHealthResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CE829770BB100793708 /* GetHealthResponse.swift */; };
 		835F0CF229770C0800793708 /* SimulateTransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CF129770C0800793708 /* SimulateTransactionResponse.swift */; };
 		835F0CF329770C0800793708 /* SimulateTransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CF129770C0800793708 /* SimulateTransactionResponse.swift */; };
-		835F0CF829770C3F00793708 /* SimulateTransactionCost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CF729770C3F00793708 /* SimulateTransactionCost.swift */; };
-		835F0CF929770C3F00793708 /* SimulateTransactionCost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CF729770C3F00793708 /* SimulateTransactionCost.swift */; };
 		835F0CFB29770C6E00793708 /* Footprint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CFA29770C6E00793708 /* Footprint.swift */; };
 		835F0CFC29770C6E00793708 /* Footprint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CFA29770C6E00793708 /* Footprint.swift */; };
 		835F0CFE29770C8700793708 /* SendTransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CFD29770C8700793708 /* SendTransactionResponse.swift */; };
@@ -1787,7 +1785,6 @@
 		835F0CE529770B8B00793708 /* SorobanRpcRequestError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SorobanRpcRequestError.swift; sourceTree = "<group>"; };
 		835F0CE829770BB100793708 /* GetHealthResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetHealthResponse.swift; sourceTree = "<group>"; };
 		835F0CF129770C0800793708 /* SimulateTransactionResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulateTransactionResponse.swift; sourceTree = "<group>"; };
-		835F0CF729770C3F00793708 /* SimulateTransactionCost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulateTransactionCost.swift; sourceTree = "<group>"; };
 		835F0CFA29770C6E00793708 /* Footprint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Footprint.swift; sourceTree = "<group>"; };
 		835F0CFD29770C8700793708 /* SendTransactionResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendTransactionResponse.swift; sourceTree = "<group>"; };
 		835F0D0029770CA700793708 /* GetTransactionResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTransactionResponse.swift; sourceTree = "<group>"; };
@@ -2862,7 +2859,6 @@
 				835F0CE529770B8B00793708 /* SorobanRpcRequestError.swift */,
 				83DDEEDD29E3EFC20052EE8D /* GetLatestLedgerResponse.swift */,
 				835F0CF129770C0800793708 /* SimulateTransactionResponse.swift */,
-				835F0CF729770C3F00793708 /* SimulateTransactionCost.swift */,
 				830DAB4B29AD59DE00ED4E66 /* SimulateTransactionResult.swift */,
 				835F0CFD29770C8700793708 /* SendTransactionResponse.swift */,
 				830DAB4229AD540200ED4E66 /* GetEventsResponse.swift */,
@@ -4273,7 +4269,6 @@
 				745DF4802052FF9B000D3660 /* CreatePassiveOfferOperationXDR.swift in Sources */,
 				745DF4812052FF9B000D3660 /* SetOptionsOperationXDR.swift in Sources */,
 				745DF4822052FF9B000D3660 /* AllowTrustOpAssetXDR.swift in Sources */,
-				835F0CF929770C3F00793708 /* SimulateTransactionCost.swift in Sources */,
 				745DF4832052FF9C000D3660 /* AllowTrustOperationXDR.swift in Sources */,
 				83DB2ACE2ACD6265008B04D6 /* InteractiveService.swift in Sources */,
 				745DF4842052FF9C000D3660 /* ChangeTrustOperationXDR.swift in Sources */,
@@ -4958,7 +4953,6 @@
 				830EFC5A20323AC000607C35 /* TransactionMetaXDR.swift in Sources */,
 				836971E42024C47300398A98 /* LinkResponse.swift in Sources */,
 				744FC6E8212D3CCC00ADFC88 /* String.swift in Sources */,
-				835F0CF829770C3F00793708 /* SimulateTransactionCost.swift in Sources */,
 				833CBFE72036F7C200C23CFE /* AccountMergeOperation.swift in Sources */,
 				83DB2ACD2ACD6265008B04D6 /* InteractiveService.swift in Sources */,
 				744602E4203B22CC00D807C1 /* Network.swift in Sources */,

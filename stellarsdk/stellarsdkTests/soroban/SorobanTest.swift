@@ -362,10 +362,6 @@ class SorobanTest: XCTestCase {
         }
         XCTAssertNotNil(simulateTxResponse)
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
 
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
@@ -535,10 +531,6 @@ class SorobanTest: XCTestCase {
         }
         XCTAssertNotNil(simulateTxResponse)
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
 
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
@@ -678,10 +670,6 @@ class SorobanTest: XCTestCase {
             XCTFail()
         }
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
         XCTAssertNotNil(simulateResponse.footprint)
@@ -761,10 +749,6 @@ class SorobanTest: XCTestCase {
             XCTFail()
         }
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
         XCTAssertNotNil(simulateResponse.footprint)
@@ -851,10 +835,6 @@ class SorobanTest: XCTestCase {
             XCTFail()
         }
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
         XCTAssertNotNil(simulateResponse.footprint)
