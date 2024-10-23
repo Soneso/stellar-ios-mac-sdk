@@ -20,7 +20,7 @@ public class SubmitTransactionAsyncResponse: NSObject, Decodable {
     private enum CodingKeys: String, CodingKey {
         case txStatus = "tx_status"
         case txHash = "hash"
-        case errorResultXdr = "errorResultXdr"
+        case errorResultXdr = "error_result_xdr"
     }
     
     public required init(from decoder: Decoder) throws {
