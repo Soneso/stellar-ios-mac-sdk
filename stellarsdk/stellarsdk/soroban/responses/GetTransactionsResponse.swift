@@ -80,6 +80,9 @@ public class TransactionInfo: NSObject, Decodable {
     /// The unix timestamp of when the transaction was included in the ledger.
     public var createdAt:Int
     
+    /// hex-encoded transaction hash string.
+    public var txHash:String
+    
     private enum CodingKeys: String, CodingKey {
         case status
         case applicationOrder
@@ -90,6 +93,7 @@ public class TransactionInfo: NSObject, Decodable {
         case diagnosticEventsXdr
         case ledger
         case createdAt
+        case txHash
     }
 
     public required init(from decoder: Decoder) throws {
@@ -103,5 +107,6 @@ public class TransactionInfo: NSObject, Decodable {
         diagnosticEventsXdr = try values.decodeIfPresent([String].self, forKey: .diagnosticEventsXdr)
         ledger = try values.decode(Int.self, forKey: .ledger)
         createdAt = try values.decode(Int.self, forKey: .createdAt)
+        txHash = try values.decode(String.self, forKey: .txHash)
     }
 }
