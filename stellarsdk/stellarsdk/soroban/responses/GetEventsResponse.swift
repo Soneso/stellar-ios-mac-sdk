@@ -15,9 +15,12 @@ public class GetEventsResponse: NSObject, Decodable {
     /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
     public var latestLedger:Int
     
+    public var cursor:String
+    
     private enum CodingKeys: String, CodingKey {
         case events
         case latestLedger
+        case cursor
     }
 
     public required init(from decoder: Decoder) throws {
@@ -28,5 +31,6 @@ public class GetEventsResponse: NSObject, Decodable {
             events = []
         }
         latestLedger = try values.decode(Int.self, forKey: .latestLedger)
+        cursor = try values.decode(String.self, forKey: .cursor)
     }
 }
