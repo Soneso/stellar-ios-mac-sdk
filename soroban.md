@@ -158,6 +158,8 @@ let transaction = try Transaction(sourceAccount: accountResponse,
                                   memo: Memo.none)
 ```
 
+With the introduction of Protocol 22, contracts with constructor can also be created. The `InvokeHostFunctionOperation.forCreatingContractWithConstructor` function is used to create the operation.
+
 Next we need to **simulate** the transaction to obtain the resources needed for final submission:
 
 ```swift
