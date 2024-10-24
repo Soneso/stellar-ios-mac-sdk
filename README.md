@@ -52,7 +52,7 @@ Run `carthage update` to build the framework and drag the build `stellar-ios-mac
 ### Swift Package Manager
 
 ```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.0.1-beta.1"),
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.0.0"),
 ```
 
 ### Manual
