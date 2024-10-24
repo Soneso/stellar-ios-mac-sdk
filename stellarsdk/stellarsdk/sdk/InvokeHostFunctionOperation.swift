@@ -45,6 +45,20 @@ public class InvokeHostFunctionOperation:Operation {
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
     }
     
+    /// only avaliable for protocol version >= 22
+    public static func forCreatingContractWithConstructor(wasmId:String, address: SCAddressXDR, constructorArguments:[SCValXDR] = [], salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
+        var saltToSet = salt
+        if saltToSet == nil {
+            saltToSet = try randomSalt()
+        }
+        let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt:saltToSet!)
+        let contractIDPreimage = ContractIDPreimageXDR.fromAddress(contractIdPreimageFormAddress)
+        let executable = ContractExecutableXDR.wasm(wasmId.wrappedData32FromHex())
+        let createContractV2Args = CreateContractV2ArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable, constructorArgs: constructorArguments)
+        let hostFunction = HostFunctionXDR.createContractV2(createContractV2Args)
+        return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
+    }
+    
     public static func forDeploySACWithSourceAccount(address: SCAddressXDR, salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         var saltToSet = salt
         if saltToSet == nil {

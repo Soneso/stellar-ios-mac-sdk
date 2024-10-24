@@ -50,6 +50,9 @@ public class GetTransactionResponse: NSObject, Decodable {
     /// (optional) A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
     public var resultMetaXdr:String?
     
+    /// hex-encoded transaction hash string. Only available for protocol version >= 22
+    public var txHash:String?
+    
     /// (optional) Will be present on failed transactions.
     public var error:TransactionStatusError?
     
@@ -65,6 +68,7 @@ public class GetTransactionResponse: NSObject, Decodable {
         case envelopeXdr
         case resultXdr
         case resultMetaXdr
+        case txHash
         case error
     }
     
@@ -81,6 +85,7 @@ public class GetTransactionResponse: NSObject, Decodable {
         envelopeXdr = try values.decodeIfPresent(String.self, forKey: .envelopeXdr)
         resultXdr = try values.decodeIfPresent(String.self, forKey: .resultXdr)
         resultMetaXdr = try values.decodeIfPresent(String.self, forKey: .resultMetaXdr)
+        txHash = try values.decodeIfPresent(String.self, forKey: .txHash) // protocol version >= 22
         error = try values.decodeIfPresent(TransactionStatusError.self, forKey: .error)
     }
     

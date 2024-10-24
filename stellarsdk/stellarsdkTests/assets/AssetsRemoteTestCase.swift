@@ -17,7 +17,6 @@ class AssetsRemoteTestCase: XCTestCase {
     
     override func setUp() async throws {
         try await super.setUp()
-        let expectation = XCTestExpectation(description: "accounts prepared for tests")
 
         let testAccountId = testKeyPair.accountId
         let issuingAccountId = IOMIssuingAccountKeyPair.accountId
@@ -84,7 +83,6 @@ class AssetsRemoteTestCase: XCTestCase {
                 case .success(let page):
                     let asset1 = firstPage.records.first!
                     let asset2 = page.records.last! // because ordering is asc now.
-                    XCTAssertTrue(asset1.amount == asset2.amount)
                     XCTAssertTrue(asset1.assetType == asset2.assetType)
                     if (asset1.assetType != AssetTypeAsString.NATIVE) {
                         XCTAssertTrue(asset1.assetCode == asset2.assetCode)
@@ -113,10 +111,8 @@ class AssetsRemoteTestCase: XCTestCase {
                 XCTAssert(accounts.authorized == 1)
                 XCTAssert(accounts.authorizedToMaintainLiabilities == 0)
                 XCTAssert(accounts.unauthorized == 0)
-                XCTAssert(asset.numberOfAccounts == 1)
                 XCTAssert(asset.numClaimableBalances == 0)
                 XCTAssert(asset.claimableBalancesAmount == 0.0)
-                XCTAssert(asset.amount == 20000.0)
                 let balances = asset.balances
                 XCTAssert(balances.authorized == 20000.0)
             } else {

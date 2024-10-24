@@ -14,9 +14,6 @@ public class SimulateTransactionResponse: NSObject, Decodable {
     /// (optional) - This array will only have one element: the result for the Host Function invocation. Only present on successful simulation (i.e. no error) of InvokeHostFunction operations.
     public var results:[SimulateTransactionResult]?
     
-    /// (deprecated, optional) - The cost object is legacy, inaccurate, and will be deprecated in future RPC releases. Please decode transactionData XDR to retrieve the correct resources.
-    public var cost:SimulateTransactionCost?
-    
     /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
     public var latestLedger:Int
     
@@ -43,7 +40,6 @@ public class SimulateTransactionResponse: NSObject, Decodable {
     
     private enum CodingKeys: String, CodingKey {
         case results
-        case cost
         case latestLedger
         case transactionData
         case minResourceFee
@@ -56,7 +52,6 @@ public class SimulateTransactionResponse: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         latestLedger = try values.decode(Int.self, forKey: .latestLedger)
-        cost = try values.decodeIfPresent(SimulateTransactionCost.self, forKey: .cost)
         if let transactionDataXdrString = try values.decodeIfPresent(String.self, forKey: .transactionData) {
             transactionData = try SorobanTransactionDataXDR(fromBase64: transactionDataXdrString)
         }

@@ -379,6 +379,9 @@ public class TxRep: NSObject {
         case "HOST_FUNCTION_TYPE_CREATE_CONTRACT":
             let args = try getCreateContractArgs(dic: dic, prefix: prefix +  "createContract.")
             return HostFunctionXDR.createContract(args)
+        case "HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2":
+            let args = try getCreateContractV2Args(dic: dic, prefix: prefix +  "createContractV2.")
+            return HostFunctionXDR.createContractV2(args)
         case "HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM":
             let wasmStr = try getString(dic: dic, key: prefix +  "wasm")
             return HostFunctionXDR.uploadContractWasm(Data(hex: wasmStr))
@@ -442,7 +445,10 @@ public class TxRep: NSObject {
             return SorobanAuthorizedFunctionXDR.contractFn(args)
         case "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN":
             let args = try getCreateContractArgs(dic: dic, prefix: prefix + "createContractHostFn.")
-            return SorobanAuthorizedFunctionXDR.contractHostFn(args)
+            return SorobanAuthorizedFunctionXDR.createContractHostFn(args)
+        case "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN":
+            let args = try getCreateContractV2Args(dic: dic, prefix: prefix + "createContractV2HostFn.")
+            return SorobanAuthorizedFunctionXDR.createContractV2HostFn(args)
         default:
             throw TxRepError.invalidValue(key: key)
         }
@@ -864,6 +870,22 @@ public class TxRep: NSObject {
         let preimage = try getContractIDPreimage(dic: dic, prefix: prefix + "contractIDPreimage.")
         let executable = try getContractExecutable(dic: dic, prefix: prefix + "executable.")
         return CreateContractArgsXDR(contractIDPreimage: preimage, executable: executable)
+    }
+    
+    private static func getCreateContractV2Args(dic:Dictionary<String,String>, prefix:String) throws -> CreateContractV2ArgsXDR {
+        let preimage = try getContractIDPreimage(dic: dic, prefix: prefix + "contractIDPreimage.")
+        let executable = try getContractExecutable(dic: dic, prefix: prefix + "executable.")
+        let key = prefix + "constructorArgs.len"
+        let lenStr = try getString(dic: dic, key: key)
+        var constructorArgs:[SCValXDR] = []
+        if let count = Int(lenStr) {
+            for i in 0..<count{
+                try constructorArgs.append(getSCVal(dic:dic, prefix:prefix + "constructorArgs[\(i)]."))
+            }
+        } else {
+            throw TxRepError.invalidValue(key: key)
+        }
+        return CreateContractV2ArgsXDR(contractIDPreimage: preimage, executable: executable, constructorArgs: constructorArgs)
     }
     
     private static func getSorobanTransactionData(dic:Dictionary<String,String>, prefix:String) throws -> SorobanTransactionDataXDR? {
@@ -2641,6 +2663,9 @@ public class TxRep: NSObject {
             case .createContract(let xdr):
                 let prefix = fcPrefix + "createContract."
                 addCreateContractArgs(args: xdr, prefix: prefix, lines: &lines)
+            case .createContractV2(let xdr):
+                let prefix = fcPrefix + "createContractV2."
+                addCreateContractV2Args(args: xdr, prefix: prefix, lines: &lines)
             case .uploadContractWasm(let data):
                 addLine(key: fcPrefix + "wasm" , value: data.hexEncodedString(), lines: &lines)
             }
@@ -2667,6 +2692,8 @@ public class TxRep: NSObject {
             return "HOST_FUNCTION_TYPE_INVOKE_CONTRACT"
         case .createContract(_):
             return "HOST_FUNCTION_TYPE_CREATE_CONTRACT"
+        case .createContractV2(_):
+            return "HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2"
         case .uploadContractWasm(_):
             return "HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM"
         }
@@ -2883,6 +2910,17 @@ public class TxRep: NSObject {
         addContractExecutable(val: args.executable, prefix: prefix + "executable.", lines: &lines)
     }
     
+    private static func addCreateContractV2Args(args:CreateContractV2ArgsXDR, prefix:String, lines: inout [String]) -> Void {
+        addContractIDPreimage(val: args.contractIDPreimage, prefix: prefix + "contractIDPreimage.", lines: &lines)
+        addContractExecutable(val: args.executable, prefix: prefix + "executable.", lines: &lines)
+        addLine(key: prefix + "constructorArgs.len" , value: String(args.constructorArgs.count), lines: &lines)
+        var index = 0
+        for val in args.constructorArgs {
+            addSCVal(val: val, prefix: prefix  + "constructorArgs[\(index)]." , lines: &lines)
+            index += 1
+        }
+    }
+    
     private static func addSorobanAuthorizationEntry(auth:SorobanAuthorizationEntryXDR, prefix:String, lines: inout [String]) -> Void {
         addSorobanCredentials(credentials: auth.credentials, prefix: prefix + "credentials.", lines: &lines)
         addSorobanAuthorizedInvocation(invocation: auth.rootInvocation, prefix: prefix + "rootInvocation.", lines: &lines)
@@ -2921,9 +2959,12 @@ public class TxRep: NSObject {
         case .contractFn(let invokeContractArgsXDR):
             addLine(key: prefix + "type" , value: "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN", lines: &lines)
             addInvokeContractArgs(invokeArgs: invokeContractArgsXDR, prefix: prefix + "contractFn.", lines: &lines)
-        case .contractHostFn(let createContractArgsXDR):
+        case .createContractHostFn(let createContractArgsXDR):
             addLine(key: prefix + "type" , value: "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN", lines: &lines)
             addCreateContractArgs(args: createContractArgsXDR, prefix: prefix + "createContractHostFn.", lines: &lines)
+        case .createContractV2HostFn(let createContractV2ArgsXDR):
+            addLine(key: prefix + "type" , value: "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN", lines: &lines)
+            addCreateContractV2Args(args: createContractV2ArgsXDR, prefix: prefix + "createContractV2HostFn.", lines: &lines)
         }
     }
     

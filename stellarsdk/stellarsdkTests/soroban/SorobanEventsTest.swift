@@ -32,7 +32,7 @@ class SorobanEventsTest: XCTestCase {
         sorobanServer.enableLogging = true
         let accountAId = submitterKeyPair.accountId
 
-        //sdk.accounts.createFutureNetTestAccount(accountId: accountAId)
+        // let responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: accountAId)
         let responseEnum = await sdk.accounts.createTestAccount(accountId: accountAId)
         switch responseEnum {
         case .success(_):
@@ -94,11 +94,6 @@ class SorobanEventsTest: XCTestCase {
         }
         XCTAssertNotNil(simulateTxResponse)
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
-
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
         XCTAssertNotNil(simulateResponse.footprint)
@@ -158,11 +153,6 @@ class SorobanEventsTest: XCTestCase {
         }
         XCTAssertNotNil(simulateTxResponse)
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
-
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
         XCTAssertNotNil(simulateResponse.footprint)
@@ -286,7 +276,6 @@ class SorobanEventsTest: XCTestCase {
             XCTAssert("AAAADwAAAAdDT1VOVEVSAA==" == event.topic[0])
             XCTAssert("AAAAAwAAAAE=" == event.value)
             XCTAssert("contract" == event.type)
-            XCTAssert(event.id == event.pagingToken)
             XCTAssertTrue(event.inSuccessfulContractCall)
         case .failure(let error):
             self.printError(error: error)

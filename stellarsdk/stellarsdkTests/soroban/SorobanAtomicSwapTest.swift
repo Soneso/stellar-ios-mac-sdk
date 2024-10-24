@@ -16,7 +16,7 @@ class SorobanAtomicSwapTest: XCTestCase {
     
     let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org") // SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
     let sdk = StellarSDK.testNet() // StellarSDK.futureNet()
-    let network =  Network.testnet // Network.futurenet
+    let network = Network.testnet // Network.futurenet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
     let aliceKeyPair = try! KeyPair(secretSeed: "SAOA7E5N4SRXM6FO5MLYJCPTDOEXV7D3JDDMOZCZRUA5KYMEHI3ZYE6D") // GCJI6TUAS5L34QBGPM5RWDTL5VEWNIYVQULHAININFCHCWN32CRIIAN2
     let bobKeyPair = try! KeyPair(secretSeed: "SA3GPGCNRUMCXVP4VXJQS2JZEUN3FHV5ZQYCJAPUWPDQCIZUIQQI7KCC") // GCKPOKBBIIB2UMAE5BML6YECT4HE5ZUYJDSZ3DO3OXNRMZI4PEWYLYRY
@@ -32,8 +32,9 @@ class SorobanAtomicSwapTest: XCTestCase {
         try await super.setUp()
         
         sorobanServer.enableLogging = true
-        //sdk.accounts.createFutureNetTestAccount(accountId: submitterKeyPair.accountId)
+
         let responseEnum = await sdk.accounts.createTestAccount(accountId: submitterKeyPair.accountId)
+        //let responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: submitterKeyPair.accountId)
         switch responseEnum {
         case .success(_):
             break

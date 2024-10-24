@@ -562,7 +562,10 @@ public class SorobanServer {
                 let response = await self.getLedgerEntries(base64EncodedKeys: [ledgerKeyBase64])
                 switch response {
                 case .success(let response):
-                    let data = try? LedgerEntryDataXDR(fromBase64: response.entries[0].xdr)
+                    var data:LedgerEntryDataXDR?
+                    if (response.entries.count > 0) {
+                        data = try? LedgerEntryDataXDR(fromBase64: response.entries.first!.xdr)
+                    }
                     if let accountData = data?.account {
                         let account = Account(keyPair: KeyPair(publicKey: accountData.accountID), sequenceNumber: accountData.sequenceNumber);
                         return .success(response: account)

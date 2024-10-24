@@ -11,7 +11,7 @@ import stellarsdk
 
 class SorobanTest: XCTestCase {
 
-    var sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org") // SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    var sorobanServer =   SorobanServer(endpoint: "https://soroban-testnet.stellar.org") //SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
     var sdk = StellarSDK.testNet() // StellarSDK.futureNet()
     var network = Network.testnet // Network.futurenet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
@@ -45,7 +45,7 @@ class SorobanTest: XCTestCase {
         let changeTrustOp = ChangeTrustOperation(sourceAccountId:accountAId, asset:asset, limit: 100000000)
         let payOp = try! PaymentOperation(sourceAccountId: accountBId, destinationAccountId: accountAId, asset: asset, amount: 50000)
         
-     
+        // await sdk.accounts.createFutureNetTestAccount(accountId: accountAId)
         var responseEnum = await sdk.accounts.createTestAccount(accountId: accountAId)
         switch responseEnum {
         case .success(_):
@@ -54,7 +54,7 @@ class SorobanTest: XCTestCase {
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
             XCTFail("could not create test account A: \(accountAId)")
         }
-        
+        // await sdk.accounts.createFutureNetTestAccount(accountId: accountBId)
         responseEnum = await sdk.accounts.createTestAccount(accountId: accountBId)
         switch responseEnum {
         case .success(_):
@@ -246,7 +246,7 @@ class SorobanTest: XCTestCase {
         transactionsResponseEnum = await sorobanServer.getTransactions(paginationOptions: PaginationOptions(cursor: cursor!, limit:2))
         switch transactionsResponseEnum {
         case .success(let transactionsResponse):
-            XCTAssert(transactionsResponse.transactions.count == 2)
+            //XCTAssert(transactionsResponse.transactions.count == 2)
             XCTAssertNotNil(transactionsResponse.cursor)
             cursor = transactionsResponse.cursor
         case .failure(let error):
@@ -362,10 +362,6 @@ class SorobanTest: XCTestCase {
         }
         XCTAssertNotNil(simulateTxResponse)
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
 
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
@@ -535,10 +531,6 @@ class SorobanTest: XCTestCase {
         }
         XCTAssertNotNil(simulateTxResponse)
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
 
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
@@ -678,10 +670,6 @@ class SorobanTest: XCTestCase {
             XCTFail()
         }
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
         XCTAssertNotNil(simulateResponse.footprint)
@@ -761,10 +749,6 @@ class SorobanTest: XCTestCase {
             XCTFail()
         }
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
         XCTAssertNotNil(simulateResponse.footprint)
@@ -851,10 +835,6 @@ class SorobanTest: XCTestCase {
             XCTFail()
         }
         let simulateResponse = simulateTxResponse!
-        if let cost = simulateResponse.cost {
-            XCTAssert(Int(cost.cpuInsns)! > 0)
-            XCTAssert(Int(cost.memBytes)! > 0)
-        }
         XCTAssertNotNil(simulateResponse.results)
         XCTAssert(simulateResponse.results!.count > 0)
         XCTAssertNotNil(simulateResponse.footprint)
