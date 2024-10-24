@@ -15,7 +15,8 @@ public class GetEventsResponse: NSObject, Decodable {
     /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
     public var latestLedger:Int
     
-    public var cursor:String
+    /// For paging, only avaliable for protocol version >= 22
+    public var cursor:String?
     
     private enum CodingKeys: String, CodingKey {
         case events
@@ -31,6 +32,6 @@ public class GetEventsResponse: NSObject, Decodable {
             events = []
         }
         latestLedger = try values.decode(Int.self, forKey: .latestLedger)
-        cursor = try values.decode(String.self, forKey: .cursor)
+        cursor = try values.decodeIfPresent(String.self, forKey: .cursor) // protocol version > 22
     }
 }

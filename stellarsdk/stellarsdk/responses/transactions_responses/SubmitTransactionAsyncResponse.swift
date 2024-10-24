@@ -20,6 +20,7 @@ public class SubmitTransactionAsyncResponse: NSObject, Decodable {
     private enum CodingKeys: String, CodingKey {
         case txStatus = "tx_status"
         case txHash = "hash"
+        case errorResultXdrP21 = "errorResultXdr"
         case errorResultXdr = "error_result_xdr"
     }
     
@@ -28,5 +29,8 @@ public class SubmitTransactionAsyncResponse: NSObject, Decodable {
         txStatus = try values.decode(String.self, forKey: .txStatus)
         txHash = try values.decode(String.self, forKey: .txHash)
         errorResultXdr = try values.decodeIfPresent(String.self, forKey: .errorResultXdr)
+        if (errorResultXdr == nil) {
+            errorResultXdr = try values.decodeIfPresent(String.self, forKey: .errorResultXdrP21) // protocol version < 22
+        }
     }
 }

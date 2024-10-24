@@ -11,9 +11,9 @@ import stellarsdk
 
 class SorobanTest: XCTestCase {
 
-    var sorobanServer =  SorobanServer(endpoint: "https://rpc-futurenet.stellar.org") // SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
-    var sdk = StellarSDK.futureNet() // StellarSDK.testNet()
-    var network = Network.futurenet // Network.testnet
+    var sorobanServer =   SorobanServer(endpoint: "https://soroban-testnet.stellar.org") //SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    var sdk = StellarSDK.testNet() // StellarSDK.futureNet()
+    var network = Network.testnet // Network.futurenet
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
     let accountBKeyPair = try! KeyPair.generateRandomKeyPair()
     var uploadTransactionId:String? = nil
@@ -45,8 +45,8 @@ class SorobanTest: XCTestCase {
         let changeTrustOp = ChangeTrustOperation(sourceAccountId:accountAId, asset:asset, limit: 100000000)
         let payOp = try! PaymentOperation(sourceAccountId: accountBId, destinationAccountId: accountAId, asset: asset, amount: 50000)
         
-     
-        var responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: accountAId)// await sdk.accounts.createTestAccount(accountId: accountAId)
+        // await sdk.accounts.createFutureNetTestAccount(accountId: accountAId)
+        var responseEnum = await sdk.accounts.createTestAccount(accountId: accountAId)
         switch responseEnum {
         case .success(_):
             break
@@ -54,8 +54,8 @@ class SorobanTest: XCTestCase {
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
             XCTFail("could not create test account A: \(accountAId)")
         }
-        
-        responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: accountBId) //await sdk.accounts.createTestAccount(accountId: accountBId)
+        // await sdk.accounts.createFutureNetTestAccount(accountId: accountBId)
+        responseEnum = await sdk.accounts.createTestAccount(accountId: accountBId)
         switch responseEnum {
         case .success(_):
             break
@@ -124,7 +124,7 @@ class SorobanTest: XCTestCase {
         // test create contract from uploaded wasm
         await refreshSubmitterAccount()
         await createContract()
-        await getTransactionDetails(transactionHash: self.createTransactionId!, type:"HostFunctionTypeHostFunctionTypeCreateContractV2", delaySec: 10.0)
+        await getTransactionDetails(transactionHash: self.createTransactionId!, type:"HostFunctionTypeHostFunctionTypeCreateContract", delaySec: 10.0)
         await getLedgerEntries()
         
         // test contract code loading from soroban

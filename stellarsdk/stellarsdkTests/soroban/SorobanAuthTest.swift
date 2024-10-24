@@ -34,6 +34,7 @@ class SorobanAuthTest: XCTestCase {
         let invokerId = invokerKeyPair.accountId
         let senderId = senderKeyPair.accountId
         
+        //var responseEnum = await sdk.accounts.createTestAccount(accountId: invokerId)
         var responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: invokerId)
         switch responseEnum {
         case .success(_):
@@ -44,6 +45,7 @@ class SorobanAuthTest: XCTestCase {
         }
         
         responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: senderId)
+        // responseEnum = await sdk.accounts.createTestAccount(accountId: senderId)
         switch responseEnum {
         case .success(_):
             break
@@ -51,8 +53,6 @@ class SorobanAuthTest: XCTestCase {
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
             XCTFail("could not create sender account: \(senderId)")
         }
-        
-        //sdk.accounts.createFutureNetTestAccount(accountId: invokerId)
     }
     
     func testAll() async {
@@ -141,8 +141,9 @@ class SorobanAuthTest: XCTestCase {
     
     func createContract() async {
         let accountId = senderKeyPair.accountId
-        let createOperation = try! InvokeHostFunctionOperation.forCreatingContract(wasmId: self.installWasmId!, address: SCAddressXDR(accountId: accountId), constructorArguments: [])
         
+        //let createOperation = try! InvokeHostFunctionOperation.forCreatingContract(wasmId: self.installWasmId!, address: SCAddressXDR(accountId: accountId))
+        let createOperation = try! InvokeHostFunctionOperation.forCreatingContractWithConstructor(wasmId: self.installWasmId!, address: SCAddressXDR(accountId: accountId), constructorArguments: [])
         let transaction = try! Transaction(sourceAccount: senderAccount!,
                                            operations: [createOperation], memo: Memo.none)
         
