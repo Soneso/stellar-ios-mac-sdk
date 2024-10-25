@@ -5,6 +5,29 @@ The Soneso open source stellar SDK for iOS &amp; Mac provides APIs to build tran
 
 ## Installation
 
+### Swift Package Manager
+
+#### Last stable release:
+
+```swift
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.0.0"),
+```
+
+#### Prepare for Protocol 22 update:
+
+```swift
+.package(url: "https://github.com/Soneso/stellar-ios-mac-sdk", exact: "3.0.1-beta.1"),
+```
+
+If not loading (err: `cannot use bare repository`), then remove:
+
+```sh
+[safe]
+    bareRepository = explicit
+```
+
+from `~/.gitconfig`. See also this [SourceTree issue](https://forums.swift.org/t/fatal-cannot-use-bare-repository/75588). 
+
 ### CocoaPods
 
 [CocoaPods](http://cocoapods.org) is a dependency manager for Cocoa projects. You can install it with the following command:
@@ -14,6 +37,18 @@ $ gem install cocoapods
 ```
 
 To integrate stellar SDK into your Xcode project using CocoaPods, specify it in your `Podfile`:
+
+#### Last stable release:
+
+```ruby
+use_frameworks!
+
+target '<Your Target Name>' do
+    pod 'stellar-ios-mac-sdk', '~> 3.0.0'
+end
+```
+
+#### Prepare for Protocol 22:
 
 ```ruby
 use_frameworks!
@@ -43,17 +78,20 @@ $ brew install carthage
 
 To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify it in your `Cartfile`:
 
+#### Last stable release:
+
+```ogdl
+github "soneso/stellar-ios-mac-sdk" ~> 3.0.0
+```
+
+#### Prepare for Protocol 22:
+
 ```ogdl
 github "soneso/stellar-ios-mac-sdk" ~> 3.0.1-beta.1
 ```
 
 Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.
 
-### Swift Package Manager
-
-```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.0.0"),
-```
 
 ### Manual
 
