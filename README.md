@@ -7,7 +7,7 @@ The Soneso open source stellar SDK for iOS &amp; Mac provides APIs to build tran
 
 ### Swift Package Manager
 
-#### Last stable release:
+#### Latest stable release:
 
 ```swift
 .package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.0.0"),
