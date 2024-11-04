@@ -41,28 +41,28 @@ public class GetVersionInfoResponse: NSObject, Decodable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         version = try values.decode(String.self, forKey: .version)
         
-        var commitHashVal = try values.decodeIfPresent(String.self, forKey: .commitHash)
+        let commitHashVal = try values.decodeIfPresent(String.self, forKey: .commitHash)
         if (commitHashVal == nil) {
             commitHash = try values.decode(String.self, forKey: .commitHashP21) // protocol version < 22
         } else {
             commitHash = commitHashVal!
         }
         
-        var buildTimeStampVal = try values.decodeIfPresent(String.self, forKey: .buildTimeStamp)
+        let buildTimeStampVal = try values.decodeIfPresent(String.self, forKey: .buildTimeStamp)
         if (buildTimeStampVal == nil) {
             buildTimeStamp = try values.decode(String.self, forKey: .buildTimeStampP21) // protocol version < 22
         } else {
             buildTimeStamp = buildTimeStampVal!
         }
         
-        var captiveCoreVersionVal = try values.decodeIfPresent(String.self, forKey: .captiveCoreVersion)
+        let captiveCoreVersionVal = try values.decodeIfPresent(String.self, forKey: .captiveCoreVersion)
         if (captiveCoreVersionVal == nil) {
             captiveCoreVersion = try values.decode(String.self, forKey: .captiveCoreVersionP21) // protocol version < 22
         } else {
             captiveCoreVersion = captiveCoreVersionVal!
         }
         
-        var protocolVersionVal = try values.decodeIfPresent(Int.self, forKey: .protocolVersion)
+        let protocolVersionVal = try values.decodeIfPresent(Int.self, forKey: .protocolVersion)
         if (protocolVersionVal == nil) {
             protocolVersion = try values.decode(Int.self, forKey: .protocolVersionP21) // protocol version < 22
         } else {

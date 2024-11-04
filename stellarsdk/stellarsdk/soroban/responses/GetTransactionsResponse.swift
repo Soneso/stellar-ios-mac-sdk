@@ -78,7 +78,7 @@ public class TransactionInfo: NSObject, Decodable {
     public var ledger:Int
     
     /// The unix timestamp of when the transaction was included in the ledger.
-    public var createdAt:String
+    public var createdAt:Int
     
     /// hex-encoded transaction hash string. Only available for protocol version >= 22
     public var txHash:String?
@@ -106,15 +106,15 @@ public class TransactionInfo: NSObject, Decodable {
         resultMetaXdr = try values.decode(String.self, forKey: .resultMetaXdr)
         diagnosticEventsXdr = try values.decodeIfPresent([String].self, forKey: .diagnosticEventsXdr)
         ledger = try values.decode(Int.self, forKey: .ledger)
-        var createdAtVal:String?
+        var createdAtIntVal:Int?
         do {
-            createdAtVal = try values.decodeIfPresent(String.self, forKey: .createdAt) // protocol >= 22
+            createdAtIntVal = try values.decodeIfPresent(Int.self, forKey: .createdAt)
         } catch {}
-        if (createdAtVal != nil) {
-            createdAt = createdAtVal!
+        if (createdAtIntVal != nil) {
+            createdAt = createdAtIntVal!
         } else {
-            let createAtInt = try values.decode(Int.self, forKey: .createdAt) // protocol version <= 22
-            createdAt = String(createAtInt)
+            let createStringAt = try values.decode(String.self, forKey: .createdAt)
+            createdAt = Int(createStringAt) ?? 0
         }
         
         txHash = try values.decodeIfPresent(String.self, forKey: .txHash) // protocol version >= 22

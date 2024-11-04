@@ -16,7 +16,7 @@ The Soneso open source stellar SDK for iOS &amp; Mac provides APIs to build tran
 #### Prepare for Protocol 22 update:
 
 ```swift
-.package(url: "https://github.com/Soneso/stellar-ios-mac-sdk", exact: "3.0.1-beta.1"),
+.package(url: "https://github.com/Soneso/stellar-ios-mac-sdk", exact: "3.0.1-beta.2"),
 ```
 
 If not loading (err: `cannot use bare repository`), then remove:
@@ -54,7 +54,7 @@ end
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk', '~> 3.0.1-beta.1'
+    pod 'stellar-ios-mac-sdk', '~> 3.0.1-beta.2'
 end
 ```
 
@@ -87,7 +87,7 @@ github "soneso/stellar-ios-mac-sdk" ~> 3.0.0
 #### Prepare for Protocol 22:
 
 ```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 3.0.1-beta.1
+github "soneso/stellar-ios-mac-sdk" ~> 3.0.1-beta.2
 ```
 
 Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.

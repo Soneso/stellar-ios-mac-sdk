@@ -42,8 +42,8 @@ public class EventInfo: NSObject, Decodable {
     /// The transaction which triggered this event.
     public var txHash:String
     
-    /// for paging , only available for protocol version < 22
-    public var pagingToken:String?
+    /// for paging
+    public var pagingToken:String
 
     
     private enum CodingKeys: String, CodingKey {
@@ -71,7 +71,7 @@ public class EventInfo: NSObject, Decodable {
         value = try values.decode(String.self, forKey: .value)
         valueXdr = try SCValXDR.fromXdr(base64: value)
         txHash = try values.decode(String.self, forKey: .txHash)
-        pagingToken = try values.decodeIfPresent(String.self, forKey: .pagingToken) // protocol version < 22
+        pagingToken = try values.decodeIfPresent(String.self, forKey: .pagingToken) ?? id
     }
 }
 
