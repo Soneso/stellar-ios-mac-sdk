@@ -75,29 +75,26 @@ class OperationsRemoteTestCase: XCTestCase {
                 XCTAssert(response.operationCount > 0)
                 self.transactionId = response.transactionHash
                 self.ledger = response.ledger
-                switch response.transactionMeta {
-                case .transactionMetaV3(let metaV3):
-                    for opMeta in metaV3.operations {
-                        for change in opMeta.changes.ledgerEntryChanges {
-                            switch change {
-                            case .created(let entry):
-                                switch entry.data {
-                                case .claimableBalance(let IDXdr):
-                                    switch IDXdr.claimableBalanceID {
-                                    case .claimableBalanceIDTypeV0(let data):
-                                        self.claimableBalanceId = self.hexEncodedBalanceId(data:data.wrapped)
-                                        break
-                                    }
-                                default:
-                                    break
+                switch response.transactionResult.resultBody {
+                case .success(let array):
+                    for opResult in array {
+                        switch opResult {
+                        case .createClaimableBalance(_, let createClaimableBalanceResultXDR):
+                            switch createClaimableBalanceResultXDR {
+                            case .success(_, let claimableBalanceIDXDR):
+                                switch claimableBalanceIDXDR {
+                                case .claimableBalanceIDTypeV0(let data):
+                                    self.claimableBalanceId = self.hexEncodedBalanceId(data: data.wrapped)
                                 }
                             default:
                                 break
                             }
+                        default:
+                            break
                         }
                     }
                 default:
-                    XCTFail("not transactionMetaV3")
+                    break
                 }
             case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
                 XCTFail("destination account \(destinationAccountId) requires memo")
@@ -679,24 +676,22 @@ class OperationsRemoteTestCase: XCTestCase {
             switch submitTxResultEnum {
             case .success(let submitTransactionResponse):
                 XCTAssertTrue(submitTransactionResponse.operationCount > 0)
-                switch submitTransactionResponse.transactionMeta {
-                case .transactionMetaV3(let metaV3):
-                    for opMeta in metaV3.operations {
-                        for change in opMeta.changes.ledgerEntryChanges {
-                            switch change {
-                            case .created(let entry):
-                                switch entry.data {
-                                case .claimableBalance(let IDXdr):
-                                    switch IDXdr.claimableBalanceID {
-                                    case .claimableBalanceIDTypeV0(let data):
-                                        balanceId = self.hexEncodedBalanceId(data: data.wrapped)
-                                    }
-                                default:
-                                    break
+                switch submitTransactionResponse.transactionResult.resultBody {
+                case .success(let array):
+                    for opResult in array {
+                        switch opResult {
+                        case .createClaimableBalance(_, let createClaimableBalanceResultXDR):
+                            switch createClaimableBalanceResultXDR {
+                            case .success(_, let claimableBalanceIDXDR):
+                                switch claimableBalanceIDXDR {
+                                case .claimableBalanceIDTypeV0(let data):
+                                    balanceId = self.hexEncodedBalanceId(data: data.wrapped)
                                 }
                             default:
                                 break
                             }
+                        default:
+                            break
                         }
                     }
                 default:

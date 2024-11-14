@@ -443,24 +443,22 @@ class ClawbackTestCase: XCTestCase {
             let submitTxResultEnum = await sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
             case .success(let submitTransactionResponse):
-                switch submitTransactionResponse.transactionMeta {
-                case .transactionMetaV3(let metaV3):
-                    for opMeta in metaV3.operations {
-                        for change in opMeta.changes.ledgerEntryChanges {
-                            switch change {
-                            case .created(let entry):
-                                switch entry.data {
-                                case .claimableBalance(let IDXdr):
-                                    switch IDXdr.claimableBalanceID {
-                                    case .claimableBalanceIDTypeV0(let data):
-                                        self.claimableBalanceId = self.hexEncodedBalanceId(data: data.wrapped)
-                                    }
-                                default:
-                                    break
+                switch submitTransactionResponse.transactionResult.resultBody {
+                case .success(let array):
+                    if let opResult = array.first {
+                        switch opResult {
+                        case .createClaimableBalance(_, let createClaimableBalanceResultXDR):
+                            switch createClaimableBalanceResultXDR {
+                            case .success(_, let claimableBalanceIDXDR):
+                                switch claimableBalanceIDXDR {
+                                case .claimableBalanceIDTypeV0(let data):
+                                    self.claimableBalanceId = self.hexEncodedBalanceId(data: data.wrapped)
                                 }
                             default:
                                 break
                             }
+                        default:
+                            break
                         }
                     }
                 default:
