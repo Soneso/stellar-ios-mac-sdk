@@ -480,6 +480,16 @@ class ServiceHelper: NSObject {
                         }
                         continuation.resume(returning: .failure(error:.beforeHistory(message:message, horizonErrorResponse:nil)))
                         return
+                    case 413: // Payload too large
+                        if let data = data {
+                            do {
+                                let errorResponse = try self.jsonDecoder.decode(PayloadTooLargeErrorResponse.self, from: data)
+                                continuation.resume(returning: .failure(error:.payloadTooLarge(message:message, horizonErrorResponse:errorResponse)))
+                                return
+                            } catch {}
+                        }
+                        continuation.resume(returning: .failure(error:.payloadTooLarge(message:message, horizonErrorResponse:nil)))
+                        return
                     case 429: // Too many requests
                         if let data = data {
                             do {

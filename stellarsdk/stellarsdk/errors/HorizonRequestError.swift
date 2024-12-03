@@ -17,6 +17,7 @@ public enum HorizonRequestError: Error {
     case notAcceptable(message: String, horizonErrorResponse:NotAcceptableErrorResponse?) /// HTTP Status code 406
     case duplicate(message: String, horizonErrorResponse:DuplicateErrorResponse?) /// HTTP Status code 409
     case beforeHistory(message: String, horizonErrorResponse:BeforeHistoryErrorResponse?) // HTTP Status code 410
+    case payloadTooLarge(message: String, horizonErrorResponse:PayloadTooLargeErrorResponse?) // HTTP Status code 413
     case rateLimitExceeded(message: String, horizonErrorResponse:RateLimitExceededErrorResponse?) // HTTP Status code 429
     case internalServerError(message:String, horizonErrorResponse:InternalServerErrorResponse?) // HTTP Status cose 500
     case notImplemented(message:String, horizonErrorResponse:NotImplementedErrorResponse?) // HTTP Status code 501

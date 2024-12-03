@@ -36,6 +36,16 @@ public enum PutCustomerCallbackResponseEnum {
     case failure(error: KycServiceError)
 }
 
+public enum PostCustomerFileResponseEnum {
+    case success(response: CustomerFileResponse)
+    case failure(error: KycServiceError)
+}
+
+public enum GetCustomerFilesResponseEnum {
+    case success(response: GetCustomerFilesResponse)
+    case failure(error: KycServiceError)
+}
+
 
 public typealias KycServiceClosure = (_ response:KycServiceForDomainEnum) -> (Void)
 
@@ -44,6 +54,8 @@ public typealias GetCustomerInfoResponseClosure = (_ response:GetCustomerInfoRes
 public typealias PutCustomerInfoResponseClosure = (_ response:PutCustomerInfoResponseEnum) -> (Void)
 public typealias DeleteCustomerResponseClosure = (_ response:DeleteCustomerResponseEnum) -> (Void)
 public typealias PutCustomerCallbackResponseClosure = (_ response:PutCustomerCallbackResponseEnum) -> (Void)
+public typealias PostCustomerFileResponseClosure = (_ response:PostCustomerFileResponseEnum) -> (Void)
+public typealias GetCustomerFilesResponseClosure = (_ response:GetCustomerFilesResponseEnum) -> (Void)
 
 
 public class KycService: NSObject {
@@ -274,6 +286,59 @@ public class KycService: NSObject {
             return .failure(error: self.errorFor(horizonError: error))
         }
     }
+
+    /// Passing binary fields such as photo_id_front or organization.photo_proof_address in PUT /customer requests must be done using the multipart/form-data content type. This is acceptable in most cases, but multipart/form-data does not support nested data structures such as arrays or sub-objects.
+    /// This endpoint is intended to decouple requests containing binary fields from requests containing nested data structures, supported by content types such as application/json. This endpoint is optional and only needs to be supported if the use case requires accepting nested data structures in PUT /customer requests.
+    /// Once a file has been uploaded using this endpoint, it's file_id can be used in subsequent PUT /customer requests. The field name for the file_id should be the appropriate SEP-9 field followed by _file_id. For example, if file_abc is returned as a file_id from POST /customer/files, it can be used in a PUT /customer
+    /// See:  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-files
+    public func postCustomerFile(file:Data, jwtToken:String) async -> PostCustomerFileResponseEnum {
+        let requestPath = "/customer/files"
+        var parameters = [String:Data]()
+        parameters["file"] = file
+        let result = await serviceHelper.POSTMultipartRequestWithPath(path: requestPath, parameters: parameters, jwtToken: jwtToken)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(CustomerFileResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
+            }
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
+        }
+    }
+    
+    /// Requests info about the uploaded files via postCustomerFile
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-files
+    public func getCustomerFiles(fileId:String? = nil, customerId:String? = nil, jwtToken: String) async -> GetCustomerFilesResponseEnum {
+        var requestPath = "/customer/files"
+        
+        if let fid = fileId {
+            requestPath += "&file_id=\(fid)"
+        }
+        if let cid = customerId {
+            requestPath += "&customer_id=\(cid)"
+        }
+        
+        if let range = requestPath.range(of: "&") {
+            requestPath = requestPath.replacingCharacters(in: range, with: "?")
+        }
+        
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwtToken)
+        switch result {
+        case .success(let data):
+            do {
+                let response = try self.jsonDecoder.decode(GetCustomerFilesResponse.self, from: data)
+                return .success(response:response)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
+            }
+            
+        case .failure(let error):
+            return .failure(error: self.errorFor(horizonError: error))
+        }
+    }
     
     private func errorFor(horizonError:HorizonRequestError) -> KycServiceError {
         switch horizonError {
@@ -301,6 +366,17 @@ public class KycService: NSObject {
             break
         case .unauthorized(let message):
             return .unauthorized(message: message)
+        case .payloadTooLarge(let message, _):
+            var errMessage:String? = nil
+            if let data = message.data(using: .utf8) {
+                do {
+                    if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any], let error = json["error"] as? String {
+                        return .payloadTooLarge(error: error)
+                    }
+                } catch {
+                    return .payloadTooLarge(error: errMessage)
+                }
+            }
         default:
             return .horizonError(error: horizonError)
         }

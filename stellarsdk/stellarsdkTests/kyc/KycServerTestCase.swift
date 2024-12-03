@@ -23,6 +23,8 @@ final class KycServerTestCase: XCTestCase {
     var putVerificationResponseServerMock:PutVerificationResponseMock!
     var deleteCustomerInfoResponseMock: DeleteCustomerInfoResponseMock!
     var putCallbackUrlResponseServerMock:PutCallbackUrlResponseMock!
+    var postCustomerFileResponseServerMock:PostCustomerFileResponseMock!
+    var getCustomerFilesResponseServerMock:GetCustomerFilesResponseMock!
     
     override func setUp() {
         super.setUp()
@@ -34,6 +36,8 @@ final class KycServerTestCase: XCTestCase {
         putVerificationResponseServerMock = PutVerificationResponseMock(address: kycServer)
         deleteCustomerInfoResponseMock = DeleteCustomerInfoResponseMock(address: kycServer)
         putCallbackUrlResponseServerMock = PutCallbackUrlResponseMock(address: kycServer)
+        postCustomerFileResponseServerMock = PostCustomerFileResponseMock(address: kycServer)
+        getCustomerFilesResponseServerMock = GetCustomerFilesResponseMock(address: kycServer)
         kycService = KycService(kycServiceAddress: "http://\(kycServer)")
     }
     
@@ -279,6 +283,95 @@ final class KycServerTestCase: XCTestCase {
             default:
                 XCTFail()
             }
+        }
+    }
+    
+    func testPostCustomerFileSuccess() async {
+        let responseEnum = await kycService.postCustomerFile(file: "imgcontentbytes".data(using: .utf8)!,
+                                                             jwtToken: "200_jwt")
+        switch responseEnum {
+        case .success(let data):
+            XCTAssertEqual("file_d3d54529-6683-4341-9b66-4ac7d7504238", data.fileId)
+            XCTAssertEqual("image/jpeg", data.contentType)
+            XCTAssertEqual(4089371, data.size)
+            XCTAssertEqual("2bf95490-db23-442d-a1bd-c6fd5efb584e", data.customerId)
+        case .failure(_):
+            XCTFail()
+        }
+    }
+    
+    func testPostCustomerFileBadData() async {
+        let responseEnum = await kycService.postCustomerFile(file: "imgcontentbytes".data(using: .utf8)!,
+                                                             jwtToken: "400_jwt")
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .badRequest(let message):
+                XCTAssertEqual("'photo_id_front' cannot be decoded. Must be jpg or png.", message)
+            default:
+                XCTFail()
+            }
+        }
+    }
+    
+    func testPostCustomerFilePayloadTooLarge() async {
+        var responseEnum = await kycService.postCustomerFile(file: "imgcontentbytes".data(using: .utf8)!,
+                                                             jwtToken: "413_jwt")
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .payloadTooLarge(let error):
+                XCTAssertEqual("Max. size allowed: 3MB", error)
+            default:
+                XCTFail()
+            }
+        }
+        
+        responseEnum = await kycService.postCustomerFile(file: "imgcontentbytes".data(using: .utf8)!,
+                                                             jwtToken: "413_empty_jwt")
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(let error):
+            switch error {
+            case .payloadTooLarge(_):
+                break
+            default:
+                XCTFail()
+            }
+        }
+    }
+    
+    func testGetCustomerFiles() async {
+        var responseEnum = await kycService.getCustomerFiles(jwtToken: "200_files_jwt")
+        switch responseEnum {
+        case .success(let response):
+            XCTAssertEqual(2, response.files.count)
+            let firstFile = response.files.first!
+            XCTAssertEqual("file_d5c67b4c-173c-428c-baab-944f4b89a57f", firstFile.fileId)
+            XCTAssertEqual("image/png", firstFile.contentType)
+            XCTAssertEqual(6134063, firstFile.size)
+            XCTAssertEqual("2bf95490-db23-442d-a1bd-c6fd5efb584e", firstFile.customerId)
+            
+            let secondFile = response.files.last!
+            XCTAssertEqual("file_d3d54529-6683-4341-9b66-4ac7d7504238", secondFile.fileId)
+            XCTAssertEqual("image/jpeg", secondFile.contentType)
+            XCTAssertEqual(4089371, secondFile.size)
+            XCTAssertEqual("2bf95490-db23-442d-a1bd-c6fd5efb584e", secondFile.customerId)
+        case .failure(_):
+            XCTFail()
+        }
+        
+        responseEnum = await kycService.getCustomerFiles(jwtToken: "200_empty_jwt")
+        switch responseEnum {
+        case .success(let response):
+            XCTAssertEqual(0, response.files.count)
+        case .failure(_):
+            XCTFail()
         }
     }
 }

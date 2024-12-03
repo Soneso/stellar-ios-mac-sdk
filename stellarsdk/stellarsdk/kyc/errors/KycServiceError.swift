@@ -16,5 +16,6 @@ public enum KycServiceError: Error {
     case badRequest(error:String) // 400
     case notFound(error:String) // 404
     case unauthorized(message:String) // 401
+    case payloadTooLarge(error:String?) // 413
     case horizonError(error: HorizonRequestError)
 }

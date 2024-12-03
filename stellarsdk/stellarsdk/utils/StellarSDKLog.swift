@@ -36,6 +36,9 @@ public final class StellarSDKLog {
         case .beforeHistory(let message, let errorResponse):
             print("\(tag): Horizon request error of type before history with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)
+        case .payloadTooLarge(let message, let errorResponse):
+            print("\(tag): Horizon request error of type payload too large with message: \(message)")
+            printErrorResponse(tag: tag, errorResponse: errorResponse)
         case .rateLimitExceeded(let message, let errorResponse):
             print("\(tag): Horizon request error of type rate limit exceeded with message: \(message)")
             printErrorResponse(tag: tag, errorResponse: errorResponse)

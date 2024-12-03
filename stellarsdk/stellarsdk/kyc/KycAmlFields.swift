@@ -90,7 +90,7 @@ public enum KYCNaturalPersonFieldsEnum {
     /// ID issue date
     case idIssueDate(String)
     /// ID expiration date
-    case idExpirationDate(Data)
+    case idExpirationDate(String)
     /// Passport or ID number
     case idNumber(String)
     /// Image of front of user's photo ID or passport
@@ -160,7 +160,7 @@ public enum KYCNaturalPersonFieldsEnum {
             case .idIssueDate(let value):
                 return (KYCNaturalPersonFieldKey.idIssueDate, value.data(using: .utf8)!)
             case .idExpirationDate(let value):
-                return (KYCNaturalPersonFieldKey.idExpirationDate, value)
+                return (KYCNaturalPersonFieldKey.idExpirationDate, value.data(using: .utf8)!)
             case .idNumber(let value):
                 return (KYCNaturalPersonFieldKey.idNumber, value.data(using: .utf8)!)
             case .photoIdFront(let value):
