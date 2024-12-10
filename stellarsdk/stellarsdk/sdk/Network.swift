@@ -17,19 +17,24 @@ public enum Network {
     case custom(passphrase: String)
 }
 
-// MARK: Network Id
+// MARK: passphrase, Network Id
 
-extension Network {
+public extension Network {
+    
     var networkId: Data {
+        return passphrase.sha256Hash
+    }
+    
+    var passphrase: String {
         switch self {
         case .public:
-            return "Public Global Stellar Network ; September 2015".sha256Hash
+            return "Public Global Stellar Network ; September 2015"
         case .testnet:
-            return "Test SDF Network ; September 2015".sha256Hash
+            return "Test SDF Network ; September 2015"
         case .futurenet:
-            return "Test SDF Future Network ; October 2022".sha256Hash
-        case .custom(let networkId):
-            return networkId.sha256Hash
+            return "Test SDF Future Network ; October 2022"
+        case .custom(let passphrase):
+            return passphrase
         }
     }
 }
