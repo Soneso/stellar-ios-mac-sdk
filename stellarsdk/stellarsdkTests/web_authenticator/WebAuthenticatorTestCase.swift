@@ -77,6 +77,9 @@ class WebAuthenticatorTestCase: XCTestCase {
     let invalidMemoValueClientPublicKey = "GCEQZYKOEJTZET2AKUY664EM44VFNRIAH7AXE4RIDWFV6UYGDTJWD2JJ"
     let invalidMemoValueClientPrivateKey = "SCB62HPSFTIEKNXQ7SRN4ZDUCVUZ6N25ZJZXWMSBHOBA4PPFDFWT5TUQ"
     
+    let validClientDomainAccountSeed = "SBE64KCQLJXJPMYLF22YCUSTH7WXJ7VZSCTPHXY3VDSIF3QUHJDBE6R6"
+    let invalidClientDomainAccountSeed = "SBPDX5WBTUMZC6WV57AVTLCROF4X6ETNSCCTFHWYI5QIQWAYYXWVVYWK"
+    
     var tomlServerMock: WebAuthenticatorTomlResponseMock!
     var tomlFailServerMock: WebAuthenticatorTomlFailResponseMock!
     var challengeServerMock: WebAuthenticatorChallengeResponseMock!
@@ -402,16 +405,105 @@ class WebAuthenticatorTestCase: XCTestCase {
     
     func testGetChallengeValidClientDomainOpSourceAccount() async {
         let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
-        let keyPair = try! KeyPair(secretSeed: invalidCliendDomainOpSourceAccountClientPrivateKey)
+        let keyPair = try! KeyPair(secretSeed: validCliendDomainOpSourceAccountClientPrivateKey)
         let userAccountId = keyPair.accountId
         let clientDomain = "domain.client.com"
-        let clientDomainAccountKey = try! KeyPair(secretSeed: "SBE64KCQLJXJPMYLF22YCUSTH7WXJ7VZSCTPHXY3VDSIF3QUHJDBE6R6")
+        let clientDomainAccountKey = try! KeyPair(secretSeed:validClientDomainAccountSeed)
         let responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair], clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKey)
+        switch responseEnum {
+        case .success(_):
+            return
+        case .failure(_):
+            XCTFail()
+        }
+    }
+    
+    func testValidClientDomainAccountSignature() async {
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        let keyPair = try! KeyPair(secretSeed: validCliendDomainOpSourceAccountClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let clientDomain = "domain.client.com"
+
+        // client domain signing via signing key pair (not recomended, because the app should not hold the client domain signing key)
+        // this key pair contains the client domain signing private key
+        let clientDomainAccountSigningKey = try! KeyPair(secretSeed:validClientDomainAccountSeed)
+        var responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId, signers: [keyPair], clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountSigningKey)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(_):
+            XCTFail()
+        }
+        
+        // client domain signing via signing function (recommended, client domain signing shold be done on the client domain server)
+        // this key pair does not contain the client domain signing private key
+        let clientDomainAccountNotSigningKey = try! KeyPair(accountId: clientDomainAccountSigningKey.accountId)
+        responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId,
+                                                           signers: [keyPair],
+                                                           clientDomain: clientDomain,
+                                                           clientDomainAccountKeyPair: clientDomainAccountNotSigningKey,
+                                                           clientDomainSigningFunction: validClientDomainAccountSigningFunction)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(_):
+            XCTFail()
+        }
+    }
+
+    func validClientDomainAccountSigningFunction(txEnvelopeXdr:String) async throws -> String {
+        return try await clientDomainSigning (txEnvelopeXdr: txEnvelopeXdr, seed: validClientDomainAccountSeed)
+    }
+    
+    func clientDomainSigning(txEnvelopeXdr:String, seed:String) async throws -> String {
+        // normally this happens on the client domain server
+        // this mocks the client domain server signing process:
+        let envelopeXDR = try TransactionEnvelopeXDR(xdr: txEnvelopeXdr)
+        let transactionHash = try [UInt8](envelopeXDR.txHash(network: .testnet))
+        let clientDomainAccountKey = try! KeyPair(secretSeed:seed)
+        let signature = clientDomainAccountKey.signDecorated(transactionHash)
+        envelopeXDR.appendSignature(signature: signature)
+        let encoded = try XDREncoder.encode(envelopeXDR)
+        return Data(bytes: encoded, count: encoded.count).base64EncodedString()
+    }
+    
+    func invalidClientDomainAccountSigningFunction(txEnvelopeXdr:String) async throws -> String {
+        return try await clientDomainSigning (txEnvelopeXdr: txEnvelopeXdr, seed: invalidClientDomainAccountSeed)
+    }
+    
+    func testInvalidClientDomainAccountSignature() async {
+        let webAuthenticator = WebAuthenticator(authEndpoint: authServer, network: .testnet, serverSigningKey: serverPublicKey, serverHomeDomain: domain)
+        let keyPair = try! KeyPair(secretSeed: validCliendDomainOpSourceAccountClientPrivateKey)
+        let userAccountId = keyPair.accountId
+        let clientDomain = "domain.client.com"
+        
+        // client domain signing via signing key pair (not recomended, because the app should not hold the client domain signing key)
+        // this key pair contains the client domain signing private key
+        let clientDomainAccountSigningKey = try! KeyPair(secretSeed:invalidClientDomainAccountSeed)
+        var responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId,
+                                                           signers: [keyPair],
+                                                           clientDomain: clientDomain,
+                                                           clientDomainAccountKeyPair: clientDomainAccountSigningKey)
         switch responseEnum {
         case .success(_):
             XCTFail()
         case .failure(_):
-            return
+            break
+        }
+        
+        // client domain signing via signing key pair (not recomended, because the app should not hold the client domain signing key)
+        // this key pair does not contain the client domain signing private key
+        let clientDomainAccountNotSigningKey = try! KeyPair(accountId: clientDomainAccountSigningKey.accountId)
+        responseEnum = await webAuthenticator.jwtToken(forUserAccount: userAccountId,
+                                                       signers: [keyPair],
+                                                       clientDomain: clientDomain,
+                                                       clientDomainAccountKeyPair: clientDomainAccountNotSigningKey,
+                                                       clientDomainSigningFunction: invalidClientDomainAccountSigningFunction)
+        switch responseEnum {
+        case .success(_):
+            XCTFail()
+        case .failure(_):
+            break
         }
     }
         

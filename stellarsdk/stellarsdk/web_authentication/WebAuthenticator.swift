@@ -155,7 +155,7 @@ public class WebAuthenticator {
     /// - Parameter homeDomain: domain of the server hosting it's stellar.toml
     /// - Parameter clientDomain: domain of the client hosting it's stellar.toml
     /// - Parameter clientDomainAccountKeyPair: Keypair of the client domain account including the seed (used for signing the transaction if client domain is provided)
-    @available(*, renamed: "jwtToken(forUserAccount:memo:signers:homeDomain:clientDomain:clientDomainAccountKeyPair:)")
+    @available(*, deprecated, message: "use jwtToken(forUserAccount:memo:signers:homeDomain:clientDomain:clientDomainAccountKeyPair:clientDomainSigningFunction:) instead")
     public func jwtToken(forUserAccount accountId:String, memo:UInt64? = nil, signers:[KeyPair], homeDomain:String? = nil, clientDomain:String? = nil, clientDomainAccountKeyPair:KeyPair? = nil, completion:@escaping GetJWTTokenResponseClosure) {
         Task {
             let result = await jwtToken(forUserAccount: accountId, memo: memo, signers: signers, homeDomain: homeDomain, clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKeyPair)
@@ -169,27 +169,35 @@ public class WebAuthenticator {
     /// - Parameter memo: ID memo of the client account if muxed and accountId starts with G
     /// - Parameter signers: list of signers (keypairs including secret seed) of the client account
     /// - Parameter homeDomain: domain of the server hosting it's stellar.toml
-    /// - Parameter clientDomain: domain of the client hosting it's stellar.toml
-    /// - Parameter clientDomainAccountKeyPair: Keypair of the client domain account including the seed (used for signing the transaction if client domain is provided)
-    public func jwtToken(forUserAccount accountId:String, memo:UInt64? = nil, signers:[KeyPair], homeDomain:String? = nil, clientDomain:String? = nil, clientDomainAccountKeyPair:KeyPair? = nil) async -> GetJWTTokenResponseEnum {
+    /// - Parameter clientDomain: domain of the client server hosting it's stellar.toml for client domain signing
+    /// - Parameter clientDomainAccountKeyPair: Keypair of the client domain account. Needed if clientDomain is provided. If it includes the private key, it will be used for signing the transaction (client domain signer). If it only contains the account id (public key) the client domain signing can be done via a signing function that can be passed by the parameter clientDomainSigningFunction
+    /// - Parameter clientDomainSigningFunction: a function that signs the transaction if clientDomain is provided but the provided clientDomainAccountKeyPair does not have a private key. Should accept a base64 encoded transaction envelope xdr string, sign it and send the signed transaction back as base64 encoded transaction envelope xdr string. This is normally used, when the client domain signing takes place on a server and you don't have the client domain signing seed in your app.
+    public func jwtToken(forUserAccount accountId:String, memo:UInt64? = nil, signers:[KeyPair], homeDomain:String? = nil, clientDomain:String? = nil, clientDomainAccountKeyPair:KeyPair? = nil, clientDomainSigningFunction:((_:String) async throws -> String)? = nil) async -> GetJWTTokenResponseEnum {
         let response = await getChallenge(forAccount: accountId, memo: memo, homeDomain: homeDomain, clientDomain: clientDomain)
         switch response {
         case .success(let challenge):
             do {
                 let transactionEnvelope = try TransactionEnvelopeXDR(xdr: challenge)
                 var clientDomainAccount:String?
-                if let cdakp = clientDomainAccountKeyPair {
-                    clientDomainAccount = cdakp.accountId
+                if let clientDomainAccountKeyPair = clientDomainAccountKeyPair {
+                    clientDomainAccount = clientDomainAccountKeyPair.accountId
                 }
                 let challengeValid = self.isValidChallenge(transactionEnvelopeXDR: transactionEnvelope, userAccountId: accountId, memo:memo, serverSigningKey: self.serverSigningKey, clientDomainAccount: clientDomainAccount, timeBoundsGracePeriod: self.gracePeriod)
                 switch challengeValid {
                 case .success:
                     var keyPairs:[KeyPair] = [KeyPair]()
                     keyPairs.append(contentsOf: signers)
-                    if let cdakp = clientDomainAccountKeyPair {
-                        keyPairs.append(cdakp)
+                    if let clientDomainAccountKeyPair = clientDomainAccountKeyPair, clientDomainAccountKeyPair.privateKey != nil {
+                        keyPairs.append(clientDomainAccountKeyPair)
                     }
-                    if let signedTransaction = self.signTransaction(transactionEnvelopeXDR: transactionEnvelope, keyPairs: keyPairs) {
+                    if var signedTransaction = self.signTransaction(transactionEnvelopeXDR: transactionEnvelope, keyPairs: keyPairs) {
+                        if let clientDomainSigningFunction = clientDomainSigningFunction,
+                            let clientDomainAccountKeyPair = clientDomainAccountKeyPair,
+                           clientDomainAccountKeyPair.privateKey == nil {
+                            
+                            signedTransaction = try await clientDomainSigningFunction(signedTransaction)
+                        }
+                        
                         let response = await self.sendCompletedChallenge(base64EnvelopeXDR: signedTransaction)
                         switch response {
                         case .success(let jwtToken):
