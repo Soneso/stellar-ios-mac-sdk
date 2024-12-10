@@ -79,7 +79,7 @@ public class Operation {
         case .setOptions(let setOptions):
             return SetOptionsOperation(fromXDR: setOptions, sourceAccountId: mSourceAccountId)
         case .changeTrust(let changeTrust):
-            return ChangeTrustOperation(fromXDR: changeTrust, sourceAccountId: mSourceAccountId)
+            return try ChangeTrustOperation(fromXDR: changeTrust, sourceAccountId: mSourceAccountId)
         case .allowTrust(let allowTrust):
             return AllowTrustOperation(fromXDR: allowTrust, sourceAccountId: mSourceAccountId)
         case .accountMerge(let destination):

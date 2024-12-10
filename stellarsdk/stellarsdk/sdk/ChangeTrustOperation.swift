@@ -30,20 +30,10 @@ public class ChangeTrustOperation:Operation {
     /// Creates a new ChangeTrustOperation object from the given ChangeTrustOperationXDR object.
     ///
     /// - Parameter fromXDR: the ChangeTrustOperationXDR object to be used to create a new ChangeTrustOperation object.
-    @available(*, deprecated, message: "use init(..., sourceAccountId:String?) instead")
-    public init(fromXDR:ChangeTrustOperationXDR, sourceAccount:KeyPair? = nil) {
-        self.asset = try! ChangeTrustAsset.fromXDR(assetXDR: fromXDR.asset)
-        self.limit = Operation.fromXDRAmount(fromXDR.limit)
-        super.init(sourceAccount: sourceAccount)
-    }
-    
-    /// Creates a new ChangeTrustOperation object from the given ChangeTrustOperationXDR object.
-    ///
-    /// - Parameter fromXDR: the ChangeTrustOperationXDR object to be used to create a new ChangeTrustOperation object.
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     ///
-    public init(fromXDR:ChangeTrustOperationXDR, sourceAccountId:String?) {
-        self.asset = try! ChangeTrustAsset.fromXDR(assetXDR: fromXDR.asset)
+    public init(fromXDR:ChangeTrustOperationXDR, sourceAccountId:String?) throws {
+        self.asset = try ChangeTrustAsset.fromXDR(assetXDR: fromXDR.asset)
         self.limit = Operation.fromXDRAmount(fromXDR.limit)
         super.init(sourceAccountId: sourceAccountId)
     }

@@ -153,10 +153,10 @@ public class ChangeTrustAsset : Asset {
         if assetA.type > assetB.type {
             sortError = true
         } else if assetA.type == assetB.type {
-            if assetA.code!.caseInsensitiveCompare(assetB.code!) == .orderedDescending {
+            if assetA.code! > assetB.code! {
                 sortError = true
-            } else if assetA.code!.caseInsensitiveCompare(assetB.code!) == .orderedSame {
-                if assetA.issuer!.accountId.caseInsensitiveCompare(assetB.issuer!.accountId) == .orderedDescending {
+            } else if assetA.code! == assetB.code! {
+                if assetA.issuer!.accountId > assetB.issuer!.accountId {
                     sortError = true
                 }
             }

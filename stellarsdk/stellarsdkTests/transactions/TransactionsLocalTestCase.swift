@@ -1085,4 +1085,17 @@ class TransactionsLocalTestCase: XCTestCase {
             XCTFail()
         }
     }
+    
+    func testXdrChangeTrustAssetSorting() {
+    
+        let xdrEnvelope = "AAAAAgAAAABn/gGugyO02pFFGaHeLzNEHF4xG6LdYuDPD98S59AjuwADDUABL9thAAAHOQAAAAEAAAAAAAAAAAAAAABnflzGAAAAAAAAAAIAAAAAAAAAF17U/Ee2yWNcLItkCC67OfbsTUVaBlLoBV+SBdMv/ujIAAAAAAAAoHQAAAAAAACgCwAAAAAAAKDeAAAAAAAAAAYAAAADAAAAAAAAAAFVU0RDAAAAADuZETgO/piLoKiQDrHP5E82b32+lGvtB3JA9/Yk3xXFAAAAAXNVU0QAAAAAj2+KyPmYjEMFuwqWpv33O3NZCGoASCtyAGDvCBhfZ/QAAAAeAAAAAAAAAAAAAAAAAAAAAA=="
+        do {
+            let transaction = try Transaction(envelopeXdr: xdrEnvelope)
+            let encodedEnvelope = try transaction.encodedEnvelope()
+            XCTAssertTrue(xdrEnvelope == encodedEnvelope)
+
+        } catch {
+            XCTFail()
+        }
+    }
 }
