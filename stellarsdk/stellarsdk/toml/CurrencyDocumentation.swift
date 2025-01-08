@@ -27,6 +27,7 @@ public class CurrencyDocumentation {
         case isAssetAnchored = "is_asset_anchored"
         case anchorAssetType = "anchor_asset_type"
         case anchorAsset = "anchor_asset"
+        case attestationOfReserve = "attestation_of_reserve"
         case redemptionInstructions = "redemption_instructions"
         case collateralAddresses = "collateral_addresses"
         case collateralAddressMessages = "collateral_address_messages"
@@ -89,6 +90,9 @@ public class CurrencyDocumentation {
     /// If anchored token, asset that token is anchored to. E.g. USD, BTC, SBUX, Address of real-estate investment property.
     public var anchorAsset: String?
     
+    /// URL to attestation or other proof, evidence, or verification of reserves, such as third-party audits.
+    public var attestationOfReserve: String?
+    
     /// If anchored token, these are instructions to redeem the underlying asset from tokens.
     public var redemptionInstructions: String?
     
@@ -130,6 +134,7 @@ public class CurrencyDocumentation {
         isAssetAnchored = toml.bool(Keys.isAssetAnchored.rawValue)
         anchorAssetType = toml.string(Keys.anchorAssetType.rawValue)
         anchorAsset = toml.string(Keys.anchorAsset.rawValue)
+        attestationOfReserve = toml.string(Keys.attestationOfReserve.rawValue)
         redemptionInstructions = toml.string(Keys.redemptionInstructions.rawValue)
         collateralAddresses = toml.array(Keys.collateralAddresses.rawValue) ?? []
         collateralAddressMessages = toml.array(Keys.collateralAddressMessages.rawValue) ?? []

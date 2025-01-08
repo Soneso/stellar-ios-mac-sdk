@@ -229,6 +229,7 @@ class TomlTestCase: XCTestCase {
                 .contains("2C1mCx3ukix1KfegAY5zgQJV7sanAciZpv"));
             XCTAssertTrue(currencies[1].collateralAddressSignatures.contains(
                 "304502206e21798a42fae0e854281abd38bacd1aeed3ee3738d9e1446618c4571d10"));
+            XCTAssertEqual("https://att.dov.com/g/228i.html", currencies[1].attestationOfReserve);
             XCTAssertTrue(currencies[2].code == "GOAT");
             XCTAssertTrue(currencies[2].issuer ==
                 "GD5T6IPRNCKFOHQWT264YPKOZAWUMMZOLZBJ6BNQMUGPWGRLBK3U7ZNP");
@@ -329,6 +330,7 @@ class TomlTestCase: XCTestCase {
             redemption_instructions="Use SEP6 with our federation server"
             collateral_addresses=["2C1mCx3ukix1KfegAY5zgQJV7sanAciZpv"]
             collateral_address_signatures=["304502206e21798a42fae0e854281abd38bacd1aeed3ee3738d9e1446618c4571d10"]
+            attestation_of_reserve="https://att.dov.com/g/228i.html"
             
             # asset with meta info
             [[CURRENCIES]]
