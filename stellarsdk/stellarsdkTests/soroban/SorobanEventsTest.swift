@@ -45,6 +45,7 @@ class SorobanEventsTest: XCTestCase {
     
     func testAll() async {
         await refreshSubmitterAccount()
+        await restoreContractCodeFootprint(name: "soroban_events_contract")
         await uploadContractWasm(name: "soroban_events_contract")
 
         await refreshSubmitterAccount()
@@ -291,6 +292,94 @@ class SorobanEventsTest: XCTestCase {
             print(err)
         case .parsingResponseFailed(let message, _):
             print(message)
+        }
+    }
+    
+    func restoreContractCodeFootprint(name:String) async {
+        let bundle = Bundle(for: type(of: self))
+        guard let path = bundle.path(forResource: name, ofType: "wasm") else {
+            // File not found
+            XCTFail()
+            return
+        }
+        let contractCode = FileManager.default.contents(atPath: path)
+        let uploadOperation = try! InvokeHostFunctionOperation.forUploadingContractWasm(contractCode: contractCode!)
+        
+        var transaction = try! Transaction(sourceAccount: submitterAccount!,
+                                           operations: [uploadOperation], memo: Memo.none)
+        
+        var simulateTxResponse:SimulateTransactionResponse? = nil
+        var simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+        var simulateTxResonseEnum = await sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest)
+        switch simulateTxResonseEnum {
+        case .success(let response):
+            simulateTxResponse = response
+        case .failure(let error):
+            self.printError(error: error)
+            XCTFail()
+        }
+        
+        XCTAssertNotNil(simulateTxResponse)
+        XCTAssertNotNil(simulateTxResponse!.transactionData)
+        XCTAssertNotNil(simulateTxResponse!.minResourceFee)
+        
+        let restoreFootprintOperation = RestoreFootprintOperation()
+        
+        // every time we build a transaction with the source account it increments the sequence number
+        // so we decrement it now so we do not have to reload it
+        self.submitterAccount!.decrementSequenceNumber()
+        transaction = try! Transaction(sourceAccount: self.submitterAccount!,
+                                           operations: [restoreFootprintOperation], memo: Memo.none)
+        
+        var transactionData = simulateTxResponse!.transactionData!
+        transactionData.resources.footprint.readWrite.append(contentsOf:transactionData.resources.footprint.readOnly)
+        transactionData.resources.footprint.readOnly = [] // readonly must be empty
+        transaction.setSorobanTransactionData(data: transactionData)
+        transaction.addResourceFee(resourceFee: simulateTxResponse!.minResourceFee!)
+        
+        // simulate first to obtain the transaction data + resource fee
+        simulateTxRequest = SimulateTransactionRequest(transaction: transaction);
+        simulateTxResonseEnum = await sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest)
+        switch simulateTxResonseEnum {
+        case .success(let response):
+            simulateTxResponse = response
+        case .failure(let error):
+            self.printError(error: error)
+            XCTFail()
+        }
+        XCTAssertNotNil(simulateTxResponse)
+        XCTAssertNotNil(simulateTxResponse!.transactionData)
+        XCTAssertNotNil(simulateTxResponse!.minResourceFee)
+        
+        transactionData = simulateTxResponse!.transactionData!
+        transactionData.resources.footprint.readWrite.append(contentsOf:transactionData.resources.footprint.readOnly)
+        transactionData.resources.footprint.readOnly = []
+        transaction.setSorobanTransactionData(data: transactionData)
+        let ressourceFee = simulateTxResponse!.minResourceFee! + 5000
+        transaction.addResourceFee(resourceFee: ressourceFee)
+        
+        try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
+        
+        // check encoding and decoding
+        let enveloperXdr = try! transaction.encodedEnvelope();
+        XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
+        
+        let sendTxResponseEnum = await sorobanServer.sendTransaction(transaction: transaction)
+        switch sendTxResponseEnum {
+        case .success(let response):
+            XCTAssert(SendTransactionResponse.STATUS_ERROR != response.status)
+            try! await Task.sleep(nanoseconds: UInt64(10 * Double(NSEC_PER_SEC)))
+            let txResultEnum = await sorobanServer.getTransaction(transactionHash: response.transactionId)
+            switch txResultEnum {
+            case .success(let statusResponse):
+                XCTAssertEqual(GetTransactionResponse.STATUS_SUCCESS, statusResponse.status)
+            case .failure(let error):
+                self.printError(error: error)
+                XCTFail()
+            }
+        case .failure(let error):
+            self.printError(error: error)
+            XCTFail()
         }
     }
 }

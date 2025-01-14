@@ -270,10 +270,35 @@ public struct AnchorTransaction: Decodable {
         withdrawAnchorAccount = try values.decodeIfPresent(String.self, forKey: .withdrawAnchorAccount)
         withdrawMemo = try values.decodeIfPresent(String.self, forKey: .withdrawMemo)
         withdrawMemoType = try values.decodeIfPresent(String.self, forKey: .withdrawMemoType)
-        startedAt = try values.decodeIfPresent(Date.self, forKey: .startedAt)
-        updatedAt = try values.decodeIfPresent(Date.self, forKey: .updatedAt)
-        completedAt = try values.decodeIfPresent(Date.self, forKey: .completedAt)
-        userActionRequiredBy = try values.decodeIfPresent(Date.self, forKey: .userActionRequiredBy)
+        
+        let startedAtStr = try values.decode(String.self, forKey: .startedAt)
+        if let startedAtDate = ISO8601DateFormatter.full.date(from: startedAtStr) {
+            startedAt = startedAtDate
+        } else {
+            startedAt = try values.decode(Date.self, forKey: .startedAt)
+        }
+        
+        if let completedAtStr = try values.decodeIfPresent(String.self, forKey: .completedAt),
+           let completedAtDate = ISO8601DateFormatter.full.date(from: completedAtStr) {
+            completedAt = completedAtDate
+        } else {
+            completedAt = try values.decodeIfPresent(Date.self, forKey: .completedAt)
+        }
+        
+        if let updatedAtStr = try values.decodeIfPresent(String.self, forKey: .updatedAt),
+            let updatedAtDate =  ISO8601DateFormatter.full.date(from: updatedAtStr) {
+            updatedAt = updatedAtDate
+        } else {
+            updatedAt = try values.decodeIfPresent(Date.self, forKey: .updatedAt)
+        }
+        
+        if let userActionRequiredByStr = try values.decodeIfPresent(String.self, forKey: .userActionRequiredBy),
+            let userActionRequiredByDate =  ISO8601DateFormatter.full.date(from: userActionRequiredByStr) {
+            userActionRequiredBy = userActionRequiredByDate
+        } else {
+            userActionRequiredBy = try values.decodeIfPresent(Date.self, forKey: .userActionRequiredBy)
+        }
+        
         stellarTransactionId = try values.decodeIfPresent(String.self, forKey: .stellarTransactionId)
         externalTransactionId = try values.decodeIfPresent(String.self, forKey: .externalTransactionId)
         message = try values.decodeIfPresent(String.self, forKey: .message)

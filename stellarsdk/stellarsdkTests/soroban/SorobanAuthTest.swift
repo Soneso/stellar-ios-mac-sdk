@@ -12,9 +12,9 @@ import stellarsdk
 
 class SorobanAuthTest: XCTestCase {
 
-    let sorobanServer = SorobanServer(endpoint: "https://rpc-futurenet.stellar.org") // SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
-    let sdk =  StellarSDK.futureNet()  // StellarSDK.testNet()
-    let network = Network.futurenet  // Network.testnet
+    let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org") // SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    let sdk =  StellarSDK.testNet() // StellarSDK.futureNet()
+    let network = Network.testnet // Network.futurenet
     var invokerKeyPair = try! KeyPair.generateRandomKeyPair()
     var senderKeyPair = try! KeyPair.generateRandomKeyPair()
     var installTransactionId:String?
@@ -34,8 +34,8 @@ class SorobanAuthTest: XCTestCase {
         let invokerId = invokerKeyPair.accountId
         let senderId = senderKeyPair.accountId
         
-        //var responseEnum = await sdk.accounts.createTestAccount(accountId: invokerId)
-        var responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: invokerId)
+        var responseEnum = await sdk.accounts.createTestAccount(accountId: invokerId)
+        //var responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: invokerId)
         switch responseEnum {
         case .success(_):
             break
@@ -44,8 +44,8 @@ class SorobanAuthTest: XCTestCase {
             XCTFail("could not create invoker account: \(invokerId)")
         }
         
-        responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: senderId)
-        // responseEnum = await sdk.accounts.createTestAccount(accountId: senderId)
+        //responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: senderId)
+        responseEnum = await sdk.accounts.createTestAccount(accountId: senderId)
         switch responseEnum {
         case .success(_):
             break

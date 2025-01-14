@@ -81,7 +81,12 @@ public struct Sep38QuoteResponse: Decodable {
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decode(String.self, forKey: .id)
-        expiresAt = try values.decode(Date.self, forKey: .expiresAt)
+        let expiresAtStr = try values.decode(String.self, forKey: .expiresAt)
+        if let expiresAtDate = ISO8601DateFormatter.full.date(from: expiresAtStr) {
+            expiresAt = expiresAtDate
+        } else {
+            expiresAt = try values.decode(Date.self, forKey: .expiresAt)
+        }
         totalPrice = try values.decode(String.self, forKey: .totalPrice)
         price = try values.decode(String.self, forKey: .price)
         sellAsset = try values.decode(String.self, forKey: .sellAsset)

@@ -74,7 +74,7 @@ public struct Sep24Transaction: Decodable {
     
     /// Amount sent by anchor to user at end of transaction as a string with up to 7 decimals.
     /// Excludes amount converted to XLM to fund account and any external fees.
-    public var amountOut:String
+    public var amountOut:String?
     
     /// (optional) The asset delivered or to be delivered to the user. Must be present if the deposit/withdraw was made using non-equivalent assets.
     /// The value must be in SEP-38 Asset Identification Format.
@@ -84,7 +84,7 @@ public struct Sep24Transaction: Decodable {
     public var amountOutAsset:String?
     
     /// Amount of fee charged by anchor
-    public var amountFee:String
+    public var amountFee:String?
     
     /// (optional) The asset in which fees are calculated in. Must be present if the deposit/withdraw was made using non-equivalent assets.
     /// The value must be in SEP-38 Asset Identification Format.
@@ -210,17 +210,42 @@ public struct Sep24Transaction: Decodable {
         statusEta = try values.decodeIfPresent(Int.self, forKey: .statusEta)
         kycVerified = try values.decodeIfPresent(Bool.self, forKey: .kycVerified)
         moreInfoUrl = try values.decodeIfPresent(String.self, forKey: .moreInfoUrl)
-        amountIn = try values.decode(String.self, forKey: .amountIn)
+        amountIn = try values.decodeIfPresent(String.self, forKey: .amountIn)
         amountInAsset = try values.decodeIfPresent(String.self, forKey: .amountInAsset)
-        amountOut = try values.decode(String.self, forKey: .amountOut)
+        amountOut = try values.decodeIfPresent(String.self, forKey: .amountOut)
         amountOutAsset = try values.decodeIfPresent(String.self, forKey: .amountOutAsset)
-        amountFee = try values.decode(String.self, forKey: .amountFee)
+        amountFee = try values.decodeIfPresent(String.self, forKey: .amountFee)
         amountFeeAsset = try values.decodeIfPresent(String.self, forKey: .amountFeeAsset)
         quoteId = try values.decodeIfPresent(String.self, forKey: .quoteId)
-        startedAt = try values.decode(Date.self, forKey: .startedAt)
-        completedAt = try values.decodeIfPresent(Date.self, forKey: .completedAt)
-        updatedAt = try values.decodeIfPresent(Date.self, forKey: .updatedAt)
-        userActionRequiredBy = try values.decodeIfPresent(Date.self, forKey: .userActionRequiredBy)
+        
+        let startedAtStr = try values.decode(String.self, forKey: .startedAt)
+        if let startedAtDate = ISO8601DateFormatter.full.date(from: startedAtStr) {
+            startedAt = startedAtDate
+        } else {
+            startedAt = try values.decode(Date.self, forKey: .startedAt)
+        }
+        
+        if let completedAtStr = try values.decodeIfPresent(String.self, forKey: .completedAt),
+           let completedAtDate = ISO8601DateFormatter.full.date(from: completedAtStr) {
+            completedAt = completedAtDate
+        } else {
+            completedAt = try values.decodeIfPresent(Date.self, forKey: .completedAt)
+        }
+        
+        if let updatedAtStr = try values.decodeIfPresent(String.self, forKey: .updatedAt),
+            let updatedAtDate =  ISO8601DateFormatter.full.date(from: updatedAtStr) {
+            updatedAt = updatedAtDate
+        } else {
+            updatedAt = try values.decodeIfPresent(Date.self, forKey: .updatedAt)
+        }
+        
+        if let userActionRequiredByStr = try values.decodeIfPresent(String.self, forKey: .userActionRequiredBy),
+            let userActionRequiredByDate =  ISO8601DateFormatter.full.date(from: userActionRequiredByStr) {
+            userActionRequiredBy = userActionRequiredByDate
+        } else {
+            userActionRequiredBy = try values.decodeIfPresent(Date.self, forKey: .userActionRequiredBy)
+        }
+        
         stellarTransactionId = try values.decodeIfPresent(String.self, forKey: .stellarTransactionId)
         externalTransactionId = try values.decodeIfPresent(String.self, forKey: .externalTransactionId)
         message = try values.decodeIfPresent(String.self, forKey: .message)

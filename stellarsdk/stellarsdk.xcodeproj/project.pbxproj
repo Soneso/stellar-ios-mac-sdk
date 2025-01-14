@@ -768,6 +768,8 @@
 		83379C2C2280BE2A00BD5F8E /* CreatePassiveSellOfferOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83379C262280B64500BD5F8E /* CreatePassiveSellOfferOperationResponse.swift */; };
 		83379C2E2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83379C2D2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift */; };
 		83379C2F2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83379C2D2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift */; };
+		8339DA5B2D36A55200232C8B /* ISO8601DateFormatter+Full.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8339DA5A2D36A55200232C8B /* ISO8601DateFormatter+Full.swift */; };
+		8339DA5C2D36A55300232C8B /* ISO8601DateFormatter+Full.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8339DA5A2D36A55200232C8B /* ISO8601DateFormatter+Full.swift */; };
 		833C67282B84C85000E034C6 /* QuoteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67272B84C85000E034C6 /* QuoteService.swift */; };
 		833C67292B84C85000E034C6 /* QuoteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67272B84C85000E034C6 /* QuoteService.swift */; };
 		833C672C2B84C97000E034C6 /* Sep38Responses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C672B2B84C97000E034C6 /* Sep38Responses.swift */; };
@@ -1686,6 +1688,7 @@
 		83379C242280AE9C00BD5F8E /* ManageBuyOfferOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBuyOfferOperationResponse.swift; sourceTree = "<group>"; };
 		83379C262280B64500BD5F8E /* CreatePassiveSellOfferOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePassiveSellOfferOperationResponse.swift; sourceTree = "<group>"; };
 		83379C2D2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePassiveSellOfferOperation.swift; sourceTree = "<group>"; };
+		8339DA5A2D36A55200232C8B /* ISO8601DateFormatter+Full.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ISO8601DateFormatter+Full.swift"; sourceTree = "<group>"; };
 		833C67272B84C85000E034C6 /* QuoteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuoteService.swift; sourceTree = "<group>"; };
 		833C672B2B84C97000E034C6 /* Sep38Responses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep38Responses.swift; sourceTree = "<group>"; };
 		833C672F2B84CF2F00E034C6 /* Sep38PostQuoteRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep38PostQuoteRequest.swift; sourceTree = "<group>"; };
@@ -2374,6 +2377,7 @@
 				74A504ED2192CC0000A608A0 /* String+KeyUtils.swift */,
 				74A504F02192D5D600A608A0 /* Data+KeyUtils.swift */,
 				83DD714F281DE65C00530C64 /* Data+B16.swift */,
+				8339DA5A2D36A55200232C8B /* ISO8601DateFormatter+Full.swift */,
 			);
 			path = extensions;
 			sourceTree = "<group>";
@@ -4495,6 +4499,7 @@
 				745DF4E92052FF9C000D3660 /* Blowfish.swift in Sources */,
 				745DF4EA2052FF9C000D3660 /* DigestType.swift in Sources */,
 				745DF4EB2052FF9C000D3660 /* Utils.swift in Sources */,
+				8339DA5C2D36A55300232C8B /* ISO8601DateFormatter+Full.swift in Sources */,
 				830E7DBC2529E24B0059A4B4 /* TrustlineSponsorshipUpdatedEffectResponse.swift in Sources */,
 				8320A9F1251E6ED6002FE6FA /* CreateClaimableBalanceResultXDR.swift in Sources */,
 				83B827822B306E1F0064D7CB /* SimulateTransactionRequest.swift in Sources */,
@@ -5186,6 +5191,7 @@
 				744C4DBF202A29E400B46CDE /* AccountCreatedOperationResponse.swift in Sources */,
 				EC34A0D020503CAB000FB042 /* RIPEMD160.swift in Sources */,
 				EC34A11A20503CC5000FB042 /* HKDF.swift in Sources */,
+				8339DA5B2D36A55200232C8B /* ISO8601DateFormatter+Full.swift in Sources */,
 				830E7DBB2529E24B0059A4B4 /* TrustlineSponsorshipUpdatedEffectResponse.swift in Sources */,
 				8320A9F0251E6ED6002FE6FA /* CreateClaimableBalanceResultXDR.swift in Sources */,
 				83B827812B306E1F0064D7CB /* SimulateTransactionRequest.swift in Sources */,

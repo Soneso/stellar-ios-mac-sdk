@@ -44,7 +44,12 @@ public struct CustomerFileResponse: Decodable {
         fileId = try values.decode(String.self, forKey: .fileId)
         contentType = try values.decode(String.self, forKey: .contentType)
         size = try values.decode(Int.self, forKey: .size)
-        expiresAt = try values.decodeIfPresent(Date.self, forKey: .expiresAt)
+        if let expiresAtStr = try values.decodeIfPresent(String.self, forKey: .expiresAt),
+           let expiresAtDate = ISO8601DateFormatter.full.date(from: expiresAtStr) {
+            expiresAt = expiresAtDate
+        } else {
+            expiresAt = try values.decodeIfPresent(Date.self, forKey: .expiresAt)
+        }
         customerId = try values.decodeIfPresent(String.self, forKey: .customerId)
     }
 }
