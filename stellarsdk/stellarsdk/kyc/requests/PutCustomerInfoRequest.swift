@@ -42,6 +42,12 @@ public struct PutCustomerInfoRequest {
     /// one or more of the fields listed in SEP-9
     public var financialAccountFields:[KYCFinancialAccountFieldsEnum]?
     
+    /// extra fields to send
+    public var extraFields:[String:String]?
+    
+    /// extra files to send
+    public var extraFiles:[String:Data]?
+    
     public init(jwt:String) {
         self.jwt = jwt
     }
@@ -66,22 +72,69 @@ public struct PutCustomerInfoRequest {
         if let transactionId = transactionId {
             parameters["transaction_id"] = transactionId.data(using: .utf8)
         }
+        
+        var collectedFiles:[String:Data] = [:]
+        
         if let fields = fields {
             for field in fields {
-                parameters[field.parameter.0] = field.parameter.1
+                switch field {
+                case .photoIdFront(let data):
+                    collectedFiles[field.parameter.0] = field.parameter.1
+                case .photoIdBack(let data):
+                    collectedFiles[field.parameter.0] = field.parameter.1
+                case .notaryApprovalOfPhotoId(let data):
+                    collectedFiles[field.parameter.0] = field.parameter.1
+                case .ipAddress(let string):
+                    collectedFiles[field.parameter.0] = field.parameter.1
+                case .photoProofResidence(let data):
+                    collectedFiles[field.parameter.0] = field.parameter.1
+                case .proofOfIncome(let data):
+                    collectedFiles[field.parameter.0] = field.parameter.1
+                case .proofOfLiveness(let data):
+                    collectedFiles[field.parameter.0] = field.parameter.1
+                case .referralId(let data):
+                    collectedFiles[field.parameter.0] = field.parameter.1
+                default:
+                    parameters[field.parameter.0] = field.parameter.1
+                }
             }
         }
         if let fields = organizationFields {
             for field in fields {
-                parameters[field.parameter.0] = field.parameter.1
+                switch field {
+                case .photoIncorporationDoc(let data):
+                    collectedFiles[field.parameter.0] = field.parameter.1
+                case .photoProofAddress(let data):
+                    collectedFiles[field.parameter.0] = field.parameter.1
+                default:
+                    parameters[field.parameter.0] = field.parameter.1
+                }
             }
         }
+        
         if let fields = financialAccountFields {
             for field in fields {
                 parameters[field.parameter.0] = field.parameter.1
             }
         }
         
+        if let fields = extraFields {
+            for (key, value) in fields {
+                parameters[key] = value.data(using: .utf8)
+            }
+        }
+        
+        // put files at the end
+        for (key, value) in collectedFiles {
+            parameters[key] = value
+        }
+        
+        if let files = extraFiles {
+            for (key, value) in files {
+                parameters[key] = value
+            }
+        }
+    
         return parameters
     }
     

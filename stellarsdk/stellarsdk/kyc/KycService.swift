@@ -367,14 +367,13 @@ public class KycService: NSObject {
         case .unauthorized(let message):
             return .unauthorized(message: message)
         case .payloadTooLarge(let message, _):
-            var errMessage:String? = nil
             if let data = message.data(using: .utf8) {
                 do {
                     if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any], let error = json["error"] as? String {
                         return .payloadTooLarge(error: error)
                     }
                 } catch {
-                    return .payloadTooLarge(error: errMessage)
+                    return .payloadTooLarge(error: nil)
                 }
             }
         default:

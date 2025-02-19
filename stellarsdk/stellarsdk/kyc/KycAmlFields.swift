@@ -110,7 +110,7 @@ public enum KYCNaturalPersonFieldsEnum {
     /// video or image file of user as a liveness proof
     case proofOfLiveness(Data)
     /// video or image file of user as a liveness proof
-    case referralId(Data)
+    case referralId(String)
     
     var parameter:(String, Data) {
         get {
@@ -180,7 +180,7 @@ public enum KYCNaturalPersonFieldsEnum {
             case .proofOfLiveness(let value):
                 return (KYCNaturalPersonFieldKey.proofOfLiveness, value)
             case .referralId(let value):
-                return (KYCNaturalPersonFieldKey.referralId, value)
+                return (KYCNaturalPersonFieldKey.referralId, value.data(using: .utf8)!)
             }
         }
     }
