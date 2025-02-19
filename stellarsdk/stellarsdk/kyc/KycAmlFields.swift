@@ -18,6 +18,7 @@ public enum KYCNaturalPersonFieldKey {
     static let postalCode = "postal_code"
     static let address = "address"
     static let mobileNumber = "mobile_number"
+    static let mobileNumberFormat = "mobile_number_format"
     static let emailAddress = "email_address"
     static let birthDate = "birth_date"
     static let birthPlace = "birth_place"
@@ -63,6 +64,8 @@ public enum KYCNaturalPersonFieldsEnum {
     case address(String)
     /// Mobile phone number with country code, in E.164 format
     case mobileNumber(String)
+    /// Expected format of the mobile_number field. E.g.: E.164, hash, etc... In case this field is not specified, receiver will assume it's in E.164 format
+    case mobileNumberFormat(String)
     /// Email address
     case emailAddress(String)
     /// Date of birth, e.g. 1976-07-04
@@ -133,6 +136,8 @@ public enum KYCNaturalPersonFieldsEnum {
                 return (KYCNaturalPersonFieldKey.address, value.data(using: .utf8)!)
             case .mobileNumber(let value):
                 return (KYCNaturalPersonFieldKey.mobileNumber, value.data(using: .utf8)!)
+            case .mobileNumberFormat(let value):
+                return (KYCNaturalPersonFieldKey.mobileNumberFormat, value.data(using: .utf8)!)
             case .emailAddress(let value):
                 return (KYCNaturalPersonFieldKey.emailAddress, value.data(using: .utf8)!)
             case .birthDate(let value):
@@ -187,20 +192,26 @@ public enum KYCNaturalPersonFieldsEnum {
 }
 
 public enum KYCFinancialAccountFieldKey {
+    static let bankName = "bank_name"
     static let bankAccountType = "bank_account_type"
     static let bankAccountNumber = "bank_account_number"
     static let bankNumber = "bank_number"
     static let bankPhoneNumber = "bank_phone_number"
     static let bankBranchNumber = "bank_branch_number"
+    static let externalTransferMemo = "external_transfer_memo"
     static let clabeNumber = "clabe_number"
     static let cbuNumber = "cbu_number"
     static let cbuAlias = "cbu_alias"
+    static let mobileMoneyNumber = "mobile_money_number"
+    static let mobileMoneyProvider = "mobile_money_provider"
     static let cryptoAddress = "crypto_address"
     static let cryptoMemo = "crypto_memo"
 
 }
 
 public enum KYCFinancialAccountFieldsEnum {
+    /// Name of the bank. May be necessary in regions that don't have a unified routing system.
+    case bankName(String)
     /// "checking" or "savings"
     case bankAccountType(String)
     /// Number identifying bank account
@@ -211,12 +222,18 @@ public enum KYCFinancialAccountFieldsEnum {
     case bankPhoneNumber(String)
     /// Number identifying bank branch
     case bankBranchNumber(String)
+    /// A destination tag/memo used to identify a transaction
+    case externalTransferMemo(String)
     /// Bank account number for Mexico
     case clabeNumber(String)
     /// Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU). The unique key for every bank account in Argentina used for receiving deposits.
     case cbuNumber(String)
     /// The alias for a Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU).
     case cbuAlias(String)
+    /// Mobile phone number in E.164 format with which a mobile money account is associated. Note that this number may be distinct from the same customer's mobile_number.
+    case mobileMoneyNumber(String)
+    /// Name of the mobile money service provider.
+    case mobileMoneyProvider(String)
     /// Address for a cryptocurrency account
     case cryptoAddress(String)
     /// A destination tag/memo used to identify a transaction
@@ -225,6 +242,8 @@ public enum KYCFinancialAccountFieldsEnum {
     var parameter:(String, Data) {
         get {
             switch self {
+            case .bankName(let value):
+                return (KYCFinancialAccountFieldKey.bankName, value.data(using: .utf8)!)
             case .bankAccountType(let value):
                 return (KYCFinancialAccountFieldKey.bankAccountType, value.data(using: .utf8)!)
             case .bankAccountNumber(let value):
@@ -235,12 +254,18 @@ public enum KYCFinancialAccountFieldsEnum {
                 return (KYCFinancialAccountFieldKey.bankPhoneNumber, value.data(using: .utf8)!)
             case .bankBranchNumber(let value):
                 return (KYCFinancialAccountFieldKey.bankBranchNumber, value.data(using: .utf8)!)
+            case .externalTransferMemo(let value):
+                return (KYCFinancialAccountFieldKey.externalTransferMemo, value.data(using: .utf8)!)
             case .clabeNumber(let value):
                 return (KYCFinancialAccountFieldKey.clabeNumber, value.data(using: .utf8)!)
             case .cbuNumber(let value):
                 return (KYCFinancialAccountFieldKey.cbuNumber, value.data(using: .utf8)!)
             case .cbuAlias(let value):
                 return (KYCFinancialAccountFieldKey.cbuAlias, value.data(using: .utf8)!)
+            case .mobileMoneyNumber(let value):
+                return (KYCFinancialAccountFieldKey.mobileMoneyNumber, value.data(using: .utf8)!)
+            case .mobileMoneyProvider(let value):
+                return (KYCFinancialAccountFieldKey.mobileMoneyProvider, value.data(using: .utf8)!)
             case .cryptoAddress(let value):
                 return (KYCFinancialAccountFieldKey.cryptoAddress, value.data(using: .utf8)!)
             case .cryptoMemo(let value):
