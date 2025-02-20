@@ -372,3 +372,71 @@ public enum KYCOrganizationFieldsEnum {
         }
     }
 }
+
+public enum KYCCardFieldKey {
+    static let number = "card.number"
+    static let expirationDate = "card.expiration_date"
+    static let cvc = "card.cvc"
+    static let holderName = "card.holder_name"
+    static let network = "card.network"
+    static let postalCode = "card.postal_code"
+    static let countryCode = "card.country_code"
+    static let stateOrProvince = "card.state_or_province"
+    static let city = "card.city"
+    static let address = "card.address"
+    static let token = "card.token"
+}
+
+public enum KYCCardFieldsEnum {
+    /// Card number
+    case number(String)
+    /// Expiration month and year in YY-MM format (e.g. 29-11, November 2029)
+    case expirationDate(String)
+    /// CVC number (Digits on the back of the card)
+    case cvc(String)
+    /// Name of the card holder
+    case holderName(String)
+    /// Brand of the card/network it operates within (e.g. Visa, Mastercard, AmEx, etc.)
+    case network(String)
+    /// Billing address postal code
+    case postalCode(String)
+    /// Billing address country code in ISO 3166-1 alpha-2 code (e.g. US)
+    case countryCode(String)
+    /// Name of state/province/region/prefecture is ISO 3166-2 format
+    case stateOrProvince(String)
+    /// Name of city/town
+    case city(String)
+    /// Entire address (country, state, postal code, street address, etc...) as a multi-line string
+    case address(String)
+    /// Token representation of the card in some external payment system (e.g. Stripe)
+    case token(String)
+    
+    var parameter:(String, Data) {
+        get {
+            switch self {
+            case .number(let value):
+                return (KYCCardFieldKey.number, value.data(using: .utf8)!)
+            case .expirationDate(let value):
+                return (KYCCardFieldKey.expirationDate, value.data(using: .utf8)!)
+            case .cvc(let value):
+                return (KYCCardFieldKey.cvc, value.data(using: .utf8)!)
+            case .holderName(let value):
+                return (KYCCardFieldKey.holderName, value.data(using: .utf8)!)
+            case .network(let value):
+                return (KYCCardFieldKey.network, value.data(using: .utf8)!)
+            case .postalCode(let value):
+                return (KYCCardFieldKey.postalCode, value.data(using: .utf8)!)
+            case .countryCode(let value):
+                return (KYCCardFieldKey.countryCode, value.data(using: .utf8)!)
+            case .stateOrProvince(let value):
+                return (KYCCardFieldKey.stateOrProvince, value.data(using: .utf8)!)
+            case .city(let value):
+                return (KYCCardFieldKey.city, value.data(using: .utf8)!)
+            case .address(let value):
+                return (KYCCardFieldKey.address, value.data(using: .utf8)!)
+            case .token(let value):
+                return (KYCCardFieldKey.token, value.data(using: .utf8)!)
+            }
+        }
+    }
+}

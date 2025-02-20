@@ -36,11 +36,14 @@ public struct PutCustomerInfoRequest {
     /// one or more of the fields listed in SEP-9
     public var fields:[KYCNaturalPersonFieldsEnum]?
     
-    /// one or more of the fields listed in SEP-9
+    /// one or more of the organization fields listed in SEP-9
     public var organizationFields:[KYCOrganizationFieldsEnum]?
     
-    /// one or more of the fields listed in SEP-9
+    /// one or more of the financial account fields listed in SEP-9
     public var financialAccountFields:[KYCFinancialAccountFieldsEnum]?
+    
+    /// one or more of the card fields listed in SEP-9
+    public var cardFields:[KYCCardFieldsEnum]?
     
     /// extra fields to send
     public var extraFields:[String:String]?
@@ -113,6 +116,12 @@ public struct PutCustomerInfoRequest {
         }
         
         if let fields = financialAccountFields {
+            for field in fields {
+                parameters[field.parameter.0] = field.parameter.1
+            }
+        }
+        
+        if let fields = cardFields {
             for field in fields {
                 parameters[field.parameter.0] = field.parameter.1
             }
