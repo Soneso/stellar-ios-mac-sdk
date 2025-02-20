@@ -109,7 +109,36 @@ final class KycServerTestCase: XCTestCase {
         let responseEnum = await kycService.getCustomerInfo(request: request)
         switch responseEnum {
         case .success(let response):
-            XCTAssertEqual("ACCEPTED", response.status)
+            let statusAccepted = "ACCEPTED"
+            let fieldTypeString = "string"
+            XCTAssertEqual(statusAccepted, response.status)
+            guard let providedFields = response.providedFields else {
+                XCTFail("should contain provided fields")
+                return
+            }
+            guard let firstName = providedFields["first_name"] else {
+                XCTFail("should contain provided field: first_name")
+                return
+            }
+            XCTAssertEqual(statusAccepted, firstName.status)
+            XCTAssertEqual("The customer's first name", firstName.description)
+            XCTAssertEqual(fieldTypeString, firstName.type)
+            
+            guard let lastName = providedFields["last_name"] else {
+                XCTFail("should contain provided field: last_name")
+                return
+            }
+            XCTAssertEqual(statusAccepted, lastName.status)
+            XCTAssertEqual("The customer's last name", lastName.description)
+            XCTAssertEqual(fieldTypeString, lastName.type)
+            
+            guard let emailAddress = providedFields["email_address"] else {
+                XCTFail("should contain provided field: email_address")
+                return
+            }
+            XCTAssertEqual(statusAccepted, emailAddress.status)
+            XCTAssertEqual("The customer's email address", emailAddress.description)
+            XCTAssertEqual(fieldTypeString, emailAddress.type)
         case .failure(_):
             XCTFail()
         }

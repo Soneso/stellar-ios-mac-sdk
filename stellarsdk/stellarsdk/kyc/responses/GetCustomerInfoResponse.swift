@@ -44,7 +44,7 @@ public struct GetCustomerInfoResponse: Decodable {
         id = try values.decodeIfPresent(String.self, forKey: .id)
         status = try values.decode(String.self, forKey: .status)
         fields = try values.decodeIfPresent([String:GetCustomerInfoField].self, forKey: .fields)
-        providedFields = try values.decodeIfPresent([String:GetCustomerInfoProvidedField].self, forKey: .fields)
+        providedFields = try values.decodeIfPresent([String:GetCustomerInfoProvidedField].self, forKey: .providedFields)
         message = try values.decodeIfPresent(String.self, forKey: .message)
     }
     
