@@ -112,19 +112,16 @@ public struct HashIDPreimageContractIDXDR: XDRCodable {
     
     let networkID: WrappedData32
     let contractIDPreimage: ContractIDPreimageXDR
-    let invocation: SorobanAuthorizedInvocationXDR
     
-    public init(networkID: WrappedData32, contractIDPreimage: ContractIDPreimageXDR, invocation: SorobanAuthorizedInvocationXDR) {
+    public init(networkID: WrappedData32, contractIDPreimage: ContractIDPreimageXDR) {
         self.networkID = networkID
         self.contractIDPreimage = contractIDPreimage
-        self.invocation = invocation
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(networkID)
         try container.encode(contractIDPreimage)
-        try container.encode(invocation)
     }
 }
 
