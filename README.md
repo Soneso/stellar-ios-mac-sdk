@@ -601,6 +601,10 @@ Our SDK is also used by the [LOBSTR Wallet](https://lobstr.co).
 
 This SDK provides [support for Soroban](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/soroban.md). 
 
+## Soroban Smart Wallets (Passkey) support
+
+We are working on integrating passkey support for Soroban Smart Wallets into this SDK. In the meantime, we are providing an experimental Passkey Kit for working with Soroban Smart Wallets that you can find here:  [SwiftPasskeyKit](https://github.com/Soneso/SwiftPasskeyKit). 
+
 ## How to contribute
 
 Please read our [Contribution Guide](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/CONTRIBUTING.md).
