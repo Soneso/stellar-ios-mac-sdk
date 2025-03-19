@@ -253,7 +253,7 @@ public struct WithdrawExchangeAsset: Decodable {
 
 public struct AnchorField: Decodable {
     
-    public var description: String
+    public var description: String?
     public var optional: Bool?
     public var choices: [String]?
     
@@ -271,7 +271,7 @@ public struct AnchorField: Decodable {
      */
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        description = try values.decode(String.self, forKey: .description)
+        description = try values.decodeIfPresent(String.self, forKey: .description)
         optional = try values.decodeIfPresent(Bool.self, forKey: .optional)
         choices = try values.decodeIfPresent([String].self, forKey: .choices)
     }

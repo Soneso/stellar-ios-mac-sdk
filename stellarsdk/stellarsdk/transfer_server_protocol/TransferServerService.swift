@@ -467,8 +467,8 @@ public class TransferServerService: NSObject {
      
      - Parameter language: (optional) Defaults to en if not specified or if the specified language is not supported. Language code specified using RFC 4646. error fields and other human readable messages in the response should be in this language.
      */
-    @available(*, renamed: "info(language:)")
-    public func info(language: String? = nil, completion:@escaping AnchorInfoResponseClosure) {
+    @available(*, renamed: "info(language:jwtToken:)")
+    public func info(language: String? = nil, jwtToken:String? = nil, completion:@escaping AnchorInfoResponseClosure) {
         Task {
             let result = await info(language: language)
             completion(result)
@@ -479,14 +479,15 @@ public class TransferServerService: NSObject {
      Allows an anchor to communicate basic info about what their TRANSFER_SERVER supports to wallets and clients.
      
      - Parameter language: (optional) Defaults to en if not specified or if the specified language is not supported. Language code specified using RFC 4646. error fields and other human readable messages in the response should be in this language.
+     - Parameter jwtToken: (optional) You can pass the jwt token here, if the anchor requires it for the info endpoint.
      */
-    public func info(language: String? = nil) async -> AnchorInfoResponseEnum {
+    public func info(language: String? = nil, jwtToken:String? = nil) async -> AnchorInfoResponseEnum {
         var requestPath = "/info"
         if let language = language {
             requestPath += "&lang=\(language)"
         }
         
-        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwtToken)
         switch result {
         case .success(let data):
             do {
