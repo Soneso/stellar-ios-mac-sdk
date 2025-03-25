@@ -17,7 +17,7 @@ public struct TransactionXDR: XDRCodable {
     public var operations: [OperationXDR]
     public var ext: TransactionExtXDR
     
-    private var signatures = [DecoratedSignatureXDR]()
+    public var signatures = [DecoratedSignatureXDR]()
     
     public init(sourceAccount: MuxedAccountXDR, seqNum: Int64, cond: PreconditionsXDR, memo: MemoXDR, operations: [OperationXDR], maxOperationFee:UInt32 = 100, ext:TransactionExtXDR = TransactionExtXDR.void) {
         self.sourceAccount = sourceAccount
