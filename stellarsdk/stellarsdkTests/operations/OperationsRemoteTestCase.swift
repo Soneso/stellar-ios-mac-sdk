@@ -134,28 +134,9 @@ class OperationsRemoteTestCase: XCTestCase {
         await claimClaimableBalance()
         await sponsorship()
         await sponsorship2()
+        await issue169()
     }
-    
-    func testIssue169() async {
-        let publicSdk = StellarSDK.publicNet()
-        let opId = "243686570245677057"
-        let operationResponseEnum = await publicSdk.operations.getOperationDetails(operationId: opId)
-        switch operationResponseEnum {
-        case .success(let details):
-            guard let invokeDetails = details as? InvokeHostFunctionOperationResponse else {
-                XCTFail("not invoke host func op")
-                return
-            }
-            guard let assetBalanceChanges = invokeDetails.assetBalanceChanges else {
-                XCTFail("no asset balance changes found")
-                return
-            }
-            XCTAssertTrue(assetBalanceChanges.count > 0)
-        case .failure(_):
-            XCTFail("could not load operation detailsfor operation id: \(opId)")
-        }
-    }
-    
+        
     func getOperations() async {
         let operationsResEnum = await sdk.operations.getOperations()
         switch operationsResEnum {
@@ -935,6 +916,25 @@ class OperationsRemoteTestCase: XCTestCase {
         }
     }
      
+    func issue169() async {
+        let publicSdk = StellarSDK.publicNet()
+        let opId = "243686570245677057"
+        let operationResponseEnum = await publicSdk.operations.getOperationDetails(operationId: opId)
+        switch operationResponseEnum {
+        case .success(let details):
+            guard let invokeDetails = details as? InvokeHostFunctionOperationResponse else {
+                XCTFail("not invoke host func op")
+                return
+            }
+            guard let assetBalanceChanges = invokeDetails.assetBalanceChanges else {
+                XCTFail("no asset balance changes found")
+                return
+            }
+            XCTAssertTrue(assetBalanceChanges.count > 0)
+        case .failure(_):
+            XCTFail("could not load operation details for operation id: \(opId)")
+        }
+    }
     
     func hexEncodedBalanceId(data: Data) -> String {
         let hexDigits = Array(("0123456789abcdef").utf16)
