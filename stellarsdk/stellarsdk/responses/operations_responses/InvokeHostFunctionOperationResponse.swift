@@ -74,7 +74,7 @@ public class AssetBalanceChange: NSObject, Decodable {
     public var assetCode:String?
     public var assetIssuer:String?
     public var type:String
-    public var from:String
+    public var from:String?
     public var to:String
     public var amount:String
    
@@ -102,7 +102,7 @@ public class AssetBalanceChange: NSObject, Decodable {
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)
         assetIssuer = try values.decodeIfPresent(String.self, forKey: .assetIssuer)
         type = try values.decode(String.self, forKey: .type)
-        from = try values.decode(String.self, forKey: .from)
+        from = try values.decodeIfPresent(String.self, forKey: .from)
         to = try values.decode(String.self, forKey: .to)
         amount = try values.decode(String.self, forKey: .amount)
     }

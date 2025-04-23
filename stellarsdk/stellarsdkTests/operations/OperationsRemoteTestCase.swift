@@ -136,6 +136,26 @@ class OperationsRemoteTestCase: XCTestCase {
         await sponsorship2()
     }
     
+    func testIssue169() async {
+        let publicSdk = StellarSDK.publicNet()
+        let opId = "243686570245677057"
+        let operationResponseEnum = await publicSdk.operations.getOperationDetails(operationId: opId)
+        switch operationResponseEnum {
+        case .success(let details):
+            guard let invokeDetails = details as? InvokeHostFunctionOperationResponse else {
+                XCTFail("not invoke host func op")
+                return
+            }
+            guard let assetBalanceChanges = invokeDetails.assetBalanceChanges else {
+                XCTFail("no asset balance changes found")
+                return
+            }
+            XCTAssertTrue(assetBalanceChanges.count > 0)
+        case .failure(_):
+            XCTFail("could not load operation detailsfor operation id: \(opId)")
+        }
+    }
+    
     func getOperations() async {
         let operationsResEnum = await sdk.operations.getOperations()
         switch operationsResEnum {
