@@ -135,6 +135,7 @@ class OperationsRemoteTestCase: XCTestCase {
         await sponsorship()
         await sponsorship2()
         await issue169()
+        await issue170()
     }
         
     func getOperations() async {
@@ -933,6 +934,22 @@ class OperationsRemoteTestCase: XCTestCase {
             XCTAssertTrue(assetBalanceChanges.count > 0)
         case .failure(_):
             XCTFail("could not load operation details for operation id: \(opId)")
+        }
+    }
+    
+    func issue170() async {
+        let publicSdk = StellarSDK.publicNet()
+        let responseEnum = await publicSdk.operations.getOperationDetails(operationId: "235893644145414236")
+        switch responseEnum {
+        case .success(let details):
+            guard let cOp = details as? CreateClaimableBalanceOperationResponse else {
+                XCTFail()
+                return
+            }
+            XCTAssertNil(cOp.sponsor)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"issue170()", horizonRequestError: error)
+            XCTFail()
         }
     }
     

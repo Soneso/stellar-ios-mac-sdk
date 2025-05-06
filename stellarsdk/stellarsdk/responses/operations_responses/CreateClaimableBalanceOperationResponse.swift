@@ -10,7 +10,7 @@ import Foundation
 
 public class CreateClaimableBalanceOperationResponse: OperationResponse {
     
-    public var sponsor:String
+    public var sponsor:String?
     public var asset:Asset
     public var amount:String
     public var claimants: [ClaimantResponse]
@@ -25,7 +25,7 @@ public class CreateClaimableBalanceOperationResponse: OperationResponse {
     
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        sponsor = try values.decode(String.self, forKey: .sponsor)
+        sponsor = try values.decodeIfPresent(String.self, forKey: .sponsor)
         let canonicalAsset = try values.decode(String.self, forKey: .asset)
         if let a = Asset(canonicalForm: canonicalAsset) {
             asset = a
