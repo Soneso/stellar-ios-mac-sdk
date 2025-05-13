@@ -12,8 +12,8 @@ public struct TransactionXDR: XDRCodable {
     public let sourceAccount: MuxedAccountXDR
     public var fee: UInt32
     public let seqNum: Int64
-    public let cond: PreconditionsXDR
-    public let memo: MemoXDR
+    public var cond: PreconditionsXDR
+    public var memo: MemoXDR
     public var operations: [OperationXDR]
     public var ext: TransactionExtXDR
     

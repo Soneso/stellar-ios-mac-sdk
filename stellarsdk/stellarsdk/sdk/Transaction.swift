@@ -12,11 +12,12 @@ import Foundation
 /// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/transactions.html, "Transactions")
 public class Transaction {
     
-    public var fee:UInt32
+    public static let minBaseFee:UInt32 = 100
+    public private(set) var fee:UInt32
     public let sourceAccount:TransactionAccount
-    public let operations:[Operation]
-    public let memo:Memo
-    public let preconditions:TransactionPreconditions?
+    public private(set) var operations:[Operation]
+    public private(set) var memo:Memo
+    public private(set) var preconditions:TransactionPreconditions?
     public private(set) var transactionXDR:TransactionXDR
     
     public var xdrEncoded: String? {
@@ -34,7 +35,7 @@ public class Transaction {
     /// - Parameter maxOperationFee: Optional. The maximum fee in stoops you are willing to pay per operation. If not set, it will default to the network base fee which is currently set to 100 stroops (0.00001 lumens). Transaction fee is equal to operation fee times number of operations in this transaction.
     /// - Parameter sorobanTransactionData: Optional. Soroban Transaction Data
     ///
-    public init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, preconditions:TransactionPreconditions? = nil, maxOperationFee:UInt32 = 100, sorobanTransactionData:SorobanTransactionDataXDR? = nil) throws {
+    public init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, preconditions:TransactionPreconditions? = nil, maxOperationFee:UInt32 = Transaction.minBaseFee, sorobanTransactionData:SorobanTransactionDataXDR? = nil) throws {
         if operations.count == 0 {
             throw StellarSDKError.invalidArgument(message: "At least one operation required")
         }
@@ -78,7 +79,7 @@ public class Transaction {
     }
     
     @available(*, deprecated, message: "use init with preconditions instead")
-    public convenience init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, timeBounds:TimeBounds?, maxOperationFee:UInt32 = 100) throws {
+    public convenience init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, timeBounds:TimeBounds?, maxOperationFee:UInt32 = Transaction.minBaseFee) throws {
         let precond = TransactionPreconditions(timeBounds:timeBounds)
         try self.init(sourceAccount:sourceAccount, operations:operations, memo:memo, preconditions:precond, maxOperationFee:maxOperationFee)
     }
@@ -192,5 +193,29 @@ public class Transaction {
         for i in 0...transactionXDR.operations.count - 1 {
             transactionXDR.operations[i].setSorobanAuth(auth: authToSet!)
         }
+    }
+    
+    public func setMemo(memo:Memo? = nil) {
+        self.memo = memo ?? Memo.none
+        transactionXDR.memo = self.memo.toXDR()
+    }
+    
+    public func setPreconditions(preconditions:TransactionPreconditions? = nil) {
+        self.preconditions = preconditions
+        var condXdr = PreconditionsXDR.none
+        if let pc = self.preconditions {
+            condXdr = pc.toXdr()
+        }
+        transactionXDR.cond = condXdr
+    }
+    
+    public func setFee(fee:UInt32) {
+        self.fee = fee
+        transactionXDR.fee = self.fee
+    }
+    
+    public func addOperation(operation:Operation) throws {
+        self.operations.append(operation)
+        self.transactionXDR.operations.append(try operation.toXDR())
     }
 }

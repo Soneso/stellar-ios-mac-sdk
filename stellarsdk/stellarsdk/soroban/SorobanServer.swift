@@ -659,7 +659,7 @@ public class SorobanServer {
     
     /// Submit a real transaction to the stellar network. This is the only way to make changes “on-chain”.
     /// Unlike Horizon, this does not wait for transaction completion. It simply validates and enqueues the transaction.
-    /// Clients should call getTransactionStatus to learn about transaction success/failure.
+    /// Clients should call getTransaction to learn about transaction success/failure.
     /// See: https://soroban.stellar.org/api/methods/sendTransaction
     @available(*, renamed: "sendTransaction(transaction:)")
     public func sendTransaction(transaction: Transaction, completion:@escaping SendTransactionResponseClosure) {
@@ -671,7 +671,7 @@ public class SorobanServer {
     
     /// Submit a real transaction to the stellar network. This is the only way to make changes “on-chain”.
     /// Unlike Horizon, this does not wait for transaction completion. It simply validates and enqueues the transaction.
-    /// Clients should call getTransactionStatus to learn about transaction success/failure.
+    /// Clients should call getTransaction to learn about transaction success/failure.
     /// See: https://soroban.stellar.org/api/methods/sendTransaction
     public func sendTransaction(transaction: Transaction) async -> SendTransactionResponseEnum {
         

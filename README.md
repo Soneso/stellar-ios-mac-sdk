@@ -12,7 +12,7 @@ This is the core `stellar-ios-mac` SDK. If you are looking for an easy way to bu
 #### Latest stable release:
 
 ```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.0.9"),
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.1.0"),
 ```
 
 If not loading (err: `cannot use bare repository`), then remove:
@@ -40,7 +40,7 @@ To integrate stellar SDK into your Xcode project using CocoaPods, specify it in 
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk', '~> 3.0.9'
+    pod 'stellar-ios-mac-sdk', '~> 3.1.0'
 end
 ```
 
@@ -67,7 +67,7 @@ To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify
 #### Last stable release:
 
 ```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 3.0.9
+github "soneso/stellar-ios-mac-sdk" ~> 3.1.0
 ```
 
 Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.

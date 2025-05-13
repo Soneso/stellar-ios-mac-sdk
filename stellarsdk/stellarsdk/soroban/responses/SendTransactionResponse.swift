@@ -35,6 +35,8 @@ public class SendTransactionResponse: NSObject, Decodable {
     /// (optional) If the transaction status is ERROR, this will be the raw TransactionResult XDR struct containing details on why stellar-core rejected the transaction.
     public var errorResult:TransactionResultXDR?
     
+    public var errorResultXdr:String?
+    
     /// (optional) If the transaction status is ERROR, this field may be present. Each entry is a raw DiagnosticEvent XDR struct containing details on why stellar-core rejected the transaction.
     public var diagnosticEvents:[DiagnosticEventXDR]?
     
@@ -56,6 +58,7 @@ public class SendTransactionResponse: NSObject, Decodable {
         latestLedgerCloseTime = try values.decode(String.self, forKey: .latestLedgerCloseTime)
         error = try values.decodeIfPresent(TransactionStatusError.self, forKey: .error)
         if let errorResultXdrStr = try values.decodeIfPresent(String.self, forKey: .errorResultXdr) {
+            errorResultXdr = errorResultXdrStr
             errorResult = try? TransactionResultXDR.fromXdr(base64: errorResultXdrStr)
         }
         
