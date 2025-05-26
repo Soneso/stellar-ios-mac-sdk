@@ -56,12 +56,12 @@ final class SubmitTransactionAsyncTestCase: XCTestCase {
 
                     
                     try! transaction.sign(keyPair: self.accountKeyPair, network: Network.testnet)
-                    try! self.sdk.transactions.submitAsyncTransaction(transaction: transaction) { (response) -> (Void) in
+                    self.sdk.transactions.submitAsyncTransaction(transaction: transaction) { (response) -> (Void) in
                         switch response {
                         case .success(let submitAsyncResponse):
                             XCTAssertEqual("PENDING", submitAsyncResponse.txStatus)
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                try! self.sdk.transactions.submitAsyncTransaction(transaction: transaction) { (response) -> (Void) in
+                                self.sdk.transactions.submitAsyncTransaction(transaction: transaction) { (response) -> (Void) in
                                     switch response {
                                     case .success(let submitAsyncResponse2):
                                         XCTAssertEqual("DUPLICATE", submitAsyncResponse2.txStatus)
@@ -106,7 +106,7 @@ final class SubmitTransactionAsyncTestCase: XCTestCase {
 
             
             try! transaction.sign(keyPair: self.accountKeyPair, network: Network.testnet)
-            try! self.sdk.transactions.submitAsyncTransaction(transaction: transaction) { (response) -> (Void) in
+            self.sdk.transactions.submitAsyncTransaction(transaction: transaction) { (response) -> (Void) in
                 switch response {
                 case .success(let submitAsyncResponse):
                     XCTAssertEqual("ERROR", submitAsyncResponse.txStatus)

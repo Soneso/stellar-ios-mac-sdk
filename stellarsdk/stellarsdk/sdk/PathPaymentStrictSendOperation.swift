@@ -12,22 +12,9 @@ public class PathPaymentStrictSendOperation:PathPaymentOperation
 {
     
     /// Creates a new PathPaymentStrictSendOperation object.
-    @available(*, deprecated, message: "use init(sourceAccountId:String?, ..., destinationAccountId:String, ...) instead")
-    public override init(sourceAccount:KeyPair? = nil, sendAsset:Asset, sendMax:Decimal, destination:KeyPair, destAsset:Asset, destAmount:Decimal, path:[Asset]) throws {
-        
-        try super.init(sourceAccount: sourceAccount, sendAsset: sendAsset, sendMax: sendMax, destination: destination, destAsset: destAsset, destAmount: destAmount, path: path);
-    }
-    
-    /// Creates a new PathPaymentStrictSendOperation object.
     public override init(sourceAccountId:String?, sendAsset:Asset, sendMax:Decimal, destinationAccountId:String, destAsset:Asset, destAmount:Decimal, path:[Asset]) throws {
         
         try super.init(sourceAccountId: sourceAccountId, sendAsset: sendAsset, sendMax: sendMax, destinationAccountId: destinationAccountId, destAsset: destAsset, destAmount: destAmount, path: path);
-    }
-    
-    /// Creates a new PathPaymentStrictSendOperation object from the given PathPaymentOperationXDR object.
-    @available(*, deprecated, message: "use init(fromXDR:PaymentOperationXDR, sourceAccountId:String?) instead")
-    public override init(fromXDR:PathPaymentOperationXDR, sourceAccount:KeyPair? = nil) {
-        super.init(fromXDR: fromXDR, sourceAccount: sourceAccount)
     }
     
     /// Creates a new PathPaymentStrictSendOperation object from the given PathPaymentOperationXDR object.

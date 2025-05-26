@@ -19,9 +19,9 @@ class Sep08FollowNextMock: ResponsesMock {
     
     override func requestMock() -> RequestMock {
         let handler: MockHandler = { [weak self] mock, request in
-            if let data = request.httpBodyStream?.readfully() {
-                let body = String(decoding: data, as: UTF8.self)
-                //print(body)
+            if let _ = request.httpBodyStream?.readfully() {
+                // let body = String(decoding: data, as: UTF8.self)
+                // print(body)
                 mock.statusCode = 200
                 return """
                     {

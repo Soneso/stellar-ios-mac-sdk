@@ -12,31 +12,7 @@ import Foundation
 /// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html#account-merge, "Account Merge Operations").
 public class AccountMergeOperation:Operation {
     
-    @available(*, deprecated, message: "use destinationAccountId instead")
-    public let destination:KeyPair
     public let destinationAccountId:String
-    
-    /// Creates a new AccountMergeOperation object.
-    ///
-    /// - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
-    /// - Parameter destination: The account that receives the remaining XLM balance of the source account.
-    ///
-    @available(*, deprecated, message: "use init(destinationAccountId:String, sourceAccountId:String?) instead")
-    public init(sourceAccount:KeyPair? = nil, destination:KeyPair) {
-        self.destination = destination
-        self.destinationAccountId = destination.accountId
-        super.init(sourceAccount:sourceAccount)
-    }
-    
-    /// Creates a new AccountMergeOperation object from the given PublicKey object representing the destination account.
-    ///
-    /// - Parameter destinatioAccountPublicKey: the PublicKey object representing the destination account to be used to create a new AccountMergeOperation object.
-    @available(*, deprecated, message: "use init(destinationAccountId:String, sourceAccountId:String?) instead")
-    public init(destinatioAccountPublicKey:PublicKey, sourceAccount:KeyPair? = nil) {
-        self.destination = KeyPair(publicKey: destinatioAccountPublicKey)
-        self.destinationAccountId = destination.accountId
-        super.init(sourceAccount: sourceAccount)
-    }
     
     /// Creates a new AccountMergeOperation object.
     ///
@@ -46,7 +22,6 @@ public class AccountMergeOperation:Operation {
     public init(destinationAccountId:String, sourceAccountId:String?) throws {
         let mux = try destinationAccountId.decodeMuxedAccount()
         self.destinationAccountId = mux.accountId
-        self.destination = try KeyPair(accountId: mux.ed25519AccountId)
         super.init(sourceAccountId:sourceAccountId)
     }
     

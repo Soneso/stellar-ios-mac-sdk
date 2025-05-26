@@ -17,18 +17,6 @@ public class CreateAccountOperation:Operation {
     
     /// Creates a new CreateAccountOperation object.
     ///
-    /// - Parameter sourceAccount: Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
-    /// - Parameter destination: Account address that is created and funded.
-    /// - Parameter startBalance: Amount of XLM to send to the newly created account. This XLM comes from the source account.
-    @available(*, deprecated, message: "use init(sourceAccountId:String?, ...) instead")
-    public init(sourceAccount:KeyPair? = nil, destination:KeyPair, startBalance:Decimal) {
-        self.destination = destination
-        self.startBalance = startBalance
-        super.init(sourceAccount:sourceAccount)
-    }
-    
-    /// Creates a new CreateAccountOperation object.
-    ///
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     /// - Parameter destination: Account address that is created and funded.
     /// - Parameter startBalance: Amount of XLM to send to the newly created account. This XLM comes from the source account.
@@ -43,17 +31,6 @@ public class CreateAccountOperation:Operation {
         self.destination = try KeyPair(accountId: destinationAccountId)
         self.startBalance = startBalance
         super.init(sourceAccountId:sourceAccountId)
-    }
-
-    /// Creates a new CreateAccountOperation object from the given CreateAccountOperationXDR object.
-    ///
-    /// - Parameter fromXDR: the CreateAccountOperationXDR object to be used to create a new CreateAccountOperation object.
-    ///
-    @available(*, deprecated, message: "use init(..., sourceAccountId:String?) instead")
-    public init(fromXDR:CreateAccountOperationXDR, sourceAccount:KeyPair? = nil) {
-        self.destination = KeyPair(publicKey: fromXDR.destination)
-        self.startBalance = Operation.fromXDRAmount(fromXDR.startingBalance)
-        super.init(sourceAccount: sourceAccount)
     }
     
     /// Creates a new CreateAccountOperation object from the given CreateAccountOperationXDR object.

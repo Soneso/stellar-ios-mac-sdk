@@ -34,40 +34,40 @@ enum Token: Hashable {
     case TableEnd
     case Comment(String)
 
-    var hashValue: Int {
+    public func hash(into hasher: inout Hasher) {
         switch self {
         case .Identifier:
-            return 0
+            hasher.combine(0)
         case .Key:
-            return 1
+            hasher.combine(1)
         case .IntegerNumber:
-            return 2
+            hasher.combine(2)
         case .DoubleNumber:
-            return 3
+            hasher.combine(3)
         case .Boolean:
-            return 4
+            hasher.combine(4)
         case .DateTime:
-            return 5
+            hasher.combine(5)
         case .ArrayBegin:
-            return 6
+            hasher.combine(6)
         case .ArrayEnd:
-            return 7
+            hasher.combine(7)
         case .TableArrayBegin:
-            return 8
+            hasher.combine(8)
         case .TableArrayEnd:
-            return 9
+            hasher.combine(9)
         case .InlineTableBegin:
-            return 10
+            hasher.combine(10)
         case .InlineTableEnd:
-            return 11
+            hasher.combine(11)
         case .TableBegin:
-            return 12
+            hasher.combine(12)
         case .TableSep:
-            return 13
+            hasher.combine(13)
         case .TableEnd:
-            return 14
+            hasher.combine(14)
         case .Comment:
-            return 15
+            hasher.combine(15)
         }
     }
 

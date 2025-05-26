@@ -38,8 +38,8 @@ public struct Path: Hashable, Equatable {
         return true
     }
 
-    public var hashValue: Int {
-        return components.reduce(0, { $0 ^ $1.hashValue })
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(components.reduce(0, { $0 ^ $1.hashValue }))
     }
 
     public static func == (lhs: Path, rhs: Path) -> Bool {

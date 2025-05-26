@@ -231,7 +231,7 @@ public enum TransactionEnvelopeXDR: XDRCodable {
     public var txExt: TransactionExtXDR? {
         get {
             switch self {
-            case .v0(let tev0):
+            case .v0(_):
                 return nil
             case .v1(let tev1):
                 return tev1.tx.ext

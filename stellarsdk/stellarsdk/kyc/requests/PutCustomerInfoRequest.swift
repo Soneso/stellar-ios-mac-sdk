@@ -81,21 +81,21 @@ public struct PutCustomerInfoRequest {
         if let fields = fields {
             for field in fields {
                 switch field {
-                case .photoIdFront(let data):
+                case .photoIdFront(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
-                case .photoIdBack(let data):
+                case .photoIdBack(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
-                case .notaryApprovalOfPhotoId(let data):
+                case .notaryApprovalOfPhotoId(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
-                case .ipAddress(let string):
+                case .ipAddress(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
-                case .photoProofResidence(let data):
+                case .photoProofResidence(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
-                case .proofOfIncome(let data):
+                case .proofOfIncome(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
-                case .proofOfLiveness(let data):
+                case .proofOfLiveness(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
-                case .referralId(let data):
+                case .referralId(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
                 default:
                     parameters[field.parameter.0] = field.parameter.1
@@ -105,9 +105,9 @@ public struct PutCustomerInfoRequest {
         if let fields = organizationFields {
             for field in fields {
                 switch field {
-                case .photoIncorporationDoc(let data):
+                case .photoIncorporationDoc(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
-                case .photoProofAddress(let data):
+                case .photoProofAddress(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
                 default:
                     parameters[field.parameter.0] = field.parameter.1

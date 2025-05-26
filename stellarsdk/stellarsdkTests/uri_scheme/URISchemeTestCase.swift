@@ -36,7 +36,7 @@ class URISchemeTestCase: XCTestCase {
         
         let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: accountID);
         switch accDetailsResEnum {
-        case .success(let accountResponse):
+        case .success(_):
             return
         case .failure(_):
             let responseEnum = await sdk.accounts.createTestAccount(accountId: accountID)
@@ -127,7 +127,7 @@ class URISchemeTestCase: XCTestCase {
         switch responseEnum {
         case .success(let signedURL):
             self.validTestUrl = signedURL
-        case .failure(let uRISchemeErrors):
+        case .failure(_):
             XCTFail()
         }
     }
@@ -137,7 +137,7 @@ class URISchemeTestCase: XCTestCase {
         switch responseEnum {
         case .success:
             return
-        case .failure(let error):
+        case .failure(_):
             XCTFail()
         }
     }
@@ -206,7 +206,6 @@ class URISchemeTestCase: XCTestCase {
     func checkNotConfirmed() async {
         let uriBuilder = URIScheme()
         let keyPair = try! KeyPair(secretSeed: secretSeed)
-        let url = "web+stellar:tx?xdr=asdasdsadsadsa"
         let responseEnum = await uriBuilder.signAndSubmitTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair, transactionConfirmation: { (transaction) -> (Bool) in
             return false
         })

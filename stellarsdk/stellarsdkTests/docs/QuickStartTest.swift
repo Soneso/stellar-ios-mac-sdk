@@ -154,10 +154,10 @@ class QuickStartTest: XCTestCase {
                 else if let nextPayment = payment as? AccountCreatedOperationResponse {
                     print("account \(nextPayment.account) created by \(nextPayment.funder)" )
                 }
-                else if let nextPayment = payment as? PathPaymentStrictSendOperationResponse {
+                else if let _ = payment as? PathPaymentStrictSendOperationResponse {
                     continue
                 }
-                else if let nextPayment = payment as? PathPaymentStrictReceiveOperationResponse {
+                else if let _ = payment as? PathPaymentStrictReceiveOperationResponse {
                     continue
                 }
             }

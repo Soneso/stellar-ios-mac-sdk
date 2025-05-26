@@ -44,7 +44,7 @@ public enum ExtendFootprintTTLResultXDR: XDRCodable {
     }
     
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
+        let _ = encoder.unkeyedContainer()
         switch self {
         case .success:
             break

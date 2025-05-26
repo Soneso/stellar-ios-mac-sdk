@@ -12,24 +12,9 @@ import Foundation
 /// See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/operations.html, "Operations")
 /// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html, "List of Operations")
 public class Operation {
-    @available(*, deprecated, message: "use sourceAccountId instead")
-    public private (set) var sourceAccount:KeyPair?
     public private (set) var sourceAccountId:String? //"G..." or "M..."
     public private (set) var sourceAccountXdr: MuxedAccountXDR?
-    
-    /// Creates a new operation object.
-    ///
-    /// - Parameter sourceAccount: (optional) Operations are executed on behalf of the source account specified in the transaction, unless there is an override defined for the operation.
-    ///
-    @available(*, deprecated, message: "use init(sourceAccountId:String?) instead")
-    public init(sourceAccount:KeyPair?) {
-        if let sa = sourceAccount, let mux = try? sa.accountId.decodeMuxedAccount() {
-            self.sourceAccount = sourceAccount
-            self.sourceAccountId = sa.accountId
-            self.sourceAccountXdr = mux
-        }
-    }
-    
+        
     /// Creates a new operation object.
     ///
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
@@ -37,7 +22,6 @@ public class Operation {
     public init(sourceAccountId:String?) {
         
         if let saId = sourceAccountId, let mux = try? saId.decodeMuxedAccount() {
-            self.sourceAccount = try? KeyPair(accountId: mux.ed25519AccountId)
             self.sourceAccountId = sourceAccountId
             self.sourceAccountXdr = mux
         }

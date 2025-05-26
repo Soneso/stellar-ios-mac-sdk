@@ -20,8 +20,8 @@ class Sep08PostSuccessMock: ResponsesMock {
     override func requestMock() -> RequestMock {
         let handler: MockHandler = { [weak self] mock, request in
             if let data = request.httpBodyStream?.readfully() {
-                let body = String(decoding: data, as: UTF8.self)
-                //print(body)
+                // let body = String(decoding: data, as: UTF8.self)
+                // print(body)
                 let request = try! self!.jsonDecoder.decode(Sep08PostTestRequest.self, from: data)
                 mock.statusCode = 200
                 return """

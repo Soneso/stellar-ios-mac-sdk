@@ -20,7 +20,6 @@ class TradesTestCase: XCTestCase {
     
     override func setUp() async throws {
         try await super.setUp()
-        let expectation = XCTestExpectation(description: "accounts prepared for tests")
 
         let testAccountId = sellerKeyPair.accountId
         let issuingAccountId = IOMIssuerKeyPair.accountId

@@ -119,7 +119,6 @@ final class SorobanClientTest: XCTestCase {
     }
     
     func atomicSwapTest() async throws {
-        let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
         
         let swapContractWasmHash = try await installContract(fileName: swapContractFilename)
         print("Installed swap contract wasm hash: \(swapContractWasmHash)")
