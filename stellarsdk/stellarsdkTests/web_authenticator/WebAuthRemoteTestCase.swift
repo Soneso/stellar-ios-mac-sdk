@@ -50,7 +50,7 @@ final class WebAuthRemoteTestCase: XCTestCase {
     
     func testGetJWTSuccess2() async {
         let authEndpoint = "https://testanchor.stellar.org/auth"
-        let serverSigningKey = "GCUZ6YLL5RQBTYLTTQLPCM73C5XAIUGK2TIMWQH7HPSGWVS2KJ2F3CHS"
+        let serverSigningKey = "GCHLHDBOKG2JWMJQBTLSL5XG6NO7ESXI2TAQKZXCXWXB5WI2X6W233PR"
         let serverHomeDomain = "testanchor.stellar.org"
         
         let webAuth = WebAuthenticator(authEndpoint: authEndpoint, network: .testnet,
