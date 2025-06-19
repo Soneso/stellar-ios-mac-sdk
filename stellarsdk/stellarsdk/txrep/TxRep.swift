@@ -913,10 +913,31 @@ public class TxRep: NSObject {
         let vStr = try getString(dic: dic, key: key)
         if let v = UInt8(vStr) {
             if v == 1 {
+                var ext = SorobanResourcesExt.void
+                let extStr = try getString(dic: dic, key: prefix + "sorobanData.ext.v")
+                if let extV = Int(extStr), extV == 1 {
+                    let key = prefix + "sorobanData.ext.archivedSorobanEntries.len"
+                    let lenStr = try getString(dic: dic, key: key)
+                    var archivedSorobanEntries:[UInt32] = []
+                    if let count = Int(lenStr) {
+                        for i in 0..<count{
+                            let key = prefix + "sorobanData.ext.archivedSorobanEntries[\(i)]"
+                            let valStr = try getString(dic: dic, key: key)
+                            if let val = UInt32(valStr) {
+                                archivedSorobanEntries.append(val)
+                            } else {
+                                throw TxRepError.invalidValue(key: key)
+                            }
+                        }
+                    } else {
+                        throw TxRepError.invalidValue(key: key)
+                    }
+                    ext = SorobanResourcesExt.resourceExt(SorobanResourcesExtV0(archivedSorobanEntries: archivedSorobanEntries))
+                }
                 let sorobanResources = try getSorobanResources(dic: dic, prefix: prefix + "sorobanData.resources.")
                 let resourceFeeStr = try getString(dic: dic, key: prefix + "sorobanData.resourceFee")
                 if let resourceFee = Int64(resourceFeeStr) {
-                    return SorobanTransactionDataXDR(resources: sorobanResources, resourceFee: resourceFee)
+                    return SorobanTransactionDataXDR(ext: ext, resources: sorobanResources, resourceFee: resourceFee)
                 }
             }
             return nil
@@ -3029,7 +3050,20 @@ public class TxRep: NSObject {
     }
     
     private static func addSorobanTransactionData(data: SorobanTransactionDataXDR, prefix:String, lines: inout [String]) -> Void {
-        addLine(key: prefix + "ext.v", value: "0", lines: &lines)
+        switch data.ext {
+        case .void:
+            addLine(key: prefix + "ext.v", value: "0" , lines: &lines)
+        case .resourceExt(let sorobanResourcesExtV0):
+            addLine(key: prefix + "ext.v", value: "1" , lines: &lines)
+            let archivedSorobanEntries = sorobanResourcesExtV0.archivedSorobanEntries
+            addLine(key: prefix + "ext.archivedSorobanEntries.len" , value: String(archivedSorobanEntries.count), lines: &lines)
+            var index = 0
+            for entry in archivedSorobanEntries {
+                addLine(key: prefix + "ext.archivedSorobanEntries[\(index)]" , value: String(entry), lines: &lines)
+                index += 1
+            }
+        }
+        
         addSorobanResources(resources: data.resources, prefix: prefix + "resources.", lines: &lines)
         addLine(key: prefix + "resourceFee" , value: String(data.resourceFee), lines: &lines)
     }

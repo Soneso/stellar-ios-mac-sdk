@@ -746,7 +746,6 @@ public struct SorobanResourcesExtV0: XDRCodable {
     }
     
     public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
         archivedSorobanEntries = try decodeArray(type: UInt32.self, dec: decoder)
     }
     
