@@ -384,10 +384,18 @@ public enum ContractCodeEntryExt: XDRCodable {
     }
 }
 
+// Bandwidth related data settings for contracts.
+// We consider bandwidth to only be consumed by the transaction envelopes, hence
+// this concerns only transaction sizes.
 public struct ConfigSettingContractBandwidthV0XDR: XDRCodable {
     
+    // Maximum sum of all transaction sizes in the ledger in bytes
     public var ledgerMaxTxsSizeBytes: UInt32
+    
+    // Maximum size in bytes for a transaction
     public var txMaxSizeBytes: UInt32
+    
+    // Fee for 1 KB of transaction size
     public var feeTxSize1KB: Int64
 
     public init(ledgerMaxTxsSizeBytes: UInt32, txMaxSizeBytes: UInt32, feeTxSize1KB: Int64) {
@@ -411,11 +419,19 @@ public struct ConfigSettingContractBandwidthV0XDR: XDRCodable {
     }
 }
 
+// "Compute" settings for contracts (instructions and memory).
 public struct ConfigSettingContractComputeV0XDR: XDRCodable {
 
+    // Maximum instructions per ledger
     public var ledgerMaxInstructions: Int64
+    
+    // Maximum instructions per transaction
     public var txMaxInstructions: Int64
+    
+    // Cost of 10000 instructions
     public var feeRatePerInstructionsIncrement: Int64
+    
+    // Memory limit per transaction. Unlike instructions, there is no fee for memory, just the limit.
     public var txMemoryLimit: UInt32
 
     public init(ledgerMaxInstructions: Int64, txMaxInstructions: Int64, feeRatePerInstructionsIncrement: Int64, txMemoryLimit: UInt32) {
@@ -442,7 +458,10 @@ public struct ConfigSettingContractComputeV0XDR: XDRCodable {
     }
 }
 
+// Historical data (pushed to core archives) settings for contracts.
 public struct ConfigSettingContractHistoricalDataV0XDR: XDRCodable {
+    
+    // Fee for storing 1KB in archives
     public var feeHistorical1KB: Int64
 
     public init(feeHistorical1KB: Int64) {
@@ -460,83 +479,120 @@ public struct ConfigSettingContractHistoricalDataV0XDR: XDRCodable {
     }
 }
 
+// Ledger access settings for contracts.
 public struct ConfigSettingContractLedgerCostV0XDR: XDRCodable {
 
-    public var ledgerMaxReadLedgerEntries: UInt32
-    public var ledgerMaxReadBytes: UInt32
+    // Maximum number of disk entry read operations per ledger
+    public var ledgerMaxDiskReadEntries: UInt32
+    
+    // Maximum number of bytes of disk reads that can be performed per ledger
+    public var ledgerMaxDiskReadBytes: UInt32
+    
+    // Maximum number of ledger entry write operations per ledger
     public var ledgerMaxWriteLedgerEntries: UInt32
+    
+    // Maximum number of bytes that can be written per ledger
     public var ledgerMaxWriteBytes: UInt32
-    public var txMaxReadLedgerEntries: UInt32
-    public var txMaxReadBytes: UInt32
+    
+    // Maximum number of disk entry read operations per transaction
+    public var txMaxDiskReadEntries: UInt32
+    
+    // Maximum number of bytes of disk reads that can be performed per transaction
+    public var txMaxDiskReadBytes: UInt32
+    
+    // Maximum number of ledger entry write operations per transaction
     public var txMaxWriteLedgerEntries: UInt32
+    
+    // Maximum number of bytes that can be written per transaction
     public var txMaxWriteBytes: UInt32
-    public var feeReadLedgerEntry: Int64
+    
+    // Fee per disk ledger entry read
+    public var feeDiskReadLedgerEntry: Int64
+    
+    // Fee per ledger entry write
     public var feeWriteLedgerEntry: Int64
-    public var feeRead1KB: Int64
-    public var bucketListTargetSizeBytes: Int64
-    public var writeFee1KBBucketListLow: Int64
-    public var writeFee1KBBucketListHigh: Int64
-    public var bucketListWriteFeeGrowthFactor: UInt32
+    
+    // Fee for reading 1KB disk
+    public var feeDiskRead1KB: Int64
+    
+    // The following parameters determine the write fee per 1KB.
+    
+    // Rent fee grows linearly until soroban state reaches this size
+    public var sorobanStateTargetSizeBytes: Int64
+    
+    // Fee per 1KB rent when the soroban state is empty
+    public var rentFee1KBSorobanStateSizeLow: Int64
+    
+    // Fee per 1KB rent when the soroban state has reached `sorobanStateTargetSizeBytes`
+    public var rentFee1KBSorobanStateSizeHigh: Int64
+    
+    // Rent fee multiplier for any additional data past the first `sorobanStateTargetSizeBytes`
+    public var sorobanStateRentFeeGrowthFactor: UInt32
 
-    public init(ledgerMaxReadLedgerEntries: UInt32, ledgerMaxReadBytes: UInt32, ledgerMaxWriteLedgerEntries: UInt32, ledgerMaxWriteBytes: UInt32, txMaxReadLedgerEntries: UInt32, txMaxReadBytes: UInt32, txMaxWriteLedgerEntries: UInt32, txMaxWriteBytes: UInt32, feeReadLedgerEntry: Int64, feeWriteLedgerEntry: Int64, feeRead1KB: Int64, bucketListTargetSizeBytes: Int64, writeFee1KBBucketListLow: Int64, writeFee1KBBucketListHigh: Int64, bucketListWriteFeeGrowthFactor: UInt32) {
-        self.ledgerMaxReadLedgerEntries = ledgerMaxReadLedgerEntries
-        self.ledgerMaxReadBytes = ledgerMaxReadBytes
+    public init(ledgerMaxDiskReadEntries: UInt32, ledgerMaxDiskReadBytes: UInt32, ledgerMaxWriteLedgerEntries: UInt32, ledgerMaxWriteBytes: UInt32, txMaxDiskReadEntries: UInt32, txMaxDiskReadBytes: UInt32, txMaxWriteLedgerEntries: UInt32, txMaxWriteBytes: UInt32, feeDiskReadLedgerEntry: Int64, feeWriteLedgerEntry: Int64, feeDiskRead1KB: Int64, sorobanStateTargetSizeBytes: Int64, rentFee1KBSorobanStateSizeLow: Int64, rentFee1KBSorobanStateSizeHigh: Int64, sorobanStateRentFeeGrowthFactor: UInt32) {
+        self.ledgerMaxDiskReadEntries = ledgerMaxDiskReadEntries
+        self.ledgerMaxDiskReadBytes = ledgerMaxDiskReadBytes
         self.ledgerMaxWriteLedgerEntries = ledgerMaxWriteLedgerEntries
         self.ledgerMaxWriteBytes = ledgerMaxWriteBytes
-        self.txMaxReadLedgerEntries = txMaxReadLedgerEntries
-        self.txMaxReadBytes = txMaxReadBytes
+        self.txMaxDiskReadEntries = txMaxDiskReadEntries
+        self.txMaxDiskReadBytes = txMaxDiskReadBytes
         self.txMaxWriteLedgerEntries = txMaxWriteLedgerEntries
         self.txMaxWriteBytes = txMaxWriteBytes
-        self.feeReadLedgerEntry = feeReadLedgerEntry
+        self.feeDiskReadLedgerEntry = feeDiskReadLedgerEntry
         self.feeWriteLedgerEntry = feeWriteLedgerEntry
-        self.feeRead1KB = feeRead1KB
-        self.bucketListTargetSizeBytes = bucketListTargetSizeBytes
-        self.writeFee1KBBucketListLow = writeFee1KBBucketListLow
-        self.writeFee1KBBucketListHigh = writeFee1KBBucketListHigh
-        self.bucketListWriteFeeGrowthFactor = bucketListWriteFeeGrowthFactor
+        self.feeDiskRead1KB = feeDiskRead1KB
+        self.sorobanStateTargetSizeBytes = sorobanStateTargetSizeBytes
+        self.rentFee1KBSorobanStateSizeLow = rentFee1KBSorobanStateSizeLow
+        self.rentFee1KBSorobanStateSizeHigh = rentFee1KBSorobanStateSizeHigh
+        self.sorobanStateRentFeeGrowthFactor = sorobanStateRentFeeGrowthFactor
     }
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        ledgerMaxReadLedgerEntries = try container.decode(UInt32.self)
-        ledgerMaxReadBytes = try container.decode(UInt32.self)
+        ledgerMaxDiskReadEntries = try container.decode(UInt32.self)
+        ledgerMaxDiskReadBytes = try container.decode(UInt32.self)
         ledgerMaxWriteLedgerEntries = try container.decode(UInt32.self)
         ledgerMaxWriteBytes = try container.decode(UInt32.self)
-        txMaxReadLedgerEntries = try container.decode(UInt32.self)
-        txMaxReadBytes = try container.decode(UInt32.self)
+        txMaxDiskReadEntries = try container.decode(UInt32.self)
+        txMaxDiskReadBytes = try container.decode(UInt32.self)
         txMaxWriteLedgerEntries = try container.decode(UInt32.self)
         txMaxWriteBytes = try container.decode(UInt32.self)
-        feeReadLedgerEntry = try container.decode(Int64.self)
+        feeDiskReadLedgerEntry = try container.decode(Int64.self)
         feeWriteLedgerEntry = try container.decode(Int64.self)
-        feeRead1KB = try container.decode(Int64.self)
-        bucketListTargetSizeBytes = try container.decode(Int64.self)
-        writeFee1KBBucketListLow = try container.decode(Int64.self)
-        writeFee1KBBucketListHigh = try container.decode(Int64.self)
-        bucketListWriteFeeGrowthFactor = try container.decode(UInt32.self)
+        feeDiskRead1KB = try container.decode(Int64.self)
+        sorobanStateTargetSizeBytes = try container.decode(Int64.self)
+        rentFee1KBSorobanStateSizeLow = try container.decode(Int64.self)
+        rentFee1KBSorobanStateSizeHigh = try container.decode(Int64.self)
+        sorobanStateRentFeeGrowthFactor = try container.decode(UInt32.self)
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(ledgerMaxReadLedgerEntries)
-        try container.encode(ledgerMaxReadBytes)
+        try container.encode(ledgerMaxDiskReadEntries)
+        try container.encode(ledgerMaxDiskReadBytes)
         try container.encode(ledgerMaxWriteLedgerEntries)
         try container.encode(ledgerMaxWriteBytes)
-        try container.encode(txMaxReadLedgerEntries)
-        try container.encode(txMaxReadBytes)
+        try container.encode(txMaxDiskReadEntries)
+        try container.encode(txMaxDiskReadBytes)
         try container.encode(txMaxWriteLedgerEntries)
         try container.encode(txMaxWriteBytes)
-        try container.encode(feeReadLedgerEntry)
+        try container.encode(feeDiskReadLedgerEntry)
         try container.encode(feeWriteLedgerEntry)
-        try container.encode(feeRead1KB)
-        try container.encode(bucketListTargetSizeBytes)
-        try container.encode(writeFee1KBBucketListLow)
-        try container.encode(writeFee1KBBucketListHigh)
-        try container.encode(bucketListWriteFeeGrowthFactor)
+        try container.encode(feeDiskRead1KB)
+        try container.encode(sorobanStateTargetSizeBytes)
+        try container.encode(rentFee1KBSorobanStateSizeLow)
+        try container.encode(rentFee1KBSorobanStateSizeHigh)
+        try container.encode(sorobanStateRentFeeGrowthFactor)
     }
 }
 
+// Contract event-related settings.
 public struct ConfigSettingContractEventsV0XDR: XDRCodable {
+    
+    // Maximum size of events that a contract call can emit.
     public var txMaxContractEventsSizeBytes: UInt32
+    
+    // Fee for generating 1KB of contract events.
     public var feeContractEvents1KB: Int64
 
     public init(txMaxContractEventsSizeBytes: UInt32, feeContractEvents1KB: Int64) {
@@ -627,6 +683,98 @@ public struct EvictionIteratorXDR: XDRCodable {
     }
 }
 
+// Settings for running the contract transactions in parallel.
+public struct ConfigSettingContractParallelComputeV0: XDRCodable {
+
+    // Maximum number of clusters with dependent transactions allowed in a
+    // stage of parallel tx set component.
+    // This effectively sets the lower bound on the number of physical threads
+    // necessary to effectively apply transaction sets in parallel.
+    public var ledgerMaxDependentTxClusters: UInt32
+
+    public init(ledgerMaxDependentTxClusters: UInt32) {
+        self.ledgerMaxDependentTxClusters = ledgerMaxDependentTxClusters
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        ledgerMaxDependentTxClusters = try container.decode(UInt32.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(ledgerMaxDependentTxClusters)
+    }
+}
+
+// Ledger access settings for contracts.
+public struct ConfigSettingContractLedgerCostExtV0: XDRCodable {
+
+    // Maximum number of RO+RW entries in the transaction footprint.
+    public var txMaxFootprintEntries: UInt32
+    
+    // Fee per 1 KB of data written to the ledger.
+    // Unlike the rent fee, this is a flat fee that is charged for any ledger
+    // write, independent of the type of the entry being written.
+    public var feeWrite1KB: Int64
+
+    public init(txMaxFootprintEntries: UInt32, feeWrite1KB: Int64) {
+        self.txMaxFootprintEntries = txMaxFootprintEntries
+        self.feeWrite1KB = feeWrite1KB
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        txMaxFootprintEntries = try container.decode(UInt32.self)
+        feeWrite1KB = try container.decode(Int64.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(txMaxFootprintEntries)
+        try container.encode(feeWrite1KB)
+    }
+}
+
+public struct ConfigSettingSCPTiming: XDRCodable {
+
+    public var ledgerTargetCloseTimeMilliseconds: UInt32
+    public var nominationTimeoutInitialMilliseconds: UInt32
+    public var nominationTimeoutIncrementMilliseconds: UInt32
+    public var ballotTimeoutInitialMilliseconds: UInt32
+    public var ballotTimeoutIncrementMilliseconds: UInt32
+
+    public init(ledgerTargetCloseTimeMilliseconds: UInt32,
+                nominationTimeoutInitialMilliseconds: UInt32,
+                nominationTimeoutIncrementMilliseconds: UInt32,
+                ballotTimeoutInitialMilliseconds: UInt32,
+                ballotTimeoutIncrementMilliseconds: UInt32) {
+        self.ledgerTargetCloseTimeMilliseconds = ledgerTargetCloseTimeMilliseconds
+        self.nominationTimeoutInitialMilliseconds = nominationTimeoutInitialMilliseconds
+        self.nominationTimeoutIncrementMilliseconds = nominationTimeoutIncrementMilliseconds
+        self.ballotTimeoutInitialMilliseconds = ballotTimeoutInitialMilliseconds
+        self.ballotTimeoutIncrementMilliseconds = ballotTimeoutIncrementMilliseconds
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        ledgerTargetCloseTimeMilliseconds = try container.decode(UInt32.self)
+        nominationTimeoutInitialMilliseconds = try container.decode(UInt32.self)
+        nominationTimeoutIncrementMilliseconds = try container.decode(UInt32.self)
+        ballotTimeoutInitialMilliseconds = try container.decode(UInt32.self)
+        ballotTimeoutIncrementMilliseconds = try container.decode(UInt32.self)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(ledgerTargetCloseTimeMilliseconds)
+        try container.encode(nominationTimeoutInitialMilliseconds)
+        try container.encode(nominationTimeoutIncrementMilliseconds)
+        try container.encode(ballotTimeoutInitialMilliseconds)
+        try container.encode(ballotTimeoutIncrementMilliseconds)
+    }
+}
+
 
 public enum ConfigSettingEntryXDR: XDRCodable {
     case contractMaxSizeBytes(Int32)
@@ -641,8 +789,11 @@ public enum ConfigSettingEntryXDR: XDRCodable {
     case contractDataEntrySizeBytes(UInt32)
     case stateArchivalSettings(StateArchivalSettingsXDR)
     case contractExecutionLanes(ConfigSettingContractExecutionLanesV0XDR)
-    case bucketListSizeWindow([UInt64])
+    case liveSorobanStateSizeWindow([UInt64])
     case evictionIterator(EvictionIteratorXDR)
+    case contractParallelCompute(ConfigSettingContractParallelComputeV0)
+    case contractLedgerCostExt(ConfigSettingContractLedgerCostExtV0)
+    case contractSCPTiming(ConfigSettingSCPTiming)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -674,12 +825,18 @@ public enum ConfigSettingEntryXDR: XDRCodable {
                 self = .stateArchivalSettings(try container.decode(StateArchivalSettingsXDR.self))
             case ConfigSettingID.contractExecutionLanes.rawValue:
                 self = .contractExecutionLanes(try container.decode(ConfigSettingContractExecutionLanesV0XDR.self))
-            case ConfigSettingID.bucketListSizeWindow.rawValue:
-                self = .bucketListSizeWindow(try decodeArray(type: UInt64.self, dec: decoder))
+            case ConfigSettingID.liveSorobanStateSizeWindow.rawValue:
+                self = .liveSorobanStateSizeWindow(try decodeArray(type: UInt64.self, dec: decoder))
             case ConfigSettingID.evictionIterator.rawValue:
                 self = .evictionIterator(try container.decode(EvictionIteratorXDR.self))
+            case ConfigSettingID.contractParallelComputeV0.rawValue:
+                self = .contractParallelCompute(try container.decode(ConfigSettingContractParallelComputeV0.self))
+            case ConfigSettingID.contractLedgerCostExtV0.rawValue:
+                self = .contractLedgerCostExt(try container.decode(ConfigSettingContractLedgerCostExtV0.self))
+            case ConfigSettingID.scpTiming.rawValue:
+                self = .contractSCPTiming(try container.decode(ConfigSettingSCPTiming.self))
             default:
-                self = .bucketListSizeWindow(try decodeArray(type: UInt64.self, dec: decoder))
+                self = .liveSorobanStateSizeWindow(try decodeArray(type: UInt64.self, dec: decoder))
         }
         
     }
@@ -698,8 +855,11 @@ public enum ConfigSettingEntryXDR: XDRCodable {
             case .contractDataEntrySizeBytes: return ConfigSettingID.contractDataEntrySizeBytes.rawValue
             case .stateArchivalSettings: return ConfigSettingID.stateArchival.rawValue
             case .contractExecutionLanes: return ConfigSettingID.contractExecutionLanes.rawValue
-            case .bucketListSizeWindow: return ConfigSettingID.bucketListSizeWindow.rawValue
+            case .liveSorobanStateSizeWindow: return ConfigSettingID.liveSorobanStateSizeWindow.rawValue
             case .evictionIterator: return ConfigSettingID.evictionIterator.rawValue
+            case .contractParallelCompute: return ConfigSettingID.contractParallelComputeV0.rawValue
+            case .contractLedgerCostExt: return ConfigSettingID.contractLedgerCostExtV0.rawValue
+            case .contractSCPTiming: return ConfigSettingID.scpTiming.rawValue
         }
     }
     
@@ -733,9 +893,15 @@ public enum ConfigSettingEntryXDR: XDRCodable {
             try container.encode(val)
         case .contractExecutionLanes (let val):
             try container.encode(val)
-        case .bucketListSizeWindow (let val):
+        case .liveSorobanStateSizeWindow (let val):
             try container.encode(val)
         case .evictionIterator(let val):
+            try container.encode(val)
+        case .contractParallelCompute(let val):
+            try container.encode(val)
+        case .contractLedgerCostExt(let val):
+            try container.encode(val)
+        case .contractSCPTiming(let val):
             try container.encode(val)
         }
     }
@@ -746,23 +912,35 @@ public struct StateArchivalSettingsXDR: XDRCodable {
     public var maxEntryTTL: UInt32
     public var minTemporaryTTL: UInt32
     public var minPersistentTTL: UInt32
+    
+    // rent_fee = wfee_rate_average / rent_rate_denominator_for_type
     public var persistentRentRateDenominator: Int64
     public var tempRentRateDenominator: Int64
+    
+    // max number of entries that emit archival meta in a single ledger
     public var maxEntriesToArchive: UInt32
-    public var bucketListSizeWindowSampleSize: UInt32
-    public var bucketListWindowSamplePeriod: UInt32
+    
+    // Number of snapshots to use when calculating average live Soroban State size
+    public var liveSorobanStateSizeWindowSampleSize: UInt32
+    
+    // How often to sample the live Soroban State size for the average, in ledgers
+    public var liveSorobanStateSizeWindowSamplePeriod: UInt32
+    
+    // Maximum number of bytes that we scan for eviction per ledger
     public var evictionScanSize: UInt32
+    
+    // Lowest BucketList level to be scanned to evict entries
     public var startingEvictionScanLevel: UInt32
 
-    public init(maxEntryTTL: UInt32, minTemporaryTTL: UInt32, minPersistentTTL: UInt32, persistentRentRateDenominator: Int64, tempRentRateDenominator: Int64, maxEntriesToArchive: UInt32, bucketListSizeWindowSampleSize: UInt32, bucketListWindowSamplePeriod: UInt32, evictionScanSize: UInt32, startingEvictionScanLevel: UInt32) {
+    public init(maxEntryTTL: UInt32, minTemporaryTTL: UInt32, minPersistentTTL: UInt32, persistentRentRateDenominator: Int64, tempRentRateDenominator: Int64, maxEntriesToArchive: UInt32, liveSorobanStateSizeWindowSampleSize: UInt32, liveSorobanStateSizeWindowSamplePeriod: UInt32, evictionScanSize: UInt32, startingEvictionScanLevel: UInt32) {
         self.maxEntryTTL = maxEntryTTL
         self.minTemporaryTTL = minTemporaryTTL
         self.minPersistentTTL = minPersistentTTL
         self.persistentRentRateDenominator = persistentRentRateDenominator
         self.tempRentRateDenominator = tempRentRateDenominator
         self.maxEntriesToArchive = maxEntriesToArchive
-        self.bucketListSizeWindowSampleSize = bucketListSizeWindowSampleSize
-        self.bucketListWindowSamplePeriod = bucketListWindowSamplePeriod
+        self.liveSorobanStateSizeWindowSampleSize = liveSorobanStateSizeWindowSampleSize
+        self.liveSorobanStateSizeWindowSamplePeriod = liveSorobanStateSizeWindowSamplePeriod
         self.evictionScanSize = evictionScanSize
         self.startingEvictionScanLevel = startingEvictionScanLevel
     }
@@ -775,8 +953,8 @@ public struct StateArchivalSettingsXDR: XDRCodable {
         persistentRentRateDenominator = try container.decode(Int64.self)
         tempRentRateDenominator = try container.decode(Int64.self)
         maxEntriesToArchive = try container.decode(UInt32.self)
-        bucketListSizeWindowSampleSize = try container.decode(UInt32.self)
-        bucketListWindowSamplePeriod = try container.decode(UInt32.self)
+        liveSorobanStateSizeWindowSampleSize = try container.decode(UInt32.self)
+        liveSorobanStateSizeWindowSamplePeriod = try container.decode(UInt32.self)
         evictionScanSize = try container.decode(UInt32.self)
         startingEvictionScanLevel = try container.decode(UInt32.self)
     }
@@ -789,15 +967,17 @@ public struct StateArchivalSettingsXDR: XDRCodable {
         try container.encode(persistentRentRateDenominator)
         try container.encode(tempRentRateDenominator)
         try container.encode(maxEntriesToArchive)
-        try container.encode(bucketListSizeWindowSampleSize)
-        try container.encode(bucketListWindowSamplePeriod)
+        try container.encode(liveSorobanStateSizeWindowSampleSize)
+        try container.encode(liveSorobanStateSizeWindowSamplePeriod)
         try container.encode(evictionScanSize)
         try container.encode(startingEvictionScanLevel)
     }
 }
 
+// General “Soroban execution lane” settings
 public struct ConfigSettingContractExecutionLanesV0XDR: XDRCodable {
 
+    // maximum number of Soroban transactions per ledger
     public var ledgerMaxTxCount: UInt32
 
     public init(ledgerMaxTxCount: UInt32) {

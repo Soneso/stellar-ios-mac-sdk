@@ -13,6 +13,7 @@ public enum TransactionMetaType: Int32 {
     case transactionMetaV1 = 1
     case transactionMetaV2 = 2
     case transactionMetaV3 = 3
+    case transactionMetaV4 = 4
 }
 
 public enum TransactionMetaXDR: XDRCodable {
@@ -20,6 +21,7 @@ public enum TransactionMetaXDR: XDRCodable {
     case transactionMetaV1 (TransactionMetaV1XDR)
     case transactionMetaV2 (TransactionMetaV2XDR)
     case transactionMetaV3 (TransactionMetaV3XDR)
+    case transactionMetaV4 (TransactionMetaV4XDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -33,6 +35,8 @@ public enum TransactionMetaXDR: XDRCodable {
                 self = .transactionMetaV2(try TransactionMetaV2XDR(from: decoder))
             case .transactionMetaV3:
                 self = .transactionMetaV3(try TransactionMetaV3XDR(from: decoder))
+            case .transactionMetaV4:
+                self = .transactionMetaV4(try TransactionMetaV4XDR(from: decoder))
             }
         } else {
             throw StellarSDKError.xdrDecodingError(message: "Invalid TransactionMetaType")
@@ -45,6 +49,7 @@ public enum TransactionMetaXDR: XDRCodable {
             case .transactionMetaV1: return TransactionMetaType.transactionMetaV1.rawValue
             case .transactionMetaV2: return TransactionMetaType.transactionMetaV2.rawValue
             case .transactionMetaV3: return TransactionMetaType.transactionMetaV3.rawValue
+            case .transactionMetaV4: return TransactionMetaType.transactionMetaV4.rawValue
         }
     }
     
@@ -62,6 +67,8 @@ public enum TransactionMetaXDR: XDRCodable {
             try container.encode(metaV2)
         case .transactionMetaV3 (let metaV3):
             try container.encode(metaV3)
+        case .transactionMetaV4 (let metaV4):
+            try container.encode(metaV4)
         }
     }
     
@@ -73,6 +80,15 @@ public enum TransactionMetaXDR: XDRCodable {
     public var transactionMetaV3:TransactionMetaV3XDR? {
         switch self {
         case .transactionMetaV3(let val):
+            return val
+        default:
+            return nil
+        }
+    }
+    
+    public var transactionMetaV4:TransactionMetaV4XDR? {
+        switch self {
+        case .transactionMetaV4(let val):
             return val
         default:
             return nil

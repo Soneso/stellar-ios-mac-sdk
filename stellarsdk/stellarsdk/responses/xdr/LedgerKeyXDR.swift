@@ -8,6 +8,7 @@
 
 import Foundation
 
+// Identifiers of all the network settings.
 public enum ConfigSettingID: Int32 {
     case contractMaxSizeBytes = 0
     case contractComputeV0 = 1
@@ -21,8 +22,11 @@ public enum ConfigSettingID: Int32 {
     case contractDataEntrySizeBytes = 9
     case stateArchival = 10
     case contractExecutionLanes = 11
-    case bucketListSizeWindow = 12
+    case liveSorobanStateSizeWindow = 12
     case evictionIterator = 13
+    case contractParallelComputeV0 = 14
+    case contractLedgerCostExtV0 = 15
+    case scpTiming = 16
 }
 
 public enum LedgerKeyXDR: XDRCodable {

@@ -9,10 +9,20 @@
 import Foundation
 
 public enum LedgerEntryChangeType: Int32 {
+    // entry was added to the ledger
     case ledgerEntryCreated = 0
+    
+    // entry was modified in the ledger
     case ledgerEntryUpdated = 1
+    
+    // entry was removed from the ledger
     case ledgerEntryRemoved = 2
+    
+    // value of the entry
     case ledgerEntryState = 3
+    
+    // archived entry was restored in the ledger
+    case ledgerEntryRestore = 4
 }
 
 public enum LedgerEntryChangeXDR: XDRCodable {
@@ -20,6 +30,7 @@ public enum LedgerEntryChangeXDR: XDRCodable {
     case updated (LedgerEntryXDR)
     case removed (LedgerKeyXDR)
     case state (LedgerEntryXDR)
+    case restored (LedgerEntryXDR)
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
@@ -35,6 +46,8 @@ public enum LedgerEntryChangeXDR: XDRCodable {
                 self = .removed(try container.decode(LedgerKeyXDR.self))
             case LedgerEntryChangeType.ledgerEntryState.rawValue:
                 self = .state(try container.decode(LedgerEntryXDR.self))
+            case LedgerEntryChangeType.ledgerEntryRestore.rawValue:
+                self = .restored(try container.decode(LedgerEntryXDR.self))
             default:
                 self = .created(try container.decode(LedgerEntryXDR.self))
         }
@@ -46,6 +59,7 @@ public enum LedgerEntryChangeXDR: XDRCodable {
             case .updated: return LedgerEntryChangeType.ledgerEntryUpdated.rawValue
             case .removed: return LedgerEntryChangeType.ledgerEntryRemoved.rawValue
             case .state: return LedgerEntryChangeType.ledgerEntryState.rawValue
+            case .restored: return LedgerEntryChangeType.ledgerEntryRestore.rawValue
         }
     }
     
@@ -65,6 +79,9 @@ public enum LedgerEntryChangeXDR: XDRCodable {
                 try container.encode(op)
             
             case .state (let op):
+                try container.encode(op)
+            
+            case .restored (let op):
                 try container.encode(op)
         }
     }

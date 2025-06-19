@@ -840,6 +840,26 @@ public class TxRep: NSObject {
             } else {
                 throw TxRepError.missingValue(key: key)
             }
+        } else if "SC_ADDRESS_TYPE_MUXED_ACCOUNT" == type {
+            key = prefix + "muxedAccount"
+            if let accountId = dic[key] {
+                return try SCAddressXDR(accountId: accountId)
+            } else {
+                key = prefix + "accountId"
+                if let accountId = dic[key] {
+                    return try SCAddressXDR(accountId: accountId)
+                } else {
+                    throw TxRepError.missingValue(key: key)
+                }
+            }
+        } else if "SC_ADDRESS_TYPE_CLAIMABLE_BALANCE" == type {
+            let key = prefix + "claimableBalanceId.balanceID.v0"
+            let balanceId = try getString(dic: dic, key: key)
+            return SCAddressXDR(claimableBalanceId: balanceId)
+        } else if "SC_ADDRESS_TYPE_LIQUIDITY_POOL" == type {
+            let key = prefix + "liquidityPoolId"
+            let liquidityPoolId = try getString(dic: dic, key: key)
+            return SCAddressXDR(liquidityPoolId: liquidityPoolId)
         } else {
             throw TxRepError.invalidValue(key: key)
         }
@@ -911,13 +931,17 @@ public class TxRep: NSObject {
         let key = prefix + "instructions"
         let instructionsStr = try getString(dic: dic, key: key)
         if let instructions = UInt32(instructionsStr) {
-            let key = prefix + "readBytes"
-            let readBytesStr = try getString(dic: dic, key: key)
-            if let readBytes = UInt32(readBytesStr) {
+            var key = prefix + "readBytes"
+            var readBytesStr = dic[key]
+            if (readBytesStr == nil) {
+                key = prefix + "diskReadBytes"
+                readBytesStr = try getString(dic: dic, key: key)
+            }
+            if let readBytes = UInt32(readBytesStr!) {
                 let key = prefix + "writeBytes"
                 let writeBytesStr = try getString(dic: dic, key: key)
                 if let writeBytes = UInt32(writeBytesStr) {
-                    return SorobanResourcesXDR(footprint: footprint, instructions: instructions, readBytes: readBytes, writeBytes: writeBytes)
+                    return SorobanResourcesXDR(footprint: footprint, instructions: instructions, diskReadBytes: readBytes, writeBytes: writeBytes)
                 } else {
                     throw TxRepError.invalidValue(key: key)
                 }
@@ -1097,7 +1121,9 @@ public class TxRep: NSObject {
         case "CONFIG_SETTING_CONTRACT_EXECUTION_LANES":
             return ConfigSettingID.contractExecutionLanes
         case "CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW":
-            return ConfigSettingID.bucketListSizeWindow
+            return ConfigSettingID.liveSorobanStateSizeWindow
+        case "CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW":
+            return ConfigSettingID.liveSorobanStateSizeWindow
         case "CONFIG_SETTING_EVICTION_ITERATOR":
             return ConfigSettingID.evictionIterator
         default:
@@ -2709,6 +2735,22 @@ public class TxRep: NSObject {
             addLine(key: prefix + "type" , value: "SC_ADDRESS_TYPE_CONTRACT", lines: &lines)
             addLine(key: prefix + "contractId" , value: try! (wrappedData32.wrapped.hexEncodedString()).encodeContractIdHex(), lines: &lines)
             break
+        case .muxedAccount(let muxed):
+            let muxedAccount = MuxedAccountXDR.med25519(muxed)
+            addLine(key: prefix + "type" , value: "SC_ADDRESS_TYPE_MUXED_ACCOUNT", lines: &lines)
+            addLine(key: prefix + "muxedAccount" , value: muxedAccount.accountId, lines: &lines)
+            break
+        case .claimableBalanceId(let claimableBalanceId):
+            addLine(key: prefix + "type", value: "SC_ADDRESS_TYPE_CLAIMABLE_BALANCE", lines: &lines)
+            addLine(key: prefix + "claimableBalanceId.balanceID.type", value: "CLAIMABLE_BALANCE_ID_TYPE_V0", lines: &lines)
+            switch claimableBalanceId {
+            case .claimableBalanceIDTypeV0(let wrappedData32):
+                let balanceId = wrappedData32.wrapped.hexEncodedString()
+                addLine(key: prefix + "claimableBalanceId.balanceID.v0", value: balanceId, lines: &lines)
+            }
+        case .liquidityPoolId(let poolId):
+            addLine(key: prefix + "type", value: "SC_ADDRESS_TYPE_LIQUIDITY_POOL", lines: &lines)
+            addLine(key: prefix + "liquidityPoolId", value: poolId.liquidityPoolID.wrapped.hexEncodedString(), lines: &lines)
         }
     }
     
@@ -2989,7 +3031,7 @@ public class TxRep: NSObject {
     private static func addSorobanResources(resources: SorobanResourcesXDR, prefix:String, lines: inout [String]) -> Void {
         addLedgerFootprint(footprint: resources.footprint, prefix: prefix + "footprint.", lines: &lines)
         addLine(key: prefix + "instructions" , value: String(resources.instructions), lines: &lines)
-        addLine(key: prefix + "readBytes" , value: String(resources.readBytes), lines: &lines)
+        addLine(key: prefix + "diskReadBytes" , value: String(resources.diskReadBytes), lines: &lines)
         addLine(key: prefix + "writeBytes" , value: String(resources.writeBytes), lines: &lines)
     }
     
@@ -3086,7 +3128,7 @@ public class TxRep: NSObject {
         case 11:
             addLine(key: prefix, value: "CONFIG_SETTING_CONTRACT_EXECUTION_LANES", lines: &lines)
         case 12:
-            addLine(key: prefix, value: "CONFIG_SETTING_BUCKETLIST_SIZE_WINDOW", lines: &lines)
+            addLine(key: prefix, value: "CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW", lines: &lines)
         case 13:
             addLine(key: prefix, value: "CONFIG_SETTING_EVICTION_ITERATOR", lines: &lines)
         default:

@@ -692,16 +692,26 @@ public struct InvokeHostFunctionSuccessPreImageXDR: XDRCodable {
     }
 }
 
+// Resource limits for a Soroban transaction.
+// The transaction will fail if it exceeds any of these limits.
 public struct SorobanResourcesXDR: XDRCodable {
+    
+    // The ledger footprint of the transaction.
     public var footprint: LedgerFootprintXDR;
+    
+    // The maximum number of instructions this transaction can use
     public var instructions: UInt32
-    public var readBytes: UInt32
+    
+    // The maximum number of bytes this transaction can read from disk backed entries
+    public var diskReadBytes: UInt32
+    
+    // The maximum number of bytes this transaction can write to ledger
     public var writeBytes: UInt32
     
-    public init(footprint: LedgerFootprintXDR, instructions: UInt32 = 0, readBytes: UInt32 = 0, writeBytes: UInt32 = 0) {
+    public init(footprint: LedgerFootprintXDR, instructions: UInt32 = 0, diskReadBytes: UInt32 = 0, writeBytes: UInt32 = 0) {
         self.footprint = footprint
         self.instructions = instructions
-        self.readBytes = readBytes
+        self.diskReadBytes = diskReadBytes
         self.writeBytes = writeBytes
     }
     
@@ -710,7 +720,7 @@ public struct SorobanResourcesXDR: XDRCodable {
         
         footprint = try container.decode(LedgerFootprintXDR.self)
         instructions = try container.decode(UInt32.self)
-        readBytes = try container.decode(UInt32.self)
+        diskReadBytes = try container.decode(UInt32.self)
         writeBytes = try container.decode(UInt32.self)
     }
     
@@ -719,17 +729,89 @@ public struct SorobanResourcesXDR: XDRCodable {
         
         try container.encode(footprint)
         try container.encode(instructions)
-        try container.encode(readBytes)
+        try container.encode(diskReadBytes)
         try container.encode(writeBytes)
     }
 }
 
+public struct SorobanResourcesExtV0: XDRCodable {
+    
+    // Vector of indices representing what Soroban
+    // entries in the footprint are archived, based on the
+    // order of keys provided in the readWrite footprint.
+    public var archivedSorobanEntries: [UInt32]
+    
+    public init(archivedSorobanEntries: [UInt32]) {
+        self.archivedSorobanEntries = archivedSorobanEntries
+    }
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        archivedSorobanEntries = try decodeArray(type: UInt32.self, dec: decoder)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(archivedSorobanEntries)
+    }
+}
+
+public enum SorobanResourcesExt : XDRCodable {
+    case void
+    case resourceExt(SorobanResourcesExtV0)
+    
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        let code = try container.decode(Int32.self)
+        
+        switch code {
+        case 0:
+            self = .void
+        case 1:
+            self = .resourceExt(try container.decode(SorobanResourcesExtV0.self))
+        default:
+            self = .void
+        }
+    }
+    
+    public func type() -> Int32 {
+        switch self {
+        case .void: return 0
+        case .resourceExt:return 1
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        
+        try container.encode(type())
+        
+        switch self {
+        case .void:
+            return
+        case .resourceExt(let data):
+            try container.encode(data)
+            return
+        }
+    }
+}
+
 public struct SorobanTransactionDataXDR: XDRCodable {
-    public var ext: ExtensionPoint
+    public var ext: SorobanResourcesExt
     public var resources: SorobanResourcesXDR;
+    
+    // Amount of the transaction `fee` allocated to the Soroban resource fees.
+    // The fraction of `resourceFee` corresponding to `resources` specified
+    // above is *not* refundable (i.e. fees for instructions, ledger I/O), as
+    // well as fees for the transaction size.
+    // The remaining part of the fee is refundable and the charged value is
+    // based on the actual consumption of refundable resources (events, ledger
+    // rent bumps).
+    // The `inclusionFee` used for prioritization of the transaction is defined
+    // as `tx.fee - resourceFee`.
     public var resourceFee: Int64
 
-    public init(ext: ExtensionPoint = ExtensionPoint.void, resources: SorobanResourcesXDR, resourceFee: Int64 = 0) {
+    public init(ext: SorobanResourcesExt = SorobanResourcesExt.void, resources: SorobanResourcesXDR, resourceFee: Int64 = 0) {
         self.ext = ext
         self.resources = resources
         self.resourceFee = resourceFee
@@ -737,7 +819,7 @@ public struct SorobanTransactionDataXDR: XDRCodable {
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        ext = try container.decode(ExtensionPoint.self)
+        ext = try container.decode(SorobanResourcesExt.self)
         resources = try container.decode(SorobanResourcesXDR.self)
         resourceFee = try container.decode(Int64.self)
     }

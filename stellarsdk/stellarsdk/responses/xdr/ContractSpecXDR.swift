@@ -27,6 +27,7 @@ public enum SCSpecType: Int32 {
     case string = 16
     case symbol = 17
     case address = 19
+    case muxedAddress = 20
     
     // Types with parameters
     case option = 1000
@@ -195,6 +196,7 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
     case string
     case symbol
     case address
+    case muxedAddress
     case option(SCSpecTypeOptionXDR)
     case result(SCSpecTypeResultXDR)
     case vec(SCSpecTypeVecXDR)
@@ -243,6 +245,8 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
             self = .symbol
         case .address:
             self = .address
+        case .muxedAddress:
+            self = .muxedAddress
         case .option:
             let option = try container.decode(SCSpecTypeOptionXDR.self)
             self = .option(option)
@@ -291,6 +295,7 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
         case .string: return SCSpecType.string.rawValue
         case .symbol: return SCSpecType.symbol.rawValue
         case .address: return SCSpecType.address.rawValue
+        case .muxedAddress: return SCSpecType.muxedAddress.rawValue
         case .option: return SCSpecType.option.rawValue
         case .result: return SCSpecType.result.rawValue
         case .vec: return SCSpecType.vec.rawValue
@@ -657,12 +662,96 @@ public struct SCSpecFunctionV0XDR: XDRCodable {
     }
 }
 
+public struct SCSpecEventV0XDR: XDRCodable {
+    public let doc: String
+    public let name: String
+    public let prefixTopics: [String]
+    public let params: [SCSpecEventParamV0XDR]
+    public let dataFormat: SCSpecEventDataFormat
+    
+    public init(doc: String, name:String, prefixTopics:[String], params:[SCSpecEventParamV0XDR], dataFormat:SCSpecEventDataFormat) {
+        self.doc = doc
+        self.name = name
+        self.prefixTopics = prefixTopics
+        self.params = params
+        self.dataFormat = dataFormat
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        doc = try container.decode(String.self)
+        name = try container.decode(String.self)
+        prefixTopics = try decodeArray(type: String.self, dec: decoder)
+        params = try decodeArray(type: SCSpecEventParamV0XDR.self, dec: decoder)
+        let discriminant = try container.decode(Int32.self)
+        guard let decodedDataFormat = SCSpecEventDataFormat(rawValue: discriminant) else {
+            throw StellarSDKError.decodingError(message: "unknown SCSpecEventDataFormat value: \(discriminant)")
+        }
+        dataFormat = decodedDataFormat
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(doc)
+        try container.encode(name)
+        try container.encode(prefixTopics)
+        try container.encode(params)
+        try container.encode(dataFormat.rawValue)
+    }
+}
+
+public enum SCSpecEventDataFormat: Int32 {
+    case singleValue = 0
+    case vec = 1
+    case map = 2
+}
+
+public enum SCSpecEventParamLocationV0: Int32 {
+    case data = 0
+    case topicList = 1
+}
+
+public struct SCSpecEventParamV0XDR: XDRCodable {
+    public let doc: String
+    public let name: String
+    public let type: SCSpecTypeDefXDR
+    public let location: SCSpecEventParamLocationV0
+    
+    public init(doc: String, name:String, type:SCSpecTypeDefXDR, location:SCSpecEventParamLocationV0) {
+        self.doc = doc
+        self.name = name
+        self.type = type
+        self.location = location
+    }
+
+    public init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        doc = try container.decode(String.self)
+        name = try container.decode(String.self)
+        type = try container.decode(SCSpecTypeDefXDR.self)
+        let discriminant = try container.decode(Int32.self)
+        guard let decodedLocation = SCSpecEventParamLocationV0(rawValue: discriminant) else {
+            throw StellarSDKError.decodingError(message: "unknown SCSpecEventParamLocationV0 value: \(discriminant)")
+        }
+        location = decodedLocation
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(doc)
+        try container.encode(name)
+        try container.encode(type)
+        try container.encode(location.rawValue)
+    }
+}
+
 public enum SCSpecEntryKind: Int32 {
     case functionV0 = 0
     case structV0 = 1
     case unionV0 = 2
     case enumV0 = 3
     case errorEnumV0 = 4
+    case entryEventV0 = 5
 }
 
 public enum SCSpecEntryXDR: XDRCodable {
@@ -672,6 +761,7 @@ public enum SCSpecEntryXDR: XDRCodable {
     case unionV0(SCSpecUDTUnionV0XDR)
     case enumV0(SCSpecUDTEnumV0XDR)
     case errorEnumV0(SCSpecUDTErrorEnumV0XDR)
+    case eventV0(SCSpecEventV0XDR)
     
     
     public init(from decoder: Decoder) throws {
@@ -695,6 +785,9 @@ public enum SCSpecEntryXDR: XDRCodable {
         case .errorEnumV0:
             let errorEnumV0 = try container.decode(SCSpecUDTErrorEnumV0XDR.self)
             self = .errorEnumV0(errorEnumV0)
+        case .entryEventV0:
+            let eventV0 = try container.decode(SCSpecEventV0XDR.self)
+            self = .eventV0(eventV0)
         case .none:
             throw StellarSDKError.decodingError(message: "invaid SCSpecEntryXDR discriminant")
         }
@@ -707,6 +800,7 @@ public enum SCSpecEntryXDR: XDRCodable {
         case .unionV0: return SCSpecEntryKind.unionV0.rawValue
         case .enumV0: return SCSpecEntryKind.enumV0.rawValue
         case .errorEnumV0: return SCSpecEntryKind.errorEnumV0.rawValue
+        case .eventV0: return SCSpecEntryKind.entryEventV0.rawValue
         }
     }
     
@@ -728,6 +822,9 @@ public enum SCSpecEntryXDR: XDRCodable {
             break
         case .errorEnumV0 (let errorEnumV0):
             try container.encode(errorEnumV0)
+            break
+        case .eventV0 (let eventV0):
+            try container.encode(eventV0)
             break
         }
     }

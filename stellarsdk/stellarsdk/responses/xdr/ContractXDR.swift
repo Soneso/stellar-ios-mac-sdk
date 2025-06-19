@@ -127,6 +127,57 @@ public enum ContractCostType: Int32 {
     case sec1DecodePointUncompressed = 43
     // Cost of verifying an ECDSA Secp256r1 signature
     case verifyEcdsaSecp256r1Sig = 44
+    // Cost of encoding a BLS12-381 Fp (base field element)
+    case bls12381EncodeFp = 45
+    // Cost of decoding a BLS12-381 Fp (base field element)
+    case bls12381DecodeFp = 46
+    // Cost of checking a G1 point lies on the curve
+    case bls12381G1CheckPointOnCurve = 47
+    // Cost of checking a G1 point belongs to the correct subgroup
+    case bls12381G1CheckPointInSubgroup = 48
+    // Cost of checking a G2 point lies on the curve
+    case bls12381G2CheckPointOnCurve = 49
+    // Cost of checking a G2 point belongs to the correct subgroup
+    case bls12381G2CheckPointInSubgroup = 50
+    // Cost of converting a BLS12-381 G1 point from projective to affine coordinates
+    case bls12381G1ProjectiveToAffine = 51
+    // Cost of converting a BLS12-381 G2 point from projective to affine coordinates
+    case bls12381G2ProjectiveToAffine = 52
+    // Cost of performing BLS12-381 G1 point addition
+    case bls12381G1Add = 53
+    // Cost of performing BLS12-381 G1 scalar multiplication
+    case bls12381G1Mul = 54
+    // Cost of performing BLS12-381 G1 multi-scalar multiplication (MSM)
+    case bls12381G1Msm = 55
+    // Cost of mapping a BLS12-381 Fp field element to a G1 point
+    case bls12381MapFpToG1 = 56
+    // Cost of hashing to a BLS12-381 G1 point
+    case bls12381HashToG1 = 57
+    // Cost of performing BLS12-381 G2 point addition
+    case bls12381G2Add = 58
+    // Cost of performing BLS12-381 G2 scalar multiplication
+    case bls12381G2Mul = 59
+    // Cost of performing BLS12-381 G2 multi-scalar multiplication (MSM)
+    case bls12381G2Msm = 60
+    // Cost of mapping a BLS12-381 Fp2 field element to a G2 point
+    case bls12381MapFp2ToG2 = 61
+    // Cost of hashing to a BLS12-381 G2 point
+    case bls12381HashToG2 = 62
+    // Cost of performing BLS12-381 pairing operation
+    case bls12381Pairing = 63
+    // Cost of converting a BLS12-381 scalar element from U256
+    case bls12381FrFromU256 = 64
+    // Cost of converting a BLS12-381 scalar element to U256
+    case bls12381FrToU256 = 65
+    // Cost of performing BLS12-381 scalar element addition/subtraction
+    case bls12381FrAddSub = 66
+    // Cost of performing BLS12-381 scalar element multiplication
+    case bls12381FrMul = 67
+    // Cost of performing BLS12-381 scalar element exponentiation
+    case bls12381FrPow = 68
+    // Cost of performing BLS12-381 scalar element inversion
+    case bls12381FrInv = 69
+
 }
 
 public enum SCErrorXDR: XDRCodable {
@@ -223,14 +274,33 @@ public enum SCErrorXDR: XDRCodable {
 public enum SCAddressType: Int32 {
     case account = 0
     case contract = 1
+    case muxedAccount = 2
+    case claimableBalance = 3
+    case liquidityPool = 4
 }
 
 public enum SCAddressXDR: XDRCodable {
     case account(PublicKey)
     case contract(WrappedData32)
+    case muxedAccount(MuxedAccountMed25519XDR)
+    case claimableBalanceId(ClaimableBalanceIDXDR)
+    case liquidityPoolId(LiquidityPoolIDXDR)
     
     public init(accountId: String) throws {
-        self = .account(try PublicKey(accountId: accountId))
+        if accountId.hasPrefix("G") {
+            self = .account(try PublicKey(accountId: accountId))
+            return
+        } else if accountId.hasPrefix("M") {
+            let muxl = try accountId.decodeMuxedAccount()
+            switch muxl {
+            case .med25519(let inner):
+                self = .muxedAccount(inner)
+                return
+            default:
+                break
+            }
+        }
+        throw StellarSDKError.encodingError(message: "error xdr encoding SCAddressXDR, invalid account id")
     }
     
     public init(contractId: String) throws {
@@ -241,8 +311,18 @@ public enum SCAddressXDR: XDRCodable {
         if let contractIdData = contractIdHex.data(using: .hexadecimal) {
             self = .contract(WrappedData32(contractIdData))
         } else {
-            throw StellarSDKError.encodingError(message: "error xdr encoding invoke host function operation, invalid contract id")
+            throw StellarSDKError.encodingError(message: "error xdr encoding SCAddressXDR, invalid contract id")
         }
+    }
+    
+    public init(claimableBalanceId: String) {
+        let value = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(claimableBalanceId.wrappedData32FromHex())
+        self = .claimableBalanceId(value)
+    }
+    
+    public init(liquidityPoolId: String) {
+        let value = LiquidityPoolIDXDR(id: liquidityPoolId.wrappedData32FromHex())
+        self = .liquidityPoolId(value)
     }
     
     public init(from decoder: Decoder) throws {
@@ -257,6 +337,15 @@ public enum SCAddressXDR: XDRCodable {
         case .contract:
             let contract = try container.decode(WrappedData32.self)
             self = .contract(contract)
+        case .muxedAccount:
+            let muxedAccount = try container.decode(MuxedAccountMed25519XDR.self)
+            self = .muxedAccount(muxedAccount)
+        case .claimableBalance:
+            let claimableBalanceId = try container.decode(ClaimableBalanceIDXDR.self)
+            self = .claimableBalanceId(claimableBalanceId)
+        case .liquidityPool:
+            let liquidityPoolId = try container.decode(LiquidityPoolIDXDR.self)
+            self = .liquidityPoolId(liquidityPoolId)
         case .none:
             throw StellarSDKError.decodingError(message: "invaid SCAddressXDR discriminant")
         }
@@ -266,6 +355,9 @@ public enum SCAddressXDR: XDRCodable {
         switch self {
         case .account: return SCAddressType.account.rawValue
         case .contract: return SCAddressType.contract.rawValue
+        case .muxedAccount: return SCAddressType.muxedAccount.rawValue
+        case .claimableBalanceId: return SCAddressType.claimableBalance.rawValue
+        case .liquidityPoolId: return SCAddressType.liquidityPool.rawValue
         }
     }
     
@@ -278,6 +370,15 @@ public enum SCAddressXDR: XDRCodable {
             break
         case .contract (let contract):
             try container.encode(contract)
+            break
+        case .muxedAccount(let muxedAccount):
+            try container.encode(muxedAccount)
+            break
+        case .claimableBalanceId(let claimableBalanceId):
+            try container.encode(claimableBalanceId)
+            break
+        case .liquidityPoolId(let liquidityPoolId):
+            try container.encode(liquidityPoolId)
             break
         }
     }

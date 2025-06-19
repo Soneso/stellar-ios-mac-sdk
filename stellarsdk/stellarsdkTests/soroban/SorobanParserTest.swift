@@ -53,6 +53,8 @@ final class SorobanParserTest: XCTestCase {
                 printUdtEnum(udtEnum: sCSpecUDTEnumV0XDR)
             case .errorEnumV0(let sCSpecUDTErrorEnumV0XDR):
                 printUdtErrorEnum(udtErrorEnum: sCSpecUDTErrorEnumV0XDR)
+            case .eventV0(let sSCSpecEventV0XDR):
+                printEvent(event:sSCSpecEventV0XDR)
             }
             print("")
         }
@@ -173,6 +175,46 @@ final class SorobanParserTest: XCTestCase {
         }
     }
     
+    func printEvent(event:SCSpecEventV0XDR) {
+        print("Event: \(event.name)")
+        var index = 0
+        for prefixTopic in event.prefixTopics {
+            print("prefixTopic[\(index)]: \(prefixTopic)")
+            index += 1
+        }
+        index = 0
+        for param in event.params {
+            print("param[\(index)] name: \(param.name)")
+            if (param.doc.count > 0) {
+                print("param[\(index)] doc: \(param.doc)")
+            }
+            print("param[\(index)] type: \(getSpecTypeInfo(specType: param.type))")
+            var location = "unknown"
+            switch param.location {
+            case .data:
+                location = "data"
+            case .topicList:
+                location = "topic list"
+            }
+            print("param[\(index)] location: \(location)")
+            index += 1
+        }
+        var dataFormat = "unknown"
+        switch event.dataFormat {
+        case .singleValue:
+            dataFormat = "single value"
+        case .vec:
+            dataFormat = "vec"
+        case .map:
+            dataFormat = "map"
+        }
+        print("data format : \(dataFormat)")
+        
+        if (event.doc.count > 0) {
+            print("doc : \(event.doc)")
+        }
+    }
+    
     func getSpecTypeInfo(specType: SCSpecTypeDefXDR) -> String {
         switch specType {
         case .val:
@@ -236,6 +278,8 @@ final class SorobanParserTest: XCTestCase {
             return "bytesN (n: \(sCSpecTypeBytesNXDR.n))"
         case .udt(let sCSpecTypeUDTXDR):
             return "udt (name: \(sCSpecTypeUDTXDR.name))"
+        case .muxedAddress:
+            return "muxedAddress"
         }
     }
 
