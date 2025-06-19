@@ -664,16 +664,16 @@ public struct SCSpecFunctionV0XDR: XDRCodable {
 
 public struct SCSpecEventV0XDR: XDRCodable {
     public let doc: String
-    public let name: String
     public let lib: String
+    public let name: String
     public let prefixTopics: [String]
     public let params: [SCSpecEventParamV0XDR]
     public let dataFormat: SCSpecEventDataFormat
     
-    public init(doc: String, name:String, lib:String, prefixTopics:[String], params:[SCSpecEventParamV0XDR], dataFormat:SCSpecEventDataFormat) {
+    public init(doc: String, lib:String, name:String, prefixTopics:[String], params:[SCSpecEventParamV0XDR], dataFormat:SCSpecEventDataFormat) {
         self.doc = doc
-        self.name = name
         self.lib = lib
+        self.name = name
         self.prefixTopics = prefixTopics
         self.params = params
         self.dataFormat = dataFormat
@@ -682,8 +682,8 @@ public struct SCSpecEventV0XDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         doc = try container.decode(String.self)
-        name = try container.decode(String.self)
         lib = try container.decode(String.self)
+        name = try container.decode(String.self)
         prefixTopics = try decodeArray(type: String.self, dec: decoder)
         params = try decodeArray(type: SCSpecEventParamV0XDR.self, dec: decoder)
         let discriminant = try container.decode(Int32.self)
@@ -696,8 +696,8 @@ public struct SCSpecEventV0XDR: XDRCodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(doc)
-        try container.encode(name)
         try container.encode(lib)
+        try container.encode(name)
         try container.encode(prefixTopics)
         try container.encode(params)
         try container.encode(dataFormat.rawValue)

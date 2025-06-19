@@ -1126,6 +1126,12 @@ public class TxRep: NSObject {
             return ConfigSettingID.liveSorobanStateSizeWindow
         case "CONFIG_SETTING_EVICTION_ITERATOR":
             return ConfigSettingID.evictionIterator
+        case "CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0":
+            return ConfigSettingID.contractParallelComputeV0
+        case "CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0":
+            return ConfigSettingID.contractLedgerCostExtV0
+        case "CONFIG_SETTING_SCP_TIMING":
+            return ConfigSettingID.scpTiming
         default:
             throw TxRepError.invalidValue(key: key)
         }
@@ -3131,6 +3137,12 @@ public class TxRep: NSObject {
             addLine(key: prefix, value: "CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW", lines: &lines)
         case 13:
             addLine(key: prefix, value: "CONFIG_SETTING_EVICTION_ITERATOR", lines: &lines)
+        case 14:
+            addLine(key: prefix, value: "CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0", lines: &lines)
+        case 15:
+            addLine(key: prefix, value: "CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0", lines: &lines)
+        case 16:
+            addLine(key: prefix, value: "CONFIG_SETTING_SCP_TIMING", lines: &lines)
         default:
             break
         }
