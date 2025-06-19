@@ -95,6 +95,9 @@ public class GetTransactionResponse: NSObject, Decodable {
             return nil
         }
         let meta = try? TransactionMetaXDR(fromBase64: resultMetaXdr!)
+        if let result =  meta?.transactionMetaV4?.sorobanMeta?.returnValue {
+            return result
+        }
         return meta?.transactionMetaV3?.sorobanMeta?.returnValue
     }
     
