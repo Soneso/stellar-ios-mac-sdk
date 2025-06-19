@@ -177,6 +177,8 @@ final class SorobanParserTest: XCTestCase {
     
     func printEvent(event:SCSpecEventV0XDR) {
         print("Event: \(event.name)")
+        print("lib: \(event.lib)")
+        
         var index = 0
         for prefixTopic in event.prefixTopics {
             print("prefixTopic[\(index)]: \(prefixTopic)")
