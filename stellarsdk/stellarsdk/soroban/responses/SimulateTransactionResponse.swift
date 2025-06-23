@@ -90,6 +90,13 @@ public class SimulateTransactionResponse: NSObject, Decodable {
         }
         return nil;
     }
+    
+    /// true if the simulation detected expired ledger entries which requires restoring with the submission of a RestoreFootprint
+    /// operation before submitting the InvokeHostFunction operation. The restorePreamble.minResourceFee and restorePreamble.transactionData fields should
+    /// be used to construct the transaction containing the RestoreFootprint
+    private var needsRestoreFootprint:Bool {
+        return restorePreamble != nil
+    }
 }
 
 /// It can only present on successful simulation (i.e. no error) of InvokeHostFunction operations. If present, it indicates

@@ -14,26 +14,18 @@ class SorobanTest: XCTestCase {
     var sorobanServer =   SorobanServer(endpoint: "https://soroban-testnet.stellar.org") //SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
     var sdk = StellarSDK.testNet() // StellarSDK.futureNet()
     var network = Network.testnet // Network.futurenet
+    
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
+    var submitterAccount:Account?
+    var asset:Asset? = nil
+    
     let accountBKeyPair = try! KeyPair.generateRandomKeyPair()
-    var uploadTransactionId:String? = nil
+
     var wasmContractCode:Data? = nil
-    var restoreTransactionId:String? = nil
-    var bumpTransactionId:String? = nil
     var wasmId:String? = nil
-    var uploadContractWasmFootprint:Footprint? = nil
-    var createTransactionId:String? = nil
     var contractId:String? = nil
     var createContractFootprint:Footprint? = nil
-    var invokeTransactionId:String? = nil
-    var invokeContractFootprint:Footprint? = nil
-    var deploySATransactionId:String? = nil
-    var deploySAFootprint:Footprint? = nil
-    var asset:Asset? = nil
-    var deployWithAssetTransactionId:String? = nil
-    var deployWithAssetFootprint:Footprint? = nil
-    var submitterAccount:Account?
-    
+
     override func setUp() async throws {
         try await super.setUp()
     
@@ -90,41 +82,20 @@ class SorobanTest: XCTestCase {
     }
     
     func testAll() async {
+        
         await getHealth()
         await getNetwork()
         await getFeeStats()
         await getVersionInfo()
         await getTransactions()
-        
-        await refreshSubmitterAccount()
-        
-        // test restore contract code footprint
-        // see: https://developers.stellar.org/docs/learn/smart-contract-internals/state-archival
-        await restoreContractCodeFootprint(fileName: "soroban_hello_world_contract")
-        await checkTransactionStatusSuccess(transactionId: self.restoreTransactionId!, delaySec: 10.0)
-        await getTransactionDetails(transactionHash: self.restoreTransactionId!, type:"restore_footprint", delaySec: 10.0)
-        
-        // test upload contract
-        await refreshSubmitterAccount()
-        await uploadContractWasm(name: "soroban_hello_world_contract")
-        await getTransactionDetails(transactionHash: self.uploadTransactionId!, type:"HostFunctionTypeHostFunctionTypeUploadContractWasm", delaySec: 10.0)
                 
-        // test transaction error
-        await getTransactionStatusError()
-        
-        // test bump contract code footprint
-        // see: https://developers.stellar.org/docs/learn/smart-contract-internals/state-archival
-        await refreshSubmitterAccount()
-        await extendContractCodeFootprintTTL(wasmId: self.wasmId!, ledgersToExpire: 10000)
-        await checkTransactionStatusSuccess(transactionId: self.bumpTransactionId!, delaySec: 10.0)
-        // this is currently not testable because horizon returns status 500
-        //getTransactionDetails(transactionHash: self.bumpTransactionId!, type:"bump_footprint_expiration")
-        
+        // test upload contract
+        await uploadContractWasm(name: "soroban_hello_world_contract")
 
         // test create contract from uploaded wasm
-        await refreshSubmitterAccount()
         await createContract()
-        await getTransactionDetails(transactionHash: self.createTransactionId!, type:"HostFunctionTypeHostFunctionTypeCreateContract", delaySec: 10.0)
+    
+        // test get ledger entries
         await getLedgerEntries()
         
         // test contract code loading from soroban
@@ -134,20 +105,22 @@ class SorobanTest: XCTestCase {
         await loadContractInfoByContractId()
         
         // test invoke deployed contract
-        await refreshSubmitterAccount()
         await invokeContract()
-        await getTransactionDetails(transactionHash: self.invokeTransactionId!, type:"HostFunctionTypeHostFunctionTypeInvokeContract", delaySec: 10.0)
+
+        // test contract data
         await getContractData()
 
         // test SAC with source account
-        await refreshSubmitterAccount()
         await deploySACWithSourceAccount()
-        await getTransactionDetails(transactionHash: self.deploySATransactionId!, type:"HostFunctionTypeHostFunctionTypeCreateContract", delaySec: 10.0)
         
         // test SAC with asset
-        await refreshSubmitterAccount()
         await deploySACWithAsset()
-        await getTransactionDetails(transactionHash: self.deployWithAssetTransactionId!, type:"HostFunctionTypeHostFunctionTypeCreateContract", delaySec: 10.0)
+        
+        // test restore + extend
+        await testStateArchival()
+        
+        // test transaction error
+        await getTransactionStatusError()
         
         // test contract id encoding
         contractIdEncoding()
@@ -255,7 +228,16 @@ class SorobanTest: XCTestCase {
         }
     }
     
+    func testStateArchival() async {
+        // see: https://developers.stellar.org/docs/learn/smart-contract-internals/state-archival
+        // test restore
+        await restoreContractCodeFootprint(fileName: "soroban_hello_world_contract")
+        // test bump contract code footprint
+        await extendContractCodeFootprintTTL(wasmId: self.wasmId!, ledgersToExpire: 10000)
+    }
+    
     func restoreContractCodeFootprint(fileName:String) async {
+        await refreshSubmitterAccount()
         let bundle = Bundle(for: type(of: self))
         guard let path = bundle.path(forResource: fileName, ofType: "wasm") else {
             // File not found
@@ -283,6 +265,11 @@ class SorobanTest: XCTestCase {
         XCTAssertNotNil(simulateTxResponse!.transactionData)
         XCTAssertNotNil(simulateTxResponse!.minResourceFee)
         
+        // restore only if necessary
+        if (simulateTxResponse?.restorePreamble == nil) {
+            //return
+        }
+        
         let restoreFootprintOperation = RestoreFootprintOperation()
         
         // every time we build a transaction with the source account it increments the sequence number
@@ -292,8 +279,6 @@ class SorobanTest: XCTestCase {
                                            operations: [restoreFootprintOperation], memo: Memo.none)
         
         var transactionData = simulateTxResponse!.transactionData!
-        transactionData.resources.footprint.readWrite.append(contentsOf:transactionData.resources.footprint.readOnly)
-        transactionData.resources.footprint.readOnly = [] // readonly must be empty
         transaction.setSorobanTransactionData(data: transactionData)
         transaction.addResourceFee(resourceFee: simulateTxResponse!.minResourceFee!)
         
@@ -312,11 +297,8 @@ class SorobanTest: XCTestCase {
         XCTAssertNotNil(simulateTxResponse!.minResourceFee)
         
         transactionData = simulateTxResponse!.transactionData!
-        transactionData.resources.footprint.readWrite.append(contentsOf:transactionData.resources.footprint.readOnly)
-        transactionData.resources.footprint.readOnly = []
         transaction.setSorobanTransactionData(data: transactionData)
-        let ressourceFee = simulateTxResponse!.minResourceFee! + 5000
-        transaction.addResourceFee(resourceFee: ressourceFee)
+        transaction.addResourceFee(resourceFee: simulateTxResponse!.minResourceFee!)
         
         try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
         
@@ -324,19 +306,26 @@ class SorobanTest: XCTestCase {
         let enveloperXdr = try! transaction.encodedEnvelope();
         XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
         
+        var restoreTransactionId:String? = nil
         let sendTxResponseEnum = await sorobanServer.sendTransaction(transaction: transaction)
         switch sendTxResponseEnum {
         case .success(let response):
             XCTAssert(SendTransactionResponse.STATUS_ERROR != response.status)
-            self.restoreTransactionId = response.transactionId
-            XCTAssertNotNil(self.restoreTransactionId) // we need this to check success status later
+            restoreTransactionId = response.transactionId
+            XCTAssertNotNil(restoreTransactionId) // we need this to check success status later
         case .failure(let error):
             self.printError(error: error)
             XCTFail()
         }
+        
+        await checkTransactionStatusSuccess(transactionId: restoreTransactionId!, delaySec: 10.0)
+        await getTransactionDetails(transactionHash: restoreTransactionId!, type:"restore_footprint", delaySec: 10.0)
     }
     
     func uploadContractWasm(name:String) async {
+        
+        await refreshSubmitterAccount()
+        
         let bundle = Bundle(for: type(of: self))
         guard let path = bundle.path(forResource: name, ofType: "wasm") else {
             // File not found
@@ -369,22 +358,29 @@ class SorobanTest: XCTestCase {
         XCTAssertNotNil(simulateResponse.transactionData)
         XCTAssertNotNil(simulateResponse.minResourceFee)
         
+        if (simulateResponse.restorePreamble != nil) {
+            // restore first if needed
+            await restoreContractCodeFootprint(fileName: name)
+            await uploadContractWasm(name: name)
+            return
+        }
+        
         transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
         transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
         
-        self.uploadContractWasmFootprint = simulateResponse.footprint
         try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
         
         // check encoding and decoding
         let enveloperXdr = try! transaction.encodedEnvelope();
         XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
         
+        var uploadTransactionId:String? = nil
         let sendTxResponseEnum = await sorobanServer.sendTransaction(transaction: transaction)
         switch sendTxResponseEnum {
         case .success(let response):
             XCTAssert(SendTransactionResponse.STATUS_ERROR != response.status)
-            self.uploadTransactionId = response.transactionId
-            XCTAssertNotNil(self.uploadTransactionId) //we need it to check success later
+            uploadTransactionId = response.transactionId
+            XCTAssertNotNil(uploadTransactionId) //we need it to check success later
         case .failure(let error):
             self.printError(error: error)
             XCTFail()
@@ -392,7 +388,7 @@ class SorobanTest: XCTestCase {
         
         // wait a couple of seconds before checking the status
         try! await Task.sleep(nanoseconds: UInt64(10 * Double(NSEC_PER_SEC)))
-        let txResultEnum = await sorobanServer.getTransaction(transactionHash: self.uploadTransactionId!)
+        let txResultEnum = await sorobanServer.getTransaction(transactionHash: uploadTransactionId!)
         switch txResultEnum {
         case .success(let statusResponse):
             XCTAssertEqual(GetTransactionResponse.STATUS_SUCCESS, statusResponse.status)
@@ -402,6 +398,8 @@ class SorobanTest: XCTestCase {
             self.printError(error: error)
             XCTFail()
         }
+        
+        await getTransactionDetails(transactionHash: uploadTransactionId!, type:"HostFunctionTypeHostFunctionTypeUploadContractWasm", delaySec: 10.0)
     }
     
     func checkTransactionStatusSuccess(transactionId: String, delaySec:Double) async {
@@ -418,6 +416,7 @@ class SorobanTest: XCTestCase {
     }
     
     func extendContractCodeFootprintTTL(wasmId: String, ledgersToExpire: UInt32) async {
+        await refreshSubmitterAccount()
         let extendOperation = ExtendFootprintTTLOperation(ledgersToExpire: ledgersToExpire)
         
         let transaction = try! Transaction(sourceAccount: submitterAccount!,
@@ -433,8 +432,7 @@ class SorobanTest: XCTestCase {
         transaction.setSorobanTransactionData(data: transactionData)
         
         // simulate first to obtain the transaction data + resource fee
-        let resourceConfig = ResourceConfig(instructionLeeway: 3000000)
-        let simulateTxRequest = SimulateTransactionRequest(transaction: transaction, resourceConfig: resourceConfig)
+        let simulateTxRequest = SimulateTransactionRequest(transaction: transaction)
         var simulateTxResponse:SimulateTransactionResponse? = nil
         let simulateTxResponseEnum = await sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest)
         switch simulateTxResponseEnum {
@@ -458,16 +456,21 @@ class SorobanTest: XCTestCase {
         let enveloperXdr = try! transaction.encodedEnvelope();
         XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
         
+        var bumpTransactionId:String? = nil
         let sendTxResponseEnum = await sorobanServer.sendTransaction(transaction: transaction)
         switch sendTxResponseEnum {
         case .success(let response):
             XCTAssert(SendTransactionResponse.STATUS_ERROR != response.status)
-            self.bumpTransactionId = response.transactionId
-            XCTAssertNotNil(self.bumpTransactionId) // we need this to check success status later
+            bumpTransactionId = response.transactionId
+            XCTAssertNotNil(bumpTransactionId) // we need this to check success status later
         case .failure(let error):
             self.printError(error: error)
             XCTFail()
         }
+        
+        await checkTransactionStatusSuccess(transactionId: bumpTransactionId!, delaySec: 10.0)
+        // this is currently not testable because horizon returns status 500
+        // await getTransactionDetails(transactionHash: bumpTransactionId!, type:"bump_footprint_expiration", delaySec: 10.0)
     }
     
     func getTransactionDetails(transactionHash:String, type:String, delaySec:Double) async {
@@ -514,6 +517,7 @@ class SorobanTest: XCTestCase {
     }
     
     func createContract() async {
+        await refreshSubmitterAccount()
         let createOperation = try! InvokeHostFunctionOperation.forCreatingContract(wasmId: self.wasmId!, address: SCAddressXDR(accountId: submitterAccount!.accountId))
         
         let transaction = try! Transaction(sourceAccount: submitterAccount!,
@@ -548,12 +552,13 @@ class SorobanTest: XCTestCase {
         let enveloperXdr = try! transaction.encodedEnvelope();
         XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
         
+        var createTransactionId:String? = nil
         let sendTxResponseEnum = await sorobanServer.sendTransaction(transaction: transaction)
         switch sendTxResponseEnum {
         case .success(let response):
             XCTAssertNotEqual(SendTransactionResponse.STATUS_ERROR, response.status)
-            self.createTransactionId = response.transactionId
-            XCTAssertNotNil(self.createTransactionId) // we need this to check success status later
+            createTransactionId = response.transactionId
+            XCTAssertNotNil(createTransactionId) // we need this to check success status later
         case .failure(let error):
             self.printError(error: error)
             XCTFail()
@@ -561,7 +566,7 @@ class SorobanTest: XCTestCase {
         
         // wait a couple of seconds before checking the status
         try! await Task.sleep(nanoseconds: UInt64(10 * Double(NSEC_PER_SEC)))
-        let txResultEnum = await sorobanServer.getTransaction(transactionHash: self.createTransactionId!)
+        let txResultEnum = await sorobanServer.getTransaction(transactionHash: createTransactionId!)
         switch txResultEnum {
         case .success(let statusResponse):
             XCTAssertEqual(GetTransactionResponse.STATUS_SUCCESS, statusResponse.status)
@@ -571,6 +576,8 @@ class SorobanTest: XCTestCase {
             self.printError(error: error)
             XCTFail()
         }
+        
+        await getTransactionDetails(transactionHash: createTransactionId!, type:"HostFunctionTypeHostFunctionTypeCreateContract", delaySec: 10.0)
         
     }
 
@@ -652,6 +659,8 @@ class SorobanTest: XCTestCase {
     }
     
     func invokeContract() async {
+        await refreshSubmitterAccount()
+        
         let functionName = "hello"
         let arg = SCValXDR.symbol("friend")
         let invokeOperation = try! InvokeHostFunctionOperation.forInvokingContract(contractId: self.contractId!, functionName: functionName, functionArguments: [arg])
@@ -679,17 +688,17 @@ class SorobanTest: XCTestCase {
         transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
         transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
         try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
-        self.invokeContractFootprint = simulateResponse.footprint
         
         // check encoding and decoding
         let enveloperXdr = try! transaction.encodedEnvelope();
         XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
         
+        var invokeTransactionId:String? = nil
         let sendTxResponseEnum = await sorobanServer.sendTransaction(transaction: transaction)
         switch sendTxResponseEnum {
         case .success(let response):
             XCTAssertNotEqual(SendTransactionResponse.STATUS_ERROR, response.status)
-            self.invokeTransactionId = response.transactionId
+            invokeTransactionId = response.transactionId
         case .failure(let error):
             self.printError(error: error)
             XCTFail()
@@ -697,7 +706,7 @@ class SorobanTest: XCTestCase {
         
         // wait a couple of seconds before checking the status
         try! await Task.sleep(nanoseconds: UInt64(10 * Double(NSEC_PER_SEC)))
-        let statusResponseEnum = await sorobanServer.getTransaction(transactionHash: self.invokeTransactionId!)
+        let statusResponseEnum = await sorobanServer.getTransaction(transactionHash: invokeTransactionId!)
         switch statusResponseEnum {
         case .success(let statusResponse):
             XCTAssertEqual(GetTransactionResponse.STATUS_SUCCESS, statusResponse.status)
@@ -719,6 +728,8 @@ class SorobanTest: XCTestCase {
             self.printError(error: error)
             XCTFail()
         }
+        
+        await getTransactionDetails(transactionHash: invokeTransactionId!, type:"HostFunctionTypeHostFunctionTypeInvokeContract", delaySec: 10.0)
     }
 
     func getContractData() async {
@@ -734,6 +745,8 @@ class SorobanTest: XCTestCase {
     }
     
     func deploySACWithSourceAccount() async {
+        await refreshSubmitterAccount()
+        
         let deployOperation = try! InvokeHostFunctionOperation.forDeploySACWithSourceAccount(address: SCAddressXDR(accountId: submitterAccount!.accountId))
         
         let transaction = try! Transaction(sourceAccount: submitterAccount!,
@@ -768,17 +781,18 @@ class SorobanTest: XCTestCase {
         transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
         transaction.setSorobanAuth(auth: simulateResponse.sorobanAuth)
         try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
-        self.deploySAFootprint = simulateResponse.footprint
-        XCTAssertNotNil(self.deploySAFootprint)
+        let deploySAFootprint = simulateResponse.footprint
+        XCTAssertNotNil(deploySAFootprint)
         // check encoding and decoding
         let enveloperXdr = try! transaction.encodedEnvelope();
         XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
         
+        var deploySATransactionId:String? = nil
         let sendTxResponseEnum = await sorobanServer.sendTransaction(transaction: transaction)
         switch sendTxResponseEnum {
         case .success(let response):
             XCTAssertNotEqual(SendTransactionResponse.STATUS_ERROR, response.status)
-            self.deploySATransactionId = response.transactionId
+            deploySATransactionId = response.transactionId
         case .failure(let error):
             self.printError(error: error)
             XCTFail()
@@ -786,7 +800,7 @@ class SorobanTest: XCTestCase {
         
         // wait a couple of seconds before checking the status
         try! await Task.sleep(nanoseconds: UInt64(10 * Double(NSEC_PER_SEC)))
-        let statusResponseEnum = await sorobanServer.getTransaction(transactionHash: self.deploySATransactionId!)
+        let statusResponseEnum = await sorobanServer.getTransaction(transactionHash: deploySATransactionId!)
         switch statusResponseEnum {
         case .success(let statusResponse):
             XCTAssertEqual(GetTransactionResponse.STATUS_SUCCESS, statusResponse.status)
@@ -805,9 +819,13 @@ class SorobanTest: XCTestCase {
             self.printError(error: error)
             XCTFail()
         }
+        
+        await getTransactionDetails(transactionHash: deploySATransactionId!, type:"HostFunctionTypeHostFunctionTypeCreateContract", delaySec: 10.0)
     }
     
     func deploySACWithAsset() async {
+        await refreshSubmitterAccount()
+        
         let accountId = accountBKeyPair.accountId
         var accountResponse:AccountResponse? = nil
         let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: accountId)
@@ -844,16 +862,19 @@ class SorobanTest: XCTestCase {
         transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
         transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
         try! transaction.sign(keyPair: self.accountBKeyPair, network: self.network)
-        self.deployWithAssetFootprint = simulateResponse.footprint
+        
+        let deployWithAssetFootprint = simulateResponse.footprint
+        
         // check encoding and decoding
         let enveloperXdr = try! transaction.encodedEnvelope();
         XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
         
+        var deployWithAssetTransactionId:String? = nil
         let sendTxResponseEnum = await sorobanServer.sendTransaction(transaction: transaction)
         switch sendTxResponseEnum {
         case .success(let response):
             XCTAssertNotEqual(SendTransactionResponse.STATUS_ERROR, response.status)
-            self.deployWithAssetTransactionId = response.transactionId
+            deployWithAssetTransactionId = response.transactionId
         case .failure(let error):
             self.printError(error: error)
             XCTFail()
@@ -861,7 +882,7 @@ class SorobanTest: XCTestCase {
         
         // wait a couple of seconds before checking the status
         try! await Task.sleep(nanoseconds: UInt64(10 * Double(NSEC_PER_SEC)))
-        let statusResponseEnum = await sorobanServer.getTransaction(transactionHash: self.deployWithAssetTransactionId!)
+        let statusResponseEnum = await sorobanServer.getTransaction(transactionHash: deployWithAssetTransactionId!)
         switch statusResponseEnum {
         case .success(let statusResponse):
             XCTAssertEqual(GetTransactionResponse.STATUS_SUCCESS, statusResponse.status)
@@ -869,6 +890,11 @@ class SorobanTest: XCTestCase {
             self.printError(error: error)
             XCTFail()
         }
+        
+        await getTransactionDetails(transactionHash: deployWithAssetTransactionId!,
+                                    type:"HostFunctionTypeHostFunctionTypeCreateContract",
+                                    delaySec: 10.0)
+        
         
         // get ledger entries
         let contractDataKey = deployWithAssetFootprint!.contractDataLedgerKey
