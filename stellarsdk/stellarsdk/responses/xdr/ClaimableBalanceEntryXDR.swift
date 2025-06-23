@@ -53,6 +53,13 @@ public enum ClaimableBalanceIDXDR: XDRCodable {
             try container.encode(value)
         }
     }
+    
+    public var claimableBalanceIdString: String {
+        switch self {
+        case .claimableBalanceIDTypeV0(let data):
+            return data.wrapped.hexEncodedString()
+        }
+    }
 }
 
 public struct ClaimableBalanceEntryXDR: XDRCodable {

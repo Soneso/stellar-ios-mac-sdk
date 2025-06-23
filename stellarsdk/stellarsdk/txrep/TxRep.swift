@@ -2770,14 +2770,10 @@ public class TxRep: NSObject {
         case .claimableBalanceId(let claimableBalanceId):
             addLine(key: prefix + "type", value: "SC_ADDRESS_TYPE_CLAIMABLE_BALANCE", lines: &lines)
             addLine(key: prefix + "claimableBalanceId.balanceID.type", value: "CLAIMABLE_BALANCE_ID_TYPE_V0", lines: &lines)
-            switch claimableBalanceId {
-            case .claimableBalanceIDTypeV0(let wrappedData32):
-                let balanceId = wrappedData32.wrapped.hexEncodedString()
-                addLine(key: prefix + "claimableBalanceId.balanceID.v0", value: balanceId, lines: &lines)
-            }
+            addLine(key: prefix + "claimableBalanceId.balanceID.v0", value: claimableBalanceId.claimableBalanceIdString, lines: &lines)
         case .liquidityPoolId(let poolId):
             addLine(key: prefix + "type", value: "SC_ADDRESS_TYPE_LIQUIDITY_POOL", lines: &lines)
-            addLine(key: prefix + "liquidityPoolId", value: poolId.liquidityPoolID.wrapped.hexEncodedString(), lines: &lines)
+            addLine(key: prefix + "liquidityPoolId", value: poolId.poolIDString, lines: &lines)
         }
     }
     

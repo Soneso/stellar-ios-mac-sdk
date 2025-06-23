@@ -797,7 +797,7 @@ public enum SorobanResourcesExt : XDRCodable {
 
 public struct SorobanTransactionDataXDR: XDRCodable {
     public var ext: SorobanResourcesExt
-    public var resources: SorobanResourcesXDR;
+    public var resources: SorobanResourcesXDR
     
     // Amount of the transaction `fee` allocated to the Soroban resource fees.
     // The fraction of `resourceFee` corresponding to `resources` specified
@@ -834,6 +834,18 @@ public struct SorobanTransactionDataXDR: XDRCodable {
         try container.encode(resources)
         try container.encode(resourceFee)
     }
+    
+    public var archivedSorobanEntries:[UInt32]? {
+        switch ext {
+        case .void:
+            return nil
+        case .resourceExt(let sorobanResourcesExtV0):
+            return sorobanResourcesExtV0.archivedSorobanEntries
+        }
+    }
+
+    
+    
 }
 
 public enum TransactionExtXDR : XDRCodable {

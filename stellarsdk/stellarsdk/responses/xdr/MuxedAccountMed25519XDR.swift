@@ -40,6 +40,17 @@ public struct MuxedAccountMed25519XDR: XDRCodable {
         return MuxedAccountMed25519XDRInverted(id: self.id, sourceAccountEd25519: self.sourceAccountEd25519)
     }
     
+    public var accountId: String {
+        let muxedAccountXdr = MuxedAccountXDR.med25519(self)
+        do {
+            var muxEncoded = try XDREncoder.encode(muxedAccountXdr)
+            let muxData = Data(bytes: &muxEncoded, count: muxEncoded.count)
+            return try muxData.encodeMuxedAccount()
+        } catch {
+            return ""
+        }
+    }
+    
 }
 
 public struct MuxedAccountMed25519XDRInverted: XDRCodable {

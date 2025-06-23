@@ -387,6 +387,11 @@ public enum SCAddressXDR: XDRCodable {
         switch self {
         case .account(let pk):
             return pk.accountId
+        case .muxedAccount(let xdr):
+            if !xdr.accountId.isEmpty {
+                return xdr.accountId
+            }
+            return nil
         default:
             return nil
         }
@@ -396,6 +401,24 @@ public enum SCAddressXDR: XDRCodable {
         switch self {
         case .contract(let data):
             return data.wrapped.hexEncodedString()
+        default:
+            return nil
+        }
+    }
+    
+    public var claimableBalanceId:String? {
+        switch self {
+        case .claimableBalanceId(let xdr):
+            return xdr.claimableBalanceIdString
+        default:
+            return nil
+        }
+    }
+    
+    public var liquidityPoolId:String? {
+        switch self {
+        case .liquidityPoolId(let xdr):
+            return xdr.poolIDString
         default:
             return nil
         }
