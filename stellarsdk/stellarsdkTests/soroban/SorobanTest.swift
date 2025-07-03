@@ -117,7 +117,7 @@ class SorobanTest: XCTestCase {
         await deploySACWithAsset()
         
         // test restore + extend
-        await testStateArchival()
+        await restoreAndExtendFootprint()
         
         // test transaction error
         await getTransactionStatusError()
@@ -228,7 +228,7 @@ class SorobanTest: XCTestCase {
         }
     }
     
-    func testStateArchival() async {
+    func restoreAndExtendFootprint() async {
         // see: https://developers.stellar.org/docs/learn/smart-contract-internals/state-archival
         // test restore
         await restoreContractCodeFootprint(fileName: "soroban_hello_world_contract")
@@ -936,7 +936,7 @@ class SorobanTest: XCTestCase {
         let strEncodedB = try! contractIdA.encodeContractIdHex();
         XCTAssertEqual(strEncodedA, strEncodedB)
         
-        let contractIdB = try! strEncodedB.decodeContractIdHex();
+        let contractIdB = try! strEncodedB.decodeContractIdToHex();
         XCTAssertEqual(contractIdA, contractIdB)
     }
 }

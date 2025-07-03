@@ -988,6 +988,8 @@
 		836658FE2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FC2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift */; };
 		836659002A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FF2A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift */; };
 		836659012A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FF2A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift */; };
+		836836062E1709D20032D97C /* StrKeyTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836836052E1709D20032D97C /* StrKeyTest.swift */; };
+		836836072E1709D20032D97C /* StrKeyTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836836052E1709D20032D97C /* StrKeyTest.swift */; };
 		836971DF2024A71B00398A98 /* AccountFlagsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */; };
 		836971E42024C47300398A98 /* LinkResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E32024C47300398A98 /* LinkResponse.swift */; };
 		836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E52024F58E00398A98 /* DataForAccountResponse.swift */; };
@@ -1855,6 +1857,7 @@
 		836658F92A6ECEFD00E8B8D9 /* RestoreFootprintOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreFootprintOperation.swift; sourceTree = "<group>"; };
 		836658FC2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendFootprintTTLOperationResponse.swift; sourceTree = "<group>"; };
 		836658FF2A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreFootprintOperationResponse.swift; sourceTree = "<group>"; };
+		836836052E1709D20032D97C /* StrKeyTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StrKeyTest.swift; sourceTree = "<group>"; };
 		836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFlagsResponse.swift; sourceTree = "<group>"; };
 		836971E32024C47300398A98 /* LinkResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkResponse.swift; sourceTree = "<group>"; };
 		836971E52024F58E00398A98 /* DataForAccountResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataForAccountResponse.swift; sourceTree = "<group>"; };
@@ -2570,6 +2573,7 @@
 				43D35B0E20348EBF00C8BDBC /* payment_paths */,
 				4300C1812032FB7A00DC5E49 /* offers */,
 				8369723A202A703600398A98 /* utils */,
+				836836042E1709AB0032D97C /* strkey */,
 				745F2BBF202C4CED008763F1 /* transactions */,
 				744C4DC0202A326600B46CDE /* operations */,
 				83DD2C9B202F24B900713FEE /* payments */,
@@ -3267,6 +3271,14 @@
 				836513982BDEEBFA00A99085 /* Sep08ActionDoneMock.swift */,
 			);
 			path = regulated_assets;
+			sourceTree = "<group>";
+		};
+		836836042E1709AB0032D97C /* strkey */ = {
+			isa = PBXGroup;
+			children = (
+				836836052E1709D20032D97C /* StrKeyTest.swift */,
+			);
+			path = strkey;
 			sourceTree = "<group>";
 		};
 		836971E92025055200398A98 /* assets_responses */ = {
@@ -4752,6 +4764,7 @@
 				744A84D5214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,
 				743DF4F3201F130200713DE7 /* stellarsdk_macOSTests.swift in Sources */,
 				74A504F52192D85B00A608A0 /* KeyUtils.swift in Sources */,
+				836836072E1709D20032D97C /* StrKeyTest.swift in Sources */,
 				83DB2AFC2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */,
 				83DB2B022ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */,
 				83DB2AF32ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */,
@@ -5458,6 +5471,7 @@
 				EC34A15E20504F92000FB042 /* MnemonicKeyPairGeneration.swift in Sources */,
 				744A84D4214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,
 				8365138D2BDEDE6500A99085 /* Sep08PostRevisedMock.swift in Sources */,
+				836836062E1709D20032D97C /* StrKeyTest.swift in Sources */,
 				83DB2AFB2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */,
 				83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */,
 				832C2B452AEC28C7005BB7B8 /* Sep30DeleteAccountResponseMock.swift in Sources */,

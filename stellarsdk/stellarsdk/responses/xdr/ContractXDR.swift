@@ -306,7 +306,7 @@ public enum SCAddressXDR: XDRCodable {
     public init(contractId: String) throws {
         var contractIdHex = contractId
         if contractId.hasPrefix("C") {
-            contractIdHex = try contractId.decodeContractIdHex()
+            contractIdHex = try contractId.decodeContractIdToHex()
         }
         if let contractIdData = contractIdHex.data(using: .hexadecimal) {
             self = .contract(WrappedData32(contractIdData))

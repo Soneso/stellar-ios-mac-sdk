@@ -16,7 +16,7 @@ public class PublicKey: XDRCodable {
     /// Human readable Stellar account ID.
     public var accountId: String {
         get {
-            var versionByte = VersionByte.accountId.rawValue
+            var versionByte = VersionByte.ed25519PublicKey.rawValue
             let versionByteData = Data(bytes: &versionByte, count: MemoryLayout.size(ofValue: versionByte))
             let payload = NSMutableData(data: versionByteData)
             payload.append(Data(self.bytes))

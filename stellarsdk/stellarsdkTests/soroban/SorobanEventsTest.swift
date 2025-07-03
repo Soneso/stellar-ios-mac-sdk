@@ -264,7 +264,7 @@ class SorobanEventsTest: XCTestCase {
         case .success(let eventsResponse):
             XCTAssert(eventsResponse.events.count > 0)
             let event = eventsResponse.events.first!
-            let cId = try! event.contractId.decodeContractIdHex()
+            let cId = try! event.contractId.decodeContractIdToHex()
             XCTAssert(self.contractId! == cId)
             XCTAssert("AAAADwAAAAdDT1VOVEVSAA==" == event.topic[0])
             XCTAssert("AAAAAwAAAAE=" == event.value)

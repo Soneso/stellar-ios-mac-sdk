@@ -61,7 +61,7 @@ public class Seed {
     
     public var secret: String {
         get {
-            var versionByte = VersionByte.seed.rawValue
+            var versionByte = VersionByte.ed25519SecretSeed.rawValue
             let versionByteData = Data(bytes: &versionByte, count: MemoryLayout.size(ofValue: versionByte))
             let payload = NSMutableData(data: versionByteData)
             payload.append(Data(bytes))
