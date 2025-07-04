@@ -15,22 +15,15 @@ public class SubmitTransactionAsyncResponse: NSObject, Decodable {
     
     public var txStatus:String // Possible values: [ERROR, PENDING, DUPLICATE, TRY_AGAIN_LATER]
     public var txHash:String
-    public var errorResultXdr:String?
     
     private enum CodingKeys: String, CodingKey {
         case txStatus = "tx_status"
         case txHash = "hash"
-        case errorResultXdrP21 = "errorResultXdr"
-        case errorResultXdr = "error_result_xdr"
     }
     
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         txStatus = try values.decode(String.self, forKey: .txStatus)
         txHash = try values.decode(String.self, forKey: .txHash)
-        errorResultXdr = try values.decodeIfPresent(String.self, forKey: .errorResultXdr)
-        if (errorResultXdr == nil) {
-            errorResultXdr = try values.decodeIfPresent(String.self, forKey: .errorResultXdrP21) // protocol version < 22
-        }
     }
 }

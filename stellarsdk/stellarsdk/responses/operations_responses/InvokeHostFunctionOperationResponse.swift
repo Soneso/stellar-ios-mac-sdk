@@ -77,8 +77,8 @@ public class AssetBalanceChange: NSObject, Decodable {
     public var from:String?
     public var to:String
     public var amount:String
+    public var destinationMuxedId:String? // a uint64
    
-    
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case assetType = "asset_type"
@@ -88,6 +88,7 @@ public class AssetBalanceChange: NSObject, Decodable {
         case from
         case to
         case amount
+        case destinationMuxedId = "destination_muxed_id"
     }
     
     /**
@@ -105,5 +106,6 @@ public class AssetBalanceChange: NSObject, Decodable {
         from = try values.decodeIfPresent(String.self, forKey: .from)
         to = try values.decode(String.self, forKey: .to)
         amount = try values.decode(String.self, forKey: .amount)
+        destinationMuxedId = try values.decodeIfPresent(String.self, forKey: .destinationMuxedId)
     }
 }
