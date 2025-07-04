@@ -1240,6 +1240,8 @@
 		83DF81AF26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81AD26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift */; };
 		83EA4763203C7F650031F13E /* LedgersLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */; };
 		83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */; };
+		83EEE6262E1810EC008B7B3C /* TransactionEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EEE6252E1810EC008B7B3C /* TransactionEvents.swift */; };
+		83EEE6272E1810EC008B7B3C /* TransactionEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EEE6252E1810EC008B7B3C /* TransactionEvents.swift */; };
 		83F4E6042A1E597600DD42A9 /* KycService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6032A1E597600DD42A9 /* KycService.swift */; };
 		83F4E6052A1E597600DD42A9 /* KycService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6032A1E597600DD42A9 /* KycService.swift */; };
 		83F4E6082A1E5A1000DD42A9 /* KycServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6072A1E5A1000DD42A9 /* KycServiceError.swift */; };
@@ -2012,6 +2014,7 @@
 		83DF81AD26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolTradesLinksResponse.swift; sourceTree = "<group>"; };
 		83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersLocalTestCase.swift; sourceTree = "<group>"; };
 		83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersResponsesMock.swift; sourceTree = "<group>"; };
+		83EEE6252E1810EC008B7B3C /* TransactionEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionEvents.swift; sourceTree = "<group>"; };
 		83F4E6032A1E597600DD42A9 /* KycService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KycService.swift; sourceTree = "<group>"; };
 		83F4E6072A1E5A1000DD42A9 /* KycServiceError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KycServiceError.swift; sourceTree = "<group>"; };
 		83F4E60A2A1E5CC300DD42A9 /* GetCustomerInfoRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetCustomerInfoRequest.swift; sourceTree = "<group>"; };
@@ -2938,6 +2941,7 @@
 				834D51452C5196AC007CA0AD /* GetFeeStatsResponse.swift */,
 				834D51482C519D4D007CA0AD /* GetVersionInfoResponse.swift */,
 				834D514B2C519FF7007CA0AD /* GetTransactionsResponse.swift */,
+				83EEE6252E1810EC008B7B3C /* TransactionEvents.swift */,
 			);
 			path = responses;
 			sourceTree = "<group>";
@@ -4615,6 +4619,7 @@
 				745DF4F62052FF9C000D3660 /* BlockModeOptions.swift in Sources */,
 				745DF4F72052FF9C000D3660 /* CFB.swift in Sources */,
 				83438A0A26E8CF03009116D0 /* LiquidityPoolDepostOperationResponse.swift in Sources */,
+				83EEE6272E1810EC008B7B3C /* TransactionEvents.swift in Sources */,
 				744A84CF214523910086B8FC /* PutCustomerInfoRequest.swift in Sources */,
 				74DD3E14208662190057775C /* String+Base32.swift in Sources */,
 				745DF4F82052FF9C000D3660 /* CBC.swift in Sources */,
@@ -5322,6 +5327,7 @@
 				744FC6EC212D3CCD00ADFC88 /* Parser.swift in Sources */,
 				743DF58F2020BBCF00713DE7 /* AccountResponse.swift in Sources */,
 				83438A0926E8CF03009116D0 /* LiquidityPoolDepostOperationResponse.swift in Sources */,
+				83EEE6262E1810EC008B7B3C /* TransactionEvents.swift in Sources */,
 				83697242202A79DC00398A98 /* PathPaymentOperationResponse.swift in Sources */,
 				744C4DC4202A364300B46CDE /* DateFormatter+ISOParsing.swift in Sources */,
 				8369721A2028F40E00398A98 /* SignerRemovedEffectResponse.swift in Sources */,

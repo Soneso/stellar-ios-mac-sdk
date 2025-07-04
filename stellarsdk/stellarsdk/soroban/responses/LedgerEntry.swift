@@ -22,12 +22,16 @@ public class LedgerEntry: NSObject, Decodable {
     /// The ledger sequence number after which the ledger entry would expire. This field exists only for ContractCodeEntry and ContractDataEntry ledger entries (optional).
     public var liveUntilLedgerSeq:Int?
     
+    /// The entry's "Ext" field. Only available for protocol version >= 23
+    public var ext:String?
+    
     
     private enum CodingKeys: String, CodingKey {
         case key
         case xdr
         case lastModifiedLedgerSeq
         case liveUntilLedgerSeq
+        case ext
     }
 
     public required init(from decoder: Decoder) throws {
@@ -36,6 +40,7 @@ public class LedgerEntry: NSObject, Decodable {
         xdr = try values.decode(String.self, forKey: .xdr)
         lastModifiedLedgerSeq = try values.decode(Int.self, forKey: .lastModifiedLedgerSeq)
         liveUntilLedgerSeq = try values.decodeIfPresent(Int.self, forKey: .liveUntilLedgerSeq)
+        ext = try values.decodeIfPresent(String.self, forKey: .ext)
     }
     
     /// Converst the key to a SCValXDR if valid.

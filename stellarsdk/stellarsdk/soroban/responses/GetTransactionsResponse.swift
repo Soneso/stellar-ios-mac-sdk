@@ -83,6 +83,9 @@ public class TransactionInfo: NSObject, Decodable {
     /// hex-encoded transaction hash string. Only available for protocol version >= 22
     public var txHash:String?
     
+    /// events for the transaction. Only available for protocol version >= 23
+    public var events:TransactionEvents?
+    
     private enum CodingKeys: String, CodingKey {
         case status
         case applicationOrder
@@ -94,6 +97,7 @@ public class TransactionInfo: NSObject, Decodable {
         case ledger
         case createdAt
         case txHash
+        case events
     }
 
     public required init(from decoder: Decoder) throws {
@@ -118,5 +122,6 @@ public class TransactionInfo: NSObject, Decodable {
         }
         
         txHash = try values.decodeIfPresent(String.self, forKey: .txHash) // protocol version >= 22
+        events = try values.decodeIfPresent(TransactionEvents.self, forKey: .events) // protocol version >= 23
     }
 }

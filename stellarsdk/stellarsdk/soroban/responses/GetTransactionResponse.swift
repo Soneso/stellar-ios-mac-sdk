@@ -56,6 +56,9 @@ public class GetTransactionResponse: NSObject, Decodable {
     /// (optional) Will be present on failed transactions.
     public var error:TransactionStatusError?
     
+    /// events for the transaction. Only available for protocol version >= 23
+    public var events:TransactionEvents?
+    
     private enum CodingKeys: String, CodingKey {
         case status
         case latestLedger
@@ -70,6 +73,7 @@ public class GetTransactionResponse: NSObject, Decodable {
         case resultMetaXdr
         case txHash
         case error
+        case events
     }
     
     public required init(from decoder: Decoder) throws {
@@ -87,6 +91,7 @@ public class GetTransactionResponse: NSObject, Decodable {
         resultMetaXdr = try values.decodeIfPresent(String.self, forKey: .resultMetaXdr)
         txHash = try values.decodeIfPresent(String.self, forKey: .txHash) // protocol version >= 22
         error = try values.decodeIfPresent(TransactionStatusError.self, forKey: .error)
+        events = try values.decodeIfPresent(TransactionEvents.self, forKey: .events) // protocol version >= 23
     }
     
     /// Extracts the value from the first transaction status result
