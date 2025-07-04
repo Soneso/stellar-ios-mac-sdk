@@ -39,7 +39,12 @@ public class ClaimableBalancesService: NSObject {
     
     
     open func getClaimableBalance(balanceId:String) async -> ClaimableBalanceDetailsResponseEnum {
-        let requestPath = "/claimable_balances/" + balanceId
+        var idHex = balanceId
+        if balanceId.hasPrefix("B"),
+            let cid = try? balanceId.decodeClaimableBalanceIdToHex() {
+            idHex = cid
+        }
+        let requestPath = "/claimable_balances/" + idHex
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
         switch result {
         case .success(let data):

@@ -855,11 +855,11 @@ public class TxRep: NSObject {
         } else if "SC_ADDRESS_TYPE_CLAIMABLE_BALANCE" == type {
             let key = prefix + "claimableBalanceId.balanceID.v0"
             let balanceId = try getString(dic: dic, key: key)
-            return SCAddressXDR(claimableBalanceId: balanceId)
+            return try SCAddressXDR(claimableBalanceId: balanceId)
         } else if "SC_ADDRESS_TYPE_LIQUIDITY_POOL" == type {
             let key = prefix + "liquidityPoolId"
             let liquidityPoolId = try getString(dic: dic, key: key)
-            return SCAddressXDR(liquidityPoolId: liquidityPoolId)
+            return try SCAddressXDR(liquidityPoolId: liquidityPoolId)
         } else {
             throw TxRepError.invalidValue(key: key)
         }
@@ -1083,7 +1083,11 @@ public class TxRep: NSObject {
         } else if (ledgerKeyType == "LIQUIDITY_POOL") {
             let key = prefix + "liquidityPool.liquidityPoolID"
             let liquidityPoolId = try getString(dic: dic, key: key)
-            let value = LiquidityPoolIDXDR(id: liquidityPoolId.wrappedData32FromHex())
+            var lidHex = liquidityPoolId
+            if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
+                lidHex = idHex
+            }
+            let value = LiquidityPoolIDXDR(id: lidHex.wrappedData32FromHex())
             return LedgerKeyXDR.liquidityPool(value)
         } else if (ledgerKeyType == "CONTRACT_DATA") {
             let address = try getSCAddress(dic: dic, prefix: prefix + "contractData.contract.")

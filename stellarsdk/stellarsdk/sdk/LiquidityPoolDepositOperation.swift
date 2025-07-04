@@ -56,10 +56,11 @@ public class LiquidityPoolDepositOperation:Operation {
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let maxAmountAXDR = Operation.toXDRAmount(amount: maxAmountA)
         let maxAmountBXDR = Operation.toXDRAmount(amount: maxAmountB)
-        return OperationBodyXDR.liquidityPoolDeposit(LiquidityPoolDepositOpXDR(liquidityPoolID:liquidityPoolId.wrappedData32FromHex(),
-                                                                               maxAmountA: maxAmountAXDR,
-                                                                               maxAmountB: maxAmountBXDR,
-                                                                               minPrice: minPrice.toXdr(),
-                                                                               maxPrice: maxPrice.toXdr()))
+        return try OperationBodyXDR.liquidityPoolDeposit(
+            LiquidityPoolDepositOpXDR(liquidityPoolId:liquidityPoolId,
+                                      maxAmountA: maxAmountAXDR,
+                                      maxAmountB: maxAmountBXDR,
+                                      minPrice: minPrice.toXdr(),
+                                      maxPrice: maxPrice.toXdr()))
     }
 }

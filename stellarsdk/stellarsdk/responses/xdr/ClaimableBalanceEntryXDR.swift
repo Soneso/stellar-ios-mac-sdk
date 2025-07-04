@@ -37,6 +37,18 @@ public enum ClaimableBalanceIDXDR: XDRCodable {
             self = .claimableBalanceIDTypeV0(value)
         }
     }
+    
+    public init(claimableBalanceId:String) throws {
+        var claimableBalanceIdHex = claimableBalanceId
+        if claimableBalanceId.hasPrefix("B") {
+            claimableBalanceIdHex = try claimableBalanceId.decodeClaimableBalanceIdToHex()
+        }
+        if let _ = claimableBalanceIdHex.data(using: .hexadecimal) {
+            self = .claimableBalanceIDTypeV0(claimableBalanceIdHex.wrappedData32FromHex())
+        } else {
+            throw StellarSDKError.encodingError(message: "error creating ClaimableBalanceIDXDR, invalid claimable balance id")
+        }
+    }
   
     public func type() -> Int32 {
         switch self {

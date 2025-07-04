@@ -207,7 +207,11 @@ public class EffectsService: NSObject {
     /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
     ///
     open func getEffects(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<EffectResponse>.ResponseEnum {
-        let path = "/liquidity_pools/" + liquidityPoolId + "/effects"
+        var lidHex = liquidityPoolId
+        if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
+            lidHex = idHex
+        }
+        let path = "/liquidity_pools/" + lidHex + "/effects"
         return await getEffects(onPath: path, from:cursor, order:order, limit:limit)
     }
     
@@ -243,7 +247,11 @@ public class EffectsService: NSObject {
                 subpath = subpath + "?cursor=" + cursor
             }
         case .effectsForLiquidityPool(let liquidityPool, let cursor):
-            subpath = "/liquidity_pools/" + liquidityPool + "/effects"
+            var lidHex = liquidityPool
+            if liquidityPool.hasPrefix("L"), let idHex = try? liquidityPool.decodeLiquidityPoolIdToHex() {
+                lidHex = idHex
+            }
+            subpath = "/liquidity_pools/" + lidHex + "/effects"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor
             }

@@ -95,7 +95,12 @@ public class TransactionsService: NSObject {
     
     
     open func getTransactions(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
-        let path = "/claimable_balances/" + claimableBalanceId + "/transactions"
+        var id = claimableBalanceId
+        if claimableBalanceId.hasPrefix("B"), 
+            let cid = try? claimableBalanceId.decodeClaimableBalanceIdToHex() {
+            id = cid
+        }
+        let path = "/claimable_balances/" + id + "/transactions"
         return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
     
@@ -108,7 +113,11 @@ public class TransactionsService: NSObject {
     }
     
     open func getTransactions(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
-        let path = "/liquidity_pools/" + liquidityPoolId + "/transactions"
+        var lidHex = liquidityPoolId
+        if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
+            lidHex = idHex
+        }
+        let path = "/liquidity_pools/" + lidHex + "/transactions"
         return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
     
@@ -454,7 +463,12 @@ public class TransactionsService: NSObject {
                 subpath = subpath + "?cursor=" + cursor
             }
         case .transactionsForClaimableBalance(let claimableBalanceId, let cursor):
-            subpath = "/_balances/" + claimableBalanceId + "/transactions"
+            var idHex = claimableBalanceId
+            if claimableBalanceId.hasPrefix("B"),
+                let cid = try? claimableBalanceId.decodeClaimableBalanceIdToHex() {
+                idHex = cid
+            }
+            subpath = "/balances/" + idHex + "/transactions"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor
             }

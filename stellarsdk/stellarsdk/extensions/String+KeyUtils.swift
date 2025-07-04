@@ -152,6 +152,30 @@ extension String {
         throw StellarSDKError.invalidArgument(message: "Not a hex string \(self)")
     }
     
+    // Encodes a claimable balance id from its hex representation into its strkey representation ("B...")
+    public func encodeClaimableBalanceIdHex() throws -> String {
+        if let data = data(using: .hexadecimal) {
+            return try data.encodeClaimableBalanceId()
+        }
+        throw StellarSDKError.invalidArgument(message: "Not a hex string \(self)")
+    }
+    
+    // Encodes a liquidity pool id from its hex representation into its strkey representation ("L...")
+    public func encodeLiquidityPoolIdHex() throws -> String {
+        if let data = data(using: .hexadecimal) {
+            return try data.encodeLiquidityPoolId()
+        }
+        throw StellarSDKError.invalidArgument(message: "Not a hex string \(self)")
+    }
+    
+    // Checks if the string is a hex representation of data.
+    public func isHexString() -> Bool {
+        if let _ = data(using: .hexadecimal) {
+            return true
+        }
+        return false
+    }
+    
     private func isValid(versionByte:VersionByte) -> Bool {
         switch versionByte {
         case .ed25519PublicKey, .ed25519SecretSeed, .preAuthTX, .sha256Hash, .contract, .liquidityPool:

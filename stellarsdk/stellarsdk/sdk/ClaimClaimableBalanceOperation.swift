@@ -36,8 +36,7 @@ public class ClaimClaimableBalanceOperation:Operation {
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
-        
-        let cIDXDR = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(balanceId.wrappedData32FromHex())
+        let cIDXDR = try ClaimableBalanceIDXDR(claimableBalanceId: balanceId)
         let cbXDR = ClaimClaimableBalanceOpXDR(balanceID: cIDXDR)
         return OperationBodyXDR.claimClaimableBalance(cbXDR)
     }

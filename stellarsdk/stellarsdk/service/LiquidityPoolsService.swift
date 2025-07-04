@@ -45,7 +45,11 @@ public class LiquidityPoolsService: NSObject {
     
     
     open func getLiquidityPool(poolId:String) async -> LiquidityPoolDetailsResponseEnum {
-        let requestPath = "/liquidity_pools/" + poolId
+        var lidHex = poolId
+        if poolId.hasPrefix("L"), let idHex = try? poolId.decodeLiquidityPoolIdToHex() {
+            lidHex = idHex
+        }
+        let requestPath = "/liquidity_pools/" + lidHex
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
         switch result {
         case .success(let data):

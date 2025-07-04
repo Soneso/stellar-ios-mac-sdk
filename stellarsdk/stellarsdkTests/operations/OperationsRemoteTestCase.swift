@@ -780,7 +780,13 @@ class OperationsRemoteTestCase: XCTestCase {
         let accDetailsEnum = await sdk.accounts.getAccountDetails(accountId: claimantAccountId)
         switch accDetailsEnum {
         case .success(let accountResponse):
-            let claimClaimableBalanceOp = ClaimClaimableBalanceOperation(balanceId: balanceId)
+            // test also acceptance of claimable balance ids in their strkey representation
+            var requestBalanceId = balanceId
+            if (requestBalanceId.isHexString()) {
+                // convert to strkey representation
+                requestBalanceId = try! requestBalanceId.encodeClaimableBalanceIdHex()
+            }
+            let claimClaimableBalanceOp = ClaimClaimableBalanceOperation(balanceId: requestBalanceId)
             
             let transaction = try! Transaction(sourceAccount: accountResponse,
                                               operations: [claimClaimableBalanceOp],

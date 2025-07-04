@@ -47,9 +47,10 @@ public class LiquidityPoolWithdrawOperation:Operation {
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
-        return OperationBodyXDR.liquidityPoolWithdraw(LiquidityPoolWithdrawOpXDR(liquidityPoolID:liquidityPoolId.wrappedData32FromHex(),
-                                                                                 amount: Operation.toXDRAmount(amount:amount),
-                                                                                 minAmountA: Operation.toXDRAmount(amount:minAmountA),
-                                                                                 minAmountB: Operation.toXDRAmount(amount:minAmountB)))
+        return try OperationBodyXDR.liquidityPoolWithdraw(
+            LiquidityPoolWithdrawOpXDR(liquidityPoolId:liquidityPoolId,
+                                       amount: Operation.toXDRAmount(amount:amount),
+                                       minAmountA: Operation.toXDRAmount(amount:minAmountA),
+                                       minAmountB: Operation.toXDRAmount(amount:minAmountB)))
     }
 }

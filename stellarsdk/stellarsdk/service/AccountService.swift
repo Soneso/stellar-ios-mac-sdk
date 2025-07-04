@@ -281,7 +281,12 @@ open class AccountService: NSObject {
         params["signer"] = signer
         params["asset"] = asset
         params["sponsor"] = sponsor
-        params["liquidity_pool"] = liquidityPoolId
+        var lidHex = liquidityPoolId
+        if liquidityPoolId != nil && liquidityPoolId!.hasPrefix("L"),
+            let id = try? liquidityPoolId!.decodeLiquidityPoolIdToHex() {
+            lidHex = id
+        }
+        params["liquidity_pool"] = lidHex
         params["cursor"] = cursor
         params["order"] = order?.rawValue
         if let limit = limit { params["limit"] = String(limit) }

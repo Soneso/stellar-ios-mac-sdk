@@ -315,14 +315,30 @@ public enum SCAddressXDR: XDRCodable {
         }
     }
     
-    public init(claimableBalanceId: String) {
-        let value = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(claimableBalanceId.wrappedData32FromHex())
-        self = .claimableBalanceId(value)
+    public init(claimableBalanceId: String) throws {
+        var claimableBalanceIdHex = claimableBalanceId
+        if claimableBalanceId.hasPrefix("B") {
+            claimableBalanceIdHex = try claimableBalanceId.decodeClaimableBalanceIdToHex()
+        }
+        if let _ = claimableBalanceIdHex.data(using: .hexadecimal) {
+            let value = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(claimableBalanceIdHex.wrappedData32FromHex())
+            self = .claimableBalanceId(value)
+        } else {
+            throw StellarSDKError.encodingError(message: "error xdr encoding SCAddressXDR, invalid claimable balance id")
+        }
     }
     
-    public init(liquidityPoolId: String) {
-        let value = LiquidityPoolIDXDR(id: liquidityPoolId.wrappedData32FromHex())
-        self = .liquidityPoolId(value)
+    public init(liquidityPoolId: String) throws {
+        var liquidityPoolIdHex = liquidityPoolId
+        if liquidityPoolId.hasPrefix("L") {
+            liquidityPoolIdHex = try liquidityPoolId.decodeLiquidityPoolIdToHex()
+        }
+        if let _ = liquidityPoolIdHex.data(using: .hexadecimal) {
+            let value = LiquidityPoolIDXDR(id: liquidityPoolIdHex.wrappedData32FromHex())
+            self = .liquidityPoolId(value)
+        } else {
+            throw StellarSDKError.encodingError(message: "error xdr encoding SCAddressXDR, invalid liquidity pool id")
+        }
     }
     
     public init(from decoder: Decoder) throws {

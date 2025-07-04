@@ -121,6 +121,9 @@ class AmmTestCase: XCTestCase {
                     if let poolId = effect.liquidityPoolId {
                         self.nonNativeLiquidityPoolId = poolId
                         print("trustline created. pool id: \(poolId)")
+                        if (poolId.isHexString()) {
+                            print("trustline created. pool id strKey: \(try! poolId.encodeLiquidityPoolIdHex())")
+                        }
                         expectation.fulfill()
                     }
                 }
@@ -178,6 +181,9 @@ class AmmTestCase: XCTestCase {
                 if let effect = effectResponse as? TrustlineCreatedEffectResponse {
                     if let poolId = effect.liquidityPoolId {
                         print("trustline created, pool id: \(poolId)")
+                        if (poolId.isHexString()) {
+                            print("trustline created. pool id strKey: \(try! poolId.encodeLiquidityPoolIdHex())")
+                        }
                         self.nativeLiquidityPoolId = poolId
                         expectation.fulfill()
                     }
@@ -240,7 +246,11 @@ class AmmTestCase: XCTestCase {
                 break
             case .response(_, let effectResponse):
                 if let effect = effectResponse as? LiquidityPoolDepositedEffectResponse {
-                    print("liquidity pool id: " + effect.liquidityPool.poolId)
+                    let poolIdFromEffect = effect.liquidityPool.poolId
+                    print("liquidity pool id: " + poolIdFromEffect)
+                    if (poolIdFromEffect.isHexString()) {
+                        print("liquidity pool id strKey: \(try! poolIdFromEffect.encodeLiquidityPoolIdHex())")
+                    }
                     print("shares received: " + effect.sharesReceived)
                     if (effect.reservesDeposited.first?.asset.code == "COOL") {
                         expectation.fulfill()
@@ -262,7 +272,13 @@ class AmmTestCase: XCTestCase {
             let minPrice = Price.fromString(price: "1.0")
             let maxPrice = Price.fromString(price: "2.0")
             
-            let liquidityPoolDepositOp = LiquidityPoolDepositOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: poolId, maxAmountA: 250.0, maxAmountB: 250.0, minPrice: minPrice, maxPrice: maxPrice)
+            // test also acceptance of liquidity pool ids in their strkey representation
+            var requestPoolId = poolId
+            if (requestPoolId.isHexString()) {
+                // convert to strkey representation
+                requestPoolId = try! requestPoolId.encodeLiquidityPoolIdHex()
+            }
+            let liquidityPoolDepositOp = LiquidityPoolDepositOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: requestPoolId, maxAmountA: 250.0, maxAmountB: 250.0, minPrice: minPrice, maxPrice: maxPrice)
             let transaction = try! Transaction(sourceAccount: muxSource,
                                               operations: [liquidityPoolDepositOp],
                                               memo: Memo.none)
@@ -326,7 +342,13 @@ class AmmTestCase: XCTestCase {
             let minPrice = Price.fromString(price: "1.0")
             let maxPrice = Price.fromString(price: "2.0")
             
-            let liquidityPoolDepositOp = LiquidityPoolDepositOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: poolId, maxAmountA: 5.0, maxAmountB: 5.0, minPrice: minPrice, maxPrice: maxPrice)
+            // test also acceptance of liquidity pool ids in their strkey representation
+            var requestPoolId = poolId
+            if (requestPoolId.isHexString()) {
+                // convert to strkey representation
+                requestPoolId = try! requestPoolId.encodeLiquidityPoolIdHex()
+            }
+            let liquidityPoolDepositOp = LiquidityPoolDepositOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: requestPoolId, maxAmountA: 5.0, maxAmountB: 5.0, minPrice: minPrice, maxPrice: maxPrice)
             let transaction = try! Transaction(sourceAccount: muxSource,
                                               operations: [liquidityPoolDepositOp],
                                               memo: Memo.none)
@@ -390,7 +412,13 @@ class AmmTestCase: XCTestCase {
             let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
             print ("Muxed source account id: \(muxSource.accountId)")
             
-            let liquidityPoolWithdrawOp = LiquidityPoolWithdrawOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: poolId, amount: 100.0, minAmountA: 100.0, minAmountB: 100.0)
+            // test also acceptance of liquidity pool ids in their strkey representation
+            var requestPoolId = poolId
+            if (requestPoolId.isHexString()) {
+                // convert to strkey representation
+                requestPoolId = try! requestPoolId.encodeLiquidityPoolIdHex()
+            }
+            let liquidityPoolWithdrawOp = LiquidityPoolWithdrawOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: requestPoolId, amount: 100.0, minAmountA: 100.0, minAmountB: 100.0)
             let transaction = try! Transaction(sourceAccount: muxSource,
                                               operations: [liquidityPoolWithdrawOp],
                                               memo: Memo.none)
@@ -417,7 +445,14 @@ class AmmTestCase: XCTestCase {
         let expectation = XCTestExpectation(description: "pool share withdraw")
         let sourceAccountKeyPair = testKeyPair
         
-        operationsStreamItem = sdk.operations.stream(for: .operationsForLiquidityPool(liquidityPoolId: nativeLiquidityPoolId!, cursor: "now"))
+        // test also acceptance of liquidity pool ids in their strkey representation
+        var requestPoolId = nativeLiquidityPoolId!
+        if (requestPoolId.isHexString()) {
+            // convert to strkey representation
+            requestPoolId = try! requestPoolId.encodeLiquidityPoolIdHex()
+        }
+        
+        operationsStreamItem = sdk.operations.stream(for: .operationsForLiquidityPool(liquidityPoolId: requestPoolId, cursor: "now"))
         operationsStreamItem?.onReceive { (response) -> (Void) in
             switch response {
             case .open:
@@ -446,7 +481,14 @@ class AmmTestCase: XCTestCase {
             let muxSource = MuxedAccount(keyPair: sourceAccountKeyPair, sequenceNumber: accountResponse.sequenceNumber, id: 1278881)
             print ("Muxed source account id: \(muxSource.accountId)")
             
-            let liquidityPoolWithdrawOp = LiquidityPoolWithdrawOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: self.nativeLiquidityPoolId!, amount: 1.0, minAmountA: 1.0, minAmountB: 1.0)
+            // test also acceptance of liquidity pool ids in their strkey representation
+            var requestPoolId = self.nativeLiquidityPoolId!
+            if (requestPoolId.isHexString()) {
+                // convert to strkey representation
+                requestPoolId = try! requestPoolId.encodeLiquidityPoolIdHex()
+            }
+            
+            let liquidityPoolWithdrawOp = LiquidityPoolWithdrawOperation(sourceAccountId: muxSource.accountId, liquidityPoolId: requestPoolId, amount: 1.0, minAmountA: 1.0, minAmountB: 1.0)
             let transaction = try! Transaction(sourceAccount: muxSource,
                                               operations: [liquidityPoolWithdrawOp],
                                               memo: Memo.none)
@@ -494,7 +536,14 @@ class AmmTestCase: XCTestCase {
             return
         }
         
-        let response = await sdk.operations.getOperations(forLiquidityPool: poolId, from: nil, order: Order.descending, includeFailed: true, join: "transactions")
+        // test also acceptance of liquidity pool ids in their strkey representation
+        var requestPoolId = poolId
+        if (requestPoolId.isHexString()) {
+            // convert to strkey representation
+            requestPoolId = try! requestPoolId.encodeLiquidityPoolIdHex()
+        }
+        
+        let response = await sdk.operations.getOperations(forLiquidityPool: requestPoolId, from: nil, order: Order.descending, includeFailed: true, join: "transactions")
         switch response {
         case .success(let ops):
             if let operation = ops.records.first {
@@ -525,7 +574,13 @@ class AmmTestCase: XCTestCase {
             XCTFail()
             return
         }
-        let response = await sdk.liquidityPools.getLiquidityPool(poolId:poolId)
+        // test also acceptance of liquidity pool ids in their strkey representation
+        var requestPoolId = poolId
+        if (requestPoolId.isHexString()) {
+            // convert to strkey representation
+            requestPoolId = try! requestPoolId.encodeLiquidityPoolIdHex()
+        }
+        let response = await sdk.liquidityPools.getLiquidityPool(poolId:requestPoolId)
         switch response {
         case .success(let pool):
             if pool.poolId != poolId {

@@ -55,7 +55,7 @@ public class RevokeSponsorshipOperation:Operation {
     }
     
     public static func revokeClaimableBalanceSponsorshipLedgerKey(balanceId:String) throws -> LedgerKeyXDR {
-        let value = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(balanceId.wrappedData32FromHex())
+        let value = try ClaimableBalanceIDXDR(claimableBalanceId: balanceId)
         return LedgerKeyXDR.claimableBalance(value)
     }
     

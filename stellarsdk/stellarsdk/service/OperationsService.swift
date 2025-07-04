@@ -74,7 +74,12 @@ public class OperationsService: NSObject {
     
     
     open func getOperations(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
-        let path = "/claimable_balances/" + claimableBalanceId + "/operations"
+        var id = claimableBalanceId
+        if claimableBalanceId.hasPrefix("B"),
+            let cid = try? claimableBalanceId.decodeClaimableBalanceIdToHex() {
+            id = cid
+        }
+        let path = "/claimable_balances/" + id + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
     
@@ -116,7 +121,11 @@ public class OperationsService: NSObject {
     
     
     open func getOperations(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
-        let path = "/liquidity_pools/" + liquidityPoolId + "/operations"
+        var lidHex = liquidityPoolId
+        if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
+            lidHex = idHex
+        }
+        let path = "/liquidity_pools/" + lidHex + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
     
@@ -169,7 +178,12 @@ public class OperationsService: NSObject {
                 subpath = subpath + "?cursor=" + cursor
             }
         case .operationsForClaimableBalance(let claimableBalanceId, let cursor):
-            subpath = "/claimable_balances/" + claimableBalanceId + "/operations"
+            var idHex = claimableBalanceId
+            if claimableBalanceId.hasPrefix("B"),
+                let cid = try? claimableBalanceId.decodeClaimableBalanceIdToHex() {
+                idHex = cid
+            }
+            subpath = "/claimable_balances/" + idHex + "/operations"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor
             }
@@ -184,7 +198,11 @@ public class OperationsService: NSObject {
                 subpath = subpath + "?cursor=" + cursor
             }
         case .operationsForLiquidityPool(let liquidityPool, let cursor):
-            subpath = "/liquidity_pools/" + liquidityPool + "/operations"
+            var lidHex = liquidityPool
+            if liquidityPool.hasPrefix("L"), let idHex = try? liquidityPool.decodeLiquidityPoolIdToHex() {
+                lidHex = idHex
+            }
+            subpath = "/liquidity_pools/" + lidHex + "/operations"
             if let cursor = cursor {
                 subpath = subpath + "?cursor=" + cursor
             }
