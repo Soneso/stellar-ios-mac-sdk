@@ -27,8 +27,8 @@ public class EventInfo: NSObject, Decodable {
     /// Unique identifier for this event.
     public var id:String
     
-    /// If true the event was emitted during a successful contract call.
-    public var inSuccessfulContractCall:Bool
+    @available(*, deprecated, message: "Deprecated for protocol version >= 23. If true the event was emitted during a successful contract call.")
+    public var inSuccessfulContractCall:Bool?
     
     /// List containing the topic this event was emitted with. [XdrSCVal as base64|]
     public var topic:[String]
@@ -42,9 +42,11 @@ public class EventInfo: NSObject, Decodable {
     /// The transaction which triggered this event.
     public var txHash:String
     
-    /// for paging
-    public var pagingToken:String
-
+    /// The operation at which an event occurred. Only avalable for protocol version >= 23
+    public var opIndex:Int?
+    
+    /// The transaction at which an event occurred. Only avalable for protocol version >= 23
+    public var txIndex:Int?
     
     private enum CodingKeys: String, CodingKey {
         case type
@@ -56,7 +58,8 @@ public class EventInfo: NSObject, Decodable {
         case topic
         case value
         case txHash
-        case pagingToken
+        case opIndex
+        case txIndex
     }
 
     public required init(from decoder: Decoder) throws {
@@ -66,12 +69,13 @@ public class EventInfo: NSObject, Decodable {
         ledgerClosedAt = try values.decode(String.self, forKey: .ledgerClosedAt)
         contractId = try values.decode(String.self, forKey: .contractId)
         id = try values.decode(String.self, forKey: .id)
-        inSuccessfulContractCall = try values.decode(Bool.self, forKey: .inSuccessfulContractCall)
+        inSuccessfulContractCall = try values.decodeIfPresent(Bool.self, forKey: .inSuccessfulContractCall)
         topic = try values.decode([String].self, forKey: .topic)
         value = try values.decode(String.self, forKey: .value)
         valueXdr = try SCValXDR.fromXdr(base64: value)
         txHash = try values.decode(String.self, forKey: .txHash)
-        pagingToken = try values.decodeIfPresent(String.self, forKey: .pagingToken) ?? id
+        opIndex = try values.decodeIfPresent(Int.self, forKey: .opIndex)
+        txIndex = try values.decodeIfPresent(Int.self, forKey: .txIndex)
     }
 }
 

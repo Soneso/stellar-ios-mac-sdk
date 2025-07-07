@@ -269,7 +269,6 @@ class SorobanEventsTest: XCTestCase {
             XCTAssert("AAAADwAAAAdDT1VOVEVSAA==" == event.topic[0])
             XCTAssert("AAAAAwAAAAE=" == event.value)
             XCTAssert("contract" == event.type)
-            XCTAssertTrue(event.inSuccessfulContractCall)
         case .failure(let error):
             self.printError(error: error)
             XCTFail()
