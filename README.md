@@ -24,6 +24,12 @@ If not loading (err: `cannot use bare repository`), then remove:
 
 from `~/.gitconfig`. See also this [SourceTree issue](https://forums.swift.org/t/fatal-cannot-use-bare-repository/75588). 
 
+#### Protocol 23 release candidate:
+
+```swift
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.2.0-beta.1"),
+```
+
 ### CocoaPods
 
 [CocoaPods](http://cocoapods.org) is a dependency manager for Cocoa projects. You can install it with the following command:
@@ -51,6 +57,12 @@ $ pod repo update
 $ pod install
 ```
 
+#### Protocol 23 release candidate:
+
+```ruby
+pod 'stellar-ios-mac-sdk', '~> 3.2.0-beta.1'
+```
+
 ### Carthage
 
 [Carthage](https://github.com/Carthage/Carthage) is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks.
@@ -72,6 +84,11 @@ github "soneso/stellar-ios-mac-sdk" ~> 3.1.0
 
 Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.
 
+#### Protocol 23 release candidate:
+
+```ogdl
+github "soneso/stellar-ios-mac-sdk" ~> 3.2.0-beta.1
+```
 
 ### Manual
 

@@ -16,7 +16,7 @@ public class AllowTrustOperation:Operation {
     public let assetCode:String
     public let authorize:UInt32 // 0, or any bitwise combination of TrustLineFlags
     
-    /// Creates a new PaymentOperation object.
+    /// Creates a new AllowTrustOperation object.
     ///
     /// - Parameter sourceAccountId: (optional) source account Id. must start with "M" or "G" and must be valid, otherwise it will be ignored.
     /// - Parameter trustor: The account of the recipient of the trustline.
@@ -32,7 +32,7 @@ public class AllowTrustOperation:Operation {
         try self.init(sourceAccountId: sourceAccountId, trustor: trustor, assetCode: assetCode, authorize: flags)
     }
     
-    /// Creates a new PaymentOperation object.
+    /// Creates a new AllowTrustOperation object.
     ///
     /// - Parameter sourceAccountId: (optional) source account Id. must start with "M" or "G" and must be valid, otherwise it will be ignored.
     /// - Parameter trustor: The account of the recipient of the trustline.

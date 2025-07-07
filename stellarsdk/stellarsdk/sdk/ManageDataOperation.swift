@@ -15,7 +15,7 @@ public class ManageDataOperation:Operation {
     public let name:String
     public let data:Data?
     
-    /// Creates a new PaymentOperation object.
+    /// Creates a new ManageDataOperation object.
     ///
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     /// - Parameter name: String up to 64 bytes long. If this is a new Name it will add the given name/value pair to the account. If this Name is already present then the associated value will be modified.
