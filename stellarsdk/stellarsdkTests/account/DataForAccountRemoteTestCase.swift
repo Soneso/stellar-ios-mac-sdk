@@ -10,7 +10,11 @@ import XCTest
 import stellarsdk
 
 class DataForAccountRemoteTestCase: XCTestCase {
-    let sdk = StellarSDK()
+    
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
+    
     let testKeyPair = try! KeyPair.generateRandomKeyPair()
 
     override func setUp() async throws {
@@ -18,7 +22,7 @@ class DataForAccountRemoteTestCase: XCTestCase {
         let testAccountId = testKeyPair.accountId
         let manageDataOp = ManageDataOperation(sourceAccountId: testAccountId, name: "soneso", data: "is super".data(using: .utf8))
         
-        let response = await sdk.accounts.createTestAccount(accountId: testAccountId)
+        let response = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
         switch response {
         case .success(_):
             let accDetailsRes = await self.sdk.accounts.getAccountDetails(accountId: testAccountId);
@@ -27,7 +31,7 @@ class DataForAccountRemoteTestCase: XCTestCase {
                 let transaction = try! Transaction(sourceAccount: accountResponse,
                                                   operations: [manageDataOp],
                                                   memo: Memo.none)
-                try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
+                try! transaction.sign(keyPair: self.testKeyPair, network: self.network)
                 let submitTxRes = await self.sdk.transactions.submitTransaction(transaction: transaction)
                 switch submitTxRes {
                 case .success(let details):

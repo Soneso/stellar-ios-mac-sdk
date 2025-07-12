@@ -10,7 +10,10 @@ import XCTest
 import stellarsdk
 
 class EffectsRemoteTestCase: XCTestCase {
-    let sdk = StellarSDK()
+    
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
     
     let testKeyPair = try! KeyPair.generateRandomKeyPair()
     var transactionHash:String? = nil
@@ -22,7 +25,7 @@ class EffectsRemoteTestCase: XCTestCase {
         let testAccountId = testKeyPair.accountId
         let manageDataOp = ManageDataOperation(sourceAccountId: testAccountId, name: "soneso", data: "is super".data(using: .utf8))
 
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: testAccountId)
+        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -36,7 +39,7 @@ class EffectsRemoteTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: accountResponse,
                                               operations: [manageDataOp],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: self.testKeyPair, network: self.network)
             
             let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {

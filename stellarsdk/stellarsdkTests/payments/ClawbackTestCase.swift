@@ -11,8 +11,9 @@ import stellarsdk
 
 class ClawbackTestCase: XCTestCase {
 
-    let sdk = StellarSDK()
-    let network = Network.testnet
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
     
     let IOMIssuingAccountKeyPair = try! KeyPair.generateRandomKeyPair()
     let destinationKeyPair = try! KeyPair.generateRandomKeyPair()
@@ -32,7 +33,7 @@ class ClawbackTestCase: XCTestCase {
         let createAccountOp2 = CreateAccountOperation(sourceAccountId: donorAccountId, destination: destinationKeyPair, startBalance: 100)
         let createAccountOp3 = CreateAccountOperation(sourceAccountId: donorAccountId, destination: claimantKeyPair, startBalance: 100)
         
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: donorAccountId)
+        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: donorAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: donorAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -47,7 +48,7 @@ class ClawbackTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: accountResponse,
                                               operations: [createAccountOp1, createAccountOp2, createAccountOp3],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: self.donorKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: self.donorKeyPair, network: self.network)
             
             let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {

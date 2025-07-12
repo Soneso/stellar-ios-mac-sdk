@@ -10,7 +10,11 @@ import XCTest
 import stellarsdk
 
 class MemoRemoteTestCase: XCTestCase {
-    let sdk = StellarSDK()
+    
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
+    
     var streamItem:TransactionsStreamItem? = nil
     
     let sourceKeyPair = try! KeyPair.generateRandomKeyPair()
@@ -22,7 +26,7 @@ class MemoRemoteTestCase: XCTestCase {
         let sourceAccountId = sourceKeyPair.accountId
         let destinationAccountId = destinationKeyPair.accountId
         
-        var responseEnum = await sdk.accounts.createTestAccount(accountId: sourceAccountId)
+        var responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: sourceAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: sourceAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -31,7 +35,7 @@ class MemoRemoteTestCase: XCTestCase {
             XCTFail("could not create test account: \(sourceAccountId)")
         }
         
-        responseEnum = await sdk.accounts.createTestAccount(accountId: destinationAccountId)
+        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: destinationAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: destinationAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -85,7 +89,7 @@ class MemoRemoteTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: accountResponse,
                                               operations: [paymentOperation],
                                               memo: memo)
-            try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
             
             let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {

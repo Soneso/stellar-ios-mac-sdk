@@ -10,21 +10,22 @@ import XCTest
 import stellarsdk
 
 final class SorobanClientTest: XCTestCase {
-
-    let testnetServerUrl = "https://soroban-testnet.stellar.org"
+    static let testOn = "testnet" // "futurenet"
+    let testnetServerUrl = testOn == "testnet" ? "https://soroban-testnet.stellar.org" : "https://rpc-futurenet.stellar.org"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
     let helloContractFileName = "soroban_hello_world_contract"
     let authContractFileName = "soroban_auth_contract"
     let swapContractFilename = "soroban_atomic_swap_contract"
     let tokenContractFilename = "soroban_token_contract"
-    var sdk = StellarSDK.testNet()
-    let network = Network.testnet
     var sourceAccountKeyPair:KeyPair!
 
     
     override func setUp() async throws {
         sourceAccountKeyPair = try KeyPair.generateRandomKeyPair()
         print("Signer seed: \(String(describing: sourceAccountKeyPair.secretSeed))")
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: sourceAccountKeyPair.accountId)
+        let testAccountId = sourceAccountKeyPair.accountId
+        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -290,7 +291,7 @@ final class SorobanClientTest: XCTestCase {
     }
     
     func fundTestnetAccount(accountId:String) async {
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: accountId)
+        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: accountId) : await sdk.accounts.createFutureNetTestAccount(accountId: accountId)
         switch responseEnum {
         case .success(_):
             break

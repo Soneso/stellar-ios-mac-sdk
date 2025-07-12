@@ -10,7 +10,11 @@ import XCTest
 import stellarsdk
 
 class PaymentPathsTestCase: XCTestCase {
-    let sdk = StellarSDK()    
+
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
+    
     let sourceKeyPair = try! KeyPair.generateRandomKeyPair() // IOM holder
     let destinationKeyPair = try! KeyPair.generateRandomKeyPair() // EUR holder
     let IOMIssuerKeyPair = try! KeyPair.generateRandomKeyPair()
@@ -33,7 +37,7 @@ class PaymentPathsTestCase: XCTestCase {
         let chTrustOp3 = ChangeTrustOperation(sourceAccountId: sellerKeyPair.accountId, asset: IOMAsset, limit: 10000)
         let chTrustOp4 = ChangeTrustOperation(sourceAccountId: sellerKeyPair.accountId, asset: EURAsset, limit: 10000)
         
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: sourceAccountId)
+        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: sourceAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: sourceAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -49,9 +53,9 @@ class PaymentPathsTestCase: XCTestCase {
                                               operations: [createAccOp1, createAccOp2, createAccOp3, createAccOp4,
                                                            chTrustOp1, chTrustOp2, chTrustOp3, chTrustOp4],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: self.sourceKeyPair, network: Network.testnet)
-            try! transaction.sign(keyPair: self.destinationKeyPair, network: Network.testnet)
-            try! transaction.sign(keyPair: self.sellerKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: self.sourceKeyPair, network: self.network)
+            try! transaction.sign(keyPair: self.destinationKeyPair, network: self.network)
+            try! transaction.sign(keyPair: self.sellerKeyPair, network: self.network)
             
             let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
@@ -95,8 +99,8 @@ class PaymentPathsTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: accountResponse,
                                               operations: [payOp1, payOp2, payOp3, payOp4],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: self.IOMIssuerKeyPair, network: Network.testnet)
-            try! transaction.sign(keyPair: self.EURIssuerKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: self.IOMIssuerKeyPair, network: self.network)
+            try! transaction.sign(keyPair: self.EURIssuerKeyPair, network: self.network)
             
             let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
@@ -125,7 +129,7 @@ class PaymentPathsTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: accountResponse,
                                               operations: [offerOp1],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: sellerKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: sellerKeyPair, network: self.network)
             
             let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
@@ -194,7 +198,7 @@ class PaymentPathsTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: muxSource,
                                               operations: [paymentOperation],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
             
             let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
@@ -231,7 +235,7 @@ class PaymentPathsTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: muxSource,
                                               operations: [paymentOperation],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
             
             let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {

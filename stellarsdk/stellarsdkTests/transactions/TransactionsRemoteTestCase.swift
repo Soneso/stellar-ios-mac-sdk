@@ -11,7 +11,10 @@ import stellarsdk
 
 class TransactionsRemoteTestCase: XCTestCase {
 
-    let sdk = StellarSDK()
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
+    
     var streamItem:TransactionsStreamItem? = nil
     let testKeyPair = try! KeyPair.generateRandomKeyPair()
     let destinationKeyPair = try! KeyPair.generateRandomKeyPair()
@@ -24,7 +27,6 @@ class TransactionsRemoteTestCase: XCTestCase {
     var feeBumpTransactionId:String? = nil
     var feeBumpTransactionV0Id:String? = nil
     let assetNative = Asset(type: AssetType.ASSET_TYPE_NATIVE)
-    let network = Network.testnet
     
     override func setUp() async throws {
         try await super.setUp()
@@ -35,7 +37,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         let createAccountOp2 = try! CreateAccountOperation(sourceAccountId: testAccountId, destinationAccountId: destinationKeyPair.accountId, startBalance: 100)
         let createAccountOp3 = try! CreateAccountOperation(sourceAccountId: testAccountId, destinationAccountId: payerKeyPair.accountId, startBalance: 100)
         
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: testAccountId)
+        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -50,7 +52,7 @@ class TransactionsRemoteTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: accountResponse,
                                               operations: [createAccountOp1, createAccountOp2, createAccountOp3],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: self.testKeyPair, network: self.network)
             
             let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
@@ -293,7 +295,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         let tb = TimeBoundsXDR(minTime: 100, maxTime: 4000101011)
         let cond = PreconditionsXDR.time(tb)
         var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: 12, cond: cond, memo: .none, operations: [operation])
-        XCTAssertNoThrow(try transaction.sign(keyPair: keyPair, network: Network.testnet))
+        XCTAssertNoThrow(try transaction.sign(keyPair: keyPair, network: self.network))
     }
     
     func checkTransactionV0Signing() {
@@ -302,7 +304,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         let mux = MuxedAccountXDR.ed25519(keyPair.publicKey.bytes)
         let operation = OperationXDR(sourceAccount: mux, body: operationBody)
         var transaction = TransactionV0XDR(sourceAccount: keyPair.publicKey, seqNum: 12, timeBounds: nil, memo: .none, operations: [operation])
-        XCTAssertNoThrow(try transaction.sign(keyPair: keyPair, network: Network.testnet))
+        XCTAssertNoThrow(try transaction.sign(keyPair: keyPair, network: self.network))
     }
     
     func checkTransactionMultiSigning() async {
@@ -345,8 +347,8 @@ class TransactionsRemoteTestCase: XCTestCase {
                                               operations: [paymentOperation, paymentOperation2],
                                               memo: Memo.none)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: source, network: .testnet))
-            XCTAssertNoThrow(try transaction.sign(keyPair: destination, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: source, network: self.network))
+            XCTAssertNoThrow(try transaction.sign(keyPair: destination, network: self.network))
             let submitTxResultEnum = await sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
             case .success(let result):
@@ -378,7 +380,7 @@ class TransactionsRemoteTestCase: XCTestCase {
             let operation = OperationXDR(sourceAccount: mux, body: operationBody)
             var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, cond: PreconditionsXDR.none, memo: .none, operations: [operation0, operation], maxOperationFee: 190)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: keyPair, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: keyPair, network: self.network))
             let xdrEnvelope = try! transaction.encodedEnvelope()
             
             let postTxEnum = await sdk.transactions.postTransaction(transactionEnvelope: xdrEnvelope)
@@ -576,7 +578,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         let innerTx = try! Transaction(sourceAccount: sourceAccount!,
                                           operations: [paymentOperation],
                                           memo: Memo.none)
-        XCTAssertNoThrow(try innerTx.sign(keyPair: sourceAccountKeyPair, network: Network.testnet))
+        XCTAssertNoThrow(try innerTx.sign(keyPair: sourceAccountKeyPair, network: self.network))
         
         var payerAccount:AccountResponse? = nil
         accDetailsEnum = await sdk.accounts.getAccountDetails(accountId: payerKeyPair.accountId)
@@ -592,7 +594,7 @@ class TransactionsRemoteTestCase: XCTestCase {
         let mux = try! MuxedAccount(accountId: payerAccount!.accountId, sequenceNumber: payerAccount!.sequenceNumber, id: 929299292)
         let fb = try! FeeBumpTransaction(sourceAccount: mux, fee: 200, innerTransaction: innerTx)
         
-        XCTAssertNoThrow(try fb.sign(keyPair: payerKeyPair, network: Network.testnet))
+        XCTAssertNoThrow(try fb.sign(keyPair: payerKeyPair, network: self.network))
         
         let submitFBEnum = await sdk.transactions.submitFeeBumpTransaction(transaction: fb)
         switch submitFBEnum {

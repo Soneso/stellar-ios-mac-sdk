@@ -11,8 +11,10 @@ import stellarsdk
 
 class AmmTestCase: XCTestCase {
 
-    let sdk = StellarSDK()
-    let network = Network.testnet
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
+
     var effectsStreamItem:EffectsStreamItem? = nil
     var operationsStreamItem:OperationsStreamItem? = nil
     let assetNative = Asset(type: AssetType.ASSET_TYPE_NATIVE)
@@ -35,7 +37,7 @@ class AmmTestCase: XCTestCase {
         let payOp1 = try! PaymentOperation(sourceAccountId: SONESOIssuingAccountId, destinationAccountId: testAccountId, asset: SONESOAsset, amount: 50000)
         let payOp2 = try! PaymentOperation(sourceAccountId: COOLIssuingAccountId, destinationAccountId: testAccountId, asset: COOLAsset, amount: 50000)
         
-        var responseEnum = await sdk.accounts.createTestAccount(accountId: testAccountId)
+        var responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -44,7 +46,7 @@ class AmmTestCase: XCTestCase {
             XCTFail("could not create test account: \(testAccountId)")
         }
         
-        responseEnum = await sdk.accounts.createTestAccount(accountId: SONESOIssuingAccountId)
+        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: SONESOIssuingAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: SONESOIssuingAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -53,7 +55,7 @@ class AmmTestCase: XCTestCase {
             XCTFail("could not create test account: \(SONESOIssuingAccountId)")
         }
         
-        responseEnum = await sdk.accounts.createTestAccount(accountId: COOLIssuingAccountId)
+        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: COOLIssuingAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: COOLIssuingAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -68,9 +70,9 @@ class AmmTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: accountResponse,
                                               operations: [changeTrustOp1, changeTrustOp2, payOp1, payOp2],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
-            try! transaction.sign(keyPair: self.SONESOIssuingAccountKeyPair, network: Network.testnet)
-            try! transaction.sign(keyPair: self.COOLIssuingAccountKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: self.testKeyPair, network: self.network)
+            try! transaction.sign(keyPair: self.SONESOIssuingAccountKeyPair, network: self.network)
+            try! transaction.sign(keyPair: self.COOLIssuingAccountKeyPair, network: self.network)
             
             let submitTxResponse = await sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {

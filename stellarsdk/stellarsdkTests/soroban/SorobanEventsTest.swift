@@ -12,9 +12,11 @@ import stellarsdk
 
 class SorobanEventsTest: XCTestCase {
 
-    var sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org") // SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
-    var sdk = StellarSDK.testNet() // StellarSDK.futureNet()
-    var network = Network.testnet // Network.futurenet
+    static let testOn = "testnet" // "futurenet"
+    let sorobanServer = testOn == "testnet" ? SorobanServer(endpoint: "https://soroban-testnet.stellar.org"): SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
+    
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
     var submitterAccount:Account?
     
@@ -29,8 +31,7 @@ class SorobanEventsTest: XCTestCase {
         sorobanServer.enableLogging = true
         let accountAId = submitterKeyPair.accountId
 
-        // let responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: accountAId)
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: accountAId)
+        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: accountAId) : await sdk.accounts.createFutureNetTestAccount(accountId: accountAId)
         switch responseEnum {
         case .success(_):
             break

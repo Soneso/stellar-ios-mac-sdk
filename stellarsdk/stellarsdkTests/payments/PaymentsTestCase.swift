@@ -10,7 +10,11 @@ import XCTest
 import stellarsdk
 
 class PaymentsTestCase: XCTestCase {
-    let sdk = StellarSDK()
+
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
+    
     var streamItem:OperationsStreamItem? = nil
     let testKeyPair = try! KeyPair.generateRandomKeyPair()
     let IOMIssuingAccountKeyPair = try! KeyPair.generateRandomKeyPair()
@@ -25,7 +29,7 @@ class PaymentsTestCase: XCTestCase {
         let changeTrustOp = ChangeTrustOperation(sourceAccountId:testAccountId, asset:IOMAsset, limit: 100000000)
         let manageDataOp = ManageDataOperation(sourceAccountId: issuingAccountId, name: "config.memo_required", data: Data(base64Encoded: "MQ=="))
         
-        var response = await sdk.accounts.createTestAccount(accountId: testAccountId)
+        var response = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
         switch response {
         case .success(_):
             break
@@ -34,7 +38,7 @@ class PaymentsTestCase: XCTestCase {
             XCTFail("could not create test account: \(testAccountId)")
         }
         
-        response = await sdk.accounts.createTestAccount(accountId: issuingAccountId)
+        response = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: issuingAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: issuingAccountId)
         switch response {
         case .success(_):
             break
@@ -49,8 +53,8 @@ class PaymentsTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: accountResponse,
                                               operations: [changeTrustOp, manageDataOp],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
-            try! transaction.sign(keyPair: self.IOMIssuingAccountKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: self.testKeyPair, network: self.network)
+            try! transaction.sign(keyPair: self.IOMIssuingAccountKeyPair, network: self.network)
             
             let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
@@ -201,7 +205,7 @@ class PaymentsTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: muxSource,
                                               operations: [paymentOperation],
                                               memo: Memo.init(text: "test"))
-            try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
             
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
@@ -265,8 +269,8 @@ class PaymentsTestCase: XCTestCase {
                                                     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
                                                     amount: 1.5)
             
-            let lb = LedgerBounds(minLedger: 0, maxLedger: 4892052)
-            let tb = TimeBounds(minTime: 1652110741, maxTime: 1752110741)
+            let lb = LedgerBounds(minLedger: 0, maxLedger: 18779025)
+            let tb = TimeBounds(minTime: 1652110741, maxTime: 1846805141)
             
             let precond = TransactionPreconditions(ledgerBounds: lb, timeBounds: tb, minSeqNumber: accountResponse.sequenceNumber, minSeqAge: 1, minSeqLedgerGap: 1)
 
@@ -274,7 +278,7 @@ class PaymentsTestCase: XCTestCase {
                                               operations: [paymentOperation],
                                               memo: Memo.init(text: "test"),
                                               preconditions:precond)
-            try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
             case .success(let details):
@@ -339,7 +343,7 @@ class PaymentsTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: muxSource,
                                               operations: [paymentOperation],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: sourceKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: sourceKeyPair, network: self.network)
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
             case .success(let details):
@@ -382,7 +386,7 @@ class PaymentsTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: accountResponse,
                                               operations: [paymentOperationOne, paymentOperationTwo],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: sourceAccountKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
             case .success(_):

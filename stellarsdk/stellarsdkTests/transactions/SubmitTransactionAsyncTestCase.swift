@@ -11,138 +11,106 @@ import stellarsdk
 
 final class SubmitTransactionAsyncTestCase: XCTestCase {
 
-    let sdk = StellarSDK()
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
+    
     let accountKeyPair = try! KeyPair.generateRandomKeyPair()
-    var accountResponse:AccountResponse? = nil
     
-    override func setUp() {
-        super.setUp()
-        let expectation = XCTestExpectation(description: "account prepared for tests")
-        sdk.accounts.createTestAccount(accountId: accountKeyPair.accountId) { (response) -> (Void) in
-            switch response {
-            case .success(_):
-                self.sdk.accounts.getAccountDetails(accountId: self.accountKeyPair.accountId) { (response) -> (Void) in
-                    switch response {
-                    case .success(let accountResponse):
-                        self.accountResponse = accountResponse
-                        expectation.fulfill()
-                    case .failure(_):
-                        XCTFail()
-                    }
-                }
-            case .failure(_):
-                XCTFail()
-            }
-        }
-        wait(for: [expectation], timeout: 15.0)
-    }
-    
-    func testAll() {
-        pendingAndDuplicate();
-        statusError()
-        malformed()
-    }
-    
-    func pendingAndDuplicate() {
-        XCTContext.runActivity(named: "submitSuccess") { activity in
-            let expectation = XCTestExpectation(description: "First submission is pending, the second is duplicate")
-            self.sdk.accounts.getAccountDetails(accountId: self.accountKeyPair.accountId) { (response) -> (Void) in
-                switch response {
-                case .success(let accountResponse):
-                    let bumpSequenceOperation = BumpSequenceOperation(bumpTo: accountResponse.sequenceNumber + 10, sourceAccountId: nil)
-                    let transaction = try! Transaction(sourceAccount: accountResponse,
-                                                      operations: [bumpSequenceOperation],
-                                                      memo: Memo.text("Enjoy this transaction!"))
-
-                    
-                    try! transaction.sign(keyPair: self.accountKeyPair, network: Network.testnet)
-                    self.sdk.transactions.submitAsyncTransaction(transaction: transaction) { (response) -> (Void) in
-                        switch response {
-                        case .success(let submitAsyncResponse):
-                            XCTAssertEqual("PENDING", submitAsyncResponse.txStatus)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                self.sdk.transactions.submitAsyncTransaction(transaction: transaction) { (response) -> (Void) in
-                                    switch response {
-                                    case .success(let submitAsyncResponse2):
-                                        XCTAssertEqual("DUPLICATE", submitAsyncResponse2.txStatus)
-                                    case .destinationRequiresMemo(let destinationAccountId):
-                                        print("submitDuplicate: Destination requires memo \(destinationAccountId)")
-                                        XCTFail()
-                                    case .failure(let error):
-                                        StellarSDKLog.printHorizonRequestErrorMessage(tag:"submitSuccess", horizonRequestError:error)
-                                        XCTFail()
-                                    }
-                                    expectation.fulfill()
-                                }
-                            }
-                        case .destinationRequiresMemo(let destinationAccountId):
-                            print("submitPending: Destination requires memo \(destinationAccountId)")
-                            XCTFail()
-                            expectation.fulfill()
-                        case .failure(let error):
-                            StellarSDKLog.printHorizonRequestErrorMessage(tag:"submitSuccess", horizonRequestError:error)
-                            XCTFail()
-                            expectation.fulfill()
-                        }
-                    }
-                case .failure(_):
-                    XCTFail()
-                    expectation.fulfill()
-                }
-            }
-            
-            wait(for: [expectation], timeout: 15.0)
+    override func setUp() async throws {
+        try await super.setUp()
+        
+        let testAccountId = accountKeyPair.accountId
+        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
+        switch responseEnum {
+        case .success(_):
+            break
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not create test account: \(testAccountId)")
         }
     }
     
-    func statusError() {
-        XCTContext.runActivity(named: "errorSubmission") { activity in
-            let expectation = XCTestExpectation(description: "Status is ERROR")
-            let account = try! Account(accountId: accountKeyPair.accountId, sequenceNumber: 10000000)
-            let bumpSequenceOperation = BumpSequenceOperation(bumpTo: account.sequenceNumber + 10, sourceAccountId: nil)
-            let transaction = try! Transaction(sourceAccount: account,
+    func testAll() async {
+        await pendingAndDuplicate();
+        await statusError()
+        await malformed()
+    }
+    
+    func pendingAndDuplicate() async {
+        let testAccountId = accountKeyPair.accountId
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: testAccountId)
+        switch accDetailsResEnum {
+        case .success(let accountResponse):
+            let bumpSequenceOperation = BumpSequenceOperation(bumpTo: accountResponse.sequenceNumber + 10, sourceAccountId: nil)
+            let transaction = try! Transaction(sourceAccount: accountResponse,
                                               operations: [bumpSequenceOperation],
                                               memo: Memo.text("Enjoy this transaction!"))
 
             
-            try! transaction.sign(keyPair: self.accountKeyPair, network: Network.testnet)
-            self.sdk.transactions.submitAsyncTransaction(transaction: transaction) { (response) -> (Void) in
-                switch response {
-                case .success(let submitAsyncResponse):
-                    XCTAssertEqual("ERROR", submitAsyncResponse.txStatus)
-                    expectation.fulfill()
-                case .destinationRequiresMemo(let destinationAccountId):
-                    print("submitPending: Destination requires memo \(destinationAccountId)")
-                    XCTFail()
-                    expectation.fulfill()
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"failed", horizonRequestError:error)
-                    XCTFail()
-                    expectation.fulfill()
-                }
-            }
+            try! transaction.sign(keyPair: self.accountKeyPair, network: self.network)
             
-            wait(for: [expectation], timeout: 15.0)
+            let submitTxResponse = await sdk.transactions.submitAsyncTransaction(transaction: transaction)
+            switch submitTxResponse {
+            case .success(let submitAsyncResponse):
+                XCTAssertEqual("PENDING", submitAsyncResponse.txStatus)
+                let response = await sdk.transactions.submitAsyncTransaction(transaction: transaction)
+                switch response {
+                case .success(let submitAsyncResponse2):
+                    XCTAssertEqual("DUPLICATE", submitAsyncResponse2.txStatus)
+                case .destinationRequiresMemo(let destinationAccountId):
+                    print("submitDuplicate: Destination requires memo \(destinationAccountId)")
+                    XCTFail()
+                case .failure(let error):
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"submitSuccess", horizonRequestError:error)
+                    XCTFail()
+                }
+            case .destinationRequiresMemo(let destinationAccountId):
+                print("submitPending: Destination requires memo \(destinationAccountId)")
+                XCTFail()
+            case .failure(let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"submitSuccess", horizonRequestError:error)
+                XCTFail()
+            }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
+            XCTFail("could not load account details")
         }
     }
     
-    func malformed() {
-        XCTContext.runActivity(named: "marformedSubmission") { activity in
-            let expectation = XCTestExpectation(description: "horizon error with status 400 received")
-            self.sdk.transactions.postTransactionAsync(transactionEnvelope: "Hello my friend!", skipMemoRequiredCheck: true,  response: { (response) -> (Void) in
-                switch response {
-                case .success(_):
-                    XCTFail()
-                case .destinationRequiresMemo(let destinationAccountId):
-                    print("checkTransactionEnvelopePost: Destination requires memo \(destinationAccountId)")
-                    XCTFail()
-                case .failure(let error):
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"malformed", horizonRequestError:error)
-                }
-                expectation.fulfill()
-            })
-                        
-            wait(for: [expectation], timeout: 15.0)
+    func statusError() async {
+        let account = try! Account(accountId: accountKeyPair.accountId, sequenceNumber: 10000000)
+        let bumpSequenceOperation = BumpSequenceOperation(bumpTo: account.sequenceNumber + 10, sourceAccountId: nil)
+        let transaction = try! Transaction(sourceAccount: account,
+                                          operations: [bumpSequenceOperation],
+                                          memo: Memo.text("Enjoy this transaction!"))
+
+        
+        try! transaction.sign(keyPair: self.accountKeyPair, network: self.network)
+        let submitTxResponse = await sdk.transactions.submitAsyncTransaction(transaction: transaction)
+        switch submitTxResponse {
+        case .success(let submitAsyncResponse):
+            XCTAssertEqual("ERROR", submitAsyncResponse.txStatus)
+        case .destinationRequiresMemo(let destinationAccountId):
+            print("submitPending: Destination requires memo \(destinationAccountId)")
+            XCTFail()
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"failed", horizonRequestError:error)
+            XCTFail()
+        }
+    }
+    
+    func malformed() async {
+        
+        let submitTxResponse = await self.sdk.transactions.postTransactionAsync(transactionEnvelope: "Hello my friend!", skipMemoRequiredCheck: true)
+        switch submitTxResponse {
+        case .success(_):
+            XCTFail()
+        case .destinationRequiresMemo(let destinationAccountId):
+            print("checkTransactionEnvelopePost: Destination requires memo \(destinationAccountId)")
+            XCTFail()
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"malformed", horizonRequestError:error)
         }
     }
 

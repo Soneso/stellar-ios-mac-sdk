@@ -10,7 +10,8 @@ import XCTest
 import stellarsdk
 
 class FeeStatsRemoteTestCase: XCTestCase {
-    let sdk = StellarSDK()
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
     
     func testGetFeeStats() async {
 

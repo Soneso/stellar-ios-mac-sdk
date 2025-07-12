@@ -12,9 +12,11 @@ import stellarsdk
 
 class SorobanAuthTest: XCTestCase {
 
-    let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org") // SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
-    let sdk =  StellarSDK.testNet() // StellarSDK.futureNet()
-    let network = Network.testnet // Network.futurenet
+    static let testOn = "testnet" // "futurenet"
+    let sorobanServer = testOn == "testnet" ? SorobanServer(endpoint: "https://soroban-testnet.stellar.org"): SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
+    
     var invokerKeyPair = try! KeyPair.generateRandomKeyPair()
     var senderKeyPair = try! KeyPair.generateRandomKeyPair()
     var senderAccount:Account?
@@ -31,8 +33,7 @@ class SorobanAuthTest: XCTestCase {
         let invokerId = invokerKeyPair.accountId
         let senderId = senderKeyPair.accountId
         
-        var responseEnum = await sdk.accounts.createTestAccount(accountId: invokerId)
-        //var responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: invokerId)
+        var responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: invokerId) : await sdk.accounts.createFutureNetTestAccount(accountId: invokerId)
         switch responseEnum {
         case .success(_):
             break
@@ -41,8 +42,7 @@ class SorobanAuthTest: XCTestCase {
             XCTFail("could not create invoker account: \(invokerId)")
         }
         
-        //responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: senderId)
-        responseEnum = await sdk.accounts.createTestAccount(accountId: senderId)
+        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: senderId) : await sdk.accounts.createFutureNetTestAccount(accountId: senderId)
         switch responseEnum {
         case .success(_):
             break

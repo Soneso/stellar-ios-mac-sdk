@@ -10,7 +10,10 @@ import XCTest
 import stellarsdk
 
 class OperationsRemoteTestCase: XCTestCase {
-    let sdk = StellarSDK()
+
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
     
     var streamItem:OperationsStreamItem? = nil
     var effectsStreamItem:EffectsStreamItem? = nil
@@ -40,7 +43,7 @@ class OperationsRemoteTestCase: XCTestCase {
         let createAccountOp3 = CreateAccountOperation(sourceAccountId: testAccountId, destination: accountToSponsorKeyPair, startBalance: 100.0)
         let paymentOp1 = try! PaymentOperation(sourceAccountId: issuingAccountId, destinationAccountId: testAccountId, asset: IOMAsset, amount: 20000)
         
-        var responseEnum = await sdk.accounts.createTestAccount(accountId: testAccountId)
+        var responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -49,7 +52,7 @@ class OperationsRemoteTestCase: XCTestCase {
             XCTFail("could not create test account: \(testAccountId)")
         }
         
-        responseEnum = await sdk.accounts.createTestAccount(accountId: issuingAccountId)
+        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: issuingAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: issuingAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -66,8 +69,8 @@ class OperationsRemoteTestCase: XCTestCase {
                                                            createAccountOp, createAccountOp2,
                                                            createAccountOp3, paymentOp1],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
-            try! transaction.sign(keyPair: self.IOMIssuingAccountKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: self.testKeyPair, network: self.network)
+            try! transaction.sign(keyPair: self.IOMIssuingAccountKeyPair, network: self.network)
             
             let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
@@ -267,7 +270,7 @@ class OperationsRemoteTestCase: XCTestCase {
                                               operations: [createAccount],
                                               memo: Memo.none)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network))
  
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
@@ -325,7 +328,7 @@ class OperationsRemoteTestCase: XCTestCase {
                                               operations: [setHomeDomainOperation],
                                               memo: Memo.none)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network))
  
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
@@ -359,7 +362,7 @@ class OperationsRemoteTestCase: XCTestCase {
                                               operations: [mergeAccountOperation],
                                               memo: Memo.none)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network))
  
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
@@ -418,7 +421,7 @@ class OperationsRemoteTestCase: XCTestCase {
                                               operations: [changeTrustOp],
                                               memo: Memo.none)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: trustingAccountKeyPair, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: trustingAccountKeyPair, network: self.network))
  
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
@@ -482,7 +485,7 @@ class OperationsRemoteTestCase: XCTestCase {
                                               operations: [manageOfferOperation],
                                               memo: Memo.none)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network))
  
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
@@ -547,7 +550,7 @@ class OperationsRemoteTestCase: XCTestCase {
                                               operations: [createPassiveSellOfferOperation],
                                               memo: Memo.none)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network))
  
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
@@ -604,7 +607,7 @@ class OperationsRemoteTestCase: XCTestCase {
                                               operations: [manageDataOperation],
                                               memo: Memo.none)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network))
  
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
@@ -672,7 +675,7 @@ class OperationsRemoteTestCase: XCTestCase {
                                               operations: [createClaimableBalance],
                                               memo: Memo.none)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: sourceAccountKeyPair, network: self.network))
  
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
@@ -792,7 +795,7 @@ class OperationsRemoteTestCase: XCTestCase {
                                               operations: [claimClaimableBalanceOp],
                                               memo: Memo.none)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: claimantAccountKeyPair, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: claimantAccountKeyPair, network: self.network))
  
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
@@ -861,8 +864,8 @@ class OperationsRemoteTestCase: XCTestCase {
                                               operations: [begingSponsorshipOp, createAccountOp, manageDataOp, changeTrustOp, payRichOp, createClaimableBalanceAOp, createOfferOp, addSignerOperation, addAccSignerOperation, endSponsoringOp, revokeAccountSponsorshipOp, revokeDataSponsorshipOp, revokeTrustlineSponsorshipOp, revokeSignerSponsorshipOp, revokeAccSignerSponsorshipOp],
                                               memo: Memo.none)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: masterAccountKeyPair, network: .testnet))
-            XCTAssertNoThrow(try transaction.sign(keyPair: accountAKeyPair, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: masterAccountKeyPair, network: self.network))
+            XCTAssertNoThrow(try transaction.sign(keyPair: accountAKeyPair, network: self.network))
  
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
@@ -904,8 +907,8 @@ class OperationsRemoteTestCase: XCTestCase {
                                               operations: [begingSponsorshipOp, changeTrustOp, endSponsoringOp],
                                               memo: Memo.none)
             
-            XCTAssertNoThrow(try transaction.sign(keyPair: masterAccountKeyPair, network: .testnet))
-            XCTAssertNoThrow(try transaction.sign(keyPair: accountAKeyPair, network: .testnet))
+            XCTAssertNoThrow(try transaction.sign(keyPair: masterAccountKeyPair, network: self.network))
+            XCTAssertNoThrow(try transaction.sign(keyPair: accountAKeyPair, network: self.network))
  
             let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {

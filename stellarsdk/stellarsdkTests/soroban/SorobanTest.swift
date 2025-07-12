@@ -11,9 +11,10 @@ import stellarsdk
 
 class SorobanTest: XCTestCase {
 
-    var sorobanServer =   SorobanServer(endpoint: "https://soroban-testnet.stellar.org") //SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
-    var sdk = StellarSDK.testNet() // StellarSDK.futureNet()
-    var network = Network.testnet // Network.futurenet
+    static let testOn = "testnet" // "futurenet"
+    let sorobanServer = testOn == "testnet" ? SorobanServer(endpoint: "https://soroban-testnet.stellar.org"): SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
     
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
     var submitterAccount:Account?
@@ -37,8 +38,7 @@ class SorobanTest: XCTestCase {
         let changeTrustOp = ChangeTrustOperation(sourceAccountId:accountAId, asset:asset, limit: 100000000)
         let payOp = try! PaymentOperation(sourceAccountId: accountBId, destinationAccountId: accountAId, asset: asset, amount: 50000)
         
-        // await sdk.accounts.createFutureNetTestAccount(accountId: accountAId)
-        var responseEnum = await sdk.accounts.createTestAccount(accountId: accountAId)
+        var responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: accountAId) : await sdk.accounts.createFutureNetTestAccount(accountId: accountAId)
         switch responseEnum {
         case .success(_):
             break
@@ -46,8 +46,8 @@ class SorobanTest: XCTestCase {
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"setUp()", horizonRequestError: error)
             XCTFail("could not create test account A: \(accountAId)")
         }
-        // await sdk.accounts.createFutureNetTestAccount(accountId: accountBId)
-        responseEnum = await sdk.accounts.createTestAccount(accountId: accountBId)
+        
+        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: accountBId) : await sdk.accounts.createFutureNetTestAccount(accountId: accountBId)
         switch responseEnum {
         case .success(_):
             break

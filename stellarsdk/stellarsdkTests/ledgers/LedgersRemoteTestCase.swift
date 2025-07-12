@@ -18,7 +18,9 @@ import XCTest
 import stellarsdk
 
 class LedgersRemoteTestCase: XCTestCase {
-    let sdk = StellarSDK()
+    
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
 
     
     func testGetLedgers() async {

@@ -12,7 +12,10 @@ import XCTest
 import stellarsdk
 
 class AccountRemoteTestCase: XCTestCase {
-    let sdk = StellarSDK()
+    
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
     
     let testKeyPair = try! KeyPair.generateRandomKeyPair()
     let testKeyPairExtra = try! KeyPair.generateRandomKeyPair()
@@ -35,7 +38,7 @@ class AccountRemoteTestCase: XCTestCase {
         let changeTrustOp2 = ChangeTrustOperation(sourceAccountId:testAccountExtraId, asset:IOMAsset, limit: 100000000)
         let endSponsoringOp = EndSponsoringFutureReservesOperation(sponsoredAccountId: testAccountExtraId)
         
-        var responseEnum = await sdk.accounts.createTestAccount(accountId: testAccountId)
+        var responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -44,7 +47,7 @@ class AccountRemoteTestCase: XCTestCase {
             XCTFail("could not create test account: \(testAccountId)")
         }
         
-        responseEnum = await self.sdk.accounts.createTestAccount(accountId: issuingAccountId)
+        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: issuingAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: issuingAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -59,8 +62,8 @@ class AccountRemoteTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: accountResponse,
                                               operations: [changeTrustOp1, begingSponsorshipOp, createAccountOp, changeTrustOp2, endSponsoringOp, setOptionsOp],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: self.testKeyPair, network: Network.testnet)
-            try! transaction.sign(keyPair: self.testKeyPairExtra, network: Network.testnet)
+            try! transaction.sign(keyPair: self.testKeyPair, network: self.network)
+            try! transaction.sign(keyPair: self.testKeyPairExtra, network: self.network)
             
             let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {

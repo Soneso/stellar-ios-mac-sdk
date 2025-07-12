@@ -11,6 +11,14 @@ import Foundation
 class Sep08FollowNextMock: ResponsesMock {
     var host: String
     private let jsonDecoder = JSONDecoder()
+    private let response = 
+    """
+    {
+      "result" : "follow_next_url",
+      "message": "Please submit mobile number",
+      "next_url": "http://goat.io/action",
+    }
+    """
     
     init(host:String) {
         self.host = host
@@ -23,13 +31,7 @@ class Sep08FollowNextMock: ResponsesMock {
                 // let body = String(decoding: data, as: UTF8.self)
                 // print(body)
                 mock.statusCode = 200
-                return """
-                    {
-                      "result" : "follow_next_url",
-                      "message": "Please submit mobile number",
-                      "next_url": "http://goat.io/action",
-                    }
-                    """
+                return self?.response
             }
             mock.statusCode = 400
             return ""

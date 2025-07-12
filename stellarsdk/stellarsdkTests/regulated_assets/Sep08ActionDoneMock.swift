@@ -11,6 +11,12 @@ import Foundation
 class Sep08ActionDoneMock: ResponsesMock {
     var host: String
     private let jsonDecoder = JSONDecoder()
+    private let response =
+    """
+    {
+      "result" : "no_further_action_required"
+    }
+    """
     
     init(host:String) {
         self.host = host
@@ -23,11 +29,7 @@ class Sep08ActionDoneMock: ResponsesMock {
                 // let body = String(decoding: data, as: UTF8.self)
                 // print(body)
                 mock.statusCode = 200
-                return """
-                    {
-                      "result" : "no_further_action_required"
-                    }
-                    """
+                return self?.response
             }
             mock.statusCode = 400
             return ""

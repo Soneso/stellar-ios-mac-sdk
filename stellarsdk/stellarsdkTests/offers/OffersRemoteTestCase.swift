@@ -10,8 +10,11 @@ import XCTest
 import stellarsdk
 
 class OffersRemoteTestCase: XCTestCase {
-    let sdk = StellarSDK()
-    let network = Network.testnet
+
+    static let testOn = "testnet" // "futurenet"
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
+    
     let sellerKeyPair = try! KeyPair.generateRandomKeyPair()
     let IOMIssuerKeyPair = try! KeyPair.generateRandomKeyPair()
     var operationsStreamItem:OperationsStreamItem? = nil
@@ -34,7 +37,7 @@ class OffersRemoteTestCase: XCTestCase {
         let paymentOp = try! PaymentOperation(sourceAccountId: issuingAccountId, destinationAccountId: testAccountId, asset: IOMAsset, amount: 10000.0)
 
         
-        var responseEnum = await sdk.accounts.createTestAccount(accountId: testAccountId)
+        var responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -43,7 +46,7 @@ class OffersRemoteTestCase: XCTestCase {
             XCTFail("could not create issuing account: \(testAccountId)")
         }
         
-        responseEnum = await sdk.accounts.createTestAccount(accountId: issuingAccountId)
+        responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: issuingAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: issuingAccountId)
         switch responseEnum {
         case .success(_):
             break
@@ -59,9 +62,9 @@ class OffersRemoteTestCase: XCTestCase {
             let transaction = try! Transaction(sourceAccount: accountResponse,
                                                operations: [createAccountOp1, createAccountOp2, changeTrustOp1, changeTrustOp2, paymentOp],
                                               memo: Memo.none)
-            try! transaction.sign(keyPair: self.sellerKeyPair, network: Network.testnet)
-            try! transaction.sign(keyPair: self.IOMIssuerKeyPair, network: Network.testnet)
-            try! transaction.sign(keyPair: self.buyerKeyPair, network: Network.testnet)
+            try! transaction.sign(keyPair: self.sellerKeyPair, network: self.network)
+            try! transaction.sign(keyPair: self.IOMIssuerKeyPair, network: self.network)
+            try! transaction.sign(keyPair: self.buyerKeyPair, network: self.network)
             
             let submitTxResponse = await self.sdk.transactions.submitTransaction(transaction: transaction);
             switch submitTxResponse {
