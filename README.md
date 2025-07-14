@@ -27,7 +27,7 @@ from `~/.gitconfig`. See also this [SourceTree issue](https://forums.swift.org/t
 #### Protocol 23 release candidate:
 
 ```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.2.0-beta.1"),
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.2.0-beta.2"),
 ```
 
 ### CocoaPods
@@ -60,7 +60,7 @@ $ pod install
 #### Protocol 23 release candidate:
 
 ```ruby
-pod 'stellar-ios-mac-sdk', '~> 3.2.0-beta.1'
+pod 'stellar-ios-mac-sdk', '~> 3.2.0-beta.2'
 ```
 
 ### Carthage
@@ -87,7 +87,7 @@ Run `carthage update` to build the framework and drag the build `stellar-ios-mac
 #### Protocol 23 release candidate:
 
 ```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 3.2.0-beta.1
+github "soneso/stellar-ios-mac-sdk" ~> 3.2.0-beta.2
 ```
 
 ### Manual

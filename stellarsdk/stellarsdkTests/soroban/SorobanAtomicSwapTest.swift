@@ -14,15 +14,17 @@ class SorobanAtomicSwapTest: XCTestCase {
     // See https://developers.stellar.org/docs/smart-contracts/example-contracts/atomic-swap
     // See https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
     
-    let sorobanServer = SorobanServer(endpoint: "https://soroban-testnet.stellar.org") // SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
-    let sdk = StellarSDK.testNet() // StellarSDK.futureNet()
-    let network = Network.testnet // Network.futurenet
+    static let testOn = "futurenet" // "testnet"
+    let sorobanServer = testOn == "testnet" ? SorobanServer(endpoint: "https://soroban-testnet.stellar.org"): SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
+    let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
+    let network = testOn == "testnet" ? Network.testnet : Network.futurenet
+    
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
-    let aliceKeyPair = try! KeyPair(secretSeed: "SABEXI4FJ46U3KVITDJYZEH2MJRI4OYEISQPS5EHURWTIS5JUMTTA375") // GAWXTKUDVJPMMWMD2LC22NY2DBC6B4ZNUDF35LOGRQKIXD2WE6RQL7K7
-    let bobKeyPair = try! KeyPair(secretSeed: "SBTLSCVKO3EGTD5X7VYA6JAVBXKP5E3PDGV3FM6CAV6YNJJL5AXZXP4K") // GAQWQG3VGPAKAY52R5OUEFFDHYXMLMSYSWERIDRX4JSWO2KFPRKJ2N5S
-    let atomicSwapContractId = "CBTXLMP27TIW7M5UQVKUBSR4S6ZCUUZD4T6IPL4XOSHH5QSQWEMMUXH5"
-    let tokenAId  = "CBX44ZWSOMZISOQ3Y3SSLSSK7WDONLPWBREGHYJBZLNSLKSBDC4FJHY5"
-    let tokenBId = "CBDVQUJNOBKVXWF4YVNEK4HJDNZCPKLNPF2TQHNL6KPVQNKGDQ2SXP7M"
+    let aliceKeyPair = try! KeyPair(secretSeed: "SB2VMA5RB6ATRLYVZQ5KU7C6FQSKES4SWJNSUPYSLNLEHHYXTE22GS7C") // GB7VPA7JRGSUXP5JZKPOPRTEQBX2UPW4LLNLAP6Y5VRDRQ3BN6TCPFJO
+    let bobKeyPair = try! KeyPair(secretSeed: "SBDMVEUMKGHBCVARE3CL2QQCXOWU4KTSJYZSCVGWWNPVHXTOS2LFCT33") // GA3LKGOJIJ4BWD4Z5SQGIYTABXLT7MYBZALRKH5F7ENQ3FQKDP57UO3M
+    let atomicSwapContractId = "CDBQXE5CFF52OARZ7FR7TKHUZN76QFRFLVCWHR7GVC2TNBNUK2JOMAMN"
+    let tokenAId  = "CAKECBTTSYKQEJEUQKHRD5JND4U6EAZ6Q6EQ6I644X5KPPRCM7UYREI7"
+    let tokenBId = "CABFWMLEPS2ZECD5WZLAVRMIXEVD4UP3YLKKV7VDLHTQ7Q6CTWOO5ZC5"
     let swapFunctionName = "swap"
     var invokeTransactionId:String?
     var submitterAccount:Account?
@@ -33,8 +35,8 @@ class SorobanAtomicSwapTest: XCTestCase {
         
         sorobanServer.enableLogging = true
 
-        let responseEnum = await sdk.accounts.createTestAccount(accountId: submitterKeyPair.accountId)
-        //let responseEnum = await sdk.accounts.createFutureNetTestAccount(accountId: submitterKeyPair.accountId)
+        let submitterAccountId = submitterKeyPair.accountId
+        let responseEnum = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: submitterAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: submitterAccountId)
         switch responseEnum {
         case .success(_):
             break
