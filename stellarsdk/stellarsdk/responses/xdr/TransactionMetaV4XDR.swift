@@ -83,7 +83,7 @@ public struct SorobanTransactionMetaV2XDR: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         ext = try container.decode(SorobanTransactionMetaExt.self)
-        returnValue = try container.decodeIfPresent(SCValXDR.self)
+        returnValue = try decodeArray(type: SCValXDR.self, dec: decoder).first
     }
     
     public func encode(to encoder: Encoder) throws {
