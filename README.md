@@ -1,9 +1,6 @@
 # stellar-ios-mac-sdk
 
-The Soneso open source stellar SDK for iOS &amp; Mac provides APIs to build transactions and connect to [Horizon](https://github.com/stellar/horizon).
-
-Hint:
-This is the core `stellar-ios-mac` SDK. If you are looking for an easy way to build a Stellar wallet or interact with Stellar Anchors, we recommend you to consider using the [Swift Wallet SDK](https://github.com/Soneso/stellar-swift-wallet-sdk).
+The Soneso open source Stellar SDK for iOS &amp; Mac provides APIs to query Horizon and Soroban RPC, build, sign and submit transactions to the Stellar Network. It supports different Stellar Ecosystem Proposals and helps developers deploy and invoke Soroban Smart Contracts.
 
 ## Installation
 
@@ -12,7 +9,7 @@ This is the core `stellar-ios-mac` SDK. If you are looking for an easy way to bu
 #### Latest stable release:
 
 ```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.1.0"),
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.2.0"),
 ```
 
 If not loading (err: `cannot use bare repository`), then remove:
@@ -23,12 +20,6 @@ If not loading (err: `cannot use bare repository`), then remove:
 ```
 
 from `~/.gitconfig`. See also this [SourceTree issue](https://forums.swift.org/t/fatal-cannot-use-bare-repository/75588). 
-
-#### Protocol 23 release candidate:
-
-```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.2.0-beta.2"),
-```
 
 ### CocoaPods
 
@@ -46,7 +37,7 @@ To integrate stellar SDK into your Xcode project using CocoaPods, specify it in 
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk', '~> 3.1.0'
+    pod 'stellar-ios-mac-sdk', '~> 3.2.0'
 end
 ```
 
@@ -55,12 +46,6 @@ Then, run the following command:
 ```bash
 $ pod repo update
 $ pod install
-```
-
-#### Protocol 23 release candidate:
-
-```ruby
-pod 'stellar-ios-mac-sdk', '~> 3.2.0-beta.2'
 ```
 
 ### Carthage
@@ -79,16 +64,11 @@ To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify
 #### Last stable release:
 
 ```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 3.1.0
+github "soneso/stellar-ios-mac-sdk" ~> 3.2.0
 ```
 
 Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.
 
-#### Protocol 23 release candidate:
-
-```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 3.2.0-beta.2
-```
 
 ### Manual
 
