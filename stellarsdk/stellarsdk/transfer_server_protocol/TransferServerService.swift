@@ -587,7 +587,7 @@ public class TransferServerService: NSObject {
             requestPath += "&lang=\(lang)"
         }
         
-        let result = await serviceHelper.GETRequestWithPath(path: requestPath)
+        let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
         switch result {
         case .success(let data):
             do {
