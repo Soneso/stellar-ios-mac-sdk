@@ -14,17 +14,17 @@ class SorobanAtomicSwapTest: XCTestCase {
     // See https://developers.stellar.org/docs/smart-contracts/example-contracts/atomic-swap
     // See https://developers.stellar.org/docs/learn/smart-contract-internals/authorization
     
-    static let testOn = "futurenet" // "testnet"
+    static let testOn = "testnet" // "futurenet"
     let sorobanServer = testOn == "testnet" ? SorobanServer(endpoint: "https://soroban-testnet.stellar.org"): SorobanServer(endpoint: "https://rpc-futurenet.stellar.org")
     let sdk = testOn == "testnet" ? StellarSDK.testNet() : StellarSDK.futureNet()
     let network = testOn == "testnet" ? Network.testnet : Network.futurenet
     
     let submitterKeyPair = try! KeyPair.generateRandomKeyPair()
-    let aliceKeyPair = try! KeyPair(secretSeed: "SB2VMA5RB6ATRLYVZQ5KU7C6FQSKES4SWJNSUPYSLNLEHHYXTE22GS7C") // GB7VPA7JRGSUXP5JZKPOPRTEQBX2UPW4LLNLAP6Y5VRDRQ3BN6TCPFJO
-    let bobKeyPair = try! KeyPair(secretSeed: "SBDMVEUMKGHBCVARE3CL2QQCXOWU4KTSJYZSCVGWWNPVHXTOS2LFCT33") // GA3LKGOJIJ4BWD4Z5SQGIYTABXLT7MYBZALRKH5F7ENQ3FQKDP57UO3M
-    let atomicSwapContractId = "CDBQXE5CFF52OARZ7FR7TKHUZN76QFRFLVCWHR7GVC2TNBNUK2JOMAMN"
-    let tokenAId  = "CAKECBTTSYKQEJEUQKHRD5JND4U6EAZ6Q6EQ6I644X5KPPRCM7UYREI7"
-    let tokenBId = "CABFWMLEPS2ZECD5WZLAVRMIXEVD4UP3YLKKV7VDLHTQ7Q6CTWOO5ZC5"
+    let aliceKeyPair = try! KeyPair(secretSeed: "SAPCDDYOPZFRPKF37JYWMLJFTCXVINRLEBL6OTQKQRHG4ZRDKYVLK2EF") // GCMG4DDY4JZHZDEVSHGNDFQB4CVMHQ5D46YRL2IBQ2PJ3J6MOVXTPJDI
+    let bobKeyPair = try! KeyPair(secretSeed: "SCLI6IKAPPIKE5PVMFAO4B3EB3DL2RBUGHJ4L26NFY5CN22BXL3RWUUV") // GB3LW53GQIFZTIVEREKLA7527JQ4NK5OZYVWHORDPC2PTODBSFNVJWCI
+    let atomicSwapContractId = "CAOGPIXWHJ3SPO4PR272EHUJKSPHH63EZKSAUKJEVHE3B3XXHR5MHN7O"
+    let tokenAId  = "CDGFRQPKCHQTEHW7BIN6LBIHZSW4TOOJYTRON5OBZEBQO4G5WZGP7XNS"
+    let tokenBId = "CANV2AIUB6IXHV3OOZVYULZV5O46ML4IAWXFVDRH2IQIGS2IRDGQ75Z7"
     let swapFunctionName = "swap"
     var invokeTransactionId:String?
     var submitterAccount:Account?
