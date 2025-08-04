@@ -299,6 +299,384 @@ try await tx.signAuthEntries(signerKeyPair: bobPublicKeyKeypair, authorizeEntryC
 To see an even more complicated example, where Alice swaps with Bob but the
 transaction is invoked by yet another party, check out in the `SorobanClientTest.atomicSwapTest()`
 
+## Contract Spec
+
+The `ContractSpec` class offers a range of useful functions based on the contract spec entries of a contract.
+It can be used to find specific entries from the contract specification and, more importantly,
+to easily prepare the arguments to invoke the contract functions.
+
+The class is initialized with the contract spec entries from the soroban client:
+
+```swift
+let spec = client.getContractSpec()
+```
+
+After initialization, certain spec entries or functions can be found, for example:
+
+```swift
+let functions = spec.funcs()
+let func = spec.getFunc(name: "swap")
+let unionEntry = spec.findEntry(name: "myUnion")
+```
+
+More important, however, is the ability to easily prepare the arguments for invoking contract functions.
+The arguments for invoking the functions must be of type `SCValXDR`. 
+
+These can either be constructed manually or with the support of the `ContractSpec` class.
+
+Example of manual construction:
+
+```swift
+let swapMethodName = "swap"
+
+let amountA = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 1000))
+let minBForA = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 4500))
+
+let amountB = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 5000))
+let minAForB = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 950))
+
+let args: [SCValXDR] = [
+    try SCValXDR.address(SCAddressXDR(accountId: aliceAccountId)),
+    try SCValXDR.address(SCAddressXDR(accountId: bobAccountId)),
+    try SCValXDR.address(SCAddressXDR(contractId: tokenAContractId)),
+    try SCValXDR.address(SCAddressXDR(contractId: tokenBContractId)),
+    amountA,
+    minBForA,
+    amountB,
+    minAForB
+]
+```
+
+Example using the `ContractSpec` class:
+
+```swift
+let args = try spec.funcArgsToXdrSCValues(name: swapMethodName, args: [
+    "a": aliceId,
+    "b": bobId,
+    "token_a": tokenAContractId,
+    "token_b": tokenBContractId,
+    "amount_a": 1000,
+    "min_b_for_a": 4500,
+    "amount_b": 5000,
+    "min_a_for_b": 950
+])
+```
+
+The conversion of native values to `SCValXDR` is based on the contract spec entries of the contract
+and can be done via the method `funcArgsToXdrSCValues` or individually via the method `nativeToXdrSCVal(val:ty:)`:
+
+```swift
+// examples for nativeToXdrSCVal:
+
+let def = SCSpecTypeDefXDR.address // self defined
+let val = try spec.nativeToXdrSCVal(val: "CCCZVCWISWKWZ3NNH737WGOVCDUI3P776QE3ZM7AUWMJKQBHCPW7NW3D", ty: def)
+
+// or
+let def = SCSpecTypeDefXDR.udt(SCSpecTypeUDTXDR(name: "myStruct")) // myStruct is in the spec entries of the contract.
+let val = try spec.nativeToXdrSCVal(val: ["field1": 1, "field2": 2, "field3": 3], ty: def)
+
+// example for funcArgsToXdrSCValues:
+let args = try spec.funcArgsToXdrSCValues(name: "myFunc", args: [
+    "admin": "CCCZVCWISWKWZ3NNH737WGOVCDUI3P776QE3ZM7AUWMJKQBHCPW7NW3D"
+])
+```
+
+### Supported values
+
+Next, we will go through the individual supported value types using examples. 
+We will use the `nativeToXdrSCVal` method for a better understanding. 
+Of course, these also apply to the method `funcArgsToXdrSCValues` where the type definitions are 
+already included in the spec of the contract function. 
+
+For our examples, we will create the type definitions ourselves in order to better explain the context.
+
+#### Void
+
+To obtain an `SCValXDR` of type void, the native value `nil` can be passed:
+
+```swift
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+let def = SCSpecTypeDefXDR.void
+
+// convert nil to SCValXDR of type void
+let val = try spec.nativeToXdrSCVal(val: nil, ty: def)
+XCTAssertEqual(SCValType.void.rawValue, val.type())
+```
+
+#### Addresses 
+
+To obtain an `SCValXDR` object of type address, a string can be passed.
+Both account ids and contract ids are supported.
+
+```swift
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+let def = SCSpecTypeDefXDR.address
+
+// convert
+let accountId = "GB6AXVJOIWOEOH4EA6ZT24ZJ5XNVOQUJK4PBAEOFNG44VKROWLDA65DB"
+let val = try spec.nativeToXdrSCVal(val: accountId, ty: def)
+
+let contractId = "CCCZVCWISWKWZ3NNH737WGOVCDUI3P776QE3ZM7AUWMJKQBHCPW7NW3D"
+let val2 = try spec.nativeToXdrSCVal(val: contractId, ty: def)
+```
+
+#### Vectors
+
+To obtain an `SCValXDR` object of type vec, an array of native values must be passed:
+
+```swift
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+let vecType = SCSpecTypeVecXDR(elementType: SCSpecTypeDefXDR.symbol)
+let def = SCSpecTypeDefXDR.vec(vecType)
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: ["a", "b"], ty: def)
+XCTAssertEqual(SCValType.vec.rawValue, val.type())
+XCTAssertEqual(2, val.vec?.count)
+```
+
+#### Maps
+
+To obtain an `SCValXDR` object of type map, a dictionary of native key value pairs must be passed:
+
+```swift
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+let mapType = SCSpecTypeMapXDR(keyType: SCSpecTypeDefXDR.string, valueType: SCSpecTypeDefXDR.address)
+let def = SCSpecTypeDefXDR.map(mapType)
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: ["a": accountId, "b": contractId], ty: def)
+XCTAssertEqual(SCValType.map.rawValue, val.type())
+```
+
+#### Tuple
+
+To obtain an `SCValXDR` object of type tuple, an array of native values must be passed:
+
+```swift
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+let tupleType = SCSpecTypeTupleXDR(valueTypes: [SCSpecTypeDefXDR.string, SCSpecTypeDefXDR.bool])
+let def = SCSpecTypeDefXDR.tuple(tupleType)
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: ["a", true], ty: def)
+XCTAssertEqual(SCValType.vec.rawValue, val.type())
+```
+
+#### Numbers
+
+To obtain an `SCValXDR` object of type u32, i32, u64, i64, native Int values must be passed:
+
+```swift
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+let def = SCSpecTypeDefXDR.u32
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: 12, ty: def)
+XCTAssertEqual(SCValType.u32.rawValue, val.type())
+
+let def2 = SCSpecTypeDefXDR.i32
+let val2 = try spec.nativeToXdrSCVal(val: -12, ty: def2)
+XCTAssertEqual(SCValType.i32.rawValue, val2.type())
+
+let def3 = SCSpecTypeDefXDR.u64
+let val3 = try spec.nativeToXdrSCVal(val: 112, ty: def3)
+XCTAssertEqual(SCValType.u64.rawValue, val3.type())
+
+let def4 = SCSpecTypeDefXDR.i64
+let val4 = try spec.nativeToXdrSCVal(val: -112, ty: def4)
+XCTAssertEqual(SCValType.i64.rawValue, val4.type())
+```
+
+`SCValXDR` objects of type u128, i128, u256 and i256 are only supported for positive native Int values:
+
+```swift
+// for > 64 bit only positive numbers are supported
+let def = SCSpecTypeDefXDR.u128
+let val = try spec.nativeToXdrSCVal(val: 1112, ty: def)
+XCTAssertEqual(SCValType.u128.rawValue, val.type())
+XCTAssertEqual(1112, val.u128?.lo)
+
+let def2 = SCSpecTypeDefXDR.i128
+let val2 = try spec.nativeToXdrSCVal(val: 2112, ty: def2)
+XCTAssertEqual(SCValType.i128.rawValue, val2.type())
+XCTAssertEqual(2112, val2.i128?.lo)
+
+let def3 = SCSpecTypeDefXDR.u256
+let val3 = try spec.nativeToXdrSCVal(val: 3112, ty: def3)
+XCTAssertEqual(SCValType.u256.rawValue, val3.type())
+XCTAssertEqual(3112, val3.u256?.loLo)
+
+let def4 = SCSpecTypeDefXDR.i256
+let val4 = try spec.nativeToXdrSCVal(val: 3112, ty: def4)
+XCTAssertEqual(SCValType.i256.rawValue, val4.type())
+XCTAssertEqual(3112, val4.i256?.loLo)
+
+// bigger, or negative numbers must be passed as SCValXDR to funcArgsToXdrSCValues
+let args = try spec.funcArgsToXdrSCValues(name: "myFunc", args: [
+    "bob": accountId, 
+    "amount": SCValXDR.i128(Int128PartsXDR(hi: -1230, lo: 81881))
+])
+```
+
+#### Bytes and BytesN
+
+`SCValXDR` objects of type bytes or bytesN, are constructed from native strings (containing the bytes):
+
+```swift
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+let def = SCSpecTypeDefXDR.bytes
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: keyPair.publicKey.accountId, ty: def)
+XCTAssertEqual(SCValType.bytes.rawValue, val.type())
+
+let bytesNType = SCSpecTypeBytesNXDR(n: 32)
+let def2 = SCSpecTypeDefXDR.bytesN(bytesNType)
+let val2 = try spec.nativeToXdrSCVal(val: keyPair.publicKey.accountId, ty: def2)
+XCTAssertEqual(SCValType.bytes.rawValue, val2.type())
+```
+
+#### String
+
+`SCValXDR` objects of type string, are constructed from native strings:
+
+```swift
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+let def = SCSpecTypeDefXDR.string
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: "hello this is a text", ty: def)
+XCTAssertEqual(SCValType.string.rawValue, val.type())
+```
+
+#### Symbol
+
+`SCValXDR` objects of type symbol, are constructed from native strings:
+
+```swift
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+let def = SCSpecTypeDefXDR.symbol
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: "XLM", ty: def)
+XCTAssertEqual(SCValType.symbol.rawValue, val.type())
+```
+
+#### Bool
+
+`SCValXDR` objects of type bool, are constructed from native Bool:
+
+```swift
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+let def = SCSpecTypeDefXDR.bool
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: false, ty: def)
+XCTAssertEqual(SCValType.bool.rawValue, val.type())
+```
+
+#### Option
+
+Optional `SCValXDR` objects:
+
+```swift
+// prepare def (this is not needed for funcArgsToXdrSCValues)
+let optionType = SCSpecTypeOptionXDR(valueType: SCSpecTypeDefXDR.string)
+let def = SCSpecTypeDefXDR.option(optionType)
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: "a string", ty: def)
+XCTAssertEqual(SCValType.string.rawValue, val.type())
+
+let val2 = try spec.nativeToXdrSCVal(val: nil, ty: def)
+XCTAssertEqual(SCValType.void.rawValue, val2.type())
+```
+
+#### User defined types (enum, struct union)
+
+***Enum:***
+```swift
+// prepare (this is not needed for funcArgsToXdrSCValues)
+let cases = [
+    SCSpecUDTEnumCaseV0XDR(doc: "", name: "a", value: 1),
+    SCSpecUDTEnumCaseV0XDR(doc: "", name: "b", value: 2),
+    SCSpecUDTEnumCaseV0XDR(doc: "", name: "c", value: 3)
+]
+let enumSpec = SCSpecUDTEnumV0XDR(doc: "", lib: "", name: "myEnum", cases: cases)
+let entry = SCSpecEntryXDR.enumV0(enumSpec)
+let spec = ContractSpec(entries: [entry])
+let def = SCSpecTypeDefXDR.udt(SCSpecTypeUDTXDR(name: "myEnum"))
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: 2, ty: def)
+XCTAssertEqual(SCValType.u32.rawValue, val.type())
+XCTAssertEqual(2, val.u32)
+```
+
+***Struct (non-numeric fields):***
+```swift
+// prepare (this is not needed for funcArgsToXdrSCValues)
+let fields = [
+    SCSpecUDTStructFieldV0XDR(doc: "", name: "field1", type: SCSpecTypeDefXDR.u32),
+    SCSpecUDTStructFieldV0XDR(doc: "", name: "field2", type: SCSpecTypeDefXDR.u32),
+    SCSpecUDTStructFieldV0XDR(doc: "", name: "field3", type: SCSpecTypeDefXDR.u32)
+]
+let structSpec = SCSpecUDTStructV0XDR(doc: "", lib: "", name: "myStruct", fields: fields)
+let entry = SCSpecEntryXDR.structV0(structSpec)
+let spec = ContractSpec(entries: [entry])
+let def = SCSpecTypeDefXDR.udt(SCSpecTypeUDTXDR(name: "myStruct"))
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: ["field1": 1, "field2": 2, "field3": 3], ty: def)
+XCTAssertEqual(SCValType.map.rawValue, val.type())
+XCTAssertEqual(3, val.map?.count)
+```
+
+***Struct (all fields are numeric):***
+```swift
+// prepare (this is not needed for funcArgsToXdrSCValues)
+let fields = [
+    SCSpecUDTStructFieldV0XDR(doc: "", name: "1", type: SCSpecTypeDefXDR.string),
+    SCSpecUDTStructFieldV0XDR(doc: "", name: "2", type: SCSpecTypeDefXDR.string),
+    SCSpecUDTStructFieldV0XDR(doc: "", name: "3", type: SCSpecTypeDefXDR.string)
+]
+let numericStructSpec = SCSpecUDTStructV0XDR(doc: "", lib: "", name: "myNumericStruct", fields: fields)
+let entry = SCSpecEntryXDR.structV0(numericStructSpec)
+let spec = ContractSpec(entries: [entry])
+let def = SCSpecTypeDefXDR.udt(SCSpecTypeUDTXDR(name: "myNumericStruct"))
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: ["one", "two", "three"], ty: def)
+XCTAssertEqual(SCValType.vec.rawValue, val.type())
+XCTAssertEqual(3, val.vec?.count)
+```
+
+***Union:***
+```swift
+// prepare (this is not needed for funcArgsToXdrSCValues)
+let unionCases = [
+    SCSpecUDTUnionCaseV0XDR.voidV0(SCSpecUDTUnionCaseVoidV0XDR(doc: "", name: "voidCase")),
+    SCSpecUDTUnionCaseV0XDR.tupleV0(SCSpecUDTUnionCaseTupleV0XDR(doc: "", name: "tupleCase",
+        type: [SCSpecTypeDefXDR.string, SCSpecTypeDefXDR.u32]))
+]
+let unionSpec = SCSpecUDTUnionV0XDR(doc: "", lib: "", name: "myUnion", cases: unionCases)
+let entry = SCSpecEntryXDR.unionV0(unionSpec)
+let spec = ContractSpec(entries: [entry])
+let def = SCSpecTypeDefXDR.udt(SCSpecTypeUDTXDR(name: "myUnion"))
+
+// convert
+let val = try spec.nativeToXdrSCVal(val: NativeUnionVal(tag: "voidCase"), ty: def)
+XCTAssertEqual(SCValType.vec.rawValue, val.type())
+XCTAssertEqual(1, val.vec?.count) // only key
+
+let val2 = try spec.nativeToXdrSCVal(val: NativeUnionVal(tag: "tupleCase", values: ["a", 4]), ty: def)
+XCTAssertEqual(SCValType.vec.rawValue, val2.type())
+XCTAssertEqual(3, val2.vec?.count) // key + 2 values (a,4)
+```
+
+The above examples can be found in the `SorobanClientTest.swift` and `ContractSpecTest.swift` of the SDK.
+
 ## Interacting with Soroban without using the SorobanClient
 
 The `SorobanClient` was introduced as a usability improvement, that allows you to easily 

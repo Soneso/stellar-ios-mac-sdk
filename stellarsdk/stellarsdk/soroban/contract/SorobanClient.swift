@@ -180,4 +180,16 @@ public class SorobanClient {
         return try await AssembledTransaction.build(options: options)
     }
     
+    /// Gets the spec entries of the contract represented by this client.
+    /// - Returns: Array of SCSpecEntryXDR objects
+    public func getSpecEntries() -> [SCSpecEntryXDR] {
+        return specEntries
+    }
+    
+    /// Creates a ContractSpec instance for this contract.
+    /// - Returns: ContractSpec instance that can be used for type conversions
+    public func getContractSpec() -> ContractSpec {
+        return ContractSpec(entries: specEntries)
+    }
+    
 }

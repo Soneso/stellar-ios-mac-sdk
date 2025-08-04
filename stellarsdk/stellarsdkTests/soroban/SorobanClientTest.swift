@@ -40,6 +40,105 @@ final class SorobanClientTest: XCTestCase {
         try await authContractTest()
         try await atomicSwapTest()
     }
+    
+    func testNativeToXdrSCVal() throws {
+        let spec = ContractSpec(entries: [])
+        let keyPair = try KeyPair.generateRandomKeyPair()
+        let accountId = keyPair.accountId
+        let contractId = "CCCZVCWISWKWZ3NNH737WGOVCDUI3P776QE3ZM7AUWMJKQBHCPW7NW3D"
+        
+        // Test void
+        let voidVal = try spec.nativeToXdrSCVal(val: nil, ty: SCSpecTypeDefXDR.void)
+        XCTAssertEqual(SCValType.void.rawValue, voidVal.type())
+        
+        // Test address - account ID
+        let accountAddressVal = try spec.nativeToXdrSCVal(val: accountId, ty: SCSpecTypeDefXDR.address)
+        XCTAssertEqual(SCValType.address.rawValue, accountAddressVal.type())
+        
+        // Test address - contract ID
+        let contractAddressVal = try spec.nativeToXdrSCVal(val: contractId, ty: SCSpecTypeDefXDR.address)
+        XCTAssertEqual(SCValType.address.rawValue, contractAddressVal.type())
+        
+        // Test vector
+        let vecType = SCSpecTypeVecXDR(elementType: SCSpecTypeDefXDR.symbol)
+        let vecTypeDefType = SCSpecTypeDefXDR.vec(vecType)
+        let vecVal = try spec.nativeToXdrSCVal(val: ["a", "b"], ty: vecTypeDefType)
+        XCTAssertEqual(SCValType.vec.rawValue, vecVal.type())
+        XCTAssertEqual(2, vecVal.vec?.count)
+        
+        // Test map
+        let mapType = SCSpecTypeMapXDR(keyType: SCSpecTypeDefXDR.string, valueType: SCSpecTypeDefXDR.address)
+        let mapTypeDefType = SCSpecTypeDefXDR.map(mapType)
+        let mapVal = try spec.nativeToXdrSCVal(val: ["a": accountId, "b": contractId], ty: mapTypeDefType)
+        XCTAssertEqual(SCValType.map.rawValue, mapVal.type())
+        XCTAssertEqual(2, mapVal.map?.count)
+        
+        // Test tuple
+        let tupleType = SCSpecTypeTupleXDR(valueTypes: [SCSpecTypeDefXDR.string, SCSpecTypeDefXDR.bool])
+        let tupleTypeDefType = SCSpecTypeDefXDR.tuple(tupleType)
+        let tupleVal = try spec.nativeToXdrSCVal(val: ["a", true], ty: tupleTypeDefType)
+        XCTAssertEqual(SCValType.vec.rawValue, tupleVal.type())
+        XCTAssertEqual(2, tupleVal.vec?.count)
+        
+        // Test numbers
+        let u32Val = try spec.nativeToXdrSCVal(val: 12, ty: SCSpecTypeDefXDR.u32)
+        XCTAssertEqual(SCValType.u32.rawValue, u32Val.type())
+        XCTAssertEqual(12, u32Val.u32)
+        
+        let i32Val = try spec.nativeToXdrSCVal(val: -12, ty: SCSpecTypeDefXDR.i32)
+        XCTAssertEqual(SCValType.i32.rawValue, i32Val.type())
+        XCTAssertEqual(-12, i32Val.i32)
+        
+        let u64Val = try spec.nativeToXdrSCVal(val: 112, ty: SCSpecTypeDefXDR.u64)
+        XCTAssertEqual(SCValType.u64.rawValue, u64Val.type())
+        XCTAssertEqual(112, u64Val.u64)
+        
+        let i64Val = try spec.nativeToXdrSCVal(val: -112, ty: SCSpecTypeDefXDR.i64)
+        XCTAssertEqual(SCValType.i64.rawValue, i64Val.type())
+        XCTAssertEqual(-112, i64Val.i64)
+        
+        // Test 128-bit numbers
+        let u128Val = try spec.nativeToXdrSCVal(val: 1112, ty: SCSpecTypeDefXDR.u128)
+        XCTAssertEqual(SCValType.u128.rawValue, u128Val.type())
+        XCTAssertEqual(1112, u128Val.u128?.lo)
+        
+        let i128Val = try spec.nativeToXdrSCVal(val: 2112, ty: SCSpecTypeDefXDR.i128)
+        XCTAssertEqual(SCValType.i128.rawValue, i128Val.type())
+        XCTAssertEqual(2112, i128Val.i128?.lo)
+        
+        // Test 256-bit numbers
+        let u256Val = try spec.nativeToXdrSCVal(val: 3112, ty: SCSpecTypeDefXDR.u256)
+        XCTAssertEqual(SCValType.u256.rawValue, u256Val.type())
+        XCTAssertEqual(3112, u256Val.u256?.loLo)
+        
+        let i256Val = try spec.nativeToXdrSCVal(val: 3112, ty: SCSpecTypeDefXDR.i256)
+        XCTAssertEqual(SCValType.i256.rawValue, i256Val.type())
+        XCTAssertEqual(3112, i256Val.i256?.loLo)
+        
+        // Test strings
+        let bytesVal = try spec.nativeToXdrSCVal(val: keyPair.publicKey.accountId, ty: SCSpecTypeDefXDR.bytes)
+        XCTAssertEqual(SCValType.bytes.rawValue, bytesVal.type())
+        
+        let stringVal = try spec.nativeToXdrSCVal(val: "hello this is a text", ty: SCSpecTypeDefXDR.string)
+        XCTAssertEqual(SCValType.string.rawValue, stringVal.type())
+        
+        let symbolVal = try spec.nativeToXdrSCVal(val: "XLM", ty: SCSpecTypeDefXDR.symbol)
+        XCTAssertEqual(SCValType.symbol.rawValue, symbolVal.type())
+        
+        // Test bool
+        let boolVal = try spec.nativeToXdrSCVal(val: false, ty: SCSpecTypeDefXDR.bool)
+        XCTAssertEqual(SCValType.bool.rawValue, boolVal.type())
+        XCTAssertFalse(boolVal.bool ?? true)
+        
+        // Test option
+        let optionType = SCSpecTypeOptionXDR(valueType: SCSpecTypeDefXDR.string)
+        let optionTypeDefType = SCSpecTypeDefXDR.option(optionType)
+        let optionSomeVal = try spec.nativeToXdrSCVal(val: "a string", ty: optionTypeDefType)
+        XCTAssertEqual(SCValType.string.rawValue, optionSomeVal.type())
+        
+        let optionNoneVal = try spec.nativeToXdrSCVal(val: nil, ty: optionTypeDefType)
+        XCTAssertEqual(SCValType.void.rawValue, optionNoneVal.type())
+    }
 
     func helloContractTest() async throws {
         let helloContractWasmHash = try await installContract(fileName: helloContractFileName)
@@ -64,6 +163,23 @@ final class SorobanClientTest: XCTestCase {
             return
         }
         XCTAssertEqual("Hello, John", "\(firstSym), \(secondSym)")
+        
+        // contract spec test
+        let spec = client.getContractSpec()
+        let args = try spec.funcArgsToXdrSCValues(name: "hello", args: ["to": "Maria"])
+        XCTAssertEqual(1, args.count)
+        let specResult = try await client.invokeMethod(name: "hello", args: args)
+        guard let specVec = specResult.vec else {
+            XCTFail("Hello contract spec invocation result is not a vector")
+            return
+        }
+        
+        XCTAssertEqual(2, specVec.count)
+        guard let firstSpecSym = specVec[0].symbol, let secondSpecSym = specVec[1].symbol else {
+            XCTFail("Hello contract spec invocation result has unexpected values")
+            return
+        }
+        XCTAssertEqual("Hello, Maria", "\(firstSpecSym), \(secondSpecSym)")
     }
     
     func authContractTest() async throws {
@@ -89,8 +205,9 @@ final class SorobanClientTest: XCTestCase {
         // submitter and invoker use are the same
         // no need to sign auth
         
-        var invokerAddress = try SCAddressXDR(accountId: sourceAccountKeyPair.accountId)
-        var args = [SCValXDR.address(invokerAddress), SCValXDR.u32(3)]
+        let invokerAccountId = sourceAccountKeyPair.accountId
+        let spec = client.getContractSpec()
+        var args = try spec.funcArgsToXdrSCValues(name: methodName, args: ["user": invokerAccountId, "value": 3])
         let result = try await client.invokeMethod(name: methodName, args: args)
         XCTAssertEqual(3, result.u32)
         
@@ -100,8 +217,8 @@ final class SorobanClientTest: XCTestCase {
         let invokerKeyPair = try KeyPair.generateRandomKeyPair()
         await fundTestnetAccount(accountId: invokerKeyPair.accountId)
         
-        invokerAddress = try SCAddressXDR(accountId: invokerKeyPair.accountId)
-        args = [SCValXDR.address(invokerAddress), SCValXDR.u32(4)]
+        let newInvokerAccountId = invokerKeyPair.accountId
+        args = try spec.funcArgsToXdrSCValues(name: methodName, args: ["user": newInvokerAccountId, "value": 4])
         
         do {
             let _ = try await client.invokeMethod(name: methodName, args: args)
@@ -162,23 +279,19 @@ final class SorobanClientTest: XCTestCase {
         let bobTokenBBalance = try await readBalance(forAccountId: bobId, tokenClient: tokenBClient)
         XCTAssertEqual(10000000000000, bobTokenBBalance)
 
-        let amountA = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 1000))
-        let minBForA = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 4500))
-        
-        let amountB = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 5000))
-        let minAForB = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: 950))
-        
         let swapMethodName = "swap"
         
-        let args:[SCValXDR] = [try SCValXDR.address(SCAddressXDR(accountId: aliceId)),
-                    try SCValXDR.address(SCAddressXDR(accountId: bobId)),
-                    try SCValXDR.address(SCAddressXDR(contractId: tokenAContractId)),
-                    try SCValXDR.address(SCAddressXDR(contractId: tokenBContractId)),
-                    amountA,
-                    minBForA,
-                    amountB,
-                    minAForB
-        ]
+        let spec = atomicSwapClient.getContractSpec()
+        let args = try spec.funcArgsToXdrSCValues(name: swapMethodName, args: [
+            "a": aliceId,
+            "b": bobId,
+            "token_a": tokenAContractId,
+            "token_b": tokenBContractId,
+            "amount_a": 1000,
+            "min_b_for_a": 4500,
+            "amount_b": 5000,
+            "min_a_for_b": 950
+        ])
         try! await Task.sleep(nanoseconds: UInt64(5 * Double(NSEC_PER_SEC)))
         let tx = try await atomicSwapClient.buildInvokeMethodTx(name: swapMethodName, args: args, enableServerLogging: true)
         let whoElseNeedsToSign = try tx.needsNonInvokerSigningBy()
@@ -215,16 +328,27 @@ final class SorobanClientTest: XCTestCase {
         }
         XCTAssertEqual(SCValType.void.rawValue, result.type())
         print("Swap done")
+        
+        // small spec functions test
+        let tokenSpec = tokenAClient.getContractSpec()
+        let functions = tokenSpec.funcs()
+        XCTAssertEqual(13, functions.count)
+        let initFunc = tokenSpec.getFunc(name: "initialize")
+        XCTAssertNotNil(initFunc)
+        XCTAssertEqual("initialize", initFunc?.name)
     }
     
     func createToken(tokenClient:SorobanClient, submitterKeyPair:KeyPair, name:String, symbol:String) async throws {
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
         let submitterId = submitterKeyPair.accountId
-        let adminAddress = SCValXDR.address(try SCAddressXDR(accountId: submitterId))
         let methodName = "initialize"
-        let tokenName = SCValXDR.string(name)
-        let tokenSymbol = SCValXDR.string(symbol)
-        let args = [adminAddress, SCValXDR.u32(8), tokenName, tokenSymbol]
+        let spec = tokenClient.getContractSpec()
+        let args = try spec.funcArgsToXdrSCValues(name: methodName, args: [
+            "admin": submitterId,
+            "decimal": 8,
+            "name": name,
+            "symbol": symbol
+        ])
         let _ = try await tokenClient.invokeMethod(name: methodName, args: args)
         
     }
@@ -233,11 +357,11 @@ final class SorobanClientTest: XCTestCase {
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
         
         let methodName = "mint"
-        
-        let toAddress = SCValXDR.address(try SCAddressXDR(accountId: toAccountId))
-        let amountValue = SCValXDR.i128(Int128PartsXDR(hi: 0, lo: amount))
-        
-        let args = [toAddress, amountValue]
+        let spec = tokenClient.getContractSpec()
+        let args = try spec.funcArgsToXdrSCValues(name: methodName, args: [
+            "to": toAccountId,
+            "amount": Int(amount)
+        ])
         let tx = try await tokenClient.buildInvokeMethodTx(name: methodName, args: args, enableServerLogging: true)
         try await tx.signAuthEntries(signerKeyPair: adminKp)
         let _ = try await tx.signAndSend()
@@ -246,9 +370,11 @@ final class SorobanClientTest: XCTestCase {
     func readBalance(forAccountId:String, tokenClient:SorobanClient) async throws -> UInt64 {
         // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
 
-        let address = SCValXDR.address(try SCAddressXDR(accountId: forAccountId))
         let methodName = "balance"
-        let args = [address]
+        let spec = tokenClient.getContractSpec()
+        let args = try spec.funcArgsToXdrSCValues(name: methodName, args: [
+            "id": forAccountId
+        ])
         
         let resultValue = try await tokenClient.invokeMethod(name: methodName, args: args)
         guard let res = resultValue.i128?.lo else {

@@ -1034,6 +1034,12 @@
 		83697252202A80D600398A98 /* ManageDataOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697251202A80D600398A98 /* ManageDataOperationResponse.swift */; };
 		83697255202BC5B900398A98 /* AccountLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697254202BC5B800398A98 /* AccountLinksResponse.swift */; };
 		83697259202CB88300398A98 /* EffectLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697258202CB88300398A98 /* EffectLinksResponse.swift */; };
+		836E662F2E40ECB100D68F6A /* ContractSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836E662D2E40ECB100D68F6A /* ContractSpec.swift */; };
+		836E66302E40ECB100D68F6A /* ContractSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836E662D2E40ECB100D68F6A /* ContractSpec.swift */; };
+		836E66312E40ECB100D68F6A /* NativeUnionVal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836E662E2E40ECB100D68F6A /* NativeUnionVal.swift */; };
+		836E66322E40ECB100D68F6A /* NativeUnionVal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836E662E2E40ECB100D68F6A /* NativeUnionVal.swift */; };
+		836E66342E40ECDD00D68F6A /* ContractSpecTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836E66332E40ECDD00D68F6A /* ContractSpecTest.swift */; };
+		836E66352E40EE7100D68F6A /* ContractSpecTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836E66332E40ECDD00D68F6A /* ContractSpecTest.swift */; };
 		83707A9C2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83707A9B2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift */; };
 		83707A9D2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83707A9B2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift */; };
 		83707A9F2AB34CD8001790B0 /* ContractMetaXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83707A9E2AB34CD8001790B0 /* ContractMetaXDR.swift */; };
@@ -1904,6 +1910,9 @@
 		83697251202A80D600398A98 /* ManageDataOperationResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageDataOperationResponse.swift; sourceTree = "<group>"; };
 		83697254202BC5B800398A98 /* AccountLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountLinksResponse.swift; sourceTree = "<group>"; };
 		83697258202CB88300398A98 /* EffectLinksResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectLinksResponse.swift; sourceTree = "<group>"; };
+		836E662D2E40ECB100D68F6A /* ContractSpec.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContractSpec.swift; sourceTree = "<group>"; };
+		836E662E2E40ECB100D68F6A /* NativeUnionVal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NativeUnionVal.swift; sourceTree = "<group>"; };
+		836E66332E40ECDD00D68F6A /* ContractSpecTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContractSpecTest.swift; sourceTree = "<group>"; };
 		83707A9B2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthRemoteTestCase.swift; sourceTree = "<group>"; };
 		83707A9E2AB34CD8001790B0 /* ContractMetaXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractMetaXDR.swift; sourceTree = "<group>"; };
 		837228592DCA34480050BBC9 /* AssembledTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssembledTransaction.swift; sourceTree = "<group>"; };
@@ -3249,6 +3258,7 @@
 				830A8F0A29AE916300B30483 /* SorobanAtomicSwapTest.swift */,
 				830A8F1029AEC3F800B30483 /* SorobanEventsTest.swift */,
 				83ACC0102C885DC500A71CF1 /* SorobanParserTest.swift */,
+				836E66332E40ECDD00D68F6A /* ContractSpecTest.swift */,
 			);
 			path = soroban;
 			sourceTree = "<group>";
@@ -3344,6 +3354,8 @@
 				8372286E2DCA34FB0050BBC9 /* SorobanClient.swift */,
 				837228712DCB673E0050BBC9 /* AssembledTransactionError.swift */,
 				837228742DCCB3D50050BBC9 /* SorobanClientError.swift */,
+				836E662D2E40ECB100D68F6A /* ContractSpec.swift */,
+				836E662E2E40ECB100D68F6A /* NativeUnionVal.swift */,
 			);
 			path = contract;
 			sourceTree = "<group>";
@@ -4496,6 +4508,7 @@
 				745DF4BB2052FF9C000D3660 /* KeyPair.swift in Sources */,
 				745DF4BC2052FF9C000D3660 /* PublicKey.swift in Sources */,
 				744FC6E3212D3CCC00ADFC88 /* Path.swift in Sources */,
+				836E66302E40ECB100D68F6A /* ContractSpec.swift in Sources */,
 				74A504EF2192CC0000A608A0 /* String+KeyUtils.swift in Sources */,
 				745DF4BD2052FF9C000D3660 /* PrivateKey.swift in Sources */,
 				836658F22A6E773A00E8B8D9 /* RestoreFootprintOpXDR.swift in Sources */,
@@ -4607,6 +4620,7 @@
 				83DF81A926EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift in Sources */,
 				744FC6DF212D3CCC00ADFC88 /* Regex.swift in Sources */,
 				745DF4EE2052FF9C000D3660 /* RandomAccessCryptor.swift in Sources */,
+				836E66322E40ECB100D68F6A /* NativeUnionVal.swift in Sources */,
 				745DF4EF2052FF9C000D3660 /* SHA2.swift in Sources */,
 				745DF4F02052FF9C000D3660 /* Padding.swift in Sources */,
 				745DF4F12052FF9C000D3660 /* PKCS7Padding.swift in Sources */,
@@ -4660,6 +4674,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				836E66352E40EE7100D68F6A /* ContractSpecTest.swift in Sources */,
 				8310BDDD26EB6E75004D3EF2 /* AmmTestCase.swift in Sources */,
 				743D9C1A21B57246004C56BD /* PostCallbackMock.swift in Sources */,
 				833C67392B84E38F00E034C6 /* QuoteServiceTestCase.swift in Sources */,
@@ -5204,6 +5219,7 @@
 				74A504EE2192CC0000A608A0 /* String+KeyUtils.swift in Sources */,
 				833CBF9E2033535000C23CFE /* CreatePassiveOfferOperationXDR.swift in Sources */,
 				8369720A2028BA3E00398A98 /* Constants.swift in Sources */,
+				836E662F2E40ECB100D68F6A /* ContractSpec.swift in Sources */,
 				833CBFD1203638C500C23CFE /* InflationPayoutXDR.swift in Sources */,
 				836972162028F19000398A98 /* AccountFlagsUpdatedEffectResponse.swift in Sources */,
 				EC34A11820503CC5000FB042 /* UInt64+Extension.swift in Sources */,
@@ -5315,6 +5331,7 @@
 				83DF81A826EF8FED00AF72CD /* LiquidityPoolLinksResponse.swift in Sources */,
 				743DF581202053B100713DE7 /* PrivateKey.swift in Sources */,
 				8395F94C246B44C500B04E11 /* FeeBumpTransactionXDR.swift in Sources */,
+				836E66312E40ECB100D68F6A /* NativeUnionVal.swift in Sources */,
 				43E34B5E2031BE33003104A9 /* OrderbookResponse.swift in Sources */,
 				EC34A14320503CC5000FB042 /* SHA2.swift in Sources */,
 				7467C3FD2142546C00412FE1 /* DepositResponse.swift in Sources */,
@@ -5400,6 +5417,7 @@
 				43464797203D56AF0082B96A /* OperationsResponsesMock.swift in Sources */,
 				833C67442B85152C00E034C6 /* Sep38PostQuoteResponseMock.swift in Sources */,
 				83AFD636234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */,
+				836E66342E40ECDD00D68F6A /* ContractSpecTest.swift in Sources */,
 				C62F97E52199BE5B000A835A /* URISchemeTestCase.swift in Sources */,
 				83BD1EE82949F67D00F6C041 /* IssueAssetTest.swift in Sources */,
 				836513962BDEEA0E00A99085 /* Sep08FollowNextMock.swift in Sources */,
