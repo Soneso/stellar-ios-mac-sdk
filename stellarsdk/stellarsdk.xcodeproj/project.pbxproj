@@ -1248,6 +1248,8 @@
 		83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */; };
 		83EEE6262E1810EC008B7B3C /* TransactionEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EEE6252E1810EC008B7B3C /* TransactionEvents.swift */; };
 		83EEE6272E1810EC008B7B3C /* TransactionEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EEE6252E1810EC008B7B3C /* TransactionEvents.swift */; };
+		83F32D552E43E9E400A8355A /* SCValXDRBigIntTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D542E43E9E400A8355A /* SCValXDRBigIntTest.swift */; };
+		83F32D562E43E9E400A8355A /* SCValXDRBigIntTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D542E43E9E400A8355A /* SCValXDRBigIntTest.swift */; };
 		83F4E6042A1E597600DD42A9 /* KycService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6032A1E597600DD42A9 /* KycService.swift */; };
 		83F4E6052A1E597600DD42A9 /* KycService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6032A1E597600DD42A9 /* KycService.swift */; };
 		83F4E6082A1E5A1000DD42A9 /* KycServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6072A1E5A1000DD42A9 /* KycServiceError.swift */; };
@@ -2024,6 +2026,7 @@
 		83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersLocalTestCase.swift; sourceTree = "<group>"; };
 		83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersResponsesMock.swift; sourceTree = "<group>"; };
 		83EEE6252E1810EC008B7B3C /* TransactionEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionEvents.swift; sourceTree = "<group>"; };
+		83F32D542E43E9E400A8355A /* SCValXDRBigIntTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCValXDRBigIntTest.swift; sourceTree = "<group>"; };
 		83F4E6032A1E597600DD42A9 /* KycService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KycService.swift; sourceTree = "<group>"; };
 		83F4E6072A1E5A1000DD42A9 /* KycServiceError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KycServiceError.swift; sourceTree = "<group>"; };
 		83F4E60A2A1E5CC300DD42A9 /* GetCustomerInfoRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetCustomerInfoRequest.swift; sourceTree = "<group>"; };
@@ -3259,6 +3262,7 @@
 				830A8F1029AEC3F800B30483 /* SorobanEventsTest.swift */,
 				83ACC0102C885DC500A71CF1 /* SorobanParserTest.swift */,
 				836E66332E40ECDD00D68F6A /* ContractSpecTest.swift */,
+				83F32D542E43E9E400A8355A /* SCValXDRBigIntTest.swift */,
 			);
 			path = soroban;
 			sourceTree = "<group>";
@@ -4789,6 +4793,7 @@
 				83DB2B022ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */,
 				83DB2AF32ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */,
 				83ACC0122C885DC500A71CF1 /* SorobanParserTest.swift in Sources */,
+				83F32D562E43E9E400A8355A /* SCValXDRBigIntTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5400,6 +5405,7 @@
 				744E75E42028DBD500170D57 /* EffectsRemoteTestCase.swift in Sources */,
 				437D8A92202F15DC0024D031 /* TradesTestCase.swift in Sources */,
 				C69B1CAB219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift in Sources */,
+				83F32D552E43E9E400A8355A /* SCValXDRBigIntTest.swift in Sources */,
 				83ACC0112C885DC500A71CF1 /* SorobanParserTest.swift in Sources */,
 				4367E5FE203ED15500C0AB4F /* OffersResponsesMock.swift in Sources */,
 				83AFD64E234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift in Sources */,

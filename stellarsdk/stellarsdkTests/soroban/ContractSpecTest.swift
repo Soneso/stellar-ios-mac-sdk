@@ -341,4 +341,207 @@ class ContractSpecTest: XCTestCase {
         XCTAssertEqual(tupleUnion.tag, "tupleCase")
         XCTAssertEqual(tupleUnion.values?.count, 2)
     }
+    
+    func testContractSpecBigNumberTypes() throws {
+        let spec = ContractSpec(entries: [])
+        
+        // Test u128 conversion with Int
+        let u128ValInt = try spec.nativeToXdrSCVal(val: 123, ty: SCSpecTypeDefXDR.u128)
+        if case .u128(let parts) = u128ValInt {
+            XCTAssertEqual(parts.hi, 0)
+            XCTAssertEqual(parts.lo, 123)
+        } else {
+            XCTFail("Expected u128 SCVal")
+        }
+        
+        // Test i128 conversion with negative Int
+        let i128ValNeg = try spec.nativeToXdrSCVal(val: -123, ty: SCSpecTypeDefXDR.i128)
+        if case .i128(_) = i128ValNeg {
+            // Success - just check it creates the right type
+        } else {
+            XCTFail("Expected i128 SCVal")
+        }
+        
+        // Test u256 conversion with Int
+        let u256ValInt = try spec.nativeToXdrSCVal(val: 456, ty: SCSpecTypeDefXDR.u256)
+        if case .u256(let parts) = u256ValInt {
+            XCTAssertEqual(parts.hiHi, 0)
+            XCTAssertEqual(parts.hiLo, 0)
+            XCTAssertEqual(parts.loHi, 0)
+            XCTAssertEqual(parts.loLo, 456)
+        } else {
+            XCTFail("Expected u256 SCVal")
+        }
+        
+        // Test i256 conversion with negative Int
+        let i256ValNeg = try spec.nativeToXdrSCVal(val: -456, ty: SCSpecTypeDefXDR.i256)
+        if case .i256(_) = i256ValNeg {
+            // Success - just check it creates the right type
+        } else {
+            XCTFail("Expected i256 SCVal")
+        }
+        
+        // Test negative value error for unsigned types
+        XCTAssertThrowsError(try spec.nativeToXdrSCVal(val: -1, ty: SCSpecTypeDefXDR.u128)) { error in
+            if let contractError = error as? ContractSpecError {
+                if case .invalidType = contractError {
+                    // Expected error
+                } else {
+                    XCTFail("Expected invalidType error")
+                }
+            } else {
+                XCTFail("Expected ContractSpecError")
+            }
+        }
+        
+        XCTAssertThrowsError(try spec.nativeToXdrSCVal(val: -1, ty: SCSpecTypeDefXDR.u256)) { error in
+            if let contractError = error as? ContractSpecError {
+                if case .invalidType = contractError {
+                    // Expected error
+                } else {
+                    XCTFail("Expected invalidType error")
+                }
+            } else {
+                XCTFail("Expected ContractSpecError")
+            }
+        }
+    }
+    
+    func testContractSpecBigNumberStringConversion() throws {
+        let spec = ContractSpec(entries: [])
+        
+        // Test u128 conversion with string
+        let u128ValStr = try spec.nativeToXdrSCVal(val: "340282366920938463463374607431768211455", ty: SCSpecTypeDefXDR.u128)
+        if case .u128(_) = u128ValStr {
+            // Success - just check it creates the right type
+        } else {
+            XCTFail("Expected u128 SCVal")
+        }
+        
+        // Test i128 conversion with negative string
+        let i128ValNegStr = try spec.nativeToXdrSCVal(val: "-170141183460469231731687303715884105728", ty: SCSpecTypeDefXDR.i128)
+        if case .i128(_) = i128ValNegStr {
+            // Success - just check it creates the right type
+        } else {
+            XCTFail("Expected i128 SCVal")
+        }
+        
+        // Test u256 conversion with large string
+        let u256ValStr = try spec.nativeToXdrSCVal(val: "115792089237316195423570985008687907853269984665640564039457584007913129639935", ty: SCSpecTypeDefXDR.u256)
+        if case .u256(_) = u256ValStr {
+            // Success - just check it creates the right type
+        } else {
+            XCTFail("Expected u256 SCVal")
+        }
+        
+        // Test i256 conversion with negative large string
+        let i256ValNegStr = try spec.nativeToXdrSCVal(val: "-57896044618658097711785492504343953926634992332820282019728792003956564819968", ty: SCSpecTypeDefXDR.i256)
+        if case .i256(_) = i256ValNegStr {
+            // Success - just check it creates the right type
+        } else {
+            XCTFail("Expected i256 SCVal")
+        }
+        
+        // Test small positive string values
+        let u128SmallStr = try spec.nativeToXdrSCVal(val: "12345", ty: SCSpecTypeDefXDR.u128)
+        if case .u128(_) = u128SmallStr {
+            // Success
+        } else {
+            XCTFail("Expected u128 SCVal")
+        }
+        
+        let i128SmallStr = try spec.nativeToXdrSCVal(val: "12345", ty: SCSpecTypeDefXDR.i128)
+        if case .i128(_) = i128SmallStr {
+            // Success
+        } else {
+            XCTFail("Expected i128 SCVal")
+        }
+        
+        // Test zero string
+        let u128ZeroStr = try spec.nativeToXdrSCVal(val: "0", ty: SCSpecTypeDefXDR.u128)
+        if case .u128(_) = u128ZeroStr {
+            // Success
+        } else {
+            XCTFail("Expected u128 SCVal")
+        }
+        
+        // Test invalid string format
+        XCTAssertThrowsError(try spec.nativeToXdrSCVal(val: "not_a_number", ty: SCSpecTypeDefXDR.u128)) { error in
+            // Should throw an error for invalid number format
+            XCTAssertTrue(error is StellarSDKError)
+        }
+    }
+    
+    func testContractSpecBigNumberDataConversion() throws {
+        let spec = ContractSpec(entries: [])
+        
+        // Test u128 conversion with Data (16 bytes max)
+        let u128Data = Data([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10])
+        let u128ValData = try spec.nativeToXdrSCVal(val: u128Data, ty: SCSpecTypeDefXDR.u128)
+        if case .u128(_) = u128ValData {
+            // Success
+        } else {
+            XCTFail("Expected u128 SCVal")
+        }
+        
+        // Test i128 conversion with Data
+        let i128Data = Data([0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8, 0xF7, 0xF6, 0xF5, 0xF4, 0xF3, 0xF2, 0xF1, 0xF0])
+        let i128ValData = try spec.nativeToXdrSCVal(val: i128Data, ty: SCSpecTypeDefXDR.i128)
+        if case .i128(_) = i128ValData {
+            // Success
+        } else {
+            XCTFail("Expected i128 SCVal")
+        }
+        
+        // Test u256 conversion with Data (32 bytes max)
+        let u256Data = Data(Array(repeating: UInt8(0x11), count: 32))
+        let u256ValData = try spec.nativeToXdrSCVal(val: u256Data, ty: SCSpecTypeDefXDR.u256)
+        if case .u256(_) = u256ValData {
+            // Success
+        } else {
+            XCTFail("Expected u256 SCVal")
+        }
+        
+        // Test i256 conversion with Data
+        let i256Data = Data(Array(repeating: UInt8(0x88), count: 32))
+        let i256ValData = try spec.nativeToXdrSCVal(val: i256Data, ty: SCSpecTypeDefXDR.i256)
+        if case .i256(_) = i256ValData {
+            // Success
+        } else {
+            XCTFail("Expected i256 SCVal")
+        }
+        
+        // Test small Data values (should be padded)
+        let smallData = Data([0x01, 0x02])
+        let u128SmallData = try spec.nativeToXdrSCVal(val: smallData, ty: SCSpecTypeDefXDR.u128)
+        if case .u128(_) = u128SmallData {
+            // Success
+        } else {
+            XCTFail("Expected u128 SCVal")
+        }
+        
+        // Test empty Data
+        let emptyData = Data()
+        let u128EmptyData = try spec.nativeToXdrSCVal(val: emptyData, ty: SCSpecTypeDefXDR.u128)
+        if case .u128(_) = u128EmptyData {
+            // Success
+        } else {
+            XCTFail("Expected u128 SCVal")
+        }
+        
+        // Test Data too large for type
+        let tooLargeData = Data(Array(repeating: UInt8(0xFF), count: 33))
+        XCTAssertThrowsError(try spec.nativeToXdrSCVal(val: tooLargeData, ty: SCSpecTypeDefXDR.u256)) { error in
+            XCTAssertTrue(error is StellarSDKError)
+        }
+        
+        // Test regular Data for bytes type (should still work)
+        let bytesData = Data([0x01, 0x02, 0x03])
+        let bytesValData = try spec.nativeToXdrSCVal(val: bytesData, ty: SCSpecTypeDefXDR.bytes)
+        if case .bytes(let data) = bytesValData {
+            XCTAssertEqual(data, bytesData)
+        } else {
+            XCTFail("Expected bytes SCVal")
+        }
+    }
 }

@@ -97,7 +97,7 @@ final class SorobanClientTest: XCTestCase {
         XCTAssertEqual(SCValType.i64.rawValue, i64Val.type())
         XCTAssertEqual(-112, i64Val.i64)
         
-        // Test 128-bit numbers
+        // Test 128-bit numbers - Int values
         let u128Val = try spec.nativeToXdrSCVal(val: 1112, ty: SCSpecTypeDefXDR.u128)
         XCTAssertEqual(SCValType.u128.rawValue, u128Val.type())
         XCTAssertEqual(1112, u128Val.u128?.lo)
@@ -106,7 +106,12 @@ final class SorobanClientTest: XCTestCase {
         XCTAssertEqual(SCValType.i128.rawValue, i128Val.type())
         XCTAssertEqual(2112, i128Val.i128?.lo)
         
-        // Test 256-bit numbers
+        // Test negative values for signed 128-bit
+        let i128NegVal = try spec.nativeToXdrSCVal(val: -1234, ty: SCSpecTypeDefXDR.i128)
+        XCTAssertEqual(SCValType.i128.rawValue, i128NegVal.type())
+        XCTAssertEqual("-1234", i128NegVal.i128String)
+        
+        // Test 256-bit numbers - Int values  
         let u256Val = try spec.nativeToXdrSCVal(val: 3112, ty: SCSpecTypeDefXDR.u256)
         XCTAssertEqual(SCValType.u256.rawValue, u256Val.type())
         XCTAssertEqual(3112, u256Val.u256?.loLo)
@@ -114,6 +119,94 @@ final class SorobanClientTest: XCTestCase {
         let i256Val = try spec.nativeToXdrSCVal(val: 3112, ty: SCSpecTypeDefXDR.i256)
         XCTAssertEqual(SCValType.i256.rawValue, i256Val.type())
         XCTAssertEqual(3112, i256Val.i256?.loLo)
+        
+        // Test negative values for signed 256-bit
+        let i256NegVal = try spec.nativeToXdrSCVal(val: -5678, ty: SCSpecTypeDefXDR.i256)
+        XCTAssertEqual(SCValType.i256.rawValue, i256NegVal.type())
+        XCTAssertEqual("-5678", i256NegVal.i256String)
+        
+        // Test big numbers with String values
+        // Test u128 with large string value
+        let u128StrVal = try spec.nativeToXdrSCVal(val: "340282366920938463463374607431768211455", ty: SCSpecTypeDefXDR.u128)
+        XCTAssertEqual(SCValType.u128.rawValue, u128StrVal.type())
+        XCTAssertEqual("340282366920938463463374607431768211455", u128StrVal.u128String)
+        
+        // Test i128 with negative string value
+        let i128NegStrVal = try spec.nativeToXdrSCVal(val: "-170141183460469231731687303715884105728", ty: SCSpecTypeDefXDR.i128)
+        XCTAssertEqual(SCValType.i128.rawValue, i128NegStrVal.type())
+        XCTAssertEqual("-170141183460469231731687303715884105728", i128NegStrVal.i128String)
+        
+        // Test u256 with large string value
+        let u256StrVal = try spec.nativeToXdrSCVal(val: "115792089237316195423570985008687907853269984665640564039457584007913129639935", ty: SCSpecTypeDefXDR.u256)
+        XCTAssertEqual(SCValType.u256.rawValue, u256StrVal.type())
+        XCTAssertEqual("115792089237316195423570985008687907853269984665640564039457584007913129639935", u256StrVal.u256String)
+        
+        // Test i256 with negative string value
+        let i256NegStrVal = try spec.nativeToXdrSCVal(val: "-57896044618658097711785492504343953926634992332820282019728792003956564819968", ty: SCSpecTypeDefXDR.i256)
+        XCTAssertEqual(SCValType.i256.rawValue, i256NegStrVal.type())
+        XCTAssertEqual("-57896044618658097711785492504343953926634992332820282019728792003956564819968", i256NegStrVal.i256String)
+        
+        // Test big numbers with Data values
+        // Test u128 with Data
+        let u128Data = Data([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10])
+        let u128DataVal = try spec.nativeToXdrSCVal(val: u128Data, ty: SCSpecTypeDefXDR.u128)
+        XCTAssertEqual(SCValType.u128.rawValue, u128DataVal.type())
+        XCTAssertNotNil(u128DataVal.u128String)
+        
+        // Test i128 with negative Data (two's complement)
+        let i128NegData = Data([0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8, 0xF7, 0xF6, 0xF5, 0xF4, 0xF3, 0xF2, 0xF1, 0xF0])
+        let i128NegDataVal = try spec.nativeToXdrSCVal(val: i128NegData, ty: SCSpecTypeDefXDR.i128)
+        XCTAssertEqual(SCValType.i128.rawValue, i128NegDataVal.type())
+        XCTAssertNotNil(i128NegDataVal.i128String)
+        
+        // Test u256 with Data
+        let u256Data = Data(Array(repeating: UInt8(0x11), count: 32))
+        let u256DataVal = try spec.nativeToXdrSCVal(val: u256Data, ty: SCSpecTypeDefXDR.u256)
+        XCTAssertEqual(SCValType.u256.rawValue, u256DataVal.type())
+        XCTAssertNotNil(u256DataVal.u256String)
+        
+        // Test i256 with negative Data
+        let i256NegData = Data(Array(repeating: UInt8(0x88), count: 32))
+        let i256NegDataVal = try spec.nativeToXdrSCVal(val: i256NegData, ty: SCSpecTypeDefXDR.i256)
+        XCTAssertEqual(SCValType.i256.rawValue, i256NegDataVal.type())
+        XCTAssertNotNil(i256NegDataVal.i256String)
+        
+        // Test small Data values (should be padded)
+        let smallData = Data([0x01, 0x02])
+        let u128SmallDataVal = try spec.nativeToXdrSCVal(val: smallData, ty: SCSpecTypeDefXDR.u128)
+        XCTAssertEqual(SCValType.u128.rawValue, u128SmallDataVal.type())
+        XCTAssertEqual("258", u128SmallDataVal.u128String) // 0x0102 = 256 + 2 = 258
+        
+        // Test empty Data
+        let emptyData = Data()
+        let u128EmptyDataVal = try spec.nativeToXdrSCVal(val: emptyData, ty: SCSpecTypeDefXDR.u128)
+        XCTAssertEqual(SCValType.u128.rawValue, u128EmptyDataVal.type())
+        XCTAssertEqual("0", u128EmptyDataVal.u128String)
+        
+        // Test zero string
+        let u128ZeroStrVal = try spec.nativeToXdrSCVal(val: "0", ty: SCSpecTypeDefXDR.u128)
+        XCTAssertEqual(SCValType.u128.rawValue, u128ZeroStrVal.type())
+        XCTAssertEqual("0", u128ZeroStrVal.u128String)
+        
+        // Test error cases - negative value for unsigned types
+        XCTAssertThrowsError(try spec.nativeToXdrSCVal(val: -1, ty: SCSpecTypeDefXDR.u128)) { error in
+            XCTAssertTrue(error is ContractSpecError)
+        }
+        
+        XCTAssertThrowsError(try spec.nativeToXdrSCVal(val: -1, ty: SCSpecTypeDefXDR.u256)) { error in
+            XCTAssertTrue(error is ContractSpecError)
+        }
+        
+        // Test error case - invalid string format
+        XCTAssertThrowsError(try spec.nativeToXdrSCVal(val: "not_a_number", ty: SCSpecTypeDefXDR.u128)) { error in
+            XCTAssertTrue(error is StellarSDKError)
+        }
+        
+        // Test error case - Data too large
+        let tooLargeData = Data(Array(repeating: UInt8(0xFF), count: 33))
+        XCTAssertThrowsError(try spec.nativeToXdrSCVal(val: tooLargeData, ty: SCSpecTypeDefXDR.u256)) { error in
+            XCTAssertTrue(error is StellarSDKError)
+        }
         
         // Test strings
         let bytesVal = try spec.nativeToXdrSCVal(val: keyPair.publicKey.accountId, ty: SCSpecTypeDefXDR.bytes)

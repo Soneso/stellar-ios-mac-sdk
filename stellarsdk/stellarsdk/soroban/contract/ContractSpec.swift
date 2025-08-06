@@ -169,6 +169,11 @@ public class ContractSpec {
             return try handleStringConversion(stringVal: stringVal, ty: ty)
         }
         
+        // Handle Data (for big numbers)
+        if let dataVal = val as? Data {
+            return try handleDataConversion(dataVal: dataVal, ty: ty)
+        }
+        
         // Handle booleans
         if let boolVal = val as? Bool {
             switch ty {
@@ -386,25 +391,19 @@ public class ContractSpec {
             guard intVal >= 0 else {
                 throw ContractSpecError.invalidType(message: "Negative integer value provided for u128")
             }
-            return SCValXDR.u128(UInt128PartsXDR(hi: 0, lo: UInt64(intVal)))
+            return try SCValXDR.u128(stringValue: String(intVal))
             
         case .i128:
-            guard intVal >= 0 else {
-                throw ContractSpecError.invalidType(message: "Negative integer value provided for i128")
-            }
-            return SCValXDR.i128(Int128PartsXDR(hi: 0, lo: UInt64(intVal)))
+            return try SCValXDR.i128(stringValue: String(intVal))
             
         case .u256:
             guard intVal >= 0 else {
                 throw ContractSpecError.invalidType(message: "Negative integer value provided for u256")
             }
-            return SCValXDR.u256(UInt256PartsXDR(hiHi: 0, hiLo: 0, loHi: 0, loLo: UInt64(intVal)))
+            return try SCValXDR.u256(stringValue: String(intVal))
             
         case .i256:
-            guard intVal >= 0 else {
-                throw ContractSpecError.invalidType(message: "Negative integer value provided for i256")
-            }
-            return SCValXDR.i256(Int256PartsXDR(hiHi: 0, hiLo: 0, loHi: 0, loLo: UInt64(intVal)))
+            return try SCValXDR.i256(stringValue: String(intVal))
             
         default:
             throw ContractSpecError.invalidType(message: "Invalid type for val of type int")
@@ -434,8 +433,42 @@ public class ContractSpec {
             }
             return SCValXDR.address(address)
             
+        case .u128:
+            return try SCValXDR.u128(stringValue: stringVal)
+            
+        case .i128:
+            return try SCValXDR.i128(stringValue: stringVal)
+            
+        case .u256:
+            return try SCValXDR.u256(stringValue: stringVal)
+            
+        case .i256:
+            return try SCValXDR.i256(stringValue: stringVal)
+            
         default:
             throw ContractSpecError.invalidType(message: "Invalid type for val of type string")
+        }
+    }
+    
+    private func handleDataConversion(dataVal: Data, ty: SCSpecTypeDefXDR) throws -> SCValXDR {
+        switch ty {
+        case .bytes, .bytesN(_):
+            return SCValXDR.bytes(dataVal)
+            
+        case .u128:
+            return try SCValXDR.u128(data: dataVal)
+            
+        case .i128:
+            return try SCValXDR.i128(data: dataVal)
+            
+        case .u256:
+            return try SCValXDR.u256(data: dataVal)
+            
+        case .i256:
+            return try SCValXDR.i256(data: dataVal)
+            
+        default:
+            throw ContractSpecError.invalidType(message: "Invalid type for val of type Data")
         }
     }
 }
