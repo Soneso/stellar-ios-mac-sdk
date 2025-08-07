@@ -35,10 +35,15 @@ final class SorobanClientTest: XCTestCase {
         }
     }
 
-    func testAll() async throws {
+    func testContracts() async throws {
         try await helloContractTest()
         try await authContractTest()
         try await atomicSwapTest()
+        
+        // Test with generated bindings
+        try await helloContractBindingTest()
+        try await authContractBindingTest()
+        try await atomicSwapBindingTest()
     }
     
     func testNativeToXdrSCVal() throws {
@@ -518,5 +523,221 @@ final class SorobanClientTest: XCTestCase {
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"fundTestnetAccount(\(accountId))", horizonRequestError: error)
             XCTFail("could not create test account: \(accountId)")
         }
+    }
+    
+    // MARK: - Generated Binding Tests
+    
+    func helloContractBindingTest() async throws {
+        print("=== Starting helloContractBindingTest ===")
+        
+        let helloContractWasmHash = try await installContract(fileName: helloContractFileName)
+        print("Installed hello contract wasm hash: \(helloContractWasmHash)")
+        
+        let client = try await deployContract(wasmHash: helloContractWasmHash)
+        let contractId = client.contractId
+        print("Deployed hello contract contract id: \(contractId)")
+        
+        // Test with generated binding
+        let clientOptions = ClientOptions(sourceAccountKeyPair: sourceAccountKeyPair, contractId: contractId, network: network, rpcUrl: testnetServerUrl)
+        let helloContract = try await HelloContract.forClientOptions(options: clientOptions)
+        
+        // Test the hello method
+        let result: [String] = try await helloContract.hello(to: "World")
+        XCTAssertEqual(2, result.count)
+        XCTAssertEqual("Hello", result[0])
+        XCTAssertEqual("World", result[1])
+        print("HelloContract binding test passed with result: \(result[0]), \(result[1])")
+        
+        // Test with different name
+        let result2: [String] = try await helloContract.hello(to: "Stellar")
+        XCTAssertEqual(2, result2.count)
+        XCTAssertEqual("Hello", result2[0])
+        XCTAssertEqual("Stellar", result2[1])
+        print("HelloContract binding test passed with result: \(result2[0]), \(result2[1])")
+    }
+    
+    func authContractBindingTest() async throws {
+        print("=== Starting authContractBindingTest ===")
+        
+        let authContractWasmHash = try await installContract(fileName: authContractFileName)
+        print("Installed auth contract wasm hash: \(authContractWasmHash)")
+        
+        let deployedClient = try await deployContract(wasmHash: authContractWasmHash)
+        let contractId = deployedClient.contractId
+        print("Deployed auth contract contract id: \(contractId)")
+        
+        // Test with generated binding
+        let clientOptions = ClientOptions(sourceAccountKeyPair: sourceAccountKeyPair, contractId: contractId, network: network, rpcUrl: testnetServerUrl)
+        let authContract = try await AuthContract.forClientOptions(options: clientOptions)
+        
+        // Test when submitter and invoker are the same - no auth signing needed
+        let invokerAccountId = sourceAccountKeyPair.accountId
+        let userAddress = try SCAddressXDR(accountId: invokerAccountId)
+        
+        let result1 = try await authContract.increment(user: userAddress, value: 10)
+        XCTAssertEqual(10, result1)
+        print("AuthContract binding test (same invoker) passed with result: \(result1)")
+        
+        let result2 = try await authContract.increment(user: userAddress, value: 5)
+        XCTAssertEqual(15, result2) // 10 + 5
+        print("AuthContract binding test (cumulative) passed with result: \(result2)")
+        
+        // Test when submitter and invoker are different - need auth signing
+        let differentInvokerKeyPair = try KeyPair.generateRandomKeyPair()
+        await fundTestnetAccount(accountId: differentInvokerKeyPair.accountId)
+        
+        let differentInvokerAddress = try SCAddressXDR(accountId: differentInvokerKeyPair.accountId)
+        
+        // First try without signing - should fail
+        do {
+            let _ = try await authContract.increment(user: differentInvokerAddress, value: 7)
+            XCTFail("Should have failed due to missing signature")
+        } catch {
+            print("Expected failure due to missing signature: \(error)")
+        }
+        
+        // Now build transaction and sign auth entries
+        let tx = try await authContract.buildIncrementTx(user: differentInvokerAddress, value: 7)
+        try await tx.signAuthEntries(signerKeyPair: differentInvokerKeyPair)
+        
+        let response = try await tx.signAndSend()
+        guard let authResult = response.resultValue else {
+            XCTFail("No result value from auth contract invocation")
+            return
+        }
+        XCTAssertEqual(7, authResult.u32)
+        print("AuthContract binding test (different invoker with auth) passed with result: \(authResult.u32 ?? 0)")
+    }
+    
+    func atomicSwapBindingTest() async throws {
+        print("=== Starting atomicSwapBindingTest ===")
+        
+        // Install contracts
+        let swapContractWasmHash = try await installContract(fileName: swapContractFilename)
+        print("Installed swap contract wasm hash: \(swapContractWasmHash)")
+        
+        let tokenContractWasmHash = try await installContract(fileName: tokenContractFilename)
+        print("Installed token contract wasm hash: \(tokenContractWasmHash)")
+        
+        // Create accounts
+        let adminKeyPair = try KeyPair.generateRandomKeyPair()
+        let aliceKeyPair = try KeyPair.generateRandomKeyPair()
+        let aliceId = aliceKeyPair.accountId
+        let bobKeyPair = try KeyPair.generateRandomKeyPair()
+        let bobId = bobKeyPair.accountId
+        
+        await fundTestnetAccount(accountId: adminKeyPair.accountId)
+        await fundTestnetAccount(accountId: aliceId)
+        await fundTestnetAccount(accountId: bobId)
+        
+        // Deploy contracts
+        let atomicSwapClient = try await deployContract(wasmHash: swapContractWasmHash)
+        let swapContractId = atomicSwapClient.contractId
+        print("Deployed swap contract contract id: \(swapContractId)")
+        
+        let tokenAClient = try await deployContract(wasmHash: tokenContractWasmHash)
+        let tokenAContractId = tokenAClient.contractId
+        print("Deployed token A contract contract id: \(tokenAContractId)")
+        
+        let tokenBClient = try await deployContract(wasmHash: tokenContractWasmHash)
+        let tokenBContractId = tokenBClient.contractId
+        print("Deployed token B contract contract id: \(tokenBContractId)")
+        
+        // Initialize tokens using generated bindings
+        let adminAddress = try SCAddressXDR(accountId: adminKeyPair.accountId)
+        
+        let tokenAOptions = ClientOptions(sourceAccountKeyPair: adminKeyPair, contractId: tokenAContractId, network: network, rpcUrl: testnetServerUrl)
+        let tokenAContract = try await TokenContract.forClientOptions(options: tokenAOptions)
+        
+        let tokenBOptions = ClientOptions(sourceAccountKeyPair: adminKeyPair, contractId: tokenBContractId, network: network, rpcUrl: testnetServerUrl)
+        let tokenBContract = try await TokenContract.forClientOptions(options: tokenBOptions)
+        
+        // Initialize tokens
+        try await tokenAContract.initialize(admin: adminAddress, decimal: 8, name: "TokenA", symbol: "TKA")
+        try await tokenBContract.initialize(admin: adminAddress, decimal: 8, name: "TokenB", symbol: "TKB")
+        print("Tokens initialized using bindings")
+        
+        // Mint tokens to Alice and Bob
+        let aliceAddress = try SCAddressXDR(accountId: aliceId)
+        let bobAddress = try SCAddressXDR(accountId: bobId)
+        
+        // Build mint transactions with auth signing
+        let mintToAliceTx = try await tokenAContract.buildMintTx(to: aliceAddress, amount: "10000000000000")
+        try await mintToAliceTx.signAuthEntries(signerKeyPair: adminKeyPair)
+        let _ = try await mintToAliceTx.signAndSend()
+        
+        let mintToBobTx = try await tokenBContract.buildMintTx(to: bobAddress, amount: "10000000000000")
+        try await mintToBobTx.signAuthEntries(signerKeyPair: adminKeyPair)
+        let _ = try await mintToBobTx.signAndSend()
+        print("Alice and Bob funded using bindings")
+        
+        // Check initial balances
+        let aliceInitialBalance = try await tokenAContract.balance(id: aliceAddress)
+        XCTAssertEqual("10000000000000", aliceInitialBalance)
+        
+        let bobInitialBalance = try await tokenBContract.balance(id: bobAddress)
+        XCTAssertEqual("10000000000000", bobInitialBalance)
+        print("Initial balances verified")
+        
+        // Perform atomic swap using generated binding
+        let swapClientOptions = ClientOptions(sourceAccountKeyPair: sourceAccountKeyPair, contractId: swapContractId, network: network, rpcUrl: testnetServerUrl)
+        let atomicSwapContract = try await AtomicSwapContract.forClientOptions(options: swapClientOptions)
+        
+        let tokenAAddress = try SCAddressXDR(contractId: tokenAContractId)
+        let tokenBAddress = try SCAddressXDR(contractId: tokenBContractId)
+        
+        // Build swap transaction
+        let swapTx = try await atomicSwapContract.buildSwapTx(
+            a: aliceAddress,
+            b: bobAddress,
+            token_a: tokenAAddress,
+            token_b: tokenBAddress,
+            amount_a: "1000",
+            min_b_for_a: "4500",
+            amount_b: "5000",
+            min_a_for_b: "950"
+        )
+        
+        // Verify who needs to sign
+        let signers = try swapTx.needsNonInvokerSigningBy()
+        XCTAssertEqual(2, signers.count)
+        XCTAssert(signers.contains(aliceId))
+        XCTAssert(signers.contains(bobId))
+        
+        // Sign with Alice and Bob
+        try await swapTx.signAuthEntries(signerKeyPair: aliceKeyPair)
+        print("Signed by Alice")
+        
+        try await swapTx.signAuthEntries(signerKeyPair: bobKeyPair)
+        print("Signed by Bob")
+        
+        // Execute swap
+        let response = try await swapTx.signAndSend()
+        guard let result = response.resultValue else {
+            XCTFail("No result obtained for invoking swap")
+            return
+        }
+        XCTAssertEqual(SCValType.void.rawValue, result.type())
+        print("Swap executed successfully using bindings!")
+        
+        // Verify final balances
+        let aliceFinalTokenA = try await tokenAContract.balance(id: aliceAddress)
+        let aliceFinalTokenB = try await tokenBContract.balance(id: aliceAddress)
+        let bobFinalTokenA = try await tokenAContract.balance(id: bobAddress)
+        let bobFinalTokenB = try await tokenBContract.balance(id: bobAddress)
+        
+        print("Final balances:")
+        print("  Alice - Token A: \(aliceFinalTokenA)")
+        print("  Alice - Token B: \(aliceFinalTokenB)")
+        print("  Bob - Token A: \(bobFinalTokenA)")
+        print("  Bob - Token B: \(bobFinalTokenB)")
+        
+        // Verify swap occurred
+        XCTAssertNotEqual("10000000000000", aliceFinalTokenA) // Alice spent some token A
+        XCTAssertNotEqual("0", aliceFinalTokenB) // Alice received some token B
+        XCTAssertNotEqual("0", bobFinalTokenA) // Bob received some token A
+        XCTAssertNotEqual("10000000000000", bobFinalTokenB) // Bob spent some token B
+        
+        print("AtomicSwapContract binding test completed successfully!")
     }
 }
