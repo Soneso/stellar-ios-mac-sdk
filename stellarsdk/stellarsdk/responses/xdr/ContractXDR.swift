@@ -316,16 +316,7 @@ public enum SCAddressXDR: XDRCodable {
     }
     
     public init(claimableBalanceId: String) throws {
-        var claimableBalanceIdHex = claimableBalanceId
-        if claimableBalanceId.hasPrefix("B") {
-            claimableBalanceIdHex = try claimableBalanceId.decodeClaimableBalanceIdToHex()
-        }
-        if let _ = claimableBalanceIdHex.data(using: .hexadecimal) {
-            let value = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(claimableBalanceIdHex.wrappedData32FromHex())
-            self = .claimableBalanceId(value)
-        } else {
-            throw StellarSDKError.encodingError(message: "error xdr encoding SCAddressXDR, invalid claimable balance id")
-        }
+        self = .claimableBalanceId(try ClaimableBalanceIDXDR(claimableBalanceId: claimableBalanceId))
     }
     
     public init(liquidityPoolId: String) throws {
@@ -426,6 +417,15 @@ public enum SCAddressXDR: XDRCodable {
         switch self {
         case .claimableBalanceId(let xdr):
             return xdr.claimableBalanceIdString
+        default:
+            return nil
+        }
+    }
+    
+    public func getClaimableBalanceIdStrKey() throws -> String? {
+        switch self {
+        case .claimableBalanceId(let xdr):
+            return try xdr.claimableBalanceIdString.encodeClaimableBalanceIdHex()
         default:
             return nil
         }

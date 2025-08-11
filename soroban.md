@@ -488,36 +488,77 @@ let val4 = try spec.nativeToXdrSCVal(val: -112, ty: def4)
 XCTAssertEqual(SCValType.i64.rawValue, val4.type())
 ```
 
-`SCValXDR` objects of type u128, i128, u256 and i256 are only supported for positive native Int values:
+##### Big Number Support (u128, i128, u256, i256)
 
+The `ContractSpec` class now provides comprehensive support for big numbers with multiple input formats:
+
+**1. Int values:**
 ```swift
-// for > 64 bit only positive numbers are supported
+// Convert native Int to big numbers (supports negative values for signed types)
 let def = SCSpecTypeDefXDR.u128
 let val = try spec.nativeToXdrSCVal(val: 1112, ty: def)
-XCTAssertEqual(SCValType.u128.rawValue, val.type())
-XCTAssertEqual(1112, val.u128?.lo)
 
 let def2 = SCSpecTypeDefXDR.i128
-let val2 = try spec.nativeToXdrSCVal(val: 2112, ty: def2)
-XCTAssertEqual(SCValType.i128.rawValue, val2.type())
-XCTAssertEqual(2112, val2.i128?.lo)
+let val2 = try spec.nativeToXdrSCVal(val: -1112, ty: def2) // negative values supported
+```
+
+**2. String values (for large numbers):**
+```swift
+// Convert string representations of big numbers
+let def = SCSpecTypeDefXDR.u128
+let maxU128 = "340282366920938463463374607431768211455"
+let val = try spec.nativeToXdrSCVal(val: maxU128, ty: def)
+
+let def2 = SCSpecTypeDefXDR.i128
+let negativeI128 = "-170141183460469231731687303715884105728"
+let val2 = try spec.nativeToXdrSCVal(val: negativeI128, ty: def2)
 
 let def3 = SCSpecTypeDefXDR.u256
-let val3 = try spec.nativeToXdrSCVal(val: 3112, ty: def3)
-XCTAssertEqual(SCValType.u256.rawValue, val3.type())
-XCTAssertEqual(3112, val3.u256?.loLo)
+let maxU256 = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+let val3 = try spec.nativeToXdrSCVal(val: maxU256, ty: def3)
 
 let def4 = SCSpecTypeDefXDR.i256
-let val4 = try spec.nativeToXdrSCVal(val: 3112, ty: def4)
-XCTAssertEqual(SCValType.i256.rawValue, val4.type())
-XCTAssertEqual(3112, val4.i256?.loLo)
+let negativeI256 = "-57896044618658097711785492504343953926634992332820282019728792003956564819968"
+let val4 = try spec.nativeToXdrSCVal(val: negativeI256, ty: def4)
+```
 
-// bigger, or negative numbers must be passed as SCValXDR to funcArgsToXdrSCValues
+**3. Data values (binary representation):**
+```swift
+// Convert Data (binary) to big numbers
+let def = SCSpecTypeDefXDR.u128
+let data = Data([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 
+                 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10])
+let val = try spec.nativeToXdrSCVal(val: data, ty: def)
+
+// Works with smaller data (automatically padded)
+let smallData = Data([0x01, 0x02])
+let val2 = try spec.nativeToXdrSCVal(val: smallData, ty: def)
+
+// Supports negative numbers with two's complement
+let def2 = SCSpecTypeDefXDR.i128
+let negativeData = Data([0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8,
+                        0xF7, 0xF6, 0xF5, 0xF4, 0xF3, 0xF2, 0xF1, 0xF0])
+let val3 = try spec.nativeToXdrSCVal(val: negativeData, ty: def2)
+```
+
+**Using in function arguments:**
+```swift
 let args = try spec.funcArgsToXdrSCValues(name: "myFunc", args: [
-    "bob": accountId, 
-    "amount": SCValXDR.i128(Int128PartsXDR(hi: -1230, lo: 81881))
+    "account": accountId,
+    "small_amount": 1000,                    // Int - converted automatically
+    "large_amount": "12345678901234567890",  // String - for large numbers
+    "binary_data": data,                     // Data - for binary representation
+    "negative_amount": -500                  // Negative Int - supported for signed types
 ])
 ```
+
+**Key Features:**
+- **Multiple input formats**: Int, String, and Data
+- **Automatic conversion**: Uses the new string-based `SCValXDR` creation methods
+- **Full range support**: Handles the complete range of 128-bit and 256-bit integers
+- **Negative number support**: Signed types (i128, i256) support negative values in all input formats
+- **Binary data support**: Data input with proper padding and sign handling
+- **Error handling**: Validates input ranges and formats
 
 #### Bytes and BytesN
 

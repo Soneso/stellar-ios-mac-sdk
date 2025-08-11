@@ -43,8 +43,17 @@ public enum ClaimableBalanceIDXDR: XDRCodable {
         if claimableBalanceId.hasPrefix("B") {
             claimableBalanceIdHex = try claimableBalanceId.decodeClaimableBalanceIdToHex()
         }
-        if let _ = claimableBalanceIdHex.data(using: .hexadecimal) {
-            self = .claimableBalanceIDTypeV0(claimableBalanceIdHex.wrappedData32FromHex())
+        if let data = claimableBalanceIdHex.data(using: .hexadecimal) {
+            if data.count == 33 { // contains the discriminant in the first byte
+                let type = data.first.map { Int32($0) } ?? 0
+                if type == ClaimableBalanceIDType.claimableBalanceIDTypeV0.rawValue {
+                    self = .claimableBalanceIDTypeV0(claimableBalanceIdHex.wrappedData32FromHex())
+                } else {
+                    throw StellarSDKError.encodingError(message: "error creating ClaimableBalanceIDXDR, unknown discriminant: \(type)")
+                }
+            } else {
+                self = .claimableBalanceIDTypeV0(claimableBalanceIdHex.wrappedData32FromHex())
+            }
         } else {
             throw StellarSDKError.encodingError(message: "error creating ClaimableBalanceIDXDR, invalid claimable balance id")
         }
@@ -69,7 +78,10 @@ public enum ClaimableBalanceIDXDR: XDRCodable {
     public var claimableBalanceIdString: String {
         switch self {
         case .claimableBalanceIDTypeV0(let data):
-            return data.wrapped.hexEncodedString()
+            let type = UInt8(ClaimableBalanceIDType.claimableBalanceIDTypeV0.rawValue) // put the type into the first byte
+            var result = Data([type])
+            result.append(data.wrapped)
+            return result.hexEncodedString()
         }
     }
 }
