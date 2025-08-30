@@ -718,6 +718,91 @@ XCTAssertEqual(3, val2.vec?.count) // key + 2 values (a,4)
 
 The above examples can be found in the `SorobanClientTest.swift` and `ContractSpecTest.swift` of the SDK.
 
+## Contract Bindings
+
+For an even more streamlined development experience, you can generate type-safe Swift contract bindings using the [stellar-contract-bindings](https://github.com/lightsail-network/stellar-contract-bindings) tool. This tool generates Swift classes from your contract specifications that provide:
+
+- **Type-safe method calls** with proper Swift types for all parameters
+- **Automatic type conversion** between Swift and Soroban types
+- **Simplified API** that feels natural
+
+### Generating Contract Bindings
+
+To generate Swift bindings for a deployed contract, you can use the `stellar-contract-bindings` tool:
+
+```bash
+# Install the tool
+pip install stellar-contract-bindings
+
+# Generate bindings for a deployed contract
+stellar-contract-bindings swift \
+  --contract-id YOUR_CONTRACT_ID \
+  --rpc-url https://soroban-testnet.stellar.org \
+  --output ./YourContract.swift \
+  --class-name YourContractName
+```
+
+This will generate a Swift file with:
+- A main contract client class
+- Type definitions for all structs, enums, and unions defined in the contract
+- Methods for each contract function with proper type hints
+- Error types for handling conversion and invocation failures
+
+Hint: You can also use the Contract Bindings [Web Interface](https://stellar-contract-bindings.fly.dev/) to generate the bindings.
+
+### Using Generated Bindings
+
+```swift
+import stellarsdk
+import Foundation
+
+// Import the generated bindings
+// Assuming the generated file is named MyContract.swift
+
+// Initialize
+let sourceKeyPair = try! KeyPair.init(accountId: "GD5KKP3LHUDXLDCGKP55NLEOEHMS3Z4BS6IDDZFCYU3BDXUZTBWL7JNF")
+// or: let sourceKeyPair = try! KeyPair.init(secretSeed: "S...")
+
+// Create client instance
+let options = ClientOptions(
+    sourceAccountKeyPair: sourceKeyPair,
+    contractId: "CDOAW6D7NXAPOCO7TFAWZNJHK62E3IYRGNRVX3VOXNKNVOXCLLPJXQCF",
+    network: .public,
+    rpcUrl: "https://mainnet.sorobanrpc.com"
+)
+
+Task {
+    do {
+        let client = try await MyContract.forClientOptions(options: options)
+        
+        // Call contract method directly
+        let result = try await client.hello(
+            to: "World",
+            methodOptions: nil,
+            force: false
+        )
+        print("Contract response: \(result)")
+        
+        // Or build an assembled transaction for more control
+        let methodOptions = MethodOptions()
+        let assembledTx = try await client.buildHelloTx(
+            to: "World",
+            methodOptions: methodOptions
+        )
+        
+    } catch {
+        print("Error calling contract: \(error)")
+    }
+}
+```
+
+### Generated Bindings examples
+
+For examples of using generated bindings, see [SorobanClientTest.swift](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanClientTest.swift), particularly the binding test functions:
+- `helloContractBindingTest()` - Simple contract interaction
+- `authContractBindingTest()` - Authorization handling
+- `atomicSwapBindingTest()` - Complex multi-contract interaction
+
 ## Interacting with Soroban without using the SorobanClient
 
 The `SorobanClient` was introduced as a usability improvement, that allows you to easily 
