@@ -1,0 +1,85 @@
+name: "Bug Report"
+description: Report a bug or unexpected behavior in the iOS Stellar SDK
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ Thanks for helping us improve the SDK!  
+        Please provide as much detail as possible so we can reproduce and fix the issue.  
+
+  - type: input
+    id: summary
+    attributes:
+      label: "Bug Summary"
+      description: "Briefly describe the issue."
+      placeholder: "Example: Transaction fails when signing XDR"
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps to Reproduce"
+      description: "List the steps needed to reproduce the problem."
+      placeholder: |
+        1. Build project with Xcode ...
+        2. Call method ...
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      description: "What did you expect to happen?"
+      placeholder: "Example: The transaction should be accepted by Horizon."
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Actual Behavior"
+      description: "What actually happened?"
+      placeholder: "Example: App crashes with ..."
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Error Messages / Logs"
+      description: "Paste any relevant error messages or logs."
+      render: shell
+
+  - type: input
+    id: version
+    attributes:
+      label: "SDK Version"
+      description: "Which version of the SDK are you using?"
+      placeholder: "Example: 3.2.4"
+
+  - type: input
+    id: xcode
+    attributes:
+      label: "Xcode Version"
+      description: "Which version of Xcode are you using?"
+      placeholder: "Example: Xcode 16.0"
+
+  - type: input
+    id: swift
+    attributes:
+      label: "Swift Version"
+      description: "Which version of Swift are you using?"
+      placeholder: "Example: Swift 6.0"
+
+  - type: input
+    id: platform
+    attributes:
+      label: "iOS/macOS Version"
+      description: "Which OS version are you running?"
+      placeholder: "Example: iOS 18.0, macOS 15.0"
+
+  - type: input
+    id: device
+    attributes:
+      label: "Device/Simulator"
+      description: "Which device or simulator are you using?"
+      placeholder: "Example: iPhone 15 Pro simulator, M1 Mac"
+

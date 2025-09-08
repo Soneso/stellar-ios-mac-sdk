@@ -604,15 +604,33 @@ This SDK provides [support for Soroban](https://github.com/Soneso/stellar-ios-ma
 
 We are working on integrating passkey support for Soroban Smart Wallets into this SDK. In the meantime, we are providing an experimental Passkey Kit for working with Soroban Smart Wallets that you can find here:  [SwiftPasskeyKit](https://github.com/Soneso/SwiftPasskeyKit). 
 
-## How to contribute
+## Feedback & Feature Requests  
 
-Please read our [Contribution Guide](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/CONTRIBUTING.md).
+We’d love to hear from you! 
+If you’re using this SDK in your project, your feedback is incredibly valuable for helping us improve.  
 
-Then please [sign the Contributor License Agreement](https://goo.gl/forms/hS2KOI8d7WcelI892).
+- ✅ What’s working well?  
+- ⚡ What could be improved?  
+- 🌟 Any features you’d like to see in the future?  
 
-## License
+Please share your thoughts in [GitHub Discussions](https://github.com/Soneso/stellar-ios-mac-sdk/discussions),  
+or open an issue directly:  
+- [🐞 Bug Report](https://github.com/Soneso/stellar-ios-mac-sdk/issues/new?template=bug_report.yml)  
+- [🌟 Feature Request](https://github.com/Soneso/stellar-ios-mac-sdk/issues/new?template=feature_request.yml)  
 
-stellar-ios-mac-sdk is licensed under an Apache-2.0 license. See the [LICENSE](https://github.com/soneso/stellar-ios-mac-sdk/blob/master/LICENSE) file for details.
+Even a couple of quick notes go a long way — thank you for helping us make the SDK better for the whole Stellar community! 🙏  
+
+## Contributing
+
+Contributions are welcome! There are several ways you can help improve this SDK:
+
+- 🐞 [Report bugs](https://github.com/Soneso/stellar-ios-mac-sdk/issues/new?template=bug_report.yml)  
+- 🌟 [Request features](https://github.com/Soneso/stellar-ios-mac-sdk/issues/new?template=feature_request.yml)  
+- 💬 Share your ideas in [Discussions](https://github.com/Soneso/stellar-ios-mac-sdk/discussions)  
+- 🔧 Submit a Pull Request with code improvements  
+
+Please check out our [Contributing Guide](./CONTRIBUTING.md) for details. 🙏
+
 
 ## DeepWiki
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-ios-mac-sdk)

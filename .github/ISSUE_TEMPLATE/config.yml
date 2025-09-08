@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Feedback & Discussions
+    url: https://github.com/Soneso/stellar-ios-mac-sdk/discussions
+    about: For open-ended questions, ideas, or general feedback, please use Discussions.
+

@@ -1,0 +1,50 @@
+name: "Feature Request"
+description: Suggest a new feature or improvement for the iOS Stellar SDK
+labels: ["feedback", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        🙌 Thanks for taking the time to suggest a feature!  
+        Please fill out the sections below to help us understand your request.  
+
+  - type: input
+    id: summary
+    attributes:
+      label: "Feature Summary"
+      description: "Briefly describe the feature you’d like to see."
+      placeholder: "Example: Add support for [specific operation]"
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: "Why is this feature needed?"
+      description: "Tell us what problem this would solve or how it would help developers."
+      placeholder: "Example: This would make it easier to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: "Proposed Solution"
+      description: "Describe how you imagine this feature could be implemented or used."
+      placeholder: "Example: Provide a helper method like..."
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered"
+      description: "If you’ve thought about other ways to solve this, list them here."
+      placeholder: "Example: I could work around this by..."
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "How important is this feature to you?"
+      options:
+        - Nice to have
+        - Important
+        - Blocker
+      default: 0
+
