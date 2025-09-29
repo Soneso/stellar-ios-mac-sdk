@@ -260,7 +260,13 @@ class SorobanEventsTest: XCTestCase {
         //let topicFilter = TopicFilter(segmentMatchers:[SCValXDR.symbol("COUNTER").xdrEncoded!, "*"])
         let eventFilter = EventFilter(type:"contract", contractIds: [try! contractId!.encodeContractIdHex()], topics: [topicFilter])
         
-        let responseEnum = await sorobanServer.getEvents(startLedger: ledger, eventFilters: [eventFilter], paginationOptions: PaginationOptions(limit: 2))
+        let responseEnum = await sorobanServer.getEvents(
+            startLedger: ledger,
+            endLedger: ledger + 5,
+            eventFilters: [eventFilter],
+            paginationOptions: PaginationOptions(limit: 2)
+        )
+        
         switch responseEnum {
         case .success(let eventsResponse):
             XCTAssert(eventsResponse.events.count > 0)

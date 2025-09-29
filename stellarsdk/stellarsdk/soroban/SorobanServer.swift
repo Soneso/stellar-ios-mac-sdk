@@ -786,9 +786,9 @@ public class SorobanServer {
     /// By default soroban-rpc retains the most recent 24 hours of events.
     /// See: https://soroban.stellar.org/api/methods/getEvents
     @available(*, renamed: "getEvents(startLedger:eventFilters:paginationOptions:)")
-    public func getEvents(startLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
+    public func getEvents(startLedger:Int? = nil, endLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
         Task {
-            let result = await getEvents(startLedger: startLedger, eventFilters: eventFilters, paginationOptions: paginationOptions)
+            let result = await getEvents(startLedger: startLedger, endLedger: endLedger, eventFilters: eventFilters, paginationOptions: paginationOptions)
             completion(result)
         }
     }
@@ -799,9 +799,9 @@ public class SorobanServer {
     /// If making multiple requests, clients should deduplicate any events received, based on the event's unique id field. This prevents double-processing in the case of duplicate events being received.
     /// By default soroban-rpc retains the most recent 24 hours of events.
     /// See: https://soroban.stellar.org/api/methods/getEvents
-    public func getEvents(startLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) async -> GetEventsResponseEnum {
+    public func getEvents(startLedger:Int? = nil, endLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) async -> GetEventsResponseEnum {
         
-        let result = await request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, eventFilters: eventFilters, paginationOptions: paginationOptions)))
+        let result = await request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, endLedger: endLedger, eventFilters: eventFilters, paginationOptions: paginationOptions)))
         switch result {
         case .success(let data):
             if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
@@ -825,11 +825,15 @@ public class SorobanServer {
         }
     }
     
-    private func buildEventsRequestParams(startLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
+    private func buildEventsRequestParams(startLedger:Int? = nil, endLedger:Int?=nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
         var result: [String : Any] = [:]
         
         if (startLedger != nil) {
             result["startLedger"] = startLedger
+        }
+        
+        if (endLedger != nil) {
+            result["endLedger"] = endLedger
         }
         
         // filters
