@@ -175,7 +175,7 @@ public class OffersService: NSObject {
                         let sponsor,
                         let cursor,
                         let order):
-            
+
             var params = Dictionary<String,String>()
             params["seller"] = seller
             params["selling_asset_type"] = sellingAssetType
@@ -187,9 +187,9 @@ public class OffersService: NSObject {
             params["sponsor"] = sponsor
             params["cursor"] = cursor
             params["order"] = order?.rawValue
-            
+
             subpath = "/offers"
-            
+
             if let pathParams = params.stringFromHttpParameters(),
                 pathParams.count > 0 {
                 subpath += "?\(pathParams)"
@@ -202,8 +202,36 @@ public class OffersService: NSObject {
                 subpath = subpath + "?cursor=" + cursor
             }
         }
-    
+
         let streamItem = OffersStreamItem(requestUrl: serviceHelper.requestUrlWithPath(path: subpath))
+        return streamItem
+    }
+
+    /// Allows to stream trades for a specific offer using SSE (Server-Sent Events).
+    /// This mode will keep the connection to horizon open and horizon will continue to return
+    /// trade responses as new trades occur for this offer.
+    ///
+    /// See [Horizon API] (https://developers.stellar.org/api/aggregations/trades/object "Trades for Offer")
+    ///
+    /// - Parameter offerId: The ID of the Offer
+    /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from. Use "now" to stream only new trades.
+    /// - Parameter order: Optional. The order in which to return rows, "asc" or "desc"
+    /// - Parameter limit: Optional. Maximum number of records to return.
+    ///
+    open func streamTrades(forOffer offerId: String, cursor: String? = nil, order: Order? = nil, limit: Int? = nil) -> TradesStreamItem {
+        var requestPath = "/offers/" + offerId + "/trades"
+
+        var params = Dictionary<String,String>()
+        params["cursor"] = cursor
+        params["order"] = order?.rawValue
+        if let limit = limit { params["limit"] = String(limit) }
+
+        if let pathParams = params.stringFromHttpParameters(),
+            pathParams.count > 0 {
+            requestPath += "?\(pathParams)"
+        }
+
+        let streamItem = TradesStreamItem(requestUrl: serviceHelper.requestUrlWithPath(path: requestPath))
         return streamItem
     }
     
@@ -237,9 +265,84 @@ public class OffersService: NSObject {
             } catch {
                 return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
-            
+
         case .failure(let error):
             return .failure(error:error)
+        }
+    }
+
+    /// This endpoint represents all trades for a given offer and can be used in streaming mode.
+    /// Streaming mode allows you to listen for new trades for this offer as they are added to the Stellar ledger.
+    /// If called in streaming mode, Horizon will start at the earliest known trade unless a cursor is set, in which case it will start from that cursor.
+    /// By setting the cursor value to now, you can stream trades created since your request time.
+    ///
+    /// See [Horizon API] (https://developers.stellar.org/api/aggregations/trades/object "Trades for Offer")
+    ///
+    /// - Parameter offerId: The ID of the Offer
+    /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
+    /// - Parameter order: Optional. The order in which to return rows, "asc" or "desc", ordered by ledger sequence number.
+    /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
+    /// - Parameter response: The closure to be called upon response.
+    ///
+    @available(*, renamed: "getTrades(forOffer:cursor:order:limit:)")
+    open func getTrades(forOffer offerId: String, cursor: String? = nil, order: Order? = nil, limit: Int? = nil, response: @escaping PageResponse<TradeResponse>.ResponseClosure) {
+        Task {
+            let result = await getTrades(forOffer: offerId, cursor: cursor, order: order, limit: limit)
+            response(result)
+        }
+    }
+
+    /// This endpoint represents all trades for a given offer and can be used in streaming mode.
+    /// Streaming mode allows you to listen for new trades for this offer as they are added to the Stellar ledger.
+    /// If called in streaming mode, Horizon will start at the earliest known trade unless a cursor is set, in which case it will start from that cursor.
+    /// By setting the cursor value to now, you can stream trades created since your request time.
+    ///
+    /// See [Horizon API] (https://developers.stellar.org/api/aggregations/trades/object "Trades for Offer")
+    ///
+    /// - Parameter offerId: The ID of the Offer
+    /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
+    /// - Parameter order: Optional. The order in which to return rows, "asc" or "desc", ordered by ledger sequence number.
+    /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
+    ///
+    open func getTrades(forOffer offerId: String, cursor: String? = nil, order: Order? = nil, limit: Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
+        var requestPath = "/offers/" + offerId + "/trades"
+
+        var params = Dictionary<String,String>()
+        params["cursor"] = cursor
+        params["order"] = order?.rawValue
+        if let limit = limit { params["limit"] = String(limit) }
+
+        if let pathParams = params.stringFromHttpParameters(),
+           pathParams.count > 0 {
+            requestPath += "?\(pathParams)"
+        }
+
+        return await getTradesFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
+    }
+
+    @available(*, renamed: "getTradesFromUrl(url:)")
+    func getTradesFromUrl(url: String, response: @escaping PageResponse<TradeResponse>.ResponseClosure) {
+        Task {
+            let result = await getTradesFromUrl(url: url)
+            response(result)
+        }
+    }
+
+    func getTradesFromUrl(url: String) async -> PageResponse<TradeResponse>.ResponseEnum {
+        let jsonDecoder = JSONDecoder()
+        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+
+        let result = await serviceHelper.GETRequestFromUrl(url: url)
+        switch result {
+        case .success(let data):
+            do {
+                let trades = try jsonDecoder.decode(PageResponse<TradeResponse>.self, from: data)
+                return .success(page: trades)
+            } catch {
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
+            }
+        case .failure(let error):
+            return .failure(error: error)
         }
     }
 }

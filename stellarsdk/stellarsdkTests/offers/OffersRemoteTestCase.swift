@@ -92,6 +92,9 @@ class OffersRemoteTestCase: XCTestCase {
         await loadOffersForSellingAsset()
         await createBuyOffers()
         await loadOffersForBuyingAsset()
+        await executeTrade()
+        await loadTradesForOffer()
+        await streamTradesForOffer()
         await getOrderbook()
     }
     
@@ -362,7 +365,7 @@ class OffersRemoteTestCase: XCTestCase {
     
     func loadOffersForBuyingAsset() async {
         let response = await sdk.offers.getOffers(seller:nil, sellingAssetType: "native", buyingAssetType:"credit_alphanum4", buyingAssetCode: "IOM", buyingAssetIssuer: IOMIssuerKeyPair.accountId)
-        
+
         switch response {
         case .success(let offersResponse):
             let offer = offersResponse.records.first
@@ -372,15 +375,159 @@ class OffersRemoteTestCase: XCTestCase {
             XCTFail()
         }
     }
-    
+
+    func executeTrade() async {
+        // Execute a trade by creating a matching buy offer that will consume part of the sell offer
+        let expectation = XCTestExpectation(description: "trade executed")
+
+        let IOM = ChangeTrustAsset(canonicalForm: "IOM:" + IOMIssuerKeyPair.accountId)!
+
+        // Monitor operations to confirm the trade
+        operationsStreamItem = sdk.operations.stream(for: .operationsForAccount(account: buyerKeyPair.accountId, cursor: "now"))
+        operationsStreamItem?.onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                break
+            case .response(_, let operationResponse):
+                if let _ = operationResponse as? ManageBuyOfferOperationResponse {
+                    expectation.fulfill()
+                }
+            case .error(let error):
+                if let horizonRequestError = error as? HorizonRequestError {
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"executeTrade Test - stream", horizonRequestError:horizonRequestError)
+                } else {
+                    print("executeTrade stream error \(error?.localizedDescription ?? "")")
+                }
+                break
+            }
+        }
+
+        let accDetailsEnum = await sdk.accounts.getAccountDetails(accountId: buyerKeyPair.accountId)
+        switch accDetailsEnum {
+        case .success(let accountResponse):
+            // Create a buy offer that matches the sell offer price to execute a trade
+            // Using price 1/2 (same as first sell offer) to ensure it matches
+            let buyOfferOperation = ManageBuyOfferOperation(sourceAccountId: self.buyerKeyPair.accountId, selling: self.assetNative!, buying: IOM, amount: 10, price: Price(numerator: 1, denominator: 2), offerId: 0)
+
+            let transaction = try! Transaction(sourceAccount: accountResponse,
+                                              operations: [buyOfferOperation],
+                                              memo: Memo.none)
+            try! transaction.sign(keyPair: buyerKeyPair, network: self.network)
+            let submitTxResultEnum = await self.sdk.transactions.submitTransaction(transaction: transaction)
+            switch submitTxResultEnum {
+            case .success(let result):
+                XCTAssertTrue(result.operationCount > 0)
+            case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+                XCTFail("destination account \(destinationAccountId) requires memo")
+            case .failure(error: let error):
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"executeTrade()", horizonRequestError: error)
+                XCTFail("submit transaction error")
+            }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"executeTrade()", horizonRequestError: error)
+            XCTFail("could not load account details for \(buyerKeyPair.accountId)")
+        }
+
+        await fulfillment(of: [expectation], timeout: 15.0)
+    }
+
+    func loadTradesForOffer() async {
+        // Test the getTrades(forOffer:) endpoint
+        guard let offerId = self.offerId else {
+            XCTFail("offerId is nil")
+            return
+        }
+
+        let response = await sdk.offers.getTrades(forOffer: offerId)
+        switch response {
+        case .success(let tradesPage):
+            // The offer may or may not have trades depending on execution
+            // We test pagination functionality
+            XCTAssertNotNil(tradesPage)
+            XCTAssertNotNil(tradesPage.records)
+
+            // If there are trades, validate the structure
+            if let firstTrade = tradesPage.records.first {
+                XCTAssertFalse(firstTrade.id.isEmpty)
+                XCTAssertFalse(firstTrade.pagingToken.isEmpty)
+                XCTAssertFalse(firstTrade.baseAmount.isEmpty)
+                XCTAssertFalse(firstTrade.counterAmount.isEmpty)
+                XCTAssertNotNil(firstTrade.price)
+
+                // Test pagination if we have trades
+                if tradesPage.records.count > 0 {
+                    let nextPageResult = await tradesPage.getNextPage()
+                    switch nextPageResult {
+                    case .success(let nextPage):
+                        XCTAssertNotNil(nextPage)
+                        // Test previous page
+                        let prevPageResult = await nextPage.getPreviousPage()
+                        switch prevPageResult {
+                        case .success(let prevPage):
+                            XCTAssertNotNil(prevPage)
+                        case .failure(let error):
+                            StellarSDKLog.printHorizonRequestErrorMessage(tag:"loadTradesForOffer - prev page", horizonRequestError: error)
+                        }
+                    case .failure(let error):
+                        // It's ok if there's no next page
+                        print("No next page available: \(error)")
+                    }
+                }
+            }
+
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"loadTradesForOffer", horizonRequestError: error)
+            XCTFail("Failed to load trades for offer")
+        }
+    }
+
+    func streamTradesForOffer() async {
+        // Test streaming trades for an offer
+        guard let offerId = self.offerId else {
+            XCTFail("offerId is nil")
+            return
+        }
+
+        let expectation = XCTestExpectation(description: "stream trades for offer")
+        expectation.isInverted = true // We don't expect new trades in this test
+
+        let streamItem = sdk.offers.streamTrades(forOffer: offerId, cursor: "now", order: .descending, limit: 10)
+
+        var streamEventReceived = false
+        streamItem.onReceive { (response) -> (Void) in
+            switch response {
+            case .open:
+                streamEventReceived = true
+            case .response(_, let tradeResponse):
+                // If we receive a trade response, validate it
+                XCTAssertFalse(tradeResponse.id.isEmpty)
+                XCTAssertFalse(tradeResponse.pagingToken.isEmpty)
+                expectation.fulfill()
+            case .error(let error):
+                if let horizonRequestError = error as? HorizonRequestError {
+                    StellarSDKLog.printHorizonRequestErrorMessage(tag:"streamTradesForOffer", horizonRequestError: horizonRequestError)
+                    XCTFail("Stream error")
+                }
+            }
+        }
+
+        // Wait a bit to ensure the stream opens
+        try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
+
+        XCTAssertTrue(streamEventReceived, "Stream should have opened")
+        streamItem.closeStream()
+
+        await fulfillment(of: [expectation], timeout: 5.0)
+    }
+
     func getOrderbook() async {
         let response = await sdk.orderbooks.getOrderbook(sellingAssetType: AssetTypeAsString.NATIVE, buyingAssetType: AssetTypeAsString.CREDIT_ALPHANUM4, buyingAssetCode:"IOM", buyingAssetIssuer:IOMIssuerKeyPair.accountId, limit:10)
-        
+
         switch response {
         case .success(let orderbookResponse):
             XCTAssertFalse(orderbookResponse.bids.isEmpty)
             XCTAssertFalse(orderbookResponse.asks.isEmpty)
-            
+
         case .failure(let error):
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"GOB Test", horizonRequestError: error)
             XCTFail()
