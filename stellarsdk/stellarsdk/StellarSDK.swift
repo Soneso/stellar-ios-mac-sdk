@@ -20,6 +20,7 @@ public class StellarSDK: NSObject {
     public var assets: AssetsService
     public var feeStats: FeeStatsService
     public var effects: EffectsService
+    public var health: HealthService
     public var ledgers: LedgersService
     public var operations: OperationsService
     public var payments: PaymentsService
@@ -34,11 +35,12 @@ public class StellarSDK: NSObject {
     
     public override init() {
         horizonURL = StellarSDK.testNetUrl
-        
+
         accounts = AccountService(baseURL: horizonURL)
         assets = AssetsService(baseURL: horizonURL)
         feeStats = FeeStatsService(baseURL: horizonURL)
         effects = EffectsService(baseURL: horizonURL)
+        health = HealthService(baseURL: horizonURL)
         ledgers = LedgersService(baseURL: horizonURL)
         operations = OperationsService(baseURL: horizonURL)
         payments = PaymentsService(baseURL: horizonURL)
@@ -54,11 +56,12 @@ public class StellarSDK: NSObject {
     
     public init(withHorizonUrl horizonURL:String) {
         self.horizonURL = horizonURL
-        
+
         accounts = AccountService(baseURL: horizonURL)
         assets = AssetsService(baseURL: horizonURL)
         feeStats = FeeStatsService(baseURL: horizonURL)
         effects = EffectsService(baseURL: horizonURL)
+        health = HealthService(baseURL: horizonURL)
         ledgers = LedgersService(baseURL: horizonURL)
         operations = OperationsService(baseURL: horizonURL)
         payments = PaymentsService(baseURL: horizonURL)

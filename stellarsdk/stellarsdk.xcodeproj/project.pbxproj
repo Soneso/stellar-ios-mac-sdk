@@ -972,6 +972,12 @@
 		836513972BDEEA0E00A99085 /* Sep08FollowNextMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513952BDEEA0E00A99085 /* Sep08FollowNextMock.swift */; };
 		836513992BDEEBFA00A99085 /* Sep08ActionDoneMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513982BDEEBFA00A99085 /* Sep08ActionDoneMock.swift */; };
 		8365139A2BDEEBFA00A99085 /* Sep08ActionDoneMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513982BDEEBFA00A99085 /* Sep08ActionDoneMock.swift */; };
+		8365E4E32E96C63600341284 /* HealthCheckResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4E12E96C63600341284 /* HealthCheckResponse.swift */; };
+		8365E4E42E96C63600341284 /* HealthCheckResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4E12E96C63600341284 /* HealthCheckResponse.swift */; };
+		8365E4E62E96C68800341284 /* HealthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4E52E96C68800341284 /* HealthService.swift */; };
+		8365E4E72E96C68800341284 /* HealthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4E52E96C68800341284 /* HealthService.swift */; };
+		8365E4EA2E96C6CE00341284 /* HealthRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4E82E96C6CE00341284 /* HealthRemoteTestCase.swift */; };
+		8365E4EB2E96C6CE00341284 /* HealthRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4E82E96C6CE00341284 /* HealthRemoteTestCase.swift */; };
 		836658EB2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658EA2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift */; };
 		836658EC2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658EA2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift */; };
 		836658EE2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658ED2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift */; };
@@ -1867,6 +1873,9 @@
 		836513922BDEE81800A99085 /* Sep08PostActionRequiredMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep08PostActionRequiredMock.swift; sourceTree = "<group>"; };
 		836513952BDEEA0E00A99085 /* Sep08FollowNextMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep08FollowNextMock.swift; sourceTree = "<group>"; };
 		836513982BDEEBFA00A99085 /* Sep08ActionDoneMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sep08ActionDoneMock.swift; sourceTree = "<group>"; };
+		8365E4E12E96C63600341284 /* HealthCheckResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthCheckResponse.swift; sourceTree = "<group>"; };
+		8365E4E52E96C68800341284 /* HealthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthService.swift; sourceTree = "<group>"; };
+		8365E4E82E96C6CE00341284 /* HealthRemoteTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthRemoteTestCase.swift; sourceTree = "<group>"; };
 		836658EA2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendFootprintTTLOpXDR.swift; sourceTree = "<group>"; };
 		836658ED2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendFootprintTTLResultXDR.swift; sourceTree = "<group>"; };
 		836658F02A6E773A00E8B8D9 /* RestoreFootprintOpXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreFootprintOpXDR.swift; sourceTree = "<group>"; };
@@ -2404,6 +2413,7 @@
 			isa = PBXGroup;
 			children = (
 				744D458D2038288700178D04 /* Streaming */,
+				8365E4E52E96C68800341284 /* HealthService.swift */,
 				743DF54F201FBD2B00713DE7 /* AccountService.swift */,
 				836971E72025048D00398A98 /* AssetsService.swift */,
 				83DD2C97202F249800713FEE /* PaymentsService.swift */,
@@ -2576,6 +2586,7 @@
 		7445EA09201B106500470E0A /* stellarsdkTests */ = {
 			isa = PBXGroup;
 			children = (
+				8365E4E92E96C6CE00341284 /* health */,
 				835F0CE1297613C900793708 /* soroban */,
 				83C54D042945F1DD00CC1E8A /* docs */,
 				8310BDCC26EB6183004D3EF2 /* amm */,
@@ -3304,6 +3315,22 @@
 			path = regulated_assets;
 			sourceTree = "<group>";
 		};
+		8365E4E22E96C63600341284 /* health_responses */ = {
+			isa = PBXGroup;
+			children = (
+				8365E4E12E96C63600341284 /* HealthCheckResponse.swift */,
+			);
+			path = health_responses;
+			sourceTree = "<group>";
+		};
+		8365E4E92E96C6CE00341284 /* health */ = {
+			isa = PBXGroup;
+			children = (
+				8365E4E82E96C6CE00341284 /* HealthRemoteTestCase.swift */,
+			);
+			path = health;
+			sourceTree = "<group>";
+		};
 		836836042E1709AB0032D97C /* strkey */ = {
 			isa = PBXGroup;
 			children = (
@@ -3474,6 +3501,7 @@
 		83DD2C5C202D04E100713FEE /* responses */ = {
 			isa = PBXGroup;
 			children = (
+				8365E4E22E96C63600341284 /* health_responses */,
 				83D408E726EB8835003A9C0F /* liquidity_pool_responses */,
 				83B4CB932528766600EEE55E /* claimable_balances_responses */,
 				83FE810623F0719A00F4A13D /* fee_stats_responses */,
@@ -4179,6 +4207,7 @@
 				745DF5662052FFF6000D3660 /* verify.c in Sources */,
 				745DF50A2052FFC3000D3660 /* Dictionary+HttpParams.swift in Sources */,
 				8346DDA926E8AC63002D609B /* ChangeTrustAssetXDR.swift in Sources */,
+				8365E4E62E96C68800341284 /* HealthService.swift in Sources */,
 				83DD7142281ACAD800530C64 /* PreconditionsTimeBoundsResponse.swift in Sources */,
 				745DF50B2052FFC3000D3660 /* Data+CRC.swift in Sources */,
 				745DF50E2052FFC3000D3660 /* DateFormatter+ISOParsing.swift in Sources */,
@@ -4613,6 +4642,7 @@
 				8372286D2DCA34D00050BBC9 /* SimulateHostFunctionResult.swift in Sources */,
 				830E7D3A252930F60059A4B4 /* RevokeSponsorshipOperationResponse.swift in Sources */,
 				83AFD637234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */,
+				8365E4E42E96C63600341284 /* HealthCheckResponse.swift in Sources */,
 				745DF4E02052FF9C000D3660 /* Authenticator.swift in Sources */,
 				74723337219D983500343E25 /* WebAuthenticator.swift in Sources */,
 				7468CDD42136DBB5002A538D /* BumpSequenceResultXDR.swift in Sources */,
@@ -4753,6 +4783,7 @@
 				74723344219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift in Sources */,
 				744A84C921441CC60086B8FC /* Date.swift in Sources */,
 				74723341219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift in Sources */,
+				8365E4EA2E96C6CE00341284 /* HealthRemoteTestCase.swift in Sources */,
 				7467C4052142700000412FE1 /* TransferServerTestCase.swift in Sources */,
 				745DF578205304AC000D3660 /* LedgersRemoteTestCase.swift in Sources */,
 				833C67542B8F688000E034C6 /* WithdrawExchangeResponseMock.swift in Sources */,
@@ -4895,6 +4926,7 @@
 				8369720E2028EDB100398A98 /* AccountCreditedEffectResponse.swift in Sources */,
 				8346DDA826E8AC63002D609B /* ChangeTrustAssetXDR.swift in Sources */,
 				83DD7141281ACAD800530C64 /* PreconditionsTimeBoundsResponse.swift in Sources */,
+				8365E4E72E96C68800341284 /* HealthService.swift in Sources */,
 				744FC6F7212D52D300ADFC88 /* FederationError.swift in Sources */,
 				43E34B652031DAD5003104A9 /* OfferPriceResponse.swift in Sources */,
 				746AD2BC20341DF100A9CF21 /* OperationResultXDR.swift in Sources */,
@@ -5329,6 +5361,7 @@
 				8372286C2DCA34D00050BBC9 /* SimulateHostFunctionResult.swift in Sources */,
 				830E7D39252930F60059A4B4 /* RevokeSponsorshipOperationResponse.swift in Sources */,
 				74723336219D983500343E25 /* WebAuthenticator.swift in Sources */,
+				8365E4E32E96C63600341284 /* HealthCheckResponse.swift in Sources */,
 				743DF5762020530A00713DE7 /* keypair.c in Sources */,
 				C694DABE21478E8100D6D63F /* URISchemeEnums.swift in Sources */,
 				EC34A0CF20503CAB000FB042 /* DataConvertable.swift in Sources */,
@@ -5509,6 +5542,7 @@
 				8365138A2BDEDD4E00A99085 /* Sep08PostPendingMock.swift in Sources */,
 				8310BDCE26EB61B0004D3EF2 /* AmmTestCase.swift in Sources */,
 				7467C4072142740C00412FE1 /* DepositResponseMock.swift in Sources */,
+				8365E4EB2E96C6CE00341284 /* HealthRemoteTestCase.swift in Sources */,
 				8357A91D203B6F8500A144A9 /* DataForAccountResponsesMock.swift in Sources */,
 				437CEBD820457E5E00CAAF93 /* MemoRemoteTestCase.swift in Sources */,
 				832AF8E6263BE8E500B7EB49 /* ClawbackTestCase.swift in Sources */,
