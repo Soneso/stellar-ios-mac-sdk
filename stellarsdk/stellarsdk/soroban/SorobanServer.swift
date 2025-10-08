@@ -70,6 +70,11 @@ public enum GetNonceResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
+public enum GetLedgersResponseEnum {
+    case success(response: GetLedgersResponse)
+    case failure(error: SorobanRpcRequestError)
+}
+
 public enum GetContractCodeResponseEnum {
     case success(response: ContractCodeEntryXDR)
     case failure(error: SorobanRpcRequestError)
@@ -108,6 +113,7 @@ public typealias GetContractCodeResponseClosure = (_ response:GetContractCodeRes
 public typealias GetContractInfoClosure = (_ response:GetContractInfoEnum) -> (Void)
 public typealias GetAccountResponseClosure = (_ response:GetAccountResponseEnum) -> (Void)
 public typealias GetContractDataResponseClosure = (_ response:GetContractDataResponseEnum) -> (Void)
+public typealias GetLedgersResponseClosure = (_ response:GetLedgersResponseEnum) -> (Void)
 
 /// An enum to diferentiate between succesful and failed responses
 private enum RpcResult {
@@ -379,7 +385,7 @@ public class SorobanServer {
     /// For finding out the current latest known ledger of this node. This is a subset of the ledger info from Horizon.
     /// See: https://soroban.stellar.org/api/methods/getLatestLedger
     public func getLatestLedger() async -> GetLatestLedgerResponseEnum {
-        
+
         let result = await request(body: try? buildRequestJson(method: "getLatestLedger"))
         switch result {
         case .success(let data):
@@ -388,6 +394,50 @@ public class SorobanServer {
                     do {
                         let response = try self.jsonDecoder.decode(GetLatestLedgerResponse.self, from: JSONSerialization.data(withJSONObject: result))
                         return .success(response: response)
+                    } catch {
+                        return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
+                    }
+                } else if let error = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(errorData: error))
+                } else {
+                    return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
+                }
+            } else {
+                return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
+            }
+        case .failure(let error):
+            return .failure(error: error)
+        }
+    }
+
+    /// Retrieve a list of ledgers starting from the specified starting point.
+    /// The getLedgers method return a detailed list of ledgers starting from
+    /// the user specified starting point that you can paginate as long as the pages
+    /// fall within the history retention of their corresponding RPC provider.
+    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+    @available(*, renamed: "getLedgers(startLedger:paginationOptions:format:)")
+    public func getLedgers(startLedger: UInt32, paginationOptions: PaginationOptions? = nil, format: String? = nil, completion: @escaping GetLedgersResponseClosure) {
+        Task {
+            let result = await getLedgers(startLedger: startLedger, paginationOptions: paginationOptions, format: format)
+            completion(result)
+        }
+    }
+
+    /// Retrieve a list of ledgers starting from the specified starting point.
+    /// The getLedgers method return a detailed list of ledgers starting from
+    /// the user specified starting point that you can paginate as long as the pages
+    /// fall within the history retention of their corresponding RPC provider.
+    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+    public func getLedgers(startLedger: UInt32, paginationOptions: PaginationOptions? = nil, format: String? = nil) async -> GetLedgersResponseEnum {
+
+        let result = await request(body: try? buildRequestJson(method: "getLedgers", args: buildLedgersRequestParams(startLedger: startLedger, paginationOptions: paginationOptions, format: format)))
+        switch result {
+        case .success(let data):
+            if let response = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                if let result = response["result"] as? [String: Any] {
+                    do {
+                        let decoded = try self.jsonDecoder.decode(GetLedgersResponse.self, from: JSONSerialization.data(withJSONObject: result))
+                        return .success(response: decoded)
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
@@ -854,17 +904,35 @@ public class SorobanServer {
     
     private func buildTransactionssRequestParams(startLedger:Int? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
         var result: [String : Any] = [:]
-        
+
         if (startLedger != nil) {
             result["startLedger"] = startLedger
         }
-        
+
         // pagination options
         if (paginationOptions != nil) {
             result["pagination"] = paginationOptions!.buildRequestParams()
         }
-        
+
         return result;
+    }
+
+    private func buildLedgersRequestParams(startLedger: UInt32, paginationOptions: PaginationOptions? = nil, format: String? = nil) -> [String : Any] {
+        var result: [String : Any] = [:]
+
+        result["startLedger"] = startLedger
+
+        // format (xdrFormat parameter)
+        if let format = format {
+            result["xdrFormat"] = format
+        }
+
+        // pagination options
+        if let paginationOptions = paginationOptions {
+            result["pagination"] = paginationOptions.buildRequestParams()
+        }
+
+        return result
     }
     
     private func buildRequestJson(method:String, args:Any? = nil) throws -> Data? {
