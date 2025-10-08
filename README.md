@@ -604,6 +604,10 @@ This SDK provides [support for Soroban](https://github.com/Soneso/stellar-ios-ma
 
 We are working on integrating passkey support for Soroban Smart Wallets into this SDK. In the meantime, we are providing an experimental Passkey Kit for working with Soroban Smart Wallets that you can find here:  [SwiftPasskeyKit](https://github.com/Soneso/SwiftPasskeyKit). 
 
+## Compatibility matrices
+- [Horizon API compatibility matrix](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/compatibility/horizon/HORIZON_COMPATIBILITY_MATRIX.md)
+- [RPC API compatibility matrix](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/compatibility/rpc/RPC_COMPATIBILITY_MATRIX.md)
+
 ## Feedback & Feature Requests  
 
 We’d love to hear from you! 
