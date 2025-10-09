@@ -20,8 +20,8 @@
 
 ## Overall Statistics
 
-- **Total RPC Methods:** 11
-- **Fully Supported:** 11 (100.0%)
+- **Total RPC Methods:** 12
+- **Fully Supported:** 12 (100.0%)
 - **Partially Supported:** 0 (0.0%)
 - **Not Supported:** 0 (0.0%)
 - **Helper Methods:** 6 additional convenience methods
