@@ -16,13 +16,13 @@
 - **Language:** Swift
 
 ## Overall Statistics
-- **Total Horizon Endpoints:** 77
-- **Public Endpoints:** 70
-- **Fully Supported:** 70 (100.0%)
+- **Total Horizon Endpoints:** 59
+- **Public Endpoints:** 52
+- **Fully Supported:** 52 (100.0%)
 - **Partially Supported:** 0 (0.0%)
 - **Not Supported:** 0 (0.0%)
 - **Internal/Admin Endpoints (N/A):** 7
-- **Streaming Enabled:** 30 endpoints (43% of public endpoints)
+- **Streaming Enabled:** 30 endpoints (58% of public endpoints)
 - **Streaming Implemented in SDK:** 9 services with full SSE support
 
 ## Compatibility Matrix
@@ -234,7 +234,7 @@ The iOS SDK implements streaming via Server-Sent Events (SSE) for the following 
 | Network | 1 | 1 | 100.0% |
 | Friendbot | 2 | 2 | 100.0% |
 | Internal/Admin | 7 | N/A | N/A |
-| **Public Total** | **70** | **70** | **100.0%** |
+| **Public Total** | **52** | **52** | **100.0%** |
 
 ## Query Parameter Support
 
@@ -358,7 +358,7 @@ All Horizon responses are strongly typed with Swift Codable models:
 
 ## Conclusion
 
-The Stellar iOS & macOS SDK provides **100% coverage** of the Horizon API public endpoints with all 70 public endpoints fully supported. The SDK excels in:
+The Stellar iOS & macOS SDK provides **100% coverage** of the Horizon API public endpoints with all 52 public endpoints fully supported. The SDK excels in:
 
 - ✅ **Comprehensive API Coverage** - Nearly complete implementation of Horizon API
 - ✅ **Modern Swift Architecture** - Full async/await and AsyncStream support
