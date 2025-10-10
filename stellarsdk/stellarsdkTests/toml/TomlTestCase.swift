@@ -165,6 +165,10 @@ class TomlTestCase: XCTestCase {
             XCTAssertNil(stellarToml.accountInformation.transferServerSep24)
             XCTAssertNil(stellarToml.accountInformation.kycServer)
             XCTAssertNil(stellarToml.accountInformation.webAuthEndpoint)
+            XCTAssertTrue(stellarToml.accountInformation.webAuthForContractsEndpoint
+            == "https://api.domain.com/web_auth_contracts")
+            XCTAssertTrue(stellarToml.accountInformation.webAuthContractId
+            == "CBGTG7ZOL3XW2YQJVUX6V2OVDVQPVXVKKYKQ4PWZCZ3QXJIHXGZ6R2KJ")
             XCTAssertTrue(stellarToml.accountInformation.signingKey
             == "GBBHQ7H4V6RRORKYLHTCAWP6MOHNORRFJSDPXDFYDGJB2LPZUFPXUEW3")
             XCTAssertTrue(stellarToml.accountInformation.horizonUrl
@@ -230,18 +234,22 @@ class TomlTestCase: XCTestCase {
             XCTAssertTrue(currencies[1].collateralAddressSignatures.contains(
                 "304502206e21798a42fae0e854281abd38bacd1aeed3ee3738d9e1446618c4571d10"));
             XCTAssertEqual("https://att.dov.com/g/228i.html", currencies[1].attestationOfReserve);
-            XCTAssertTrue(currencies[2].code == "GOAT");
-            XCTAssertTrue(currencies[2].issuer ==
+            XCTAssertTrue(currencies[2].code == "USDC");
+            XCTAssertTrue(currencies[2].contract ==
+                "CBGTG7ZOL3XW2YQJVUX6V2OVDVQPVXVKKYKQ4PWZCZ3QXJIHXGZ6R2KJ");
+            XCTAssertTrue(currencies[2].displayDecimals == 7);
+            XCTAssertTrue(currencies[3].code == "GOAT");
+            XCTAssertTrue(currencies[3].issuer ==
                 "GD5T6IPRNCKFOHQWT264YPKOZAWUMMZOLZBJ6BNQMUGPWGRLBK3U7ZNP");
-            XCTAssertTrue(currencies[2].displayDecimals == 2);
-            XCTAssertTrue(currencies[2].name == "goat share");
-            XCTAssertTrue(currencies[2].desc ==
+            XCTAssertTrue(currencies[3].displayDecimals == 2);
+            XCTAssertTrue(currencies[3].name == "goat share");
+            XCTAssertTrue(currencies[3].desc ==
                 "1 GOAT token entitles you to a share of revenue from Elkins Goat Farm.");
-            XCTAssertTrue(currencies[2].conditions ==
+            XCTAssertTrue(currencies[3].conditions ==
                 "There will only ever be 10,000 GOAT tokens in existence. We will distribute the revenue share annually on Jan. 15th");
-            XCTAssertTrue(currencies[2].image ==
+            XCTAssertTrue(currencies[3].image ==
                 "https://static.thenounproject.com/png/2292360-200.png");
-            XCTAssertTrue(currencies[2].fixedNumber == 10000);
+            XCTAssertTrue(currencies[3].fixedNumber == 10000);
             
             let validators = stellarToml.validatorsInformation
             
@@ -281,6 +289,8 @@ class TomlTestCase: XCTestCase {
             FEDERATION_SERVER="https://api.domain.com/federation"
             AUTH_SERVER="https://api.domain.com/auth"
             TRANSFER_SERVER="https://api.domain.com"
+            WEB_AUTH_FOR_CONTRACTS_ENDPOINT="https://api.domain.com/web_auth_contracts"
+            WEB_AUTH_CONTRACT_ID="CBGTG7ZOL3XW2YQJVUX6V2OVDVQPVXVKKYKQ4PWZCZ3QXJIHXGZ6R2KJ"
             SIGNING_KEY="GBBHQ7H4V6RRORKYLHTCAWP6MOHNORRFJSDPXDFYDGJB2LPZUFPXUEW3"
             HORIZON_URL="https://horizon.domain.com"
             ACCOUNTS=[
@@ -320,7 +330,7 @@ class TomlTestCase: XCTestCase {
             code="USD"
             issuer="GCZJM35NKGVK47BB4SPBDV25477PZYIYPVVG453LPYFNXLS3FGHDXOCM"
             display_decimals=2
-            
+
             [[CURRENCIES]]
             code="BTC"
             issuer="GAOO3LWBC4XF6VWRP5ESJ6IBHAISVJMSBTALHOQM2EZG7Q477UWA6L7U"
@@ -331,6 +341,11 @@ class TomlTestCase: XCTestCase {
             collateral_addresses=["2C1mCx3ukix1KfegAY5zgQJV7sanAciZpv"]
             collateral_address_signatures=["304502206e21798a42fae0e854281abd38bacd1aeed3ee3738d9e1446618c4571d10"]
             attestation_of_reserve="https://att.dov.com/g/228i.html"
+
+            [[CURRENCIES]]
+            code="USDC"
+            contract="CBGTG7ZOL3XW2YQJVUX6V2OVDVQPVXVKKYKQ4PWZCZ3QXJIHXGZ6R2KJ"
+            display_decimals=7
             
             # asset with meta info
             [[CURRENCIES]]

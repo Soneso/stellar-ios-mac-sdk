@@ -19,13 +19,15 @@ public class AccountInformation {
         case transferServerSep24 = "TRANSFER_SERVER_SEP0024"
         case kycServer = "KYC_SERVER"
         case webAuthEndpoint = "WEB_AUTH_ENDPOINT"
+        case webAuthForContractsEndpoint = "WEB_AUTH_FOR_CONTRACTS_ENDPOINT"
+        case webAuthContractId = "WEB_AUTH_CONTRACT_ID"
         case signingKey = "SIGNING_KEY"
         case horizonUrl = "HORIZON_URL"
         case accounts = "ACCOUNTS"
         case uriRequestSigningKey = "URI_REQUEST_SIGNING_KEY"
         case directPaymentServer = "DIRECT_PAYMENT_SERVER"
         case anchorQuoteServer = "ANCHOR_QUOTE_SERVER"
-        
+
     }
     
     /// string
@@ -59,7 +61,15 @@ public class AccountInformation {
     /// uses https:
     /// The endpoint used for SEP-10 Web Authentication
     public var webAuthEndpoint: String?
-    
+
+    /// uses https:
+    /// The endpoint used for SEP-45 Web Authentication for Contracts
+    public var webAuthForContractsEndpoint: String?
+
+    /// string
+    /// The web authentication contract ID for SEP-45 Web Authentication
+    public var webAuthContractId: String?
+
     /// Stellar public key
     /// The signing key is used for SEP-3 Compliance Protocol (deprecated) and SEP-10 Authentication Protocol
     public var signingKey: String?
@@ -90,6 +100,8 @@ public class AccountInformation {
         transferServerSep24 = toml.string(Keys.transferServerSep24.rawValue)
         kycServer = toml.string(Keys.kycServer.rawValue)
         webAuthEndpoint = toml.string(Keys.webAuthEndpoint.rawValue)
+        webAuthForContractsEndpoint = toml.string(Keys.webAuthForContractsEndpoint.rawValue)
+        webAuthContractId = toml.string(Keys.webAuthContractId.rawValue)
         signingKey = toml.string(Keys.signingKey.rawValue)
         horizonUrl = toml.string(Keys.horizonUrl.rawValue)
         accounts = toml.array(Keys.accounts.rawValue) ?? []

@@ -14,6 +14,7 @@ public class CurrencyDocumentation {
         case code = "code"
         case codeTemplate = "code_template"
         case issuer = "issuer"
+        case contract = "contract"
         case toml = "toml"
         case status = "status"
         case displayDecimals = "display_decimals"
@@ -48,7 +49,11 @@ public class CurrencyDocumentation {
     /// G... string
     /// Token issuer Stellar public key
     public var issuer: String?
-    
+
+    /// C... string
+    /// Contract ID of the token contract (REQUIRED for Soroban tokens per SEP-41)
+    public var contract: String?
+
     /// Alternately, stellar.toml can link out to a separate TOML file for each currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
     public var toml: String?
     
@@ -121,6 +126,7 @@ public class CurrencyDocumentation {
         code = toml.string(Keys.code.rawValue)
         codeTemplate = toml.string(Keys.codeTemplate.rawValue)
         issuer = toml.string(Keys.issuer.rawValue)
+        contract = toml.string(Keys.contract.rawValue)
         self.toml = toml.string(Keys.toml.rawValue)
         status = toml.string(Keys.status.rawValue)
         displayDecimals = toml.int(Keys.displayDecimals.rawValue)
