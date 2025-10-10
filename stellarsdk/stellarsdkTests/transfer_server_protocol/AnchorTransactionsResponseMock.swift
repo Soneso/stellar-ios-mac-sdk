@@ -140,6 +140,16 @@ class AnchorTransactionsResponseMock: ResponsesMock {
           "amount_fee_asset": "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
           "started_at": "2021-06-11T17:05:32Z"
         },
+        {
+          "id": "92fys79f63dh3v3",
+          "kind": "deposit",
+          "status": "expired",
+          "amount_in": "100.00",
+          "amount_out": "0",
+          "amount_fee": "0",
+          "started_at": "2023-03-20T17:00:02Z",
+          "message": "Transaction expired due to user inactivity"
+        }
       ]
     }
     """

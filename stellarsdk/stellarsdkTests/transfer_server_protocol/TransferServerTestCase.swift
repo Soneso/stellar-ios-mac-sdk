@@ -460,7 +460,7 @@ class TransferServerTestCase: XCTestCase {
         let responseEnum = await transferServerService.getTransactions(request: request)
         switch responseEnum {
         case .success(let transactions):
-            XCTAssert(transactions.transactions.count == 6)
+            XCTAssert(transactions.transactions.count == 7)
             XCTAssert(transactions.transactions[0].id == "82fhs729f63dh0v4")
             XCTAssert(transactions.transactions[0].kind == .deposit)
             XCTAssert(transactions.transactions[0].status == .pendingExternal)
@@ -569,6 +569,16 @@ class TransferServerTestCase: XCTestCase {
             XCTAssert(tx.amountFee == "0.1")
             XCTAssert(tx.amountFeeAsset == "stellar:USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN")
             XCTAssert(tx.startedAt == Date(rfc3339String: "2021-06-11T17:05:32Z", fractionalSeconds: false))
+
+            tx = transactions.transactions[6]
+            XCTAssert(tx.id == "92fys79f63dh3v3")
+            XCTAssert(tx.kind == .deposit)
+            XCTAssert(tx.status == .expired)
+            XCTAssert(tx.amountIn == "100.00")
+            XCTAssert(tx.amountOut == "0")
+            XCTAssert(tx.amountFee == "0")
+            XCTAssert(tx.startedAt == Date(rfc3339String: "2023-03-20T17:00:02Z", fractionalSeconds: false))
+            XCTAssert(tx.message == "Transaction expired due to user inactivity")
         case .failure(_):
             XCTFail()
         }

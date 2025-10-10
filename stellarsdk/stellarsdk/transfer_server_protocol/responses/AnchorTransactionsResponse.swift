@@ -48,6 +48,8 @@ public enum AnchorTransactionStatus: String {
     case error = "error"
     /// the deposit/withdrawal is fully refunded.
     case refunded = "refunded"
+    /// the transaction has expired and is no longer valid. Normally this is due to the transaction_expiration_date being reached.
+    case expired = "expired"
 }
 
 public struct AnchorTransactionsResponse: Decodable {
