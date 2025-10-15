@@ -149,11 +149,33 @@ public class SorobanContractInfo {
     public let envInterfaceVersion:UInt64
     public let specEntries:[SCSpecEntryXDR]
     public let metaEntries: [String: String]
-    
+
+    /// List of SEPs (Stellar Ecosystem Proposals) supported by the contract.
+    /// Extracted from the "sep" meta entry as defined in SEP-47.
+    public let supportedSeps: [String]
+
     public init(envInterfaceVersion:UInt64, specEntries:[SCSpecEntryXDR], metaEntries: [String: String]) {
         self.envInterfaceVersion = envInterfaceVersion
         self.specEntries = specEntries
         self.metaEntries = metaEntries
+        self.supportedSeps = SorobanContractInfo.parseSupportedSeps(metaEntries: metaEntries)
+    }
+
+    /// Parses the supported SEPs from the meta entries.
+    /// The "sep" meta entry contains a comma-separated list of SEP identifiers.
+    /// Duplicates are removed while preserving the order of first appearance.
+    private static func parseSupportedSeps(metaEntries: [String: String]) -> [String] {
+        guard let sepValue = metaEntries["sep"], !sepValue.isEmpty else {
+            return []
+        }
+        let seps = sepValue
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+
+        // Remove duplicates while preserving order
+        var seen = Set<String>()
+        return seps.filter { seen.insert($0).inserted }
     }
 }
 
