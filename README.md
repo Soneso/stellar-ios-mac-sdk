@@ -607,6 +607,7 @@ We are working on integrating passkey support for Soroban Smart Wallets into thi
 ## Compatibility matrices
 - [Horizon API compatibility matrix](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/compatibility/horizon/HORIZON_COMPATIBILITY_MATRIX.md)
 - [RPC API compatibility matrix](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/compatibility/rpc/RPC_COMPATIBILITY_MATRIX.md)
+- [SEP support compatibility matrices](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/compatibility/sep)
 
 ## Feedback & Feature Requests  
 
