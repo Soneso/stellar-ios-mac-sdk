@@ -55,7 +55,109 @@ public class ContractSpec {
         }
         return nil
     }
-    
+
+    /// Gets the XDR events from the spec.
+    /// - Returns: Array of SCSpecEventV0XDR objects
+    public func events() -> [SCSpecEventV0XDR] {
+        var result: [SCSpecEventV0XDR] = []
+
+        for entry in entries {
+            switch entry {
+            case .eventV0(let eventV0):
+                result.append(eventV0)
+            default:
+                break
+            }
+        }
+
+        return result
+    }
+
+    /// Gets the XDR event spec for the given event name if available.
+    /// - Parameter name: Name of the event
+    /// - Returns: The event spec or nil if not found
+    public func getEvent(name: String) -> SCSpecEventV0XDR? {
+        for entry in entries {
+            switch entry {
+            case .eventV0(let eventV0):
+                if eventV0.name == name {
+                    return eventV0
+                }
+            default:
+                break
+            }
+        }
+        return nil
+    }
+
+    /// Gets all UDT struct specifications from the contract spec.
+    /// - Returns: Array of SCSpecUDTStructV0XDR objects representing all struct definitions
+    public func udtStructs() -> [SCSpecUDTStructV0XDR] {
+        var result: [SCSpecUDTStructV0XDR] = []
+
+        for entry in entries {
+            switch entry {
+            case .structV0(let structV0):
+                result.append(structV0)
+            default:
+                break
+            }
+        }
+
+        return result
+    }
+
+    /// Gets all UDT union specifications from the contract spec.
+    /// - Returns: Array of SCSpecUDTUnionV0XDR objects representing all union definitions
+    public func udtUnions() -> [SCSpecUDTUnionV0XDR] {
+        var result: [SCSpecUDTUnionV0XDR] = []
+
+        for entry in entries {
+            switch entry {
+            case .unionV0(let unionV0):
+                result.append(unionV0)
+            default:
+                break
+            }
+        }
+
+        return result
+    }
+
+    /// Gets all UDT enum specifications from the contract spec.
+    /// - Returns: Array of SCSpecUDTEnumV0XDR objects representing all enum definitions
+    public func udtEnums() -> [SCSpecUDTEnumV0XDR] {
+        var result: [SCSpecUDTEnumV0XDR] = []
+
+        for entry in entries {
+            switch entry {
+            case .enumV0(let enumV0):
+                result.append(enumV0)
+            default:
+                break
+            }
+        }
+
+        return result
+    }
+
+    /// Gets all UDT error enum specifications from the contract spec.
+    /// - Returns: Array of SCSpecUDTErrorEnumV0XDR objects representing all error enum definitions
+    public func udtErrorEnums() -> [SCSpecUDTErrorEnumV0XDR] {
+        var result: [SCSpecUDTErrorEnumV0XDR] = []
+
+        for entry in entries {
+            switch entry {
+            case .errorEnumV0(let errorEnumV0):
+                result.append(errorEnumV0)
+            default:
+                break
+            }
+        }
+
+        return result
+    }
+
     /// Finds the XDR spec entry for the given name.
     /// - Parameter name: The name to find
     /// - Returns: The entry or nil if not found
@@ -82,8 +184,10 @@ public class ContractSpec {
                 if errorEnumV0.name == name {
                     return entry
                 }
-            case .eventV0(_):
-                break
+            case .eventV0(let eventV0):
+                if eventV0.name == name {
+                    return entry
+                }
             }
         }
         return nil

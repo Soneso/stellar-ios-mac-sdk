@@ -124,7 +124,6 @@ public struct TokenContractAllowanceValue: Codable {
 public enum TokenContractDataKey {
     case Allowance(TokenContractAllowanceDataKey)
     case Balance(SCAddressXDR)
-    case Nonce(SCAddressXDR)
     case State(SCAddressXDR)
     case Admin
     
@@ -138,11 +137,6 @@ public enum TokenContractDataKey {
         case .Balance(let value):
             return .vec([
                 .symbol("Balance"),
-                SCValXDR.address(value)
-            ])
-        case .Nonce(let value):
-            return .vec([
-                .symbol("Nonce"),
                 SCValXDR.address(value)
             ])
         case .State(let value):
@@ -183,11 +177,6 @@ public enum TokenContractDataKey {
                 throw TokenContractError.conversionFailed(message: "Invalid union value for Balance: expected 2 elements")
             }
             return .Balance(try vec[1].address ?? { throw TokenContractError.conversionFailed(message: "Missing or invalid address value") }())
-        case "Nonce":
-            guard vec.count == 2 else {
-                throw TokenContractError.conversionFailed(message: "Invalid union value for Nonce: expected 2 elements")
-            }
-            return .Nonce(try vec[1].address ?? { throw TokenContractError.conversionFailed(message: "Missing or invalid address value") }())
         case "State":
             guard vec.count == 2 else {
                 throw TokenContractError.conversionFailed(message: "Invalid union value for State: expected 2 elements")
@@ -302,68 +291,6 @@ public class TokenContract {
     /// - Returns: Array of method names
     public var methodNames: [String] {
         return client.methodNames
-    }
-    
-    /// Invoke the initialize method
-    ///
-    /// - Parameter admin: SCAddressXDR
-    /// - Parameter decimal: UInt32
-    /// - Parameter name: String
-    /// - Parameter symbol: String
-    /// - Parameter methodOptions: Options for transaction (optional)
-    /// - Parameter force: Force signing and sending even if it's a read call (default: false)
-    /// - Returns: Void
-    public func initialize(
-        admin: SCAddressXDR,
-        decimal: UInt32,
-        name: String,
-        symbol: String,
-        methodOptions: MethodOptions? = nil,
-        force: Bool = false
-    ) async throws {
-        let args: [SCValXDR] = [
-            SCValXDR.address(admin),
-            SCValXDR.u32(decimal),
-            SCValXDR.string(name),
-            SCValXDR.string(symbol)
-        ]
-        
-        let result = try await client.invokeMethod(
-            name: "initialize",
-            args: args,
-            force: force,
-            methodOptions: methodOptions
-        )
-    }
-    
-    /// Build an AssembledTransaction for the initialize method.
-    /// This is useful if you need to manipulate the transaction before signing and sending.
-    ///
-    /// - Parameter admin: SCAddressXDR
-    /// - Parameter decimal: UInt32
-    /// - Parameter name: String
-    /// - Parameter symbol: String
-    /// - Parameter methodOptions: Options for transaction (optional)
-    /// - Returns: AssembledTransaction
-    public func buildInitializeTx(
-        admin: SCAddressXDR,
-        decimal: UInt32,
-        name: String,
-        symbol: String,
-        methodOptions: MethodOptions? = nil
-    ) async throws -> AssembledTransaction {
-        let args: [SCValXDR] = [
-            SCValXDR.address(admin),
-            SCValXDR.u32(decimal),
-            SCValXDR.string(name),
-            SCValXDR.string(symbol)
-        ]
-        
-        return try await client.buildInvokeMethodTx(
-            name: "initialize",
-            args: args,
-            methodOptions: methodOptions
-        )
     }
     
     /// Invoke the mint method
@@ -621,21 +548,21 @@ public class TokenContract {
     /// Invoke the transfer method
     ///
     /// - Parameter from: SCAddressXDR
-    /// - Parameter to: SCAddressXDR
+    /// - Parameter to_muxed: SCAddressXDR
     /// - Parameter amount: String
     /// - Parameter methodOptions: Options for transaction (optional)
     /// - Parameter force: Force signing and sending even if it's a read call (default: false)
     /// - Returns: Void
     public func transfer(
         from: SCAddressXDR,
-        to: SCAddressXDR,
+        to_muxed: SCAddressXDR,
         amount: String,
         methodOptions: MethodOptions? = nil,
         force: Bool = false
     ) async throws {
         let args: [SCValXDR] = [
             SCValXDR.address(from),
-            SCValXDR.address(to),
+            SCValXDR.address(to_muxed),
             try SCValXDR.i128(stringValue: amount)
         ]
         
@@ -651,19 +578,19 @@ public class TokenContract {
     /// This is useful if you need to manipulate the transaction before signing and sending.
     ///
     /// - Parameter from: SCAddressXDR
-    /// - Parameter to: SCAddressXDR
+    /// - Parameter to_muxed: SCAddressXDR
     /// - Parameter amount: String
     /// - Parameter methodOptions: Options for transaction (optional)
     /// - Returns: AssembledTransaction
     public func buildTransferTx(
         from: SCAddressXDR,
-        to: SCAddressXDR,
+        to_muxed: SCAddressXDR,
         amount: String,
         methodOptions: MethodOptions? = nil
     ) async throws -> AssembledTransaction {
         let args: [SCValXDR] = [
             SCValXDR.address(from),
-            SCValXDR.address(to),
+            SCValXDR.address(to_muxed),
             try SCValXDR.i128(stringValue: amount)
         ]
         

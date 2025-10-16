@@ -154,11 +154,41 @@ public class SorobanContractInfo {
     /// Extracted from the "sep" meta entry as defined in SEP-47.
     public let supportedSeps: [String]
 
+    /// Contract functions extracted from spec entries.
+    /// Contains all function specifications exported by the contract.
+    public let funcs: [SCSpecFunctionV0XDR]
+
+    /// User-defined type structs extracted from spec entries.
+    /// Contains all UDT struct specifications exported by the contract.
+    public let udtStructs: [SCSpecUDTStructV0XDR]
+
+    /// User-defined type unions extracted from spec entries.
+    /// Contains all UDT union specifications exported by the contract.
+    public let udtUnions: [SCSpecUDTUnionV0XDR]
+
+    /// User-defined type enums extracted from spec entries.
+    /// Contains all UDT enum specifications exported by the contract.
+    public let udtEnums: [SCSpecUDTEnumV0XDR]
+
+    /// User-defined type error enums extracted from spec entries.
+    /// Contains all UDT error enum specifications exported by the contract.
+    public let udtErrorEnums: [SCSpecUDTErrorEnumV0XDR]
+
+    /// Event specifications extracted from spec entries.
+    /// Contains all event specifications exported by the contract.
+    public let events: [SCSpecEventV0XDR]
+
     public init(envInterfaceVersion:UInt64, specEntries:[SCSpecEntryXDR], metaEntries: [String: String]) {
         self.envInterfaceVersion = envInterfaceVersion
         self.specEntries = specEntries
         self.metaEntries = metaEntries
         self.supportedSeps = SorobanContractInfo.parseSupportedSeps(metaEntries: metaEntries)
+        self.funcs = SorobanContractInfo.parseFuncs(specEntries: specEntries)
+        self.udtStructs = SorobanContractInfo.parseUdtStructs(specEntries: specEntries)
+        self.udtUnions = SorobanContractInfo.parseUdtUnions(specEntries: specEntries)
+        self.udtEnums = SorobanContractInfo.parseUdtEnums(specEntries: specEntries)
+        self.udtErrorEnums = SorobanContractInfo.parseUdtErrorEnums(specEntries: specEntries)
+        self.events = SorobanContractInfo.parseEvents(specEntries: specEntries)
     }
 
     /// Parses the supported SEPs from the meta entries.
@@ -176,6 +206,66 @@ public class SorobanContractInfo {
         // Remove duplicates while preserving order
         var seen = Set<String>()
         return seps.filter { seen.insert($0).inserted }
+    }
+
+    /// Parses contract functions from spec entries.
+    private static func parseFuncs(specEntries: [SCSpecEntryXDR]) -> [SCSpecFunctionV0XDR] {
+        return specEntries.compactMap { entry in
+            if case .functionV0(let functionV0) = entry {
+                return functionV0
+            }
+            return nil
+        }
+    }
+
+    /// Parses user-defined type structs from spec entries.
+    private static func parseUdtStructs(specEntries: [SCSpecEntryXDR]) -> [SCSpecUDTStructV0XDR] {
+        return specEntries.compactMap { entry in
+            if case .structV0(let structV0) = entry {
+                return structV0
+            }
+            return nil
+        }
+    }
+
+    /// Parses user-defined type unions from spec entries.
+    private static func parseUdtUnions(specEntries: [SCSpecEntryXDR]) -> [SCSpecUDTUnionV0XDR] {
+        return specEntries.compactMap { entry in
+            if case .unionV0(let unionV0) = entry {
+                return unionV0
+            }
+            return nil
+        }
+    }
+
+    /// Parses user-defined type enums from spec entries.
+    private static func parseUdtEnums(specEntries: [SCSpecEntryXDR]) -> [SCSpecUDTEnumV0XDR] {
+        return specEntries.compactMap { entry in
+            if case .enumV0(let enumV0) = entry {
+                return enumV0
+            }
+            return nil
+        }
+    }
+
+    /// Parses user-defined type error enums from spec entries.
+    private static func parseUdtErrorEnums(specEntries: [SCSpecEntryXDR]) -> [SCSpecUDTErrorEnumV0XDR] {
+        return specEntries.compactMap { entry in
+            if case .errorEnumV0(let errorEnumV0) = entry {
+                return errorEnumV0
+            }
+            return nil
+        }
+    }
+
+    /// Parses event specifications from spec entries.
+    private static func parseEvents(specEntries: [SCSpecEntryXDR]) -> [SCSpecEventV0XDR] {
+        return specEntries.compactMap { entry in
+            if case .eventV0(let eventV0) = entry {
+                return eventV0
+            }
+            return nil
+        }
     }
 }
 

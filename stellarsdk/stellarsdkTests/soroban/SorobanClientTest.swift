@@ -343,29 +343,37 @@ final class SorobanClientTest: XCTestCase {
         print("Installed token contract wasm hash: \(tokenContractWasmHash)")
         
         let adminKeyPair = try KeyPair.generateRandomKeyPair()
+        let adminAccountId = adminKeyPair.accountId
         let aliceKeyPair = try KeyPair.generateRandomKeyPair()
         let aliceId = aliceKeyPair.accountId
         let bobKeyPair = try KeyPair.generateRandomKeyPair()
         let bobId = bobKeyPair.accountId
         
-        await fundTestnetAccount(accountId: adminKeyPair.accountId)
+        await fundTestnetAccount(accountId: adminAccountId)
         await fundTestnetAccount(accountId: aliceId)
         await fundTestnetAccount(accountId: bobId)
         
         let atomicSwapClient = try await deployContract(wasmHash: swapContractWasmHash)
         print("Deployed swap contract contract id: \(atomicSwapClient.contractId)")
         
-        let tokenAClient = try await deployContract(wasmHash: tokenContractWasmHash)
+        var tokenName = SCValXDR.string("TokenA")
+        var tokenSymbol = SCValXDR.string("TokenA")
+        let decimal = SCValXDR.u32(8)
+        let adminAddress = try SCAddressXDR(accountId: adminKeyPair.accountId)
+        let adminAddressScVal = SCValXDR.address(adminAddress)
+        
+        let tokenAClient = try await deployContract(wasmHash: tokenContractWasmHash,
+                                                    constructorArgs: [adminAddressScVal, decimal, tokenName, tokenSymbol])
         let tokenAContractId = tokenAClient.contractId
         print("Deployed token A contract contract id: \(tokenAContractId)")
         
-        let tokenBClient = try await deployContract(wasmHash: tokenContractWasmHash)
+        tokenName = SCValXDR.string("TokenB")
+        tokenSymbol = SCValXDR.string("TokenB")
+        
+        let tokenBClient = try await deployContract(wasmHash: tokenContractWasmHash,
+                                                    constructorArgs: [adminAddressScVal, decimal, tokenName, tokenSymbol])
         let tokenBContractId = tokenBClient.contractId
         print("Deployed token B contract contract id: \(tokenBContractId)")
-        
-        try await createToken(tokenClient: tokenAClient, submitterKeyPair: adminKeyPair, name: "TokenA", symbol: "TokenA")
-        try await createToken(tokenClient: tokenBClient, submitterKeyPair: adminKeyPair, name: "TokenB", symbol: "TokenB")
-        print("Tokens created")
         
         try await mint(tokenClient: tokenAClient, adminKp: adminKeyPair, toAccountId: aliceId, amount: 10000000000000)
         try await mint(tokenClient: tokenBClient, adminKp: adminKeyPair, toAccountId: bobId, amount: 10000000000000)
@@ -431,24 +439,9 @@ final class SorobanClientTest: XCTestCase {
         let tokenSpec = tokenAClient.getContractSpec()
         let functions = tokenSpec.funcs()
         XCTAssertEqual(13, functions.count)
-        let initFunc = tokenSpec.getFunc(name: "initialize")
-        XCTAssertNotNil(initFunc)
-        XCTAssertEqual("initialize", initFunc?.name)
-    }
-    
-    func createToken(tokenClient:SorobanClient, submitterKeyPair:KeyPair, name:String, symbol:String) async throws {
-        // see https://soroban.stellar.org/docs/reference/interfaces/token-interface
-        let submitterId = submitterKeyPair.accountId
-        let methodName = "initialize"
-        let spec = tokenClient.getContractSpec()
-        let args = try spec.funcArgsToXdrSCValues(name: methodName, args: [
-            "admin": submitterId,
-            "decimal": 8,
-            "name": name,
-            "symbol": symbol
-        ])
-        let _ = try await tokenClient.invokeMethod(name: methodName, args: args)
-        
+        let mintFunc = tokenSpec.getFunc(name: "mint")
+        XCTAssertNotNil(mintFunc)
+        XCTAssertEqual("mint", mintFunc?.name)
     }
     
     func mint(tokenClient:SorobanClient, adminKp:KeyPair, toAccountId:String, amount:UInt64) async throws {
@@ -504,11 +497,12 @@ final class SorobanClientTest: XCTestCase {
         return try await SorobanClient.install(installRequest: installRequest)
     }
     
-    func deployContract(wasmHash:String) async throws -> SorobanClient {
+    func deployContract(wasmHash:String, constructorArgs: [SCValXDR]? = nil) async throws -> SorobanClient {
         let deployRequest = DeployRequest(rpcUrl: testnetServerUrl,
                                           network: network,
                                           sourceAccountKeyPair: sourceAccountKeyPair,
                                           wasmHash: wasmHash,
+                                          constructorArgs: constructorArgs,
                                           enableServerLogging: true)
         
         return try await SorobanClient.deploy(deployRequest: deployRequest)
@@ -621,12 +615,13 @@ final class SorobanClientTest: XCTestCase {
         
         // Create accounts
         let adminKeyPair = try KeyPair.generateRandomKeyPair()
+        let adminAccountId = adminKeyPair.accountId
         let aliceKeyPair = try KeyPair.generateRandomKeyPair()
         let aliceId = aliceKeyPair.accountId
         let bobKeyPair = try KeyPair.generateRandomKeyPair()
         let bobId = bobKeyPair.accountId
         
-        await fundTestnetAccount(accountId: adminKeyPair.accountId)
+        await fundTestnetAccount(accountId: adminAccountId)
         await fundTestnetAccount(accountId: aliceId)
         await fundTestnetAccount(accountId: bobId)
         
@@ -635,27 +630,33 @@ final class SorobanClientTest: XCTestCase {
         let swapContractId = atomicSwapClient.contractId
         print("Deployed swap contract contract id: \(swapContractId)")
         
-        let tokenAClient = try await deployContract(wasmHash: tokenContractWasmHash)
+        var tokenName = SCValXDR.string("TokenA")
+        var tokenSymbol = SCValXDR.string("TokenA")
+        let decimal = SCValXDR.u32(8)
+        let adminAddress = try SCAddressXDR(accountId: adminKeyPair.accountId)
+        let adminAddressScVal = SCValXDR.address(adminAddress)
+        
+        let tokenAClient = try await deployContract(wasmHash: tokenContractWasmHash,
+                                                    constructorArgs: [adminAddressScVal, decimal, tokenName, tokenSymbol])
         let tokenAContractId = tokenAClient.contractId
         print("Deployed token A contract contract id: \(tokenAContractId)")
         
-        let tokenBClient = try await deployContract(wasmHash: tokenContractWasmHash)
+        tokenName = SCValXDR.string("TokenB")
+        tokenSymbol = SCValXDR.string("TokenB")
+        
+        let tokenBClient = try await deployContract(wasmHash: tokenContractWasmHash,
+                                                    constructorArgs: [adminAddressScVal, decimal, tokenName, tokenSymbol])
+        
         let tokenBContractId = tokenBClient.contractId
         print("Deployed token B contract contract id: \(tokenBContractId)")
         
         // Initialize tokens using generated bindings
-        let adminAddress = try SCAddressXDR(accountId: adminKeyPair.accountId)
-        
+
         let tokenAOptions = ClientOptions(sourceAccountKeyPair: adminKeyPair, contractId: tokenAContractId, network: network, rpcUrl: testnetServerUrl)
         let tokenAContract = try await TokenContract.forClientOptions(options: tokenAOptions)
         
         let tokenBOptions = ClientOptions(sourceAccountKeyPair: adminKeyPair, contractId: tokenBContractId, network: network, rpcUrl: testnetServerUrl)
         let tokenBContract = try await TokenContract.forClientOptions(options: tokenBOptions)
-        
-        // Initialize tokens
-        try await tokenAContract.initialize(admin: adminAddress, decimal: 8, name: "TokenA", symbol: "TKA")
-        try await tokenBContract.initialize(admin: adminAddress, decimal: 8, name: "TokenB", symbol: "TKB")
-        print("Tokens initialized using bindings")
         
         // Mint tokens to Alice and Bob
         let aliceAddress = try SCAddressXDR(accountId: aliceId)
