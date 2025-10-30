@@ -130,11 +130,11 @@ extension String {
     /// Decodes strkey muxed account id (med25519 public key - "M...") to MuxedAccountXDR.
     public func decodeMuxedAccount() throws -> MuxedAccountXDR {
         switch self.count {
-        case 56:
+        case StellarProtocolConstants.STRKEY_ENCODED_LENGTH_STANDARD:
             let pk = try PublicKey(accountId: self)
             let mux = MuxedAccountXDR.ed25519(pk.bytes)
             return mux
-        case 69:
+        case StellarProtocolConstants.STRKEY_ENCODED_LENGTH_MUXED:
             let xdr = try decodeCheck(versionByte: .med25519PublicKey)
             let muxEd25519 = try XDRDecoder.decode(MuxedAccountMed25519XDRInverted.self, data:xdr)
             let mux = MuxedAccountXDR.med25519(muxEd25519.toMuxedAccountMed25519XDR())
@@ -179,19 +179,19 @@ extension String {
     private func isValid(versionByte:VersionByte) -> Bool {
         switch versionByte {
         case .ed25519PublicKey, .ed25519SecretSeed, .preAuthTX, .sha256Hash, .contract, .liquidityPool:
-            if self.count != 56 {
+            if self.count != StellarProtocolConstants.STRKEY_ENCODED_LENGTH_STANDARD {
                 return false
             }
         case .med25519PublicKey:
-            if self.count != 69 {
+            if self.count != StellarProtocolConstants.STRKEY_ENCODED_LENGTH_MUXED {
                 return false
             }
         case .signedPayload:
-            if self.count < 56 || self.count > 165 {
+            if self.count < StellarProtocolConstants.STRKEY_SIGNED_PAYLOAD_MIN_LENGTH || self.count > StellarProtocolConstants.STRKEY_ENCODED_LENGTH_SIGNED_PAYLOAD_MAX {
                 return false
             }
         case .claimableBalance:
-            if self.count != 58 {
+            if self.count != StellarProtocolConstants.STRKEY_ENCODED_LENGTH_CLAIMABLE_BALANCE {
                 return false
             }
         }
@@ -200,15 +200,16 @@ extension String {
             let data = try decodeCheck(versionByte: versionByte)
             switch versionByte {
             case .ed25519PublicKey, .ed25519SecretSeed, .preAuthTX, .sha256Hash, .contract, .liquidityPool:
-                return data.count == 32
+                return data.count == StellarProtocolConstants.STRKEY_DECODED_SIZE_STANDARD
             case .med25519PublicKey:
-                return data.count == 40 // +8 bytes for the ID
+                return data.count == StellarProtocolConstants.STRKEY_DECODED_SIZE_MUXED
             case .signedPayload:
-                // 32 for the signer, +4 for the payload size, then either +4 for the
-                // min or +64 for the max payload
-                return data.count >= 32 + 4 + 4 && data.count <= 32 + 4 + 64
+                // Signer key + payload size field + payload data
+                let minSize = StellarProtocolConstants.SIGNED_PAYLOAD_SIGNER_SIZE + StellarProtocolConstants.SIGNED_PAYLOAD_SIZE_FIELD + StellarProtocolConstants.SIGNED_PAYLOAD_MIN_PAYLOAD
+                let maxSize = StellarProtocolConstants.SIGNED_PAYLOAD_SIGNER_SIZE + StellarProtocolConstants.SIGNED_PAYLOAD_SIZE_FIELD + StellarProtocolConstants.SIGNED_PAYLOAD_MAX_PAYLOAD
+                return data.count >= minSize && data.count <= maxSize
             case .claimableBalance:
-                return data.count == 32 + 1; // +1 byte for discriminant
+                return data.count == StellarProtocolConstants.STRKEY_DECODED_SIZE_STANDARD + StellarProtocolConstants.CLAIMABLE_BALANCE_DISCRIMINANT_SIZE
             }
         } catch {
             return false
@@ -222,9 +223,9 @@ extension String {
             }
             let buffer = decoded.bytes
             if let byte = buffer.first, let dataVersionByte = VersionByte(rawValue: byte), dataVersionByte == versionByte {
-                let payload = Array(buffer[0...buffer.count - 3])
-                let data = Array(payload[1...payload.count - 1])
-                let checksumBytes = Array(buffer[buffer.count - 2...buffer.count - 1])
+                let payload = Array(buffer[0...buffer.count - StellarProtocolConstants.STRKEY_OVERHEAD_SIZE])
+                let data = Array(payload[StellarProtocolConstants.STRKEY_VERSION_BYTE_SIZE...payload.count - 1])
+                let checksumBytes = Array(buffer[buffer.count - StellarProtocolConstants.STRKEY_CHECKSUM_SIZE...buffer.count - 1])
                 let checksum = Data(bytes: checksumBytes, count: checksumBytes.count)
                 var crc = Data(bytes: payload, count: payload.count).crc16()
                 let checksumedData = Data(bytes: &crc, count: MemoryLayout.size(ofValue: crc))

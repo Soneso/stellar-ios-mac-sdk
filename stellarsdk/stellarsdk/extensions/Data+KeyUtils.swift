@@ -49,7 +49,7 @@ extension Data {
     
     /// Encodes raw data to strkey claimable balance ("B...").
     public func encodeClaimableBalanceId() throws -> String {
-        if self.count == 32 {
+        if self.count == StellarProtocolConstants.CLAIMABLE_BALANCE_ID_SIZE {
             // type is missing so let's append it
             let type = UInt8(ClaimableBalanceIDType.claimableBalanceIDTypeV0.rawValue) // put the type into the first byte
             var typedData = Data([type])

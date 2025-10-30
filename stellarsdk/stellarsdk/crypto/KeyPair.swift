@@ -78,9 +78,9 @@ public final class KeyPair {
     /// - Parameter seed: the seed object
     ///
     public convenience init(seed: Seed) {
-        
-        var pubBuffer = [UInt8](repeating: 0, count: 32)
-        var privBuffer = [UInt8](repeating: 0, count: 64)
+
+        var pubBuffer = [UInt8](repeating: 0, count: StellarProtocolConstants.ED25519_PUBLIC_KEY_SIZE)
+        var privBuffer = [UInt8](repeating: 0, count: StellarProtocolConstants.ED25519_PRIVATE_KEY_SIZE)
 
         privBuffer.withUnsafeMutableBufferPointer { priv in
             pubBuffer.withUnsafeMutableBufferPointer { pub in
@@ -119,8 +119,8 @@ public final class KeyPair {
     /// - Returns signed bytes, "empty" byte array containing only 0 if the private key for this keypair is null.
     ///
     public func sign(_ message: [UInt8]) -> [UInt8] {
-        
-        var signature = [UInt8](repeating: 0, count: 64)
+
+        var signature = [UInt8](repeating: 0, count: StellarProtocolConstants.ED25519_SIGNATURE_SIZE)
         
         if (privateKey == nil) { return signature}
         
@@ -151,7 +151,7 @@ public final class KeyPair {
         var signatureBytes = sign(message)
         let signatureData = Data(bytes: &signatureBytes, count: signatureBytes.count)
         var publicKeyData = publicKey.bytes
-        let hint = Data(bytes: &publicKeyData, count: publicKeyData.count).suffix(4)
+        let hint = Data(bytes: &publicKeyData, count: publicKeyData.count).suffix(StellarProtocolConstants.SIGNATURE_HINT_SIZE)
         let decoratedSignature = DecoratedSignatureXDR(hint: WrappedData4(hint) , signature: signatureData)
         
         return decoratedSignature
@@ -165,10 +165,10 @@ public final class KeyPair {
     /// - Returns the DecoratedSignatureXDR object
     ///
     public func signPayloadDecorated(_ signerPayload: [UInt8]) -> DecoratedSignatureXDR {
-        
+
         let decoratedSignature = signDecorated(signerPayload)
         var signerPayloadData = signerPayload
-        var suffix = 4
+        var suffix = StellarProtocolConstants.SIGNATURE_HINT_SIZE
         if (signerPayload.count < suffix) {
             suffix = signerPayload.count
         }

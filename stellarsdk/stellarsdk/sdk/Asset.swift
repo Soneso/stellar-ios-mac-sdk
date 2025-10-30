@@ -28,11 +28,11 @@ public class Asset
         self.type = type
         switch self.type {
             case AssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-                guard let code = code, code.count >= 1, code.count <= 4, issuer != nil else { return nil }
+                guard let code = code, code.count >= StellarProtocolConstants.ASSET_CODE_MIN_LENGTH, code.count <= StellarProtocolConstants.ASSET_CODE_ALPHANUM4_MAX_LENGTH, issuer != nil else { return nil }
                 self.code = code
                 self.issuer = issuer
             case AssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-                guard let code = code, code.count >= 5, code.count <= 12, issuer != nil else { return nil }
+                guard let code = code, code.count >= StellarProtocolConstants.ASSET_CODE_ALPHANUM12_MIN_LENGTH, code.count <= StellarProtocolConstants.ASSET_CODE_ALPHANUM12_MAX_LENGTH, issuer != nil else { return nil }
                 self.code = code
                 self.issuer = issuer
             case AssetType.ASSET_TYPE_NATIVE:
@@ -55,7 +55,7 @@ public class Asset
         }
         let code = components[0].trimmingCharacters(in: .whitespaces)
         let issuer = components[1].trimmingCharacters(in: .whitespaces)
-        let type = code.count < 5 ? AssetType.ASSET_TYPE_CREDIT_ALPHANUM4 : AssetType.ASSET_TYPE_CREDIT_ALPHANUM12
+        let type = code.count < StellarProtocolConstants.ASSET_CODE_ALPHANUM12_MIN_LENGTH ? AssetType.ASSET_TYPE_CREDIT_ALPHANUM4 : AssetType.ASSET_TYPE_CREDIT_ALPHANUM12
         do {
             let kp = try KeyPair(accountId: issuer)
             self.init(type: type, code: code, issuer: kp)

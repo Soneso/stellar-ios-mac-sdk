@@ -80,7 +80,7 @@ public class SetOptionsOperation:Operation {
         self.homeDomain = fromXDR.homeDomain
         self.signer = fromXDR.signer?.key
         if let weight = fromXDR.signer?.weight {
-            self.signerWeight = weight & 0xFF
+            self.signerWeight = weight & StellarProtocolConstants.SIGNER_WEIGHT_MASK
         } else {
             self.signerWeight = fromXDR.signer?.weight
         }

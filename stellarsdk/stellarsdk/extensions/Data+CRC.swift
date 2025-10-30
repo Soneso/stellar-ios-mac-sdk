@@ -15,20 +15,20 @@ import Foundation
  [http://web.mit.edu/6.115/www/amulet/xmodem.htm]()
  */
 private func CRCCCITTXModem(_ bytes: Data) -> UInt16 {
-    var crc: UInt16 = 0
-    
+    var crc: UInt16 = CryptographicConstants.CRC16_INITIAL
+
     for byte in bytes {
         crc ^= UInt16(byte) << 8
-        
-        for _ in 0..<8 {
-            if crc & 0x8000 != 0 {
-                crc = crc << 1 ^ 0x1021
+
+        for _ in 0..<CryptographicConstants.CRC16_ITERATIONS {
+            if crc & CryptographicConstants.CRC16_HIGH_BIT_MASK != 0 {
+                crc = crc << 1 ^ CryptographicConstants.CRC16_POLYNOMIAL
             } else {
                 crc = crc << 1
             }
         }
     }
-    
+
     return crc
 }
 
@@ -46,7 +46,7 @@ extension Data {
     }
     
     func crcValid() -> Bool {
-        return CRCCCITTXModem(subdata(in: 0..<count-2)) == self.subdata(in: count-2..<count).withUnsafeBytes { $0.pointee }
+        return CRCCCITTXModem(subdata(in: 0..<count-CryptographicConstants.CRC16_SIZE)) == self.subdata(in: count-CryptographicConstants.CRC16_SIZE..<count).withUnsafeBytes { $0.pointee }
     }
     
     func crc16Data() -> Data {
