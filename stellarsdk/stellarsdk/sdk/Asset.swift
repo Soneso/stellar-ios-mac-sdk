@@ -45,7 +45,7 @@ public class Asset
     }
     
     public convenience init?(canonicalForm: String) {
-        if canonicalForm == "native" || canonicalForm == "XLM" {
+        if canonicalForm == StellarProtocolConstants.ASSET_CANONICAL_NATIVE || canonicalForm == "XLM" {
             self.init(type: AssetType.ASSET_TYPE_NATIVE)!
             return
         }
@@ -67,7 +67,7 @@ public class Asset
     public func toCanonicalForm() -> String {
         switch self.type {
             case AssetType.ASSET_TYPE_NATIVE:
-                return "native"
+                return StellarProtocolConstants.ASSET_CANONICAL_NATIVE
             default:
                 return self.code! + ":" + self.issuer!.accountId
         }
@@ -188,7 +188,7 @@ public class ChangeTrustAsset : Asset {
                 case AssetType.ASSET_TYPE_POOL_SHARE:
                     let assetAXDR = try assetA!.toXDR()
                     let assetBXDR = try assetB!.toXDR()
-                    let params = LiquidityPoolConstantProductParametersXDR(assetA: assetAXDR, assetB: assetBXDR, fee: LiquidityPoolConstantProductParametersXDR.LIQUIDITY_POOL_FEE_V18)
+                    let params = LiquidityPoolConstantProductParametersXDR(assetA: assetAXDR, assetB: assetBXDR, fee: StellarProtocolConstants.LIQUIDITY_POOL_FEE_V18)
                     return ChangeTrustAssetXDR(params: params)
                 default:
                     throw StellarSDKError.xdrEncodingError(message: "Unknown asset type")

@@ -59,11 +59,11 @@ public class PublicKey: XDRCodable {
     /// - Throws Ed25519Error.invalidPublicKey if the accountId is invalid
     ///
     public convenience init(accountId: String) throws {
-        
-        if !accountId.hasPrefix("G") {
+
+        if !accountId.hasPrefix(StellarProtocolConstants.STRKEY_PREFIX_ACCOUNT) {
             throw Ed25519Error.invalidPublicKey
         }
-        
+
         if let data = accountId.base32DecodedData {
             try self.init(Array(([UInt8](data))[StellarProtocolConstants.STRKEY_VERSION_BYTE_SIZE...data.count - StellarProtocolConstants.STRKEY_OVERHEAD_SIZE]))
         } else {

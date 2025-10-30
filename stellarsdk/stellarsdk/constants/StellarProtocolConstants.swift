@@ -194,6 +194,12 @@ public struct StellarProtocolConstants {
     /// Reference: https://developers.stellar.org/docs/fundamentals-and-concepts/stellar-data-structures/assets
     public static let ASSET_CODE_ALPHANUM12_MAX_LENGTH = 12
 
+    // MARK: - Asset Canonical Form
+
+    /// Canonical form identifier for the native asset (XLM)
+    /// Reference: https://developers.stellar.org/docs/fundamentals-and-concepts/stellar-data-structures/assets
+    public static let ASSET_CANONICAL_NATIVE = "native"
+
     // MARK: - Memo Limits
 
     /// Maximum length for MEMO_TEXT in bytes (28 bytes)
@@ -271,7 +277,7 @@ public struct StellarProtocolConstants {
 
     /// Liquidity pool fee in basis points for protocol version 18+ (30 basis points = 0.30%)
     /// Reference: https://developers.stellar.org/docs/encyclopedia/liquidity-on-stellar-sdex-liquidity-pools
-    public static let LIQUIDITY_POOL_FEE_V18 = 30
+    public static let LIQUIDITY_POOL_FEE_V18: Int32 = 30
 
     // MARK: - StrKey Prefixes
 

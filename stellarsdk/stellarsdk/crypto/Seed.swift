@@ -40,11 +40,11 @@ public class Seed {
     }
     
     public convenience init(secret: String) throws {
-        
-        if !secret.hasPrefix("S") {
+
+        if !secret.hasPrefix(StellarProtocolConstants.STRKEY_PREFIX_SEED) {
             throw Ed25519Error.invalidSeed
         }
-        
+
         if let data = secret.base32DecodedData {
             if data.count - StellarProtocolConstants.STRKEY_OVERHEAD_SIZE <= StellarProtocolConstants.STRKEY_VERSION_BYTE_SIZE {
                 throw Ed25519Error.invalidSeed

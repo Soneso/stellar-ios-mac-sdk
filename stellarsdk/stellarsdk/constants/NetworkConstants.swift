@@ -29,7 +29,7 @@ public struct NetworkConstants {
 
     /// Default transaction timeout in seconds (300 seconds = 5 minutes)
     /// Reference: https://developers.stellar.org/docs/encyclopedia/transactions
-    public static let DEFAULT_TIMEOUT_SECONDS = 300
+    public static let DEFAULT_TIMEOUT_SECONDS:UInt64 = 300
 
     /// Transaction time buffer in seconds (10 seconds)
     /// Used to account for clock skew when setting transaction time bounds
