@@ -45,8 +45,8 @@ extension Memo: MemoProtocol {
     /// - Throws an StellarSDKError.invalidArgument error if the given string is larger than 28 bytes.
     ///
     public init?(text:String) throws {
-        if text.count > 28 {
-            throw StellarSDKError.invalidArgument(message: "text must be <= 28 bytes. length=\(text.count)" )
+        if text.count > StellarProtocolConstants.MEMO_TEXT_MAX_LENGTH {
+            throw StellarSDKError.invalidArgument(message: "text must be <= \(StellarProtocolConstants.MEMO_TEXT_MAX_LENGTH) bytes. length=\(text.count)" )
         }
         self = .text(text)
     }
@@ -58,8 +58,8 @@ extension Memo: MemoProtocol {
     /// - Throws an StellarSDKError.invalidArgument error if the given data is larger than 32 bytes.
     ///
     public init?(hash:Data) throws {
-        if (hash.count > 32) {
-            throw StellarSDKError.invalidArgument(message: "MEMO_HASH can contain 32 bytes at max.")
+        if (hash.count > StellarProtocolConstants.MEMO_HASH_SIZE) {
+            throw StellarSDKError.invalidArgument(message: "MEMO_HASH can contain \(StellarProtocolConstants.MEMO_HASH_SIZE) bytes at max.")
         }
         self = .hash(hash)
     }
@@ -71,8 +71,8 @@ extension Memo: MemoProtocol {
     /// - Throws an StellarSDKError.invalidArgument error if the given data is larger than 32 bytes.
     ///
     public init?(returnHash:Data) throws {
-        if (returnHash.count > 32) {
-            throw StellarSDKError.invalidArgument(message: "MEMO_RETURN_HASH can contain 32 bytes at max.")
+        if (returnHash.count > StellarProtocolConstants.MEMO_RETURN_HASH_SIZE) {
+            throw StellarSDKError.invalidArgument(message: "MEMO_RETURN_HASH can contain \(StellarProtocolConstants.MEMO_RETURN_HASH_SIZE) bytes at max.")
         }
         self = .returnHash(returnHash)
     }

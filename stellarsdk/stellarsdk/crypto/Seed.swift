@@ -18,7 +18,7 @@ public class Seed {
     }
     
     public init(bytes: [UInt8]) throws {
-        guard bytes.count == 32 else {
+        guard bytes.count == StellarProtocolConstants.ED25519_SEED_SIZE else {
             throw Ed25519Error.invalidSeedLength
         }
         
@@ -26,7 +26,7 @@ public class Seed {
     }
 
     public convenience init() throws {
-        var buffer = [UInt8](repeating: 0, count: 32)
+        var buffer = [UInt8](repeating: 0, count: StellarProtocolConstants.ED25519_SEED_SIZE)
         
         let result = buffer.withUnsafeMutableBufferPointer {
             ed25519_create_seed($0.baseAddress)
@@ -40,16 +40,16 @@ public class Seed {
     }
     
     public convenience init(secret: String) throws {
-        
-        if !secret.hasPrefix("S") {
+
+        if !secret.hasPrefix(StellarProtocolConstants.STRKEY_PREFIX_SEED) {
             throw Ed25519Error.invalidSeed
         }
-        
+
         if let data = secret.base32DecodedData {
-            if data.count - 3 <= 1 {
+            if data.count - StellarProtocolConstants.STRKEY_OVERHEAD_SIZE <= StellarProtocolConstants.STRKEY_VERSION_BYTE_SIZE {
                 throw Ed25519Error.invalidSeed
             }
-            try self.init(bytes:Array(([UInt8](data))[1...data.count - 3]))
+            try self.init(bytes:Array(([UInt8](data))[StellarProtocolConstants.STRKEY_VERSION_BYTE_SIZE...data.count - StellarProtocolConstants.STRKEY_OVERHEAD_SIZE]))
         } else {
             throw Ed25519Error.invalidSeed
         }

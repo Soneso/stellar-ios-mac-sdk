@@ -91,7 +91,7 @@ public class WebAuthenticator {
     private let serviceHelper: ServiceHelper
     public let network: Network
     public let serverHomeDomain: String
-    public let gracePeriod:UInt64 = 60 * 5
+    public let gracePeriod:UInt64 = SEPConstants.WEBAUTH_GRACE_PERIOD_SECONDS
     
     /// Get a WebAuthenticator instange from a domain
     ///

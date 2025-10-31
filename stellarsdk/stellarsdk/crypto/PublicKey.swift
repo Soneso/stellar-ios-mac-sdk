@@ -37,7 +37,7 @@ public class PublicKey: XDRCodable {
     /// - Throws Ed25519Error.invalidPublicKeyLength if the lenght of the given byte array != 32
     ///
     public convenience init(_ bytes: [UInt8]) throws {
-        guard bytes.count == 32 else {
+        guard bytes.count == StellarProtocolConstants.ED25519_PUBLIC_KEY_SIZE else {
             throw Ed25519Error.invalidPublicKeyLength
         }
         
@@ -59,13 +59,13 @@ public class PublicKey: XDRCodable {
     /// - Throws Ed25519Error.invalidPublicKey if the accountId is invalid
     ///
     public convenience init(accountId: String) throws {
-        
-        if !accountId.hasPrefix("G") {
+
+        if !accountId.hasPrefix(StellarProtocolConstants.STRKEY_PREFIX_ACCOUNT) {
             throw Ed25519Error.invalidPublicKey
         }
-        
+
         if let data = accountId.base32DecodedData {
-            try self.init(Array(([UInt8](data))[1...data.count - 3]))
+            try self.init(Array(([UInt8](data))[StellarProtocolConstants.STRKEY_VERSION_BYTE_SIZE...data.count - StellarProtocolConstants.STRKEY_OVERHEAD_SIZE]))
         } else {
             throw Ed25519Error.invalidPublicKey
         }
@@ -126,7 +126,7 @@ public class PublicKey: XDRCodable {
     /// - Throws: Ed25519Error.invalidSignatureLength if the signature length is not 64
     ///
     public func verify(signature: [UInt8], message: [UInt8]) throws -> Bool {
-        guard signature.count == 64 else {
+        guard signature.count == StellarProtocolConstants.ED25519_SIGNATURE_SIZE else {
             throw Ed25519Error.invalidSignatureLength
         }
 

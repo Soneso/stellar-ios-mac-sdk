@@ -23,7 +23,6 @@ public class FeeBumpTransaction {
     public let innerTransaction:Transaction
     public private(set) var feeBumpTransactionXDR:FeeBumpTransactionXDR
     public private(set) var innerTransactionXDR:FeeBumpTransactionXDR.InnerTransactionXDR
-    public static let MIN_BASE_FEE:UInt32 = 100
     
     public var xdrEncoded: String? {
         get {
@@ -38,9 +37,9 @@ public class FeeBumpTransaction {
     /// - Parameter innterTransaction: fee bump inner transaction
     ///
     public init(sourceAccount:MuxedAccount, fee:UInt64, innerTransaction:Transaction) throws {
-        
-        if fee < FeeBumpTransaction.MIN_BASE_FEE {
-            throw FeeBumpTransactionError.feeSmallerThanBaseFee(message: "fee cannot be smaller than the BASE_FEE :\(FeeBumpTransaction.MIN_BASE_FEE)")
+
+        if fee < StellarProtocolConstants.MIN_BASE_FEE {
+            throw FeeBumpTransactionError.feeSmallerThanBaseFee(message: "fee cannot be smaller than the BASE_FEE :\(StellarProtocolConstants.MIN_BASE_FEE)")
         }
         var innerBaseFee = innerTransaction.transactionXDR.fee
         let operationsCount = innerTransaction.operations.count

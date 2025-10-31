@@ -19,7 +19,7 @@ public final class PrivateKey {
     /// - Throws Ed25519Error.invalidPrivateKeyLength if the lenght of the given byte array != 64
     ///
     public init(_ bytes: [UInt8]) throws {
-        guard bytes.count == 64 else {
+        guard bytes.count == StellarProtocolConstants.ED25519_PRIVATE_KEY_SIZE else {
             throw Ed25519Error.invalidPrivateKeyLength
         }
         

@@ -808,6 +808,14 @@
 		833C67572B8F76DF00E034C6 /* FeeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67552B8F76DF00E034C6 /* FeeResponseMock.swift */; };
 		833C67592B8F77F200E034C6 /* TransactionResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67582B8F77F200E034C6 /* TransactionResponseMock.swift */; };
 		833C675A2B8F77F200E034C6 /* TransactionResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67582B8F77F200E034C6 /* TransactionResponseMock.swift */; };
+		833CBC7B2EB3ABE90061D6E4 /* SEPConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBC792EB3ABE90061D6E4 /* SEPConstants.swift */; };
+		833CBC7C2EB3ABE90061D6E4 /* NetworkConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBC782EB3ABE90061D6E4 /* NetworkConstants.swift */; };
+		833CBC7D2EB3ABE90061D6E4 /* CryptographicConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBC772EB3ABE90061D6E4 /* CryptographicConstants.swift */; };
+		833CBC7E2EB3ABE90061D6E4 /* StellarProtocolConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBC7A2EB3ABE90061D6E4 /* StellarProtocolConstants.swift */; };
+		833CBC7F2EB3ABE90061D6E4 /* SEPConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBC792EB3ABE90061D6E4 /* SEPConstants.swift */; };
+		833CBC802EB3ABE90061D6E4 /* NetworkConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBC782EB3ABE90061D6E4 /* NetworkConstants.swift */; };
+		833CBC812EB3ABE90061D6E4 /* CryptographicConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBC772EB3ABE90061D6E4 /* CryptographicConstants.swift */; };
+		833CBC822EB3ABE90061D6E4 /* StellarProtocolConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBC7A2EB3ABE90061D6E4 /* StellarProtocolConstants.swift */; };
 		833CBF8A2033510D00C23CFE /* DecoratedSignatureXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBF892033510D00C23CFE /* DecoratedSignatureXDR.swift */; };
 		833CBF8C2033514C00C23CFE /* OperationMetaXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBF8B2033514C00C23CFE /* OperationMetaXDR.swift */; };
 		833CBF8E203351B200C23CFE /* TimeBoundsXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBF8D203351B200C23CFE /* TimeBoundsXDR.swift */; };
@@ -1770,6 +1778,10 @@
 		833C67522B8F688000E034C6 /* WithdrawExchangeResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawExchangeResponseMock.swift; sourceTree = "<group>"; };
 		833C67552B8F76DF00E034C6 /* FeeResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeResponseMock.swift; sourceTree = "<group>"; };
 		833C67582B8F77F200E034C6 /* TransactionResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionResponseMock.swift; sourceTree = "<group>"; };
+		833CBC772EB3ABE90061D6E4 /* CryptographicConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptographicConstants.swift; sourceTree = "<group>"; };
+		833CBC782EB3ABE90061D6E4 /* NetworkConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConstants.swift; sourceTree = "<group>"; };
+		833CBC792EB3ABE90061D6E4 /* SEPConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SEPConstants.swift; sourceTree = "<group>"; };
+		833CBC7A2EB3ABE90061D6E4 /* StellarProtocolConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StellarProtocolConstants.swift; sourceTree = "<group>"; };
 		833CBF892033510D00C23CFE /* DecoratedSignatureXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecoratedSignatureXDR.swift; sourceTree = "<group>"; };
 		833CBF8B2033514C00C23CFE /* OperationMetaXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationMetaXDR.swift; sourceTree = "<group>"; };
 		833CBF8D203351B200C23CFE /* TimeBoundsXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeBoundsXDR.swift; sourceTree = "<group>"; };
@@ -2566,6 +2578,7 @@
 		7445E9FE201B106500470E0A /* stellarsdk */ = {
 			isa = PBXGroup;
 			children = (
+				833CBC762EB3AB8D0061D6E4 /* constants */,
 				8365137B2BDBCD0B00A99085 /* regulated_assets */,
 				833C67262B84C82800E034C6 /* quote */,
 				835F0CDD2976016000793708 /* soroban */,
@@ -3210,6 +3223,17 @@
 				833C67462B8517E200E034C6 /* Sep38GetQuoteResponseMock.swift */,
 			);
 			path = quote;
+			sourceTree = "<group>";
+		};
+		833CBC762EB3AB8D0061D6E4 /* constants */ = {
+			isa = PBXGroup;
+			children = (
+				833CBC772EB3ABE90061D6E4 /* CryptographicConstants.swift */,
+				833CBC782EB3ABE90061D6E4 /* NetworkConstants.swift */,
+				833CBC792EB3ABE90061D6E4 /* SEPConstants.swift */,
+				833CBC7A2EB3ABE90061D6E4 /* StellarProtocolConstants.swift */,
+			);
+			path = constants;
 			sourceTree = "<group>";
 		};
 		833CBFBD20337D1600C23CFE /* sdk */ = {
@@ -4482,6 +4506,10 @@
 				743060C821380D7A00E2E9F2 /* SequenceBumpedEffectResponse.swift in Sources */,
 				83DD714E281BE9A400530C64 /* LedgerBounds.swift in Sources */,
 				745DF48A2052FF9C000D3660 /* LedgerEntryChangeXDR.swift in Sources */,
+				833CBC7B2EB3ABE90061D6E4 /* SEPConstants.swift in Sources */,
+				833CBC7C2EB3ABE90061D6E4 /* NetworkConstants.swift in Sources */,
+				833CBC7D2EB3ABE90061D6E4 /* CryptographicConstants.swift in Sources */,
+				833CBC7E2EB3ABE90061D6E4 /* StellarProtocolConstants.swift in Sources */,
 				745DF48B2052FF9C000D3660 /* LedgerKeyXDR.swift in Sources */,
 				745DF48C2052FF9C000D3660 /* LedgerKeyAccountXDR.swift in Sources */,
 				837228672DCA34A50050BBC9 /* InstallRequest.swift in Sources */,
@@ -5204,6 +5232,10 @@
 				7464B72B219442E90029FDC8 /* PointOfContactDocumentation.swift in Sources */,
 				83AFD63D234FC60700A574D2 /* PathPaymentStrictSendOperation.swift in Sources */,
 				83DD2C98202F249800713FEE /* PaymentsService.swift in Sources */,
+				833CBC7F2EB3ABE90061D6E4 /* SEPConstants.swift in Sources */,
+				833CBC802EB3ABE90061D6E4 /* NetworkConstants.swift in Sources */,
+				833CBC812EB3ABE90061D6E4 /* CryptographicConstants.swift in Sources */,
+				833CBC822EB3ABE90061D6E4 /* StellarProtocolConstants.swift in Sources */,
 				83DF81A226EF822000AF72CD /* LiquidityPoolPriceResponse.swift in Sources */,
 				83379C212280ABA600BD5F8E /* ManageBuyOfferOperation.swift in Sources */,
 				837228662DCA34A50050BBC9 /* InstallRequest.swift in Sources */,

@@ -33,8 +33,8 @@ public class Signer {
      * Data model for the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#xdr-changes">signed payload signer </a>
      */
     public static func signedPayload(accountId: String, payload: Data) throws -> SignerKeyXDR {
-        if payload.count > 64 {
-            throw StellarSDKError.invalidArgument(message: "invalid payload length, must be less than 64")
+        if payload.count > StellarProtocolConstants.SIGNED_PAYLOAD_MAX_PAYLOAD {
+            throw StellarSDKError.invalidArgument(message: "invalid payload length, must be less than \(StellarProtocolConstants.SIGNED_PAYLOAD_MAX_PAYLOAD)")
         }
         let pk = try PublicKey(accountId: accountId)
         return SignerKeyXDR.signedPayload(Ed25519SignedPayload(ed25519: pk.wrappedData32(), payload: payload))
