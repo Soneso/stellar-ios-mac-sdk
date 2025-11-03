@@ -27,6 +27,35 @@ public enum OrderbookChange {
 /// A closure to be called with the response from an orderbook request
 public typealias OrderbookResponseClosure = (_ response:OrderbookResponseEnum) -> (Void)
 
+/// Service for querying orderbook information from the Stellar Horizon API.
+///
+/// The orderbook shows current bids and asks for a given asset pair on the Stellar DEX.
+/// Provides a snapshot of available offers at different price levels.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get orderbook for USD/XLM
+/// let response = await sdk.orderbook.getOrderbook(
+///     sellingAssetType: AssetTypeAsString.CREDIT_ALPHANUM4,
+///     sellingAssetCode: "USD",
+///     sellingAssetIssuer: "GISSUER...",
+///     buyingAssetType: AssetTypeAsString.NATIVE,
+///     limit: 20
+/// )
+/// switch response {
+/// case .success(let orderbook):
+///     print("Bids: \(orderbook.bids.count)")
+///     print("Asks: \(orderbook.asks.count)")
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Orderbook API](https://developers.stellar.org/api/horizon/reference/endpoints/orderbook-details)
+/// - OffersService for individual offers
 public class OrderbookService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()

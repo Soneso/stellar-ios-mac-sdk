@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Result enum for claimable balance details requests.
 public enum ClaimableBalanceDetailsResponseEnum {
     case success(details: ClaimableBalanceResponse)
     case failure(error: HorizonRequestError)
@@ -15,6 +16,35 @@ public enum ClaimableBalanceDetailsResponseEnum {
 
 public typealias ClaimableBalanceDetailsResponseClosure = (_ response:ClaimableBalanceDetailsResponseEnum) -> (Void)
 
+/// Service for querying claimable balances from the Stellar Horizon API.
+///
+/// Claimable balances allow creating asset transfers that recipients can claim later when
+/// specific conditions are met. Useful for implementing payment channels, escrow, and
+/// conditional transfers.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get claimable balance details
+/// let response = await sdk.claimableBalances.getClaimableBalanceDetails(
+///     claimableBalanceId: "00000000..."
+/// )
+/// switch response {
+/// case .success(let balance):
+///     print("Amount: \(balance.amount)")
+///     print("Asset: \(balance.asset)")
+///     for claimant in balance.claimants {
+///         print("Claimant: \(claimant.destination)")
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Claimable Balances API](https://developers.stellar.org/api/horizon/reference/resources/claimablebalance)
+/// - CreateClaimableBalanceOperation for creating claimable balances
 public class ClaimableBalancesService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()

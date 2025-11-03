@@ -8,17 +8,29 @@
 
 import Foundation
 
-///  Represents account thresholds.
-///  See [Stellar documentation](https://developers.stellar.org/docs/concepts/multi-sig.html#thresholds "Account Thresholds")
+/// Represents signature weight thresholds for multi-signature accounts.
+///
+/// Thresholds determine how many signature weights are required to authorize operations.
+/// Each operation type (low, medium, high) requires a total signature weight that meets
+/// or exceeds its threshold. Used for implementing multi-sig security.
+///
+/// Threshold categories:
+/// - Low: Allow Trust, Bump Sequence
+/// - Medium: All other operations
+/// - High: Set Options (changing signers or thresholds)
+///
+/// See also:
+/// - [Multi-Signature Documentation](https://developers.stellar.org/docs/encyclopedia/security/signatures-multisig#multisig)
+/// - AccountSignerResponse for signer weights
 public class AccountThresholdsResponse: NSObject, Decodable {
-    
-    /// The account's threshhold for low security operations.
+
+    /// Minimum total signature weight required for low security operations. Range: 0-255.
     public var lowThreshold:Int
-    
-    /// The account's threshhold for medium security operations.
+
+    /// Minimum total signature weight required for medium security operations. Range: 0-255.
     public var medThreshold:Int
-    
-    /// The account's threshhold for high security operations.
+
+    /// Minimum total signature weight required for high security operations (e.g., changing signers). Range: 0-255.
     public var highThreshold:Int
     
     // Properties to encode and decode

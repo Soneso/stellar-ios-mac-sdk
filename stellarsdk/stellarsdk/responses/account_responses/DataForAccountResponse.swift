@@ -8,8 +8,8 @@
 
 import Foundation
 
-///  Represents a data for account response from the Horizon API, conating a single data value associated with a given account and requested key.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/data-for-account.html "Data for account")
+///  Represents a data for account response from the Horizon API, containing a single data value associated with a given account and requested key.
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/endpoints/data-for-account.html "Data for account")
 public class DataForAccountResponse: NSObject, Decodable {
     
     /// The base64-encoded value for the requested key.

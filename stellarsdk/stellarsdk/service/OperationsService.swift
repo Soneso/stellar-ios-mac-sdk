@@ -8,11 +8,13 @@
 
 import Foundation
 
+/// Result enum for operation details requests.
 public enum OperationDetailsResponseEnum {
     case success(details: OperationResponse)
     case failure(error: HorizonRequestError)
 }
 
+/// Defines operation stream filter options.
 public enum OperationsChange {
     case allOperations(cursor:String?)
     case operationsForAccount(account:String, cursor:String?)
@@ -24,6 +26,35 @@ public enum OperationsChange {
 
 public typealias OperationDetailsResponseClosure = (_ response:OperationDetailsResponseEnum) -> (Void)
 
+/// Service for querying operation history from the Stellar Horizon API.
+///
+/// The OperationsService provides methods to retrieve operations (individual actions within transactions)
+/// filtered by account, ledger, transaction, claimable balance, or liquidity pool. Supports pagination
+/// and streaming of real-time operation updates.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get operations for an account
+/// let response = await sdk.operations.getOperations(
+///     forAccount: "GACCOUNT...",
+///     limit: 20,
+///     order: .descending
+/// )
+/// switch response {
+/// case .success(let page):
+///     for operation in page.records {
+///         print("Type: \(operation.operationType)")
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Operations API](https://developers.stellar.org/api/horizon/reference/resources/operation)
+/// - OperationResponse for operation data structures
 public class OperationsService: NSObject {
     let serviceHelper: ServiceHelper
     let operationsFactory = OperationsFactory()

@@ -8,6 +8,36 @@
 
 import Foundation
 
+/// Service for querying asset information from the Stellar Horizon API.
+///
+/// The AssetsService provides methods to retrieve information about all assets issued on the
+/// Stellar network, including supply statistics, number of accounts, and issuer details.
+/// Can filter by asset code and issuer.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get all assets with code "USD"
+/// let response = await sdk.assets.getAssets(
+///     for: "USD",
+///     limit: 100
+/// )
+/// switch response {
+/// case .success(let page):
+///     for asset in page.records {
+///         print("\(asset.assetCode): \(asset.assetIssuer)")
+///         print("Accounts: \(asset.numAccounts)")
+///         print("Amount: \(asset.amount)")
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Assets API](https://developers.stellar.org/api/horizon/reference/resources/asset)
+/// - AssetResponse for asset data structure
 public class AssetsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()

@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Defines offer stream filter options.
 public enum OffersChange {
     case allOffers(seller:String?,
                    sellingAssetType:String,
@@ -23,6 +24,7 @@ public enum OffersChange {
                           cursor:String?)
 }
 
+/// Result enum for offer details requests.
 public enum OfferResponseEnum {
     case success(details: OfferResponse)
     case failure(error: HorizonRequestError)
@@ -30,6 +32,32 @@ public enum OfferResponseEnum {
 
 public typealias OfferResponseClosure = (_ response:OfferResponseEnum) -> (Void)
 
+/// Service for querying offer information from the Stellar Horizon API.
+///
+/// Offers represent open orders on the Stellar decentralized exchange (DEX). Each offer specifies
+/// an amount and price to buy or sell an asset. Can query offers by account, asset pair, or sponsor.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get all offers for an account
+/// let response = await sdk.offers.getOffers(forAccount: "GACCOUNT...")
+/// switch response {
+/// case .success(let page):
+///     for offer in page.records {
+///         print("Selling: \(offer.amount) \(offer.selling.assetCode ?? "XLM")")
+///         print("Buying: \(offer.buying.assetCode ?? "XLM")")
+///         print("Price: \(offer.price)")
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Offers API](https://developers.stellar.org/api/horizon/reference/resources/offer)
+/// - OrderbookService for orderbook snapshots
 public class OffersService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()

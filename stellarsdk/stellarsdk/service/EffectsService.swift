@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Defines effect stream filter options.
 public enum EffectsChange {
     case allEffects(cursor:String?)
     case effectsForAccount(account:String, cursor:String?)
@@ -17,7 +18,37 @@ public enum EffectsChange {
     case effectsForLiquidityPool(liquidityPool:String, cursor:String?)
 }
 
-/// Builds requests connected to effects.
+/// Service for querying effects from the Stellar Horizon API.
+///
+/// Effects represent specific changes to the ledger caused by operations. Each operation
+/// produces one or more effects. Examples include account created, account credited,
+/// trustline created, signer added, etc.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get effects for an account
+/// let response = await sdk.effects.getEffects(
+///     forAccount: "GACCOUNT...",
+///     limit: 20
+/// )
+/// switch response {
+/// case .success(let page):
+///     for effect in page.records {
+///         print("Effect type: \(effect.effectType)")
+///         if let credited = effect as? AccountCreditedEffectResponse {
+///             print("Credited: \(credited.amount)")
+///         }
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Effects API](https://developers.stellar.org/api/horizon/reference/resources/effect)
+/// - EffectResponse for effect data structures
 public class EffectsService: NSObject {
     let serviceHelper: ServiceHelper
     let effectsFactory = EffectsFactory()

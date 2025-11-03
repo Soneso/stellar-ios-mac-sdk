@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Result enum for payment path finding requests.
 public enum PaymentPathsResponseEnum {
     case success(details: FindPaymentPathsResponse)
     case failure(error: HorizonRequestError)
@@ -16,6 +17,37 @@ public enum PaymentPathsResponseEnum {
 /// A closure to be called with the response from a payment path request
 public typealias FindPaymentPathsResponseClosure = (_ response:PaymentPathsResponseEnum) -> (Void)
 
+/// Service for finding payment paths on the Stellar network.
+///
+/// Payment paths allow sending one asset and having the recipient receive a different asset
+/// through automatic conversions on the Stellar DEX. This service finds available paths
+/// and their costs for path payment operations.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Find paths to send USD and receive XLM
+/// let response = await sdk.paymentPaths.findPaymentPaths(
+///     destinationAccount: "GDEST...",
+///     destinationAssetType: AssetTypeAsString.NATIVE,
+///     destinationAmount: "100",
+///     sourceAccount: "GSOURCE..."
+/// )
+/// switch response {
+/// case .success(let paths):
+///     for path in paths.paths {
+///         print("Source amount: \(path.sourceAmount)")
+///         print("Path length: \(path.path.count)")
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Payment Paths API](https://developers.stellar.org/api/horizon/reference/endpoints/path-finding)
+/// - PathPaymentOperation for executing path payments
 public class PaymentPathsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()

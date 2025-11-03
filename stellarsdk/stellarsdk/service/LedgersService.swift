@@ -8,17 +8,42 @@
 
 import Foundation
 
+/// Result enum for ledger details requests.
 public enum LedgerDetailsResponseEnum {
     case success(details: LedgerResponse)
     case failure(error: HorizonRequestError)
 }
 
+/// Defines ledger stream filter options.
 public enum LedgersChange {
     case allLedgers(cursor:String?)
 }
 
 public typealias LedgerDetailsResponseClosure = (_ response:LedgerDetailsResponseEnum) -> (Void)
 
+/// Service for querying ledger information from the Stellar Horizon API.
+///
+/// Ledgers represent the state of the Stellar network at a specific point in time. Each ledger
+/// contains all transactions and operations that occurred, along with metadata like fees,
+/// transaction count, and protocol version.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get details for a specific ledger
+/// let response = await sdk.ledgers.getLedgerDetails(sequence: "12345")
+/// switch response {
+/// case .success(let ledger):
+///     print("Transaction count: \(ledger.transactionCount)")
+///     print("Closed at: \(ledger.closedAt)")
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Ledgers API](https://developers.stellar.org/api/horizon/reference/resources/ledger)
 public class LedgersService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()

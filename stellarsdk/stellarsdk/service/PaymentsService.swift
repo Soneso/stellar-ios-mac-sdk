@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Defines payment stream filter options.
 public enum PaymentsChange {
     case allPayments(cursor:String?)
     case paymentsForAccount(account:String, cursor:String?)
@@ -15,7 +16,37 @@ public enum PaymentsChange {
     case paymentsForTransaction(transaction:String, cursor:String?)
 }
 
-/// Builds requests connected to payments.
+/// Service for querying payment operations from the Stellar Horizon API.
+///
+/// The PaymentsService provides methods to retrieve payment-related operations including
+/// payments, path payments, create account operations, and account merges. These are the
+/// operations that transfer value between accounts.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get payment history for an account
+/// let response = await sdk.payments.getPayments(
+///     forAccount: "GACCOUNT...",
+///     limit: 50,
+///     order: .descending
+/// )
+/// switch response {
+/// case .success(let page):
+///     for payment in page.records {
+///         if let paymentOp = payment as? PaymentOperationResponse {
+///             print("Amount: \(paymentOp.amount) \(paymentOp.assetCode ?? "XLM")")
+///         }
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Payments API](https://developers.stellar.org/api/horizon/reference/resources/operation)
+/// - OperationResponse for payment operation types
 public class PaymentsService: NSObject {
     let serviceHelper: ServiceHelper
     let operationsFactory = OperationsFactory()

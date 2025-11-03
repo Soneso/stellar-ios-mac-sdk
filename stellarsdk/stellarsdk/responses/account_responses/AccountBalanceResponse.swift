@@ -8,44 +8,58 @@
 
 import Foundation
 
-///  Represents the account balance.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/account.html "Account Balance")
+/// Represents a single asset balance in an account.
+///
+/// Each AccountResponse contains an array of AccountBalanceResponse objects representing
+/// all assets (including native XLM) held by the account. Also includes authorization status
+/// and liabilities from open offers.
+///
+/// See also:
+/// - [Horizon Account Resource](https://developers.stellar.org/api/horizon/reference/resources/account)
+/// - AccountResponse for complete account information
 public class AccountBalanceResponse: NSObject, Decodable {
 
-    /// Balance for the specified asset.
+    /// Current balance amount for this asset as a decimal string.
     public var balance:String
-    
-    /// Buying Liabilities for the specified asset.
+
+    /// Amount of this asset reserved for buying in open offers (liabilities).
     public var buyingLiabilities:String?
-    
-    /// Selling Liabilities for the specified asset.
+
+    /// Amount of this asset reserved for selling in open offers (liabilities).
     public var sellingLiabilities:String?
-    
-    /// Maximum number of asset amount this account can hold.
+
+    /// Maximum amount of this asset the account can hold (from trustline limit).
+    /// Nil for native XLM which has no limit.
     public var limit:String!
-    
-    /// The asset type. Possible values: native, credit_alphanum4, credit_alphanum12
-    /// See also Constants.AssetType
+
+    /// Asset type: "native" for XLM, "credit_alphanum4" for 4-char assets, "credit_alphanum12" for 12-char assets, or "liquidity_pool_shares".
     public var assetType:String
-    
-    /// The asset code e.g., USD or BTC.
+
+    /// Asset code (e.g., "USD", "BTC"). Nil for native XLM.
     public var assetCode:String?
-    
-    /// The account id of the account that created the asset.
+
+    /// Issuer account ID for the asset. Nil for native XLM.
     public var assetIssuer:String?
-    
+
+    /// Account ID sponsoring this trustline's base reserve. Nil if not sponsored.
     public var sponsor:String?
-    
+
+    /// Whether the issuer has authorized this account to hold the asset.
     public var isAuthorized:Bool?
-    
+
+    /// Whether the account is authorized to maintain liabilities but not hold new balance.
     public var isAuthorizedToMaintainLiabilities:Bool?
-    
+
+    /// Whether clawback is enabled for this asset.
     public var isClawbackEnabled:Bool?
-    
+
+    /// Liquidity pool ID for pool share balances. Nil for regular assets.
     public var liquidityPoolId:String?
-    
+
+    /// Ledger sequence when this balance was last modified.
     public var lastModifiedLedger:Int?
-    
+
+    /// Timestamp when this balance was last modified (ISO 8601).
     public var lastModifiedTime:String?
     
     // Properties to encode and decode.

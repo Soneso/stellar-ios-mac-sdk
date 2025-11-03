@@ -8,25 +8,61 @@
 
 import Foundation
 
-///  Represents an error response from the horizon api, containing information related to the error that occured.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/errors.html "Errors")
+/// Represents an error response from the Horizon API.
+///
+/// When a request fails, Horizon returns an error response with details about what went wrong.
+/// Error responses include HTTP status codes, error types, descriptions, and additional debugging
+/// information in the extras field.
+///
+/// Common error types:
+/// - 400 Bad Request: Invalid parameters or malformed request
+/// - 404 Not Found: Resource doesn't exist
+/// - 429 Rate Limit Exceeded: Too many requests
+/// - 500 Internal Server Error: Server-side problem
+///
+/// Example usage:
+/// ```swift
+/// let response = await sdk.transactions.submitTransaction(transaction: tx)
+/// switch response {
+/// case .success(let result):
+///     print("Success: \(result.hash)")
+/// case .failure(let error):
+///     if case .badRequest(_, let horizonError) = error,
+///        let errorResponse = horizonError {
+///         print("Error: \(errorResponse.title)")
+///         print("Detail: \(errorResponse.detail)")
+///
+///         // Check for transaction-specific errors
+///         if let extras = errorResponse.extras,
+///            let resultCodes = extras.resultCodes {
+///             print("Transaction result: \(resultCodes.transaction ?? "")")
+///             print("Operation results: \(resultCodes.operations ?? [])")
+///         }
+///     }
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Error Codes](https://developers.stellar.org/api/horizon/reference/errors)
+/// - HorizonRequestError for error enum types
 public class ErrorResponse: NSObject, Decodable {
-    
-    /// The identifier for the error. This is a URL that can be visited in the browser.
+
+    /// URL identifier for the error type. Can be visited for more information.
     public var type:String
-    
-    /// A short title describing the error.
+
+    /// Short human-readable summary of the error.
     public var title:String
-    
-    /// An HTTP status code that maps to the error.
+
+    /// HTTP status code (400, 404, 429, 500, etc.).
     public var httpStatusCode:UInt
-    
-    /// A more detailed description of the error.
+
+    /// Detailed description of the error and potential solutions.
     public var detail:String
-    
-    /// A token that uniquely identifies this request. Allows server administrators to correlate a client report with server log files.
+
+    /// Unique request ID for correlating with server logs. Useful for support requests.
     public var instance:String?
-    
+
+    /// Additional error context including transaction result codes and XDR data.
     public var extras:ErrorResponseExtras?
     
     // Properties to encode and decode
@@ -55,10 +91,21 @@ public class ErrorResponse: NSObject, Decodable {
     }
 }
 
+/// Additional error information for transaction submission failures.
+///
+/// Contains transaction-specific debugging data including XDR representations
+/// and result codes from Stellar Core.
 public class ErrorResponseExtras: Decodable {
+    /// Base64-encoded XDR of the transaction envelope that failed.
     public var envelopeXdr: String?
+
+    /// Base64-encoded XDR of the transaction result from Stellar Core.
     public var resultXdr: String?
+
+    /// Parsed result codes indicating why the transaction or operations failed.
     public var resultCodes: ErrorResultCodes?
+
+    /// Hash of the submitted transaction.
     public var txHash: String?
 
     private enum CodingKeys: String, CodingKey {
@@ -77,8 +124,23 @@ public class ErrorResponseExtras: Decodable {
     }
 }
 
+/// Result codes explaining transaction and operation failures.
+///
+/// Contains error codes from Stellar Core indicating why a transaction failed.
+/// Transaction result codes apply to the whole transaction, while operation result
+/// codes indicate which specific operations failed and why.
+///
+/// Common transaction results:
+/// - tx_failed: One or more operations failed
+/// - tx_bad_seq: Incorrect sequence number
+/// - tx_insufficient_balance: Not enough XLM to pay fee
+///
+/// See [Transaction Result Codes](https://developers.stellar.org/docs/learn/fundamentals/transactions/list-of-operations#result-codes)
 public class ErrorResultCodes: Decodable {
+    /// Transaction-level result code (e.g., "tx_failed", "tx_bad_seq").
     public var transaction: String?
+
+    /// Array of operation result codes, one per operation. Indicates which operations failed.
     public var operations: [String]?
     
     private enum CodingKeys: String, CodingKey {

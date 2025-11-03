@@ -8,30 +8,38 @@
 
 import Foundation
 
+/// Result enum for transaction details requests.
 public enum TransactionDetailsResponseEnum {
     case success(details: TransactionResponse)
     case failure(error: HorizonRequestError)
 }
 
+/// Result enum for transaction submission requests.
+///
+/// Includes a special case for SEP-29 compliance when a destination requires a memo.
 public enum TransactionPostResponseEnum {
     case success(details: SubmitTransactionResponse)
     case destinationRequiresMemo(destinationAccountId: String)
     case failure(error: HorizonRequestError)
 }
 
+/// Result enum for async transaction submission requests.
+///
+/// Async submission returns immediately after validation without waiting for ledger inclusion.
 public enum TransactionPostAsyncResponseEnum {
     case success(details: SubmitTransactionAsyncResponse)
     case destinationRequiresMemo(destinationAccountId: String)
     case failure(error: HorizonRequestError)
 }
 
-
+/// Result enum for SEP-29 memo requirement checks.
 public enum CheckMemoRequiredResponseEnum {
     case noMemoRequired
     case memoRequired(destination: String)
     case failure(error: HorizonRequestError)
 }
 
+/// Defines transaction stream filter options.
 public enum TransactionsChange {
     case allTransactions(cursor:String?)
     case transactionsForAccount(account:String, cursor:String?)
@@ -44,6 +52,38 @@ public typealias TransactionPostResponseClosure = (_ response:TransactionPostRes
 public typealias TransactionPostAsyncResponseClosure = (_ response:TransactionPostAsyncResponseEnum) -> (Void)
 public typealias CheckMemoRequiredResponseClosure = (_ response:CheckMemoRequiredResponseEnum) -> (Void)
 
+/// Service for querying and submitting transactions on the Stellar network.
+///
+/// The TransactionsService provides methods to retrieve transaction history, submit new
+/// transactions to the network, and check SEP-29 memo requirements. Supports both synchronous
+/// and asynchronous transaction submission modes.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get transaction details
+/// let txResponse = await sdk.transactions.getTransactionDetails(
+///     transactionHash: "abc123..."
+/// )
+///
+/// // Submit a transaction
+/// let submitResponse = await sdk.transactions.submitTransaction(
+///     transaction: myTransaction
+/// )
+/// switch submitResponse {
+/// case .success(let result):
+///     print("Transaction successful: \(result.hash)")
+/// case .destinationRequiresMemo(let accountId):
+///     print("Destination \(accountId) requires a memo (SEP-29)")
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Transactions API](https://developers.stellar.org/api/horizon/reference/resources/transaction)
+/// - [SEP-29 Memo Required](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md)
 public class TransactionsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()

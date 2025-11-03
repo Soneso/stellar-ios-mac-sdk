@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Defines trade stream filter options.
 public enum TradesChange {
     case allTrades(baseAssetType:String?,
                    baseAssetCode:String?,
@@ -21,6 +22,35 @@ public enum TradesChange {
     case tradesForAccount(account:String, cursor:String?)
 }
 
+/// Service for querying trade history from the Stellar Horizon API.
+///
+/// Trades represent completed exchanges between two assets on the Stellar decentralized exchange.
+/// Can filter trades by asset pair, account, offer, or liquidity pool.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get trades for a trading pair
+/// let response = await sdk.trades.getTrades(
+///     forAssetPair: (selling: Asset(canonicalForm: "USD:GISSUER...")!,
+///                    buying: Asset(type: AssetType.ASSET_TYPE_NATIVE)!),
+///     limit: 50
+/// )
+/// switch response {
+/// case .success(let page):
+///     for trade in page.records {
+///         print("Price: \(trade.price)")
+///         print("Amount: \(trade.baseAmount)")
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Trades API](https://developers.stellar.org/api/horizon/reference/resources/trade)
+/// - TradeAggregationsService for aggregated trade statistics
 public class TradesService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()

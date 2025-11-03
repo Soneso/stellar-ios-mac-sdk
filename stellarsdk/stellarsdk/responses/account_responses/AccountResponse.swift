@@ -8,57 +8,113 @@
 
 import Foundation
 
-///  Represents an account response, containing information and links relating to a single account.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/account.html "Account Details")
+/// Represents a Stellar account with all its properties and balances.
+///
+/// Contains complete account information including balances, signers, thresholds, flags,
+/// sequence number, and sponsorship data. This is the main data structure returned when
+/// querying account details from Horizon.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// let response = await sdk.accounts.getAccountDetails(accountId: "GACCOUNT...")
+/// switch response {
+/// case .success(let account):
+///     // Access account properties
+///     print("Account ID: \(account.accountId)")
+///     print("Sequence: \(account.sequenceNumber)")
+///
+///     // Check balances
+///     for balance in account.balances {
+///         if balance.assetType == AssetTypeAsString.NATIVE {
+///             print("XLM Balance: \(balance.balance)")
+///         } else {
+///             print("\(balance.assetCode ?? ""): \(balance.balance)")
+///         }
+///     }
+///
+///     // Check signers
+///     for signer in account.signers {
+///         print("Signer: \(signer.key) weight: \(signer.weight)")
+///     }
+///
+///     // Use for transaction building
+///     let transaction = try Transaction(
+///         sourceAccount: account,
+///         operations: [/* ... */],
+///         memo: Memo.none,
+///         timeBounds: nil
+///     )
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Account Resource](https://developers.stellar.org/api/horizon/reference/resources/account)
+/// - AccountService for querying accounts
 public class AccountResponse: NSObject, Decodable, TransactionAccount {
 
-    /// A list of Links related to this account.
+    /// Navigation links related to this account including transactions, operations, and payments.
     public var links:AccountLinksResponse
-    
-    /// The account’s id 
+
+    /// The account ID (public key), always starts with 'G'.
     public var accountId:String
-    
-    /// Keypair of the account containing the public key.
+
+    /// KeyPair instance for this account containing the public key.
     public var keyPair: KeyPair
-    
-    /// The current sequence number that can be used when submitting a transaction from this account.
+
+    /// Current sequence number. Must be incremented for each transaction from this account.
     public private (set) var sequenceNumber: Int64
-    
-    /// The number of account subentries.
+
+    /// Number of subentries (trustlines, offers, data entries, etc.) owned by this account.
+    /// Affects the minimum balance requirement.
     public var subentryCount:UInt
-    
-    /// A paging token, specifying where the returned records start from.
+
+    /// Paging token for cursor-based pagination.
     public var pagingToken:String
 
-    /// Account designated to receive inflation if any.
+    /// Account designated to receive inflation (deprecated feature).
     public var inflationDestination:String?
-    
-    /// The home domain added to this account if any.
+
+    /// Home domain for this account. Used for federation and stellar.toml lookup.
     public var homeDomain:String?
-    
-    /// An object of account flags.
+
+    /// Signature thresholds for low, medium, and high security operations.
     public var thresholds:AccountThresholdsResponse
-    
-    /// Flags used by the issuers of assets.
+
+    /// Account flags (auth required, auth revocable, auth immutable, auth clawback enabled).
     public var flags:AccountFlagsResponse
-    
-    /// An array of the native asset or credits this account holds.
+
+    /// Array of all asset balances including native XLM and issued assets.
     public var balances:[AccountBalanceResponse]
-    
-    /// An array of account signers with their weights.
+
+    /// Array of account signers with their public keys and signing weights.
     public var signers:[AccountSignerResponse]
-    
-    /// An array of account data fields. The values are base64 encoded.
+
+    /// Key-value data entries attached to this account. Values are base64 encoded.
     public var data:[String:String]
-    
+
+    /// Account ID of the sponsor for this account's base reserve (if sponsored).
     public var sponsor:String?
+
+    /// Number of reserves this account is currently sponsoring for other accounts.
     public var numSponsoring:Int
+
+    /// Number of reserves being sponsored for this account by others.
     public var numSponsored:Int
+
+    /// Ledger sequence number when the sequence number was last updated.
     public var sequenceLedger:Int?
+
+    /// Timestamp when the sequence number was last updated (ISO 8601).
     public var sequenceTime:String?
-    
+
+    /// Ledger sequence number when this account was last modified.
     public var lastModifiedLedger:Int
-    
+
+    /// Timestamp when this account was last modified (ISO 8601).
     public var lastModifiedTime:String?
     
     // Properties to encode and decode
