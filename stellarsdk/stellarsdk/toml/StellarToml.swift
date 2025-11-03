@@ -37,8 +37,53 @@ public typealias TomlFileClosure = (_ response:TomlForDomainEnum) -> (Void)
 /// Alternately to specifying a currency in its content, stellar.toml can link out to a separate TOML file for the currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
 public typealias TomlCurrencyFromUrlClosure = (_ response:TomlCurrencyFromUrlEnum) -> (Void)
 
-/// see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md
-/// Supported version: 2.5.0
+/// Implements SEP-0001 - stellar.toml Discovery and Configuration.
+///
+/// This class parses and provides access to a domain's stellar.toml file, which contains
+/// configuration and metadata about a Stellar integration. The stellar.toml file enables
+/// automatic discovery of services, validator nodes, asset information, and contact details.
+///
+/// SEP-0001 is foundational for the Stellar ecosystem, allowing wallets and applications
+/// to discover anchor services, validator information, and asset metadata from a domain.
+///
+/// ## Typical Usage
+///
+/// ```swift
+/// // Fetch stellar.toml from a domain
+/// let result = await StellarToml.from(domain: "testanchor.stellar.org")
+///
+/// switch result {
+/// case .success(let toml):
+///     // Access account information
+///     if let webAuthEndpoint = toml.accountInformation.webAuthEndpoint {
+///         print("SEP-10 endpoint: \(webAuthEndpoint)")
+///     }
+///
+///     // Access supported currencies
+///     for currency in toml.currenciesDocumentation {
+///         print("Asset: \(currency.code ?? ""), Issuer: \(currency.issuer ?? "")")
+///     }
+///
+///     // Access transfer server
+///     if let transferServer = toml.accountInformation.transferServer {
+///         print("SEP-6 server: \(transferServer)")
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// ## Available Information
+///
+/// - **Account Information**: Service endpoints (SEP-6, SEP-10, SEP-12, SEP-24, SEP-31, SEP-38)
+/// - **Issuer Documentation**: Organization details, contact information
+/// - **Currencies**: Supported assets with metadata and regulatory info
+/// - **Validators**: Validator node information for network operators
+/// - **Points of Contact**: Key personnel and support contacts
+///
+/// See also:
+/// - [SEP-0001 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
+/// - Supported version: 2.5.0
 public class StellarToml {
 
     public var accountInformation: AccountInformation

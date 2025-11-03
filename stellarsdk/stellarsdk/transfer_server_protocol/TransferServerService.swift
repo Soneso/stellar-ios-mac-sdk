@@ -71,7 +71,66 @@ public typealias AnchorTransactionResponseClosure = (_ response:AnchorTransactio
 /// A closure to be called with the response from a fee request.
 public typealias AnchorFeeResponseClosure = (_ response:AnchorFeeResponseEnum) -> (Void)
 
-
+/// Implements SEP-0006 - Deposit and Withdrawal API.
+///
+/// This class provides programmatic deposit and withdrawal functionality for Stellar assets
+/// without requiring user interaction in a web interface. Unlike SEP-0024, SEP-6 is designed
+/// for automated workflows and server-to-server integrations.
+///
+/// ## Key Differences from SEP-0024
+///
+/// - **SEP-6**: Programmatic API for automation (no user web interface)
+/// - **SEP-24**: Interactive flows with hosted web UI for user input
+///
+/// ## Typical Workflow
+///
+/// ```swift
+/// // Initialize service
+/// let result = await TransferServerService.forDomain(domain: "testanchor.stellar.org")
+/// guard case .success(let service) = result else { return }
+///
+/// // Get info about supported assets
+/// let info = await service.info()
+///
+/// // Deposit flow
+/// let depositRequest = DepositRequest(
+///     assetCode: "USDC",
+///     account: accountId,
+///     jwt: jwtToken
+/// )
+/// let depositResult = await service.deposit(request: depositRequest)
+///
+/// // Withdraw flow
+/// let withdrawRequest = WithdrawRequest(
+///     type: "bank_account",
+///     assetCode: "USDC",
+///     account: accountId,
+///     dest: "123456789", // Bank account number
+///     jwt: jwtToken
+/// )
+/// let withdrawResult = await service.withdraw(request: withdrawRequest)
+/// ```
+///
+/// ## Exchange Operations
+///
+/// SEP-6 supports asset conversion during deposit/withdrawal using SEP-38 quotes:
+///
+/// ```swift
+/// // Deposit with exchange (e.g., receive BRL, send USDC to Stellar)
+/// let exchangeRequest = DepositExchangeRequest(
+///     destinationAsset: "stellar:USDC:G...",
+///     sourceAsset: "iso4217:BRL",
+///     amount: "1000",
+///     account: accountId,
+///     jwt: jwtToken
+/// )
+/// let result = await service.depositExchange(request: exchangeRequest)
+/// ```
+///
+/// See also:
+/// - [SEP-0006 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
+/// - [InteractiveService] for SEP-24 (interactive flows)
+/// - [WebAuthenticator] for SEP-10 authentication
 public class TransferServerService: NSObject {
 
     public var transferServiceAddress: String

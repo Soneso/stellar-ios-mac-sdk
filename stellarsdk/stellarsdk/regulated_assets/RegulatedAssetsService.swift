@@ -38,11 +38,52 @@ public typealias AuthorizationRequiredClosure = (_ response:AuthorizationRequire
 public typealias PostSep08TransactionClosure = (_ response:PostSep08TransactionEnum) -> (Void)
 public typealias PostSep08ActionClosure = (_ response:PostSep08ActionEnum) -> (Void)
 
-/**
- Implements SEP-0008 - Regulated Assets
- See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md" target="_blank">Regulated Assets</a>
- */
-
+/// Implements SEP-0008 - Regulated Assets.
+///
+/// This class enables issuers to validate and approve transactions involving regulated assets
+/// before they are submitted to the network. Regulated assets require issuer approval for
+/// transfers, ensuring compliance with securities regulations and KYC/AML requirements.
+///
+/// ## Typical Usage
+///
+/// ```swift
+/// // Initialize from domain
+/// let result = await RegulatedAssetsService.forDomain(
+///     domain: "https://issuer.example.com",
+///     network: .public
+/// )
+///
+/// guard case .success(let service) = result else { return }
+///
+/// // Build transaction
+/// let transaction = try Transaction(...)
+/// let txXdr = try transaction.encodedEnvelope()
+///
+/// // Submit for approval
+/// let approvalResult = await service.postTransaction(
+///     txB64Xdr: txXdr,
+///     apporvalServer: service.regulatedAssets[0].approvalServer
+/// )
+///
+/// switch approvalResult {
+/// case .success(let response):
+///     // Transaction approved, submit to network
+///     let approvedTx = try Transaction(envelopeXdr: response.tx)
+/// case .revised(let response):
+///     // Issuer revised transaction (e.g., added compliance fee)
+///     let revisedTx = try Transaction(envelopeXdr: response.tx)
+/// case .pending(let response):
+///     // Approval pending, retry later
+/// case .actionRequired(let response):
+///     // User action needed (e.g., complete KYC)
+/// case .rejected(let response):
+///     // Transaction rejected
+/// }
+/// ```
+///
+/// See also:
+/// - [SEP-0008 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md)
+/// - [StellarToml] for discovering regulated assets
 public class RegulatedAssetsService: NSObject {
     
     public var tomlData:StellarToml

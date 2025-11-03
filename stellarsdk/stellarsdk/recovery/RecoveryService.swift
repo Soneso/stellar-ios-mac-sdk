@@ -27,8 +27,40 @@ public typealias Sep30AccountResponseClosure = (_ response:Sep30AccountResponseE
 public typealias Sep30SignatureResponseClosure = (_ response:Sep30SignatureResponseEnum) -> (Void)
 public typealias Sep30AccountsResponseClosure = (_ response:Sep30AccountsResponseEnum) -> (Void)
 
-/// Implements SEP-0030 - Account Recovery: multi-party recovery of Stellar accounts.
-/// See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md" target="_blank">Account Recovery: multi-party recovery of Stellar accounts.</a>
+/// Implements SEP-0030 - Account Recovery: Multi-Party Recovery of Stellar Accounts.
+///
+/// This class provides account recovery functionality allowing users to regain access to their
+/// Stellar accounts through registered identities. Multiple recovery methods can be configured
+/// as a safety net if primary authentication is lost.
+///
+/// ## Typical Usage
+///
+/// ```swift
+/// let service = RecoveryService(serviceAddress: "https://recovery.example.com")
+///
+/// // Register account with recovery identities
+/// let request = Sep30Request()
+/// request.identities = [
+///     Sep30Identity(role: "owner", authMethods: [...])
+/// ]
+/// let result = await service.registerAccount(
+///     address: accountId,
+///     request: request,
+///     jwt: jwtToken
+/// )
+///
+/// // Sign transaction for recovery
+/// let signResult = await service.signTransaction(
+///     address: accountId,
+///     signingAddress: signerAddress,
+///     transaction: transactionXdr,
+///     jwt: jwtToken
+/// )
+/// ```
+///
+/// See also:
+/// - [SEP-0030 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md)
+/// - [WebAuthenticator] for SEP-10 authentication
 public class RecoveryService: NSObject {
 
     public var serviceAddress: String

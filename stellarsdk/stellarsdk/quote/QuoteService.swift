@@ -34,10 +34,53 @@ public typealias Sep38PriceResponseClosure = (_ response:Sep38PriceResponseEnum)
 public typealias Sep38QuoteResponseClosure = (_ response:Sep38QuoteResponseEnum) -> (Void)
 
 
-/**
- Implements SEP-0038 - Anchor RFQ API
- See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md" target="_blank">Anchor RFQ API.</a>
- */
+/// Implements SEP-0038 - Anchor RFQ (Request for Quote) API.
+///
+/// This class provides price discovery and firm quotes for asset exchanges. Anchors use this
+/// to offer indicative and firm exchange rates for converting between on-chain and off-chain assets.
+/// Essential for cross-asset deposit/withdrawal operations.
+///
+/// ## Typical Usage
+///
+/// ```swift
+/// let service = QuoteService(serviceAddress: "https://anchor.example.com")
+///
+/// // Get indicative price
+/// let priceResult = await service.price(
+///     context: "sep6",
+///     sellAsset: "iso4217:USD",
+///     buyAsset: "stellar:USDC:G...",
+///     sellAmount: "100",
+///     jwt: jwtToken
+/// )
+///
+/// // Request firm quote
+/// let quoteRequest = Sep38PostQuoteRequest(
+///     context: "sep6",
+///     sellAsset: "iso4217:USD",
+///     buyAsset: "stellar:USDC:G...",
+///     sellAmount: "100"
+/// )
+/// let quoteResult = await service.postQuote(request: quoteRequest, jwt: jwtToken)
+///
+/// // Use quote in SEP-6 deposit-exchange
+/// if case .success(let quote) = quoteResult {
+///     let depositRequest = DepositExchangeRequest(
+///         destinationAsset: quote.buyAsset,
+///         sourceAsset: quote.sellAsset,
+///         amount: quote.sellAmount,
+///         quoteId: quote.id,
+///         account: accountId,
+///         jwt: jwtToken
+///     )
+///     // Submit to TransferServerService
+/// }
+/// ```
+///
+/// See also:
+/// - [SEP-0038 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)
+/// - [TransferServerService] for SEP-6 integration
+/// - [InteractiveService] for SEP-24 integration
 public class QuoteService: NSObject {
 
     public var serviceAddress: String

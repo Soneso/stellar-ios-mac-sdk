@@ -35,7 +35,35 @@ public typealias SubmitTransactionClosure = (_ completion: SubmitTransactionEnum
 /// A closure to be callded for the confirmation of a transaction.
 public typealias TransactionConfirmationClosure = ((TransactionXDR) -> (Bool))
 
-/// see https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
+/// Implements SEP-0007 - URI Scheme to Facilitate Delegated Signing.
+///
+/// This class provides functionality for creating and processing Stellar URIs that enable
+/// transaction signing delegation. Applications can generate URIs requesting users to sign
+/// transactions or make payments, and wallets can parse these URIs to fulfill the requests.
+///
+/// ## Typical Usage
+///
+/// ```swift
+/// let uriScheme = URIScheme()
+///
+/// // Generate payment URI
+/// let paymentUri = uriScheme.getPayOperationURI(
+///     destination: "GDESTINATION...",
+///     amount: 100.50,
+///     assetCode: "USDC",
+///     assetIssuer: "GISSUER..."
+/// )
+///
+/// // Generate transaction signing URI
+/// let transaction = try Transaction(...)
+/// let signingUri = uriScheme.getSignTransactionURI(
+///     transactionXDR: transaction.transactionXDR,
+///     callBack: "url:https://callback.example.com"
+/// )
+/// ```
+///
+/// See also:
+/// - [SEP-0007 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md)
 public class URIScheme: NSObject {
     let sdk = StellarSDK()
     
