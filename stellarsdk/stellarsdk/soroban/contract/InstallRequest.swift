@@ -8,6 +8,37 @@
 
 import Foundation
 
+/// Request parameters for installing (uploading) contract WebAssembly code.
+///
+/// Installing a contract uploads the compiled WASM bytecode to the Stellar network,
+/// making it available for deployment. The same WASM code can be used to deploy
+/// multiple contract instances.
+///
+/// Required parameters:
+/// - Source account keypair (with private key for signing)
+/// - Contract WASM bytecode
+/// - Network and RPC endpoint
+///
+/// Example:
+/// ```swift
+/// // Load contract WASM file
+/// let wasmBytes = try Data(contentsOf: contractWasmUrl)
+///
+/// let installRequest = InstallRequest(
+///     rpcUrl: "https://soroban-testnet.stellar.org",
+///     network: Network.testnet,
+///     sourceAccountKeyPair: sourceKeyPair,
+///     wasmBytes: wasmBytes,
+///     enableServerLogging: false
+/// )
+///
+/// let wasmHash = try await SorobanClient.install(installRequest: installRequest)
+/// print("Installed with hash: \(wasmHash)")
+/// ```
+///
+/// See also:
+/// - [SorobanClient.install] for installing contracts
+/// - [DeployRequest] for deploying contract instances
 public class InstallRequest {
     
     /// The URL of the RPC instance that will be used to install the contract.

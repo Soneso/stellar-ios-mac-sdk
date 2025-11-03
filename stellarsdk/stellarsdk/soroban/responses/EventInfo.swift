@@ -8,8 +8,36 @@
 
 import Foundation
 
-/// Part of the getEvents respopnse
-/// See https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
+/// Information about a single contract event.
+///
+/// Represents an event emitted by a smart contract during execution.
+/// Events are used to communicate contract state changes and actions to off-chain systems.
+///
+/// Event types:
+/// - contract: Events emitted by user contracts
+/// - system: Events from system-level operations
+/// - diagnostic: Debug events (only in simulation)
+///
+/// Contains:
+/// - Event type and emission context (ledger, timestamp)
+/// - Contract ID that emitted the event
+/// - Topics (indexed event parameters)
+/// - Event value (event payload)
+/// - Transaction and operation context
+///
+/// Example:
+/// ```swift
+/// for event in eventsResponse.events {
+///     print("Event from contract: \(event.contractId)")
+///     print("Emitted in ledger: \(event.ledger)")
+///     print("Topics: \(event.topic.count)")
+///     print("Value: \(event.valueXdr)")
+/// }
+/// ```
+///
+/// See also:
+/// - [GetEventsResponse] for querying events
+/// - [Soroban Events](https://developers.stellar.org/docs/smart-contracts/guides/events)
 public class EventInfo: NSObject, Decodable {
     
     /// The type of event emission. Possible values: contract, diagnostic,  system
@@ -42,10 +70,10 @@ public class EventInfo: NSObject, Decodable {
     /// The transaction which triggered this event.
     public var txHash:String
     
-    /// The operation at which an event occurred. Only avalable for protocol version >= 23
+    /// The operation at which an event occurred. Only available for protocol version >= 23
     public var opIndex:Int?
     
-    /// The transaction at which an event occurred. Only avalable for protocol version >= 23
+    /// The transaction at which an event occurred. Only available for protocol version >= 23
     public var txIndex:Int?
     
     private enum CodingKeys: String, CodingKey {

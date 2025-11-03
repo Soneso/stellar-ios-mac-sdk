@@ -8,6 +8,52 @@
 
 import Foundation
 
+/// Request parameters for deploying a smart contract instance.
+///
+/// Deploying a contract creates a new instance from previously installed WASM code.
+/// The contract receives a unique contract ID and can optionally be initialized
+/// with constructor arguments.
+///
+/// Prerequisites:
+/// - Contract WASM code must be installed first (use InstallRequest)
+/// - You need the WASM hash from the installation
+///
+/// Required parameters:
+/// - Source account keypair (with private key for signing)
+/// - WASM hash from contract installation
+/// - Network and RPC endpoint
+///
+/// Optional parameters:
+/// - Constructor arguments (if contract has an __constructor function)
+/// - Salt for deterministic contract ID generation
+/// - Method options for transaction customization
+///
+/// Example:
+/// ```swift
+/// // After installing contract and obtaining wasmHash
+/// let constructorArgs = [
+///     try SCValXDR.address(adminAddress),
+///     SCValXDR.u32(1000)
+/// ]
+///
+/// let deployRequest = DeployRequest(
+///     rpcUrl: "https://soroban-testnet.stellar.org",
+///     network: Network.testnet,
+///     sourceAccountKeyPair: sourceKeyPair,
+///     wasmHash: wasmHash,
+///     constructorArgs: constructorArgs,
+///     salt: nil,  // Random salt
+///     methodOptions: MethodOptions(),
+///     enableServerLogging: false
+/// )
+///
+/// let client = try await SorobanClient.deploy(deployRequest: deployRequest)
+/// print("Deployed at: \(client.contractId)")
+/// ```
+///
+/// See also:
+/// - [SorobanClient.deploy] for deploying contracts
+/// - [InstallRequest] for installing contract code
 public class DeployRequest {
     
     /// The URL of the RPC instance that will be used to deploy the contract.

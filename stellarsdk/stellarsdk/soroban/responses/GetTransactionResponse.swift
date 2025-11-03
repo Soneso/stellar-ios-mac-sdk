@@ -8,9 +8,58 @@
 
 import Foundation
 
-/// Response when polling the rpc server to find out if a transaction has been
-/// completed.
-/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getTransaction
+/// Response when polling for transaction completion status.
+///
+/// After submitting a transaction with sendTransaction, use this response to check
+/// if the transaction has been included in a ledger and whether it succeeded or failed.
+///
+/// Transaction status values:
+/// - SUCCESS: Transaction was included in a ledger and executed successfully
+/// - FAILED: Transaction was included but execution failed
+/// - NOT_FOUND: Transaction not found (may still be pending or has expired)
+///
+/// For successful transactions, this response contains:
+/// - The return value from contract invocations
+/// - Events emitted during execution
+/// - The ledger number and timestamp when included
+/// - Complete transaction metadata
+///
+/// For failed transactions, check the error field for details about why it failed.
+///
+/// Example:
+/// ```swift
+/// let response = await server.getTransaction(transactionHash: txHash)
+/// switch response {
+/// case .success(let txInfo):
+///     switch txInfo.status {
+///     case GetTransactionResponse.STATUS_SUCCESS:
+///         print("Transaction succeeded in ledger \(txInfo.ledger ?? 0)")
+///         if let result = txInfo.resultValue {
+///             print("Contract returned: \(result)")
+///         }
+///         // Process events
+///         if let events = txInfo.events {
+///             for event in events.events {
+///                 print("Event: \(event)")
+///             }
+///         }
+///     case GetTransactionResponse.STATUS_FAILED:
+///         if let error = txInfo.error {
+///             print("Transaction failed: \(error.message)")
+///         }
+///     case GetTransactionResponse.STATUS_NOT_FOUND:
+///         print("Transaction not yet included")
+///     default:
+///         print("Unknown status: \(txInfo.status)")
+///     }
+/// case .failure(let error):
+///     print("RPC error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [SorobanServer.getTransaction] for polling transaction status
+/// - [Soroban RPC getTransaction](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransaction)
 public class GetTransactionResponse: NSObject, Decodable {
     
     public static let STATUS_SUCCESS = "SUCCESS"

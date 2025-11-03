@@ -8,6 +8,20 @@
 
 import Foundation
 
+/// Individual result from a simulated transaction operation.
+///
+/// Part of SimulateTransactionResponse, contains the return value and authorization
+/// requirements for a single host function invocation.
+///
+/// Contains:
+/// - Return value from the contract function
+/// - Authorization entries required for execution
+///
+/// For most contract calls, SimulateTransactionResponse.results will contain
+/// a single element with the contract's return value.
+///
+/// See also:
+/// - [SimulateTransactionResponse] for the complete simulation response
 public class SimulateTransactionResult: NSObject, Decodable {
     
     /// Array of serialized base64 strings - Per-address authorizations recorded when simulating this Host Function call.
@@ -27,7 +41,7 @@ public class SimulateTransactionResult: NSObject, Decodable {
         xdr = try values.decode(String.self, forKey: .xdr)
     }
     
-    /// Converst the return value of the Host Function call to a SCValXDR object
+    /// Converts the return value of the Host Function call to a SCValXDR object
     public var value:SCValXDR? {
         return try? SCValXDR.fromXdr(base64: xdr)
     }

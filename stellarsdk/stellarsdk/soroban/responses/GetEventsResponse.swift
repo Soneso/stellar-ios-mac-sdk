@@ -8,6 +8,52 @@
 
 import Foundation
 
+/// Response from querying contract events.
+///
+/// Contains a list of events emitted by smart contracts within the specified ledger range.
+/// Events are ordered by their emission time and include all relevant metadata.
+///
+/// Use this response to:
+/// - Monitor contract state changes
+/// - Track token transfers and other contract activities
+/// - Build event-driven applications
+/// - Populate databases with on-chain event data
+///
+/// Important: When making multiple requests, deduplicate events by their unique ID
+/// to prevent double-processing in case of overlapping queries.
+///
+/// Example:
+/// ```swift
+/// let response = await server.getEvents(
+///     startLedger: 1000000,
+///     eventFilters: [filter],
+///     paginationOptions: PaginationOptions(limit: 100)
+/// )
+///
+/// switch response {
+/// case .success(let eventsResponse):
+///     for event in eventsResponse.events {
+///         print("Event ID: \(event.id)")
+///         print("Contract: \(event.contractId ?? "system")")
+///         print("Ledger: \(event.ledger)")
+///         print("Topics: \(event.topic)")
+///         print("Value: \(event.value)")
+///     }
+///
+///     // Fetch next page if available
+///     if let cursor = eventsResponse.cursor {
+///         let nextPageOptions = PaginationOptions(cursor: cursor, limit: 100)
+///         // Query next page...
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [SorobanServer.getEvents] for querying events
+/// - [EventInfo] for individual event details
+/// - [EventFilter] for filtering events
 public class GetEventsResponse: NSObject, Decodable {
     
     public var events:[EventInfo]

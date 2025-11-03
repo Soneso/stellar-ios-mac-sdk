@@ -8,8 +8,44 @@
 
 import Foundation
 
-/// Response when submitting a real transaction to the stellar network.
-/// See:  https://developers.stellar.org/network/soroban-rpc/api-reference/methods/sendTransaction
+/// Response from submitting a transaction to the Stellar network.
+///
+/// After calling sendTransaction, this response indicates whether the transaction
+/// was accepted for processing. Note that acceptance does not mean the transaction
+/// has executed - you must poll with getTransaction to check final status.
+///
+/// Status values:
+/// - PENDING: Transaction accepted and waiting to be included in a ledger
+/// - DUPLICATE: Transaction already submitted (same hash exists)
+/// - TRY_AGAIN_LATER: Server is busy, retry the submission
+/// - ERROR: Transaction rejected (check error field for details)
+///
+/// After receiving a PENDING status, use getTransaction with the returned
+/// transactionId (hash) to poll for completion.
+///
+/// Example:
+/// ```swift
+/// let sendResponse = await server.sendTransaction(transaction: signedTx)
+/// switch sendResponse {
+/// case .success(let result):
+///     switch result.status {
+///     case SendTransactionResponse.STATUS_PENDING:
+///         print("Transaction submitted: \(result.transactionId)")
+///         // Poll for status with getTransaction
+///     case SendTransactionResponse.STATUS_ERROR:
+///         print("Transaction rejected: \(result.error?.message ?? "unknown")")
+///     default:
+///         print("Status: \(result.status)")
+///     }
+/// case .failure(let error):
+///     print("RPC error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [SorobanServer.sendTransaction] for submitting transactions
+/// - [GetTransactionResponse] for polling transaction status
+/// - [Soroban RPC sendTransaction](https://developers.stellar.org/docs/data/rpc/api-reference/methods/sendTransaction)
 public class SendTransactionResponse: NSObject, Decodable {
     
     public static let STATUS_PENDING = "PENDING"

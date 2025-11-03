@@ -8,7 +8,52 @@
 
 import Foundation
 
-/// Represents a Soroban contract and helps you to interact with the contract, such as by invoking a contract method.
+/// High-level client for interacting with deployed Soroban smart contracts.
+///
+/// SorobanClient provides a simplified interface for common contract operations:
+/// - Installing contract WebAssembly code
+/// - Deploying contracts with constructor arguments
+/// - Invoking contract methods (both read-only and write operations)
+/// - Automatic transaction construction, simulation, and submission
+///
+/// The client automatically handles:
+/// - Transaction building with correct parameters
+/// - Simulation to get resource requirements
+/// - Distinguishing between read and write calls
+/// - Return value extraction from transaction results
+///
+/// Use this class when you want a streamlined experience for contract interaction.
+/// For more control over transaction construction, use AssembledTransaction directly.
+///
+/// Example usage:
+/// ```swift
+/// // Connect to an existing contract
+/// let clientOptions = ClientOptions(
+///     sourceAccountKeyPair: sourceKeyPair,
+///     contractId: "CCONTRACT123...",
+///     network: Network.testnet,
+///     rpcUrl: "https://soroban-testnet.stellar.org"
+/// )
+/// let client = try await SorobanClient.forClientOptions(options: clientOptions)
+///
+/// // Invoke a read-only method
+/// let balance = try await client.invokeMethod(
+///     name: "balance",
+///     args: [try SCValXDR.address(userAddress)]
+/// )
+///
+/// // Invoke a write method
+/// let result = try await client.invokeMethod(
+///     name: "transfer",
+///     args: [fromAddr, toAddr, amount]
+/// )
+/// print("Transfer result: \(result)")
+/// ```
+///
+/// See also:
+/// - [AssembledTransaction] for lower-level transaction control
+/// - [ContractSpec] for contract interface parsing
+/// - [Soroban Documentation](https://developers.stellar.org/docs/smart-contracts)
 public class SorobanClient {
 
     private static let constructorFunc = "__constructor"
@@ -57,13 +102,46 @@ public class SorobanClient {
         }
     }
     
-    /// After deploying the contract it creates and returns a new SorobanClient for the deployed contract.
-    /// The contract must be installed before calling this method. You can use `SorobanClient.install`
-    /// to install the contract.
+    /// Deploys a smart contract to the Stellar network.
     ///
-    /// - Parameters:
-    ///   - deployRequest: Deploy request data.
+    /// Contract deployment involves:
+    /// 1. Installing the contract WASM code (use install method first)
+    /// 2. Creating a contract instance with a unique contract ID
+    /// 3. Optionally invoking the contract's constructor function
     ///
+    /// The contract must be installed before deployment. Use SorobanClient.install to
+    /// upload the contract code and obtain a wasm hash, then use that hash in the deploy request.
+    ///
+    /// - Parameter deployRequest: Deployment parameters including wasm hash, constructor arguments, and network settings
+    /// - Returns: SorobanClient instance connected to the newly deployed contract
+    /// - Throws: SorobanClientError if deployment fails
+    ///
+    /// Example:
+    /// ```swift
+    /// // First install the contract
+    /// let installRequest = InstallRequest(
+    ///     sourceAccountKeyPair: keyPair,
+    ///     wasmBytes: contractWasmBytes,
+    ///     network: Network.testnet,
+    ///     rpcUrl: "https://soroban-testnet.stellar.org"
+    /// )
+    /// let wasmHash = try await SorobanClient.install(installRequest: installRequest)
+    ///
+    /// // Then deploy it
+    /// let deployRequest = DeployRequest(
+    ///     sourceAccountKeyPair: keyPair,
+    ///     wasmHash: wasmHash,
+    ///     network: Network.testnet,
+    ///     rpcUrl: "https://soroban-testnet.stellar.org",
+    ///     constructorArgs: [arg1, arg2]  // Constructor arguments if needed
+    /// )
+    /// let client = try await SorobanClient.deploy(deployRequest: deployRequest)
+    /// print("Contract deployed at: \(client.contractId)")
+    /// ```
+    ///
+    /// See also:
+    /// - install(installRequest:force:) for uploading contract code
+    /// - [Soroban Contract Deployment](https://developers.stellar.org/docs/smart-contracts/getting-started/deploy-to-testnet)
     public static func deploy(deployRequest:DeployRequest) async throws -> SorobanClient {
         let sourceAddress = try SCAddressXDR(accountId: deployRequest.sourceAccountKeyPair.accountId)
         let createContractOp = try InvokeHostFunctionOperation.forCreatingContractWithConstructor(wasmId: deployRequest.wasmHash, address: sourceAddress, constructorArguments: deployRequest.constructorArgs ?? [], salt: deployRequest.salt)
@@ -86,13 +164,46 @@ public class SorobanClient {
         
     }
     
-    /// Installs (uploads) the given contract code to soroban.
-    /// If successfull, it returns the wasm hash of the installed contract as a hex string.
+    /// Installs (uploads) contract WebAssembly code to the Stellar network.
     ///
-    /// - Parameters:
-    ///   - installRequest: Intalls request parameters.
-    ///   - force: force singing and sending the transaction even if it is a read call. Default false.
+    /// Installing a contract is the first step in contract deployment. This operation uploads
+    /// the compiled WebAssembly bytecode to the network and returns a unique hash identifier.
+    /// The same WASM code can be used to deploy multiple contract instances.
     ///
+    /// The installation process:
+    /// 1. Uploads the WASM bytecode to the network
+    /// 2. Returns a hash that uniquely identifies this code
+    /// 3. This hash is then used when deploying contract instances
+    ///
+    /// Note: If the code is already installed, this operation will detect it during simulation
+    /// and can return the existing hash without submitting a transaction (unless force is true).
+    ///
+    /// - Parameter installRequest: Installation parameters including WASM bytes, source account, and network settings
+    /// - Parameter force: If true, always submit transaction even if code is already installed. Default is false.
+    /// - Returns: Hex-encoded hash of the installed WASM code
+    /// - Throws: SorobanClientError if installation fails
+    ///
+    /// Example:
+    /// ```swift
+    /// // Load contract WASM file
+    /// let wasmBytes = try Data(contentsOf: contractWasmUrl)
+    ///
+    /// // Install the contract
+    /// let installRequest = InstallRequest(
+    ///     sourceAccountKeyPair: keyPair,
+    ///     wasmBytes: wasmBytes,
+    ///     network: Network.testnet,
+    ///     rpcUrl: "https://soroban-testnet.stellar.org"
+    /// )
+    /// let wasmHash = try await SorobanClient.install(installRequest: installRequest)
+    /// print("Contract code installed with hash: \(wasmHash)")
+    ///
+    /// // Use this hash to deploy contract instances
+    /// ```
+    ///
+    /// See also:
+    /// - deploy(deployRequest:) for creating contract instances
+    /// - [Soroban Contract Deployment](https://developers.stellar.org/docs/smart-contracts/getting-started/deploy-to-testnet)
     public static func install(installRequest:InstallRequest, force:Bool = false) async throws -> String {
         let uploadContractOp = try InvokeHostFunctionOperation.forUploadingContractWasm(contractCode: installRequest.wasmBytes)
         let clientOptions = ClientOptions(sourceAccountKeyPair: installRequest.sourceAccountKeyPair,
