@@ -31,7 +31,7 @@ open class FeeStatsService: NSObject {
     }
     
     /// This endpoint gives useful information about per-operation fee stats in the last 5 ledgers. It can be used to predict a fee set on the transaction that will be submitted to the network.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/fee-stats.html "Fee stats")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/fee-stats.html "Fee stats")
     ///
     /// - Parameter response: The closure to be called upon response.
     ///
@@ -44,7 +44,7 @@ open class FeeStatsService: NSObject {
     }
     
     /// This endpoint gives useful information about per-operation fee stats in the last 5 ledgers. It can be used to predict a fee set on the transaction that will be submitted to the network.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/fee-stats.html "Fee stats")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/fee-stats.html "Fee stats")
     ///
     /// - Parameter response: The closure to be called upon response.
     ///

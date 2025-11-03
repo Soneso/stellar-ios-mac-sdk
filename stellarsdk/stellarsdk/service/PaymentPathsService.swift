@@ -57,7 +57,7 @@ public class PaymentPathsService: NSObject {
     }
     
     /// The Stellar Network allows payments to be made across assets through path payments. A path payment specifies a series of assets to route a payment through, from source asset (the asset debited from the payer) to destination asset (the asset credited to the payee).
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/path-finding-strict-receive.html "Strict receive payment path")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/path-finding-strict-receive.html "Strict receive payment path")
     ///
     /// A strict receive path search is specified using:
     /// - The source account id or source assets.
@@ -86,7 +86,7 @@ public class PaymentPathsService: NSObject {
     }
     
     /// The Stellar Network allows payments to be made across assets through path payments. A path payment specifies a series of assets to route a payment through, from source asset (the asset debited from the payer) to destination asset (the asset credited to the payee).
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/path-finding-strict-receive.html "Strict receive payment path")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/path-finding-strict-receive.html "Strict receive payment path")
     ///
     /// A strict receive path search is specified using:
     /// - The source account id or source assets.
@@ -128,7 +128,7 @@ public class PaymentPathsService: NSObject {
     }
     
     /// The Stellar Network allows payments to be made across assets through path payments. A path payment specifies a series of assets to route a payment through, from source asset (the asset debited from the payer) to destination asset (the asset credited to the payee).
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/path-finding-strict-send.html "Strict send payment path")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/path-finding-strict-send.html "Strict send payment path")
     ///
     /// A Path Payment Strict Send allows a user to specify the amount of the asset to send. The amount received will vary based on offers in the order books.
     /// A path payment strict send search is specified using:
@@ -159,7 +159,7 @@ public class PaymentPathsService: NSObject {
     }
     
     /// The Stellar Network allows payments to be made across assets through path payments. A path payment specifies a series of assets to route a payment through, from source asset (the asset debited from the payer) to destination asset (the asset credited to the payee).
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/path-finding-strict-send.html "Strict send payment path")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/path-finding-strict-send.html "Strict send payment path")
     ///
     /// A Path Payment Strict Send allows a user to specify the amount of the asset to send. The amount received will vary based on offers in the order books.
     /// A path payment strict send search is specified using:

@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents the links connected to a ledger response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/ledger.html "Ledger")
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/ledger.html "Ledger")
 public class LedgerLinksResponse: NSObject, Decodable {
     
     /// Link to the current ledger request URL of this ledger.

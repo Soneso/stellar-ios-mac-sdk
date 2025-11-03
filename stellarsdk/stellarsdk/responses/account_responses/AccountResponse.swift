@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents an account response, containing information and links relating to a single account.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account Details")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/account.html "Account Details")
 public class AccountResponse: NSObject, Decodable, TransactionAccount {
 
     /// A list of Links related to this account.

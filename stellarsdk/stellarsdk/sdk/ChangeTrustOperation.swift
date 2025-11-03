@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a change trust operation. Creates, updates, or deletes a trustline.
-/// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html#change-trust, "Change Trust Operations").
+/// See [Stellar Guides] (https://developers.stellar.org/docs/learn/concepts/list-of-operations.html#change-trust, "Change Trust Operations").
 public class ChangeTrustOperation:Operation {
     
     public let asset:ChangeTrustAsset

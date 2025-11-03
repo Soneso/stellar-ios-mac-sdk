@@ -7,6 +7,6 @@
 //
 
 ///  Represents an inflation destination updated effect response. See superclass InflationDestinationUpdatedEffect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/assets.html#inflation "InflationDestinationUpdated")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+///  See [Stellar guides](https://developers.stellar.org/docs/concepts/assets.html#inflation "InflationDestinationUpdated")
 public class AccountInflationDestinationUpdatedEffectResponse: EffectResponse {}

@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a ledger response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/ledger.html "Ledger")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/ledger.html "Ledger")
 public class LedgerResponse: NSObject, Decodable {
     
     /// A list of links related to this ledger.

@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents account thresholds.
-///  See [Stellar documentation](https://www.stellar.org/developers/guides/concepts/multi-sig.html#thresholds "Account Thresholds")
+///  See [Stellar documentation](https://developers.stellar.org/docs/concepts/multi-sig.html#thresholds "Account Thresholds")
 public class AccountThresholdsResponse: NSObject, Decodable {
     
     /// The account's threshhold for low security operations.

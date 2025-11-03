@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a data created effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
 public class DataCreatedEffectResponse: EffectResponse {
     
     // name of the account data created

@@ -39,7 +39,7 @@ public enum OperationType: Int32 {
 }
 
 /// Represents an operation response. Superclass for all other operation response classes.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html "Operation")
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html "Operation")
 public class OperationResponse: NSObject, Decodable {
 
      /// A list of links related to this operation.

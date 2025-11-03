@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a set options operation response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#set-options "Set Options Operation")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#set-options "Set Options Operation")
 public class SetOptionsOperationResponse: OperationResponse {
     
     /// The sum weight for the low threshold.

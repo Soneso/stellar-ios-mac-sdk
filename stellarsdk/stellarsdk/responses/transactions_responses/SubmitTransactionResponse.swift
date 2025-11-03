@@ -9,7 +9,7 @@
 import Foundation
 
 ///  A successful response to a post transaction request.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/transactions-create.html "Post Transaction")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/endpoints/transactions-create.html "Post Transaction")
 public class SubmitTransactionResponse: TransactionResponse {
 
 }

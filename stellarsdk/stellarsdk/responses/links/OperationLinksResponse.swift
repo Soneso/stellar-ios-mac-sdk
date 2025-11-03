@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents the links connected to an operation response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html "Operation")
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html "Operation")
 public class OperationLinksResponse: NSObject, Decodable {
     
     /// Link to the effects of this operation.

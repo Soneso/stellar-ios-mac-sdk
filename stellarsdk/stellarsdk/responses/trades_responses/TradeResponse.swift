@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a trade response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/trade.html "Trade")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/trade.html "Trade")
 public class TradeResponse: NSObject, Decodable {
     
     /// A list of links related to this trade.

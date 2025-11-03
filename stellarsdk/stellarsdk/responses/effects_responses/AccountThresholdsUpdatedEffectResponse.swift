@@ -9,8 +9,8 @@
 import Foundation
 
 ///  Represents an account thresholds updated effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/multi-sig.html#thresholds "Account Thresholds")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+///  See [Stellar guides](https://developers.stellar.org/docs/concepts/multi-sig.html#thresholds "Account Thresholds")
 public class AccountThresholdsUpdatedEffectResponse: EffectResponse {
     
     /// The value of the low threshold for the account.

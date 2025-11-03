@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents the offer asset(selling/buying) attribute.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/offer.html "Offer Asset")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/offer.html "Offer Asset")
 public class OfferAssetResponse: NSObject, Decodable {
     
     /// The asset type. Possible values: native, credit_alphanum4, credit_alphanum12

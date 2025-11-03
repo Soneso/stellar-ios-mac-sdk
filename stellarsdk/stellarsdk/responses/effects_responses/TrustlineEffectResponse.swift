@@ -7,8 +7,8 @@
 //
 
 ///  Represents an account trustline effect response. Superclass for trustline created, updated, removed, authorized and deauthorized effects.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/assets.html#trustlines "Trustlines")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+///  See [Stellar guides](https://developers.stellar.org/docs/concepts/assets.html#trustlines "Trustlines")
 public class TrustlineEffectResponse: EffectResponse {
     
     /// The limit for which the account trusts the issuing account.

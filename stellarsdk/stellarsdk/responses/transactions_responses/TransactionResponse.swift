@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a transaction response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/transaction.html "Transaction")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/transaction.html "Transaction")
 public class TransactionResponse: NSObject, Decodable {
     
     /// A list of links related to this asset.

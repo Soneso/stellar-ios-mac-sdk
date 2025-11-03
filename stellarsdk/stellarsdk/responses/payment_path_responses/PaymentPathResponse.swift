@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a Payment Path response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/path.html "Payment Path")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/path.html "Payment Path")
 public class PaymentPathResponse: NSObject, Decodable {
     
     /// An array of assets that represents the intermediary assets this path hops through

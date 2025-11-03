@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents the links connected to a transaction response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/transaction.html "Transaction")
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/transaction.html "Transaction")
 public class TransactionLinksResponse: NSObject, Decodable {
     
     /// Link to the current transaction respones.

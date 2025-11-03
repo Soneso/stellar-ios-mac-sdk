@@ -9,5 +9,5 @@
 import Foundation
 
 ///  Represents a not implemented error response from the horizon api (code 501), containing information related to the error
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/errors/not-implemented.html "Not Implemented")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/errors/not-implemented.html "Not Implemented")
 public class NotImplementedErrorResponse: ErrorResponse {}

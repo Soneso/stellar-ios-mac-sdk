@@ -8,7 +8,7 @@
 
 import Foundation
 
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/page.html "Page")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/page.html "Page")
 public struct PageResponse<Element:Decodable>: Decodable {
     
     public enum ResponseEnum {

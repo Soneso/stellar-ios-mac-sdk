@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents an allow trust operation response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#allow-trust "Allow Trust Operation")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#allow-trust "Allow Trust Operation")
 public class AllowTrustOperationResponse: OperationResponse {
     
     /// Trustor account.

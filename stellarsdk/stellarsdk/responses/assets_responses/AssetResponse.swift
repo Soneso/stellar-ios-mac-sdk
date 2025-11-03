@@ -9,8 +9,8 @@
 import Foundation
 
 ///  Represents an asset response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/assets-all.html "All Assets Request")
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/asset.html "Asset")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/endpoints/assets-all.html "All Assets Request")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/asset.html "Asset")
 public class AssetResponse: NSObject, Decodable {
     
     /// A list of links related to this asset.

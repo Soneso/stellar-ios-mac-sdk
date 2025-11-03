@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents the account balance.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account Balance")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/account.html "Account Balance")
 public class AccountBalanceResponse: NSObject, Decodable {
 
     /// Balance for the specified asset.

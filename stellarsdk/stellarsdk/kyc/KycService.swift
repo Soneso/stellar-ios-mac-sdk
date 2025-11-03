@@ -70,7 +70,7 @@ public class KycService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
-    /// Creates a KycService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates a KycService instance based on information from [stellar.toml](https://developers.stellar.org/docs/learn/concepts/stellar-toml.html) file for a given domain.
     @available(*, renamed: "forDomain(domain:)")
     public static func forDomain(domain:String, completion:@escaping KycServiceClosure) {
         Task {
@@ -79,7 +79,7 @@ public class KycService: NSObject {
         }
     }
     
-    /// Creates a KycService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates a KycService instance based on information from [stellar.toml](https://developers.stellar.org/docs/learn/concepts/stellar-toml.html) file for a given domain.
     public static func forDomain(domain:String) async -> KycServiceForDomainEnum {
         let kycServerKey = "KYC_SERVER"
         let transferServerKey = "TRANSFER_SERVER"

@@ -9,8 +9,8 @@
 import Foundation
 
 ///  Represents an account home domain updated effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/accounts.html#home-domain "Home Domain")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+///  See [Stellar guides](https://developers.stellar.org/docs/concepts/accounts.html#home-domain "Home Domain")
 public class AccountHomeDomainUpdatedEffectResponse: EffectResponse {
     
     /// The home domain of the account.

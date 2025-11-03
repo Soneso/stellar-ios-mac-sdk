@@ -9,7 +9,7 @@
 import Foundation
 
 ///  The memo contains optional extra information. It is the responsibility of the client to interpret this value.
-///  See [Horizon Guides](https://www.stellar.org/developers/guides/concepts/transactions.html#memo, "Memo")
+///  See [Horizon Guides](https://developers.stellar.org/docs/concepts/transactions.html#memo, "Memo")
 ///
 ///  Memos can be one of the following types:
 /// - none: Empty memo.

@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a path payment operation. Sends an amount in a specific asset to a destination account through a path of offers. This allows the asset sent (e.g., 450 XLM) to be different from the asset received (e.g, 6 BTC).
-/// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html#path-payment, "Path Payment Operations").
+/// See [Stellar Guides] (https://developers.stellar.org/docs/learn/concepts/list-of-operations.html#path-payment, "Path Payment Operations").
 public class PathPaymentOperation:Operation {
     
     public let sendAsset:Asset

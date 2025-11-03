@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a manage data operation response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#manage-data "Manage Data Operation")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#manage-data "Manage Data Operation")
 public class ManageDataOperationResponse: OperationResponse {
     
     /// Name from the (name/value pair) for an account.

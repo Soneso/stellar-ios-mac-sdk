@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents the links connected to an offer response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/offer.html "Offer")
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/offer.html "Offer")
 public class OfferLinksResponse: NSObject, Decodable {
     
     /// Link to the current offer request URL of this offer.

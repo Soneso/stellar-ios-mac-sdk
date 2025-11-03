@@ -9,8 +9,8 @@
 import Foundation
 
 ///  Represents the account flags.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account")
-///  See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/accounts.html#flags "Account flags")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/account.html "Account")
+///  See [Stellar Guides] (https://developers.stellar.org/docs/concepts/accounts.html#flags "Account flags")
 ///  Currently there are three flags, used by issuers of assets: Authorization required, Authorization revocable and Authorization immutable.
 public class AccountFlagsResponse: NSObject, Decodable {
     

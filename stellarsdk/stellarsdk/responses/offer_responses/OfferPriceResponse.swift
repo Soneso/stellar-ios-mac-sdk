@@ -10,7 +10,7 @@ import Foundation
 
 
 ///  Represents an offer price_r attribute.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/offer.html "offer")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/offer.html "offer")
 public class OfferPriceResponse: NSObject, Decodable {
     
     /// represent the buy price of the currencies on offer.

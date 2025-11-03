@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents the links connected to an effect response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
 public class EffectLinksResponse: NSObject, Decodable {
     
     /// Link to the operation that created the effect.

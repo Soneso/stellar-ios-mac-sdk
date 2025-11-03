@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a path payment operation response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#path-payment "Path Payment Operation")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#path-payment "Path Payment Operation")
 public class PathPaymentOperationResponse: OperationResponse {
     
     /// Amount received.

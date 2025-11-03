@@ -69,7 +69,7 @@ public class OffersService: NSObject {
     
     /// People on the Stellar network can make offers to buy or sell assets. This endpoint represents all the current offers, allowing filtering by seller, selling_asset or buying_asset.
     ///
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/offers.html "Offers")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/offers.html "Offers")
     ///
     /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -95,7 +95,7 @@ public class OffersService: NSObject {
     
     /// People on the Stellar network can make offers to buy or sell assets. This endpoint represents all the current offers, allowing filtering by seller, selling_asset or buying_asset.
     ///
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/offers.html "Offers")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/offers.html "Offers")
     ///
     /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///

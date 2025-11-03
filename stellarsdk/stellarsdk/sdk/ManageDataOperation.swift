@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents an manage data operation. Allows you to set,modify or delete a Data Entry (name/value pair) that is attached to a particular account. An account can have an arbitrary amount of DataEntries attached to it. Each DataEntry increases the minimum balance needed to be held by the account.
-/// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html#manage-data, "Manage Data Operations").
+/// See [Stellar Guides] (https://developers.stellar.org/docs/learn/concepts/list-of-operations.html#manage-data, "Manage Data Operations").
 public class ManageDataOperation:Operation {
     
     public let name:String

@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents an error response from the horizon api, containing information related to the error that occured.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/errors.html "Errors")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/errors.html "Errors")
 public class ErrorResponse: NSObject, Decodable {
     
     /// The identifier for the error. This is a URL that can be visited in the browser.

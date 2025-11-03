@@ -9,8 +9,8 @@
 import Foundation
 
 ///  Represents an account flags updated effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/accounts.html#flags "Account Flags")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+///  See [Stellar guides](https://developers.stellar.org/docs/concepts/accounts.html#flags "Account Flags")
 public class AccountFlagsUpdatedEffectResponse: EffectResponse {
     
     /// True if an issuing account is required to give other accounts permission before they can hold the issuing account’s credit.

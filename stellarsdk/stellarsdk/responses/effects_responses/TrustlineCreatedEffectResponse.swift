@@ -9,6 +9,6 @@
 import Foundation
 
 ///  Represents a trustline created effect response. See superclass TrustlineEffect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/assets.html#trustlines "Trustlines")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+///  See [Stellar guides](https://developers.stellar.org/docs/concepts/assets.html#trustlines "Trustlines")
 public class TrustlineCreatedEffectResponse: TrustlineEffectResponse {}

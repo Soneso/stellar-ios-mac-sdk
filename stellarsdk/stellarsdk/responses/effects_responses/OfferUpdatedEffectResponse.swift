@@ -9,6 +9,6 @@
 import Foundation
 
 ///  Represents an offer updated effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/exchange.html#offers "Offers")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+///  See [Stellar guides](https://developers.stellar.org/docs/concepts/exchange.html#offers "Offers")
 public class OfferUpdatedEffectResponse: EffectResponse {}

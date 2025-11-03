@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents the links connected to an asset response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/asset.html "Asset")
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/asset.html "Asset")
 public class AssetLinksResponse: NSObject, Decodable {
     
     /// Link to the TOML file for this issuer.

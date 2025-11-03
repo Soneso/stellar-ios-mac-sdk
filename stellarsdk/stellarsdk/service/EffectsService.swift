@@ -31,7 +31,7 @@ public class EffectsService: NSObject {
     }
     
     /// This function calls the endpoint that represents all effects.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/effects-all.html "All Effects")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/effects-all.html "All Effects")
     ///
     /// This fuction responds with a page of effects. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -48,7 +48,7 @@ public class EffectsService: NSObject {
     }
     
     /// This function calls the endpoint that represents all effects.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/effects-all.html "All Effects")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/effects-all.html "All Effects")
     ///
     /// This fuction responds with a page of effects. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -62,7 +62,7 @@ public class EffectsService: NSObject {
     }
     
     /// This function calls the endpoint represents all effects that changed a given account. It will return relevant effects from the creation of the account to the current ledger.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-account.html "Effects for Account")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/effects-for-account.html "Effects for Account")
     ///
     /// This fuction responds with a page of effects. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -86,7 +86,7 @@ public class EffectsService: NSObject {
     }
     
     /// Effects are the specific ways that the ledger was changed by any operation. This function calls the endpoint that represents all effects that occurred in the given ledger.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-ledger.html "Effects for Ledger")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/effects-for-ledger.html "Effects for Ledger")
     ///
     /// This fuction responds with a page of effects. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -104,7 +104,7 @@ public class EffectsService: NSObject {
     }
     
     /// Effects are the specific ways that the ledger was changed by any operation. This function calls the endpoint that represents all effects that occurred in the given ledger.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-ledger.html "Effects for Ledger")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/effects-for-ledger.html "Effects for Ledger")
     ///
     /// This fuction responds with a page of effects. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -119,7 +119,7 @@ public class EffectsService: NSObject {
     }
     
     /// This function calls the endpoint that represents all effects that occurred as a result of a given operation.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-operation.html "Effects for Operation")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/effects-for-operation.html "Effects for Operation")
     ///
     /// This fuction responds with a page of effects. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -137,7 +137,7 @@ public class EffectsService: NSObject {
     }
     
     /// This function calls the endpoint that represents all effects that occurred as a result of a given operation.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-operation.html "Effects for Operation")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/effects-for-operation.html "Effects for Operation")
     ///
     /// This fuction responds with a page of effects. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -152,7 +152,7 @@ public class EffectsService: NSObject {
     }
     
     /// This function calls the endpoint that represents all effects that occurred as a result of a given transaction.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-transaction.html "Effects for Transaction")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/effects-for-transaction.html "Effects for Transaction")
     ///
     /// This fuction responds with a page of effects. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -170,7 +170,7 @@ public class EffectsService: NSObject {
     }
     
     /// This function calls the endpoint that represents all effects that occurred as a result of a given transaction.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/effects-for-transaction.html "Effects for Transaction")
+    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/effects-for-transaction.html "Effects for Transaction")
     ///
     /// This fuction responds with a page of effects. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///

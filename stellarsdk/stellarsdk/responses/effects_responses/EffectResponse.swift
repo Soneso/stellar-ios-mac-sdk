@@ -71,7 +71,7 @@ public enum EffectType: Int {
 }
 
 /// Represents an account effect response. Superclass for all other effect response classes.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
 public class EffectResponse: NSObject, Decodable {
     
     /// A list of links related to this effect.

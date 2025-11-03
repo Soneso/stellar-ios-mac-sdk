@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents the links contained within an account response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html#links "Account Links")
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/account.html#links "Account Links")
 public class AccountLinksResponse: NSObject, Decodable {
     
     /// Link to the account.

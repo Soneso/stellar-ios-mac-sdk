@@ -8,7 +8,7 @@
 
 import Foundation
 
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/path-finding.html "Find Payment Paths")
+///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/endpoints/path-finding.html "Find Payment Paths")
 public struct FindPaymentPathsResponse: Decodable {
     
     /// records found in the response.
