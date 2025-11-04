@@ -8,8 +8,20 @@
 
 import Foundation
 
-/// Data+KeyUtils is a helper extension that allows encoding Stellar keys
-/// from their binary (Data) representations to thier StrKey representations (i.e. "GABCD...", etc.)
+/// Extension providing Stellar key encoding utilities for Data.
+///
+/// This extension allows encoding binary key data into Stellar's StrKey format, which uses
+/// versioned base32 encoding with checksums. Different version bytes are used for different
+/// key types (accounts, seeds, hashes, etc.).
+///
+/// Example:
+/// ```swift
+/// let publicKeyData = Data([...]) // 32 bytes
+/// let stellarAddress = try publicKeyData.encodeEd25519PublicKey()
+/// // Returns "GABCD..." format address
+/// ```
+///
+/// See: [SEP-0023](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md) for StrKey specification.
 extension Data {
     
     /// Encodes data to strkey ed25519 public key ("G...").
@@ -87,6 +99,14 @@ extension Data {
         return checksumedData.base32EncodedString.replacingOccurrences(of: "=", with: "")
     }
     
+    /// Performs XOR operation on two Data objects.
+    ///
+    /// XORs each byte of the two data objects. If one is longer than the other,
+    /// the remaining bytes of the longer one are appended unchanged.
+    ///
+    /// - Parameter left: First data object
+    /// - Parameter right: Second data object
+    /// - Returns: Result of XOR operation
     static func xor (left: Data, right: Data) -> Data {
         var result: Data = Data()
         var smaller: Data, bigger: Data

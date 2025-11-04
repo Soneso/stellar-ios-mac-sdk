@@ -8,14 +8,35 @@
 
 import Foundation
 
+/// Errors that can occur during Stellar key decoding.
 public enum KeyUtilsError: Error {
+    /// The encoded string is invalid or malformed.
     case invalidEncodedString
+
+    /// The version byte in the encoded string is incorrect.
     case invalidVersionByte
+
+    /// The checksum validation failed.
     case invalidChecksum
 }
 
-/// Str+KeyUtils is a helper extension that allows decoding Stellar keys
-/// from thier StrKey representations (i.e. "GABCD...", etc.) to their binary (Data) representations.
+/// Extension providing Stellar key decoding utilities for String.
+///
+/// This extension allows decoding Stellar's StrKey format (versioned base32 encoding with checksums)
+/// back to binary key data. Different version bytes are used for different key types.
+///
+/// Example:
+/// ```swift
+/// let address = "GABCD..."
+/// let publicKeyData = try address.decodeEd25519PublicKey()
+///
+/// // Validate before decoding
+/// if address.isValidEd25519PublicKey() {
+///     let keyData = try address.decodeEd25519PublicKey()
+/// }
+/// ```
+///
+/// See: [SEP-0023](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md) for StrKey specification.
 extension String {
     
     /// Decodes strkey ed25519 public key ("G...")  to raw data
@@ -144,7 +165,10 @@ extension String {
         }
     }
     
-    // Encodes a contract id from its hex representation into its strkey representation ("C...")
+    /// Encodes a contract id from its hex representation into its strkey representation ("C...").
+    ///
+    /// - Returns: StrKey encoded contract id
+    /// - Throws: StellarSDKError if the string is not valid hexadecimal
     public func encodeContractIdHex() throws -> String {
         if let data = data(using: .hexadecimal) {
             return try data.encodeContractId()
@@ -152,7 +176,10 @@ extension String {
         throw StellarSDKError.invalidArgument(message: "Not a hex string \(self)")
     }
     
-    // Encodes a claimable balance id from its hex representation into its strkey representation ("B...")
+    /// Encodes a claimable balance id from its hex representation into its strkey representation ("B...").
+    ///
+    /// - Returns: StrKey encoded claimable balance id
+    /// - Throws: StellarSDKError if the string is not valid hexadecimal
     public func encodeClaimableBalanceIdHex() throws -> String {
         if let data = data(using: .hexadecimal) {
             return try data.encodeClaimableBalanceId()
@@ -160,7 +187,10 @@ extension String {
         throw StellarSDKError.invalidArgument(message: "Not a hex string \(self)")
     }
     
-    // Encodes a liquidity pool id from its hex representation into its strkey representation ("L...")
+    /// Encodes a liquidity pool id from its hex representation into its strkey representation ("L...").
+    ///
+    /// - Returns: StrKey encoded liquidity pool id
+    /// - Throws: StellarSDKError if the string is not valid hexadecimal
     public func encodeLiquidityPoolIdHex() throws -> String {
         if let data = data(using: .hexadecimal) {
             return try data.encodeLiquidityPoolId()
@@ -168,7 +198,9 @@ extension String {
         throw StellarSDKError.invalidArgument(message: "Not a hex string \(self)")
     }
     
-    // Checks if the string is a hex representation of data.
+    /// Checks if the string is a valid hexadecimal representation of data.
+    ///
+    /// - Returns: True if the string is valid hexadecimal, false otherwise
     public func isHexString() -> Bool {
         if let _ = data(using: .hexadecimal) {
             return true

@@ -8,18 +8,29 @@
 
 import Foundation
 
+/// Extension providing multipart form data support for URLRequest.
 extension URLRequest {
-    
-    /**
-     Configures the URL request for `multipart/form-data`. The request's `httpBody` is set, and a value is set for the HTTP header field `Content-Type`.
-     
-     - Parameter parameters: The form data to set.
-     - Parameter encoding: The encoding to use for the keys and values.
-     
-     - Throws: `EncodingError` if any keys or values in `parameters` are not entirely in `encoding`.
-     
-     - Note: The default `httpMethod` is `GET`, and `GET` requests do not typically have a response body. Remember to set the `httpMethod` to e.g. `POST` before sending the request.
-     */
+
+    /// Configures the URL request for multipart/form-data encoding.
+    ///
+    /// Sets the request's httpBody and Content-Type header for multipart form data submission.
+    /// This is commonly used for file uploads and form submissions that include binary data.
+    ///
+    /// - Parameter parameters: Dictionary of form field names to data values
+    /// - Parameter encoding: Text encoding to use for field names
+    /// - Throws: EncodingError if field names cannot be encoded properly
+    ///
+    /// Example:
+    /// ```swift
+    /// var request = URLRequest(url: uploadURL)
+    /// request.httpMethod = "POST"
+    /// try request.setMultipartFormData([
+    ///     "file": fileData,
+    ///     "description": descriptionData
+    /// ], encoding: .utf8)
+    /// ```
+    ///
+    /// - Note: Remember to set httpMethod to POST before sending the request.
     mutating func setMultipartFormData(_ parameters: [String: Data], encoding: String.Encoding) throws {
         let boundary = String(format: "------------------------%08X%08X", arc4random(), arc4random())
         
@@ -58,6 +69,8 @@ extension URLRequest {
     }
 }
 
+/// Error that occurs when encoding multipart form data fails.
 struct EncodingError: Error {
+    /// Description of what failed to encode (e.g., "charset", "name").
     let what: String
 }
