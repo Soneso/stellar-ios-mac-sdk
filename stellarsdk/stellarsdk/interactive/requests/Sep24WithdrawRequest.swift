@@ -1,87 +1,100 @@
 import Foundation
 
+/// Request parameters for initiating a withdrawal transaction via SEP-0024.
+///
+/// This struct encapsulates all the parameters needed to start an interactive withdrawal flow,
+/// where a user withdraws Stellar assets with an anchor and receives the equivalent off-chain
+/// assets (e.g., fiat currency).
+///
+/// See also:
+/// - [InteractiveService.withdraw] for the method that uses this request
+/// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
 public struct Sep24WithdrawRequest {
 
-    /// jwt previously received from the anchor via the SEP-10 authentication flow
+    /// JWT previously received from the anchor via the SEP-10 authentication flow.
     public var jwt:String
-    
+
     /// Code of the asset the user wants to withdraw. The value passed must match one of the codes listed in the /info response's withdraw object.
     /// 'native' is a special asset_code that represents the native XLM token.
     public var assetCode:String
     
-    /// (optional) The issuer of the stellar asset the user wants to withdraw with the anchor.
+    /// The issuer of the stellar asset the user wants to withdraw with the anchor.
     /// If asset_issuer is not provided, the anchor should use the asset issued by themselves as described in their TOML file.
     /// If 'native' is specified as the asset_code, asset_issuer must be not be set.
     public var assetIssuer:String?
-    
-    /// (optional) string in Asset Identification Format - The asset user wants to receive. It's an off-chain or fiat asset.
+
+    /// String in Asset Identification Format - The asset user wants to receive. It's an off-chain or fiat asset.
     /// If this is not provided, it will be collected in the interactive flow.
     /// When quote_id is specified, this parameter must match the quote's buy_asset asset code or be omitted.
     public var destinationAsset:String?
-    
-    /// (optional) Amount of asset requested to withdraw. If this is not provided it will be collected in the interactive flow.
+
+    /// Amount of asset requested to withdraw. If this is not provided it will be collected in the interactive flow.
     public var amount:String?
-    
-    /// (optional) The id returned from a SEP-38 POST /quote response.
+
+    /// The id returned from a SEP-38 POST /quote response.
     public var quoteId:String?
-    
-    /// (optional) The Stellar (G...) or muxed account (M...) the client wants to use as the destination of the payment sent by the anchor.
+
+    /// The Stellar (G...) or muxed account (M...) the client wants to use as the destination of the payment sent by the anchor.
     /// Defaults to the account authenticated via SEP-10 if not specified.
     public var account:String?
-    
-    /// (deprecated, optional) This field was originally intended to differentiate users of the same Stellar account.
+
+    /// Deprecated. This field was originally intended to differentiate users of the same Stellar account.
     /// However, the anchor should use the sub value included in the decoded SEP-10 JWT instead.
     /// Anchors should still support this parameter to maintain support for outdated clients.
-    /// See the Shared Account Authentication section for more information.
-    /// https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md#shared-omnibus-or-pooled-accounts
     public var memo:String?
-    
-    /// (deprecated, optional) Type of memo. One of text, id or hash. Deprecated because memos used to identify users of the same Stellar account should always be of type of id.
+
+    /// Deprecated. Type of memo. One of text, id or hash. Deprecated because memos used to identify users of the same Stellar account should always be of type of id.
     public var memoType:String?
-    
-    /// (optional) In communications / pages about the withdrawal, anchor should display the wallet name to the user to explain where funds are coming from.
+
+    /// In communications / pages about the withdrawal, anchor should display the wallet name to the user to explain where funds are coming from.
     public var walletName:String?
-    
-    /// (optional) Anchor can show this to the user when referencing the wallet involved in the withdrawal (ex. in the anchor's transaction history).
+
+    /// Anchor can show this to the user when referencing the wallet involved in the withdrawal (ex. in the anchor's transaction history).
     public var walletUrl:String?
-    
-    /// (optional) Defaults to en if not specified or if the specified language is not supported.
+
+    /// Defaults to en if not specified or if the specified language is not supported.
     /// Language code specified using RFC 4646 which means it can also accept locale in the format en-US.
-    /// error fields in the response, as well as the interactive flow UI and any other user-facing
+    /// Error fields in the response, as well as the interactive flow UI and any other user-facing
     /// strings returned for this transaction should be in this language.
     public var lang:String?
-    
-    /// (optional) The memo the anchor must use when sending refund payments back to the user.
+
+    /// The memo the anchor must use when sending refund payments back to the user.
     /// If not specified, the anchor should use the same memo used by the user to send the original payment.
     /// If specified, refund_memo_type must also be specified.
     public var refundMemo:String?
-    
-    /// (optional) The type of the refund_memo. Can be id, text, or hash.
-    /// See the memos documentation for more information.
+
+    /// The type of the refund_memo. Can be id, text, or hash.
     /// If specified, refund_memo must also be specified.
-    /// https://developers.stellar.org/docs/encyclopedia/memos
     public var refundMemoType:String?
-    
-    /// one or more of the fields listed in SEP-9
+
+    /// One or more of the KYC fields for natural persons as listed in SEP-9.
     public var kycFields:[KYCNaturalPersonFieldsEnum]?
-    
-    /// one or more of the fields listed in SEP-9
+
+    /// One or more of the KYC fields for organizations as listed in SEP-9.
     public var kycOrganizationFields:[KYCOrganizationFieldsEnum]?
-    
-    /// one or more of the fields listed in SEP-9
+
+    /// One or more of the KYC fields for financial accounts as listed in SEP-9.
     public var kycFinancialAccountFields:[KYCFinancialAccountFieldsEnum]?
-    
-    // additional custom fields to be added
+
+    /// Additional custom fields to be added to the request.
     public var customFields:[String:String]?
-    
-    // additional custom files to be added
+
+    /// Additional custom files to be added to the request.
     public var customFiles:[String:Data]?
-    
+
+    /// Creates a new withdrawal request.
+    ///
+    /// - Parameters:
+    ///   - jwt: JWT previously received from the anchor via SEP-10 authentication
+    ///   - assetCode: The code of the stellar asset the user wants to withdraw
     public init(jwt:String, assetCode:String) {
         self.assetCode = assetCode
         self.jwt = jwt
     }
-    
+
+    /// Converts the request parameters to a dictionary of data for multipart form submission.
+    ///
+    /// - Returns: Dictionary mapping parameter names to their Data representations
     public func toParameters() -> [String:Data] {
         var parameters = [String:Data]()
         parameters["asset_code"] = assetCode.data(using: .utf8)
