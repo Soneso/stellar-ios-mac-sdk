@@ -8,9 +8,16 @@
 
 import Foundation
 
+/// The URI scheme identifier for Stellar SEP-0007 compliant URIs.
 public let URISchemeName = "web+stellar:"
+
+/// The operation identifier for transaction signing requests in SEP-0007 URIs.
 public let SignOperation = "tx?"
+
+/// The operation identifier for payment requests in SEP-0007 URIs.
 public let PayOperation = "pay?"
+
+/// Maximum allowed length for message parameters in SEP-0007 URIs.
 public let MessageMaximumLength = 300
 
 /// An enum used to differentiate between a successful and a failed transaction setup.
@@ -32,7 +39,7 @@ public typealias SetupTransactionXDRClosure = (_ completion: SetupTransactionXDR
 /// A closure to be called with the response from a transaction submission.
 public typealias SubmitTransactionClosure = (_ completion: SubmitTransactionEnum) -> (Void)
 
-/// A closure to be callded for the confirmation of a transaction.
+/// A closure to be called for the confirmation of a transaction.
 public typealias TransactionConfirmationClosure = ((TransactionXDR) -> (Bool))
 
 /// Implements SEP-0007 - URI Scheme to Facilitate Delegated Signing.
@@ -141,7 +148,7 @@ public class URIScheme: NSObject {
     }
     
     /// This function is used to generate a URIScheme compliant URL to serve as a request to pay a specific address with a specific asset, regardless of the source asset used by the payer.
-    /// It will URL-encode the given parameter values. If memo is MEMO_HASH or MEMO_RETURN it will bese64 encode it and the url encode it.
+    /// It will URL-encode the given parameter values. If memo is MEMO_HASH or MEMO_RETURN it will base64 encode it and the url encode it.
     /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md#operation-pay
     ///
     /// - Parameter destination: A valid account ID or payment address that will be used as destination for the payment.
