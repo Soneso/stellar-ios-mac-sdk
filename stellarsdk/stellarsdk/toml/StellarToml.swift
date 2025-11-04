@@ -8,13 +8,22 @@
 
 import Foundation
 
+/// Errors that can occur when loading a stellar.toml file from a domain.
 public enum TomlFileError: Error {
+    /// The provided domain is invalid or cannot be used to construct a valid URL.
     case invalidDomain
+    /// The stellar.toml file could not be parsed or contains invalid TOML syntax.
     case invalidToml
 }
 
+/// Errors that can occur when loading a linked currency TOML file from a URL.
+///
+/// Per SEP-0001, a stellar.toml can link to separate TOML files for individual currencies
+/// using toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
 public enum TomlCurrencyLoadError: Error {
+    /// The provided URL string is invalid or cannot be parsed.
     case invalidUrl
+    /// The currency TOML file could not be parsed or contains invalid TOML syntax.
     case invalidToml
 }
 
@@ -83,7 +92,7 @@ public typealias TomlCurrencyFromUrlClosure = (_ response:TomlCurrencyFromUrlEnu
 ///
 /// See also:
 /// - [SEP-0001 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
-/// - Supported version: 2.5.0
+/// - Supported version: 2.7.0
 public class StellarToml {
 
     public var accountInformation: AccountInformation
