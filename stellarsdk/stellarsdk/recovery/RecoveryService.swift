@@ -23,8 +23,16 @@ public enum Sep30AccountsResponseEnum {
     case failure(error: RecoveryServiceError)
 }
 
+/// Callback closure for account operations (register, update, get, delete).
+/// Receives a result containing either a Sep30AccountResponse or RecoveryServiceError.
 public typealias Sep30AccountResponseClosure = (_ response:Sep30AccountResponseEnum) -> (Void)
+
+/// Callback closure for transaction signing operations.
+/// Receives a result containing either a Sep30SignatureResponse or RecoveryServiceError.
 public typealias Sep30SignatureResponseClosure = (_ response:Sep30SignatureResponseEnum) -> (Void)
+
+/// Callback closure for listing accounts operations.
+/// Receives a result containing either a Sep30AccountsResponse or RecoveryServiceError.
 public typealias Sep30AccountsResponseClosure = (_ response:Sep30AccountsResponseEnum) -> (Void)
 
 /// Implements SEP-0030 - Account Recovery: Multi-Party Recovery of Stellar Accounts.
