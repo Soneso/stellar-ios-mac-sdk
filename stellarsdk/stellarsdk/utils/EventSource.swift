@@ -8,12 +8,96 @@
 
 import Foundation
 
+/// The connection state of an EventSource instance.
+///
+/// Tracks the lifecycle of the Server-Sent Events connection from initial connection
+/// through active streaming to final closure.
 public enum EventSourceState {
+    /// Initial state when establishing connection to the server.
     case connecting
+    /// Connection is established and ready to receive events.
     case open
+    /// Connection is closed and no longer receiving events.
     case closed
 }
 
+/// Implementation of the W3C Server-Sent Events (SSE) protocol for streaming data from Horizon.
+///
+/// This class implements a client for the Server-Sent Events protocol, which enables
+/// servers to push real-time updates to clients over HTTP. The implementation is used
+/// throughout the SDK to stream live data from Stellar Horizon servers, including
+/// ledgers, transactions, operations, effects, and account changes.
+///
+/// ## Protocol Overview
+///
+/// Server-Sent Events provide a unidirectional channel from server to client over HTTP.
+/// The connection remains open, and the server pushes updates as formatted text messages.
+/// Key features include:
+///
+/// - Automatic reconnection with configurable retry intervals
+/// - Event identification for resuming from last received message
+/// - Named events for routing different message types
+/// - Long-lived connections with appropriate timeouts
+///
+/// ## Usage Example
+///
+/// ```swift
+/// // Stream ledger updates from Horizon
+/// let url = "https://horizon.stellar.org/ledgers?cursor=now"
+/// let eventSource = EventSource(url: url)
+///
+/// eventSource.onOpen { response in
+///     print("Connection opened, status: \(response?.statusCode ?? 0)")
+/// }
+///
+/// eventSource.onMessage { id, event, data in
+///     print("Received message - ID: \(id ?? "none"), Event: \(event ?? "none")")
+///     // Parse data as JSON ledger response
+///     if let ledgerData = data?.data(using: .utf8) {
+///         // Process ledger data
+///     }
+/// }
+///
+/// eventSource.onError { error in
+///     print("Connection error: \(error?.localizedDescription ?? "unknown")")
+/// }
+///
+/// // Close when done
+/// eventSource.close()
+/// ```
+///
+/// ## Event Handlers
+///
+/// The EventSource supports three types of callbacks:
+///
+/// - `onOpen`: Called when connection is established
+/// - `onMessage`: Called for each message received
+/// - `onError`: Called when errors occur
+///
+/// Additionally, named event listeners can be registered for specific event types:
+///
+/// ```swift
+/// eventSource.addEventListener("ledger-update") { id, event, data in
+///     // Handle ledger-specific events
+/// }
+/// ```
+///
+/// ## Automatic Reconnection
+///
+/// The implementation automatically reconnects on connection failures using an
+/// exponential backoff strategy. The retry interval can be set by the server
+/// using the `retry:` field in the event stream, defaulting to 3000 milliseconds.
+///
+/// ## Last Event ID
+///
+/// To support reliable streaming, the last received event ID is persisted and
+/// sent with reconnection requests using the `Last-Event-Id` header. This allows
+/// the server to resume streaming from where it left off.
+///
+/// See also:
+/// - [W3C Server-Sent Events Specification](https://html.spec.whatwg.org/multipage/server-sent-events.html)
+/// - [Horizon Streaming](https://developers.stellar.org/docs/data/horizon/api-reference/structure/streaming)
+/// - [StreamingHelper] for simplified Horizon streaming integration
 open class EventSource: NSObject, URLSessionDataDelegate {
     static let DefaultsKey = "com.soneso.eventSource.lastEventId"
     
@@ -23,6 +107,12 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     fileprivate var onOpenCallback: ((HTTPURLResponse?) -> Void)?
     fileprivate var onErrorCallback: ((NSError?) -> Void)?
     fileprivate var onMessageCallback: ((_ id: String?, _ event: String?, _ data: String?) -> Void)?
+
+    /// Current connection state of the EventSource.
+    ///
+    /// Indicates whether the connection is connecting, open, or closed. This property
+    /// is read-only from outside the class and updates automatically as the connection
+    /// state changes.
     open internal(set) var readyState: EventSourceState
     open fileprivate(set) var retryTime = 3000
     fileprivate var eventListeners = Dictionary<String, (_ id: String?, _ event: String?, _ data: String?) -> Void>()
@@ -37,7 +127,19 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     
     var event = Dictionary<String, String>()
     var defaults = Dictionary<String, String>()
-    
+
+    /// Creates a new EventSource instance and establishes connection to the specified URL.
+    ///
+    /// The initializer creates an EventSource that immediately begins connecting to the
+    /// server. Custom headers can be provided for authentication or other purposes.
+    ///
+    /// - Parameters:
+    ///   - url: The URL string of the Server-Sent Events endpoint. Must be a valid URL.
+    ///   - headers: Optional dictionary of HTTP headers to include in the request.
+    ///                Useful for adding authentication tokens or custom headers.
+    ///
+    /// - Note: The connection starts automatically after initialization. Use `onOpen`,
+    ///         `onMessage`, and `onError` callbacks to handle connection lifecycle events.
     public init(url: String, headers: [String : String] = [:]) {
         
         self.url = URL(string: url)!
@@ -92,6 +194,14 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     }
     
     //Mark: Close
+
+    /// Closes the EventSource connection and invalidates the underlying URLSession.
+    ///
+    /// After calling this method, the EventSource will no longer receive events and
+    /// will not attempt to reconnect. The connection state transitions to `closed`.
+    ///
+    /// - Note: This method should be called when you no longer need to receive events
+    ///         to free up resources and close the network connection.
     open func close() {
         self.readyState = EventSourceState.closed
         self.urlSession?.invalidateAndCancel()
@@ -111,31 +221,135 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     }
     
     //Mark: EventListeners
+
+    /// Registers a callback to be invoked when the connection opens.
+    ///
+    /// The callback is called on the main thread when the Server-Sent Events connection
+    /// is successfully established and transitions to the `open` state.
+    ///
+    /// - Parameter onOpenCallback: Closure called when connection opens.
+    ///   - Parameter response: The HTTP response received from the server, or nil if unavailable.
+    ///                        Contains status code and headers from the initial connection.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// eventSource.onOpen { response in
+    ///     if let statusCode = response?.statusCode {
+    ///         print("Connected with status: \(statusCode)")
+    ///     }
+    /// }
+    /// ```
     open func onOpen(_ onOpenCallback: @escaping ((HTTPURLResponse?) -> Void)) {
         self.onOpenCallback = onOpenCallback
     }
-    
+
+    /// Registers a callback to be invoked when an error occurs.
+    ///
+    /// The callback is called on the main thread when connection errors occur, including
+    /// network failures, timeouts, or server errors. If an error occurred before this
+    /// callback was registered, it will be immediately invoked with that error.
+    ///
+    /// - Parameter onErrorCallback: Closure called when errors occur.
+    ///   - Parameter error: The NSError describing the failure, or nil if unavailable.
+    ///                     Common error codes include network connectivity issues,
+    ///                     timeouts, and HTTP errors.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// eventSource.onError { error in
+    ///     print("Connection error: \(error?.localizedDescription ?? "unknown")")
+    ///     // Handle reconnection or cleanup
+    /// }
+    /// ```
+    ///
+    /// - Note: The EventSource automatically attempts to reconnect after errors
+    ///         unless explicitly closed.
     open func onError(_ onErrorCallback: @escaping ((NSError?) -> Void)) {
         self.onErrorCallback = onErrorCallback
-        
+
         if let errorBeforeSet = self.errorBeforeSetErrorCallBack {
             self.onErrorCallback?(errorBeforeSet)
             self.errorBeforeSetErrorCallBack = nil
         }
     }
-    
+
+    /// Registers a callback to be invoked when a message is received.
+    ///
+    /// The callback is called on the main thread for each Server-Sent Event message
+    /// received from the server. Messages without an explicit event type are dispatched
+    /// to this handler with event type "message".
+    ///
+    /// - Parameter onMessageCallback: Closure called when messages are received.
+    ///   - Parameter id: The event ID from the message, or nil if not specified.
+    ///                  Used for tracking and resuming streams.
+    ///   - Parameter event: The event type, typically "message" for default events.
+    ///   - Parameter data: The message payload as a string. Usually contains JSON data
+    ///                    from Horizon that should be parsed by the caller.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// eventSource.onMessage { id, event, data in
+    ///     guard let jsonData = data?.data(using: .utf8),
+    ///           let ledger = try? JSONDecoder().decode(LedgerResponse.self, from: jsonData) else {
+    ///         return
+    ///     }
+    ///     print("Received ledger: \(ledger.sequence)")
+    /// }
+    /// ```
     open func onMessage(_ onMessageCallback: @escaping ((_ id: String?, _ event: String?, _ data: String?) -> Void)) {
         self.onMessageCallback = onMessageCallback
     }
-    
+
+    /// Registers a handler for messages with a specific event type.
+    ///
+    /// Allows routing of different event types to specific handlers. The Server-Sent Events
+    /// protocol supports named events, enabling the server to send different types of messages
+    /// that can be handled separately.
+    ///
+    /// - Parameters:
+    ///   - event: The event type name to listen for. Must match the `event:` field in the
+    ///           server's message stream.
+    ///   - handler: Closure called when a message with the specified event type is received.
+    ///     - Parameter id: The event ID from the message, or nil if not specified.
+    ///     - Parameter event: The event type name that was matched.
+    ///     - Parameter data: The message payload as a string.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// // Register handler for specific event types
+    /// eventSource.addEventListener("create") { id, event, data in
+    ///     print("Create event received")
+    /// }
+    ///
+    /// eventSource.addEventListener("update") { id, event, data in
+    ///     print("Update event received")
+    /// }
+    /// ```
+    ///
+    /// - Note: Only one handler can be registered per event type. Registering a new handler
+    ///         for an event type will replace any existing handler for that type.
     open func addEventListener(_ event: String, handler: @escaping ((_ id: String?, _ event: String?, _ data: String?) -> Void)) {
         self.eventListeners[event] = handler
     }
-    
+
+    /// Removes the handler for a specific event type.
+    ///
+    /// After removal, messages with the specified event type will no longer be dispatched
+    /// to a handler.
+    ///
+    /// - Parameter event: The event type name to stop listening for.
     open func removeEventListener(_ event: String) -> Void {
         self.eventListeners.removeValue(forKey: event)
     }
-    
+
+    /// Returns an array of all registered event type names.
+    ///
+    /// - Returns: Array of event type names that currently have registered handlers.
+    ///           Does not include the default "message" event type handled by `onMessage`.
     open func events() -> Array<String> {
         return Array(self.eventListeners.keys)
     }
