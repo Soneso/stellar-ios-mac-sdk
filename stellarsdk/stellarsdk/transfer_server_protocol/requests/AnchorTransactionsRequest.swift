@@ -1,39 +1,51 @@
-//
-//  AnchorTransactionsRequest.swift
-//  stellarsdk
-//
-//  Created by Razvan Chelemen on 08/09/2018.
-//  Copyright © 2018 Soneso. All rights reserved.
-//
-
 import Foundation
 
+/// Request parameters for retrieving transaction history via SEP-0006.
+///
+/// This struct encapsulates all the parameters needed to fetch a list of historical transactions
+/// for a specific asset and account. The response includes details about deposits, withdrawals,
+/// and their current statuses. This endpoint is useful for displaying transaction history
+/// to users within a wallet application.
+///
+/// See also:
+/// - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
 public struct AnchorTransactionsRequest {
-    
-    /// The code of the asset of interest. E.g. BTC,ETH,USD,INR,etc
+
+    /// The code of the asset of interest.
+    /// Examples: BTC, ETH, USD, INR, etc.
     public var assetCode:String
-    
-    /// The stellar account ID involved in the transactions. If the service requires SEP-10 authentication, this parameter must match the authenticated account.
+
+    /// The stellar account ID involved in the transactions.
+    /// If the service requires SEP-10 authentication, this parameter must match the authenticated account.
     public var account:String
-    
-    /// (optional) The response should contain transactions starting on or after this date & time
-    public var noOlderThan:Date?
-    
-    /// (optional) the response should contain at most limit transactions
-    public var limit:Int?
-    
-    /// (optional) A list containing the desired transaction kinds. The possible values are deposit, deposit-exchange, withdrawal and withdrawal-exchange.
-    public var kind:String?
-    
-    /// (optional) the response should contain transactions starting prior to this ID (exclusive)
-    public var pagingId:String?
-    
-    /// (optional) Defaults to en if not specified or if the specified language is not supported. Language code specified using RFC 4646. error fields and other human readable messages in the response should be in this language.
-    public var lang:String?
-    
-    /// jwt previously received from the anchor via the SEP-10 authentication flow
+
+    /// JWT previously received from the anchor via the SEP-10 authentication flow.
     public var jwt:String?
-    
+
+    /// The response should contain transactions starting on or after this date and time.
+    public var noOlderThan:Date?
+
+    /// The response should contain at most this number of transactions.
+    public var limit:Int?
+
+    /// A comma-separated list of transaction kinds to filter by.
+    /// Possible values are: deposit, deposit-exchange, withdrawal, withdrawal-exchange.
+    public var kind:String?
+
+    /// The response should contain transactions starting prior to this ID (exclusive).
+    /// Used for pagination.
+    public var pagingId:String?
+
+    /// Language code specified using RFC 4646. Defaults to en if not specified.
+    /// Error fields and other human readable messages in the response should be in this language.
+    public var lang:String?
+
+    /// Creates a new transactions history request.
+    ///
+    /// - Parameters:
+    ///   - assetCode: The code of the asset to query transactions for
+    ///   - account: The Stellar account ID involved in the transactions
+    ///   - jwt: Optional JWT token from SEP-10 authentication
     public init(assetCode:String, account:String, jwt:String? = nil) {
         self.assetCode = assetCode
         self.account = account
@@ -41,24 +53,42 @@ public struct AnchorTransactionsRequest {
     }
 }
 
+/// Request parameters for retrieving a single transaction via SEP-0006.
+///
+/// This struct encapsulates the parameters needed to fetch details about a specific transaction.
+/// The transaction can be identified by its internal ID, Stellar transaction ID, or external
+/// transaction ID. At least one of these identifiers must be provided.
+///
+/// See also:
+/// - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
 public struct AnchorTransactionRequest {
-    
-    /// The id of the transaction.
-    public var id:String?
-    
-    /// The stellar transaction id of the transaction.
-    public var stellarTransactionId:String?
-    
-    /// The external transaction id of the transaction.
-    public var externalTransactionId:String?
-    
-    /// (optional) Defaults to en if not specified or if the specified language is not supported. Language code specified using RFC 4646. error fields and other human readable messages in the response should be in this language.
-    public var lang:String?
-    
-    /// jwt previously received from the anchor via the SEP-10 authentication flow
+
+    /// JWT previously received from the anchor via the SEP-10 authentication flow.
     public var jwt:String?
-    
-    /// One of id, stellar_transaction_id or external_transaction_id is required.
+
+    /// The internal ID of the transaction assigned by the anchor.
+    public var id:String?
+
+    /// The Stellar transaction hash of the transaction.
+    public var stellarTransactionId:String?
+
+    /// The external transaction ID assigned by external systems.
+    public var externalTransactionId:String?
+
+    /// Language code specified using RFC 4646. Defaults to en if not specified.
+    /// Error fields and other human readable messages in the response should be in this language.
+    public var lang:String?
+
+    /// Creates a new single transaction request.
+    ///
+    /// At least one of the transaction identifiers (id, stellarTransactionId, or externalTransactionId)
+    /// must be provided.
+    ///
+    /// - Parameters:
+    ///   - id: Optional internal transaction ID
+    ///   - stellarTransactionId: Optional Stellar transaction hash
+    ///   - externalTransactionId: Optional external transaction ID
+    ///   - jwt: Optional JWT token from SEP-10 authentication
     public init(id:String? = nil, stellarTransactionId:String? = nil, externalTransactionId:String? = nil, jwt:String? = nil) {
         self.id = id
         self.stellarTransactionId = stellarTransactionId
