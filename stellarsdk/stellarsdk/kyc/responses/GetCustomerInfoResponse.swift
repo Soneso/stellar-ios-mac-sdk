@@ -8,6 +8,19 @@
 
 import Foundation
 
+/// Response returned when checking the status of a customer's KYC information.
+///
+/// This response is returned by GET /customer requests in SEP-12 and provides the current
+/// status of the customer's KYC process along with any fields that need to be provided or
+/// have already been submitted.
+///
+/// The response varies based on the customer's current status:
+/// - ACCEPTED: Customer is fully KYC'd and approved
+/// - PROCESSING: KYC information is being processed
+/// - NEEDS_INFO: Additional information is required
+/// - REJECTED: Customer has been rejected
+///
+/// See [SEP-12](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)
 public struct GetCustomerInfoResponse: Decodable {
     
     /// (optional) ID of the customer, if the customer has already been created via a PUT /customer request.
@@ -50,8 +63,14 @@ public struct GetCustomerInfoResponse: Decodable {
     
 }
 
+/// Describes a field that the anchor requires from the customer.
+///
+/// This structure defines fields that need to be provided by the customer to complete
+/// their KYC process. It appears in the NEEDS_INFO status response.
+///
+/// See [SEP-12 Fields](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#fields)
 public struct GetCustomerInfoField: Decodable {
-    
+
     /// The data type of the field value. Can be "string", "binary", "number", or "date"
     public var type:String
     
@@ -87,8 +106,14 @@ public struct GetCustomerInfoField: Decodable {
     
 }
 
+/// Describes a field that has been provided by the customer along with its validation status.
+///
+/// This structure defines fields that the customer has already submitted and their current
+/// validation status. It is required for customers whose information needs verification.
+///
+/// See [SEP-12 Provided Fields](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#provided-fields)
 public struct GetCustomerInfoProvidedField: Decodable {
-    
+
     /// The data type of the field value. Can be "string", "binary", "number", or "date"
     public var type:String
     

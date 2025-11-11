@@ -8,8 +8,16 @@
 
 import Foundation
 
+/// Response returned when retrieving customer files.
+///
+/// This response is returned by GET /customer/files requests in SEP-12 and contains a list
+/// of files associated with a customer. The request can filter by file_id or customer_id.
+///
+/// If no files are found for the specified identifier, an empty list is returned.
+///
+/// See [SEP-12 Customer Files GET](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#get-request)
 public struct GetCustomerFilesResponse: Decodable {
-    
+
     /// A list of file objects
     public var files:[CustomerFileResponse]
     

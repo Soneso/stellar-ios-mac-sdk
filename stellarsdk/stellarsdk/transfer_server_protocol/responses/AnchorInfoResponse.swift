@@ -8,15 +8,37 @@
 
 import Foundation
 
+/// Response returned by the GET /info endpoint describing anchor capabilities.
+///
+/// This response provides information about which assets the anchor supports for deposits
+/// and withdrawals, along with fee structures, transaction limits, and required fields.
+/// It is the first endpoint wallets should call to understand what operations are supported.
+///
+/// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
 public struct AnchorInfoResponse: Decodable {
 
+    /// Information about assets available for deposit, keyed by asset code.
     public var deposit: [String:DepositAsset]?
+
+    /// Information about assets available for deposit with exchange, keyed by asset code.
     public var depositExchange: [String:DepositExchangeAsset]?
+
+    /// Information about assets available for withdrawal, keyed by asset code.
     public var withdraw: [String:WithdrawAsset]?
+
+    /// Information about assets available for withdrawal with exchange, keyed by asset code.
     public var withdrawExchange: [String:WithdrawExchangeAsset]?
+
+    /// Information about the GET /transactions endpoint support.
     public var transactions: AnchorTransactionsInfo?
+
+    /// Information about the GET /transaction endpoint support.
     public var transaction: AnchorTransactionInfo?
+
+    /// Information about the GET /fee endpoint support.
     public var fee: AnchorFeeInfo?
+
+    /// Feature flags indicating additional anchor capabilities.
     public var features: AnchorFeatureFlags?
     
     /// Properties to encode and decode
@@ -50,8 +72,14 @@ public struct AnchorInfoResponse: Decodable {
     
 }
 
+/// Information about an asset available for deposit operations via SEP-6.
+///
+/// Provides details about deposit capabilities including fee structure, transaction limits,
+/// authentication requirements, and any required fields for deposit transactions.
+///
+/// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
 public struct DepositAsset: Decodable {
-    
+
     /// true if SEP-6 deposit for this asset is supported
     public var enabled: Bool
     
@@ -107,8 +135,14 @@ public struct DepositAsset: Decodable {
     }
 }
 
+/// Information about an asset available for deposit operations with exchange via SEP-6.
+///
+/// Similar to DepositAsset but used when deposits support on-chain asset exchange.
+/// Allows users to deposit one off-chain asset and receive a different on-chain Stellar asset.
+///
+/// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
 public struct DepositExchangeAsset: Decodable {
-    
+
     /// true if SEP-6 deposit for this asset is supported
     public var enabled: Bool
     
@@ -142,8 +176,14 @@ public struct DepositExchangeAsset: Decodable {
     }
 }
 
+/// Information about an asset available for withdrawal operations via SEP-6.
+///
+/// Provides details about withdrawal capabilities including fee structure, transaction limits,
+/// authentication requirements, and supported withdrawal types with their required fields.
+///
+/// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
 public struct WithdrawAsset: Decodable {
-    
+
     /// true if SEP-6 withdrawal for this asset is supported
     public var enabled: Bool
     
@@ -207,6 +247,12 @@ public struct WithdrawAsset: Decodable {
     }
 }
 
+/// Information about an asset available for withdrawal operations with exchange via SEP-6.
+///
+/// Similar to WithdrawAsset but used when withdrawals support on-chain asset exchange.
+/// Allows users to exchange one on-chain Stellar asset and withdraw a different off-chain asset.
+///
+/// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
 public struct WithdrawExchangeAsset: Decodable {
     /// true if SEP-6 withdrawal for this asset is supported
     public var enabled: Bool
@@ -251,8 +297,14 @@ public struct WithdrawExchangeAsset: Decodable {
     }
 }
 
+/// Describes a field that must be provided by the user for deposit or withdrawal operations.
+///
+/// Used to specify required or optional fields for deposit and withdrawal requests.
+/// Anchors should use SEP-9 financial account fields where possible but can define custom fields.
+///
+/// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
 public struct AnchorField: Decodable {
-    
+
     public var description: String?
     public var optional: Bool?
     public var choices: [String]?
@@ -277,8 +329,14 @@ public struct AnchorField: Decodable {
     }
 }
 
+/// Describes a specific withdrawal type supported by the anchor.
+///
+/// Each withdrawal method (e.g., bank account, crypto address, mobile money) can have different
+/// field requirements. This structure specifies which fields are needed for a particular withdrawal type.
+///
+/// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
 public struct WithdrawType: Decodable {
-    
+
     public var fields: [String:AnchorField]?
     
     /// Properties to encode and decode
@@ -297,8 +355,14 @@ public struct WithdrawType: Decodable {
     }
 }
 
+/// Information about the anchor's GET /transactions endpoint availability and requirements.
+///
+/// Indicates whether the endpoint for retrieving multiple transaction records is supported
+/// and if authentication is required to access it.
+///
+/// See [SEP-6 Transaction History](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
 public struct AnchorTransactionsInfo: Decodable {
-    
+
     public var enabled: Bool
     public var authenticationRequired:Bool?
     
@@ -320,8 +384,14 @@ public struct AnchorTransactionsInfo: Decodable {
     }
 }
 
+/// Information about the anchor's GET /transaction endpoint availability and requirements.
+///
+/// Indicates whether the endpoint for retrieving a single transaction record by ID is supported
+/// and if authentication is required to access it.
+///
+/// See [SEP-6 Single Transaction](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#single-historical-transaction)
 public struct AnchorTransactionInfo: Decodable {
-    
+
     public var enabled: Bool
     public var authenticationRequired:Bool?
     
@@ -343,8 +413,14 @@ public struct AnchorTransactionInfo: Decodable {
     }
 }
 
+/// Information about the anchor's GET /fee endpoint availability and requirements.
+///
+/// Indicates whether the endpoint for querying detailed fee information is supported
+/// and if authentication is required to access it.
+///
+/// See [SEP-6 Fee](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#fee)
 public struct AnchorFeeInfo: Decodable {
-    
+
     public var enabled: Bool
     public var authenticationRequired:Bool?
     
@@ -366,8 +442,14 @@ public struct AnchorFeeInfo: Decodable {
     }
 }
 
+/// Feature flags indicating additional capabilities supported by the anchor.
+///
+/// These flags communicate optional features that the anchor has implemented beyond the basic
+/// SEP-6 requirements, such as account creation and claimable balance support.
+///
+/// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
 public struct AnchorFeatureFlags: Decodable {
-    
+
     /// Whether or not the anchor supports creating accounts for users requesting deposits. Defaults to true.
     public var accountCreation: Bool = true
     

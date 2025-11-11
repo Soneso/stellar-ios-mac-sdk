@@ -8,8 +8,18 @@
 
 import Foundation
 
+/// Response returned when uploading or retrieving customer files.
+///
+/// This response is returned by POST /customer/files and GET /customer/files requests in SEP-12.
+/// It contains metadata about uploaded files including the file ID that can be used to reference
+/// the file in subsequent PUT /customer requests.
+///
+/// Files can be referenced in PUT /customer requests using the pattern {field_name}_file_id.
+/// For example, if uploading a photo ID front, use "photo_id_front_file_id" in the request.
+///
+/// See [SEP-12 Customer Files](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-files)
 public struct CustomerFileResponse: Decodable {
-    
+
     /// Unique identifier for the object.
     public var fileId:String
     
