@@ -8,11 +8,34 @@
 
 import Foundation
 
-// MARK: Base56Encode
-
+/// Provides Base58 encoding functionality.
+///
+/// Base58 is a binary-to-text encoding scheme used to represent binary data in an
+/// ASCII string format. Unlike Base64, it omits similar-looking characters (0, O, I, l)
+/// to reduce user errors when manually entering or copying encoded data.
+///
+/// Base58 is commonly used in cryptocurrency applications for encoding addresses and keys.
+/// The alphabet used is: 123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
+///
+/// Note: Stellar primarily uses Base32 (strkey format) for account IDs and secret seeds,
+/// but Base58 encoding is included for compatibility with other systems and standards.
 public struct Base58 {
     private static let alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
-    
+
+    /// Encodes binary data to a Base58 string.
+    ///
+    /// Converts the input bytes to a Base58-encoded string using the Bitcoin Base58 alphabet.
+    /// Leading zero bytes are preserved as '1' characters in the output.
+    ///
+    /// - Parameter bytes: The binary data to encode
+    ///
+    /// - Returns: A Base58-encoded string representation
+    ///
+    /// Example:
+    /// ```swift
+    /// let data = Data([0x00, 0x01, 0x02, 0x03])
+    /// let encoded = Base58.encode(data)
+    /// ```
     public static func encode(_ bytes: Data) -> String {
         var bytes = bytes
         var zerosCount = 0

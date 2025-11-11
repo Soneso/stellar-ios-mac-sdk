@@ -6,16 +6,53 @@
 //  Copyright © 2018 yuzushioh. All rights reserved.
 //
 
+/// Represents supported BIP-39 mnemonic word lists in different languages.
+///
+/// BIP-39 defines standardized word lists for generating mnemonic phrases in multiple languages.
+/// Each list contains exactly 2048 words carefully selected to be unambiguous and easy to write.
+///
+/// All supported languages produce compatible mnemonics that encode the same entropy,
+/// allowing users to choose their preferred language for mnemonic generation and recovery.
+///
+/// Supported languages:
+/// - English (default and most widely used)
+/// - Chinese (Simplified and Traditional)
+/// - French
+/// - Italian
+/// - Japanese
+/// - Korean
+/// - Spanish
+///
+/// See also:
+/// - [BIP-39 Word Lists](https://github.com/bitcoin/bips/blob/master/bip-0039/bip-0039-wordlists.md)
 public enum WordList {
+    /// English word list (2048 words)
     case english
+
+    /// Simplified Chinese word list (2048 words)
     case chineseSimplified
+
+    /// Traditional Chinese word list (2048 words)
     case chineseTraditional
+
+    /// French word list (2048 words)
     case french
+
+    /// Italian word list (2048 words)
     case italian
+
+    /// Japanese word list (2048 words)
     case japanese
+
+    /// Korean word list (2048 words)
     case korean
+
+    /// Spanish word list (2048 words)
     case spanish
-    
+
+    /// Returns the word list array for the selected language.
+    ///
+    /// Each array contains exactly 2048 words used for BIP-39 mnemonic generation.
     public var words: [String] {
         switch self {
         case .english:

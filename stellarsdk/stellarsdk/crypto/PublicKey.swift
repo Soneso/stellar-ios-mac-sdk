@@ -9,7 +9,25 @@
 import Foundation
 import ed25519C
 
-/// Holds a Stellar public key.
+/// Represents a Stellar Ed25519 public key.
+///
+/// A public key is a 32-byte value that represents the public component of an Ed25519 keypair.
+/// Public keys are used to identify accounts on the Stellar network and to verify signatures.
+///
+/// Public keys are encoded as Stellar account IDs (G-addresses) using base32 encoding with
+/// version byte and checksum. This encoding makes them human-readable and helps prevent
+/// transmission errors.
+///
+/// Usage:
+/// - Creating from bytes: Construct from raw 32-byte public key
+/// - Creating from account ID: Parse from G-address string
+/// - Signature verification: Verify transaction signatures
+/// - XDR encoding/decoding: For network protocol operations
+///
+/// Security considerations:
+/// - Public keys can be safely shared and are meant to be public
+/// - They do not grant access to accounts on their own
+/// - Used to verify that operations were signed by the corresponding private key
 public class PublicKey: XDRCodable {
     private let buffer: [UInt8]
     
@@ -43,15 +61,7 @@ public class PublicKey: XDRCodable {
         
         self.init(unchecked: bytes)
     }
-    
-    /*public init(key: String) throws {
-        if let data = key.base32DecodedData {
-            self.buffer = [UInt8](data)
-        } else {
-            throw Ed25519Error.invalidPublicKey
-        }
-    }*/
-    
+
     /// Creates a new Stellar public key from the Stellar account ID
     ///
     /// - Parameter accountId: The Stellar account ID
@@ -93,12 +103,13 @@ public class PublicKey: XDRCodable {
     public var bytes: [UInt8] {
         return buffer
     }
-    
-    /*public var key: String {
-        var bytes = buffer
-        return Data(bytes: &bytes, count: bytes.count).base32EncodedString!
-    }*/
-    
+
+    /// Wraps the public key bytes in a WrappedData32 structure for XDR encoding.
+    ///
+    /// This method is used internally for encoding the public key in XDR format
+    /// for network protocol operations.
+    ///
+    /// - Returns: A WrappedData32 containing the 32-byte public key
     public func wrappedData32() -> WrappedData32 {
         var bytesArray = bytes
         return WrappedData32(Data(bytes: &bytesArray, count: bytesArray.count))

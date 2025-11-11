@@ -8,7 +8,22 @@
 
 import ed25519C
 
-/// Holds a Stellar private key.
+/// Represents a Stellar Ed25519 private key.
+///
+/// A private key is a 64-byte value that represents the private component of an Ed25519 keypair.
+/// The first 32 bytes are the secret scalar, and the last 32 bytes are the precomputed public key.
+/// Private keys are used to sign transactions and messages on the Stellar network.
+///
+/// Security considerations:
+/// - Private keys must be kept absolutely secret and secure
+/// - Never transmit private keys over insecure channels
+/// - Store private keys using secure storage (iOS Keychain or equivalent)
+/// - Never commit private keys to version control
+/// - Use Seed class for human-readable secret seed representation
+/// - Clear sensitive data from memory when no longer needed
+///
+/// Note: For most use cases, use the Seed class which provides the 32-byte seed
+/// and can be encoded as a human-readable secret seed (S-address).
 public final class PrivateKey {
     private let buffer: [UInt8]
     
@@ -25,20 +40,21 @@ public final class PrivateKey {
         
         self.buffer = bytes
     }
-    
+
+    /// Internal initializer that skips validation.
+    ///
+    /// Used internally when the bytes are known to be valid.
+    ///
+    /// - Parameter buffer: The private key bytes (assumed to be 64 bytes)
     init(unchecked buffer: [UInt8]) {
         self.buffer = buffer
     }
-    
-    /// Byte array representation of the private key.
+
+    /// The raw private key bytes (64 bytes).
+    ///
+    /// The first 32 bytes are the secret scalar, and the last 32 bytes are
+    /// the precomputed public key for efficient signature operations.
     public var bytes: [UInt8] {
         return buffer
     }
-    
-    /*
-    public var key: String {
-        var bytes = buffer
-        return Data(bytes: &bytes, count: bytes.count).base32EncodedString!
-    }
-    */
 }
