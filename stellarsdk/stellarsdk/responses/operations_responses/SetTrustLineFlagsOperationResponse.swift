@@ -8,15 +8,33 @@
 
 import Foundation
 
+/// Represents a set trustline flags operation response.
+/// This operation allows an asset issuer to set or clear flags on a trustline, controlling authorization and clawback capabilities.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#set-trust-line-flags "Set Trust Line Flags Operation")
 public class SetTrustLineFlagsOperationResponse: OperationResponse {
-    
+
+    /// Account ID of the trustline holder.
     public var trustor:String
+
+    /// Asset type (native / alphanum4 / alphanum12).
     public var assetType:String
+
+    /// Asset code.
     public var assetCode:String?
+
+    /// Asset issuer.
     public var assetIssuer:String?
+
+    /// Flags being set (numeric values).
     public var setFlags:[Int]?
+
+    /// Flags being set (string values).
     public var setFlagsS:[String]?
+
+    /// Flags being cleared (numeric values).
     public var clearFlags:[Int]?
+
+    /// Flags being cleared (string values).
     public var clearFlagsS:[String]?
     
     // Properties to encode and decode

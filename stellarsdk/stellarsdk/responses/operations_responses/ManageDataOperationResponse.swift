@@ -12,10 +12,10 @@ import Foundation
 ///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#manage-data "Manage Data Operation")
 public class ManageDataOperationResponse: OperationResponse {
     
-    /// Name from the (name/value pair) for an account.
+    /// Name of the data entry (key in the name/value pair).
     public var name:String
-    
-    /// Value from the (name/value pair) for an account.
+
+    /// Base64-encoded value of the data entry. Empty string to delete the entry.
     public var value:String
     
     // Properties to encode and decode

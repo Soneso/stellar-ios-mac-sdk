@@ -12,15 +12,19 @@ import Foundation
 ///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#create-account "Create Account Operation")
 public class AccountCreatedOperationResponse: OperationResponse {
 
-    /// Amount the account was funded.
+    /// Amount the account was funded with (starting balance).
     public var startingBalance:Decimal
-    
-    /// Account that funded a new account.
+
+    /// Account ID that funded the new account.
     public var funder:String
+
+    /// Multiplexed account address of the funder (if used).
     public var funderMuxed:String?
+
+    /// ID of the multiplexed funder account (if used).
     public var funderMuxedId:String?
-    
-    /// A new account that was funded.
+
+    /// Account ID of the newly created account.
     public var account:String
     
     // Properties to encode and decode

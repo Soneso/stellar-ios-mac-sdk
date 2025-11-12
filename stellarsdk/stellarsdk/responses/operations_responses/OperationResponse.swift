@@ -8,6 +8,8 @@
 
 import Foundation
 
+/// Enumeration of all Stellar operation types.
+/// Each operation type corresponds to a specific action that can be performed on the Stellar network.
 public enum OperationType: Int32 {
     case accountCreated = 0
     case payment = 1
@@ -47,31 +49,35 @@ public class OperationResponse: NSObject, Decodable {
     
     /// ID of the operation.
     public var id:String
-    
+
     /// A paging token, specifying where the returned records start from.
     public var pagingToken:String
-    
-    /// Account ID/Public Key of the account the operation belongs to.
+
+    /// Account ID of the source account that originated this operation.
     public var sourceAccount:String
+
+    /// Multiplexed account address of the source account (if used).
     public var sourceAccountMuxed:String?
+
+    /// ID of the multiplexed source account (if used).
     public var sourceAccountMuxedId:String?
-    
+
     /// Type of the operation as a human readable string.
     public var operationTypeString:String
-    
-    /// Type of the effect (int) see enum OperationType.
+
+    /// Type of the operation. See OperationType enum.
     public var operationType:OperationType
-    
-    /// Date created.
+
+    /// Date when the operation was created.
     public var createdAt:Date
-    
-    // Transaction hash of the operation.
+
+    /// Transaction hash containing this operation.
     public var transactionHash:String
-    
-    // Transaction successful
+
+    /// Indicates whether the transaction containing this operation was successful.
     public var transactionSuccessful:Bool
-    
-    // optional transaction if requested by join parameter
+
+    /// The transaction containing this operation (included if requested via join parameter).
     public var transaction: TransactionResponse?
     
     // Properties to encode and decode

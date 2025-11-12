@@ -8,10 +8,18 @@
 
 import Foundation
 
+/// Represents an end sponsoring future reserves operation response.
+/// This operation terminates the current sponsorship relationship initiated by a begin sponsoring future reserves operation.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#end-sponsoring-future-reserves "End Sponsoring Future Reserves Operation")
 public class EndSponsoringFutureReservesOperationResponse: OperationResponse {
-    
+
+    /// Account ID of the sponsor from the begin sponsoring operation.
     public var beginSponsor:String
+
+    /// Multiplexed account address of the sponsor (if used).
     public var beginSponsorMuxed:String?
+
+    /// ID of the multiplexed sponsor account (if used).
     public var beginSponsorMuxedId:String?
     
     // Properties to encode and decode

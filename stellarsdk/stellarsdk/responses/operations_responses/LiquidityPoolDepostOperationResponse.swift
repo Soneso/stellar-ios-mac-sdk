@@ -8,15 +8,33 @@
 
 import Foundation
 
+/// Represents a liquidity pool deposit operation response.
+/// This operation deposits assets into a liquidity pool, providing liquidity to the pool in exchange for pool shares.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#liquidity-pool-deposit "Liquidity Pool Deposit Operation")
 public class LiquidityPoolDepostOperationResponse: OperationResponse {
-    
+
+    /// ID of the liquidity pool receiving the deposit.
     public var liquidityPoolId:String
+
+    /// Maximum amounts of each reserve asset that can be deposited.
     public var reservesMax:[ReserveResponse]
+
+    /// Minimum price (as decimal).
     public var minPrice:String
+
+    /// Minimum price as a rational number (numerator/denominator).
     public var minPriceR:LiquidityPoolPriceResponse
+
+    /// Maximum price (as decimal).
     public var maxPrice:String
+
+    /// Maximum price as a rational number (numerator/denominator).
     public var maxPriceR:LiquidityPoolPriceResponse
+
+    /// Actual amounts deposited for each reserve.
     public var reservesDeposited:[ReserveResponse]
+
+    /// Amount of pool shares received in exchange for the deposit.
     public var sharesReceived:String
     
     // Properties to encode and decode

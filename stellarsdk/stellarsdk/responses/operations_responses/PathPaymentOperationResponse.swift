@@ -12,41 +12,49 @@ import Foundation
 ///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#path-payment "Path Payment Operation")
 public class PathPaymentOperationResponse: OperationResponse {
     
-    /// Amount received.
+    /// Amount received by the destination.
     public var amount:String
-    
-    /// Amount sent.
+
+    /// Amount sent from the source.
     public var sourceAmount:String
-    
-    /// Sender of a payment.
+
+    /// Account ID of the payment sender.
     public var from:String
+
+    /// Multiplexed account address of the sender (if used).
     public var fromMuxed:String?
+
+    /// ID of the multiplexed sender account (if used).
     public var fromMuxedId:String?
-    
-    /// Destination of a payment.
+
+    /// Account ID of the payment recipient.
     public var to:String
+
+    /// Multiplexed account address of the recipient (if used).
     public var toMuxed:String?
+
+    /// ID of the multiplexed recipient account (if used).
     public var toMuxedId:String?
-    
-    /// Destination asset type (native / alphanum4 / alphanum12)
+
+    /// Destination asset type (native / alphanum4 / alphanum12).
     public var assetType:String
-    
-    /// Code of the destination asset.
+
+    /// Destination asset code.
     public var assetCode:String?
-    
+
     /// Destination asset issuer.
     public var assetIssuer:String?
-    
+
     /// Source asset type (native / alphanum4 / alphanum12).
     public var sourceAssetType:String?
-    
-    /// Code of the source asset.
+
+    /// Source asset code.
     public var sourceAssetCode:String?
-    
+
     /// Source asset issuer.
     public var sourceAssetIssuer:String?
-    
-    /// Additional hops the operation went through to get to the destination asset.
+
+    /// Path of asset conversions from source to destination.
     public var path:[OfferAssetResponse]?
 
     // Properties to encode and decode

@@ -12,14 +12,22 @@ import Foundation
 ///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#account-merge "Account Merge Operation")
 public class AccountMergeOperationResponse: OperationResponse {
     
-    /// Account ID of the account that has been deleted.
+    /// Account ID of the account that has been merged (deleted).
     public var account:String
+
+    /// Multiplexed account address of the merged account (if used).
     public var accountMuxed:String?
+
+    /// ID of the multiplexed merged account (if used).
     public var accountMuxedId:String?
-    
-    /// Account ID where funds of deleted account were transferred.
+
+    /// Account ID where funds of the merged account were transferred.
     public var into:String
+
+    /// Multiplexed account address of the destination account (if used).
     public var intoMuxed:String?
+
+    /// ID of the multiplexed destination account (if used).
     public var intoMuxedId:String?
     
      // Properties to encode and decode

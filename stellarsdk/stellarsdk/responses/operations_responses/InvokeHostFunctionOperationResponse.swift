@@ -8,12 +8,24 @@
 
 import Foundation
 
+/// Represents an invoke host function operation response.
+/// This Soroban operation invokes a smart contract function on the Stellar network.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#invoke-host-function "Invoke Host Function Operation")
 public class InvokeHostFunctionOperationResponse: OperationResponse {
-    
+
+    /// Type of host function being invoked (e.g., InvokeContract, CreateContract).
     public var function:String
+
+    /// Contract address or deployment address.
     public var address:String
+
+    /// Salt used for contract deployment.
     public var salt:String
+
+    /// Parameters passed to the function.
     public var parameters:[ParameterResponse]?
+
+    /// Asset balance changes resulting from the invocation.
     public var assetBalanceChanges:[AssetBalanceChange]?
     
     // Properties to encode and decode
@@ -41,9 +53,13 @@ public class InvokeHostFunctionOperationResponse: OperationResponse {
     }
 }
 
+/// Represents a parameter passed to a Soroban contract function.
 public class ParameterResponse: NSObject, Decodable {
-    
+
+    /// Parameter type.
     public var type:String
+
+    /// Parameter value.
     public var value:String
    
     
@@ -68,16 +84,32 @@ public class ParameterResponse: NSObject, Decodable {
     }
 }
 
+/// Represents an asset balance change resulting from a Soroban contract invocation.
 public class AssetBalanceChange: NSObject, Decodable {
-    
+
+    /// Asset type (native / alphanum4 / alphanum12).
     public var assetType:String
+
+    /// Asset code (if not native).
     public var assetCode:String?
+
+    /// Asset issuer (if not native).
     public var assetIssuer:String?
+
+    /// Type of balance change (transfer, mint, burn, etc.).
     public var type:String
+
+    /// Source account of the transfer (if applicable).
     public var from:String?
+
+    /// Destination account of the transfer.
     public var to:String
+
+    /// Amount transferred or changed.
     public var amount:String
-    public var destinationMuxedId:String? // a uint64
+
+    /// Multiplexed ID of the destination account (if used).
+    public var destinationMuxedId:String?
    
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
