@@ -8,12 +8,18 @@
 
 import Foundation
 
+/// Represents a signer sponsorship removal effect.
+/// This effect occurs when sponsorship for a signer's base reserve is revoked.
+/// The account becomes responsible for paying the signer's base reserve.
+/// Triggered by the Revoke Sponsorship operation.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/sponsored-reserves "Sponsored Reserves")
 public class SignerSponsorshipRemovedEffectResponse: EffectResponse {
-    
-    // signer being sponsored
+
+    /// The public key of the signer whose sponsorship is being removed.
     public var signer:String
-    
-    //  former sponsor of the signer
+
+    /// The account ID of the former sponsor.
     public var formerSponsor:String
     
     // Properties to encode and decode

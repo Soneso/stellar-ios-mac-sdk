@@ -8,20 +8,22 @@
 
 import Foundation
 
-///  Represents an account debited effect response.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// Represents an account debit effect.
+/// This effect occurs when an account sends a payment or other debit operation.
+/// Triggered by Payment, Path Payment, Create Claimable Balance, and other operations that reduce an account balance.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
 public class AccountDebitedEffectResponse: EffectResponse {
-    
+
     /// The amount debited from this account.
     public var amount:String
-    
-    /// The asset type of the asset debited from the account. E.g. native
+
+    /// The asset type debited from the account (e.g., native, credit_alphanum4, credit_alphanum12).
     public var assetType:String
-    
-    /// The asset code of the asset debited from the account. E.g. BTC, nil if native
+
+    /// The asset code debited from the account. Nil for native assets.
     public var assetCode:String?
-    
-    /// The issuer of the asset debited from the account. Nil if asset type is "native"
+
+    /// The issuer account ID of the asset debited from the account. Nil for native assets.
     public var assetIssuer:String?
     
     // Properties to encode and decode

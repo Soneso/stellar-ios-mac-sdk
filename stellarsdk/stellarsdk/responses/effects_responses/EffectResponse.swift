@@ -8,8 +8,9 @@
 
 import Foundation
 
-/// Currently available effect types.
-// https://github.com/stellar/go/blob/master/protocols/horizon/effects/main.go
+/// Enumeration of all available effect types on the Stellar network.
+/// Effects represent specific changes that occur to the ledger as a result of operations in successfully submitted transactions.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effects")
 public enum EffectType: Int {
     case accountCreated = 0
     case accountRemoved = 1
@@ -70,7 +71,9 @@ public enum EffectType: Int {
     case contractDebited = 97
 }
 
-/// Represents an account effect response. Superclass for all other effect response classes.
+/// Base class for all effect responses from the Horizon API.
+/// Effects represent specific changes that occur to the ledger as a result of operations in successfully submitted transactions.
+/// Each operation can produce multiple effects, and this class provides common properties shared by all effect types.
 /// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
 public class EffectResponse: NSObject, Decodable {
     
@@ -86,9 +89,13 @@ public class EffectResponse: NSObject, Decodable {
     /// A paging token, specifying where the returned records start from.
     public var pagingToken:String
     
-    /// Account ID/Public Key of the account the effect belongs to.
+    /// Account ID of the account the effect belongs to.
     public var account:String
+
+    /// The multiplexed account address if the account is a muxed account.
     public var accountMuxed:String?
+
+    /// The multiplexed account ID if the account is a muxed account.
     public var accountMuxedId:String?
     
     /// Type of the effect as a human readable string.

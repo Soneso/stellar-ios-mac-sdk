@@ -8,18 +8,21 @@
 
 import Foundation
 
-///  Represents an account signer (create,update,remove) effect response. Superclass for signer created, signer updated and signer removed effects.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://developers.stellar.org/docs/concepts/accounts.html#signers "Account Signer")
+/// Base class for signer effect responses.
+/// Represents changes to account signers, including creation, updates, and removal.
+/// Signers allow an account to be controlled by multiple keys with configurable weights.
+/// Triggered by the Set Options operation.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts#signers "Account Signers")
 public class SignerEffectResponse: EffectResponse {
-    
+
     /// Public key of the signer.
     public var publicKey:String
-    
-    /// Weight of the signers public key.
+
+    /// Weight assigned to the signer's public key for transaction authorization.
     public var weight:Int
 
-    // The signer key.
+    /// The signer key in its encoded form.
     public var key: String?
 
     // Properties to encode and decode

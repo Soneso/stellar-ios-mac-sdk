@@ -8,18 +8,24 @@
 
 import Foundation
 
+/// Represents a claimable balance claimant creation effect.
+/// This effect occurs for each claimant specified when a claimable balance is created.
+/// It includes the predicate conditions that must be met for the claimant to claim the balance.
+/// Triggered by the Create Claimable Balance operation.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/claimable-balances "Claimable Balances")
 public class ClaimableBalanceClaimantCreatedEffectResponse: EffectResponse {
-    
-    // unique ID of claimable balance
+
+    /// The unique identifier of the claimable balance.
     public var balanceId:String
-    
-    /// asset available to be claimed (in canonical form)
+
+    /// The asset available to be claimed.
     public var asset:Asset
-    
-    /// amount available to be claimed
+
+    /// The amount available to be claimed.
     public var amount:String
-    
-    /// amount available to be claimed
+
+    /// The predicate conditions that must be met for the claimant to claim the balance.
     public var predicate:ClaimantPredicateResponse
     
     // Properties to encode and decode

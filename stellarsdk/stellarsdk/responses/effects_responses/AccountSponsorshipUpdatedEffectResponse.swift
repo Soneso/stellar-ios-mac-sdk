@@ -8,12 +8,18 @@
 
 import Foundation
 
+/// Represents an account sponsorship update effect.
+/// This effect occurs when the sponsoring account for an account's base reserve changes.
+/// The sponsorship is transferred from one sponsor to another.
+/// Triggered by the Revoke Sponsorship operation.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/sponsored-reserves "Sponsored Reserves")
 public class AccountSponsorshipUpdatedEffectResponse: EffectResponse {
-    
-    // new sponsor of an account
+
+    /// The account ID of the new sponsor.
     public var newSponsor:String
-    
-    //  former sponsor of an account
+
+    /// The account ID of the former sponsor.
     public var formerSponsor:String
     
     // Properties to encode and decode

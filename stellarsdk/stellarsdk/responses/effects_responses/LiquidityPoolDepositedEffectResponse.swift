@@ -8,10 +8,21 @@
 
 import Foundation
 
+/// Represents a liquidity pool deposit effect.
+/// This effect occurs when an account deposits assets into a liquidity pool.
+/// The account receives pool shares in exchange for the deposited assets.
+/// Triggered by the Liquidity Pool Deposit operation.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/sdex/liquidity-on-stellar-sdex-liquidity-pools "Liquidity Pools")
 public class LiquidityPoolDepositedEffectResponse: EffectResponse {
-    
+
+    /// The liquidity pool details.
     public var liquidityPool:LiquidityPoolEffectResponse
+
+    /// The asset reserves deposited into the pool.
     public var reservesDeposited:[ReserveResponse]
+
+    /// The number of pool shares received for the deposit.
     public var sharesReceived:String
     
     // Properties to encode and decode

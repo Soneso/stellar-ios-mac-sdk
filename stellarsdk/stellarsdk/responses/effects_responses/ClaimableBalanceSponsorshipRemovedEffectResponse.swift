@@ -8,9 +8,15 @@
 
 import Foundation
 
+/// Represents a claimable balance sponsorship removal effect.
+/// This effect occurs when sponsorship for a claimable balance's base reserve is revoked.
+/// The claimable balance creator becomes responsible for paying the base reserve.
+/// Triggered by the Revoke Sponsorship operation.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/sponsored-reserves "Sponsored Reserves")
 public class ClaimableBalanceSponsorshipRemovedEffectResponse: EffectResponse {
-    
-    //  former sponsor of a claimable balance.
+
+    /// The account ID of the former sponsor.
     public var formerSponsor:String
     
     // Properties to encode and decode

@@ -8,16 +8,21 @@
 
 import Foundation
 
-///  This class creates the different types of effect response classes depending on the effect type value from json.
+/// Factory class for creating effect response instances from Horizon API JSON data.
+/// This factory parses the effect type from the JSON response and instantiates the appropriate effect subclass.
+/// Effects represent specific changes that occur to the ledger as a result of operations in successfully submitted transactions.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effects")
 class EffectsFactory: NSObject {
-    
-    /// The json decoder used to parse the received json response from the Horizon API.
+
+    /// The JSON decoder used to parse effect responses from the Horizon API.
     let jsonDecoder = JSONDecoder()
-    
+
     /**
-        Returns an AllEffectResponse object conatining all effect responses parsed from the json data.
-     
-        - Parameter data: The json data received from the Horizon API. See
+     Parses a paginated collection of effects from Horizon API JSON data.
+
+     - Parameter data: The JSON data received from the Horizon API containing an embedded array of effects.
+     - Returns: A PageResponse containing an array of EffectResponse objects and pagination links.
+     - Throws: HorizonRequestError.parsingResponseFailed if the JSON cannot be parsed or contains an unknown effect type.
      */
     func effectsFromResponseData(data: Data) throws -> PageResponse<EffectResponse> {
         var effectsList = [EffectResponse]()
@@ -42,9 +47,16 @@ class EffectsFactory: NSObject {
         return PageResponse<EffectResponse>(records: effectsList, links: links)
     }
     
+    /**
+     Parses a single effect from JSON data.
+
+     - Parameter data: The JSON data representing a single effect.
+     - Returns: An EffectResponse subclass instance based on the effect type.
+     - Throws: HorizonRequestError.parsingResponseFailed if the JSON cannot be parsed or contains an unknown effect type.
+     */
     func effectFromData(data: Data) throws -> EffectResponse {
         let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
-        // The class to be used depends on the effect type coded in its json reresentation.
+        // The appropriate subclass is selected based on the effect type_i field in the JSON.
         
         if let type = EffectType(rawValue: json["type_i"] as! Int) {
             switch type {

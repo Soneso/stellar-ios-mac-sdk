@@ -8,11 +8,13 @@
 
 import Foundation
 
-///  Represents an account created effect response.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// Represents an account creation effect.
+/// This effect occurs when a new account is created on the Stellar network through a Create Account operation.
+/// The source account must fund the new account with a minimum balance to cover the base reserve.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
 public class AccountCreatedEffectResponse: EffectResponse {
-    
-    /// The starting balance of the account created.
+
+    /// The starting balance of the newly created account in lumens (XLM).
     public var startingBalance:String
     
     // Properties to encode and decode

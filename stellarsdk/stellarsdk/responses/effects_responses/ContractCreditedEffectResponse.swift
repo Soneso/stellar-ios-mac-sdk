@@ -8,12 +8,27 @@
 
 import Foundation
 
+/// Represents a contract credit effect.
+/// This effect occurs when a Soroban smart contract receives an asset transfer.
+/// Contracts can hold and manage Stellar assets as part of their execution.
+/// Triggered by Invoke Host Function operations that transfer assets to contracts.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/smart-contract-internals/contract-interactions/stellar-asset-contract "Stellar Asset Contract")
 public class ContractCreditedEffectResponse: EffectResponse {
-    
+
+    /// The contract ID receiving the credit.
     public var contract:String
+
+    /// The amount credited to the contract.
     public var amount:String
+
+    /// The asset type credited to the contract (e.g., native, credit_alphanum4, credit_alphanum12).
     public var assetType:String
+
+    /// The asset code credited to the contract. Nil for native assets.
     public var assetCode:String?
+
+    /// The issuer account ID of the asset. Nil for native assets.
     public var assetIssuer:String?
     
     // Properties to encode and decode
