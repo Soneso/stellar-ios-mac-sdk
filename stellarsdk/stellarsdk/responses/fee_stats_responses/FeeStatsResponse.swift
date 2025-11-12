@@ -8,12 +8,25 @@
 
 import Foundation
 
+/// Represents fee statistics from the Horizon API.
+/// This endpoint provides information about transaction fees and network capacity usage
+/// from the last ledger, helping clients determine appropriate fee levels for transactions.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/endpoints/fee-stats "Fee Stats")
 public class FeeStatsResponse: NSObject, Decodable {
 
+    /// The sequence number of the last ledger.
     public var lastLedger:String
+
+    /// The base fee as defined in the last ledger, in stroops.
     public var lastLedgerBaseFee:String
+
+    /// The capacity usage of the ledger, from 0 to 1 representing the percentage of maximum capacity.
     public var ledgerCapacityUsage:String
+
+    /// Statistics about fees actually charged in recent ledgers.
     public var feeCharged:FeeChargedResponse
+
+    /// Statistics about maximum fees willing to be paid in recent ledgers.
     public var maxFee:MaxFeeResponse
     
     // Properties to encode and decode

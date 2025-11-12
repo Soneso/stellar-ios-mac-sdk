@@ -38,10 +38,14 @@ public class OfferResponse: NSObject, Decodable {
     
     /// How many units of buying it takes to get 1 unit of selling. A number representing the decimal form of priceR.
     public var price:String
-    
+
+    /// The account ID of the sponsor who is paying the reserves for this offer. Optional, only present if the offer is sponsored.
     public var sponsor:String?
-  
+
+    /// The sequence number of the ledger in which this offer was last modified.
     public var lastModifiedLedger:Int
+
+    /// An ISO 8601 formatted string of when this offer was last modified.
     public var lastModifiedTime:String?
     
     private enum CodingKeys: String, CodingKey {

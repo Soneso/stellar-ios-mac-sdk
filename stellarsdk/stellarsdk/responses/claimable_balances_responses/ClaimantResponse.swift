@@ -8,9 +8,15 @@
 
 import Foundation
 
+/// Represents a claimant entry for a claimable balance.
+/// Each claimant specifies an account that can claim the balance and the conditions under which they can claim it.
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/claimablebalance "Claimable Balance")
 public class ClaimantResponse: NSObject, Decodable {
-    
+
+    /// The account ID who can claim the balance.
     public var destination:String
+
+    /// The condition which must be satisfied for the destination account to claim the balance.
     public var predicate:ClaimantPredicateResponse
    
     

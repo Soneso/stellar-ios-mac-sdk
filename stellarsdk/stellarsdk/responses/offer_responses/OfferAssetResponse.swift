@@ -8,18 +8,18 @@
 
 import Foundation
 
-///  Represents the offer asset(selling/buying) attribute.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/offer.html "Offer Asset")
+/// Represents an asset in an offer (either the selling or buying asset).
+/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/offer.html "Offer Asset")
 public class OfferAssetResponse: NSObject, Decodable {
-    
-    /// The asset type. Possible values: native, credit_alphanum4, credit_alphanum12
-    /// See also Constants.AssetType
+
+    /// The asset type. Possible values: native, credit_alphanum4, credit_alphanum12.
+    /// See also Constants.AssetType.
     public var assetType:String
-    
-    /// The asset code e.g., USD or BTC.
+
+    /// The asset code, e.g. USD or BTC. Nil if assetType is "native".
     public var assetCode:String?
-    
-    /// The account id of the account that created the asset.
+
+    /// The account ID of the asset issuer. Nil if assetType is "native".
     public var assetIssuer:String?
     
     // Properties to encode and decode.
