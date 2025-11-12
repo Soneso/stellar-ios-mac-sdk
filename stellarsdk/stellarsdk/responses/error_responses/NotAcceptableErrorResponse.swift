@@ -8,6 +8,16 @@
 
 import Foundation
 
-///  Represents a not acceptable error response from the horizon api (code 406), containing information related to the error
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/errors/not-acceptable.html "Not Acceptable")
+/// HTTP 406 Not Acceptable error from Horizon indicating unsupported response format requested.
+///
+/// This error occurs when:
+/// - Requested content type via Accept header is not supported by Horizon
+/// - Invalid or missing Accept header
+/// - Horizon cannot generate response in the requested format
+///
+/// Horizon supports JSON responses. Ensure Accept header is set to application/json or omitted.
+///
+/// See also:
+/// - [Not Acceptable Error](https://developers.stellar.org/api/horizon/reference/errors/not-acceptable)
+/// - ErrorResponse for common error properties
 public class NotAcceptableErrorResponse: ErrorResponse {}

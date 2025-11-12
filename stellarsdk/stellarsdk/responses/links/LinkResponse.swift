@@ -8,13 +8,41 @@
 
 import Foundation
 
-/// Represents a link response. Used for different responses such as for an account response or ledger response from the Horizon API.
+/// Represents a hypermedia link in Horizon API responses.
+///
+/// Horizon uses HAL (Hypertext Application Language) for responses, which includes links
+/// to related resources. Links provide navigation between related resources without requiring
+/// clients to construct URLs manually.
+///
+/// Links may be templated (contain placeholders like {cursor}, {limit}) that clients can
+/// fill in with values, or they may be direct URLs ready to use.
+///
+/// Example usage:
+/// ```swift
+/// let account: AccountResponse = // ... get account
+///
+/// // Direct link (not templated)
+/// if let transactionsURL = account.links.transactions?.href {
+///     // Use URL directly to fetch transactions
+/// }
+///
+/// // Templated link - requires parameter substitution
+/// if let templated = account.links.transactions?.templated, templated {
+///     // Link contains placeholders like {cursor}, {limit}, {order}
+///     // Need to substitute values before using
+/// }
+/// ```
+///
+/// See also:
+/// - [HAL Specification](https://en.wikipedia.org/wiki/Hypertext_Application_Language)
+/// - PagingLinksResponse for pagination links
 public class LinkResponse: NSObject, Decodable {
-    
-    /// Specifies the URL of the page the link goes to.
+
+    /// URL of the linked resource. May contain URI template placeholders if templated is true.
     public var href:String
-    
-    /// Specifies if the URL is templated with arguments/parameters such as cursor, order, limit,.
+
+    /// If true, href contains URI template variables that must be substituted with values.
+    /// Common variables: {cursor}, {limit}, {order}. If false or nil, href is a direct URL.
     public var templated:Bool?
     
     // Properties to encode and decode

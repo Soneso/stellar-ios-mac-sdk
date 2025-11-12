@@ -8,6 +8,18 @@
 
 import Foundation
 
-///  Represents a transaction malformed (bad request) error response from the horizon api (code 400), containing information related to the error
-///  See [Horizon API](https://developers.stellar.org/docs/data/horizon/api-reference/errors/http-status-codes/horizon-specific/transaction-malformed "Transaction malformed")
+/// HTTP 400 Bad Request error from Horizon indicating malformed request parameters.
+///
+/// This error occurs when:
+/// - Invalid or missing required parameters
+/// - Malformed transaction XDR
+/// - Invalid asset codes, account IDs, or other identifiers
+/// - Transaction validation failures before submission
+/// - Parameter format or type errors
+///
+/// Check the detail field for specific information about what was invalid.
+///
+/// See also:
+/// - [Transaction Malformed](https://developers.stellar.org/docs/data/horizon/api-reference/errors/http-status-codes/horizon-specific/transaction-malformed)
+/// - ErrorResponse for common error properties
 public class BadRequestErrorResponse: ErrorResponse {}

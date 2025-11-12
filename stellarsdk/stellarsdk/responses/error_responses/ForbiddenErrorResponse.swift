@@ -8,6 +8,17 @@
 
 import Foundation
 
-///  Represents a forbidden error response from the horizon api (code 403), containing information related to the error
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/errors/forbidden.html "Forbidden")
+/// HTTP 403 Forbidden error from Horizon indicating access to the resource is denied.
+///
+/// This error occurs when:
+/// - Authentication required but not provided
+/// - Invalid or expired authentication credentials
+/// - Insufficient permissions for the requested operation
+/// - IP-based access restrictions
+///
+/// Contact the Horizon server administrator if you believe access should be granted.
+///
+/// See also:
+/// - [Forbidden Error](https://developers.stellar.org/api/horizon/reference/errors/forbidden)
+/// - ErrorResponse for common error properties
 public class ForbiddenErrorResponse: ErrorResponse {}

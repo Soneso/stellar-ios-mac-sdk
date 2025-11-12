@@ -8,29 +8,37 @@
 
 import Foundation
 
-/// Represents the links connected to a transaction response.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/transaction.html "Transaction")
+/// Navigation links for transaction-related resources.
+///
+/// Provides hypermedia links to resources associated with a transaction, including
+/// the source account, containing ledger, operations, effects, and chronologically
+/// adjacent transactions.
+///
+/// See also:
+/// - [Transaction Links](https://developers.stellar.org/api/horizon/reference/resources/transaction)
+/// - TransactionResponse for complete transaction details
+/// - LinkResponse for individual link structure
 public class TransactionLinksResponse: NSObject, Decodable {
-    
-    /// Link to the current transaction respones.
+
+    /// Link to this transaction resource (self reference).
     public var selfLink:LinkResponse
-    
-    /// Link to the source account for this transaction.
+
+    /// Link to the account that submitted this transaction.
     public var account:LinkResponse
-    
-    /// Link to the ledger in which this transaction was applied.
+
+    /// Link to the ledger in which this transaction was included.
     public var ledger:LinkResponse
-    
-    /// Link to operations included in this transaction.
+
+    /// Templated link to operations contained in this transaction. Supports cursor, order, and limit.
     public var operations:LinkResponse
-    
-    /// Link to the effects which resulted by operations in this transaction.
+
+    /// Templated link to effects produced by operations in this transaction. Supports cursor, order, and limit.
     public var effects:LinkResponse
-    
-   /// A collection of transactions that occur after this transaction.
+
+    /// Templated link to transactions that occurred chronologically after this one.
     public var precedes:LinkResponse
-    
-    /// A collection of transactions that occur before this transaction.
+
+    /// Templated link to transactions that occurred chronologically before this one.
     public var succeeds:LinkResponse
     
     

@@ -8,6 +8,18 @@
 
 import Foundation
 
-///  Represents a not found error response from the horizon api (code 404), containing information related to the error
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/errors/not-found.html "Not Found")
+/// HTTP 404 Not Found error from Horizon indicating the requested resource does not exist.
+///
+/// This error occurs when:
+/// - Account ID not found on the network
+/// - Transaction hash does not exist
+/// - Ledger sequence not available
+/// - Data entry key not found for account
+/// - Invalid or non-existent resource identifier
+///
+/// Verify the resource identifier is correct and that the resource exists on the network.
+///
+/// See also:
+/// - [Not Found Error](https://developers.stellar.org/api/horizon/reference/errors/not-found)
+/// - ErrorResponse for common error properties
 public class NotFoundErrorResponse: ErrorResponse {}

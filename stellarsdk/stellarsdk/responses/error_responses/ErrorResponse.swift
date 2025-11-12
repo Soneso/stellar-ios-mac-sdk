@@ -156,6 +156,18 @@ public class ErrorResultCodes: Decodable {
     }
 }
 
-///  Represents a timeout error response (code 504) from the horizon api, containing information related to the error
-///  See [Horizon API](https://developers.stellar.org/docs/data/horizon/api-reference/errors/http-status-codes/horizon-specific/timeout "Stale History")
+/// HTTP 504 Gateway Timeout error from Horizon indicating the request took too long to process.
+///
+/// This error occurs when:
+/// - Request processing exceeded Horizon's configured timeout
+/// - Stellar Core took too long to respond
+/// - Database query exceeded time limits
+/// - Network congestion or connectivity issues
+///
+/// Retry the request after a delay. For complex queries, consider narrowing the scope
+/// or using pagination to reduce processing time.
+///
+/// See also:
+/// - [Timeout Error](https://developers.stellar.org/docs/data/horizon/api-reference/errors/http-status-codes/horizon-specific/timeout)
+/// - ErrorResponse for common error properties
 public class TimeoutErrorResponse: ErrorResponse {}

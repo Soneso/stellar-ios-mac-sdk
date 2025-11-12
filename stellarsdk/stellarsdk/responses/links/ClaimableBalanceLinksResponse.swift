@@ -8,9 +8,18 @@
 
 import Foundation
 
+/// Navigation links for claimable balance-related resources.
+///
+/// Provides hypermedia links to resources associated with a claimable balance.
+/// Currently only includes a self reference to the claimable balance resource.
+///
+/// See also:
+/// - [Claimable Balance](https://developers.stellar.org/api/horizon/reference/resources/claimablebalance)
+/// - [Claimable Balances Guide](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/claimable-balances)
+/// - ClaimableBalanceResponse for complete details
 public class ClaimableBalanceLinksResponse: NSObject, Decodable {
-    
-    /// Link to the current ledger request URL of this ledger.
+
+    /// Link to this claimable balance resource (self reference).
     public var selflink:LinkResponse
     
     // Properties to encode and decode.

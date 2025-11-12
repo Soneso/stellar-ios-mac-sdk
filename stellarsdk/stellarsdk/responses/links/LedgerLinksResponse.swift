@@ -8,23 +8,30 @@
 
 import Foundation
 
-/// Represents the links connected to a ledger response.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/ledger.html "Ledger")
+/// Navigation links for ledger-related resources.
+///
+/// Provides hypermedia links to resources contained within a ledger, including
+/// transactions, operations, payments, and effects that occurred in this ledger.
+///
+/// See also:
+/// - [Ledger Links](https://developers.stellar.org/api/horizon/reference/resources/ledger)
+/// - LedgerResponse for complete ledger details
+/// - LinkResponse for individual link structure
 public class LedgerLinksResponse: NSObject, Decodable {
-    
-    /// Link to the current ledger request URL of this ledger.
+
+    /// Link to this ledger resource (self reference).
     public var selflink:LinkResponse
-    
-    /// Link to the effects in this ledger.
+
+    /// Templated link to effects that occurred in this ledger. Supports cursor, order, and limit.
     public var effects:LinkResponse
-    
-    /// Link to the operations in this ledger.
+
+    /// Templated link to operations included in this ledger. Supports cursor, order, and limit.
     public var operations:LinkResponse
-    
-    /// Link to the payments in this ledger.
+
+    /// Templated link to payment operations in this ledger. Supports cursor, order, and limit.
     public var payments:LinkResponse
-    
-    /// Link to the transactions in this ledger.
+
+    /// Templated link to transactions included in this ledger. Supports cursor, order, and limit.
     public var transactions:LinkResponse
     
     // Properties to encode and decode.

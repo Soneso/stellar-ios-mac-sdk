@@ -8,6 +8,16 @@
 
 import Foundation
 
-///  Represents a not implemented error response from the horizon api (code 501), containing information related to the error
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/errors/not-implemented.html "Not Implemented")
+/// HTTP 501 Not Implemented error from Horizon indicating unsupported functionality.
+///
+/// This error occurs when:
+/// - Requested feature is not yet implemented in this Horizon version
+/// - API endpoint exists but functionality is disabled
+/// - Requested operation is not supported by the server configuration
+///
+/// Check Horizon version and configuration, or use an alternative approach.
+///
+/// See also:
+/// - [Not Implemented Error](https://developers.stellar.org/api/horizon/reference/errors/not-implemented)
+/// - ErrorResponse for common error properties
 public class NotImplementedErrorResponse: ErrorResponse {}

@@ -8,65 +8,122 @@
 
 import Foundation
 
-///  Represents a transaction response.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/transaction.html "Transaction")
+/// Represents a transaction on the Stellar network with all its details and metadata.
+///
+/// Contains complete transaction information including operations, fees, signatures, source account,
+/// and XDR-encoded transaction data. Returned when querying transaction details or lists from Horizon.
+///
+/// A transaction is a collection of operations that are atomically applied to the ledger.
+/// If any operation fails, the entire transaction fails and no changes are made.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// let response = await sdk.transactions.getTransactionDetails(transactionHash: "abc123...")
+/// switch response {
+/// case .success(let tx):
+///     print("Transaction Hash: \(tx.transactionHash)")
+///     print("Source Account: \(tx.sourceAccount)")
+///     print("Fee Charged: \(tx.feeCharged ?? "N/A") stroops")
+///     print("Operations: \(tx.operationCount)")
+///     print("Ledger: \(tx.ledger)")
+///
+///     if let memo = tx.memo {
+///         print("Memo: \(memo)")
+///     }
+///
+///     // Check if fee bump transaction
+///     if let feeBump = tx.feeBumpTransactionResponse {
+///         print("Fee Bump Hash: \(feeBump.transactionHash)")
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Horizon Transaction Resource](https://developers.stellar.org/api/horizon/reference/resources/transaction)
+/// - [Transaction Fundamentals](https://developers.stellar.org/docs/learn/fundamentals/transactions)
+/// - TransactionsService for querying transactions
 public class TransactionResponse: NSObject, Decodable {
-    
-    /// A list of links related to this asset.
+
+    /// Navigation links related to this transaction (self, account, ledger, operations, effects, precedes, succeeds).
     public var links:TransactionLinksResponse
-    
-    /// The id of this transaction.
+
+    /// Unique identifier for this transaction in Horizon's database.
     public var id:String
-    
-    /// A paging token suitable for use as the cursor parameter to transaction collection resources.
+
+    /// Paging token for cursor-based pagination.
     public var pagingToken:String
-    
-    /// A hex-encoded SHA-256 hash of the transaction’s XDR-encoded form.
+
+    /// Hex-encoded SHA-256 hash of the transaction's XDR-encoded form. This is the transaction ID.
     public var transactionHash:String
-    
-    /// Sequence number of the ledger in which this transaction was applied.
+
+    /// Ledger sequence number in which this transaction was included and applied.
     public var ledger:Int
-    
-    /// Date created.
+
+    /// Timestamp when this transaction was included in the ledger (ISO 8601).
     public var createdAt:Date
-    
-    /// The account that originates the transaction.
+
+    /// Account ID (public key) that originated this transaction.
     public var sourceAccount:String
+
+    /// Multiplexed account address if the source account uses muxed accounts. Nil otherwise.
     public var sourceAccountMuxed:String?
+
+    /// Muxed account ID component if the source account uses muxed accounts. Nil otherwise.
     public var sourceAccountMuxedId:String?
-    
-    /// The current transaction sequence number of the source account.
+
+    /// Sequence number of the source account when this transaction was submitted.
     public var sourceAccountSequence:String
-    
-    /// Defines the maximum fee the source account is willing to pay.
+
+    /// Maximum fee (in stroops) the source account was willing to pay for this transaction.
     public var maxFee:String?
-    
-    /// Defines the fee that was actually paid for a transaction.
+
+    /// Actual fee (in stroops) charged for this transaction. May be less than maxFee.
     public var feeCharged:String?
-    
-    /// The account which paid the transaction fee
+
+    /// Account that paid the transaction fee. Usually same as source account unless fee bump was used.
     public var feeAccount:String
+
+    /// Multiplexed account address if the fee account uses muxed accounts. Nil otherwise.
     public var feeAccountMuxed:String?
+
+    /// Muxed account ID component if the fee account uses muxed accounts. Nil otherwise.
     public var feeAccountMuxedId:String?
-    
-    /// The number of operations that are contained within this transaction.
+
+    /// Number of operations contained in this transaction.
     public var operationCount:Int
-    
-    /// The memo type. See enum MemoType. The memo contains optional extra information.
+
+    /// Type of memo attached to this transaction: "none", "text", "id", "hash", or "return".
     public var memoType:String
-    
+
+    /// Parsed memo object. Nil for memo type "none".
     public var memo:Memo?
-    
+
+    /// Array of base64-encoded signatures (decorated signatures) for this transaction.
     public var signatures:[String]
-    
+
+    /// Complete transaction envelope containing the transaction and all signatures (XDR decoded).
     public var transactionEnvelope: TransactionEnvelopeXDR
+
+    /// Result of transaction execution indicating success or specific error codes (XDR decoded).
     public var transactionResult: TransactionResultXDR
+
+    /// Metadata about ledger state changes caused by this transaction (XDR decoded). Nil if not available.
     public var transactionMeta: TransactionMetaXDR?
+
+    /// Metadata about ledger changes from paying the transaction fee (XDR decoded). Nil if not available.
     public var feeMeta: LedgerEntryChangesXDR?
-    
+
+    /// Details about the fee bump transaction if this transaction was wrapped in a fee bump. Nil otherwise.
     public var feeBumpTransactionResponse:FeeBumpTransactionResponse?
+
+    /// Details about the inner transaction if this response is for a fee bump transaction. Nil otherwise.
     public var innerTransactionResponse:InnerTransactionResponse?
-    
+
+    /// Preconditions that must be met for this transaction to be valid (time bounds, ledger bounds, etc.). Nil if none.
     public var preconditions:TransactionPreconditionsResponse?
     
     private enum CodingKeys: String, CodingKey {

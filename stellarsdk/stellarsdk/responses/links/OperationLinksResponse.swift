@@ -8,23 +8,30 @@
 
 import Foundation
 
-/// Represents the links connected to an operation response.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html "Operation")
+/// Navigation links for operation-related resources.
+///
+/// Provides hypermedia links to resources associated with an operation, including
+/// effects, the containing transaction, and chronologically adjacent operations.
+///
+/// See also:
+/// - [Operation Links](https://developers.stellar.org/api/horizon/reference/resources/operation)
+/// - OperationResponse for complete operation details
+/// - LinkResponse for individual link structure
 public class OperationLinksResponse: NSObject, Decodable {
-    
-    /// Link to the effects of this operation.
+
+    /// Templated link to effects produced by this operation. Supports cursor, order, and limit.
     public var effects:LinkResponse
-    
-    /// Link to the current operation respones.
+
+    /// Link to this operation resource (self reference).
     public var selfLink:LinkResponse
-    
-    /// Link to the transaction of this operation.
+
+    /// Link to the transaction containing this operation.
     public var transaction:LinkResponse
-    
-    /// Link to the next operation.
+
+    /// Templated link to operations that occurred chronologically after this one.
     public var precedes:LinkResponse
-    
-    /// Link to the previous operation.
+
+    /// Templated link to operations that occurred chronologically before this one.
     public var succeeds:LinkResponse
     
     
