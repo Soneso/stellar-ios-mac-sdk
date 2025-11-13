@@ -53,7 +53,7 @@ public typealias OperationDetailsResponseClosure = (_ response:OperationDetailsR
 /// ```
 ///
 /// See also:
-/// - [Horizon Operations API](https://developers.stellar.org/api/horizon/reference/resources/operation)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - OperationResponse for operation data structures
 public class OperationsService: NSObject {
     let serviceHelper: ServiceHelper

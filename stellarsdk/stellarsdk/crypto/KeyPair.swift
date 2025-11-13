@@ -47,8 +47,7 @@ import ed25519C
 /// ```
 ///
 /// See also:
-/// - [Stellar Keypairs](https://developers.stellar.org/docs/encyclopedia/security/cryptography#keypairs)
-/// - [Public Key](https://developers.stellar.org/docs/encyclopedia/security/cryptography#public-keys)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public final class KeyPair {
     /// The Ed25519 public key.
     public let publicKey: PublicKey

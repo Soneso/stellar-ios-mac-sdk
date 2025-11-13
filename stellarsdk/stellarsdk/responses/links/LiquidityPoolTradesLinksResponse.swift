@@ -14,8 +14,7 @@ import Foundation
 /// Currently only includes a self reference to the trades resource.
 ///
 /// See also:
-/// - [Liquidity Pool Trades](https://developers.stellar.org/api/horizon/reference/resources/liquidity-pool)
-/// - [Automated Market Makers](https://developers.stellar.org/docs/learn/encyclopedia/sdex/liquidity-on-stellar-sdex-liquidity-pools)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - LiquidityPoolResponse for complete details
 public class LiquidityPoolTradesLinksResponse: NSObject, Decodable {
 

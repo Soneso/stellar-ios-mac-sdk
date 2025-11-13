@@ -11,7 +11,7 @@ import Foundation
 /// Represents a liquidity pool response from the Horizon API.
 /// Liquidity pools are automated market makers that enable decentralized trading
 /// by maintaining reserves of two assets and allowing users to swap between them.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/liquiditypool "Liquidity Pool")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolResponse: NSObject, Decodable {
 
     /// A list of links related to this liquidity pool.

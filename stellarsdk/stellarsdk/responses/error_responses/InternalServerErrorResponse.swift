@@ -20,6 +20,6 @@ import Foundation
 /// If errors persist, check Horizon server status or contact administrators.
 ///
 /// See also:
-/// - [Internal Server Error](https://developers.stellar.org/api/horizon/reference/errors/server-error)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
 public class InternalServerErrorResponse: ErrorResponse {}

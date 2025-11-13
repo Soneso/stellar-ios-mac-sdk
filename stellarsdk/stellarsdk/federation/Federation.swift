@@ -102,7 +102,7 @@ public class Federation: NSObject {
         }
     }
     
-    /// Creates a Federation instance based on information from [stellar.toml](https://developers.stellar.org/docs/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates a Federation instance based on information from the stellar.toml file for a given domain.
     @available(*, renamed: "forDomain(domain:secure:)")
     public static func forDomain(domain:String, secure:Bool = true, completion:@escaping FederationClosure) {
         Task {
@@ -111,7 +111,7 @@ public class Federation: NSObject {
         }
     }
     
-    /// Creates a Federation instance based on information from [stellar.toml](https://developers.stellar.org/docs/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates a Federation instance based on information from the stellar.toml file for a given domain.
     public static func forDomain(domain:String, secure:Bool = true) async -> FederationForDomainEnum {
         
         let result = await StellarToml.from(domain: domain, secure: secure)

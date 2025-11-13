@@ -34,7 +34,7 @@ import Foundation
 /// ```
 ///
 /// See also:
-/// - [Horizon Pagination](https://developers.stellar.org/api/horizon/reference/structure/pagination)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - PageResponse for paginated results
 /// - LinkResponse for individual link details
 public class PagingLinksResponse: NSObject, Decodable {

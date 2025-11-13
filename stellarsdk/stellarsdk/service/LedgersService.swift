@@ -43,7 +43,7 @@ public typealias LedgerDetailsResponseClosure = (_ response:LedgerDetailsRespons
 /// ```
 ///
 /// See also:
-/// - [Horizon Ledgers API](https://developers.stellar.org/api/horizon/reference/resources/ledger)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class LedgersService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()

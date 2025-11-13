@@ -17,7 +17,7 @@ import Foundation
 /// For asynchronous transaction submission, see SubmitTransactionAsyncResponse instead.
 ///
 /// See also:
-/// - [Submit Transaction Endpoint](https://developers.stellar.org/api/horizon/reference/endpoints/transactions-create)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - TransactionResponse for all available properties
 /// - SubmitTransactionAsyncResponse for async submission
 public class SubmitTransactionResponse: TransactionResponse {

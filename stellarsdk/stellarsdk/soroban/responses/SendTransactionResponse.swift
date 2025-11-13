@@ -45,7 +45,7 @@ import Foundation
 /// See also:
 /// - [SorobanServer.sendTransaction] for submitting transactions
 /// - [GetTransactionResponse] for polling transaction status
-/// - [Soroban RPC sendTransaction](https://developers.stellar.org/docs/data/rpc/api-reference/methods/sendTransaction)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class SendTransactionResponse: NSObject, Decodable {
     
     public static let STATUS_PENDING = "PENDING"

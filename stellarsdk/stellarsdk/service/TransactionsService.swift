@@ -82,7 +82,7 @@ public typealias CheckMemoRequiredResponseClosure = (_ response:CheckMemoRequire
 /// ```
 ///
 /// See also:
-/// - [Horizon Transactions API](https://developers.stellar.org/api/horizon/reference/resources/transaction)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [SEP-29 Memo Required](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md)
 public class TransactionsService: NSObject {
     let serviceHelper: ServiceHelper

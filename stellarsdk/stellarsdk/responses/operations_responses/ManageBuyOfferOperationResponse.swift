@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a manage buy offer operation response.
 /// This operation creates, updates, or deletes a buy offer on the Stellar DEX, specifying the amount to buy rather than the amount to sell.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#manage-buy-offer "Manage Buy Offer Operation")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ManageBuyOfferOperationResponse: ManageOfferOperationResponse {
     /**
      Initializer - creates a new instance by decoding from the given decoder.

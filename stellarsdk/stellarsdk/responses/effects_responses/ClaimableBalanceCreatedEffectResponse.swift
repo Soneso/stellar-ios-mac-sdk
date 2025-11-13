@@ -12,8 +12,7 @@ import Foundation
 /// This effect occurs when a new claimable balance is created on the ledger.
 /// Claimable balances allow an account to set aside funds to be claimed by specific recipients at a later time.
 /// Triggered by the Create Claimable Balance operation.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/claimable-balances "Claimable Balances")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimableBalanceCreatedEffectResponse: EffectResponse {
 
     /// The unique identifier of the claimable balance.

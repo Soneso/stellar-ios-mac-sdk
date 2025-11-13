@@ -37,7 +37,7 @@ public typealias HealthCheckResponseClosure = (_ response: HealthCheckResponseEn
 /// ```
 ///
 /// See also:
-/// - [Horizon Health API](https://developers.stellar.org/api/horizon/reference/endpoints/health)
+/// - [Stellar developer docs](https://developers.stellar.org)
 open class HealthService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
@@ -59,7 +59,7 @@ open class HealthService: NSObject {
     /// - 200 OK: if all health checks pass (database connected, core up, and core synced)
     /// - 503 Service Unavailable: if any health check fails
     ///
-    /// See [Horizon API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/health "Health Check")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter response: The closure to be called upon response.
     ///
@@ -80,7 +80,7 @@ open class HealthService: NSObject {
     /// - 200 OK: if all health checks pass (database connected, core up, and core synced)
     /// - 503 Service Unavailable: if any health check fails
     ///
-    /// See [Horizon API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/health "Health Check")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Returns: HealthCheckResponseEnum indicating success or failure
     ///

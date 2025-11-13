@@ -14,8 +14,7 @@ import Foundation
 /// the issuer's stellar.toml file which contains asset metadata and verification.
 ///
 /// See also:
-/// - [Asset Links](https://developers.stellar.org/api/horizon/reference/resources/asset)
-/// - [Stellar TOML](https://developers.stellar.org/docs/issuing-assets/publishing-asset-info)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - AssetResponse for complete asset details
 public class AssetLinksResponse: NSObject, Decodable {
 

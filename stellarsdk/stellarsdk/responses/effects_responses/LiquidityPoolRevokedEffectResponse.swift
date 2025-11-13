@@ -12,8 +12,7 @@ import Foundation
 /// This effect occurs when trustline authorization for a liquidity pool is revoked by an asset issuer.
 /// The pool shares are revoked and the reserves are returned.
 /// Triggered by the Set Trust Line Flags or Allow Trust operations.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/sdex/liquidity-on-stellar-sdex-liquidity-pools "Liquidity Pools")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolRevokedEffectResponse: EffectResponse {
 
     /// The liquidity pool details.

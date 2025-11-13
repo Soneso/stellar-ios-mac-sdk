@@ -45,8 +45,7 @@ import Foundation
 /// ```
 ///
 /// See also:
-/// - [Payment Operation](https://developers.stellar.org/docs/learn/fundamentals/transactions/list-of-operations#payment)
-/// - [Assets](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/assets)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class PaymentOperation:Operation {
 
     /// The destination account that will receive the payment.

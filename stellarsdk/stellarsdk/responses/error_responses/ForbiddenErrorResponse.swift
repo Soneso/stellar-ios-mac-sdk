@@ -19,6 +19,6 @@ import Foundation
 /// Contact the Horizon server administrator if you believe access should be granted.
 ///
 /// See also:
-/// - [Forbidden Error](https://developers.stellar.org/api/horizon/reference/errors/forbidden)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
 public class ForbiddenErrorResponse: ErrorResponse {}

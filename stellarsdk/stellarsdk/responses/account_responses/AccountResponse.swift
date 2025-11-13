@@ -52,7 +52,7 @@ import Foundation
 /// ```
 ///
 /// See also:
-/// - [Horizon Account Resource](https://developers.stellar.org/api/horizon/reference/resources/account)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountService for querying accounts
 public class AccountResponse: NSObject, Decodable, TransactionAccount {
 

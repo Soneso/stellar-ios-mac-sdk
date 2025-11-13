@@ -96,7 +96,7 @@ public enum EventSourceState {
 ///
 /// See also:
 /// - [W3C Server-Sent Events Specification](https://html.spec.whatwg.org/multipage/server-sent-events.html)
-/// - [Horizon Streaming](https://developers.stellar.org/docs/data/horizon/api-reference/structure/streaming)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [StreamingHelper] for simplified Horizon streaming integration
 open class EventSource: NSObject, URLSessionDataDelegate {
     static let DefaultsKey = "com.soneso.eventSource.lastEventId"

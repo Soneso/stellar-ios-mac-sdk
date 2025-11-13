@@ -31,7 +31,7 @@ import Foundation
 /// - B: Claimable balance ID
 ///
 /// See also:
-/// - [Stellar Address Encoding](https://developers.stellar.org/docs/encyclopedia/security/addresses)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [SEP-0023: Strkeys](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md)
 enum VersionByte:UInt8 {
     /// Ed25519 public key - Standard account address starting with 'G'

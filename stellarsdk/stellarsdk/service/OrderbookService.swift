@@ -54,7 +54,7 @@ public typealias OrderbookResponseClosure = (_ response:OrderbookResponseEnum) -
 /// ```
 ///
 /// See also:
-/// - [Horizon Orderbook API](https://developers.stellar.org/api/horizon/reference/endpoints/orderbook-details)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - OffersService for individual offers
 public class OrderbookService: NSObject {
     let serviceHelper: ServiceHelper

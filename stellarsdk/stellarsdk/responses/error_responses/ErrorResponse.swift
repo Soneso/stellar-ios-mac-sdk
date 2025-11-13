@@ -43,7 +43,7 @@ import Foundation
 /// ```
 ///
 /// See also:
-/// - [Horizon Error Codes](https://developers.stellar.org/api/horizon/reference/errors)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - HorizonRequestError for error enum types
 public class ErrorResponse: NSObject, Decodable {
 
@@ -135,7 +135,7 @@ public class ErrorResponseExtras: Decodable {
 /// - tx_bad_seq: Incorrect sequence number
 /// - tx_insufficient_balance: Not enough XLM to pay fee
 ///
-/// See [Transaction Result Codes](https://developers.stellar.org/docs/learn/fundamentals/transactions/list-of-operations#result-codes)
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ErrorResultCodes: Decodable {
     /// Transaction-level result code (e.g., "tx_failed", "tx_bad_seq").
     public var transaction: String?
@@ -168,6 +168,6 @@ public class ErrorResultCodes: Decodable {
 /// or using pagination to reduce processing time.
 ///
 /// See also:
-/// - [Timeout Error](https://developers.stellar.org/docs/data/horizon/api-reference/errors/http-status-codes/horizon-specific/timeout)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
 public class TimeoutErrorResponse: ErrorResponse {}

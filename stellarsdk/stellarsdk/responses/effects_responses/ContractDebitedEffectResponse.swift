@@ -12,8 +12,7 @@ import Foundation
 /// This effect occurs when a Soroban smart contract sends an asset transfer.
 /// Contracts can hold and manage Stellar assets as part of their execution.
 /// Triggered by Invoke Host Function operations that transfer assets from contracts.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/smart-contract-internals/contract-interactions/stellar-asset-contract "Stellar Asset Contract")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ContractDebitedEffectResponse: EffectResponse {
 
     /// The contract ID sending the debit.

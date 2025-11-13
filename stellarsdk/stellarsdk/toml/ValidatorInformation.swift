@@ -25,7 +25,7 @@ import Foundation
 /// See also:
 /// - [StellarToml] for the main stellar.toml parser
 /// - [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
-/// - [Stellar Validator Guide](https://developers.stellar.org/docs/validators)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class ValidatorInformation {
 
     private enum Keys: String {

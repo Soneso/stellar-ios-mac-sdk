@@ -24,7 +24,7 @@ import Foundation
 /// - Multi-party transactions requiring additional signers beyond the account's configured signers
 ///
 /// See also:
-/// - [Transaction Preconditions](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/transaction-preconditions)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - PreconditionsTimeBoundsResponse for time constraints
 /// - PreconditionsLedgerBoundsResponse for ledger constraints
 public class TransactionPreconditionsResponse: NSObject, Decodable {

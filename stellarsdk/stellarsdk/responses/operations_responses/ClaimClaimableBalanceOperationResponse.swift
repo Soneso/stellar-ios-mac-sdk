@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a claim claimable balance operation response.
 /// This operation claims a claimable balance entry, transferring the asset amount to the claimant's account.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#claim-claimable-balance "Claim Claimable Balance Operation")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimClaimableBalanceOperationResponse: OperationResponse {
 
     /// ID of the claimable balance being claimed.

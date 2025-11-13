@@ -11,7 +11,7 @@ import Foundation
 /// Represents a claimable balance response from the Horizon API.
 /// Claimable balances are held on the ledger until they are claimed by authorized claimants
 /// or until the conditions for claiming them expire.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/claimablebalance "Claimable Balance")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimableBalanceResponse: NSObject, Decodable {
 
     /// A list of links related to this claimable balance.

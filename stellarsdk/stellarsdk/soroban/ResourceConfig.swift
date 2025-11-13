@@ -40,7 +40,7 @@ import Foundation
 /// See also:
 /// - [SimulateTransactionRequest] for simulation configuration
 /// - [SorobanServer.simulateTransaction] for running simulations
-/// - [Soroban Resource Model](https://developers.stellar.org/docs/smart-contracts/guides/transactions/resource-limits)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class ResourceConfig {
 
     /// Instruction budget leeway used in preflight calculations.

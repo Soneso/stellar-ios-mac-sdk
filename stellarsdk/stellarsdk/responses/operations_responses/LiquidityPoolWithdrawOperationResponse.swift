@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a liquidity pool withdraw operation response.
 /// This operation withdraws assets from a liquidity pool by redeeming pool shares for the underlying reserve assets.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#liquidity-pool-withdraw "Liquidity Pool Withdraw Operation")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolWithdrawOperationResponse: OperationResponse {
 
     /// ID of the liquidity pool from which assets are withdrawn.

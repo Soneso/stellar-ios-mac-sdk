@@ -17,7 +17,7 @@ import Foundation
 /// This response is included in TransactionResponse for fee bump transactions.
 ///
 /// See also:
-/// - [Fee Bump Transactions](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/fee-bump-transactions)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - FeeBumpTransactionResponse for the wrapper transaction details
 /// - TransactionResponse for complete transaction information
 public class InnerTransactionResponse: NSObject, Decodable {

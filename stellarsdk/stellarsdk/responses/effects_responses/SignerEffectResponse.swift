@@ -12,8 +12,7 @@ import Foundation
 /// Represents changes to account signers, including creation, updates, and removal.
 /// Signers allow an account to be controlled by multiple keys with configurable weights.
 /// Triggered by the Set Options operation.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts#signers "Account Signers")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class SignerEffectResponse: EffectResponse {
 
     /// Public key of the signer.

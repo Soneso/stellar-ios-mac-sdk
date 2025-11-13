@@ -13,7 +13,7 @@ import Foundation
 /// These constants represent the different asset types supported by the Stellar network
 /// and are used when parsing or constructing API requests and responses.
 ///
-/// See: [Assets](https://developers.stellar.org/docs/fundamentals-and-concepts/stellar-data-structures/assets) for more information.
+/// See: [Stellar developer docs](https://developers.stellar.org) for more information.
 public struct AssetTypeAsString
 {
     /// Native asset type (XLM).
@@ -35,7 +35,7 @@ public struct AssetTypeAsString
 /// Effects represent specific changes that occur on the Stellar network as a result of operations.
 /// These constants are used when parsing effect responses from the Horizon server.
 ///
-/// See: [Effects](https://developers.stellar.org/docs/data/horizon/api-reference/resources/effects) for more information.
+/// See: [Stellar developer docs](https://developers.stellar.org) for more information.
 public struct EffectTypeAsString
 {
     /// Effect when a new account is created on the network.
@@ -108,7 +108,7 @@ public struct EffectTypeAsString
 /// Memos are optional attachments to transactions that can be used to include additional
 /// information or identification.
 ///
-/// See: [Memos](https://developers.stellar.org/docs/encyclopedia/memos) for more information.
+/// See: [Stellar developer docs](https://developers.stellar.org) for more information.
 public struct MemoTypeAsString
 {
     /// No memo attached to the transaction.

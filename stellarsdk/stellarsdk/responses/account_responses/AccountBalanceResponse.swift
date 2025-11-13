@@ -15,7 +15,7 @@ import Foundation
 /// and liabilities from open offers.
 ///
 /// See also:
-/// - [Horizon Account Resource](https://developers.stellar.org/api/horizon/reference/resources/account)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountResponse for complete account information
 public class AccountBalanceResponse: NSObject, Decodable {
 

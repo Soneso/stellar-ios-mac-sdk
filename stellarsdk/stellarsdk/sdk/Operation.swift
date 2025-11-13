@@ -52,8 +52,7 @@ import Foundation
 /// ```
 ///
 /// See also:
-/// - [Operations](https://developers.stellar.org/docs/learn/fundamentals/transactions/operations)
-/// - [List of Operations](https://developers.stellar.org/docs/learn/fundamentals/transactions/list-of-operations)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class Operation {
     /// The source account for this operation. If nil, uses the transaction's source account.
     public private (set) var sourceAccountId:String? //"G..." or "M..."

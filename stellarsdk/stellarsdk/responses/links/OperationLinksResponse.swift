@@ -14,7 +14,7 @@ import Foundation
 /// effects, the containing transaction, and chronologically adjacent operations.
 ///
 /// See also:
-/// - [Operation Links](https://developers.stellar.org/api/horizon/reference/resources/operation)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - OperationResponse for complete operation details
 /// - LinkResponse for individual link structure
 public class OperationLinksResponse: NSObject, Decodable {

@@ -51,7 +51,7 @@ import Foundation
 ///
 /// See also:
 /// - [Network] for network passphrase configuration
-/// - [Horizon API Documentation](https://developers.stellar.org/docs/data/horizon)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - Individual service classes for specific operations
 public class StellarSDK: NSObject {
     

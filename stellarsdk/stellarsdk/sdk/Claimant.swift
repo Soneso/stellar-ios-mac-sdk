@@ -9,7 +9,7 @@
 import Foundation
 
 // Claimant class which helps the creation of claimable balances.
-// See: https://developers.stellar.org/docs/glossary/claimable-balance/
+// See: [Stellar developer docs](https://developers.stellar.org)
 // The default behavior of this class it to create claimants with an unconditional predicate if none is passed.
 public class Claimant {
     

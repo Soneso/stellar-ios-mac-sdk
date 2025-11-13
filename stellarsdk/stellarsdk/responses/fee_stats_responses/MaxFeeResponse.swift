@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents the distribution of maximum fees that users were willing to pay for transactions in recent ledgers.
 /// All values are in stroops (1 stroop = 0.0000001 XLM).
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/endpoints/fee-stats "Fee Stats")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class MaxFeeResponse: NSObject, Decodable {
 
     /// The maximum fee users were willing to pay in recent ledgers, in stroops.

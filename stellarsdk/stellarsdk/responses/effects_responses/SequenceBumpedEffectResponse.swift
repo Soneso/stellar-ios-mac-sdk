@@ -11,8 +11,7 @@ import Foundation
 /// Represents a sequence number bump effect.
 /// This effect occurs when an account's sequence number is manually bumped to a higher value.
 /// Triggered by the Bump Sequence operation, which can be used to invalidate future transactions or implement time bounds.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/operations-and-transactions#bump-sequence "Bump Sequence")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class SequenceBumpedEffectResponse: EffectResponse {
 
     /// The new sequence number after the bump.

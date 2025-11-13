@@ -62,7 +62,7 @@ import Foundation
 ///
 /// See also:
 /// - [SorobanServer.simulateTransaction] for invoking simulation
-/// - [Soroban Resources](https://developers.stellar.org/docs/smart-contracts/guides/transactions/resource-limits-fees)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class SimulateTransactionResponse: NSObject, Decodable {
     
     /// (optional) - This array will only have one element: the result for the Host Function invocation. Only present on successful simulation (i.e. no error) of InvokeHostFunction operations.

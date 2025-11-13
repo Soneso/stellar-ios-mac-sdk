@@ -9,8 +9,7 @@
 import Foundation
 
 ///  Represents an asset response.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/endpoints/assets-all.html "All Assets Request")
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/asset.html "Asset")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class AssetResponse: NSObject, Decodable {
     
     /// A list of links related to this asset.
@@ -99,7 +98,7 @@ public class AssetResponse: NSObject, Decodable {
 }
 
 /// Statistics about the number of accounts holding an asset, categorized by authorization status.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/asset.html "Asset")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AssetAccounts: NSObject, Decodable {
 
     /// The number of accounts authorized to hold and transact with this asset.
@@ -133,7 +132,7 @@ public class AssetAccounts: NSObject, Decodable {
 }
 
 /// Statistics about the total amounts of an asset held by accounts, categorized by authorization status.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/asset.html "Asset")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AssetBalances: NSObject, Decodable {
 
     /// The total amount held by accounts that are authorized to hold and transact with this asset.

@@ -9,7 +9,7 @@
 import Foundation
 
 /// Response for the getLatestLedger request
-/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLatestLedger
+/// See: [Stellar developer docs](https://developers.stellar.org)
 ///
 public class GetLatestLedgerResponse: NSObject, Decodable {
     

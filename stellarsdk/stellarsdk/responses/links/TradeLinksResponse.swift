@@ -14,7 +14,7 @@ import Foundation
 /// the base and counter accounts involved and the operation that executed the trade.
 ///
 /// See also:
-/// - [Trade Links](https://developers.stellar.org/api/horizon/reference/resources/trade)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - TradeResponse for complete trade details
 /// - LinkResponse for individual link structure
 public class TradeLinksResponse: NSObject, Decodable {

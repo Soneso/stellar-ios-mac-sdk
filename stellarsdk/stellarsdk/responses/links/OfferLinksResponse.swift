@@ -14,7 +14,7 @@ import Foundation
 /// the offer itself and the account that created the offer.
 ///
 /// See also:
-/// - [Offer Links](https://developers.stellar.org/api/horizon/reference/resources/offer)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - OfferResponse for complete offer details
 /// - LinkResponse for individual link structure
 public class OfferLinksResponse: NSObject, Decodable {

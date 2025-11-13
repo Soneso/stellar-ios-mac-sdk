@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a offer response.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/offer.html "offer")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class OfferResponse: NSObject, Decodable {
     
     /// A list of links related to this offer.

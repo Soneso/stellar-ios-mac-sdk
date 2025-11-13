@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a bump sequence operation response.
 /// This operation bumps forward the sequence number of the source account to the specified value, invalidating any lower sequence numbers for future transactions.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#bump-sequence "Bump Sequence Operation")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class BumpSequenceOperationResponse: OperationResponse {
 
     /// Value to bump the sequence to.

@@ -48,7 +48,7 @@ public typealias LiquidityPoolTradesResponseClosure = (_ response:LiquidityPoolT
 /// ```
 ///
 /// See also:
-/// - [Horizon Liquidity Pools API](https://developers.stellar.org/api/horizon/reference/resources/liquiditypool)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - LiquidityPoolDepositOperation and LiquidityPoolWithdrawOperation
 public class LiquidityPoolsService: NSObject {
     let serviceHelper: ServiceHelper

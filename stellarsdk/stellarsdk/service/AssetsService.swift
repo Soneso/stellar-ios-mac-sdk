@@ -36,7 +36,7 @@ import Foundation
 /// ```
 ///
 /// See also:
-/// - [Horizon Assets API](https://developers.stellar.org/api/horizon/reference/resources/asset)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - AssetResponse for asset data structure
 public class AssetsService: NSObject {
     let serviceHelper: ServiceHelper
@@ -51,7 +51,7 @@ public class AssetsService: NSObject {
     }
     
     /// This function calls the endpoint that represents all assets. It will give you all the assets in the system along with various statistics about each.
-    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/assets-all.html "All Assets")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// This fuction responds with a page of assets. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -70,7 +70,7 @@ public class AssetsService: NSObject {
     }
     
     /// This function calls the endpoint that represents all assets. It will give you all the assets in the system along with various statistics about each.
-    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/assets-all.html "All Assets")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// This fuction responds with a page of assets. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///

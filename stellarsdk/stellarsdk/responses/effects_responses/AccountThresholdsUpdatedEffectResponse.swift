@@ -11,8 +11,7 @@ import Foundation
 /// Represents an account thresholds update effect.
 /// This effect occurs when an account's signature thresholds are modified through a Set Options operation.
 /// Thresholds determine the minimum signature weight required for different operation categories.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/security/signatures-multisig#thresholds "Account Thresholds")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountThresholdsUpdatedEffectResponse: EffectResponse {
 
     /// The updated low threshold value (used for Allow Trust and Bump Sequence operations).

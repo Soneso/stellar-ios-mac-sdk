@@ -19,6 +19,6 @@ import Foundation
 /// is submitted multiple times. Check the transaction status rather than resubmitting.
 ///
 /// See also:
-/// - [Async Transaction Submission](https://developers.stellar.org/docs/data/horizon/api-reference/submit-async-transaction)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
 public class DuplicateErrorResponse: ErrorResponse {}

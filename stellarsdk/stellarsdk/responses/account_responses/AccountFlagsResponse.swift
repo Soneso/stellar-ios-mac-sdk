@@ -14,7 +14,7 @@ import Foundation
 /// authorization, enable revocation, make flags immutable, or enable clawback functionality.
 ///
 /// See also:
-/// - [Account Flags Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts#flags)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountResponse for complete account information
 public class AccountFlagsResponse: NSObject, Decodable {
 

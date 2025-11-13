@@ -43,8 +43,7 @@ import Foundation
 /// ```
 ///
 /// See also:
-/// - [Create Account Operation](https://developers.stellar.org/docs/learn/fundamentals/transactions/list-of-operations#create-account)
-/// - [Minimum Balance](https://developers.stellar.org/docs/learn/fundamentals/fees-resource-limits-metering#minimum-account-balance)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class CreateAccountOperation:Operation {
 
     /// The keypair representing the new account to be created.

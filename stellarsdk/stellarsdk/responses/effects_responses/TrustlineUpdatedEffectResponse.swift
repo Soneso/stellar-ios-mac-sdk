@@ -11,6 +11,5 @@ import Foundation
 /// Represents a trustline update effect.
 /// This effect occurs when an existing trustline's limit is modified through a Change Trust operation.
 /// The account can increase or decrease the maximum amount of the asset it is willing to hold.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts#trustlines "Trustlines")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class TrustlineUpdatedEffectResponse: TrustlineEffectResponse {}

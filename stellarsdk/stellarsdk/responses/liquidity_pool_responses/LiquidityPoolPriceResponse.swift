@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a price ratio in a liquidity pool.
 /// The price is represented as a fraction with a numerator and denominator.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/liquiditypool "Liquidity Pool")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolPriceResponse: NSObject, Decodable {
 
     /// The numerator of the price fraction.

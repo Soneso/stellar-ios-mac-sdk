@@ -11,7 +11,7 @@ import Foundation
 /// Represents fee statistics from the Horizon API.
 /// This endpoint provides information about transaction fees and network capacity usage
 /// from the last ledger, helping clients determine appropriate fee levels for transactions.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/endpoints/fee-stats "Fee Stats")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class FeeStatsResponse: NSObject, Decodable {
 
     /// The sequence number of the last ledger.

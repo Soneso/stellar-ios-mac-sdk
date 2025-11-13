@@ -18,6 +18,6 @@ import Foundation
 /// Check Horizon version and configuration, or use an alternative approach.
 ///
 /// See also:
-/// - [Not Implemented Error](https://developers.stellar.org/api/horizon/reference/errors/not-implemented)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
 public class NotImplementedErrorResponse: ErrorResponse {}

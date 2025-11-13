@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents an extend footprint TTL operation response.
 /// This Soroban operation extends the time-to-live (TTL) of ledger entries specified in the transaction's footprint, preventing them from being archived.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#extend-footprint-ttl "Extend Footprint TTL Operation")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ExtendFootprintTTLOperationResponse: OperationResponse {
 
     /// New ledger number at which the entries will expire.

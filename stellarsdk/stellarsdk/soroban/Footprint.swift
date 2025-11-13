@@ -41,7 +41,7 @@ import Foundation
 /// See also:
 /// - [SimulateTransactionResponse] for simulation results
 /// - SorobanTransactionDataXDR for transaction resource configuration
-/// - [Soroban Footprints](https://developers.stellar.org/docs/smart-contracts/guides/transactions/resource-limits)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class Footprint {
 
     /// The underlying XDR footprint containing read-only and read-write ledger keys.

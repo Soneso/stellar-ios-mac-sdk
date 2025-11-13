@@ -9,7 +9,7 @@
 import Foundation
 
 /// Establishes the is-sponsoring-future-reserves-for relationship between the source account and sponsoredID.
-/// See [Stellar Guides](https://developers.stellar.org/docs/start/list-of-operations/#begin-sponsoring-future-reserves "Begin Sponsoring Future Reserves").
+/// See [Stellar developer docs](https://developers.stellar.org).
 public class BeginSponsoringFutureReservesOperation:Operation {
     
     public let sponsoredId:String

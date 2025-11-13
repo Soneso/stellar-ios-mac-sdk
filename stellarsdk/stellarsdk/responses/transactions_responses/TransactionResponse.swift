@@ -43,8 +43,7 @@ import Foundation
 /// ```
 ///
 /// See also:
-/// - [Horizon Transaction Resource](https://developers.stellar.org/api/horizon/reference/resources/transaction)
-/// - [Transaction Fundamentals](https://developers.stellar.org/docs/learn/fundamentals/transactions)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - TransactionsService for querying transactions
 public class TransactionResponse: NSObject, Decodable {
 

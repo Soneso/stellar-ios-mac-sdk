@@ -12,8 +12,7 @@ import Foundation
 /// This effect occurs when a trade is executed against a liquidity pool.
 /// The pool automatically provides liquidity for the trade based on its constant product formula.
 /// Triggered by Path Payment operations or trades that match against the pool.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/sdex/liquidity-on-stellar-sdex-liquidity-pools "Liquidity Pools")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolTradeEffectResponse: EffectResponse {
 
     /// The liquidity pool details.

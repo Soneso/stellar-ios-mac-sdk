@@ -18,6 +18,6 @@ import Foundation
 /// Horizon supports JSON responses. Ensure Accept header is set to application/json or omitted.
 ///
 /// See also:
-/// - [Not Acceptable Error](https://developers.stellar.org/api/horizon/reference/errors/not-acceptable)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
 public class NotAcceptableErrorResponse: ErrorResponse {}

@@ -15,7 +15,7 @@ import Foundation
 /// adjacent transactions.
 ///
 /// See also:
-/// - [Transaction Links](https://developers.stellar.org/api/horizon/reference/resources/transaction)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - TransactionResponse for complete transaction details
 /// - LinkResponse for individual link structure
 public class TransactionLinksResponse: NSObject, Decodable {

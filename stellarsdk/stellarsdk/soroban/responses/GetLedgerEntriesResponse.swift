@@ -10,7 +10,7 @@ import Foundation
 
 
 /// Response for the getLedgerEntry request
-/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getLedgerEntries
+/// See: [Stellar developer docs](https://developers.stellar.org)
 ///
 public class GetLedgerEntriesResponse: NSObject, Decodable {
     

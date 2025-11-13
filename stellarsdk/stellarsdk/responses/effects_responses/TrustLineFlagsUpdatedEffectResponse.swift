@@ -11,8 +11,7 @@ import Foundation
 /// Represents a trustline flags update effect.
 /// This effect occurs when an asset issuer modifies the authorization flags for a trustline through a Set Trust Line Flags operation.
 /// Flags control authorization status, liability maintenance, and clawback capabilities.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/security/authorization-flags "Authorization Flags")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class TrustLineFlagsUpdatedEffectResponse: EffectResponse {
 
     /// The account ID of the account holding the trustline.

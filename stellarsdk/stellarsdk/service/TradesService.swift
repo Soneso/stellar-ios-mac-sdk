@@ -49,7 +49,7 @@ public enum TradesChange {
 /// ```
 ///
 /// See also:
-/// - [Horizon Trades API](https://developers.stellar.org/api/horizon/reference/resources/trade)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - TradeAggregationsService for aggregated trade statistics
 public class TradesService: NSObject {
     let serviceHelper: ServiceHelper

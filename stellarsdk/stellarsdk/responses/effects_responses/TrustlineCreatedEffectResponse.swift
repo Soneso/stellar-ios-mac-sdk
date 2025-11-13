@@ -11,6 +11,5 @@ import Foundation
 /// Represents a trustline creation effect.
 /// This effect occurs when an account establishes a new trustline to an asset through a Change Trust operation.
 /// Trustlines are required to hold and trade non-native assets on the Stellar network.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts#trustlines "Trustlines")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class TrustlineCreatedEffectResponse: TrustlineEffectResponse {}

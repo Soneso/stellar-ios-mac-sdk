@@ -12,8 +12,7 @@ import Foundation
 /// This effect occurs when a claimable balance is successfully claimed by an eligible claimant.
 /// The balance is transferred to the claimant's account and removed from the ledger.
 /// Triggered by the Claim Claimable Balance operation.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/claimable-balances "Claimable Balances")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimableBalanceClaimedEffectResponse: EffectResponse {
 
     /// The unique identifier of the claimable balance that was claimed.

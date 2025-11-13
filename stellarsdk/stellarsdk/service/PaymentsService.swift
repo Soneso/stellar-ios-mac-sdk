@@ -45,7 +45,7 @@ public enum PaymentsChange {
 /// ```
 ///
 /// See also:
-/// - [Horizon Payments API](https://developers.stellar.org/api/horizon/reference/resources/operation)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - OperationResponse for payment operation types
 public class PaymentsService: NSObject {
     let serviceHelper: ServiceHelper
@@ -60,7 +60,7 @@ public class PaymentsService: NSObject {
     }
     
     /// This function responds with all payment operations that are part of validated transactions.
-    /// See [Horizon API]: (https://developers.stellar.org/api/horizon/reference/endpoints/payments-all.html "All Payments")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
     /// - Parameter order: The order in which to return rows, “asc” or “desc”.
@@ -77,7 +77,7 @@ public class PaymentsService: NSObject {
     }
     
     /// This function responds with all payment operations that are part of validated transactions.
-    /// See [Horizon API]: (https://developers.stellar.org/api/horizon/reference/endpoints/payments-all.html "All Payments")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
     /// - Parameter order: The order in which to return rows, “asc” or “desc”.
@@ -91,7 +91,7 @@ public class PaymentsService: NSObject {
     }
     
     /// This function responds with a collection of payment operations where the given account was either the sender or receiver.
-    /// See [Horizon API]: (https://developers.stellar.org/api/horizon/reference/endpoints/payments-for-account.html "Payments for Account")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter accountId: The Stellar account ID of the account used to constrain results.
     /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
@@ -109,7 +109,7 @@ public class PaymentsService: NSObject {
     }
     
     /// This function responds with a collection of payment operations where the given account was either the sender or receiver.
-    /// See [Horizon API]: (https://developers.stellar.org/api/horizon/reference/endpoints/payments-for-account.html "Payments for Account")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter accountId: The Stellar account ID of the account used to constrain results.
     /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
@@ -124,7 +124,7 @@ public class PaymentsService: NSObject {
     }
     
     /// This function responds with all payment operations that are part of a valid transactions in a given ledger.
-    /// See also [Horizon API]: (https://developers.stellar.org/api/horizon/reference/endpoints/payments-for-ledger.html "Payments for Ledger")
+    /// See also [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter accountId: The ledger id of the ledger used to constrain results.
     /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
@@ -142,7 +142,7 @@ public class PaymentsService: NSObject {
     }
     
     /// This function responds with all payment operations that are part of a valid transactions in a given ledger.
-    /// See also [Horizon API]: (https://developers.stellar.org/api/horizon/reference/endpoints/payments-for-ledger.html "Payments for Ledger")
+    /// See also [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter accountId: The ledger id of the ledger used to constrain results.
     /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
@@ -157,7 +157,7 @@ public class PaymentsService: NSObject {
     }
     
     /// This function responds with all payment operations that are part of a given transaction.
-    /// See [Horizon API]: (https://developers.stellar.org/api/horizon/reference/endpoints/payments-for-transaction.html "Payments for Transaction")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter hash: A transaction hash, hex-encoded.
     /// - Parameter cursor: An optional paging token, specifying where to start returning records from.
@@ -175,7 +175,7 @@ public class PaymentsService: NSObject {
     }
     
     /// This function responds with all payment operations that are part of a given transaction.
-    /// See [Horizon API]: (https://developers.stellar.org/api/horizon/reference/endpoints/payments-for-transaction.html "Payments for Transaction")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter hash: A transaction hash, hex-encoded.
     /// - Parameter cursor: An optional paging token, specifying where to start returning records from.

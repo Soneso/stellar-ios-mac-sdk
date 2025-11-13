@@ -11,7 +11,7 @@ import Foundation
 /// Represents liquidity pool details within an effect response.
 /// Contains information about the pool's state, including reserves, shares, and fee structure.
 /// Used as a nested object in liquidity pool effect responses.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolEffectResponse: NSObject, Decodable {
 
     /// The unique identifier of the liquidity pool.

@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a payment operation response.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#payment "Payment Operation")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class PaymentOperationResponse: OperationResponse {
     
     /// Amount of the asset sent.

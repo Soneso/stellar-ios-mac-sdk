@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a claimant predicate that defines conditions for claiming a claimable balance.
 /// Predicates can be unconditional or time-based, and can be combined using logical operators.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/claimablebalance "Claimable Balance")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimantPredicateResponse: NSObject, Decodable {
 
     /// If true, the predicate is satisfied without any conditions.

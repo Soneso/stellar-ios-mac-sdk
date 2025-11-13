@@ -34,7 +34,7 @@ import Foundation
 /// ```
 ///
 /// See also:
-/// - [Horizon Trade Aggregations API](https://developers.stellar.org/api/horizon/reference/endpoints/trade-aggregations)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - TradesService for individual trade records
 public class TradeAggregationsService: NSObject {
     let serviceHelper: ServiceHelper

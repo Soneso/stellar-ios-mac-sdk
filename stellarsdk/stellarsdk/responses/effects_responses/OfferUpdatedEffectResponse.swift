@@ -11,6 +11,5 @@ import Foundation
 /// Represents an offer update effect.
 /// This effect occurs when an existing offer is modified or partially filled on the Stellar decentralized exchange (DEX).
 /// Triggered by the Manage Sell Offer or Manage Buy Offer operations, or when an offer is partially matched.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/operations-and-transactions#manage-buy-offer "Offers")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class OfferUpdatedEffectResponse: EffectResponse {}

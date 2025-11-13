@@ -11,7 +11,7 @@ import Foundation
 /// Represents an account debit effect.
 /// This effect occurs when an account sends a payment or other debit operation.
 /// Triggered by Payment, Path Payment, Create Claimable Balance, and other operations that reduce an account balance.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountDebitedEffectResponse: EffectResponse {
 
     /// The amount debited from this account.

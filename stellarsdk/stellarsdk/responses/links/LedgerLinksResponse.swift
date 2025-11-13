@@ -14,7 +14,7 @@ import Foundation
 /// transactions, operations, payments, and effects that occurred in this ledger.
 ///
 /// See also:
-/// - [Ledger Links](https://developers.stellar.org/api/horizon/reference/resources/ledger)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - LedgerResponse for complete ledger details
 /// - LinkResponse for individual link structure
 public class LedgerLinksResponse: NSObject, Decodable {

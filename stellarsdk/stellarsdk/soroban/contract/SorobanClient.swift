@@ -53,7 +53,7 @@ import Foundation
 /// See also:
 /// - [AssembledTransaction] for lower-level transaction control
 /// - [ContractSpec] for contract interface parsing
-/// - [Soroban Documentation](https://developers.stellar.org/docs/smart-contracts)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class SorobanClient {
 
     private static let constructorFunc = "__constructor"
@@ -141,7 +141,7 @@ public class SorobanClient {
     ///
     /// See also:
     /// - install(installRequest:force:) for uploading contract code
-    /// - [Soroban Contract Deployment](https://developers.stellar.org/docs/smart-contracts/getting-started/deploy-to-testnet)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     public static func deploy(deployRequest:DeployRequest) async throws -> SorobanClient {
         let sourceAddress = try SCAddressXDR(accountId: deployRequest.sourceAccountKeyPair.accountId)
         let createContractOp = try InvokeHostFunctionOperation.forCreatingContractWithConstructor(wasmId: deployRequest.wasmHash, address: sourceAddress, constructorArguments: deployRequest.constructorArgs ?? [], salt: deployRequest.salt)
@@ -203,7 +203,7 @@ public class SorobanClient {
     ///
     /// See also:
     /// - deploy(deployRequest:) for creating contract instances
-    /// - [Soroban Contract Deployment](https://developers.stellar.org/docs/smart-contracts/getting-started/deploy-to-testnet)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     public static func install(installRequest:InstallRequest, force:Bool = false) async throws -> String {
         let uploadContractOp = try InvokeHostFunctionOperation.forUploadingContractWasm(contractCode: installRequest.wasmBytes)
         let clientOptions = ClientOptions(sourceAccountKeyPair: installRequest.sourceAccountKeyPair,

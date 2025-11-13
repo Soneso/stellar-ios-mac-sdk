@@ -10,5 +10,5 @@
 /// This effect occurs when an account's inflation destination is set or changed through a Set Options operation.
 /// The inflation destination specifies which account receives inflation payouts on behalf of this account.
 /// Note: Inflation is deprecated and no longer active on the Stellar network.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountInflationDestinationUpdatedEffectResponse: EffectResponse {}

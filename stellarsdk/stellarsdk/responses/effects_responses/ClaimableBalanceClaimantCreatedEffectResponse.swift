@@ -12,8 +12,7 @@ import Foundation
 /// This effect occurs for each claimant specified when a claimable balance is created.
 /// It includes the predicate conditions that must be met for the claimant to claim the balance.
 /// Triggered by the Create Claimable Balance operation.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/claimable-balances "Claimable Balances")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimableBalanceClaimantCreatedEffectResponse: EffectResponse {
 
     /// The unique identifier of the claimable balance.

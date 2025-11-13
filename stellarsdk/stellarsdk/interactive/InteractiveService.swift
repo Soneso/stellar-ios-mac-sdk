@@ -219,7 +219,7 @@ public class InteractiveService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
-    /// Creates an InteractiveService instance based on information from [stellar.toml](https://developers.stellar.org/docs/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates an InteractiveService instance based on information from the stellar.toml file for a given domain.
     @available(*, renamed: "forDomain(domain:)")
     public static func forDomain(domain:String, completion:@escaping InteractiveServiceClosure) {
         Task {
@@ -228,7 +228,7 @@ public class InteractiveService: NSObject {
         }
     }
     
-    /// Creates an InteractiveService instance based on information from [stellar.toml](https://developers.stellar.org/docs/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates an InteractiveService instance based on information from the stellar.toml file for a given domain.
     public static func forDomain(domain:String) async -> InteractiveServiceForDomainEnum {
         let interactiveServerKey = "TRANSFER_SERVER_SEP0024"
         

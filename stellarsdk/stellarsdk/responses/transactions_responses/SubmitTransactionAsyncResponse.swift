@@ -23,7 +23,7 @@ import Foundation
 /// - TRY_AGAIN_LATER: System temporarily unable to accept transaction
 ///
 /// See also:
-/// - [Async Transaction Submission](https://developers.stellar.org/docs/data/horizon/api-reference/submit-async-transaction)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - SubmitTransactionResponse for synchronous submission
 public class SubmitTransactionAsyncResponse: NSObject, Decodable {
 

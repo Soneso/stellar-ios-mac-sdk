@@ -11,8 +11,7 @@ import Foundation
 /// Represents a signer removal effect.
 /// This effect occurs when a signer is removed from an account through a Set Options operation.
 /// The removed signer can no longer authorize transactions for the account.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts#signers "Account Signers")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class SignerRemovedEffectResponse: SignerEffectResponse {}
 
 

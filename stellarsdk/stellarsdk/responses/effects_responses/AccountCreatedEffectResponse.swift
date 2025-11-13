@@ -11,7 +11,7 @@ import Foundation
 /// Represents an account creation effect.
 /// This effect occurs when a new account is created on the Stellar network through a Create Account operation.
 /// The source account must fund the new account with a minimum balance to cover the base reserve.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountCreatedEffectResponse: EffectResponse {
 
     /// The starting balance of the newly created account in lumens (XLM).

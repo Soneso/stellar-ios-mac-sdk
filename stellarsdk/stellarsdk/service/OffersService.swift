@@ -56,7 +56,7 @@ public typealias OfferResponseClosure = (_ response:OfferResponseEnum) -> (Void)
 /// ```
 ///
 /// See also:
-/// - [Horizon Offers API](https://developers.stellar.org/api/horizon/reference/resources/offer)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - OrderbookService for orderbook snapshots
 public class OffersService: NSObject {
     let serviceHelper: ServiceHelper
@@ -97,7 +97,7 @@ public class OffersService: NSObject {
     
     /// People on the Stellar network can make offers to buy or sell assets. This endpoint represents all the current offers, allowing filtering by seller, selling_asset or buying_asset.
     ///
-    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/offers.html "Offers")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -123,7 +123,7 @@ public class OffersService: NSObject {
     
     /// People on the Stellar network can make offers to buy or sell assets. This endpoint represents all the current offers, allowing filtering by seller, selling_asset or buying_asset.
     ///
-    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/offers.html "Offers")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -239,7 +239,7 @@ public class OffersService: NSObject {
     /// This mode will keep the connection to horizon open and horizon will continue to return
     /// trade responses as new trades occur for this offer.
     ///
-    /// See [Horizon API] (https://developers.stellar.org/api/aggregations/trades/object "Trades for Offer")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter offerId: The ID of the Offer
     /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from. Use "now" to stream only new trades.
@@ -264,7 +264,7 @@ public class OffersService: NSObject {
     }
     
     /// Provides information and links relating to a single offer.
-    /// See [Horizon API] (https://developers.stellar.org/api/resources/offers/single/ "Offer Details")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter offerId: The ID of the Offer
     /// - Parameter response: The closure to be called upon response.
@@ -278,7 +278,7 @@ public class OffersService: NSObject {
     }
     
     /// Provides information and links relating to a single offer.
-    /// See [Horizon API] (https://developers.stellar.org/api/resources/offers/single/ "Offer Details")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter offerId: The ID of the Offer
     /// - Parameter response: The closure to be called upon response.
@@ -304,7 +304,7 @@ public class OffersService: NSObject {
     /// If called in streaming mode, Horizon will start at the earliest known trade unless a cursor is set, in which case it will start from that cursor.
     /// By setting the cursor value to now, you can stream trades created since your request time.
     ///
-    /// See [Horizon API] (https://developers.stellar.org/api/aggregations/trades/object "Trades for Offer")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter offerId: The ID of the Offer
     /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
@@ -325,7 +325,7 @@ public class OffersService: NSObject {
     /// If called in streaming mode, Horizon will start at the earliest known trade unless a cursor is set, in which case it will start from that cursor.
     /// By setting the cursor value to now, you can stream trades created since your request time.
     ///
-    /// See [Horizon API] (https://developers.stellar.org/api/aggregations/trades/object "Trades for Offer")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter offerId: The ID of the Offer
     /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.

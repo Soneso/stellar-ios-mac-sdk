@@ -53,7 +53,7 @@ import Foundation
 /// ```
 ///
 /// See also:
-/// - [Horizon Pagination](https://developers.stellar.org/api/horizon/reference/structure/pagination)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - PagingLinksResponse for navigation links
 public struct PageResponse<Element:Decodable>: Decodable {
 

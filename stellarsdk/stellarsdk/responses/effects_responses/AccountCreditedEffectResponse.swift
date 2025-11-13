@@ -11,7 +11,7 @@ import Foundation
 /// Represents an account credit effect.
 /// This effect occurs when an account receives a payment or other credit operation.
 /// Triggered by Payment, Path Payment, Create Claimable Balance claim, and other operations.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountCreditedEffectResponse: EffectResponse {
 
     /// The amount credited to the account.

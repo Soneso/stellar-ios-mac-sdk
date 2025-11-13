@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a create claimable balance operation response.
 /// This operation creates a claimable balance entry that can be claimed by specified claimants, enabling conditional payments on the Stellar network.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#create-claimable-balance "Create Claimable Balance Operation")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class CreateClaimableBalanceOperationResponse: OperationResponse {
 
     /// Account ID that sponsors the claimable balance reserves (if sponsored).

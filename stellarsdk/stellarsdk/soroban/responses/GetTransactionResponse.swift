@@ -59,7 +59,7 @@ import Foundation
 ///
 /// See also:
 /// - [SorobanServer.getTransaction] for polling transaction status
-/// - [Soroban RPC getTransaction](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransaction)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class GetTransactionResponse: NSObject, Decodable {
     
     public static let STATUS_SUCCESS = "SUCCESS"

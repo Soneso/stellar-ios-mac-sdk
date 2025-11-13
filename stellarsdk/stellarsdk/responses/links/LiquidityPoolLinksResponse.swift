@@ -14,8 +14,7 @@ import Foundation
 /// transactions and operations that interact with the pool.
 ///
 /// See also:
-/// - [Liquidity Pool](https://developers.stellar.org/api/horizon/reference/resources/liquidity-pool)
-/// - [Automated Market Makers](https://developers.stellar.org/docs/learn/encyclopedia/sdex/liquidity-on-stellar-sdex-liquidity-pools)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - LiquidityPoolResponse for complete details
 public class LiquidityPoolLinksResponse: NSObject, Decodable {
 

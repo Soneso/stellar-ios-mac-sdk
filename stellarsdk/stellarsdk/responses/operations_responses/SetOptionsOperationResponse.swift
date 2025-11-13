@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a set options operation response.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#set-options "Set Options Operation")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class SetOptionsOperationResponse: OperationResponse {
     
     /// Threshold for low-security operations.

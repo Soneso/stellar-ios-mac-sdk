@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a paginated collection of trades for a liquidity pool.
 /// This response contains trade records and navigation links for pagination.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/endpoints/liquiditypools-single-trades "Liquidity Pool Trades")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolTradesResponse: NSObject, Decodable {
 
     /// Navigation links for this page of trades.

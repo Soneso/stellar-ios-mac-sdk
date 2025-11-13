@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a clawback operation response.
 /// This operation burns an amount of an asset from a holding account. The asset issuer must have the AUTH_CLAWBACK_ENABLED flag set on the asset.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#clawback "Clawback Operation")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClawbackOperationResponse: OperationResponse {
 
     /// Amount of the asset clawed back.

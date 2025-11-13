@@ -20,7 +20,7 @@ import Foundation
 /// - High: Set Options (changing signers or thresholds)
 ///
 /// See also:
-/// - [Multi-Signature Documentation](https://developers.stellar.org/docs/encyclopedia/security/signatures-multisig#multisig)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountSignerResponse for signer weights
 public class AccountThresholdsResponse: NSObject, Decodable {
 

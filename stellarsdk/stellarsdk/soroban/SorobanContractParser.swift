@@ -9,11 +9,11 @@
 import Foundation
 
 /// Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
-/// see: https://developers.stellar.org/docs/tools/sdks/build-your-own
+/// see: [Stellar developer docs](https://developers.stellar.org)
 public class SorobanContractParser {
     
     /// Parses a soroban contract byteCode to get Environment Meta, Contract Spec and Contract Meta.
-    /// see: https://developers.stellar.org/docs/tools/sdks/build-your-own
+    /// see: [Stellar developer docs](https://developers.stellar.org)
     /// Returns SorobanContractInfo containing the parsed data.
     /// Throws SorobanContractParserError if any exception occurred during the byte code parsing. E.g. invalid byte code.
     public static func parseContractByteCode(byteCode:Data) throws -> SorobanContractInfo {
@@ -144,7 +144,7 @@ public class SorobanContractParser {
 
 /// Stores information parsed from a soroban contract byte code such as
 /// Environment Meta, Contract Spec Entries and Contract Meta Entries.
-/// See also: https://developers.stellar.org/docs/tools/sdks/build-your-own
+/// See also: [Stellar developer docs](https://developers.stellar.org)
 public class SorobanContractInfo {
     public let envInterfaceVersion:UInt64
     public let specEntries:[SCSpecEntryXDR]

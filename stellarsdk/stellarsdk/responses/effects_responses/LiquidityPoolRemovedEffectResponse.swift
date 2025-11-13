@@ -12,8 +12,7 @@ import Foundation
 /// This effect occurs when a liquidity pool is removed from the ledger.
 /// A pool is removed when all shares have been withdrawn and no reserves remain.
 /// Triggered by the Change Trust operation with limit set to zero.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/sdex/liquidity-on-stellar-sdex-liquidity-pools "Liquidity Pools")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolRemovedEffectResponse: EffectResponse {
 
     /// The unique identifier of the liquidity pool that was removed.

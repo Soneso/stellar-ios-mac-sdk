@@ -19,8 +19,7 @@ import Foundation
 /// - Application-specific configuration
 ///
 /// See also:
-/// - [Data Entry Endpoint](https://developers.stellar.org/api/horizon/reference/endpoints/data-for-account)
-/// - [Manage Data Operation](https://developers.stellar.org/docs/learn/fundamentals/transactions/list-of-operations#manage-data)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountResponse for the complete account data dictionary
 public class DataForAccountResponse: NSObject, Decodable {
 

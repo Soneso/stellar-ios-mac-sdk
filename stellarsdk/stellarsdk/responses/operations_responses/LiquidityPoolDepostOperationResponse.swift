@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a liquidity pool deposit operation response.
 /// This operation deposits assets into a liquidity pool, providing liquidity to the pool in exchange for pool shares.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#liquidity-pool-deposit "Liquidity Pool Deposit Operation")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolDepostOperationResponse: OperationResponse {
 
     /// ID of the liquidity pool receiving the deposit.

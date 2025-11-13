@@ -10,7 +10,7 @@ import Foundation
 
 /// Enumeration of all available effect types on the Stellar network.
 /// Effects represent specific changes that occur to the ledger as a result of operations in successfully submitted transactions.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effects")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public enum EffectType: Int {
     case accountCreated = 0
     case accountRemoved = 1
@@ -74,7 +74,7 @@ public enum EffectType: Int {
 /// Base class for all effect responses from the Horizon API.
 /// Effects represent specific changes that occur to the ledger as a result of operations in successfully submitted transactions.
 /// Each operation can produce multiple effects, and this class provides common properties shared by all effect types.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class EffectResponse: NSObject, Decodable {
     
     /// A list of links related to this effect.

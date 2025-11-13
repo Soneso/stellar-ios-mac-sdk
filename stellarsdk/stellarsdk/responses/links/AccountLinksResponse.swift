@@ -17,7 +17,7 @@ import Foundation
 /// All links are templated and support filtering, pagination, and ordering parameters.
 ///
 /// See also:
-/// - [Account Links](https://developers.stellar.org/api/horizon/reference/resources/account#links)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountResponse for complete account details
 /// - LinkResponse for individual link structure
 public class AccountLinksResponse: NSObject, Decodable {

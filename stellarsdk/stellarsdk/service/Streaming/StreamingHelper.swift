@@ -49,7 +49,7 @@ import Foundation
 ///
 /// See also:
 /// - [EventSource] for the underlying SSE implementation
-/// - [Horizon Streaming](https://developers.stellar.org/docs/data/horizon/api-reference/structure/streaming)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class StreamingHelper: NSObject {
     var eventSource: EventSource!
     private var closed = false

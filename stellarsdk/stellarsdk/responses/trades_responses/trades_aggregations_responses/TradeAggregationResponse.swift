@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a trade aggregation response.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/trade_aggregation.html "Trade Aggregation")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class TradeAggregationResponse: NSObject, Decodable {
     
     /// start time for this trade_aggregation. Represented as milliseconds since epoch.

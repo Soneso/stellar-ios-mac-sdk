@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a path payment strict receive operation response.
 /// This operation sends a path payment where the destination amount is specified, and the source amount varies within a maximum limit.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#path-payment-strict-receive "Path Payment Strict Receive Operation")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class PathPaymentStrictReceiveOperationResponse:PathPaymentOperationResponse {
 
     /// Maximum amount willing to send.

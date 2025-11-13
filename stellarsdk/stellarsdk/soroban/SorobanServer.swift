@@ -213,7 +213,7 @@ private typealias RpcResponseClosure = (_ response:RpcResult) -> (Void)
 /// ```
 ///
 /// See also:
-/// - [Soroban RPC Documentation](https://developers.stellar.org/docs/data/rpc)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - [SorobanClient] for high-level contract interaction
 /// - [AssembledTransaction] for transaction construction
 public class SorobanServer {
@@ -338,7 +338,7 @@ public class SorobanServer {
     /// For Soroban transactions and Stellar transactions, they each have their own inclusion fees
     /// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
     /// during network traffic surge.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getFeeStats
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "getFeeStats()")
     public func getFeeStats(completion:@escaping GetFeeStatsResponseClosure) {
         Task {
@@ -352,7 +352,7 @@ public class SorobanServer {
     /// For Soroban transactions and Stellar transactions, they each have their own inclusion fees
     /// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
     /// during network traffic surge.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getFeeStats
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     public func getFeeStats() async -> GetFeeStatsResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "getFeeStats"))
@@ -381,7 +381,7 @@ public class SorobanServer {
     
     /// Version information about the RPC and Captive core. RPC manages its own,
     /// pared-down version of Stellar Core optimized for its own subset of needs.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getVersionInfo
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "getVersionInfo()")
     public func getVersionInfo(completion:@escaping GetVersionInfoResponseClosure) {
         Task {
@@ -392,7 +392,7 @@ public class SorobanServer {
     
     /// Version information about the RPC and Captive core. RPC manages its own,
     /// pared-down version of Stellar Core optimized for its own subset of needs.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getVersionInfo
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     public func getVersionInfo() async -> GetVersionInfoResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "getVersionInfo"))
@@ -503,7 +503,7 @@ public class SorobanServer {
     /// The getLedgers method return a detailed list of ledgers starting from
     /// the user specified starting point that you can paginate as long as the pages
     /// fall within the history retention of their corresponding RPC provider.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "getLedgers(startLedger:paginationOptions:format:)")
     public func getLedgers(startLedger: UInt32, paginationOptions: PaginationOptions? = nil, format: String? = nil, completion: @escaping GetLedgersResponseClosure) {
         Task {
@@ -516,7 +516,7 @@ public class SorobanServer {
     /// The getLedgers method return a detailed list of ledgers starting from
     /// the user specified starting point that you can paginate as long as the pages
     /// fall within the history retention of their corresponding RPC provider.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     public func getLedgers(startLedger: UInt32, paginationOptions: PaginationOptions? = nil, format: String? = nil) async -> GetLedgersResponseEnum {
 
         let result = await request(body: try? buildRequestJson(method: "getLedgers", args: buildLedgersRequestParams(startLedger: startLedger, paginationOptions: paginationOptions, format: format)))
@@ -789,7 +789,7 @@ public class SorobanServer {
     /// ```
     ///
     /// See also:
-    /// - [Soroban RPC simulateTransaction](https://developers.stellar.org/docs/data/rpc/api-reference/methods/simulateTransaction)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "simulateTransaction(simulateTxRequest:)")
     public func simulateTransaction(simulateTxRequest: SimulateTransactionRequest, completion:@escaping SimulateTransactionResponseClosure) {
         Task {
@@ -828,7 +828,7 @@ public class SorobanServer {
     /// ```
     ///
     /// See also:
-    /// - [Soroban RPC simulateTransaction](https://developers.stellar.org/docs/data/rpc/api-reference/methods/simulateTransaction)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     public func simulateTransaction(simulateTxRequest: SimulateTransactionRequest) async -> SimulateTransactionResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "simulateTransaction", args: simulateTxRequest.buildRequestParams()))
@@ -885,7 +885,7 @@ public class SorobanServer {
     /// ```
     ///
     /// See also:
-    /// - [Soroban RPC sendTransaction](https://developers.stellar.org/docs/data/rpc/api-reference/methods/sendTransaction)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     /// - getTransaction(transactionHash:) for status polling
     @available(*, renamed: "sendTransaction(transaction:)")
     public func sendTransaction(transaction: Transaction, completion:@escaping SendTransactionResponseClosure) {
@@ -924,7 +924,7 @@ public class SorobanServer {
     /// ```
     ///
     /// See also:
-    /// - [Soroban RPC sendTransaction](https://developers.stellar.org/docs/data/rpc/api-reference/methods/sendTransaction)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     /// - getTransaction(transactionHash:) for status polling
     public func sendTransaction(transaction: Transaction) async -> SendTransactionResponseEnum {
         
@@ -996,7 +996,7 @@ public class SorobanServer {
     /// ```
     ///
     /// See also:
-    /// - [Soroban RPC getTransaction](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransaction)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "getTransaction(transactionHash:)")
     public func getTransaction(transactionHash:String, completion:@escaping GetTransactionResponseClosure) {
         Task {
@@ -1043,7 +1043,7 @@ public class SorobanServer {
     /// ```
     ///
     /// See also:
-    /// - [Soroban RPC getTransaction](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransaction)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     public func getTransaction(transactionHash:String) async -> GetTransactionResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "getTransaction", args: ["hash": transactionHash]))
@@ -1073,7 +1073,7 @@ public class SorobanServer {
     /// The getTransactions method return a detailed list of transactions starting from
     /// the user specified starting point that you can paginate as long as the pages
     /// fall within the history retention of their corresponding RPC provider.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "getTransactions(startLedger:paginationOptions:)")
     public func getTransactions(startLedger:Int? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetTransactionsResponseClosure) {
         Task {
@@ -1085,7 +1085,7 @@ public class SorobanServer {
     /// The getTransactions method return a detailed list of transactions starting from
     /// the user specified starting point that you can paginate as long as the pages
     /// fall within the history retention of their corresponding RPC provider.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     public func getTransactions(startLedger:Int? = nil, paginationOptions:PaginationOptions? = nil) async -> GetTransactionsResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "getTransactions", args: buildTransactionssRequestParams(startLedger: startLedger, paginationOptions: paginationOptions)))
@@ -1158,8 +1158,8 @@ public class SorobanServer {
     /// ```
     ///
     /// See also:
-    /// - [Soroban RPC getEvents](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getEvents)
-    /// - [Soroban Events Guide](https://developers.stellar.org/docs/smart-contracts/guides/events)
+    /// - [Stellar developer docs](https://developers.stellar.org)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "getEvents(startLedger:eventFilters:paginationOptions:)")
     public func getEvents(startLedger:Int? = nil, endLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
         Task {
@@ -1213,8 +1213,8 @@ public class SorobanServer {
     /// ```
     ///
     /// See also:
-    /// - [Soroban RPC getEvents](https://developers.stellar.org/docs/data/rpc/api-reference/methods/getEvents)
-    /// - [Soroban Events Guide](https://developers.stellar.org/docs/smart-contracts/guides/events)
+    /// - [Stellar developer docs](https://developers.stellar.org)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     public func getEvents(startLedger:Int? = nil, endLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) async -> GetEventsResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, endLedger: endLedger, eventFilters: eventFilters, paginationOptions: paginationOptions)))

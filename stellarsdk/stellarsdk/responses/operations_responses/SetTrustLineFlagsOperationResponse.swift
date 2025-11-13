@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a set trustline flags operation response.
 /// This operation allows an asset issuer to set or clear flags on a trustline, controlling authorization and clawback capabilities.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#set-trust-line-flags "Set Trust Line Flags Operation")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class SetTrustLineFlagsOperationResponse: OperationResponse {
 
     /// Account ID of the trustline holder.

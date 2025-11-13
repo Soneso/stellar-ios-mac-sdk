@@ -12,8 +12,7 @@ import Foundation
 /// This effect occurs when a key-value pair is deleted from an account's data entries.
 /// Account data entries allow accounts to store arbitrary data on the ledger.
 /// Triggered by the Manage Data operation with a null value.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/operations-and-transactions#manage-data "Manage Data")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class DataRemovedEffectResponse: EffectResponse {
 
     /// The name (key) of the data entry removed.

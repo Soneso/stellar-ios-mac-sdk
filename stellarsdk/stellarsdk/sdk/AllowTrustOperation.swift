@@ -8,8 +8,8 @@
 
 import Foundation
 
-/// Represents an allow trust operation. Updates the authorized flag of an existing trustline. This can only be called by the issuer of a trustline’s asset. The issuer can only clear the authorized flag if the issuer has the AUTH_REVOCABLE_FLAG set. Otherwise, the issuer can only set the authorized flag.
-/// See [Stellar Guides] (https://developers.stellar.org/docs/learn/concepts/list-of-operations.html#allow-trust, "Change Trust Operations").
+/// Represents an allow trust operation. Updates the authorized flag of an existing trustline. This can only be called by the issuer of a trustline's asset. The issuer can only clear the authorized flag if the issuer has the AUTH_REVOCABLE_FLAG set. Otherwise, the issuer can only set the authorized flag.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AllowTrustOperation:Operation {
     
     public let trustor:KeyPair

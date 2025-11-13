@@ -9,7 +9,7 @@
 /// Represents a trade effect.
 /// This effect occurs when a trade is executed on the Stellar decentralized exchange (DEX).
 /// Triggered when offers are matched through Manage Sell Offer, Manage Buy Offer, or Path Payment operations.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class TradeEffectResponse: EffectResponse {
 
     /// The account ID of the seller in the trade.

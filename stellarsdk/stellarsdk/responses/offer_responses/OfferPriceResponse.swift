@@ -11,7 +11,7 @@ import Foundation
 
 /// Represents an offer price_r attribute as a fraction.
 /// The price represents how many units of the buying asset are needed to purchase one unit of the selling asset.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/offer.html "offer")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class OfferPriceResponse: NSObject, Decodable {
 
     /// The numerator of the price fraction.

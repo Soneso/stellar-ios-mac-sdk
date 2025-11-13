@@ -11,8 +11,7 @@ import Foundation
 /// Represents an account flags update effect.
 /// This effect occurs when an account's authorization flags are modified through a Set Options operation.
 /// Flags control asset issuer authorization requirements and account mutability.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/security/signatures-multisig#flags "Account Flags")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountFlagsUpdatedEffectResponse: EffectResponse {
 
     /// Indicates whether the account requires authorization before other accounts can hold its issued assets.

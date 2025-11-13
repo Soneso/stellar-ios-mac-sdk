@@ -38,7 +38,7 @@ public typealias FeeStatsResponseClosure = (_ response:FeeStatsResponseEnum) -> 
 /// ```
 ///
 /// See also:
-/// - [Horizon Fee Stats API](https://developers.stellar.org/api/horizon/reference/endpoints/fee-stats)
+/// - [Stellar developer docs](https://developers.stellar.org)
 open class FeeStatsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
@@ -52,7 +52,7 @@ open class FeeStatsService: NSObject {
     }
     
     /// This endpoint gives useful information about per-operation fee stats in the last 5 ledgers. It can be used to predict a fee set on the transaction that will be submitted to the network.
-    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/fee-stats.html "Fee stats")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter response: The closure to be called upon response.
     ///
@@ -65,7 +65,7 @@ open class FeeStatsService: NSObject {
     }
     
     /// This endpoint gives useful information about per-operation fee stats in the last 5 ledgers. It can be used to predict a fee set on the transaction that will be submitted to the network.
-    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/fee-stats.html "Fee stats")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter response: The closure to be called upon response.
     ///

@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a change trust operation response.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#change-trust "Change Trust Operation")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class ChangeTrustOperationResponse: OperationResponse {
     
     /// Account ID of the trustor (the account creating or modifying the trustline).

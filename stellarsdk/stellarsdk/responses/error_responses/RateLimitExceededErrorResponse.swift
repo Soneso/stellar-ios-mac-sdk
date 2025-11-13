@@ -23,7 +23,7 @@ import Foundation
 /// Implement exponential backoff when retrying after rate limit errors.
 ///
 /// See also:
-/// - [Rate Limit Exceeded](https://developers.stellar.org/api/horizon/reference/errors/rate-limit-exceeded)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
 public class RateLimitExceededErrorResponse: ErrorResponse {}
 

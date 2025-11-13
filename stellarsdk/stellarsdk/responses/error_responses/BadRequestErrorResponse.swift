@@ -20,6 +20,6 @@ import Foundation
 /// Check the detail field for specific information about what was invalid.
 ///
 /// See also:
-/// - [Transaction Malformed](https://developers.stellar.org/docs/data/horizon/api-reference/errors/http-status-codes/horizon-specific/transaction-malformed)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
 public class BadRequestErrorResponse: ErrorResponse {}

@@ -182,7 +182,7 @@ public class RegulatedAssetsService: NSObject {
         }
     }
     
-    /// Creates a RegulatedAssetsService instance based on information from [stellar.toml](https://developers.stellar.org/docs/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates a RegulatedAssetsService instance based on information from the stellar.toml file for a given domain.
     @available(*, renamed: "forDomain(domain:horizonUrl:network:)")
     public static func forDomain(domain:String,  horizonUrl: String? = nil, network:Network? = nil, completion:@escaping RegulatedAssetsServiceClosure) {
         Task {
@@ -191,7 +191,7 @@ public class RegulatedAssetsService: NSObject {
         }
     }
     
-    /// Creates a RegulatedAssetsService instance based on information from [stellar.toml](https://developers.stellar.org/docs/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates a RegulatedAssetsService instance based on information from the stellar.toml file for a given domain.
     public static func forDomain(domain:String,  horizonUrl: String? = nil, network:Network? = nil) async -> RegulatedAssetsServiceForDomainEnum {
         
         guard let url = URL(string: "\(domain)/.well-known/stellar.toml") else {

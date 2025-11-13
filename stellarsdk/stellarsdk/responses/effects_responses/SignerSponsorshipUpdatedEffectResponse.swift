@@ -12,8 +12,7 @@ import Foundation
 /// This effect occurs when the sponsoring account for a signer's base reserve changes.
 /// The sponsorship is transferred from one sponsor to another.
 /// Triggered by the Revoke Sponsorship operation.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/sponsored-reserves "Sponsored Reserves")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class SignerSponsorshipUpdatedEffectResponse: EffectResponse {
 
     /// The public key of the signer whose sponsorship is being updated.

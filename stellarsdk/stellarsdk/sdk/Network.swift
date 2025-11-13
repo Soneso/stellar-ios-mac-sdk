@@ -36,8 +36,7 @@ import Foundation
 /// ```
 ///
 /// See also:
-/// - [Transaction Signatures](https://developers.stellar.org/docs/encyclopedia/security/signatures-multisig)
-/// - [Network Passphrases](https://developers.stellar.org/docs/encyclopedia/network-configuration/network-passphrases)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public enum Network {
     /// The Stellar public network (mainnet) - "Public Global Stellar Network ; September 2015"
     case `public`

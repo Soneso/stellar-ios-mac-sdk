@@ -19,8 +19,7 @@ import Foundation
 /// - preauth_tx: Hash of a pre-authorized transaction
 ///
 /// See also:
-/// - [Account Signers](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts#signers)
-/// - [Multi-Signature](https://developers.stellar.org/docs/encyclopedia/security/signatures-multisig)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountThresholdsResponse for threshold requirements
 public class AccountSignerResponse: NSObject, Decodable {
 

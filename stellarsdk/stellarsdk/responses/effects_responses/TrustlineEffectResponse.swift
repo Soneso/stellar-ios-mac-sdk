@@ -9,8 +9,7 @@
 /// Base class for trustline effect responses.
 /// Represents changes to account trustlines, which enable accounts to hold and trade non-native assets.
 /// Trustlines are established through Change Trust operations and can be authorized or modified by asset issuers.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/fundamentals/stellar-data-structures/accounts#trustlines "Trustlines")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class TrustlineEffectResponse: EffectResponse {
 
     /// The maximum amount of the asset that the account is willing to hold.

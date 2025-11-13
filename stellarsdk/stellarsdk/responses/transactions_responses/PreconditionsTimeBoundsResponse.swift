@@ -25,7 +25,7 @@ import Foundation
 /// - If neither set (both nil or 0), transaction has no time restrictions
 ///
 /// See also:
-/// - [Time Bounds](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/transaction-preconditions#time-bounds)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - TransactionPreconditionsResponse for all precondition types
 public class PreconditionsTimeBoundsResponse: NSObject, Decodable {
 

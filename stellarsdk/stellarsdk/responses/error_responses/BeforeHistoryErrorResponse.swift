@@ -19,6 +19,6 @@ import Foundation
 /// use a Horizon server with longer history retention.
 ///
 /// See also:
-/// - [Before History Error](https://developers.stellar.org/docs/data/horizon/api-reference/errors/http-status-codes/horizon-specific/before-history)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
 public class BeforeHistoryErrorResponse: ErrorResponse {}

@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a reserve asset in a liquidity pool.
 /// Each liquidity pool maintains reserves of two assets that are used for trading.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/liquiditypool "Liquidity Pool")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ReserveResponse: NSObject, Decodable {
 
     /// The amount of the asset held in reserve.

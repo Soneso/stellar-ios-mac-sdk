@@ -37,7 +37,7 @@ import Foundation
 ///
 /// See also:
 /// - [GetEventsResponse] for querying events
-/// - [Soroban Events](https://developers.stellar.org/docs/smart-contracts/guides/events)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class EventInfo: NSObject, Decodable {
     
     /// The type of event emission. Possible values: contract, diagnostic,  system

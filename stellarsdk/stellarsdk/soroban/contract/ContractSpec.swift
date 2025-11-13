@@ -50,7 +50,7 @@ import Foundation
 ///
 /// See also:
 /// - [SorobanClient] for high-level contract interaction
-/// - [Soroban Contract Specs](https://developers.stellar.org/docs/smart-contracts/guides/conventions)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class ContractSpec {
     
     /// The spec entries of the contract

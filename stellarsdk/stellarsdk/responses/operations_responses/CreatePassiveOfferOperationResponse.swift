@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a create passive operation response.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#create-passive-offer "Create Passive Operation")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class CreatePassiveOfferOperationResponse: OperationResponse {
         
     /// Amount of the selling asset offered.

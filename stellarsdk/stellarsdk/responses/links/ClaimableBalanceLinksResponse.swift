@@ -14,8 +14,7 @@ import Foundation
 /// Currently only includes a self reference to the claimable balance resource.
 ///
 /// See also:
-/// - [Claimable Balance](https://developers.stellar.org/api/horizon/reference/resources/claimablebalance)
-/// - [Claimable Balances Guide](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/claimable-balances)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - ClaimableBalanceResponse for complete details
 public class ClaimableBalanceLinksResponse: NSObject, Decodable {
 

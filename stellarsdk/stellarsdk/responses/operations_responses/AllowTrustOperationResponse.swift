@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents an allow trust operation response.
-///  See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#allow-trust "Allow Trust Operation")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class AllowTrustOperationResponse: OperationResponse {
     
     /// Account ID of the trustor (the account trusting the asset).

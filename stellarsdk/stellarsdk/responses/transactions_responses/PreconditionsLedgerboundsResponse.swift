@@ -22,7 +22,7 @@ import Foundation
 /// wall-clock time, providing more predictable execution windows.
 ///
 /// See also:
-/// - [Ledger Bounds](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/transaction-preconditions#ledger-bounds)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - TransactionPreconditionsResponse for all precondition types
 /// - PreconditionsTimeBoundsResponse for time-based constraints
 public class PreconditionsLedgerBoundsResponse: NSObject, Decodable {

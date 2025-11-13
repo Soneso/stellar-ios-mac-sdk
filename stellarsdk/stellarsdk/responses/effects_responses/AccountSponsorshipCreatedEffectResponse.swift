@@ -12,8 +12,7 @@ import Foundation
 /// This effect occurs when an account's reserves begin being sponsored by another account.
 /// Sponsorship allows one account to pay the base reserve for another account's existence.
 /// Triggered by the Begin Sponsoring Future Reserves and End Sponsoring Future Reserves operations.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/transactions-specialized/sponsored-reserves "Sponsored Reserves")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountSponsorshipCreatedEffectResponse: EffectResponse {
 
     /// The account ID of the sponsor paying the account's base reserve.

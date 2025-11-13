@@ -14,7 +14,7 @@ import Foundation
 /// the operation that produced it and chronologically adjacent effects.
 ///
 /// See also:
-/// - [Effect Links](https://developers.stellar.org/api/horizon/reference/resources/effect)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - EffectResponse for complete effect details
 /// - LinkResponse for individual link structure
 public class EffectLinksResponse: NSObject, Decodable {

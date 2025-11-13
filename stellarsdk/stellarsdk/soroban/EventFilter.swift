@@ -52,7 +52,7 @@ import Foundation
 /// See also:
 /// - [SorobanServer.getEvents] for querying events
 /// - [TopicFilter] for topic-based filtering
-/// - [Soroban Events](https://developers.stellar.org/docs/smart-contracts/guides/events)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class EventFilter {
     
     /// (optional) A comma separated list of event types (system, contract, or diagnostic) used to filter events. If omitted, all event types are included.

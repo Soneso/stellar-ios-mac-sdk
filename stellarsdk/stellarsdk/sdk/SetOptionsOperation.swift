@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a set options operation. This operation sets the options for an account.
-/// See [Stellar Guides] (https://developers.stellar.org/docs/learn/concepts/list-of-operations.html#set-options, "Set Options Operations").
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class SetOptionsOperation:Operation {
     
     public let inflationDestination:KeyPair?
@@ -28,13 +28,13 @@ public class SetOptionsOperation:Operation {
     ///
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     /// - Parameter inflationDestination: Account of the inflation destination.
-    /// - Parameter clearFlags: The asset you would like to buy. Indicates which flags to clear. For details about the flags, please refer to the accounts doc (https://developers.stellar.org/docs/concepts/accounts.html). The bit mask integer subtracts from the existing flags of the account. This allows for setting specific bits without knowledge of existing flags.
-    /// - Parameter setFlags: Indicates which flags to set. For details about the flags, please refer to the accounts doc (https://developers.stellar.org/docs/concepts/accounts.html). The bit mask integer adds onto the existing flags of the account. This allows for setting specific bits without knowledge of existing flags.
+    /// - Parameter clearFlags: The asset you would like to buy. Indicates which flags to clear. For details about the flags, please refer to the [Stellar developer docs](https://developers.stellar.org). The bit mask integer subtracts from the existing flags of the account. This allows for setting specific bits without knowledge of existing flags.
+    /// - Parameter setFlags: Indicates which flags to set. For details about the flags, please refer to the [Stellar developer docs](https://developers.stellar.org). The bit mask integer adds onto the existing flags of the account. This allows for setting specific bits without knowledge of existing flags.
     /// - Parameter masterKeyWeight: Weight of the master key. This account may also add other keys with which to sign transactions using signer below.
     /// - Parameter lowThreshold: A number from 0-255 representing the threshold this account sets on all operations it performs that have a low threshold.
     /// - Parameter mediumThreshold: A number from 0-255 representing the threshold this account sets on all operations it performs that have a medium threshold.
     /// - Parameter highThreshold: A number from 0-255 representing the threshold this account sets on all operations it performs that have a high threshold.
-    /// - Parameter homeDomain: Sets the home domain of an account. See Federation (https://developers.stellar.org/docs/concepts/federation.html).
+    /// - Parameter homeDomain: Sets the home domain of an account.
     /// - Parameter signer: Signers PublicKey. If you fill this parameter you also need to fill 'signerWeight'
     /// - Parameter signerWeight: Add or remove the signer from parameter 'signer'. The signer is deleted if the weight is 0.
     ///

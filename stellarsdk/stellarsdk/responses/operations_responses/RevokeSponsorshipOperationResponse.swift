@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a revoke sponsorship operation response.
 /// This operation revokes sponsorship of a ledger entry or signer, transferring reserve responsibility back to the sponsored account.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#revoke-sponsorship "Revoke Sponsorship Operation")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class RevokeSponsorshipOperationResponse: OperationResponse {
 
     /// Account ID if revoking account sponsorship.

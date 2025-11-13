@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents an invoke host function operation response.
 /// This Soroban operation invokes a smart contract function on the Stellar network.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/operation.html#invoke-host-function "Invoke Host Function Operation")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class InvokeHostFunctionOperationResponse: OperationResponse {
 
     /// Type of host function being invoked (e.g., InvokeContract, CreateContract).

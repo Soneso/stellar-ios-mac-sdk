@@ -36,7 +36,7 @@ import Foundation
 /// See also:
 /// - [EventFilter] for complete event filtering
 /// - [SorobanServer.getEvents] for querying events
-/// - [Soroban Events](https://developers.stellar.org/docs/smart-contracts/guides/events)
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class TopicFilter {
     
     public let segmentMatchers: [String]

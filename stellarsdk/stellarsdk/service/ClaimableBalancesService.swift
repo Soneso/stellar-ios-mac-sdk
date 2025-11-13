@@ -43,7 +43,7 @@ public typealias ClaimableBalanceDetailsResponseClosure = (_ response:ClaimableB
 /// ```
 ///
 /// See also:
-/// - [Horizon Claimable Balances API](https://developers.stellar.org/api/horizon/reference/resources/claimablebalance)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - CreateClaimableBalanceOperation for creating claimable balances
 public class ClaimableBalancesService: NSObject {
     let serviceHelper: ServiceHelper

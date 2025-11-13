@@ -20,6 +20,6 @@ import Foundation
 /// Verify the resource identifier is correct and that the resource exists on the network.
 ///
 /// See also:
-/// - [Not Found Error](https://developers.stellar.org/api/horizon/reference/errors/not-found)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
 public class NotFoundErrorResponse: ErrorResponse {}

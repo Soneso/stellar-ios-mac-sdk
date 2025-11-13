@@ -12,8 +12,7 @@ import Foundation
 /// This effect occurs when an account withdraws assets from a liquidity pool.
 /// The account redeems pool shares in exchange for a proportional amount of the pool's reserves.
 /// Triggered by the Liquidity Pool Withdraw operation.
-/// See [Horizon API](https://developers.stellar.org/api/horizon/reference/resources/effect.html "Effect")
-/// See [Stellar Documentation](https://developers.stellar.org/docs/learn/encyclopedia/sdex/liquidity-on-stellar-sdex-liquidity-pools "Liquidity Pools")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolWithdrewEffectResponse: EffectResponse {
 
     /// The liquidity pool details.

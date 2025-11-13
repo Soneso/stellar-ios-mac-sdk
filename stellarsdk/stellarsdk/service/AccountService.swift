@@ -66,7 +66,7 @@ public typealias DataForAccountResponseClosure = (_ response:DataForAccountRespo
 /// ```
 ///
 /// See also:
-/// - [Horizon Accounts API](https://developers.stellar.org/api/horizon/reference/resources/account)
+/// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountResponse for the account data structure
 open class AccountService: NSObject {
     let serviceHelper: ServiceHelper
@@ -81,7 +81,7 @@ open class AccountService: NSObject {
     }
     
     /// Provides information and links relating to a single account.
-    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/accounts-single.html "Account Details")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter accountId: A stellar account ID for an already created account. An stellar account is created when min. one lumen has been sent to a new public key / account ID.
     /// - Parameter response: The closure to be called upon response.
@@ -121,7 +121,7 @@ open class AccountService: NSObject {
     /// ```
     ///
     /// See also:
-    /// - [Horizon API - Single Account](https://developers.stellar.org/api/horizon/reference/endpoints/accounts-single.html)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     open func getAccountDetails(accountId: String) async -> AccountResponseEnum {
         var requestPath = "/accounts/\(accountId)"
         if accountId.hasPrefix("M"), let mux = try? accountId.decodeMuxedAccount() {
@@ -143,7 +143,7 @@ open class AccountService: NSObject {
     }
 
     /// Each account in the Stellar network can contain multiple key/value pairs associated with it. This fuction can be used to retrieve value of such a data key.
-    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/data-for-account.html "Data for Account")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter accountId: A stellar account ID for an already created account. An stellar account is created when it has a minimum balance of 1 lumen.
     /// - Parameter key: Key name of the requested data field.
@@ -187,7 +187,7 @@ open class AccountService: NSObject {
     /// ```
     ///
     /// See also:
-    /// - [Horizon API - Account Data](https://developers.stellar.org/api/horizon/reference/endpoints/data-for-account.html)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     /// - ManageDataOperation for setting account data
     open func getDataForAccount(accountId: String, key: String) async -> DataForAccountResponseEnum {
         let requestPath = "/accounts/\(accountId)/data/\(key)"
@@ -254,7 +254,7 @@ open class AccountService: NSObject {
     ///
     /// See also:
     /// - createFutureNetTestAccount for creating accounts on futurenet
-    /// - [Friendbot Documentation](https://developers.stellar.org/docs/learn/fundamentals/networks)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     open func createTestAccount(accountId:String) async -> CreateTestAccountResponseEnum {
         
         let url = URL(string: "https://horizon-testnet.stellar.org/friendbot")
@@ -354,7 +354,7 @@ open class AccountService: NSObject {
     ///
     /// To find all accounts who are trustees to an asset, pass the query parameter asset using the canonical representation for an issued assets which is Code:IssuerAccountID. Read more about canonical representation of assets in SEP-0011.
     ///
-    /// See [Horizon API] (https://developers.stellar.org/api/horizon/reference/endpoints/accounts.html "Accounts")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -419,7 +419,7 @@ open class AccountService: NSObject {
     /// ```
     ///
     /// See also:
-    /// - [Horizon API - List Accounts](https://developers.stellar.org/api/horizon/reference/endpoints/accounts.html)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     /// - PageResponse for pagination methods
     open func getAccounts(signer:String? = nil, asset:String? = nil, sponsor:String? = nil, liquidityPoolId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<AccountResponse>.ResponseEnum {
         var requestPath = "/accounts"
