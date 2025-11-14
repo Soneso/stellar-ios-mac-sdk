@@ -8,11 +8,15 @@
 
 import Foundation
 
-/// Defines payment stream filter options.
+/// Defines payment stream filter options for real-time payment updates.
 public enum PaymentsChange {
+    /// Streams all payment operations from the network
     case allPayments(cursor:String?)
+    /// Streams payments where the specified account is sender or receiver
     case paymentsForAccount(account:String, cursor:String?)
+    /// Streams payments that occurred in the specified ledger
     case paymentsForLedger(ledger:String, cursor:String?)
+    /// Streams payments that are part of the specified transaction
     case paymentsForTransaction(transaction:String, cursor:String?)
 }
 
@@ -188,7 +192,8 @@ public class PaymentsService: NSObject {
         let path = "/transactions/" + hash + "/payments"
         return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
-    
+
+    /// Internal helper method to retrieve payments for a specific Horizon endpoint path.
     @available(*, renamed: "getPayments(onPath:from:order:limit:includeFailed:join:)")
     private func getPayments(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
         Task {
@@ -196,8 +201,8 @@ public class PaymentsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Internal helper method to retrieve payments for a specific Horizon endpoint path.
     private func getPayments(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         var requestPath = path
         
@@ -246,10 +251,8 @@ public class PaymentsService: NSObject {
             return .failure(error:error)
         }
     }
-    
-    /// Allows to stream SSE events from horizon.
-    /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events. This mode will keep the connection to horizon open and horizon will continue to return responses as ledgers close.
-    ///
+
+    /// Streams real-time payment operation updates via Server-Sent Events from Horizon.
     open func stream(for transactionsType:PaymentsChange) -> OperationsStreamItem {
         var subpath:String!
         switch transactionsType {

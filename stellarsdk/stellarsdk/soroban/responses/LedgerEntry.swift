@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Represents a Stellar ledger entry with its key, XDR value, and validity metadata.
 public class LedgerEntry: NSObject, Decodable {
     
     /// The key of the ledger entry (serialized in a base64 string)

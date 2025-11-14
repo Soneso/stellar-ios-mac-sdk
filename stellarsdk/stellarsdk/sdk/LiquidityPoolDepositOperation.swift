@@ -8,12 +8,18 @@
 
 import Foundation
 
+/// Represents a Stellar liquidity pool deposit operation for adding liquidity to AMM pools.
 public class LiquidityPoolDepositOperation:Operation {
-    
+
+    /// The liquidity pool ID.
     public let liquidityPoolId:String
+    /// Maximum amount of first asset to deposit.
     public let maxAmountA:Decimal
+    /// Maximum amount of second asset to deposit.
     public let maxAmountB:Decimal
+    /// Minimum depositA/depositB price.
     public let minPrice:Price
+    /// Maximum depositA/depositB price.
     public let maxPrice:Price
 
     /// Creates a new LiquidityPoolDepositOperation object.

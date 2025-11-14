@@ -8,18 +8,27 @@
 
 import Foundation
 
+/// Result enum for SEP-30 account operations (register, update, get, delete).
 public enum Sep30AccountResponseEnum {
+    /// Successfully completed account operation, returns account details.
     case success(response: Sep30AccountResponse)
+    /// Request failed with recovery service error.
     case failure(error: RecoveryServiceError)
 }
 
+/// Result enum for SEP-30 transaction signing requests.
 public enum Sep30SignatureResponseEnum {
+    /// Successfully signed transaction, returns signature and network passphrase.
     case success(response: Sep30SignatureResponse)
+    /// Request failed with recovery service error.
     case failure(error: RecoveryServiceError)
 }
 
+/// Result enum for SEP-30 list accounts requests.
 public enum Sep30AccountsResponseEnum {
+    /// Successfully retrieved list of accessible accounts.
     case success(response: Sep30AccountsResponse)
+    /// Request failed with recovery service error.
     case failure(error: RecoveryServiceError)
 }
 
@@ -71,10 +80,12 @@ public typealias Sep30AccountsResponseClosure = (_ response:Sep30AccountsRespons
 /// - [WebAuthenticator] for SEP-10 authentication
 public class RecoveryService: NSObject {
 
+    /// The base URL of the SEP-30 account recovery service endpoint for multi-party account recovery.
     public var serviceAddress: String
     private let serviceHelper: ServiceHelper
     private let jsonDecoder = JSONDecoder()
-    
+
+    /// Creates a RecoveryService instance with a direct service endpoint URL.
     public init(serviceAddress:String) {
         self.serviceAddress = serviceAddress
         serviceHelper = ServiceHelper(baseURL: serviceAddress)

@@ -8,27 +8,34 @@
 
 import Foundation
 
+/// Represents the possible responses from a Server-Sent Events (SSE) stream connection.
 public enum StreamResponseEnum<Data:Decodable> {
+    /// Stream connection established successfully.
     case open
+    /// Data received from the stream with an event ID and decoded payload.
     case response(id:String, data:Data)
+    /// Error occurred during streaming.
     case error(error:Error?)
-    
+
+    /// Closure type for handling stream responses.
     public typealias ResponseClosure = (_ response:StreamResponseEnum<Data>) -> (Void)
 }
 
-
+/// Streams transaction data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
 public class TransactionsStreamItem: NSObject {
     private var streamingHelper: StreamingHelper
     private var requestUrl: String
     private let jsonDecoder = JSONDecoder()
-    
+
+    /// Creates a new transaction stream for the specified Horizon API endpoint.
     public init(requestUrl:String) {
         streamingHelper = StreamingHelper()
         self.requestUrl = requestUrl
-        
+
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
-    
+
+    /// Establishes the SSE connection and delivers transaction responses as they arrive from Horizon.
     public func onReceive(response:@escaping StreamResponseEnum<TransactionResponse>.ResponseClosure) {
         streamingHelper.streamFrom(requestUrl:requestUrl) { [weak self] (helperResponse) -> (Void) in
             switch helperResponse {
@@ -49,6 +56,7 @@ public class TransactionsStreamItem: NSObject {
         }
     }
     
+    /// Closes the event stream and releases resources.
     public func closeStream() {
         streamingHelper.close()
     }

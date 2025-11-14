@@ -10,15 +10,19 @@ import Foundation
 
 /// Result enum for ledger details requests.
 public enum LedgerDetailsResponseEnum {
+    /// Success case containing ledger details.
     case success(details: LedgerResponse)
+    /// Failure case containing error information.
     case failure(error: HorizonRequestError)
 }
 
-/// Defines ledger stream filter options.
+/// Defines ledger stream filter options for real-time ledger updates.
 public enum LedgersChange {
+    /// Streams all ledgers as they close on the network
     case allLedgers(cursor:String?)
 }
 
+/// Closure type for ledger details response callbacks.
 public typealias LedgerDetailsResponseClosure = (_ response:LedgerDetailsResponseEnum) -> (Void)
 
 /// Service for querying ledger information from the Stellar Horizon API.
@@ -58,6 +62,7 @@ public class LedgersService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
+    /// Retrieves detailed information about a specific ledger (callback-based, deprecated).
     @available(*, renamed: "getLedger(sequenceNumber:)")
     open func getLedger(sequenceNumber:String, response:@escaping LedgerDetailsResponseClosure) {
         Task {
@@ -65,8 +70,10 @@ public class LedgersService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves detailed information about a specific ledger by sequence number.
+    /// - Parameter sequenceNumber: The ledger sequence number as a string
+    /// - Returns: LedgerDetailsResponseEnum with ledger details or error
     open func getLedger(sequenceNumber:String) async -> LedgerDetailsResponseEnum {
         let requestPath = "/ledgers/" + sequenceNumber
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
@@ -84,6 +91,7 @@ public class LedgersService: NSObject {
         }
     }
     
+    /// Retrieves all ledgers with pagination (callback-based, deprecated).
     @available(*, renamed: "getLedgers(cursor:order:limit:)")
     open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LedgerResponse>.ResponseClosure) {
         Task {
@@ -91,8 +99,13 @@ public class LedgersService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves all ledgers with pagination support.
+    /// - Parameters:
+    ///   - cursor: Pagination cursor for next page
+    ///   - order: Sort order (.ascending or .descending)
+    ///   - limit: Maximum number of records to return (default 10, max 200)
+    /// - Returns: PageResponse containing ledgers or error
     open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<LedgerResponse>.ResponseEnum {
         var requestPath = "/ledgers"
         
@@ -109,6 +122,7 @@ public class LedgersService: NSObject {
         return await getLedgersFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    /// Loads ledgers from a specific URL (callback-based, deprecated).
     @available(*, renamed: "getLedgersFromUrl(url:)")
     open func getLedgersFromUrl(url:String, response:@escaping PageResponse<LedgerResponse>.ResponseClosure) {
         Task {
@@ -116,8 +130,10 @@ public class LedgersService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Loads ledgers from a specific URL for pagination.
+    /// - Parameter url: The complete URL to fetch ledgers from (typically from PageResponse links)
+    /// - Returns: PageResponse containing ledgers or error
     open func getLedgersFromUrl(url:String) async -> PageResponse<LedgerResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {
@@ -133,7 +149,8 @@ public class LedgersService: NSObject {
             return .failure(error:error)
         }
     }
-    
+
+    /// Streams real-time ledger updates via Server-Sent Events from Horizon.
     open func stream(for transactionsType:LedgersChange) -> LedgersStreamItem {
         var subpath:String!
         switch transactionsType {

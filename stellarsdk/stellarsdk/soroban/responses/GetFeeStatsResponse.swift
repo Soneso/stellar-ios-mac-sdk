@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Response containing Soroban transaction fee statistics including inclusion fees.
 public class GetFeeStatsResponse: NSObject, Decodable {
     
     /// Inclusion fee distribution statistics for Soroban transactions
@@ -35,6 +36,7 @@ public class GetFeeStatsResponse: NSObject, Decodable {
     }
 }
 
+/// Fee statistics showing distribution of inclusion fees across network transactions.
 public class InclusionFee: NSObject, Decodable {
     
     /// Maximum fee

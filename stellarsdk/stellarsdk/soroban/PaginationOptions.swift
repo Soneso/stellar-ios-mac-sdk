@@ -44,15 +44,19 @@ import Foundation
 /// - [SorobanServer.getTransactions] for transaction queries
 /// - [SorobanServer.getLedgers] for ledger queries
 public class PaginationOptions {
-    
+
+    /// Pagination cursor from previous response for retrieving the next page of results.
     public let cursor:String?
+    /// Maximum number of records to return per page.
     public let limit: Int?
     
+    /// Creates pagination options for limiting and offsetting query results.
     public init(cursor:String? = nil, limit: Int? = nil) {
         self.cursor = cursor
         self.limit = limit
     }
     
+    /// Converts pagination options into request parameters for the Soroban RPC API.
     public func buildRequestParams() -> [String : Any] {
         var result: [String : Any] = [:]
         if cursor != nil {

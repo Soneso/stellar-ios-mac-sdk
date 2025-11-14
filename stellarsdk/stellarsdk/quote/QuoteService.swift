@@ -8,29 +8,45 @@
 
 import Foundation
 
+/// Result enum for SEP-38 info endpoint requests.
 public enum Sep38InfoResponseEnum {
+    /// Successfully retrieved supported assets and delivery methods.
     case success(response: Sep38InfoResponse)
+    /// Request failed with quote service error.
     case failure(error: QuoteServiceError)
 }
 
+/// Result enum for SEP-38 prices endpoint requests.
 public enum Sep38PricesResponseEnum {
+    /// Successfully retrieved indicative prices for multiple assets.
     case success(response: Sep38PricesResponse)
+    /// Request failed with quote service error.
     case failure(error: QuoteServiceError)
 }
 
+/// Result enum for SEP-38 price endpoint requests.
 public enum Sep38PriceResponseEnum {
+    /// Successfully retrieved indicative price for asset exchange.
     case success(response: Sep38PriceResponse)
+    /// Request failed with quote service error.
     case failure(error: QuoteServiceError)
 }
 
+/// Result enum for SEP-38 quote requests (create and retrieve).
 public enum Sep38QuoteResponseEnum {
+    /// Successfully created or retrieved firm quote.
     case success(response: Sep38QuoteResponse)
+    /// Request failed with quote service error.
     case failure(error: QuoteServiceError)
 }
 
+/// Callback closure for retrieving SEP-38 anchor service information and supported assets.
 public typealias Sep38InfoResponseClosure = (_ response:Sep38InfoResponseEnum) -> (Void)
+/// Callback closure for retrieving SEP-38 indicative prices for multiple delivery methods.
 public typealias Sep38PricesResponseClosure = (_ response:Sep38PricesResponseEnum) -> (Void)
+/// Callback closure for retrieving SEP-38 indicative price for a specific asset pair.
 public typealias Sep38PriceResponseClosure = (_ response:Sep38PriceResponseEnum) -> (Void)
+/// Callback closure for requesting and retrieving SEP-38 firm quotes for asset exchanges.
 public typealias Sep38QuoteResponseClosure = (_ response:Sep38QuoteResponseEnum) -> (Void)
 
 
@@ -83,10 +99,12 @@ public typealias Sep38QuoteResponseClosure = (_ response:Sep38QuoteResponseEnum)
 /// - [InteractiveService] for SEP-24 integration
 public class QuoteService: NSObject {
 
+    /// The base URL of the SEP-38 quote service endpoint for price discovery and firm quotes.
     public var serviceAddress: String
     private let serviceHelper: ServiceHelper
     private let jsonDecoder = JSONDecoder()
-    
+
+    /// Creates a QuoteService instance with a direct service endpoint URL.
     public init(serviceAddress:String) {
         self.serviceAddress = serviceAddress
         serviceHelper = ServiceHelper(baseURL: serviceAddress)

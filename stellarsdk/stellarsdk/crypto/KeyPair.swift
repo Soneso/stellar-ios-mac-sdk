@@ -257,6 +257,14 @@ public final class KeyPair {
         return DecoratedSignatureXDR(hint: WrappedData4(hint) , signature: decoratedSignature.signature)
     }
     
+    /// Signs payload data and returns a decorated signature with XOR-ed hint per CAP-40.
+    ///
+    /// Unlike signDecorated(), this method XORs the signature hint with the last 4 bytes of the payload,
+    /// as required for payload signers per CAP-40 specification. The hint helps identify the signer without
+    /// revealing the full public key or payload.
+    ///
+    /// - Parameter signerPayload: The payload data to sign
+    /// - Returns: A DecoratedSignatureXDR with XOR-ed hint and Ed25519 signature
     public func signPayloadDecorated(_ signerPayload: Data) -> DecoratedSignatureXDR {
         return signPayloadDecorated([UInt8](signerPayload))
     }

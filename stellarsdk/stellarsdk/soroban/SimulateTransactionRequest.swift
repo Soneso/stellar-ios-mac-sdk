@@ -38,10 +38,11 @@ import Foundation
 /// - [SimulateTransactionResponse] for simulation results
 /// - [ResourceConfig] for resource configuration
 public class SimulateTransactionRequest {
-    
+
+    /// Transaction to simulate (must contain InvokeHostFunction operation).
     public var transaction: Transaction
-    
-    /// allows budget instruction leeway used in preflight calculations to be configured. If not provided the leeway defaults to 3000000 instructions.
+
+    /// Resource limits for simulation (instruction leeway, memory bounds).
     public var resourceConfig: ResourceConfig?
     
     /// Support for non-root authorization. Only available for protocol >= 23
@@ -49,12 +50,14 @@ public class SimulateTransactionRequest {
     public var authMode:String?
 
     
+    /// Creates a request for simulating Soroban transaction execution.
     public init(transaction:Transaction, resourceConfig:ResourceConfig? = nil, authMode:String? = nil) {
         self.transaction = transaction
         self.resourceConfig = resourceConfig
         self.authMode = authMode
     }
     
+    /// Builds JSON-RPC request parameters from the simulation configuration.
     public func buildRequestParams() -> [String : Any] {
         var result: [String : Any] = [:]
         result["transaction"] = try? transaction.encodedEnvelope()

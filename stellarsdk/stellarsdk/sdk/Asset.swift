@@ -12,8 +12,11 @@ import Foundation
 /// See [Stellar developer docs](https://developers.stellar.org)
 public class Asset
 {
+    /// The type of asset (native, alphanum4, alphanum12, or pool share).
     public let type:Int32
+    /// The asset code (e.g., "USD", "BTC"). Nil for native assets.
     public private(set) var code:String?
+    /// The issuer keypair for this asset. Nil for native assets.
     public private(set) var issuer:KeyPair?
     
     /// Creates an Asset object based on the given type, code and issuer. Assets can have the types: native, alphanumeric 4, alphanumeric 12. The asset of type native has no code and no issuer. Assets of type alphanumeric 4, alphanumeric 12 must have a code and an issuer.
@@ -44,6 +47,7 @@ public class Asset
         }
     }
     
+    /// Creates an Asset from its canonical string representation (e.g., "native" or "USD:GXXX...").
     public convenience init?(canonicalForm: String) {
         if canonicalForm == StellarProtocolConstants.ASSET_CANONICAL_NATIVE || canonicalForm == "XLM" {
             self.init(type: AssetType.ASSET_TYPE_NATIVE)!
@@ -63,7 +67,8 @@ public class Asset
             return nil
         }
     }
-    
+
+    /// Returns the canonical string representation of this asset (e.g., "native" or "USD:GXXX...").
     public func toCanonicalForm() -> String {
         switch self.type {
             case AssetType.ASSET_TYPE_NATIVE:
@@ -72,7 +77,7 @@ public class Asset
                 return self.code! + ":" + self.issuer!.accountId
         }
     }
-    
+
     /// Generates XDR object from the Asset object.
     /// Throws StellarSDKError.xdrEncodingError if the XDR Object could not be created.
     public func toXDR() throws -> AssetXDR {
@@ -89,6 +94,7 @@ public class Asset
         }
     }
     
+    /// Generates TrustlineAssetXDR object for trustline operations.
     public func toTrustlineAssetXDR() throws -> TrustlineAssetXDR {
         
         do {
@@ -133,10 +139,14 @@ public class Asset
     }
 }
 
+/// Asset subclass supporting liquidity pool shares for change trust operations.
 public class ChangeTrustAsset : Asset {
+    /// The first asset in a liquidity pool pair. Nil for non-pool assets.
     public private(set) var assetA:Asset?
+    /// The second asset in a liquidity pool pair. Nil for non-pool assets.
     public private(set) var assetB:Asset?
-    
+
+    /// Creates a liquidity pool asset from two underlying assets in correct lexicographic order.
     public init?(assetA:Asset, assetB:Asset) throws {
         
         // validate asset type
@@ -174,7 +184,8 @@ public class ChangeTrustAsset : Asset {
     public override init?(type:Int32, code:String? = nil, issuer:KeyPair? = nil) {
         super.init(type: type, code: code, issuer: issuer)
     }
-    
+
+    /// Generates ChangeTrustAssetXDR object for change trust operations.
     public func toChangeTrustAssetXDR() throws -> ChangeTrustAssetXDR {
         
         do {
@@ -199,6 +210,7 @@ public class ChangeTrustAsset : Asset {
         }
     }
     
+    /// Generates ChangeTrustAsset object from its XDR representation.
     public static func fromXDR(assetXDR:ChangeTrustAssetXDR) throws -> ChangeTrustAsset {
         
         var result: ChangeTrustAsset?

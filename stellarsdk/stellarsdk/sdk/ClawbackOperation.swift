@@ -8,10 +8,14 @@
 
 import Foundation
 
+/// Represents a Stellar clawback operation allowing asset issuers to burn assets from accounts.
 public class ClawbackOperation:Operation {
-    
+
+    /// The asset to be clawed back.
     public let asset:Asset
+    /// The account from which the asset is clawed back.
     public let fromAccountId:String
+    /// The amount of the asset to be clawed back.
     public let amount:Decimal
     
     

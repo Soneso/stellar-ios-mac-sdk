@@ -11,16 +11,26 @@ import Foundation
 /// Represents a set options operation. This operation sets the options for an account.
 /// See [Stellar developer docs](https://developers.stellar.org)
 public class SetOptionsOperation:Operation {
-    
+
+    /// Account of the inflation destination.
     public let inflationDestination:KeyPair?
+    /// Indicates which flags to clear. The bit mask subtracts from the existing flags.
     public let clearFlags:UInt32?
+    /// Indicates which flags to set. The bit mask adds onto the existing flags.
     public let setFlags:UInt32?
+    /// Weight of the master key for signing transactions.
     public let masterKeyWeight:UInt32?
+    /// Threshold for operations with low threshold requirement. Value from 0-255.
     public let lowThreshold:UInt32?
+    /// Threshold for operations with medium threshold requirement. Value from 0-255.
     public let mediumThreshold:UInt32?
+    /// Threshold for operations with high threshold requirement. Value from 0-255.
     public let highThreshold:UInt32?
+    /// Sets the home domain of the account.
     public let homeDomain:String?
+    /// The public key of the signer to add, remove, or update.
     public let signer:SignerKeyXDR?
+    /// The weight of the signer. Set to 0 to remove the signer.
     public let signerWeight:UInt32?
 
     

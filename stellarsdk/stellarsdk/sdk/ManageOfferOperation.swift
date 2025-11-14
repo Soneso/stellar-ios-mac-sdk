@@ -11,11 +11,16 @@ import Foundation
 /// Represents a manage offer operation. Creates, updates, or deletes an offer.
 /// See [Stellar developer docs](https://developers.stellar.org)
 public class ManageOfferOperation:Operation {
-    
+
+    /// The asset being sold.
     public let selling:Asset
+    /// The asset being bought.
     public let buying:Asset
+    /// Amount of selling asset to sell. Set to 0 to delete an existing offer.
     public let amount:Decimal
+    /// Price of 1 unit of selling in terms of buying.
     public let price:Price
+    /// The ID of the offer. 0 for new offer. Set to existing offer ID to update or delete.
     public let offerId:Int64
     
     /// Creates a new ManageOfferOperation object.

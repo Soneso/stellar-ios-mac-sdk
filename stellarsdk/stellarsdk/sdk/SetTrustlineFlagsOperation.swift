@@ -8,11 +8,16 @@
 
 import Foundation
 
+/// Represents a Stellar set trustline flags operation allowing issuers to authorize or revoke trustlines.
 public class SetTrustlineFlagsOperation:Operation {
-    
+
+    /// The asset of the trustline whose flags are being modified.
     public let asset:Asset
+    /// The account whose trustline is affected by this operation.
     public let trustorAccountId:String
+    /// Indicates which flags to set. The bit mask adds onto the existing trustline flags.
     public let setFlags:UInt32
+    /// Indicates which flags to clear. The bit mask subtracts from the existing trustline flags.
     public let clearFlags:UInt32
 
     /// Creates a new SetTrustlineFlagsOperation object.

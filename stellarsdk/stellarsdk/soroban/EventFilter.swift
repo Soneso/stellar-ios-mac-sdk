@@ -55,7 +55,7 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 public class EventFilter {
     
-    /// (optional) A comma separated list of event types (system, contract, or diagnostic) used to filter events. If omitted, all event types are included.
+    /// Event type filter criteria (system, contract, or diagnostic). If omitted, all types are included.
     public let type:String?
     
     /// (optional) List of contract ids to query for events. If omitted, return events for all contracts. Maximum 5 contract IDs are allowed per request.
@@ -64,12 +64,14 @@ public class EventFilter {
     /// (optional) List of topic filters. If omitted, query for all events. If multiple filters are specified, events will be included if they match any of the filters. Maximum 5 filters are allowed per request.
     public let topics: [TopicFilter]?
     
+    /// Creates an event filter for querying Soroban contract events by type, contract, and topics.
     public init(type:String? = nil, contractIds: [String]? = nil, topics: [TopicFilter]? = nil) {
         self.type = type
         self.contractIds = contractIds
         self.topics = topics
     }
     
+    /// Converts the filter into request parameters for the Soroban RPC API.
     public func buildRequestParams() -> [String : Any] {
         var result: [String : Any] = [:]
         if type != nil {

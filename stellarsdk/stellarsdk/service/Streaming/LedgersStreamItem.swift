@@ -8,18 +8,21 @@
 
 import Foundation
 
+/// Streams ledger data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
 public class LedgersStreamItem: NSObject {
     private var streamingHelper: StreamingHelper
     private var requestUrl: String
     private let jsonDecoder = JSONDecoder()
-    
+
+    /// Creates a new ledgers stream for the specified Horizon API endpoint.
     public init(requestUrl:String) {
         streamingHelper = StreamingHelper()
         self.requestUrl = requestUrl
-        
+
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
-    
+
+    /// Establishes the SSE connection and delivers ledger responses as they arrive from Horizon.
     public func onReceive(response:@escaping StreamResponseEnum<LedgerResponse>.ResponseClosure) {
         streamingHelper.streamFrom(requestUrl:requestUrl) { (helperResponse) -> (Void) in
             switch helperResponse {
@@ -39,6 +42,7 @@ public class LedgersStreamItem: NSObject {
         }
     }
     
+    /// Closes the event stream and releases resources.
     public func closeStream() {
         streamingHelper.close()
     }

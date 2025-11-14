@@ -11,8 +11,10 @@ import Foundation
 /// Represents a change trust operation. Creates, updates, or deletes a trustline.
 /// See [Stellar developer docs](https://developers.stellar.org)
 public class ChangeTrustOperation:Operation {
-    
+
+    /// The asset of the trustline.
     public let asset:ChangeTrustAsset
+    /// The limit of the trustline. If nil, defaults to maximum limit.
     public let limit:Decimal?
         
     /// Creates a new ChangeTrustOperation object.

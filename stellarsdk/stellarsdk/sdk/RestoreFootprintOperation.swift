@@ -8,12 +8,14 @@
 
 import Foundation
 
+/// Restores archived contract state entries in Soroban to active state.
 public class RestoreFootprintOperation:Operation {
     
     public override init(sourceAccountId:String? = nil) {
         super.init(sourceAccountId: sourceAccountId)
     }
-    
+
+    /// Creates a restore footprint operation from XDR representation.
     public init(fromXDR:RestoreFootprintOpXDR, sourceAccountId:String?) {
         super.init(sourceAccountId: sourceAccountId)
     }

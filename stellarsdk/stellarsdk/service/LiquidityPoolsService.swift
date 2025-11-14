@@ -10,17 +10,23 @@ import Foundation
 
 /// Result enum for liquidity pool details requests.
 public enum LiquidityPoolDetailsResponseEnum {
+    /// Successfully retrieved liquidity pool details from Horizon
     case success(details: LiquidityPoolResponse)
+    /// Failed to retrieve liquidity pool details, contains error information
     case failure(error: HorizonRequestError)
 }
 
 /// Result enum for liquidity pool trades requests.
 public enum LiquidityPoolTradesResponseEnum {
+    /// Successfully retrieved liquidity pool trade history
     case success(details: LiquidityPoolTradesResponse)
+    /// Failed to retrieve liquidity pool trades, contains error information
     case failure(error: HorizonRequestError)
 }
 
+/// Callback closure for retrieving liquidity pool details from the Stellar network.
 public typealias LiquidityPoolDetailsResponseClosure = (_ response:LiquidityPoolDetailsResponseEnum) -> (Void)
+/// Callback closure for retrieving liquidity pool trade history from the Stellar network.
 public typealias LiquidityPoolTradesResponseClosure = (_ response:LiquidityPoolTradesResponseEnum) -> (Void)
 
 /// Service for querying liquidity pools from the Stellar Horizon API.
@@ -64,6 +70,7 @@ public class LiquidityPoolsService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
+    /// Retrieves details for a specific liquidity pool by its ID.
     @available(*, renamed: "getLiquidityPool(poolId:)")
     open func getLiquidityPool(poolId:String, response:@escaping LiquidityPoolDetailsResponseClosure) {
         Task {
@@ -71,8 +78,8 @@ public class LiquidityPoolsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves details for a specific liquidity pool by its ID.
     open func getLiquidityPool(poolId:String) async -> LiquidityPoolDetailsResponseEnum {
         var lidHex = poolId
         if poolId.hasPrefix("L"), let idHex = try? poolId.decodeLiquidityPoolIdToHex() {
@@ -93,6 +100,7 @@ public class LiquidityPoolsService: NSObject {
         }
     }
     
+    /// Retrieves all liquidity pools with optional pagination parameters.
     @available(*, renamed: "getLiquidityPools(cursor:order:limit:)")
     open func getLiquidityPools(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
         Task {
@@ -100,8 +108,8 @@ public class LiquidityPoolsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves all liquidity pools with optional pagination parameters.
     open func getLiquidityPools(cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<LiquidityPoolResponse>.ResponseEnum {
         var requestPath = "/liquidity_pools"
         
@@ -118,6 +126,7 @@ public class LiquidityPoolsService: NSObject {
         return await getLiquidityPoolsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    /// Retrieves liquidity pools filtered by reserve assets with optional pagination parameters.
     @available(*, renamed: "getLiquidityPools(reserveAssetA:reserveAssetB:cursor:order:limit:)")
     open func getLiquidityPools(reserveAssetA:Asset, reserveAssetB:Asset, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
         Task {
@@ -125,8 +134,8 @@ public class LiquidityPoolsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves liquidity pools filtered by reserve assets with optional pagination parameters.
     open func getLiquidityPools(reserveAssetA:Asset, reserveAssetB:Asset, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<LiquidityPoolResponse>.ResponseEnum {
         var requestPath = "/liquidity_pools"
         
@@ -144,6 +153,7 @@ public class LiquidityPoolsService: NSObject {
         return await getLiquidityPoolsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    /// Retrieves trade history for a specific liquidity pool.
     @available(*, renamed: "getLiquidityPoolTrades(poolId:)")
     open func getLiquidityPoolTrades(poolId:String, response:@escaping LiquidityPoolTradesResponseClosure) {
         Task {
@@ -151,8 +161,8 @@ public class LiquidityPoolsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves trade history for a specific liquidity pool.
     open func getLiquidityPoolTrades(poolId:String) async -> LiquidityPoolTradesResponseEnum {
         let requestPath = "/liquidity_pools/" + poolId + "/trades"
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
@@ -169,6 +179,7 @@ public class LiquidityPoolsService: NSObject {
         }
     }
     
+    /// Retrieves liquidity pools from a specific Horizon URL.
     @available(*, renamed: "getLiquidityPoolsFromUrl(url:)")
     open func getLiquidityPoolsFromUrl(url:String, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
         Task {
@@ -176,8 +187,8 @@ public class LiquidityPoolsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves liquidity pools from a specific Horizon URL.
     open func getLiquidityPoolsFromUrl(url:String) async -> PageResponse<LiquidityPoolResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {

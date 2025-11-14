@@ -1,40 +1,64 @@
 import Foundation
 
+/// Result enum for initializing interactive service from a domain.
 public enum InteractiveServiceForDomainEnum {
+    /// Successfully created interactive service instance.
     case success(response: InteractiveService)
+    /// Failed to initialize service from domain.
     case failure(error: InteractiveServiceError)
 }
 
+/// Result enum for SEP-24 info endpoint requests.
 public enum Sep24InfoResponseEnum {
+    /// Successfully retrieved anchor's supported assets and features.
     case success(response: Sep24InfoResponse)
+    /// Request failed with interactive service error.
     case failure(error: InteractiveServiceError)
 }
 
+/// Result enum for SEP-24 fee endpoint requests.
 public enum Sep24FeeResponseEnum {
+    /// Successfully retrieved fee information for deposit or withdrawal.
     case success(response: Sep24FeeResponse)
+    /// Request failed with interactive service error.
     case failure(error: InteractiveServiceError)
 }
 
+/// Result enum for SEP-24 interactive deposit or withdrawal initiation.
 public enum Sep24InteractiveResponseEnum {
+    /// Successfully initiated interactive flow, returns URL for user interaction.
     case success(response: Sep24InteractiveResponse)
+    /// Request failed with interactive service error.
     case failure(error: InteractiveServiceError)
 }
 
+/// Result enum for SEP-24 transactions list endpoint requests.
 public enum Sep24TransactionsResponseEnum {
+    /// Successfully retrieved list of transactions.
     case success(response: Sep24TransactionsResponse)
+    /// Request failed with interactive service error.
     case failure(error: InteractiveServiceError)
 }
 
+/// Result enum for SEP-24 single transaction status requests.
 public enum Sep24TransactionResponseEnum {
+    /// Successfully retrieved transaction status and details.
     case success(response: Sep24TransactionResponse)
+    /// Request failed with interactive service error.
     case failure(error: InteractiveServiceError)
 }
 
+/// Callback closure for discovering SEP-24 interactive service endpoints for a domain.
 public typealias InteractiveServiceClosure = (_ response:InteractiveServiceForDomainEnum) -> (Void)
+/// Callback closure for retrieving SEP-24 service information and supported assets.
 public typealias Sep24InfoResponseClosure = (_ response:Sep24InfoResponseEnum) -> (Void)
+/// Callback closure for retrieving SEP-24 deposit or withdrawal fee information.
 public typealias Sep24FeeResponseClosure = (_ response:Sep24FeeResponseEnum) -> (Void)
+/// Callback closure for initiating SEP-24 interactive deposit or withdrawal flows.
 public typealias Sep24InteractiveResponseClosure = (_ response:Sep24InteractiveResponseEnum) -> (Void)
+/// Callback closure for retrieving multiple SEP-24 transaction records.
 public typealias Sep24TransactionsResponseClosure = (_ response:Sep24TransactionsResponseEnum) -> (Void)
+/// Callback closure for retrieving a single SEP-24 transaction record by ID.
 public typealias Sep24TransactionResponseClosure = (_ response:Sep24TransactionResponseEnum) -> (Void)
 
 /// Implements SEP-0024 - Hosted Deposit and Withdrawal.
@@ -209,10 +233,12 @@ public typealias Sep24TransactionResponseClosure = (_ response:Sep24TransactionR
 /// - [StellarToml] for service discovery
 public class InteractiveService: NSObject {
 
+    /// The base URL of the SEP-24 interactive service endpoint for hosted deposit and withdrawal.
     public var serviceAddress: String
     private let serviceHelper: ServiceHelper
     private let jsonDecoder = JSONDecoder()
-    
+
+    /// Initializes a new InteractiveService instance with the specified SEP-24 transfer server endpoint URL.
     public init(serviceAddress:String) {
         self.serviceAddress = serviceAddress
         serviceHelper = ServiceHelper(baseURL: serviceAddress)
@@ -332,7 +358,8 @@ public class InteractiveService: NSObject {
             return .failure(error: self.errorFor(horizonError: error))
         }
     }
-    
+
+    /// Initiates a SEP-24 deposit transaction, returning an interactive URL for the user to complete KYC and deposit requirements.
     @available(*, renamed: "deposit(request:)")
     public func deposit(request: Sep24DepositRequest, completion:@escaping Sep24InteractiveResponseClosure) {
         Task {
@@ -340,8 +367,8 @@ public class InteractiveService: NSObject {
             completion(result)
         }
     }
-    
-    
+
+    /// Initiates a SEP-24 deposit transaction, returning an interactive URL for the user to complete KYC and deposit requirements.
     public func deposit(request: Sep24DepositRequest) async -> Sep24InteractiveResponseEnum {
         let requestPath = "/transactions/deposit/interactive"
         
@@ -358,7 +385,8 @@ public class InteractiveService: NSObject {
             return .failure(error: self.errorFor(horizonError: error))
         }
     }
-    
+
+    /// Initiates a SEP-24 withdrawal transaction, returning an interactive URL for the user to provide withdrawal details and complete verification.
     @available(*, renamed: "withdraw(request:)")
     public func withdraw(request: Sep24WithdrawRequest, completion:@escaping Sep24InteractiveResponseClosure) {
         Task {
@@ -366,8 +394,8 @@ public class InteractiveService: NSObject {
             completion(result)
         }
     }
-    
-    
+
+    /// Initiates a SEP-24 withdrawal transaction, returning an interactive URL for the user to provide withdrawal details and complete verification.
     public func withdraw(request: Sep24WithdrawRequest) async -> Sep24InteractiveResponseEnum {
         let requestPath = "/transactions/withdraw/interactive"
         
@@ -384,7 +412,8 @@ public class InteractiveService: NSObject {
             return .failure(error: self.errorFor(horizonError: error))
         }
     }
-    
+
+    /// Retrieves a list of SEP-24 transactions for the authenticated user, filtered by asset code and optional parameters.
     @available(*, renamed: "getTransactions(request:)")
     public func getTransactions(request: Sep24TransactionsRequest,  completion:@escaping Sep24TransactionsResponseClosure) {
         Task {
@@ -392,8 +421,8 @@ public class InteractiveService: NSObject {
             completion(result)
         }
     }
-    
-    
+
+    /// Retrieves a list of SEP-24 transactions for the authenticated user, filtered by asset code and optional parameters.
     public func getTransactions(request: Sep24TransactionsRequest) async -> Sep24TransactionsResponseEnum {
         var requestPath = "/transactions?asset_code=\(request.assetCode)"
         if let noOlderThanDate = request.noOlderThan {
@@ -427,7 +456,8 @@ public class InteractiveService: NSObject {
             return .failure(error: self.errorFor(horizonError: error))
         }
     }
-    
+
+    /// Retrieves the status and details of a single SEP-24 transaction by ID, Stellar transaction ID, or external transaction ID.
     @available(*, renamed: "getTransaction(request:)")
     public func getTransaction(request: Sep24TransactionRequest,  completion:@escaping Sep24TransactionResponseClosure) {
         Task {
@@ -435,8 +465,8 @@ public class InteractiveService: NSObject {
             completion(result)
         }
     }
-    
-    
+
+    /// Retrieves the status and details of a single SEP-24 transaction by ID, Stellar transaction ID, or external transaction ID.
     public func getTransaction(request: Sep24TransactionRequest) async -> Sep24TransactionResponseEnum {
         var requestPath = "/transaction?"
         
@@ -479,7 +509,8 @@ public class InteractiveService: NSObject {
             return .failure(error: self.errorFor(horizonError: error))
         }
     }
-    
+
+    /// Converts a HorizonRequestError into a domain-specific InteractiveServiceError with appropriate error categorization.
     private func errorFor(horizonError:HorizonRequestError) -> InteractiveServiceError {
         switch horizonError {
         case .forbidden(let message, _):

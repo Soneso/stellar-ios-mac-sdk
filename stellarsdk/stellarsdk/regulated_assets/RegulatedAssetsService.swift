@@ -120,7 +120,7 @@ public typealias PostSep08ActionClosure = (_ response:PostSep08ActionEnum) -> (V
 /// - [StellarToml] for discovering regulated assets
 public class RegulatedAssetsService: NSObject {
 
-    /// The parsed stellar.toml file containing asset and issuer information.
+    /// The parsed stellar.toml configuration containing regulated asset definitions and approval server URLs.
     public var tomlData:StellarToml
 
     /// The Stellar network this service operates on.
@@ -209,7 +209,8 @@ public class RegulatedAssetsService: NSObject {
             return .failure(error: .invalidToml)
         }
     }
-    
+
+    /// Checks if authorization is required for a regulated asset (deprecated, use async version).
     @available(*, renamed: "authorizationRequired(asset:)")
     public func authorizationRequired(asset: RegulatedAsset, completion:@escaping AuthorizationRequiredClosure) {
         Task {
@@ -295,7 +296,8 @@ public class RegulatedAssetsService: NSObject {
             }
         }
     }
-    
+
+    /// Posts action data to SEP-08 action URL (deprecated, use async version).
     @available(*, renamed: "postAction(url:actionFields:)")
     public func postAction(url: String, actionFields:[String : Any], completion:@escaping PostSep08ActionClosure) {
         Task {

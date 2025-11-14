@@ -305,8 +305,11 @@ public struct WithdrawExchangeAsset: Decodable {
 /// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
 public struct AnchorField: Decodable {
 
+    /// Human-readable description explaining what this field is for.
     public var description: String?
+    /// Indicates whether this field is optional for the user to provide.
     public var optional: Bool?
+    /// List of allowed values for this field, if constrained to specific options.
     public var choices: [String]?
     
     /// Properties to encode and decode
@@ -337,6 +340,7 @@ public struct AnchorField: Decodable {
 /// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
 public struct WithdrawType: Decodable {
 
+    /// Additional fields required for this withdrawal type, keyed by field name.
     public var fields: [String:AnchorField]?
     
     /// Properties to encode and decode
@@ -363,7 +367,9 @@ public struct WithdrawType: Decodable {
 /// See [SEP-6 Transaction History](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
 public struct AnchorTransactionsInfo: Decodable {
 
+    /// Indicates whether the GET /transactions endpoint is supported by the anchor.
     public var enabled: Bool
+    /// Indicates whether authentication is required to access the transactions endpoint.
     public var authenticationRequired:Bool?
     
     /// Properties to encode and decode
@@ -392,7 +398,9 @@ public struct AnchorTransactionsInfo: Decodable {
 /// See [SEP-6 Single Transaction](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#single-historical-transaction)
 public struct AnchorTransactionInfo: Decodable {
 
+    /// Indicates whether the GET /transaction endpoint is supported by the anchor.
     public var enabled: Bool
+    /// Indicates whether authentication is required to access the transaction endpoint.
     public var authenticationRequired:Bool?
     
     /// Properties to encode and decode
@@ -421,7 +429,9 @@ public struct AnchorTransactionInfo: Decodable {
 /// See [SEP-6 Fee](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#fee)
 public struct AnchorFeeInfo: Decodable {
 
+    /// Indicates whether the GET /fee endpoint is supported by the anchor.
     public var enabled: Bool
+    /// Indicates whether authentication is required to access the fee endpoint.
     public var authenticationRequired:Bool?
     
     /// Properties to encode and decode

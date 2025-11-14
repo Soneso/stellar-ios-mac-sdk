@@ -8,8 +8,10 @@
 
 import Foundation
 
+/// Represents a Stellar clawback claimable balance operation allowing issuers to reclaim unclaimedbalances.
 public class ClawbackClaimableBalanceOperation:Operation {
-    
+
+    /// The claimable balance id to be clawed back.
     public let claimableBalanceID:String
     
     /// Creates a new ClawbackClaimableBalanceOperation object.

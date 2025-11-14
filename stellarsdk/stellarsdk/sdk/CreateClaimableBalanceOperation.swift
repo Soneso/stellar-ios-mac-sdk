@@ -11,9 +11,12 @@ import Foundation
 /// Represents a create claimable balance operation. Claimable Balances can be used to “split up” a payment into two parts, which allows the sending to only depend on the sending account, and the receipt to only depend on the receiving account.
 /// See [Stellar developer docs](https://developers.stellar.org).
 public class CreateClaimableBalanceOperation:Operation {
-    
+
+    /// An array of claimants that can claim this balance.
     public let claimants:[Claimant]
+    /// The asset for the claimable balance.
     public let asset:Asset
+    /// The amount for the claimable balance.
     public let amount:Decimal
     
     /// Creates a new CreateClaimableBalanceOperation object.

@@ -57,15 +57,18 @@ import Foundation
 /// - PagingLinksResponse for navigation links
 public struct PageResponse<Element:Decodable>: Decodable {
 
-    /// Result enum for page requests.
+    /// Result enum for paginated responses.
     public enum ResponseEnum {
+        /// Successfully fetched the requested page of results.
         case success(page: PageResponse)
+        /// Failed to fetch the page due to an error.
         case failure(error: HorizonRequestError)
     }
 
+    /// Closure called with the result of a paginated request.
     public typealias ResponseClosure = (_ response:ResponseEnum) -> (Void)
 
-    /// Navigation links for this page including self, next, and prev URLs.
+    /// Pagination links for next/prev pages.
     public var links:PagingLinksResponse
 
     /// Array of records returned in this page.
@@ -141,8 +144,8 @@ public struct PageResponse<Element:Decodable>: Decodable {
             response(result)
         }
     }
-    
-    
+
+    /// Fetches the next page of results if available.
     public func getNextPage() async -> PageResponse<Element>.ResponseEnum {
         if let url = links.next?.href {
             return await getRecordsFrom(url: url)

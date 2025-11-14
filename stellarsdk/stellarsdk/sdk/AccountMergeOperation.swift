@@ -11,7 +11,8 @@ import Foundation
 /// Represents an account merge operation. Transfers the native balance (the amount of XLM an account holds) to another account and removes the source account from the ledger.
 /// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountMergeOperation:Operation {
-    
+
+    /// The account that receives the remaining XLM balance of the source account.
     public let destinationAccountId:String
     
     /// Creates a new AccountMergeOperation object.

@@ -29,7 +29,9 @@ public final class Mnemonic {
     /// - normal: 128 bits of entropy, generates a 12-word mnemonic
     /// - high: 256 bits of entropy, generates a 24-word mnemonic
     public enum Strength: Int {
+        /// Normal strength with 128-bit entropy producing a 12-word mnemonic.
         case normal = 128
+        /// High strength with 256-bit entropy producing a 24-word mnemonic.
         case high = 256
     }
 

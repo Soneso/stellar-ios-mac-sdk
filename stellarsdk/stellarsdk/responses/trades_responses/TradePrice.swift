@@ -8,15 +8,16 @@
 
 import Foundation
 
+/// Represents a trade price as a fraction with numerator and denominator.
 public class TradePrice: Decodable {
-    
-    /// Numerator.
+
+    /// Numerator of price fraction.
     public final let n:String
-    
-    /// Denominator.
+
+    /// Denominator of price fraction.
     public final let d:String
-    
-    
+
+    /// Creates a trade price from numerator and denominator strings.
     public init(numerator:String, denominator:String) {
         self.n = numerator
         self.d = denominator

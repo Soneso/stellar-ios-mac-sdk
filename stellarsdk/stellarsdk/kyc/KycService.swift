@@ -9,52 +9,77 @@
 import Foundation
 
 
-/// An enum used to diferentiate between successful and failed kyc server for domain responses.
+/// Result enum for initializing KYC service from a domain.
 public enum KycServiceForDomainEnum {
+    /// Successfully created KYC service instance.
     case success(response: KycService)
+    /// Failed to initialize service from domain.
     case failure(error: KycServiceError)
 }
 
-/// An enum used to diferentiate between successful and failed get customer info responses.
+/// Result enum for SEP-12 get customer info requests.
 public enum GetCustomerInfoResponseEnum {
+    /// Successfully retrieved customer information and KYC status.
     case success(response: GetCustomerInfoResponse)
+    /// Request failed with KYC service error.
     case failure(error: KycServiceError)
 }
 
+/// Result enum for SEP-12 put customer info requests.
 public enum PutCustomerInfoResponseEnum {
+    /// Successfully uploaded or updated customer information.
     case success(response: PutCustomerInfoResponse)
+    /// Request failed with KYC service error.
     case failure(error: KycServiceError)
 }
 
+/// Result enum for SEP-12 delete customer requests.
 public enum DeleteCustomerResponseEnum {
+    /// Successfully deleted customer record.
     case success
+    /// Request failed with KYC service error.
     case failure(error: KycServiceError)
 }
 
+/// Result enum for SEP-12 put customer callback requests.
 public enum PutCustomerCallbackResponseEnum {
+    /// Successfully registered customer callback URL.
     case success
+    /// Request failed with KYC service error.
     case failure(error: KycServiceError)
 }
 
+/// Result enum for SEP-12 post customer file requests.
 public enum PostCustomerFileResponseEnum {
+    /// Successfully uploaded customer verification file.
     case success(response: CustomerFileResponse)
+    /// Request failed with KYC service error.
     case failure(error: KycServiceError)
 }
 
+/// Result enum for SEP-12 get customer files requests.
 public enum GetCustomerFilesResponseEnum {
+    /// Successfully retrieved list of customer verification files.
     case success(response: GetCustomerFilesResponse)
+    /// Request failed with KYC service error.
     case failure(error: KycServiceError)
 }
 
 
+/// Callback closure for discovering KYC service endpoints for a domain.
 public typealias KycServiceClosure = (_ response:KycServiceForDomainEnum) -> (Void)
 
-
+/// Callback closure for retrieving customer information from KYC service.
 public typealias GetCustomerInfoResponseClosure = (_ response:GetCustomerInfoResponseEnum) -> (Void)
+/// Callback closure for submitting or updating customer information to KYC service.
 public typealias PutCustomerInfoResponseClosure = (_ response:PutCustomerInfoResponseEnum) -> (Void)
+/// Callback closure for deleting customer information from KYC service.
 public typealias DeleteCustomerResponseClosure = (_ response:DeleteCustomerResponseEnum) -> (Void)
+/// Callback closure for setting a callback URL for customer status updates.
 public typealias PutCustomerCallbackResponseClosure = (_ response:PutCustomerCallbackResponseEnum) -> (Void)
+/// Callback closure for uploading customer verification files to KYC service.
 public typealias PostCustomerFileResponseClosure = (_ response:PostCustomerFileResponseEnum) -> (Void)
+/// Callback closure for retrieving customer verification files from KYC service.
 public typealias GetCustomerFilesResponseClosure = (_ response:GetCustomerFilesResponseEnum) -> (Void)
 
 /// Implements SEP-0012 - KYC API.
@@ -261,10 +286,12 @@ public typealias GetCustomerFilesResponseClosure = (_ response:GetCustomerFilesR
 /// - [InteractiveService] for SEP-24 integration
 public class KycService: NSObject {
 
+    /// The base URL of the SEP-12 KYC service endpoint for customer information management.
     public var kycServiceAddress: String
     private let serviceHelper: ServiceHelper
     private let jsonDecoder = JSONDecoder()
-    
+
+    /// Creates a KycService instance with a direct service endpoint URL.
     public init(kycServiceAddress:String) {
         self.kycServiceAddress = kycServiceAddress
         serviceHelper = ServiceHelper(baseURL: kycServiceAddress)
