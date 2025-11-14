@@ -1,0 +1,2823 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>DepositExchangeRequest Structure Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset="utf-8">
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+    <script src="../js/lunr.min.js" defer></script>
+    <script src="../js/typeahead.jquery.js" defer></script>
+    <script src="../js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+
+    <a name="//apple_ref/swift/Struct/DepositExchangeRequest" class="dashAnchor"></a>
+
+    <a title="DepositExchangeRequest Structure Reference"></a>
+
+    <header class="header">
+      <p class="header-col header-col--primary">
+        <a class="header-link" href="../index.html">
+          stellarsdk 2.8.0 Docs
+        </a>
+        
+      </p>
+    
+      <div class="header-col--secondary">
+        <form role="search" action="../search.json">
+          <input type="text" placeholder="Search documentation" data-typeahead>
+        </form>
+      </div>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="https://github.com/Soneso/stellar-ios-mac-sdk">
+            <img class="header-icon" src="../img/gh.png" alt="GitHub"/>
+            View on GitHub
+          </a>
+        </p>
+    
+        <p class="header-col header-col--secondary">
+          <a class="header-link" href="dash-feed://https%3A%2F%2Fsoneso.github.io%2Fstellar-ios-mac-sdk%2Fdocsets%2Fstellarsdk.xml">
+            <img class="header-icon" src="../img/dash.png" alt="Dash"/>
+            Install in Dash
+          </a>
+        </p>
+    </header>
+
+    <p class="breadcrumbs">
+      <a class="breadcrumb" href="../index.html">stellarsdk</a>
+      <img class="carat" src="../img/carat.png" alt=""/>
+      <a class="breadcrumb" href="../Structs.html">Structures</a>
+      <img class="carat" src="../img/carat.png" alt=""/>
+      DepositExchangeRequest Structure Reference
+    </p>
+
+    <div class="content-wrapper">
+      <nav class="navigation">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Account.html">Account</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountBalanceResponse.html">AccountBalanceResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountCreatedEffectResponse.html">AccountCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountCreatedOperationResponse.html">AccountCreatedOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountCreditedEffectResponse.html">AccountCreditedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountDebitedEffectResponse.html">AccountDebitedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountFlagsResponse.html">AccountFlagsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountFlagsUpdatedEffectResponse.html">AccountFlagsUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountHomeDomainUpdatedEffectResponse.html">AccountHomeDomainUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)AccountInflationDestinationUpdatedEffectResponse">AccountInflationDestinationUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountInformation.html">AccountInformation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountLinksResponse.html">AccountLinksResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountMergeOperation.html">AccountMergeOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountMergeOperationResponse.html">AccountMergeOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)AccountRemovedEffectResponse">AccountRemovedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountResponse.html">AccountResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountService.html">AccountService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountSignerResponse.html">AccountSignerResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountSponsorshipCreatedEffectResponse.html">AccountSponsorshipCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountSponsorshipRemovedEffectResponse.html">AccountSponsorshipRemovedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountSponsorshipUpdatedEffectResponse.html">AccountSponsorshipUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountThresholdsResponse.html">AccountThresholdsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountThresholdsUpdatedEffectResponse.html">AccountThresholdsUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AllowTrustOperation.html">AllowTrustOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AllowTrustOperationResponse.html">AllowTrustOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AssembledTransaction.html">AssembledTransaction</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AssembledTransactionOptions.html">AssembledTransactionOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Asset.html">Asset</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AssetAccounts.html">AssetAccounts</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AssetBalanceChange.html">AssetBalanceChange</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AssetBalances.html">AssetBalances</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AssetLinksResponse.html">AssetLinksResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AssetResponse.html">AssetResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AssetsService.html">AssetsService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk8BIntMathC">BIntMath</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)BadRequestErrorResponse">BadRequestErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)BeforeHistoryErrorResponse">BeforeHistoryErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BeginSponsoringFutureReservesOperation.html">BeginSponsoringFutureReservesOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BeginSponsoringFutureReservesOperationResponse.html">BeginSponsoringFutureReservesOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BumpSequenceOperation.html">BumpSequenceOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/BumpSequenceOperationResponse.html">BumpSequenceOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ChangeTrustAsset.html">ChangeTrustAsset</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ChangeTrustOperation.html">ChangeTrustOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ChangeTrustOperationResponse.html">ChangeTrustOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimClaimableBalanceOperation.html">ClaimClaimableBalanceOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimClaimableBalanceOperationResponse.html">ClaimClaimableBalanceOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimableBalanceClaimantCreatedEffectResponse.html">ClaimableBalanceClaimantCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimableBalanceClaimedEffectResponse.html">ClaimableBalanceClaimedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimableBalanceClawedBackEffectResponse.html">ClaimableBalanceClawedBackEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimableBalanceCreatedEffectResponse.html">ClaimableBalanceCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimableBalanceLinksResponse.html">ClaimableBalanceLinksResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimableBalanceResponse.html">ClaimableBalanceResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimableBalanceSponsorshipCreatedEffectResponse.html">ClaimableBalanceSponsorshipCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimableBalanceSponsorshipRemovedEffectResponse.html">ClaimableBalanceSponsorshipRemovedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimableBalanceSponsorshipUpdatedEffectResponse.html">ClaimableBalanceSponsorshipUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimableBalancesService.html">ClaimableBalancesService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Claimant.html">Claimant</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimantPredicateResponse.html">ClaimantPredicateResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClaimantResponse.html">ClaimantResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClawbackClaimableBalanceOperation.html">ClawbackClaimableBalanceOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClawbackClaimableBalanceOperationResponse.html">ClawbackClaimableBalanceOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClawbackOperation.html">ClawbackOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClawbackOperationResponse.html">ClawbackOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ClientOptions.html">ClientOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ContractCreditedEffectResponse.html">ContractCreditedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ContractDebitedEffectResponse.html">ContractDebitedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ContractSpec.html">ContractSpec</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/CreateAccountOperation.html">CreateAccountOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/CreateClaimableBalanceOperation.html">CreateClaimableBalanceOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/CreateClaimableBalanceOperationResponse.html">CreateClaimableBalanceOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/CreatePassiveOfferOperation.html">CreatePassiveOfferOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/CreatePassiveOfferOperationResponse.html">CreatePassiveOfferOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/s:10stellarsdk31CreatePassiveSellOfferOperationC">CreatePassiveSellOfferOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/CreatePassiveSellOfferOperationResponse.html">CreatePassiveSellOfferOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/CurrencyDocumentation.html">CurrencyDocumentation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DataCreatedEffectResponse.html">DataCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DataForAccountResponse.html">DataForAccountResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DataRemovedEffectResponse.html">DataRemovedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DataSponsorshipCreatedEffectResponse.html">DataSponsorshipCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DataSponsorshipRemovedEffectResponse.html">DataSponsorshipRemovedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DataSponsorshipUpdatedEffectResponse.html">DataSponsorshipUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DataUpdatedEffectResponse.html">DataUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/DeployRequest.html">DeployRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)DuplicateErrorResponse">DuplicateErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/EffectLinksResponse.html">EffectLinksResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/EffectResponse.html">EffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/EffectsService.html">EffectsService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/EffectsStreamItem.html">EffectsStreamItem</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/EndSponsoringFutureReservesOperation.html">EndSponsoringFutureReservesOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/EndSponsoringFutureReservesOperationResponse.html">EndSponsoringFutureReservesOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ErrorResponse.html">ErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ErrorResponseExtras.html">ErrorResponseExtras</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ErrorResultCodes.html">ErrorResultCodes</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/EventFilter.html">EventFilter</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/EventInfo.html">EventInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/EventSource.html">EventSource</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ExtendFootprintTTLOperation.html">ExtendFootprintTTLOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ExtendFootprintTTLOperationResponse.html">ExtendFootprintTTLOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Federation.html">Federation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/FeeBumpTransaction.html">FeeBumpTransaction</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/FeeBumpTransactionResponse.html">FeeBumpTransactionResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/FeeChargedResponse.html">FeeChargedResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/FeeStatsResponse.html">FeeStatsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/FeeStatsService.html">FeeStatsService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Footprint.html">Footprint</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)ForbiddenErrorResponse">ForbiddenErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/GetEventsResponse.html">GetEventsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/GetFeeStatsResponse.html">GetFeeStatsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/GetHealthResponse.html">GetHealthResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/GetLatestLedgerResponse.html">GetLatestLedgerResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/GetLedgerEntriesResponse.html">GetLedgerEntriesResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/GetLedgersResponse.html">GetLedgersResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/GetNetworkResponse.html">GetNetworkResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/GetTransactionResponse.html">GetTransactionResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/GetTransactionsResponse.html">GetTransactionsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/GetVersionInfoResponse.html">GetVersionInfoResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/HealthCheckResponse.html">HealthCheckResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/HealthService.html">HealthService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InclusionFee.html">InclusionFee</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)InflationOperationResponse">InflationOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InnerTransactionResponse.html">InnerTransactionResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InstallRequest.html">InstallRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InteractiveService.html">InteractiveService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)InternalServerErrorResponse">InternalServerErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InvokeHostFunctionOperation.html">InvokeHostFunctionOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/InvokeHostFunctionOperationResponse.html">InvokeHostFunctionOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/IssuerDocumentation.html">IssuerDocumentation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/KeyPair.html">KeyPair</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/KycService.html">KycService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LedgerBounds.html">LedgerBounds</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LedgerEntry.html">LedgerEntry</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LedgerEntryChange.html">LedgerEntryChange</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LedgerInfo.html">LedgerInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LedgerLinksResponse.html">LedgerLinksResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LedgerResponse.html">LedgerResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LedgersService.html">LedgersService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LedgersStreamItem.html">LedgersStreamItem</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LinkResponse.html">LinkResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolCreatedEffectResponse.html">LiquidityPoolCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolDepositOperation.html">LiquidityPoolDepositOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolDepositedEffectResponse.html">LiquidityPoolDepositedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolDepostOperationResponse.html">LiquidityPoolDepostOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolEffectResponse.html">LiquidityPoolEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolLinksResponse.html">LiquidityPoolLinksResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolPriceResponse.html">LiquidityPoolPriceResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolRemovedEffectResponse.html">LiquidityPoolRemovedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolResponse.html">LiquidityPoolResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolRevokedEffectResponse.html">LiquidityPoolRevokedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradeEffectResponse.html">LiquidityPoolTradeEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradesLinksResponse.html">LiquidityPoolTradesLinksResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradesResponse.html">LiquidityPoolTradesResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolWithdrawOperation.html">LiquidityPoolWithdrawOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolWithdrawOperationResponse.html">LiquidityPoolWithdrawOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolWithdrewEffectResponse.html">LiquidityPoolWithdrewEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolsService.html">LiquidityPoolsService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ManageBuyOfferOperation.html">ManageBuyOfferOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ManageBuyOfferOperationResponse.html">ManageBuyOfferOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ManageDataOperation.html">ManageDataOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ManageDataOperationResponse.html">ManageDataOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ManageOfferOperation.html">ManageOfferOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ManageOfferOperationResponse.html">ManageOfferOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ManageSellOfferOperation.html">ManageSellOfferOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ManageSellOfferOperationResponse.html">ManageSellOfferOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MaxFeeResponse.html">MaxFeeResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MethodOptions.html">MethodOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Mnemonic.html">Mnemonic</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Mnemonic/Strength.html">– Strength</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/MuxedAccount.html">MuxedAccount</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/NativeUnionVal.html">NativeUnionVal</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)NotAcceptableErrorResponse">NotAcceptableErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)NotFoundErrorResponse">NotFoundErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)NotImplementedErrorResponse">NotImplementedErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OfferAssetResponse.html">OfferAssetResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)OfferCreatedEffectResponse">OfferCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OfferLinksResponse.html">OfferLinksResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OfferPriceResponse.html">OfferPriceResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)OfferRemovedEffectResponse">OfferRemovedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OfferResponse.html">OfferResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)OfferUpdatedEffectResponse">OfferUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OffersService.html">OffersService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OffersStreamItem.html">OffersStreamItem</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Operation.html">Operation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OperationLinksResponse.html">OperationLinksResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OperationResponse.html">OperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OperationsService.html">OperationsService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OperationsStreamItem.html">OperationsStreamItem</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OrderbookOfferResponse.html">OrderbookOfferResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OrderbookResponse.html">OrderbookResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OrderbookService.html">OrderbookService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/OrderbookStreamItem.html">OrderbookStreamItem</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PaginationOptions.html">PaginationOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PagingLinksResponse.html">PagingLinksResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ParameterResponse.html">ParameterResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PathPaymentOperation.html">PathPaymentOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PathPaymentOperationResponse.html">PathPaymentOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PathPaymentStrictReceiveOperation.html">PathPaymentStrictReceiveOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PathPaymentStrictReceiveOperationResponse.html">PathPaymentStrictReceiveOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PathPaymentStrictSendOperation.html">PathPaymentStrictSendOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PathPaymentStrictSendOperationResponse.html">PathPaymentStrictSendOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)PayloadTooLargeErrorResponse">PayloadTooLargeErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PaymentOperation.html">PaymentOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PaymentOperationResponse.html">PaymentOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PaymentPathResponse.html">PaymentPathResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PaymentPathsService.html">PaymentPathsService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PaymentsService.html">PaymentsService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PointOfContactDocumentation.html">PointOfContactDocumentation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PreconditionsLedgerBoundsResponse.html">PreconditionsLedgerBoundsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PreconditionsTimeBoundsResponse.html">PreconditionsTimeBoundsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Price.html">Price</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PrivateKey.html">PrivateKey</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/PublicKey.html">PublicKey</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/QuoteService.html">QuoteService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)RateLimitExceededErrorResponse">RateLimitExceededErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RecoveryService.html">RecoveryService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RegulatedAsset.html">RegulatedAsset</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RegulatedAssetsService.html">RegulatedAssetsService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ReserveResponse.html">ReserveResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ResourceConfig.html">ResourceConfig</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RestoreFootprintOperation.html">RestoreFootprintOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RestoreFootprintOperationResponse.html">RestoreFootprintOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RestorePreamble.html">RestorePreamble</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperation.html">RevokeSponsorshipOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/RevokeSponsorshipOperationResponse.html">RevokeSponsorshipOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SendTransactionResponse.html">SendTransactionResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SequenceBumpedEffectResponse.html">SequenceBumpedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SetOptionsOperation.html">SetOptionsOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SetOptionsOperationResponse.html">SetOptionsOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SetTrustLineFlagsOperationResponse.html">SetTrustLineFlagsOperationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SetTrustlineFlagsOperation.html">SetTrustlineFlagsOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Signer.html">Signer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)SignerCreatedEffectResponse">SignerCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SignerEffectResponse.html">SignerEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)SignerRemovedEffectResponse">SignerRemovedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SignerSponsorshipCreatedEffectResponse.html">SignerSponsorshipCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SignerSponsorshipRemovedEffectResponse.html">SignerSponsorshipRemovedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SignerSponsorshipUpdatedEffectResponse.html">SignerSponsorshipUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)SignerUpdatedEffectResponse">SignerUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SimulateHostFunctionResult.html">SimulateHostFunctionResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SimulateTransactionRequest.html">SimulateTransactionRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SimulateTransactionResponse.html">SimulateTransactionResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SimulateTransactionResult.html">SimulateTransactionResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SorobanClient.html">SorobanClient</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SorobanContractInfo.html">SorobanContractInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SorobanContractParser.html">SorobanContractParser</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SorobanServer.html">SorobanServer</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)StaleHistoryErrorResponse">StaleHistoryErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/StellarSDK.html">StellarSDK</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/StellarSDKLog.html">StellarSDKLog</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/StellarToml.html">StellarToml</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)StreamingHelper">StreamingHelper</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SubmitTransactionAsyncResponse.html">SubmitTransactionAsyncResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)SubmitTransactionResponse">SubmitTransactionResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TimeBounds.html">TimeBounds</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)TimeoutErrorResponse">TimeoutErrorResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Toml.html">Toml</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TopicFilter.html">TopicFilter</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TradeAggregationResponse.html">TradeAggregationResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TradeAggregationsService.html">TradeAggregationsService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TradeEffectResponse.html">TradeEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TradeLinksResponse.html">TradeLinksResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TradePrice.html">TradePrice</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TradeResponse.html">TradeResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TradesService.html">TradesService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TradesStreamItem.html">TradesStreamItem</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/Transaction.html">Transaction</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TransactionEvents.html">TransactionEvents</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TransactionInfo.html">TransactionInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TransactionLinksResponse.html">TransactionLinksResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TransactionPreconditions.html">TransactionPreconditions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TransactionPreconditionsResponse.html">TransactionPreconditionsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TransactionResponse.html">TransactionResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TransactionStatusError.html">TransactionStatusError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TransactionsService.html">TransactionsService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TransactionsStreamItem.html">TransactionsStreamItem</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TransferServerService.html">TransferServerService</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TrustLineFlagsUpdatedEffectResponse.html">TrustLineFlagsUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)TrustlineAuthorizedEffectResponse">TrustlineAuthorizedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)TrustlineAuthorizedToMaintainLiabilitiesEffecResponse">TrustlineAuthorizedToMaintainLiabilitiesEffecResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)TrustlineCreatedEffectResponse">TrustlineCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)TrustlineDeauthorizedEffectResponse">TrustlineDeauthorizedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TrustlineEffectResponse.html">TrustlineEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)TrustlineRemovedEffectResponse">TrustlineRemovedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TrustlineSponsorshipCreatedEffectResponse.html">TrustlineSponsorshipCreatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TrustlineSponsorshipRemovedEffectResponse.html">TrustlineSponsorshipRemovedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TrustlineSponsorshipUpdatedEffectResponse.html">TrustlineSponsorshipUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes.html#/c:@M@stellarsdk@objc(cs)TrustlineUpdatedEffectResponse">TrustlineUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TxRep.html">TxRep</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URIScheme.html">URIScheme</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/URISchemeValidator.html">URISchemeValidator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/ValidatorInformation.html">ValidatorInformation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/WalletUtils.html">WalletUtils</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/WebAuthenticator.html">WebAuthenticator</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/XDRDecoder.html">XDRDecoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/XDRDecoder/Error.html">– Error</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/XDREncoder.html">XDREncoder</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/XDREncoder/Error.html">– Error</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Global%20Variables.html">Global Variables</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Global%20Variables.html#/s:10stellarsdk20MessageMaximumLengthSivp">MessageMaximumLength</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Global%20Variables.html#/s:10stellarsdk12PayOperationSSvp">PayOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Global%20Variables.html#/s:10stellarsdk13SignOperationSSvp">SignOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Global%20Variables.html#/s:10stellarsdk13URISchemeNameSSvp">URISchemeName</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AccountResponseEnum.html">AccountResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AnchorFeeResponseEnum.html">AnchorFeeResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AnchorInfoResponseEnum.html">AnchorInfoResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AnchorTransactionKind.html">AnchorTransactionKind</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AnchorTransactionResponseEnum.html">AnchorTransactionResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AnchorTransactionStatus.html">AnchorTransactionStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AnchorTransactionsResponseEnum.html">AnchorTransactionsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AssembledTransactionError.html">AssembledTransactionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/AuthorizationRequiredEnum.html">AuthorizationRequiredEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Base16EncodingError.html">Base16EncodingError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ChallengeResponseEnum.html">ChallengeResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ChallengeValidationError.html">ChallengeValidationError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ChallengeValidationResponseEnum.html">ChallengeValidationResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/CheckMemoRequiredResponseEnum.html">CheckMemoRequiredResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ClaimableBalanceDetailsResponseEnum.html">ClaimableBalanceDetailsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ContractSpecError.html">ContractSpecError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/CreateTestAccountResponseEnum.html">CreateTestAccountResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/DataForAccountResponseEnum.html">DataForAccountResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/DeleteCustomerResponseEnum.html">DeleteCustomerResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/DepositResponseEnum.html">DepositResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Ed25519Error.html">Ed25519Error</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/EffectType.html">EffectType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/EffectsChange.html">EffectsChange</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/EventSourceState.html">EventSourceState</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/FederationError.html">FederationError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/FederationForDomainEnum.html">FederationForDomainEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/FeeBumpTransactionError.html">FeeBumpTransactionError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/FeeStatsResponseEnum.html">FeeStatsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetAccountResponseEnum.html">GetAccountResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetContractCodeResponseEnum.html">GetContractCodeResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetContractDataResponseEnum.html">GetContractDataResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetContractInfoEnum.html">GetContractInfoEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetCustomerFilesResponseEnum.html">GetCustomerFilesResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetCustomerInfoResponseEnum.html">GetCustomerInfoResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetEventsResponseEnum.html">GetEventsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetFeeStatsResponseEnum.html">GetFeeStatsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetHealthResponseEnum.html">GetHealthResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetJWTTokenError.html">GetJWTTokenError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetJWTTokenResponseEnum.html">GetJWTTokenResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetLatestLedgerResponseEnum.html">GetLatestLedgerResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetLedgerEntriesResponseEnum.html">GetLedgerEntriesResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetLedgersResponseEnum.html">GetLedgersResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetNetworkResponseEnum.html">GetNetworkResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetNonceResponseEnum.html">GetNonceResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetTransactionResponseEnum.html">GetTransactionResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetTransactionsResponseEnum.html">GetTransactionsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/GetVersionInfoResponseEnum.html">GetVersionInfoResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/HealthCheckResponseEnum.html">HealthCheckResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/HorizonRequestError.html">HorizonRequestError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/InformationNeededEnum.html">InformationNeededEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/InteractiveServiceError.html">InteractiveServiceError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/InteractiveServiceForDomainEnum.html">InteractiveServiceForDomainEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums.html#/s:10stellarsdk15KYCCardFieldKeyO">KYCCardFieldKey</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/KYCCardFieldsEnum.html">KYCCardFieldsEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums.html#/s:10stellarsdk27KYCFinancialAccountFieldKeyO">KYCFinancialAccountFieldKey</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/KYCFinancialAccountFieldsEnum.html">KYCFinancialAccountFieldsEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums.html#/s:10stellarsdk24KYCNaturalPersonFieldKeyO">KYCNaturalPersonFieldKey</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/KYCNaturalPersonFieldsEnum.html">KYCNaturalPersonFieldsEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums.html#/s:10stellarsdk23KYCOrganizationFieldKeyO">KYCOrganizationFieldKey</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/KYCOrganizationFieldsEnum.html">KYCOrganizationFieldsEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/KeyUtilsError.html">KeyUtilsError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/KycServiceError.html">KycServiceError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/KycServiceForDomainEnum.html">KycServiceForDomainEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/LedgerDetailsResponseEnum.html">LedgerDetailsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/LedgersChange.html">LedgersChange</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/LiquidityPoolDetailsResponseEnum.html">LiquidityPoolDetailsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/LiquidityPoolTradesResponseEnum.html">LiquidityPoolTradesResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Memo.html">Memo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Network.html">Network</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OfferResponseEnum.html">OfferResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OffersChange.html">OffersChange</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OperationDetailsResponseEnum.html">OperationDetailsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OperationType.html">OperationType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OperationsChange.html">OperationsChange</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Order.html">Order</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OrderbookChange.html">OrderbookChange</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/OrderbookResponseEnum.html">OrderbookResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/PayOperationParams.html">PayOperationParams</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/PaymentPathsResponseEnum.html">PaymentPathsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/PaymentsChange.html">PaymentsChange</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/PostCustomerFileResponseEnum.html">PostCustomerFileResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/PostSep08ActionEnum.html">PostSep08ActionEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/PostSep08TransactionEnum.html">PostSep08TransactionEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/PutCustomerCallbackResponseEnum.html">PutCustomerCallbackResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/PutCustomerInfoResponseEnum.html">PutCustomerInfoResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/QuoteServiceError.html">QuoteServiceError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/RecoveryServiceError.html">RecoveryServiceError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/RegulatedAssetsServiceError.html">RegulatedAssetsServiceError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/RegulatedAssetsServiceForDomainEnum.html">RegulatedAssetsServiceForDomainEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/ResolveResponseEnum.html">ResolveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SendChallengeResponseEnum.html">SendChallengeResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SendTransactionResponseEnum.html">SendTransactionResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Sep24FeeResponseEnum.html">Sep24FeeResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Sep24InfoResponseEnum.html">Sep24InfoResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Sep24InteractiveResponseEnum.html">Sep24InteractiveResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Sep24TransactionResponseEnum.html">Sep24TransactionResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Sep24TransactionsResponseEnum.html">Sep24TransactionsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Sep30AccountResponseEnum.html">Sep30AccountResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Sep30AccountsResponseEnum.html">Sep30AccountsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Sep30SignatureResponseEnum.html">Sep30SignatureResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Sep38InfoResponseEnum.html">Sep38InfoResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Sep38PriceResponseEnum.html">Sep38PriceResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Sep38PricesResponseEnum.html">Sep38PricesResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/Sep38QuoteResponseEnum.html">Sep38QuoteResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SetupTransactionXDREnum.html">SetupTransactionXDREnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SignTransactionParams.html">SignTransactionParams</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SignURLEnum.html">SignURLEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SimulateTransactionResponseEnum.html">SimulateTransactionResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SorobanClientError.html">SorobanClientError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SorobanContractParserError.html">SorobanContractParserError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SorobanRpcRequestError.html">SorobanRpcRequestError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/StellarSDKError.html">StellarSDKError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/StreamResponseEnum.html">StreamResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/SubmitTransactionEnum.html">SubmitTransactionEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TomlCurrencyFromUrlEnum.html">TomlCurrencyFromUrlEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TomlCurrencyLoadError.html">TomlCurrencyLoadError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TomlError.html">TomlError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TomlFileError.html">TomlFileError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TomlForDomainEnum.html">TomlForDomainEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TradesChange.html">TradesChange</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TransactionDetailsResponseEnum.html">TransactionDetailsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TransactionPostAsyncResponseEnum.html">TransactionPostAsyncResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TransactionPostResponseEnum.html">TransactionPostResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TransactionsChange.html">TransactionsChange</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TransferServerError.html">TransferServerError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TransferServerServiceForDomainEnum.html">TransferServerServiceForDomainEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TxRepError.html">TxRepError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/URISchemeErrors.html">URISchemeErrors</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/URISchemeIsValidEnum.html">URISchemeIsValidEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/WebAuthenticatorError.html">WebAuthenticatorError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/WebAuthenticatorForDomainEnum.html">WebAuthenticatorForDomainEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/WithdrawResponseEnum.html">WithdrawResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/WordList.html">WordList</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Extensions.html">Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/Array.html">Array</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions.html#/s:Sb">Bool</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/Data.html">Data</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/Data/Base16EncodingOptions.html">– Base16EncodingOptions</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/DateFormatter.html">DateFormatter</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/FixedWidthInteger.html">FixedWidthInteger</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/ISO8601DateFormatter.html">ISO8601DateFormatter</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions.html#/s:s5Int32V">Int32</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions.html#/s:s5Int64V">Int64</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/Optional.html">Optional</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/String.html">String</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/String/ExtendedEncoding.html">– ExtendedEncoding</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions.html#/s:s6UInt32V">UInt32</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions.html#/s:s6UInt64V">UInt64</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions.html#/s:s5UInt8V">UInt8</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Functions.html">Functions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk3absyAA7BDoubleVADF">abs(_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk12base32DecodeySays5UInt8VGSgSSF">base32Decode(_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk18base32DecodeToDatay10Foundation0E0VSgSSF">base32DecodeToData(_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk12base32EncodeySS10Foundation4DataVF">base32Encode(_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk12base32EncodeySSSays5UInt8VGF">base32Encode(_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk15base32HexDecodeySays5UInt8VGSgSSF">base32HexDecode(_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk21base32HexDecodeToDatay10Foundation0F0VSgSSF">base32HexDecodeToData(_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk15base32HexEncodeySS10Foundation4DataVF">base32HexEncode(_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk15base32HexEncodeySSSays5UInt8VGF">base32HexEncode(_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk4ceilyAA4BIntVAA7BDoubleVF">ceil(_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk5flooryAA4BIntVAA7BDoubleVF">floor(_:)</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Functions.html#/s:10stellarsdk3powyAA7BDoubleVAD_SitF">pow(_:_:)</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/MemoHashProtocol.html">MemoHashProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/MemoProtocol.html">MemoProtocol</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/TransactionAccount.html">TransactionAccount</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/WrappedData.html">WrappedData</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/XDRDecodable.html">XDRDecodable</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Protocols/XDREncodable.html">XDREncodable</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AnchorFeatureFlags.html">AnchorFeatureFlags</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AnchorFeeInfo.html">AnchorFeeInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AnchorFeeResponse.html">AnchorFeeResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AnchorField.html">AnchorField</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AnchorInfoResponse.html">AnchorInfoResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AnchorTransaction.html">AnchorTransaction</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AnchorTransactionInfo.html">AnchorTransactionInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AnchorTransactionRequest.html">AnchorTransactionRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AnchorTransactionResponse.html">AnchorTransactionResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AnchorTransactionsInfo.html">AnchorTransactionsInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AnchorTransactionsRequest.html">AnchorTransactionsRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AnchorTransactionsResponse.html">AnchorTransactionsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/AssetTypeAsString.html">AssetTypeAsString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BDouble.html">BDouble</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/BInt.html">BInt</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Base58.html">Base58</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CryptographicConstants.html">CryptographicConstants</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CustomerFileResponse.html">CustomerFileResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CustomerInformationNeededNonInteractive.html">CustomerInformationNeededNonInteractive</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CustomerInformationStatus.html">CustomerInformationStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DepositAsset.html">DepositAsset</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DepositExchangeAsset.html">DepositExchangeAsset</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DepositExchangeRequest.html">DepositExchangeRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DepositInstruction.html">DepositInstruction</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DepositRequest.html">DepositRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/DepositResponse.html">DepositResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Ed25519Derivation.html">Ed25519Derivation</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/EffectTypeAsString.html">EffectTypeAsString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ExtraInfo.html">ExtraInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/FeeDetails.html">FeeDetails</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/FeeDetailsDetails.html">FeeDetailsDetails</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/FeeRequest.html">FeeRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/FindPaymentPathsResponse.html">FindPaymentPathsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/GetCustomerFilesResponse.html">GetCustomerFilesResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/GetCustomerInfoField.html">GetCustomerInfoField</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/GetCustomerInfoProvidedField.html">GetCustomerInfoProvidedField</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/GetCustomerInfoRequest.html">GetCustomerInfoRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/GetCustomerInfoResponse.html">GetCustomerInfoResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/HealthStatus.html">HealthStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/MemoTypeAsString.html">MemoTypeAsString</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/NetworkConstants.html">NetworkConstants</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/PageResponse.html">PageResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/PageResponse/ResponseEnum.html">– ResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Path.html">Path</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/PutCustomerCallbackRequest.html">PutCustomerCallbackRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/PutCustomerInfoRequest.html">PutCustomerInfoRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/PutCustomerInfoResponse.html">PutCustomerInfoResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/PutCustomerVerificationRequest.html">PutCustomerVerificationRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/RefundPayment.html">RefundPayment</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Refunds.html">Refunds</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/RequiredInfoUpdates.html">RequiredInfoUpdates</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/ResolveAddressResponse.html">ResolveAddressResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/SEP30ResponseIdentity.html">SEP30ResponseIdentity</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/SEP30ResponseSigner.html">SEP30ResponseSigner</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/SEPConstants.html">SEPConstants</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep08PostActionNextUrl.html">Sep08PostActionNextUrl</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep08PostActionResultResponse.html">Sep08PostActionResultResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep08PostTransactionActionRequired.html">Sep08PostTransactionActionRequired</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep08PostTransactionPending.html">Sep08PostTransactionPending</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep08PostTransactionRejected.html">Sep08PostTransactionRejected</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep08PostTransactionRevised.html">Sep08PostTransactionRevised</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep08PostTransactionStatusResponse.html">Sep08PostTransactionStatusResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep08PostTransactionSuccess.html">Sep08PostTransactionSuccess</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24DepositAsset.html">Sep24DepositAsset</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24DepositRequest.html">Sep24DepositRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24FeatureFlags.html">Sep24FeatureFlags</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24FeeEndpointInfo.html">Sep24FeeEndpointInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24FeeRequest.html">Sep24FeeRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24FeeResponse.html">Sep24FeeResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24InfoResponse.html">Sep24InfoResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24InteractiveResponse.html">Sep24InteractiveResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24Refund.html">Sep24Refund</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24RefundPayment.html">Sep24RefundPayment</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24Transaction.html">Sep24Transaction</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24TransactionRequest.html">Sep24TransactionRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24TransactionResponse.html">Sep24TransactionResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24TransactionsRequest.html">Sep24TransactionsRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24TransactionsResponse.html">Sep24TransactionsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24WithdrawAsset.html">Sep24WithdrawAsset</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep24WithdrawRequest.html">Sep24WithdrawRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep30AccountResponse.html">Sep30AccountResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep30AccountsResponse.html">Sep30AccountsResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep30AuthMethod.html">Sep30AuthMethod</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep30Request.html">Sep30Request</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep30RequestIdentity.html">Sep30RequestIdentity</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep30SignatureResponse.html">Sep30SignatureResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep38Asset.html">Sep38Asset</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep38BuyAsset.html">Sep38BuyAsset</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep38BuyDeliveryMethod.html">Sep38BuyDeliveryMethod</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep38Fee.html">Sep38Fee</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep38FeeDetails.html">Sep38FeeDetails</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep38InfoResponse.html">Sep38InfoResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep38PostQuoteRequest.html">Sep38PostQuoteRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep38PriceResponse.html">Sep38PriceResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep38PricesResponse.html">Sep38PricesResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep38QuoteResponse.html">Sep38QuoteResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/Sep38SellDeliveryMethod.html">Sep38SellDeliveryMethod</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/StellarProtocolConstants.html">StellarProtocolConstants</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WithdrawAsset.html">WithdrawAsset</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WithdrawExchangeAsset.html">WithdrawExchangeAsset</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WithdrawExchangeRequest.html">WithdrawExchangeRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WithdrawRequest.html">WithdrawRequest</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WithdrawResponse.html">WithdrawResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WithdrawType.html">WithdrawType</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WrappedData12.html">WrappedData12</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WrappedData32.html">WrappedData32</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WrappedData4.html">WrappedData4</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="../Typealiases.html">Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk22AccountResponseClosurea">AccountResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk24AnchorFeeResponseClosurea">AnchorFeeResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk25AnchorInfoResponseClosurea">AnchorInfoResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk32AnchorTransactionResponseClosurea">AnchorTransactionResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk33AnchorTransactionsResponseClosurea">AnchorTransactionsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk28AuthorizationRequiredClosurea">AuthorizationRequiredClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk24ChallengeResponseClosurea">ChallengeResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk32CheckMemoRequiredResponseClosurea">CheckMemoRequiredResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk38ClaimableBalanceDetailsResponseClosurea">ClaimableBalanceDetailsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk24CreateTestAccountClosurea">CreateTestAccountClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk29DataForAccountResponseClosurea">DataForAccountResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk29DeleteCustomerResponseClosurea">DeleteCustomerResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk22DepositResponseClosurea">DepositResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk5Digita">Digit</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk6Digitsa">Digits</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk17FederationClosurea">FederationClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk23FeeStatsResponseClosurea">FeeStatsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk31FindPaymentPathsResponseClosurea">FindPaymentPathsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk25GetAccountResponseClosurea">GetAccountResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk30GetContractCodeResponseClosurea">GetContractCodeResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk30GetContractDataResponseClosurea">GetContractDataResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk22GetContractInfoClosurea">GetContractInfoClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk31GetCustomerFilesResponseClosurea">GetCustomerFilesResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk30GetCustomerInfoResponseClosurea">GetCustomerInfoResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk24GetEventsResponseClosurea">GetEventsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk26GetFeeStatsResponseClosurea">GetFeeStatsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk24GetHealthResponseClosurea">GetHealthResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk26GetJWTTokenResponseClosurea">GetJWTTokenResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk30GetLatestLedgerResponseClosurea">GetLatestLedgerResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk31GetLedgerEntriesResponseClosurea">GetLedgerEntriesResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk25GetLedgersResponseClosurea">GetLedgersResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk25GetNetworkResponseClosurea">GetNetworkResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk23GetNonceResponseClosurea">GetNonceResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk29GetTransactionResponseClosurea">GetTransactionResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk30GetTransactionsResponseClosurea">GetTransactionsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk29GetVersionInfoResponseClosurea">GetVersionInfoResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk26HealthCheckResponseClosurea">HealthCheckResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk25InteractiveServiceClosurea">InteractiveServiceClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk17KycServiceClosurea">KycServiceClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk28LedgerDetailsResponseClosurea">LedgerDetailsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk4Limba">Limb</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk5Limbsa">Limbs</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk35LiquidityPoolDetailsResponseClosurea">LiquidityPoolDetailsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk34LiquidityPoolTradesResponseClosurea">LiquidityPoolTradesResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk20OfferResponseClosurea">OfferResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk31OperationDetailsResponseClosurea">OperationDetailsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk24OrderbookResponseClosurea">OrderbookResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk31PostCustomerFileResponseClosurea">PostCustomerFileResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk22PostSep08ActionClosurea">PostSep08ActionClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk27PostSep08TransactionClosurea">PostSep08TransactionClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk34PutCustomerCallbackResponseClosurea">PutCustomerCallbackResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk30PutCustomerInfoResponseClosurea">PutCustomerInfoResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk29RegulatedAssetsServiceClosurea">RegulatedAssetsServiceClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk14ResolveClosurea">ResolveClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk28SendChallengeResponseClosurea">SendChallengeResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk30SendTransactionResponseClosurea">SendTransactionResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk23Sep24FeeResponseClosurea">Sep24FeeResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk24Sep24InfoResponseClosurea">Sep24InfoResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk31Sep24InteractiveResponseClosurea">Sep24InteractiveResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk31Sep24TransactionResponseClosurea">Sep24TransactionResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk32Sep24TransactionsResponseClosurea">Sep24TransactionsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk27Sep30AccountResponseClosurea">Sep30AccountResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk28Sep30AccountsResponseClosurea">Sep30AccountsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk29Sep30SignatureResponseClosurea">Sep30SignatureResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk24Sep38InfoResponseClosurea">Sep38InfoResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk25Sep38PriceResponseClosurea">Sep38PriceResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk26Sep38PricesResponseClosurea">Sep38PricesResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk25Sep38QuoteResponseClosurea">Sep38QuoteResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk26SetupTransactionXDRClosurea">SetupTransactionXDRClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk34SimulateTransactionResponseClosurea">SimulateTransactionResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk24SubmitTransactionClosurea">SubmitTransactionClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk26TomlCurrencyFromUrlClosurea">TomlCurrencyFromUrlClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk15TomlFileClosurea">TomlFileClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk30TransactionConfirmationClosurea">TransactionConfirmationClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk33TransactionDetailsResponseClosurea">TransactionDetailsResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk35TransactionPostAsyncResponseClosurea">TransactionPostAsyncResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk30TransactionPostResponseClosurea">TransactionPostResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk28TransferServerServiceClosurea">TransferServerServiceClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk23URISchemeIsValidClosurea">URISchemeIsValidClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk23WebAuthenticatorClosurea">WebAuthenticatorClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk23WithdrawResponseClosurea">WithdrawResponseClosure</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Typealiases.html#/s:10stellarsdk10XDRCodablea">XDRCodable</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+
+        <section class="section">
+          <div class="section-content top-matter">
+            <h1>DepositExchangeRequest</h1>
+              <div class="declaration">
+                <div class="language">
+                  
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DepositExchangeRequest</span></code></pre>
+
+                </div>
+              </div>
+            <p>Request parameters for initiating a deposit with asset exchange via SEP-0006.</p>
+
+<p>This struct encapsulates all the parameters needed to start a deposit flow where asset
+conversion occurs between non-equivalent assets. For example, a user can deposit fiat BRL
+via bank transfer and receive USDC on the Stellar network. This endpoint requires the
+anchor to implement SEP-38 for quotes.</p>
+
+<p>The flow supports both market rate conversions (using indicative quotes) and firm quote
+conversions (where the exchange rate is guaranteed if payment is made before expiration).</p>
+
+<p>See also:</p>
+
+<ul>
+<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md">SEP-0006</a></li>
+<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md">SEP-0038</a></li>
+</ul>
+
+              <div class="slightly-smaller">
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L16-L126">Show on GitHub</a>
+              </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-content">
+            <div class="task-group">
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV16destinationAssetSSvp"></a>
+                    <a name="//apple_ref/swift/Property/destinationAsset" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV16destinationAssetSSvp">destinationAsset</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The code of the on-chain asset the user wants to receive from the anchor after making
+an off-chain deposit. The value passed must match one of the codes listed in the
+/info response&rsquo;s deposit-exchange object.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">destinationAsset</span><span class="p">:</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L21">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV11sourceAssetSSvp"></a>
+                    <a name="//apple_ref/swift/Property/sourceAsset" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV11sourceAssetSSvp">sourceAsset</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The off-chain asset the anchor will receive from the user.
+The value must match one of the asset values included in a SEP-38
+GET /prices?buy_asset=stellar:<destination_asset>:<asset_issuer> response
+using SEP-38 Asset Identification Format.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">sourceAsset</span><span class="p">:</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L27">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV6amountSSvp"></a>
+                    <a name="//apple_ref/swift/Property/amount" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV6amountSSvp">amount</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The amount of the source_asset the user would like to deposit to the anchor&rsquo;s off-chain account.
+This field may be necessary for the anchor to determine what KYC information is necessary to collect.
+Should be equal to quote.sell_amount if a quote_id was used.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">amount</span><span class="p">:</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L32">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV7accountSSvp"></a>
+                    <a name="//apple_ref/swift/Property/account" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV7accountSSvp">account</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The Stellar (G&hellip;), muxed (M&hellip;), or contract (C&hellip;) account ID of the user that wants to deposit.
+This is where the asset token will be sent. Note that the account specified in this request
+could differ from the account authenticated via SEP-10.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">account</span><span class="p">:</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L37">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV3jwtSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/jwt" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV3jwtSSSgvp">jwt</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>JWT previously received from the anchor via the SEP-10 authentication flow.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">jwt</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L40">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV7quoteIdSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/quoteId" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV7quoteIdSSSgvp">quoteId</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The id returned from a SEP-38 POST /quote response.
+If this parameter is provided and the user delivers the deposit funds to the anchor before
+the quote expiration, the anchor should respect the conversion rate agreed in that quote.
+If the values of destination_asset, source_asset and amount conflict with the ones used to
+create the SEP-38 quote, this request should be rejected with a 400.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">quoteId</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L47">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV8memoTypeSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/memoType" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV8memoTypeSSSgvp">memoType</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Type of memo that the anchor should attach to the Stellar payment transaction.
+One of text, id or hash.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">memoType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L52">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV4memoSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/memo" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV4memoSSSgvp">memo</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Value of memo to attach to transaction, for hash this should be base64-encoded.
+Because a memo can be specified in the SEP-10 JWT for Shared Accounts, this field
+as well as memo_type can be different than the values included in the SEP-10 JWT.
+For example, a client application could use the value passed for this parameter as
+a reference number used to match payments made to account.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">memo</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L59">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV12emailAddressSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/emailAddress" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV12emailAddressSSSgvp">emailAddress</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Email address of depositor.
+If desired, an anchor can use this to send email updates to the user about the deposit.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">emailAddress</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L63">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV4typeSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/type" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV4typeSSSgvp">type</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Type of deposit. If the anchor supports multiple deposit methods (e.g. SEPA or SWIFT),
+the wallet should specify type. This field may be necessary for the anchor to determine
+which KYC fields to collect.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">type</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L68">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV10walletNameSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/walletName" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV10walletNameSSSgvp">walletName</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>In communications about the deposit, anchor should display the wallet name to the user
+to explain where funds are going. However, anchors should use client_domain (for non-custodial)
+and sub value of JWT (for custodial) to determine wallet information.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">walletName</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L73">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV9walletUrlSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/walletUrl" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV9walletUrlSSSgvp">walletUrl</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Anchor should link to this when notifying the user that the transaction has completed.
+However, anchors should use client_domain (for non-custodial) and sub value of JWT
+(for custodial) to determine wallet information.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">walletUrl</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L78">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV4langSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/lang" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV4langSSSgvp">lang</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Language code specified using RFC 4646. Defaults to en if not specified.
+Error fields and other human readable messages in the response should be in this language.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">lang</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L82">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV16onChangeCallbackSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/onChangeCallback" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV16onChangeCallbackSSSgvp">onChangeCallback</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A URL that the anchor should POST a JSON message to when the status property of the
+transaction created as a result of this request changes. The JSON message should be
+identical to the response format for the /transaction endpoint.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">onChangeCallback</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L87">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV11countryCodeSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/countryCode" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV11countryCodeSSSgvp">countryCode</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The ISO 3166-1 alpha-3 code of the user&rsquo;s current address.
+This field may be necessary for the anchor to determine what KYC information is necessary to collect.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">countryCode</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L91">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV25claimableBalanceSupportedSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/claimableBalanceSupported" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV25claimableBalanceSupportedSSSgvp">claimableBalanceSupported</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>&ldquo;true&rdquo; if the client supports receiving deposit transactions as a claimable balance, false otherwise.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">claimableBalanceSupported</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L94">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV10customerIdSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/customerId" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV10customerIdSSSgvp">customerId</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>ID of an off-chain account (managed by the anchor) associated with this user&rsquo;s Stellar account
+(identified by the JWT&rsquo;s sub field). If the anchor supports SEP-12, the customer_id field should
+match the SEP-12 customer&rsquo;s id. customer_id should be passed only when the off-chain id is known
+to the client, but the relationship between this id and the user&rsquo;s Stellar account is not known
+to the anchor.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">customerId</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L101">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV10locationIdSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/locationId" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV10locationIdSSSgvp">locationId</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>ID of the chosen location to drop off cash.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">locationId</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L104">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV11extraFieldsSDyS2SGSgvp"></a>
+                    <a name="//apple_ref/swift/Property/extraFields" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV11extraFieldsSDyS2SGSgvp">extraFields</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Additional custom fields that can be used to provide extra information for the request.
+For example, required fields from the /info endpoint that are not covered by the standard parameters.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">extraFields</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span> <span class="p">:</span> <span class="kt">String</span><span class="p">]?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L108">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk22DepositExchangeRequestV16destinationAsset06sourceF06amount7account3jwtACSS_S4SSgtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(destinationAsset:sourceAsset:amount:account:jwt:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk22DepositExchangeRequestV16destinationAsset06sourceF06amount7account3jwtACSS_S4SSgtcfc">init(destinationAsset:<wbr>sourceAsset:<wbr>amount:<wbr>account:<wbr>jwt:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Creates a new deposit exchange request.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">destinationAsset</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">sourceAsset</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">amount</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">account</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">jwt</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>destinationAsset</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The on-chain asset the user wants to receive</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>sourceAsset</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The off-chain asset the anchor will receive</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>amount</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The amount of source_asset to deposit</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>account</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Stellar account ID where the asset will be sent</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>jwt</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional JWT token from SEP-10 authentication</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift#L118-L124">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </article>
+    </div>
+    <section class="footer">
+      <p>© 2025 Soneso. All rights reserved.</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
+    </section>
+  </body>
+</html>
