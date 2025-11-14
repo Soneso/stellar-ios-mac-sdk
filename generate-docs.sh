@@ -14,7 +14,7 @@ rm -rf api-docs 2>/dev/null || true
 
 # Build documentation
 xcodebuild docbuild \
-    -scheme stellarsdk-macOS \
+    -scheme stellarsdk \
     -destination 'platform=macOS' \
     -derivedDataPath ./stellarsdk/DerivedData
 
@@ -31,7 +31,7 @@ xcrun docc process-archive \
     transform-for-static-hosting \
     ./stellarsdk/DerivedData/Build/Products/Debug/stellarsdk.doccarchive \
     --output-path ./api-docs \
-    --hosting-base-path /
+    --hosting-base-path /stellar-ios-mac-sdk
 
 echo ""
 echo "Documentation generated successfully!"
