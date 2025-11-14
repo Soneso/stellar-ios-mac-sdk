@@ -1,4 +1,0 @@
-module ed25519C {
-umbrella "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/ed25519-C/include"
-export *
-}

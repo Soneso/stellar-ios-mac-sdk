@@ -1,7 +1,0 @@
-Target dependency graph (3 targets)
-Target 'stellarsdk' in project 'stellarsdk'
-➜ Explicit dependency on target 'stellarsdk' in project 'stellarsdk'
-➜ Explicit dependency on target 'ed25519C' in project 'stellarsdk'
-Target 'stellarsdk' in project 'stellarsdk'
-➜ Explicit dependency on target 'ed25519C' in project 'stellarsdk'
-Target 'ed25519C' in project 'stellarsdk' (no dependencies)
