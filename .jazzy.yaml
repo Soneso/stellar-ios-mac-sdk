@@ -1,0 +1,24 @@
+module: stellarsdk
+module_version: 2.8.0
+github_url: https://github.com/Soneso/stellar-ios-mac-sdk
+github_file_prefix: https://github.com/Soneso/stellar-ios-mac-sdk/tree/master
+root_url: https://soneso.github.io/stellar-ios-mac-sdk/
+output: api-docs
+clean: true
+xcodebuild_arguments:
+  - -project
+  - stellarsdk/stellarsdk.xcodeproj
+  - -scheme
+  - stellarsdk
+  - -destination
+  - platform=macOS
+exclude:
+  - stellarsdk/stellarsdk/libs/CryptoSwift/*
+  - stellarsdk/stellarsdk/libs/ed25519-C/*
+  - stellarsdk/stellarsdk/libs/wallet-sdk/*
+  - stellarsdk/stellarsdk/responses/xdr/*
+theme: fullwidth
+author: Soneso
+author_url: https://soneso.com
+copyright: '© 2025 Soneso. All rights reserved.'
+hide_documentation_coverage: true
