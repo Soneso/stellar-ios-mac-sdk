@@ -1,6 +1,6 @@
 # SEP-0046 (Contract Meta) Compatibility Matrix
 
-**Generated:** 2025-10-16
+**Generated:** 2025-11-14
 
 **SEP Version:** 1.0.0
 **SEP Status:** Active
@@ -87,6 +87,6 @@ A standard for the storage of metadata in contract Wasm files.
 
 ---
 
-**Report Generated:** 2025-10-16
+**Report Generated:** 2025-11-14
 **SDK Version:** 3.2.7
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0

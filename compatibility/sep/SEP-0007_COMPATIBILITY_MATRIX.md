@@ -1,6 +1,6 @@
 # SEP-0007 (URI Scheme to facilitate delegated signing) Compatibility Matrix
 
-**Generated:** 2025-10-16
+**Generated:** 2025-11-14
 
 **SEP Version:** 2.1.0
 **SEP Status:** Active
@@ -165,6 +165,6 @@ The signing applications (wallets) should follow the [recommended security best 
 
 ---
 
-**Report Generated:** 2025-10-16
+**Report Generated:** 2025-11-14
 **SDK Version:** 3.2.7
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0

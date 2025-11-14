@@ -11,10 +11,10 @@
 
 ## Version Information
 
-- **iOS & macOS SDK Version:** 3.2.7
+- **iOS & macOS SDK Version:** 3.2.8
 - **Compatible RPC Version:** v23.0.4
 - **Protocol Version:** 23
-- **Last Updated:** 2025-10-16
+- **Last Updated:** 2025-11-14
 - **Platforms:** iOS 13.0+, macOS 10.15+
 - **Language:** Swift with full async/await support
 
@@ -559,7 +559,7 @@ The `GetHealthResponse` uses `Int` type for ledger-related fields (`latestLedger
 ---
 
 **Document Version:** 1.0
-**Generated:** 2025-10-16
-**SDK Version:** 3.2.7
+**Generated:** 2025-11-14
+**SDK Version:** 3.2.8
 **RPC Version:** v23.0.4
 **Protocol Version:** 23

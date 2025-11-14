@@ -1,6 +1,6 @@
 # SEP-0024 (Hosted Deposit and Withdrawal) Compatibility Matrix
 
-**Generated:** 2025-10-16
+**Generated:** 2025-11-14
 
 **SEP Version:** 3.8.0
 **SEP Status:** Active
@@ -285,6 +285,6 @@ This proposal defines a standard protocol enabling the following features direct
 
 ---
 
-**Report Generated:** 2025-10-16
+**Report Generated:** 2025-11-14
 **SDK Version:** 3.2.7
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0

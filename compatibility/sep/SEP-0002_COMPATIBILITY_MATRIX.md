@@ -1,6 +1,6 @@
 # SEP-0002 (Federation protocol) Compatibility Matrix
 
-**Generated:** 2025-10-16
+**Generated:** 2025-11-14
 
 **SEP Version:** 1.1.0
 **SEP Status:** Final
@@ -98,6 +98,6 @@ Stellar addresses provide an easy way for users to share payment details by usin
 
 ---
 
-**Report Generated:** 2025-10-16
+**Report Generated:** 2025-11-14
 **SDK Version:** 3.2.7
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0

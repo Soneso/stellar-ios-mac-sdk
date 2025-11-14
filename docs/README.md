@@ -5,8 +5,9 @@ This Swift Stellar SDK helps iOS and macOS developers to interact with the Stell
 
 The SDK has three main uses: 
 
-- It helps you to query the blockchain by using the Horizon endpoints provided by Stellar.
+- It helps you to query the blockchain by using the Horizon & RPC endpoints provided by Stellar.
 - It helps you to build, sign and submit transactions to the Stellar Network.
+- It helps you deploy and invoke smart contracts.
 - It helps you to interact with the Stellar Ecosystem (e.g. Anchors), by providing implementations of different [Stellar Ecosystem Proposals](https://github.com/stellar/stellar-protocol/tree/master/ecosystem).
 
 The goal of this documentation is to provide you knowledge of how to use the different functions of SDK in your app. 
@@ -15,6 +16,7 @@ Before you start, please familiarize yourself with the basic concepts of Stellar
 
 We also recommend that you use the [Stellar Laboratory](https://laboratory.stellar.org/) tools while learning to implement applications that access the Stellar Network. It provides a set of tools that enables you to try out and learn about the Stellar Network. With the laboratory you can manually build transactions, sign them, and submit them to the network via the browser. It can also make requests to any of the Horizon endpoints.
 
+API documentation can be found [here](https://soneso.github.io/stellar-ios-mac-sdk/).
 
 ## Documentation content
 

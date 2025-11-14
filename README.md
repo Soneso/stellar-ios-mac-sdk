@@ -9,7 +9,7 @@ The Soneso open source Stellar SDK for iOS &amp; Mac provides APIs to query Hori
 #### Latest stable release:
 
 ```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.2.7"),
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.2.8"),
 ```
 
 If not loading (err: `cannot use bare repository`), then remove:
@@ -37,7 +37,7 @@ To integrate stellar SDK into your Xcode project using CocoaPods, specify it in 
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk', '~> 3.2.7'
+    pod 'stellar-ios-mac-sdk', '~> 3.2.8'
 end
 ```
 
@@ -64,7 +64,7 @@ To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify
 #### Last stable release:
 
 ```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 3.2.7
+github "soneso/stellar-ios-mac-sdk" ~> 3.2.8
 ```
 
 Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.
@@ -573,6 +573,8 @@ see [SEP-08 - Regulated Assets](https://github.com/Soneso/stellar-ios-mac-sdk/tr
 ## Documentation and Examples
 
 You can find more documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.
+
+API documentation can be found [here](https://soneso.github.io/stellar-ios-mac-sdk/).
 
 ## Sample
 

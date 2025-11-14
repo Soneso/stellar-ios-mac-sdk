@@ -1,6 +1,6 @@
 # SEP-0008 (Regulated Assets) Compatibility Matrix
 
-**Generated:** 2025-10-16
+**Generated:** 2025-11-14
 
 **SEP Version:** 1.7.4
 **SEP Status:** Active
@@ -181,6 +181,6 @@ It standardizes the identification of such assets as well as defines the protoco
 
 ---
 
-**Report Generated:** 2025-10-16
+**Report Generated:** 2025-11-14
 **SDK Version:** 3.2.7
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0

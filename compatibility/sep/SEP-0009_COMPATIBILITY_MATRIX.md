@@ -1,6 +1,6 @@
 # SEP-0009 (Standard KYC Fields) Compatibility Matrix
 
-**Generated:** 2025-10-16
+**Generated:** 2025-11-15
 
 **SEP Version:** 1.17.0
 **SEP Status:** Active
@@ -112,7 +112,7 @@ The best fields to use in a particular case is determined by the needs of the ap
 | `organization.photo_incorporation_doc` |  | ✅ | `photoIncorporationDoc` | Image of incorporation documents |
 | `organization.photo_proof_address` |  | ✅ | `photoProofAddress` | Image of a utility bill, bank statement with the organization's name and address |
 | `organization.address_country_code` |  | ✅ | `addressCountryCode` | Country code for current address |
-| `organization.state_or_province` |  | ✅ | `stateOrProvice` | Name of state/province/region/prefecture |
+| `organization.state_or_province` |  | ✅ | `stateOrProvince` | Name of state/province/region/prefecture |
 | `organization.city` |  | ✅ | `city` | Name of city/town |
 | `organization.postal_code` |  | ✅ | `postalCode` | Postal or other code identifying organization's locale |
 | `organization.director_name` |  | ✅ | `directorName` | Organization registered managing director |
@@ -180,6 +180,6 @@ The best fields to use in a particular case is determined by the needs of the ap
 
 ---
 
-**Report Generated:** 2025-10-16
+**Report Generated:** 2025-11-15
 **SDK Version:** 3.2.7
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0
