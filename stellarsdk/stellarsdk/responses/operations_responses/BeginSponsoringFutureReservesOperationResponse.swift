@@ -8,8 +8,12 @@
 
 import Foundation
 
+/// Represents a begin sponsoring future reserves operation response.
+/// This operation initiates sponsorship of reserves for another account, allowing the sponsor to pay for the reserve requirements of ledger entries created by the sponsored account.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class BeginSponsoringFutureReservesOperationResponse: OperationResponse {
-    
+
+    /// Account ID being sponsored.
     public var sponsoredId:String
     
     // Properties to encode and decode

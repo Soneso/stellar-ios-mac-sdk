@@ -8,6 +8,16 @@
 
 import Foundation
 
+/// Response returned when initiating a withdrawal transaction.
+///
+/// This response is returned by GET /withdraw and GET /withdraw-exchange requests in SEP-6.
+/// It provides the Stellar account and memo that the user should send their tokens to in order
+/// to initiate the withdrawal.
+///
+/// The wallet should use the transaction ID to query the GET /transaction endpoint to check
+/// the status of the withdrawal.
+///
+/// See [SEP-6 Withdraw](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#withdraw-2)
 public struct WithdrawResponse: Decodable {
 
     /// (optional) The account the user should send its token back to. This field can be omitted if the anchor cannot provide this information at the time of the request.

@@ -8,11 +8,17 @@
 
 import Foundation
 
-/// Represents the links connected to an asset response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/asset.html "Asset")
+/// Navigation links for asset-related resources.
+///
+/// Provides hypermedia links to resources associated with an asset, primarily
+/// the issuer's stellar.toml file which contains asset metadata and verification.
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - AssetResponse for complete asset details
 public class AssetLinksResponse: NSObject, Decodable {
-    
-    /// Link to the TOML file for this issuer.
+
+    /// Link to the stellar.toml file hosted by the asset issuer. Contains asset metadata and verification.
     public var toml:LinkResponse
     
     // Properties to encode and decode.

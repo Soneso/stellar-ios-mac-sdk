@@ -8,12 +8,17 @@
 
 import Foundation
 
+/// Represents a data entry sponsorship creation effect.
+/// This effect occurs when a data entry's reserve requirement begins being sponsored by another account.
+/// Sponsorship allows one account to pay the base reserve for another account's data entry.
+/// Triggered by the Begin Sponsoring Future Reserves and End Sponsoring Future Reserves operations.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class DataSponsorshipCreatedEffectResponse: EffectResponse {
-    
-    // name of the data created
+
+    /// The name (key) of the data entry being sponsored.
     public var dataName:String
 
-    // account data sponsor
+    /// The account ID of the sponsor paying the data entry's base reserve.
     public var sponsor:String
     
     

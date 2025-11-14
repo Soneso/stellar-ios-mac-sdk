@@ -8,6 +8,23 @@
 
 import Foundation
 
+/// Represents account and service endpoint information from a stellar.toml file.
+///
+/// This class parses and provides access to the account-level configuration section
+/// of a domain's stellar.toml file. It contains service endpoints for various SEPs
+/// (Stellar Ecosystem Proposals), signing keys, and account identifiers.
+///
+/// Developers use this class to discover service URLs for operations such as:
+/// - SEP-10 web authentication
+/// - SEP-6 and SEP-24 transfer/deposit/withdrawal operations
+/// - SEP-12 customer information transfer
+/// - SEP-31 direct payments
+/// - SEP-38 quotes
+/// - Federation services
+///
+/// See also:
+/// - [StellarToml] for the main stellar.toml parser
+/// - [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 public class AccountInformation {
 
     private enum Keys: String {
@@ -90,7 +107,10 @@ public class AccountInformation {
     
     /// The server used for receiving SEP-38 requests.
     public var anchorQuoteServer: String?
-    
+
+    /// Initializes account information from a parsed TOML document.
+    ///
+    /// - Parameter toml: The parsed TOML document containing account configuration
     public init(fromToml toml:Toml) {
         version = toml.string(Keys.version.rawValue)
         networkPassphrase = toml.string(Keys.networkPassphrase.rawValue)

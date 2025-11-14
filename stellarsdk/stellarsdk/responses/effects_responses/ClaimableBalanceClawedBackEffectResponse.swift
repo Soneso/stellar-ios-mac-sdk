@@ -8,9 +8,14 @@
 
 import Foundation
 
+/// Represents a claimable balance clawback effect.
+/// This effect occurs when an asset issuer claws back a claimable balance of their asset.
+/// Clawback allows issuers to revoke assets they have issued.
+/// Triggered by the Clawback Claimable Balance operation.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimableBalanceClawedBackEffectResponse: EffectResponse {
-    
-    // unique ID of claimable balance
+
+    /// The unique identifier of the claimable balance that was clawed back.
     public var balanceId:String
     
     // Properties to encode and decode

@@ -8,13 +8,58 @@
 
 import Foundation
 
+/// Errors that can occur during TxRep parsing or generation.
 public enum TxRepError: Error {
+    /// A required value is missing for the specified key.
     case missingValue(key:String)
+
+    /// The value for the specified key is invalid or cannot be parsed.
     case invalidValue(key:String)
 }
 
+/// TxRep is a human-readable text format for Stellar transactions.
+///
+/// TxRep provides a readable low-level representation of Stellar transactions that can be
+/// used for debugging, auditing, or manual transaction construction. It converts between
+/// the standard base64-encoded XDR format and a human-readable key-value format.
+///
+/// Example:
+/// ```swift
+/// let txEnvelopeXdr = "AAAAAC..." // Base64 XDR
+/// let txRep = try TxRep.toTxRep(transactionEnvelope: txEnvelopeXdr)
+/// // Returns human-readable format:
+/// // type: ENVELOPE_TYPE_TX
+/// // tx.sourceAccount: GBZX...
+/// // tx.fee: 100
+/// // ...
+///
+/// // Convert back to XDR
+/// let xdrAgain = try TxRep.fromTxRep(txRep: txRep)
+/// ```
+///
+/// See: [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md) for the TxRep specification.
 public class TxRep: NSObject {
-    
+
+    /// Converts a transaction envelope XDR to TxRep format.
+    ///
+    /// Takes a base64-encoded transaction envelope XDR and converts it to a human-readable
+    /// TxRep representation. Supports both regular transactions and fee bump transactions.
+    ///
+    /// - Parameter transactionEnvelope: Base64-encoded transaction envelope XDR
+    /// - Returns: Human-readable TxRep string with key-value pairs
+    /// - Throws: TxRepError if the XDR cannot be parsed
+    ///
+    /// Example:
+    /// ```swift
+    /// let xdr = "AAAAAC..." // Base64 XDR
+    /// let txRep = try TxRep.toTxRep(transactionEnvelope: xdr)
+    /// print(txRep)
+    /// // Output:
+    /// // type: ENVELOPE_TYPE_TX
+    /// // tx.sourceAccount: GBZX...
+    /// // tx.fee: 100
+    /// // ...
+    /// ```
     public static func toTxRep(transactionEnvelope:String) throws ->String  {
         let xdrDecoder = XDRDecoder.init(data: [UInt8].init(base64: transactionEnvelope))
         let transactionEnvelopeXDR = try TransactionEnvelopeXDR(fromBinary: xdrDecoder)

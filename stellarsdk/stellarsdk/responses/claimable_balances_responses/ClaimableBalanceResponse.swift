@@ -8,18 +8,37 @@
 
 import Foundation
 
+/// Represents a claimable balance response from the Horizon API.
+/// Claimable balances are held on the ledger until they are claimed by authorized claimants
+/// or until the conditions for claiming them expire.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimableBalanceResponse: NSObject, Decodable {
-    
+
     /// A list of links related to this claimable balance.
     public var links:ClaimableBalanceLinksResponse
-    
+
+    /// Unique identifier for this claimable balance.
     public var balanceId:String
+
+    /// The asset available to be claimed.
     public var asset:Asset
+
+    /// The amount of the asset that can be claimed.
     public var amount:String
+
+    /// The account ID of the sponsor who is paying the reserves for this claimable balance.
     public var sponsor:String
+
+    /// The sequence number of the ledger in which this claimable balance was last modified.
     public var lastModifiedLedger:Int
+
+    /// An ISO 8601 formatted string of when this claimable balance was last modified.
     public var lastModifiedTime:String?
+
+    /// Paging token suitable for use as a cursor parameter.
     public var pagingToken:String
+
+    /// The list of entries which could claim this balance and their conditions for claiming.
     public var claimants:[ClaimantResponse]
    
     

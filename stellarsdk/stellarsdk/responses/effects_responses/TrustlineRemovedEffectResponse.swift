@@ -8,7 +8,8 @@
 
 import Foundation
 
-///  Represents a trustline removed effect response. See superclass TrustlineEffect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/assets.html#trustlines "Trustlines")
+/// Represents a trustline removal effect.
+/// This effect occurs when an account removes a trustline to an asset through a Change Trust operation with limit set to zero.
+/// The account must have a zero balance of the asset before the trustline can be removed.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class TrustlineRemovedEffectResponse: TrustlineEffectResponse {}

@@ -8,15 +8,20 @@
 
 import Foundation
 
+/// Represents a data entry sponsorship update effect.
+/// This effect occurs when the sponsoring account for a data entry's base reserve changes.
+/// The sponsorship is transferred from one sponsor to another.
+/// Triggered by the Revoke Sponsorship operation.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class DataSponsorshipUpdatedEffectResponse: EffectResponse {
-    
-    // name of the data updated
+
+    /// The name (key) of the data entry whose sponsorship is being updated.
     public var dataName:String
-    
-    // new sponsor of the account data
+
+    /// The account ID of the new sponsor.
     public var newSponsor:String
-    
-    //  former sponsor of the account data
+
+    /// The account ID of the former sponsor.
     public var formerSponsor:String
     
     // Properties to encode and decode

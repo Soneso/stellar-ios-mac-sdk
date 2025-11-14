@@ -8,6 +8,33 @@
 
 import Foundation
 
+/// Configuration options for SorobanClient instances.
+///
+/// ClientOptions specifies the connection parameters and authentication details
+/// needed to interact with a deployed smart contract.
+///
+/// Required configuration:
+/// - Source account keypair (public key required, private key needed for signing)
+/// - Contract ID (the address of the deployed contract)
+/// - Network selection (testnet, mainnet, or custom)
+/// - RPC URL (endpoint for Soroban RPC server)
+///
+/// Example:
+/// ```swift
+/// let clientOptions = ClientOptions(
+///     sourceAccountKeyPair: sourceKeyPair,
+///     contractId: "CCONTRACT123...",
+///     network: Network.testnet,
+///     rpcUrl: "https://soroban-testnet.stellar.org",
+///     enableServerLogging: false
+/// )
+///
+/// let client = try await SorobanClient.forClientOptions(options: clientOptions)
+/// ```
+///
+/// See also:
+/// - [SorobanClient.forClientOptions] for creating client instances
+/// - [MethodOptions] for transaction-specific settings
 public class ClientOptions {
     
     /// Keypair of the Stellar account that will send this transaction. If restore is set to true, and restore is needed, the keypair must contain the private key (secret seed) otherwise the public key is sufficient.

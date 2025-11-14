@@ -8,21 +8,51 @@
 
 import Foundation
 
+/// Represents the distribution of fees actually charged for transactions in recent ledgers.
+/// All values are in stroops (1 stroop = 0.0000001 XLM).
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class FeeChargedResponse: NSObject, Decodable {
-    
+
+    /// The maximum fee charged in recent ledgers, in stroops.
     public var max:String
+
+    /// The minimum fee charged in recent ledgers, in stroops.
     public var min:String
+
+    /// The most common fee charged in recent ledgers, in stroops.
     public var mode:String
+
+    /// The 10th percentile fee charged, in stroops.
     public var p10:String
+
+    /// The 20th percentile fee charged, in stroops.
     public var p20:String
+
+    /// The 30th percentile fee charged, in stroops.
     public var p30:String
+
+    /// The 40th percentile fee charged, in stroops.
     public var p40:String
+
+    /// The 50th percentile (median) fee charged, in stroops.
     public var p50:String
+
+    /// The 60th percentile fee charged, in stroops.
     public var p60:String
+
+    /// The 70th percentile fee charged, in stroops.
     public var p70:String
+
+    /// The 80th percentile fee charged, in stroops.
     public var p80:String
+
+    /// The 90th percentile fee charged, in stroops.
     public var p90:String
+
+    /// The 95th percentile fee charged, in stroops.
     public var p95:String
+
+    /// The 99th percentile fee charged, in stroops.
     public var p99:String
     
     // Properties to encode and decode

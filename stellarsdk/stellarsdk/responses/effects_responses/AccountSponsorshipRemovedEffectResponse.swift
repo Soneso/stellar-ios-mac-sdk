@@ -8,9 +8,14 @@
 
 import Foundation
 
+/// Represents an account sponsorship removal effect.
+/// This effect occurs when sponsorship for an account's base reserve is revoked.
+/// The account becomes responsible for paying its own base reserve.
+/// Triggered by the Revoke Sponsorship operation.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountSponsorshipRemovedEffectResponse: EffectResponse {
-    
-    //  former sponsor of an account
+
+    /// The account ID of the former sponsor.
     public var formerSponsor:String
     
     // Properties to encode and decode

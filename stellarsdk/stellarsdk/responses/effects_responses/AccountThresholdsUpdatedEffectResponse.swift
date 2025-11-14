@@ -8,18 +8,19 @@
 
 import Foundation
 
-///  Represents an account thresholds updated effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/multi-sig.html#thresholds "Account Thresholds")
+/// Represents an account thresholds update effect.
+/// This effect occurs when an account's signature thresholds are modified through a Set Options operation.
+/// Thresholds determine the minimum signature weight required for different operation categories.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountThresholdsUpdatedEffectResponse: EffectResponse {
-    
-    /// The value of the low threshold for the account.
+
+    /// The updated low threshold value (used for Allow Trust and Bump Sequence operations).
     public var lowThreshold:Int
-    
-    /// The value of the medium threshold for the account.
+
+    /// The updated medium threshold value (used for most operations).
     public var medThreshold:Int
-    
-    /// The value of the medium threshold for the account.
+
+    /// The updated high threshold value (used for Set Options and Account Merge operations).
     public var highThreshold:Int
     
     // Properties to encode and decode

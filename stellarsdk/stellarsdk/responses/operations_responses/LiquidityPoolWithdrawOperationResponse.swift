@@ -8,11 +8,21 @@
 
 import Foundation
 
+/// Represents a liquidity pool withdraw operation response.
+/// This operation withdraws assets from a liquidity pool by redeeming pool shares for the underlying reserve assets.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolWithdrawOperationResponse: OperationResponse {
-    
+
+    /// ID of the liquidity pool from which assets are withdrawn.
     public var liquidityPoolId:String
+
+    /// Minimum amounts expected to receive for each reserve asset.
     public var reservesMin:[ReserveResponse]
+
+    /// Amount of pool shares being redeemed.
     public var shares:String
+
+    /// Actual amounts received for each reserve asset.
     public var reservesReceived:[ReserveResponse]
 
     

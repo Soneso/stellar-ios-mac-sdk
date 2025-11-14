@@ -8,6 +8,14 @@
 
 import Foundation
 
+/// Decodes fixed-size binary data from an XDR decoder.
+///
+/// Reads exactly the specified number of bytes from the decoder.
+///
+/// - Parameter decoder: XDR decoder to read from
+/// - Parameter capacity: Number of bytes to read
+/// - Returns: Decoded data
+/// - Throws: XDRDecoder.Error if decoding fails
 private func decodeData(from decoder: XDRDecoder, capacity: Int) throws -> Data {
     var d = Data(capacity: capacity)
     
@@ -19,15 +27,27 @@ private func decodeData(from decoder: XDRDecoder, capacity: Int) throws -> Data 
     return d
 }
 
+/// Protocol for fixed-size binary data wrappers used in XDR encoding.
+///
+/// WrappedData provides a type-safe way to handle fixed-size byte arrays in Stellar's
+/// XDR protocol. Common sizes include 4, 12, and 32 bytes for various key types and hashes.
 public protocol WrappedData: XDRCodable, Equatable {
+    /// Fixed capacity in bytes for this data type.
     static var capacity: Int { get }
-    
+
+    /// The underlying binary data.
     var wrapped: Data { get set }
-    
+
+    /// Encodes the data to XDR format.
     func xdrEncode(to encoder: XDREncoder) throws
-    
+
+    /// Creates an empty instance.
     init()
+
+    /// Decodes from XDR format.
     init(fromBinary decoder: XDRDecoder) throws
+
+    /// Creates an instance from data, padding to capacity if necessary.
     init(_ data: Data)
 }
 
@@ -59,31 +79,41 @@ extension WrappedData {
     }
 }
 
+/// Fixed-size 32-byte data wrapper.
+///
+/// Used for 256-bit hashes, public keys, and other 32-byte values in Stellar protocol.
+/// Examples: SHA-256 hashes, Ed25519 public keys, transaction hashes.
 public struct WrappedData32: WrappedData, Equatable {
     public static let capacity: Int = 32
-    
+
     public var wrapped: Data
-    
+
     public init() {
         wrapped = Data()
     }
 }
 
+/// Fixed-size 4-byte data wrapper.
+///
+/// Used for short binary identifiers and fixed-size fields in Stellar protocol.
 public struct WrappedData4: WrappedData {
     public static let capacity: Int = 4
-    
+
     public var wrapped: Data
-    
+
     public init() {
         wrapped = Data()
     }
 }
 
+/// Fixed-size 12-byte data wrapper.
+///
+/// Used for 12-character asset codes and other 12-byte values in Stellar protocol.
 public struct WrappedData12: WrappedData {
     public static let capacity: Int = 12
-    
+
     public var wrapped: Data
-    
+
     public init() {
         wrapped = Data()
     }

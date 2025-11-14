@@ -1,5 +1,5 @@
 //
-//  SegmentFilter.swift
+//  TopicFilter.swift
 //  stellarsdk
 //
 //  Created by Christian Rogobete on 27.02.23.
@@ -8,8 +8,35 @@
 
 import Foundation
 
-/// part of the get Events request
-/// See: https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
+/// Topic-based filter for querying contract events.
+///
+/// TopicFilter allows filtering events by their topic values. Topics are indexed
+/// parameters emitted with contract events, typically including the event name
+/// and key parameters.
+///
+/// Topic matching:
+/// - Use exact values to match specific topics (e.g., "transfer")
+/// - Use "*" as a wildcard to match any value at that position
+///
+/// Example:
+/// ```swift
+/// // Match transfer events to a specific address
+/// let topicFilter = TopicFilter(segmentMatchers: [
+///     "transfer",    // Topic 0: event name
+///     "*",          // Topic 1: any sender
+///     "GADDR..."    // Topic 2: specific recipient
+/// ])
+///
+/// let eventFilter = EventFilter(
+///     type: "contract",
+///     topics: [topicFilter]
+/// )
+/// ```
+///
+/// See also:
+/// - [EventFilter] for complete event filtering
+/// - [SorobanServer.getEvents] for querying events
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class TopicFilter {
     
     public let segmentMatchers: [String]

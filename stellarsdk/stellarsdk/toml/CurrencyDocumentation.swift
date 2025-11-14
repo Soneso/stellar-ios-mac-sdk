@@ -8,6 +8,25 @@
 
 import Foundation
 
+/// Represents currency and asset information from a stellar.toml file.
+///
+/// This class parses and provides access to the CURRENCIES section of a domain's
+/// stellar.toml file. It contains comprehensive metadata about Stellar assets
+/// including both classic assets and Soroban token contracts.
+///
+/// Asset information includes identification (code, issuer, contract), metadata
+/// (name, description, image), supply information, anchor details for backed assets,
+/// and regulatory information for compliant assets.
+///
+/// Developers use this class to discover asset properties when integrating with
+/// anchors, displaying asset information in wallets, or implementing regulatory
+/// compliance features.
+///
+/// See also:
+/// - [StellarToml] for the main stellar.toml parser
+/// - [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
+/// - [SEP-0008](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md) for regulated assets
+/// - [SEP-0041](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0041.md) for Soroban token metadata
 public class CurrencyDocumentation {
 
     private enum Keys: String {
@@ -121,7 +140,10 @@ public class CurrencyDocumentation {
     
     /// a human readable string that explains the issuer's requirements for approving transactions.
     public var approvalCriteria: String?
-    
+
+    /// Initializes currency documentation from a parsed TOML document.
+    ///
+    /// - Parameter toml: The parsed TOML document containing currency information
     public init(fromToml toml:Toml) {
         code = toml.string(Keys.code.rawValue)
         codeTemplate = toml.string(Keys.codeTemplate.rawValue)

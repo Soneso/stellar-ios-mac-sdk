@@ -8,8 +8,18 @@
 
 import Foundation
 
-///  A successful response to a post transaction request.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/transactions-create.html "Post Transaction")
+/// Response returned from successfully submitting a transaction to Horizon.
+///
+/// This is returned when a transaction is successfully submitted and included in a ledger.
+/// It extends TransactionResponse with all transaction details including the result,
+/// operations, fees, and metadata.
+///
+/// For asynchronous transaction submission, see SubmitTransactionAsyncResponse instead.
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - TransactionResponse for all available properties
+/// - SubmitTransactionAsyncResponse for async submission
 public class SubmitTransactionResponse: TransactionResponse {
 
 }

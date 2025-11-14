@@ -8,13 +8,27 @@
 
 import Foundation
 
+/// Represents a claimant predicate that defines conditions for claiming a claimable balance.
+/// Predicates can be unconditional or time-based, and can be combined using logical operators.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimantPredicateResponse: NSObject, Decodable {
-    
+
+    /// If true, the predicate is satisfied without any conditions.
     public var unconditional:Bool?
+
+    /// A list of predicates that must all be satisfied (logical AND).
     public var and:[ClaimantPredicateResponse]?
+
+    /// A list of predicates where at least one must be satisfied (logical OR).
     public var or:[ClaimantPredicateResponse]?
+
+    /// A predicate that must not be satisfied (logical NOT).
     public var not:ClaimantPredicateResponse?
+
+    /// An ISO 8601 formatted timestamp before which the claimable balance can be claimed.
     public var beforeAbsoluteTime:String?
+
+    /// A relative time in seconds since the close time of the ledger in which the claimable balance was created.
     public var beforeRelativeTime:String?
     
     // Properties to encode and decode

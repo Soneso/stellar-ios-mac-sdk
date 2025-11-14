@@ -8,18 +8,19 @@
 
 import Foundation
 
-///  Represents an account flags updated effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/accounts.html#flags "Account Flags")
+/// Represents an account flags update effect.
+/// This effect occurs when an account's authorization flags are modified through a Set Options operation.
+/// Flags control asset issuer authorization requirements and account mutability.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountFlagsUpdatedEffectResponse: EffectResponse {
-    
-    /// True if an issuing account is required to give other accounts permission before they can hold the issuing account’s credit.
+
+    /// Indicates whether the account requires authorization before other accounts can hold its issued assets.
     public var authRequired:Bool!
-    
-    /// True if an issuing account is allowed to revoke its credit held by other accounts.
+
+    /// Indicates whether the account can revoke authorization for its issued assets held by other accounts.
     public var authRevocable:Bool!
-    
-    /// If this is set then none of the authorization flags can be set and the account can never be deleted.
+
+    /// Indicates whether the account's authorization flags are permanently locked and the account cannot be deleted.
     public var authImmutable:Bool!
     
     // Properties to encode and decode

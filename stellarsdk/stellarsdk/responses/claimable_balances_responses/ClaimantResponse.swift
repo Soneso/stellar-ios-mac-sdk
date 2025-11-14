@@ -8,9 +8,15 @@
 
 import Foundation
 
+/// Represents a claimant entry for a claimable balance.
+/// Each claimant specifies an account that can claim the balance and the conditions under which they can claim it.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimantResponse: NSObject, Decodable {
-    
+
+    /// The account ID who can claim the balance.
     public var destination:String
+
+    /// The condition which must be satisfied for the destination account to claim the balance.
     public var predicate:ClaimantPredicateResponse
    
     

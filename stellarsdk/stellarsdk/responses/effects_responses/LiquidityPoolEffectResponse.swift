@@ -8,13 +8,28 @@
 
 import Foundation
 
+/// Represents liquidity pool details within an effect response.
+/// Contains information about the pool's state, including reserves, shares, and fee structure.
+/// Used as a nested object in liquidity pool effect responses.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolEffectResponse: NSObject, Decodable {
-    
+
+    /// The unique identifier of the liquidity pool.
     public var poolId:String
+
+    /// The fee charged for trades against this pool, in basis points.
     public var fee:Int64
+
+    /// The type of liquidity pool (e.g., constant_product).
     public var type:String
+
+    /// The total number of trustlines established to this pool.
     public var totalTrustlines:String
+
+    /// The total number of pool shares issued.
     public var totalShares:String
+
+    /// The asset reserves held by the pool.
     public var reserves:[ReserveResponse]
     
     // Properties to encode and decode

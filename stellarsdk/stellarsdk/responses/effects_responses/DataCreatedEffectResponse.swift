@@ -8,14 +8,17 @@
 
 import Foundation
 
-///  Represents a data created effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
+/// Represents a data entry creation effect.
+/// This effect occurs when a new key-value pair is added to an account's data entries.
+/// Account data entries allow accounts to store arbitrary data on the ledger.
+/// Triggered by the Manage Data operation.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class DataCreatedEffectResponse: EffectResponse {
-    
-    // name of the account data created
+
+    /// The name (key) of the data entry created.
     public var name:String
-    
-    // value of the account data created
+
+    /// The base64-encoded value of the data entry created.
     public var value:String
     
     // Properties to encode and decode

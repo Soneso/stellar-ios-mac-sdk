@@ -8,11 +8,21 @@
 
 import Foundation
 
+/// Response indicating that customer information is needed through a non-interactive flow.
+///
+/// This response is returned by GET /deposit or GET /withdraw requests in SEP-6 when
+/// the anchor needs specific KYC fields from the user. The wallet should collect these
+/// fields and submit them via SEP-12.
+///
+/// This approach allows wallets to collect information directly without redirecting users
+/// to an external web interface.
+///
+/// See [SEP-6 Customer Information Needed](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#response-3)
 public struct CustomerInformationNeededNonInteractive: Decodable {
 
     /// Always set to non_interactive_customer_info_needed
     public var type:String
-    
+
     /// A list of field names that need to be transmitted to the /customer endpoint for the deposit to proceed.
     public var fields:[String]
     

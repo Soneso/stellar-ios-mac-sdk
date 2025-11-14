@@ -8,12 +8,17 @@
 
 import Foundation
 
+/// Represents an account sponsorship update effect.
+/// This effect occurs when the sponsoring account for an account's base reserve changes.
+/// The sponsorship is transferred from one sponsor to another.
+/// Triggered by the Revoke Sponsorship operation.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountSponsorshipUpdatedEffectResponse: EffectResponse {
-    
-    // new sponsor of an account
+
+    /// The account ID of the new sponsor.
     public var newSponsor:String
-    
-    //  former sponsor of an account
+
+    /// The account ID of the former sponsor.
     public var formerSponsor:String
     
     // Properties to encode and decode

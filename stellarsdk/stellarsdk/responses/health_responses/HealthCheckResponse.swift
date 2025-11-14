@@ -11,7 +11,7 @@ import Foundation
 /// Represents the response from the Horizon health check endpoint.
 /// This endpoint provides information about the health status of the Horizon server,
 /// including database connectivity and Stellar Core status.
-/// See [Horizon API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/health "Health Check")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class HealthCheckResponse: NSObject, Decodable {
 
     /// Indicates whether Horizon can successfully connect to its database

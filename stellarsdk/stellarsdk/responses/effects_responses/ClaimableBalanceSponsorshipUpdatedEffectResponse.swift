@@ -8,12 +8,17 @@
 
 import Foundation
 
+/// Represents a claimable balance sponsorship update effect.
+/// This effect occurs when the sponsoring account for a claimable balance's base reserve changes.
+/// The sponsorship is transferred from one sponsor to another.
+/// Triggered by the Revoke Sponsorship operation.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimableBalanceSponsorshipUpdatedEffectResponse: EffectResponse {
-    
-    // new sponsor of a claimable balance
+
+    /// The account ID of the new sponsor.
     public var newSponsor:String
-    
-    //  former sponsor of a claimable balance
+
+    /// The account ID of the former sponsor.
     public var formerSponsor:String
     
     // Properties to encode and decode

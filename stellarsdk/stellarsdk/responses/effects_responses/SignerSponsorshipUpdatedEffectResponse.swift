@@ -8,15 +8,20 @@
 
 import Foundation
 
+/// Represents a signer sponsorship update effect.
+/// This effect occurs when the sponsoring account for a signer's base reserve changes.
+/// The sponsorship is transferred from one sponsor to another.
+/// Triggered by the Revoke Sponsorship operation.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class SignerSponsorshipUpdatedEffectResponse: EffectResponse {
-    
-    // signer being sponsored
+
+    /// The public key of the signer whose sponsorship is being updated.
     public var signer:String
-    
-    // new sponsor of the signer
+
+    /// The account ID of the new sponsor.
     public var newSponsor:String
-    
-    //  former sponsor of the signer
+
+    /// The account ID of the former sponsor.
     public var formerSponsor:String
     
     // Properties to encode and decode

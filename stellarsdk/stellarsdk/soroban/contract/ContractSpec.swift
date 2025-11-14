@@ -8,9 +8,49 @@
 
 import Foundation
 
-/// The `ContractSpec` class offers a range of useful functions based on the contract spec entries of a contract.
-/// It can be used to find specific entries from the contract specification and, more importantly,
-/// to easily prepare the arguments to invoke the contract functions.
+/// Parser and utility for Soroban contract specifications.
+///
+/// ContractSpec provides tools for working with contract interface definitions, including:
+/// - Parsing contract spec entries (functions, events, types)
+/// - Converting between native Swift types and Soroban contract values (SCVal)
+/// - Validating function arguments against contract specifications
+/// - Extracting contract metadata and type definitions
+///
+/// Contract specifications are embedded in the WebAssembly contract code and describe:
+/// - Available contract functions with parameters and return types
+/// - Custom data types (structs, enums, unions)
+/// - Events that the contract can emit
+/// - Error types the contract may return
+///
+/// Use this class to:
+/// - Introspect contract interfaces
+/// - Build type-safe contract invocations
+/// - Parse and validate contract arguments
+/// - Convert contract return values to Swift types
+///
+/// Example usage:
+/// ```swift
+/// // Get contract spec from deployed contract
+/// let client = try await SorobanClient.forClientOptions(options: clientOptions)
+/// let spec = client.getContractSpec()
+///
+/// // List all available functions
+/// let functions = spec.funcs()
+/// for func in functions {
+///     print("Function: \(func.name)")
+///     print("Parameters: \(func.inputs.count)")
+/// }
+///
+/// // Get specific function details
+/// if let transferFunc = spec.getFunc(name: "transfer") {
+///     print("Transfer function inputs: \(transferFunc.inputs)")
+///     print("Transfer function outputs: \(transferFunc.outputs)")
+/// }
+/// ```
+///
+/// See also:
+/// - [SorobanClient] for high-level contract interaction
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class ContractSpec {
     
     /// The spec entries of the contract

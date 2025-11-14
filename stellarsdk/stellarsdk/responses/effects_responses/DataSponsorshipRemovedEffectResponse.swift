@@ -8,12 +8,17 @@
 
 import Foundation
 
+/// Represents a data entry sponsorship removal effect.
+/// This effect occurs when sponsorship for a data entry's base reserve is revoked.
+/// The account becomes responsible for paying the data entry's base reserve.
+/// Triggered by the Revoke Sponsorship operation.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class DataSponsorshipRemovedEffectResponse: EffectResponse {
-    
-    // name of the data removed
+
+    /// The name (key) of the data entry whose sponsorship is being removed.
     public var dataName:String
-    
-    //  former sponsor of the account data
+
+    /// The account ID of the former sponsor.
     public var formerSponsor:String
     
     // Properties to encode and decode

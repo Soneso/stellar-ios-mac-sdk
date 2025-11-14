@@ -9,29 +9,34 @@
 import Foundation
 
 ///  Represents an allow trust operation response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#allow-trust "Allow Trust Operation")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class AllowTrustOperationResponse: OperationResponse {
     
-    /// Trustor account.
+    /// Account ID of the trustor (the account trusting the asset).
     public var trustor:String
-    
-    /// Trustee account.
+
+    /// Account ID of the trustee (the asset issuer).
     public var trustee:String
+
+    /// Multiplexed account address of the trustee (if used).
     public var trusteeMuxed:String?
+
+    /// ID of the multiplexed trustee account (if used).
     public var trusteeMuxedId:String?
-    
-    /// Asset type (native / alphanum4 / alphanum12)
+
+    /// Asset type (native / alphanum4 / alphanum12).
     public var assetType:String
-    
-    /// Asset code.
+
+    /// Asset code being authorized.
     public var assetCode:String?
-    
-    /// Asset issuer.
+
+    /// Asset issuer (the trustee).
     public var assetIssuer:String?
-    
-    /// true when allowing trust, false when revoking trust.
+
+    /// True when allowing trust, false when revoking trust.
     public var authorize:Bool
-    
+
+    /// True when authorizing the trustline to maintain liabilities.
     public var authorizeToMaintainLiabilities:Bool?
     
     /// The limit for the asset.

@@ -8,6 +8,34 @@
 
 import Foundation
 
+/// Service for querying aggregated trade statistics from the Stellar Horizon API.
+///
+/// Trade aggregations provide OHLCV (Open, High, Low, Close, Volume) candlestick data for
+/// asset pairs over specified time intervals. Useful for charts and market analysis.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get hourly trade aggregations for the last 24 hours
+/// let oneDayAgo = Int64(Date().timeIntervalSince1970 * 1000) - (24 * 60 * 60 * 1000)
+/// let now = Int64(Date().timeIntervalSince1970 * 1000)
+///
+/// let response = await sdk.tradeAggregations.getTradeAggregations(
+///     startTime: oneDayAgo,
+///     endTime: now,
+///     resolution: 3600000, // 1 hour in milliseconds
+///     baseAssetType: AssetTypeAsString.CREDIT_ALPHANUM4,
+///     baseAssetCode: "USD",
+///     baseAssetIssuer: "GISSUER...",
+///     counterAssetType: AssetTypeAsString.NATIVE,
+///     limit: 24
+/// )
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - TradesService for individual trade records
 public class TradeAggregationsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()

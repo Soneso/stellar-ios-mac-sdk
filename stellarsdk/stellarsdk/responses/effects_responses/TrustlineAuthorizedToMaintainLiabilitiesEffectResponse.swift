@@ -8,8 +8,9 @@
 
 import Foundation
 
-///  Represents a trustline authorized to maintain liabilities effect response. See superclass TrustlineEffect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/assets.html#trustlines "Trustlines")
+/// Represents a trustline authorized to maintain liabilities effect.
+/// This effect occurs when an asset issuer sets a trustline to maintain liabilities only through an Allow Trust or Set Trust Line Flags operation.
+/// The account can maintain existing offers and outstanding liabilities but cannot receive new assets.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class TrustlineAuthorizedToMaintainLiabilitiesEffecResponse: TrustlineEffectResponse {}
 

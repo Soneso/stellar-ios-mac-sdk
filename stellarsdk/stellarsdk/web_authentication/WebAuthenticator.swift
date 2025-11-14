@@ -85,6 +85,136 @@ public typealias SendChallengeResponseClosure = (_ response:SendChallengeRespons
 /// A closure to be called with the response from a get JWT token request.
 public typealias GetJWTTokenResponseClosure = (_ response:GetJWTTokenResponseEnum) -> (Void)
 
+/// Implements SEP-0010 - Stellar Web Authentication.
+///
+/// This class provides functionality for authenticating users through the Stellar Web Authentication protocol,
+/// which allows clients to prove they possess the signing key for a Stellar account. The authentication flow
+/// returns a JWT token that can be used for subsequent requests to SEP-compliant services (SEP-6, SEP-12, SEP-24, SEP-31).
+///
+/// SEP-0010 defines a standard protocol for proving account ownership without transmitting secret keys.
+/// The server generates a challenge transaction that the client signs with their account's signing key,
+/// proving ownership without revealing the secret key itself.
+///
+/// ## Typical Workflow
+///
+/// 1. **Initialize from Domain**: Create a WebAuthenticator instance using the anchor's stellar.toml
+/// 2. **Get JWT Token**: Request and obtain a JWT token for authentication
+/// 3. **Use Token**: Include the JWT token in subsequent SEP service requests
+///
+/// ## Example Usage
+///
+/// ```swift
+/// // Step 1: Create WebAuthenticator from anchor domain
+/// let result = await WebAuthenticator.from(
+///     domain: "https://testanchor.stellar.org",
+///     network: .testnet
+/// )
+///
+/// switch result {
+/// case .success(let webAuth):
+///     // Step 2: Get JWT token for user account
+///     let userKeyPair = try KeyPair(secretSeed: "S...")
+///     let jwtResult = await webAuth.jwtToken(
+///         forUserAccount: userKeyPair.accountId,
+///         signers: [userKeyPair],
+///         homeDomain: "testanchor.stellar.org"
+///     )
+///
+///     switch jwtResult {
+///     case .success(let jwtToken):
+///         // Step 3: Use JWT token for SEP-24, SEP-6, SEP-12, etc.
+///         print("JWT Token: \(jwtToken)")
+///     case .failure(let error):
+///         print("JWT token error: \(error)")
+///     }
+/// case .failure(let error):
+///     print("WebAuth initialization error: \(error)")
+/// }
+/// ```
+///
+/// ## Advanced Features
+///
+/// **Multi-Signature Accounts:**
+/// ```swift
+/// // Provide multiple signers for accounts requiring multiple signatures
+/// let signers = [keyPair1, keyPair2, keyPair3]
+/// let result = await webAuth.jwtToken(
+///     forUserAccount: accountId,
+///     signers: signers
+/// )
+/// ```
+///
+/// **Muxed Accounts:**
+/// ```swift
+/// // For muxed accounts starting with M, provide memo
+/// let result = await webAuth.jwtToken(
+///     forUserAccount: "M...",
+///     memo: 12345,
+///     signers: [keyPair]
+/// )
+/// ```
+///
+/// **Client Domain Signing:**
+/// ```swift
+/// // For client domain verification (mutual authentication)
+/// let clientDomainKeyPair = try KeyPair(accountId: "G...")
+/// let result = await webAuth.jwtToken(
+///     forUserAccount: userAccountId,
+///     signers: [userKeyPair],
+///     clientDomain: "wallet.example.com",
+///     clientDomainAccountKeyPair: clientDomainKeyPair,
+///     clientDomainSigningFunction: { txXdr in
+///         // Sign on server and return signed transaction
+///         return try await signOnServer(txXdr)
+///     }
+/// )
+/// ```
+///
+/// ## Authentication Flow Details
+///
+/// The SEP-0010 authentication process involves:
+///
+/// 1. Client requests a challenge transaction from the server
+/// 2. Server returns a transaction with specific operations and time bounds
+/// 3. Client validates the challenge transaction
+/// 4. Client signs the transaction with their account key(s)
+/// 5. Client submits the signed transaction to the server
+/// 6. Server validates signatures and returns a JWT token
+///
+/// The JWT token typically expires after 24 hours and must be refreshed.
+///
+/// ## Error Handling
+///
+/// ```swift
+/// let result = await webAuth.jwtToken(forUserAccount: accountId, signers: signers)
+/// switch result {
+/// case .success(let token):
+///     // Use token
+/// case .failure(let error):
+///     switch error {
+///     case .requestError(let horizonError):
+///         // Network or server error
+///     case .validationErrorError(let validationError):
+///         // Challenge validation failed
+///     case .signingError:
+///         // Transaction signing failed
+///     case .parsingError(let parseError):
+///         // Response parsing failed
+///     }
+/// }
+/// ```
+///
+/// ## Security Considerations
+///
+/// - Never transmit secret keys to the server
+/// - Validate the challenge transaction before signing
+/// - Check time bounds to prevent replay attacks
+/// - Store JWT tokens securely
+/// - Refresh tokens before expiration
+///
+/// See also:
+/// - [SEP-0010 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)
+/// - [StellarToml] for discovering authentication endpoints
 public class WebAuthenticator {
     public let authEndpoint: String
     public let serverSigningKey: String
@@ -107,12 +237,23 @@ public class WebAuthenticator {
         }
     }
     
-    /// Get a WebAuthenticator instange from a domain
+    /// Creates a WebAuthenticator instance by fetching configuration from a domain's stellar.toml file.
     ///
-    /// - Parameter domain: The domain from which to get the stellar information
-    /// - Parameter network: The network used.
-    /// - Parameter secure: The protocol used (http or https).
+    /// This is the recommended way to initialize a WebAuthenticator. It automatically retrieves the
+    /// authentication endpoint and server signing key from the anchor's stellar.toml configuration file.
     ///
+    /// - Parameter domain: The anchor's domain (e.g., "testanchor.stellar.org")
+    /// - Parameter network: The Stellar network to use (.public, .testnet, or .futurenet)
+    /// - Parameter secure: Whether to use HTTPS (true) or HTTP (false). Default is true.
+    /// - Returns: WebAuthenticatorForDomainEnum indicating success with WebAuthenticator instance or failure with error
+    ///
+    /// Example:
+    /// ```swift
+    /// let result = await WebAuthenticator.from(
+    ///     domain: "testanchor.stellar.org",
+    ///     network: .testnet
+    /// )
+    /// ```
     public static func from(domain: String, network:Network, secure: Bool = true) async -> WebAuthenticatorForDomainEnum {
         let result = await StellarToml.from(domain: domain, secure: secure)
         switch result {
@@ -163,15 +304,30 @@ public class WebAuthenticator {
         }
     }
     
-    /// Get JWT token for wallet
+    /// Obtains a JWT token through the SEP-0010 authentication flow.
     ///
-    /// - Parameter forUserAccount: account id of the user
-    /// - Parameter memo: ID memo of the client account if muxed and accountId starts with G
-    /// - Parameter signers: list of signers (keypairs including secret seed) of the client account
-    /// - Parameter homeDomain: domain of the server hosting it's stellar.toml
-    /// - Parameter clientDomain: domain of the client server hosting it's stellar.toml for client domain signing
-    /// - Parameter clientDomainAccountKeyPair: Keypair of the client domain account. Needed if clientDomain is provided. If it includes the private key, it will be used for signing the transaction (client domain signer). If it only contains the account id (public key) the client domain signing can be done via a signing function that can be passed by the parameter clientDomainSigningFunction
-    /// - Parameter clientDomainSigningFunction: a function that signs the transaction if clientDomain is provided but the provided clientDomainAccountKeyPair does not have a private key. Should accept a base64 encoded transaction envelope xdr string, sign it and send the signed transaction back as base64 encoded transaction envelope xdr string. This is normally used, when the client domain signing takes place on a server and you don't have the client domain signing seed in your app.
+    /// This method handles the complete authentication workflow: requesting a challenge from the server,
+    /// validating it, signing it with the provided keypairs, and submitting it to receive a JWT token.
+    /// The returned token can be used for authenticating with SEP-6, SEP-12, SEP-24, SEP-31, and other services.
+    ///
+    /// - Parameter forUserAccount: The Stellar account ID (starting with G or M) to authenticate
+    /// - Parameter memo: ID memo for the account. Required if the account is muxed (starts with M) and accountId starts with G
+    /// - Parameter signers: Array of KeyPair objects with secret keys for signing the challenge. For multi-sig accounts, include all required signers
+    /// - Parameter homeDomain: The anchor's domain hosting the stellar.toml file. Optional but recommended
+    /// - Parameter clientDomain: Domain of the client application for mutual authentication. Used to prove the client's identity to the server
+    /// - Parameter clientDomainAccountKeyPair: KeyPair for client domain signing. If it includes a private key, it will be used directly. If only public key, use clientDomainSigningFunction
+    /// - Parameter clientDomainSigningFunction: Function for remote client domain signing. Accepts base64 XDR transaction, returns signed transaction. Use when client domain signing occurs on a server
+    /// - Returns: GetJWTTokenResponseEnum with JWT token on success or error details on failure
+    ///
+    /// Example:
+    /// ```swift
+    /// let userKeyPair = try KeyPair(secretSeed: "S...")
+    /// let result = await webAuth.jwtToken(
+    ///     forUserAccount: userKeyPair.accountId,
+    ///     signers: [userKeyPair],
+    ///     homeDomain: "testanchor.stellar.org"
+    /// )
+    /// ```
     public func jwtToken(forUserAccount accountId:String, memo:UInt64? = nil, signers:[KeyPair], homeDomain:String? = nil, clientDomain:String? = nil, clientDomainAccountKeyPair:KeyPair? = nil, clientDomainSigningFunction:((_:String) async throws -> String)? = nil) async -> GetJWTTokenResponseEnum {
         let response = await getChallenge(forAccount: accountId, memo: memo, homeDomain: homeDomain, clientDomain: clientDomain)
         switch response {

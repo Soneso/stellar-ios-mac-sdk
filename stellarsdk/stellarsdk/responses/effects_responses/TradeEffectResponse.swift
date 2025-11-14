@@ -6,40 +6,46 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-///  Represents a trade effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
+/// Represents a trade effect.
+/// This effect occurs when a trade is executed on the Stellar decentralized exchange (DEX).
+/// Triggered when offers are matched through Manage Sell Offer, Manage Buy Offer, or Path Payment operations.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class TradeEffectResponse: EffectResponse {
-    
-    /// The seller in the trade effect.
+
+    /// The account ID of the seller in the trade.
     public var seller:String
+
+    /// The multiplexed account address if the seller is a muxed account.
     public var sellerMuxed:String?
+
+    /// The multiplexed account ID if the seller is a muxed account.
     public var sellerMuxedId:String?
-    
-    /// The id of the offer that has been traded.
+
+    /// The ID of the offer that was matched.
     public var offerId:String
-    
-    /// The ammount of the asset sold.
+
+    /// The amount of the asset sold.
     public var soldAmount:String
-    
-    /// The type of the sold asset. E.g. native
+
+    /// The type of the sold asset (e.g., native, credit_alphanum4, credit_alphanum12).
     public var soldAssetType:String
-    
-    /// The code of the sold asset. E.g. BTC. Nil if asset type is native.
+
+    /// The code of the sold asset. Nil for native assets.
     public var soldAssetCode:String?
-    
-    /// The asset issuer account id of the sold asset. Nil if asset type is native.
+
+    /// The issuer account ID of the sold asset. Nil for native assets.
     public var soldAssetIssuer:String?
-    
-    /// The ammount of the asset sold.
+
+    /// The amount of the asset bought.
     public var boughtAmount:String
-    
-    /// The type of the bought asset. E.g. native
+
+    /// The type of the bought asset (e.g., native, credit_alphanum4, credit_alphanum12).
     public var boughtAssetType:String
-    
-    /// The code of the bought asset. E.g. BTC. Nil if asset type is native.
+
+    /// The code of the bought asset. Nil for native assets.
     public var boughtAssetCode:String?
-    
-    /// The asset issuer account id of the bought asset. Nil if asset type is native.
+
+    /// The issuer account ID of the bought asset. Nil for native assets.
     public var boughtAssetIssuer:String?
     
     // Properties to encode and decode

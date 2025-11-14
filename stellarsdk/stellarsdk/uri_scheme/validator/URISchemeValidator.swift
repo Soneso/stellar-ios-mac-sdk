@@ -8,26 +8,41 @@
 
 import Foundation
 
-/// An enum used to diferentiate between successful and failed url singing operation.
+/// An enum used to differentiate between successful and failed URL signing operations.
 public enum SignURLEnum {
+    /// URL signing succeeded with the signed URL.
     case success(signedURL: String)
+    /// URL signing failed with the specified error.
     case failure(URISchemeErrors)
 }
 
-/// An enum used to diferentiate between successful and failed URIScheme validity.
+/// An enum used to differentiate between successful and failed URIScheme validity checks.
 public enum URISchemeIsValidEnum {
+    /// URI scheme validation succeeded.
     case success
+    /// URI scheme validation failed with the specified error.
     case failure(URISchemeErrors)
 }
 
+/// A closure to be called with the response from a URI scheme validity check.
 public typealias URISchemeIsValidClosure = (_ completion: URISchemeIsValidEnum) -> (Void)
 
-/// see  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
+/// Validates and signs SEP-0007 compliant Stellar URIs.
+///
+/// This class provides functionality for signing URI scheme requests and verifying their
+/// authenticity by validating signatures against the origin domain's stellar.toml file.
+/// It ensures URI requests come from legitimate sources by checking cryptographic signatures.
+///
+/// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
 public class URISchemeValidator: NSObject {
     /// The predefined URIScheme prefix
     private let URISchemePrefix = "stellar.sep.7 - URI Scheme"
 
     /// Signs the URIScheme compliant URL with the signer's key pair.
+    ///
+    /// - Parameter url: The SEP-0007 compliant URI to be signed.
+    /// - Parameter signerKeyPair: The key pair used to generate the signature.
+    /// - Returns: SignURLEnum indicating success with the signed URL or failure with an error.
     public func signURI(url: String, signerKeyPair: KeyPair) -> SignURLEnum {
         if let signature = sign(url: url, signerKeyPair: signerKeyPair){
             if verify(forURL: url, urlEncodedBase64Signature: signature, signerPublicKey: signerKeyPair.publicKey) {

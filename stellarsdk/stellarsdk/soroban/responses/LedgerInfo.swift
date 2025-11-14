@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a single ledger in the getLedgers response.
-/// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+/// See: [Stellar developer docs](https://developers.stellar.org)
 public class LedgerInfo: NSObject, Decodable {
 
     /// Hash of the ledger as a hex-encoded string

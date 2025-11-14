@@ -8,6 +8,17 @@
 
 import Foundation
 
-///  Represents a stale history error response (code 503) from the horizon api, containing information related to the error
-///  See [Horizon API](https://developers.stellar.org/docs/data/horizon/api-reference/errors/http-status-codes/horizon-specific/stale-history "Stale History")
+/// HTTP 503 Stale History error from Horizon indicating the server is behind the network.
+///
+/// This error occurs when:
+/// - Horizon's database is not synced with the latest ledgers
+/// - Ingestion from Stellar Core has fallen behind
+/// - Server is catching up after maintenance or downtime
+///
+/// The Horizon server is temporarily unable to serve current data. Retry after a delay
+/// or use a different Horizon server that is in sync.
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - ErrorResponse for common error properties
 public class StaleHistoryErrorResponse: ErrorResponse {}

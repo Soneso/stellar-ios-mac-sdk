@@ -8,14 +8,21 @@
 
 import Foundation
 
-/// Represents the links connected to an offer response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/offer.html "Offer")
+/// Navigation links for offer-related resources.
+///
+/// Provides hypermedia links to resources associated with an offer, including
+/// the offer itself and the account that created the offer.
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - OfferResponse for complete offer details
+/// - LinkResponse for individual link structure
 public class OfferLinksResponse: NSObject, Decodable {
-    
-    /// Link to the current offer request URL of this offer.
+
+    /// Link to this offer resource (self reference).
     public var selflink:LinkResponse
-    
-    /// Link to details about the account that made this offer.
+
+    /// Link to the account that created this offer (offer maker).
     public var seller:LinkResponse
     
     // Properties to encode and decode.

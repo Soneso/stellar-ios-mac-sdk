@@ -9,29 +9,37 @@
 import Foundation
 
 ///  Represents a payment operation response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#payment "Payment Operation")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class PaymentOperationResponse: OperationResponse {
     
-    /// Amount sent.
+    /// Amount of the asset sent.
     public var amount:String
-    
-    /// Asset type (native / alphanum4 / alphanum12)
+
+    /// Asset type (native / alphanum4 / alphanum12).
     public var assetType:String
-    
-    /// Code of the destination asset.
+
+    /// Asset code being sent.
     public var assetCode:String?
-    
+
     /// Asset issuer.
     public var assetIssuer:String?
-    
-    /// Sender of a payment.
+
+    /// Account ID of the payment sender.
     public var from:String
+
+    /// Multiplexed account address of the sender (if used).
     public var fromMuxed:String?
+
+    /// ID of the multiplexed sender account (if used).
     public var fromMuxedId:String?
-    
-    /// Destination of a payment.
+
+    /// Account ID of the payment recipient.
     public var to:String
+
+    /// Multiplexed account address of the recipient (if used).
     public var toMuxed:String?
+
+    /// ID of the multiplexed recipient account (if used).
     public var toMuxedId:String?
     
     // Properties to encode and decode

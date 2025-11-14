@@ -8,7 +8,8 @@
 
 import Foundation
 
-///  Represents an account signer created effect response. See superclass SignerEffect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/accounts.html#signers "Account Signer")
+/// Represents a signer creation effect.
+/// This effect occurs when a new signer is added to an account through a Set Options operation.
+/// The new signer can be used for multi-signature authorization of transactions.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class SignerCreatedEffectResponse: SignerEffectResponse {}

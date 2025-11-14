@@ -8,6 +8,23 @@
 
 import Foundation
 
+/// Represents organization and issuer information from a stellar.toml file.
+///
+/// This class parses and provides access to the DOCUMENTATION section of a domain's
+/// stellar.toml file. It contains organizational details about the asset issuer or
+/// service provider including legal information, contact details, and verification data.
+///
+/// The information in this class helps establish trust and transparency by providing
+/// verifiable details about the organization operating Stellar infrastructure or
+/// issuing assets. This includes legal names, physical addresses with attestations,
+/// social media accounts, and licensing information.
+///
+/// Developers use this class to display issuer information in wallets, verify
+/// organizational legitimacy, and provide users with contact details for support.
+///
+/// See also:
+/// - [StellarToml] for the main stellar.toml parser
+/// - [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 public class IssuerDocumentation {
 
     private enum Keys: String {
@@ -83,7 +100,10 @@ public class IssuerDocumentation {
     
     /// Official license number of the organization, if applicable
     public var orgLicenseNumber: String?
-    
+
+    /// Initializes issuer documentation from a parsed TOML document.
+    ///
+    /// - Parameter toml: The parsed TOML document containing organization information
     public init(fromToml toml:Toml) {
         orgName = toml.string(Keys.orgName.rawValue)
         orgDBA = toml.string(Keys.orgDBA.rawValue)

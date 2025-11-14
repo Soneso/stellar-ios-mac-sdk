@@ -8,21 +8,31 @@
 
 import Foundation
 
-///  Represents the account signer response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account")
-///  See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/accounts.html#signers "Account signers")
-///  Currently there are three flags, used by issuers of assets: Authorization required, Authorization revocable and Authorization immutable.
+/// Represents an account signer with its key, type, and signing weight.
+///
+/// Stellar accounts can have multiple signers for implementing multi-signature authorization.
+/// Each signer has a weight that contributes to meeting operation threshold requirements.
+///
+/// Common signer types:
+/// - ed25519_public_key: Standard Stellar account public key
+/// - sha256_hash: Hash of a preimage (for hash-locked transactions)
+/// - preauth_tx: Hash of a pre-authorized transaction
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - AccountThresholdsResponse for threshold requirements
 public class AccountSignerResponse: NSObject, Decodable {
-    
-    /// The signature weight of the public key of the signer.
+
+    /// Signature weight of this signer. Range: 0-255. Combined with other signers to meet thresholds.
     public var weight:Int
-    
-    /// Key representing the signer that can be different depending on the signer's type.
+
+    /// Signer key, format depends on the type (public key, hash, or preauth transaction hash).
     public var key:String
-    
-    /// Type of the key e.g. ed25519_public_key
+
+    /// Type of signer key: "ed25519_public_key", "sha256_hash", or "preauth_tx".
     public var type:String
-    
+
+    /// Account ID sponsoring this signer's base reserve. Nil if not sponsored.
     public var sponsor:String?
     
      // Properties to encode and decode

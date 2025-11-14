@@ -26,6 +26,46 @@ public typealias ResolveClosure = (_ response:ResolveResponseEnum) -> (Void)
 /// A closure to be called with the response from a federation for domain request.
 public typealias FederationClosure = (_ response:FederationForDomainEnum) -> (Void)
 
+/// Implements SEP-0002 - Federation Protocol.
+///
+/// This class provides human-readable address resolution for Stellar accounts. Instead of using
+/// long cryptographic addresses (G...), users can use addresses like "alice*example.com".
+/// Federation makes Stellar more user-friendly by mapping memorable names to account IDs.
+///
+/// ## Typical Usage
+///
+/// ```swift
+/// // Resolve a Stellar address to account ID
+/// let result = await Federation.resolve(
+///     stellarAddress: "alice*testanchor.stellar.org"
+/// )
+///
+/// switch result {
+/// case .success(let response):
+///     print("Account ID: \(response.accountId)")
+///     if let memo = response.memo {
+///         print("Memo: \(memo)")
+///     }
+/// case .failure(let error):
+///     print("Resolution failed: \(error)")
+/// }
+/// ```
+///
+/// ## Reverse Lookup
+///
+/// ```swift
+/// // Look up address from account ID
+/// let federation = Federation(federationAddress: "https://testanchor.stellar.org/federation")
+/// let result = await federation.resolve(account_id: "GACCOUNT...")
+///
+/// if case .success(let response) = result {
+///     print("Stellar address: \(response.stellarAddress ?? "unknown")")
+/// }
+/// ```
+///
+/// See also:
+/// - [SEP-0002 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)
+/// - [StellarToml] for discovering federation servers
 public class Federation: NSObject {
     
     public var federationAddress: String
@@ -62,7 +102,7 @@ public class Federation: NSObject {
         }
     }
     
-    /// Creates a Federation instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates a Federation instance based on information from the stellar.toml file for a given domain.
     @available(*, renamed: "forDomain(domain:secure:)")
     public static func forDomain(domain:String, secure:Bool = true, completion:@escaping FederationClosure) {
         Task {
@@ -71,7 +111,7 @@ public class Federation: NSObject {
         }
     }
     
-    /// Creates a Federation instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates a Federation instance based on information from the stellar.toml file for a given domain.
     public static func forDomain(domain:String, secure:Bool = true) async -> FederationForDomainEnum {
         
         let result = await StellarToml.from(domain: domain, secure: secure)

@@ -8,7 +8,22 @@
 
 import Foundation
 
-///  Represents a rate limit exceeded error response from the horizon api, containing information related to the error
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/errors/rate-limit-exceeded.html "Rate Limit Exceeded")
+/// HTTP 429 Rate Limit Exceeded error from Horizon indicating too many requests.
+///
+/// This error occurs when:
+/// - Request rate exceeds the configured limit for the Horizon server
+/// - Too many requests sent in a short time period
+/// - Need to implement backoff and retry logic
+///
+/// Check response headers for rate limit information:
+/// - X-RateLimit-Limit: Maximum requests per time window
+/// - X-RateLimit-Remaining: Requests remaining in current window
+/// - X-RateLimit-Reset: Time when rate limit resets
+///
+/// Implement exponential backoff when retrying after rate limit errors.
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - ErrorResponse for common error properties
 public class RateLimitExceededErrorResponse: ErrorResponse {}
 

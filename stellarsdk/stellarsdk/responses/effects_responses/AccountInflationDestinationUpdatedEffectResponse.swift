@@ -6,7 +6,9 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-///  Represents an inflation destination updated effect response. See superclass InflationDestinationUpdatedEffect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/assets.html#inflation "InflationDestinationUpdated")
+/// Represents an inflation destination update effect.
+/// This effect occurs when an account's inflation destination is set or changed through a Set Options operation.
+/// The inflation destination specifies which account receives inflation payouts on behalf of this account.
+/// Note: Inflation is deprecated and no longer active on the Stellar network.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountInflationDestinationUpdatedEffectResponse: EffectResponse {}

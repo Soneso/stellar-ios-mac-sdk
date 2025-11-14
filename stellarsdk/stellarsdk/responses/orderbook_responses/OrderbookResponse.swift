@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a orderbook response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/orderbook.html "Orderbook")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class OrderbookResponse: NSObject, Decodable {
     
     /// An array of prices and amounts accounts are willing to buy for the given selling and buying pair.

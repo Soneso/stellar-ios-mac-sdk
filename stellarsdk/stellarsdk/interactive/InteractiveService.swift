@@ -38,7 +38,175 @@ public typealias Sep24TransactionsResponseClosure = (_ response:Sep24Transaction
 public typealias Sep24TransactionResponseClosure = (_ response:Sep24TransactionResponseEnum) -> (Void)
 
 /// Implements SEP-0024 - Hosted Deposit and Withdrawal.
-///  See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md" target="_blank">Hosted Deposit and Withdrawal</a>
+///
+/// This class provides an interactive flow for deposits and withdrawals where the anchor service
+/// requires user interaction through a web interface. The user completes KYC and other requirements
+/// in the anchor's hosted web application, then the anchor handles the on/off-ramp process.
+///
+/// SEP-0024 enables a standardized way for wallets to integrate with anchor services for fiat on/off-ramps.
+/// The anchor hosts a web interface where users can provide additional information like KYC data,
+/// bank account details, or complete email verification.
+///
+/// ## Typical Workflow
+///
+/// 1. **Initialize Service**: Create InteractiveService from anchor's domain
+/// 2. **Check Capabilities**: Query /info endpoint to see supported assets and features
+/// 3. **Authenticate**: Obtain JWT token using SEP-0010 WebAuthenticator
+/// 4. **Initiate Flow**: Start deposit or withdraw, receive interactive URL
+/// 5. **User Interaction**: Open URL in webview/browser for user to complete requirements
+/// 6. **Monitor Status**: Poll transaction endpoint to track progress
+///
+/// ## Example: Complete Deposit Flow
+///
+/// ```swift
+/// // Step 1: Initialize service from domain
+/// let serviceResult = await InteractiveService.forDomain(
+///     domain: "https://testanchor.stellar.org"
+/// )
+///
+/// guard case .success(let service) = serviceResult else { return }
+///
+/// // Step 2: Check what assets are supported
+/// let infoResult = await service.info()
+/// guard case .success(let info) = infoResult else { return }
+/// print("Supported assets: \(info.deposit.keys)")
+///
+/// // Step 3: Get JWT token (using SEP-0010)
+/// let jwtToken = "..." // Obtained from WebAuthenticator
+///
+/// // Step 4: Initiate deposit
+/// let depositRequest = Sep24DepositRequest(
+///     assetCode: "USDC",
+///     account: userAccountId,
+///     jwt: jwtToken
+/// )
+/// let depositResult = await service.deposit(request: depositRequest)
+///
+/// switch depositResult {
+/// case .success(let response):
+///     // Step 5: Open interactive URL in webview
+///     print("Open this URL: \(response.url)")
+///     // User completes KYC and provides deposit information
+///
+///     // Step 6: Monitor transaction status
+///     let txRequest = Sep24TransactionRequest(
+///         id: response.id,
+///         jwt: jwtToken
+///     )
+///     let statusResult = await service.getTransaction(request: txRequest)
+///     // Check response.transaction.status
+/// case .failure(let error):
+///     print("Deposit initiation failed: \(error)")
+/// }
+/// ```
+///
+/// ## Example: Withdraw Flow
+///
+/// ```swift
+/// let withdrawRequest = Sep24WithdrawRequest(
+///     assetCode: "USDC",
+///     dest: "bank_account",
+///     account: userAccountId,
+///     jwt: jwtToken
+/// )
+///
+/// let result = await service.withdraw(request: withdrawRequest)
+/// switch result {
+/// case .success(let response):
+///     // Open interactive URL
+///     print("Complete withdraw at: \(response.url)")
+///
+///     // User provides bank details and completes verification
+///     // Then sends USDC to the anchor's account
+/// case .failure(let error):
+///     print("Withdraw failed: \(error)")
+/// }
+/// ```
+///
+/// ## Transaction Status Monitoring
+///
+/// ```swift
+/// // Poll for transaction status updates
+/// let txRequest = Sep24TransactionRequest(
+///     id: transactionId,
+///     jwt: jwtToken
+/// )
+///
+/// let result = await service.getTransaction(request: txRequest)
+/// if case .success(let response) = result {
+///     switch response.transaction.status {
+///     case "incomplete":
+///         // User needs to complete interactive flow
+///     case "pending_user_transfer_start":
+///         // Waiting for user to send funds
+///     case "pending_anchor":
+///         // Anchor is processing
+///     case "completed":
+///         // Transaction complete
+///     case "error":
+///         // Transaction failed
+///     default:
+///         break
+///     }
+/// }
+/// ```
+///
+/// ## Fee Information
+///
+/// ```swift
+/// let feeRequest = Sep24FeeRequest(
+///     operation: "deposit",
+///     assetCode: "USDC",
+///     amount: "100",
+///     jwt: jwtToken
+/// )
+///
+/// let feeResult = await service.fee(request: feeRequest)
+/// if case .success(let feeResponse) = feeResult {
+///     print("Fee: \(feeResponse.fee)")
+/// }
+/// ```
+///
+/// ## Error Handling
+///
+/// ```swift
+/// let result = await service.deposit(request: depositRequest)
+/// switch result {
+/// case .success(let response):
+///     // Handle success
+/// case .failure(let error):
+///     switch error {
+///     case .authenticationRequired:
+///         // JWT token missing or expired, re-authenticate with SEP-10
+///     case .anchorError(let message):
+///         // Anchor-specific error (e.g., unsupported asset, amount too large)
+///     case .parsingResponseFailed(let message):
+///         // Response parsing error
+///     case .horizonError(let horizonError):
+///         // Network or HTTP error
+///     }
+/// }
+/// ```
+///
+/// ## Integration with Other SEPs
+///
+/// SEP-0024 often works together with:
+/// - **SEP-0010**: Required for authentication (JWT tokens)
+/// - **SEP-0012**: For standalone KYC (may be handled in interactive flow)
+/// - **SEP-0038**: For cross-asset swaps during deposit/withdraw
+///
+/// ## Security Considerations
+///
+/// - Always use HTTPS for production
+/// - Validate JWT tokens are current
+/// - Open interactive URLs in a secure webview
+/// - Monitor transaction status to detect issues
+/// - Handle user cancellations gracefully
+///
+/// See also:
+/// - [SEP-0024 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
+/// - [WebAuthenticator] for SEP-0010 authentication
+/// - [StellarToml] for service discovery
 public class InteractiveService: NSObject {
 
     public var serviceAddress: String
@@ -51,7 +219,7 @@ public class InteractiveService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
-    /// Creates an InteractiveService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates an InteractiveService instance based on information from the stellar.toml file for a given domain.
     @available(*, renamed: "forDomain(domain:)")
     public static func forDomain(domain:String, completion:@escaping InteractiveServiceClosure) {
         Task {
@@ -60,7 +228,7 @@ public class InteractiveService: NSObject {
         }
     }
     
-    /// Creates an InteractiveService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates an InteractiveService instance based on information from the stellar.toml file for a given domain.
     public static func forDomain(domain:String) async -> InteractiveServiceForDomainEnum {
         let interactiveServerKey = "TRANSFER_SERVER_SEP0024"
         

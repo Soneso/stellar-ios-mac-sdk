@@ -8,7 +8,17 @@
 
 import Foundation
 
+/// Extension providing encoding utilities for String.
 public extension String {
+    /// URL-encodes the string for use in query parameters.
+    ///
+    /// Encodes characters that are not allowed in URL query parameters and keys.
+    ///
+    /// Example:
+    /// ```swift
+    /// let param = "Hello World & More"
+    /// let encoded = param.urlEncoded // "Hello%20World%20%26%20More"
+    /// ```
     var urlEncoded: String? {
         var allowedQueryParamAndKey = NSMutableCharacterSet.urlQueryAllowed
         allowedQueryParamAndKey.remove(charactersIn: ";/?:@&=+$, ")
@@ -16,19 +26,43 @@ public extension String {
         return self.addingPercentEncoding(withAllowedCharacters: allowedQueryParamAndKey)
     }
     
+    /// URL-decodes the string by removing percent encoding.
+    ///
+    /// Example:
+    /// ```swift
+    /// let encoded = "Hello%20World"
+    /// let decoded = encoded.urlDecoded // "Hello World"
+    /// ```
     var urlDecoded: String? {
         return self.removingPercentEncoding
     }
-    
+
+    /// Validates if the string is a fully qualified domain name (FQDN).
+    ///
+    /// - Returns: True if the string matches FQDN format, false otherwise
     var isFullyQualifiedDomainName: Bool {
         let sRegex = "(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-).)+[a-zA-Z]{2,63}.?$)"
         return NSPredicate(format: "SELF MATCHES[c] %@", sRegex).evaluate(with: self)
     }
     
+    /// Extended encoding types beyond standard String.Encoding.
     enum ExtendedEncoding {
+        /// Hexadecimal encoding (converts hex string to binary data).
         case hexadecimal
     }
 
+    /// Converts the string to data using extended encoding types.
+    ///
+    /// For hexadecimal encoding, converts a hex string (with optional "0x" prefix) to binary data.
+    ///
+    /// - Parameter encoding: Extended encoding type to use
+    /// - Returns: Converted data, or nil if conversion fails
+    ///
+    /// Example:
+    /// ```swift
+    /// let hex = "0x1234abcd"
+    /// let data = hex.data(using: .hexadecimal)
+    /// ```
     func data(using encoding:ExtendedEncoding) -> Data? {
         let hexStr = self.dropFirst(self.hasPrefix("0x") ? 2 : 0)
 
@@ -48,6 +82,12 @@ public extension String {
         return newData
     }
     
+    /// Converts a hexadecimal string to WrappedData32.
+    ///
+    /// Removes leading zeros and converts the hex string to 32-byte wrapped data.
+    /// Used for Soroban contract data encoding.
+    ///
+    /// - Returns: WrappedData32 representation of the hex string
     func wrappedData32FromHex() -> WrappedData32 {
         var hex = self
         // remove leading zeros

@@ -9,30 +9,34 @@
 import Foundation
 
 ///  Represents a change trust operation response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#change-trust "Change Trust Operation")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class ChangeTrustOperationResponse: OperationResponse {
     
-    /// Trustor account.
+    /// Account ID of the trustor (the account creating or modifying the trustline).
     public var trustor:String
+
+    /// Multiplexed account address of the trustor (if used).
     public var trustorMuxed:String?
+
+    /// ID of the multiplexed trustor account (if used).
     public var trustorMuxedId:String?
-    
-    /// Trustee account.
+
+    /// Account ID of the trustee (the asset issuer).
     public var trustee:String?
-    
-    /// Asset type (native / alphanum4 / alphanum12)
+
+    /// Asset type (native / alphanum4 / alphanum12 / liquidity_pool_shares).
     public var assetType:String
-    
-    /// Asset code.
+
+    /// Asset code (if not native or liquidity pool shares).
     public var assetCode:String?
-    
-    /// Asset issuer.
+
+    /// Asset issuer (if not native or liquidity pool shares).
     public var assetIssuer:String?
-    
-    /// The limit for the asset.
+
+    /// Trust limit for the asset (if 0, removes the trustline).
     public var limit:String?
-    
-    /// Liquidity pool id if type is liquidity_pool_shares
+
+    /// Liquidity pool ID (if asset type is liquidity_pool_shares).
     public var liquidityPoolId:String?
     
     // Properties to encode and decode

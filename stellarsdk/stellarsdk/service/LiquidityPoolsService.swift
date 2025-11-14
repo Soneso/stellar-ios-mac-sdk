@@ -8,11 +8,13 @@
 
 import Foundation
 
+/// Result enum for liquidity pool details requests.
 public enum LiquidityPoolDetailsResponseEnum {
     case success(details: LiquidityPoolResponse)
     case failure(error: HorizonRequestError)
 }
 
+/// Result enum for liquidity pool trades requests.
 public enum LiquidityPoolTradesResponseEnum {
     case success(details: LiquidityPoolTradesResponse)
     case failure(error: HorizonRequestError)
@@ -21,6 +23,33 @@ public enum LiquidityPoolTradesResponseEnum {
 public typealias LiquidityPoolDetailsResponseClosure = (_ response:LiquidityPoolDetailsResponseEnum) -> (Void)
 public typealias LiquidityPoolTradesResponseClosure = (_ response:LiquidityPoolTradesResponseEnum) -> (Void)
 
+/// Service for querying liquidity pools from the Stellar Horizon API.
+///
+/// Liquidity pools enable automated market making (AMM) on Stellar. Each pool contains
+/// reserves of two assets and allows swapping between them at algorithmically determined prices.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get liquidity pool details
+/// let response = await sdk.liquidityPools.getLiquidityPoolDetails(
+///     liquidityPoolId: "L..."
+/// )
+/// switch response {
+/// case .success(let pool):
+///     print("Total shares: \(pool.totalShares)")
+///     for reserve in pool.reserves {
+///         print("\(reserve.asset): \(reserve.amount)")
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - LiquidityPoolDepositOperation and LiquidityPoolWithdrawOperation
 public class LiquidityPoolsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()

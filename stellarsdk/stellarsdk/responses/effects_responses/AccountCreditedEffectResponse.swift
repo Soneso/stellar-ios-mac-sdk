@@ -8,20 +8,22 @@
 
 import Foundation
 
-///  Represents an account credited effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
+/// Represents an account credit effect.
+/// This effect occurs when an account receives a payment or other credit operation.
+/// Triggered by Payment, Path Payment, Create Claimable Balance claim, and other operations.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountCreditedEffectResponse: EffectResponse {
-    
-    /// Amount credited to the account.
+
+    /// The amount credited to the account.
     public var amount:String
-    
-    /// Asset type credited to this account. E.g. native
+
+    /// The asset type credited to this account (e.g., native, credit_alphanum4, credit_alphanum12).
     public var assetType:String
-    
-    /// Asset code of the asset credited to the account. E.g. BTC, nil if native
+
+    /// The asset code credited to the account. Nil for native assets.
     public var assetCode:String?
-    
-    /// The issuer of the asset credited to the account. Nil if asset type is "native"
+
+    /// The issuer account ID of the asset credited to the account. Nil for native assets.
     public var assetIssuer:String?
     
     // Properties to encode and decode

@@ -8,17 +8,24 @@
 
 import Foundation
 
-/// Represents the links connected to an effect response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
+/// Navigation links for effect-related resources.
+///
+/// Provides hypermedia links to resources associated with an effect, including
+/// the operation that produced it and chronologically adjacent effects.
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - EffectResponse for complete effect details
+/// - LinkResponse for individual link structure
 public class EffectLinksResponse: NSObject, Decodable {
-    
-    /// Link to the operation that created the effect.
+
+    /// Link to the operation that produced this effect.
     public var operation:LinkResponse
-    
-    /// Link to the next effect.
+
+    /// Templated link to effects that occurred chronologically after this one.
     public var precedes:LinkResponse
-    
-    /// Link to the previous effect.
+
+    /// Templated link to effects that occurred chronologically before this one.
     public var succeeds:LinkResponse
     
     

@@ -8,7 +8,8 @@
 
 import Foundation
 
-///  Represents a trustline updated effect response. See superclass TrustlineEffect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/assets.html#trustlines "Trustlines")
+/// Represents a trustline update effect.
+/// This effect occurs when an existing trustline's limit is modified through a Change Trust operation.
+/// The account can increase or decrease the maximum amount of the asset it is willing to hold.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class TrustlineUpdatedEffectResponse: TrustlineEffectResponse {}

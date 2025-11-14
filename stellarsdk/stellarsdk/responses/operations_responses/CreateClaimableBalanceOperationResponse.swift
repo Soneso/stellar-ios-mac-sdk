@@ -8,11 +8,21 @@
 
 import Foundation
 
+/// Represents a create claimable balance operation response.
+/// This operation creates a claimable balance entry that can be claimed by specified claimants, enabling conditional payments on the Stellar network.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class CreateClaimableBalanceOperationResponse: OperationResponse {
-    
+
+    /// Account ID that sponsors the claimable balance reserves (if sponsored).
     public var sponsor:String?
+
+    /// Asset held in the claimable balance.
     public var asset:Asset
+
+    /// Amount of the asset in the claimable balance.
     public var amount:String
+
+    /// List of claimants who can claim this balance.
     public var claimants: [ClaimantResponse]
     
     // Properties to encode and decode

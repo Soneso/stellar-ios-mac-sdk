@@ -8,7 +8,61 @@
 
 import Foundation
 
-/// Response that will be received when submitting a trial contract invocation.
+/// Response from simulating a Soroban contract invocation.
+///
+/// Contains all information needed to understand what will happen when a transaction executes:
+/// - Return values from contract function calls
+/// - Resource requirements (CPU instructions, memory, I/O)
+/// - Ledger footprint (which ledger entries will be read/written)
+/// - Authorization requirements for multi-party transactions
+/// - Events emitted during simulation
+/// - Required fees and resource costs
+///
+/// Use this response to:
+/// - Get results from read-only contract calls without submitting a transaction
+/// - Determine resource limits before submitting a write transaction
+/// - Check if ledger entries need restoration before invocation
+/// - Validate that a transaction will succeed before submission
+///
+/// Before submitting a write transaction, you must:
+/// 1. Simulate the transaction
+/// 2. Use transactionData and minResourceFee from the simulation
+/// 3. Add these to your transaction
+/// 4. Sign and submit
+///
+/// Example:
+/// ```swift
+/// let simResponse = await server.simulateTransaction(simulateTxRequest: request)
+/// switch simResponse {
+/// case .success(let simulation):
+///     // Check for errors
+///     if let error = simulation.error {
+///         print("Simulation failed: \(error)")
+///         return
+///     }
+///
+///     // Check if restoration is needed
+///     if let restore = simulation.restorePreamble {
+///         print("Must restore footprint first")
+///         // Submit RestoreFootprint operation
+///     }
+///
+///     // Get return value for read calls
+///     if let result = simulation.results?.first?.returnValue {
+///         print("Contract returned: \(result)")
+///     }
+///
+///     // For write calls, use simulation data
+///     transaction.setSorobanTransactionData(simulation.transactionData!)
+///     transaction.addResourceFee(simulation.minResourceFee!)
+/// case .failure(let error):
+///     print("RPC error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [SorobanServer.simulateTransaction] for invoking simulation
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class SimulateTransactionResponse: NSObject, Decodable {
     
     /// (optional) - This array will only have one element: the result for the Host Function invocation. Only present on successful simulation (i.e. no error) of InvokeHostFunction operations.

@@ -8,9 +8,20 @@
 
 import Foundation
 
+/// Extension providing base64 encoding and decoding for String.
 extension String {
-    
-    /// Base64 encoding a string
+
+    /// Encodes the string to base64 format.
+    ///
+    /// Converts the string to UTF-8 data and then encodes it as a base64 string.
+    ///
+    /// - Returns: Base64-encoded string, or nil if encoding fails
+    ///
+    /// Example:
+    /// ```swift
+    /// let text = "Hello, Stellar!"
+    /// let encoded = text.base64Encoded()
+    /// ```
     public func base64Encoded() -> String? {
         if let data = self.data(using: .utf8) {
             return data.base64EncodedString()
@@ -18,7 +29,17 @@ extension String {
         return nil
     }
     
-    /// Base64 decoding a string
+    /// Decodes a base64-encoded string.
+    ///
+    /// Decodes the base64 string to data and then converts it to a UTF-8 string.
+    ///
+    /// - Returns: Decoded string, or nil if decoding fails
+    ///
+    /// Example:
+    /// ```swift
+    /// let encoded = "SGVsbG8sIFN0ZWxsYXIh"
+    /// let decoded = encoded.base64Decoded() // "Hello, Stellar!"
+    /// ```
     public func base64Decoded() -> String? {
         if let data = Data(base64Encoded: self) {
             return String(data: data, encoding: .utf8)

@@ -57,7 +57,208 @@ public typealias PutCustomerCallbackResponseClosure = (_ response:PutCustomerCal
 public typealias PostCustomerFileResponseClosure = (_ response:PostCustomerFileResponseEnum) -> (Void)
 public typealias GetCustomerFilesResponseClosure = (_ response:GetCustomerFilesResponseEnum) -> (Void)
 
-
+/// Implements SEP-0012 - KYC API.
+///
+/// This class provides standardized endpoints for transmitting KYC and AML information to anchors
+/// and other services. It allows customers to upload their identity information and status tracking
+/// for deposit/withdrawal operations requiring identity verification.
+///
+/// SEP-0012 is designed to work with SEP-6 (Deposit/Withdrawal) and SEP-24 (Interactive Deposit/Withdrawal)
+/// to enable regulated on/off-ramp operations that require customer identity verification.
+///
+/// ## Typical Workflow
+///
+/// 1. **Initialize Service**: Create KycService from anchor's domain
+/// 2. **Authenticate**: Obtain JWT token using SEP-0010 WebAuthenticator
+/// 3. **Get Required Fields**: Query which KYC fields the anchor requires
+/// 4. **Upload Information**: Submit customer data and supporting documents
+/// 5. **Check Status**: Monitor KYC verification status
+///
+/// ## Example: Complete KYC Flow
+///
+/// ```swift
+/// // Step 1: Initialize service from domain
+/// let serviceResult = await KycService.forDomain(
+///     domain: "https://testanchor.stellar.org"
+/// )
+///
+/// guard case .success(let kycService) = serviceResult else { return }
+///
+/// // Step 2: Get JWT token (using SEP-0010)
+/// let jwtToken = "..." // Obtained from WebAuthenticator
+///
+/// // Step 3: Check what fields are required
+/// let getRequest = GetCustomerInfoRequest(
+///     account: userAccountId,
+///     jwt: jwtToken
+/// )
+///
+/// let getResult = await kycService.getCustomerInfo(request: getRequest)
+/// switch getResult {
+/// case .success(let response):
+///     if response.status == "NEEDS_INFO" {
+///         // Check response.fields to see what's required
+///         print("Required fields: \(response.fields?.keys ?? [])")
+///     }
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+///
+/// // Step 4: Upload customer information
+/// let putRequest = PutCustomerInfoRequest(jwt: jwtToken)
+/// putRequest.account = userAccountId
+/// putRequest.firstName = "John"
+/// putRequest.lastName = "Doe"
+/// putRequest.emailAddress = "john@example.com"
+/// putRequest.birthDate = "1990-01-01"
+///
+/// let putResult = await kycService.putCustomerInfo(request: putRequest)
+/// switch putResult {
+/// case .success(let response):
+///     print("Customer ID: \(response.id ?? "")")
+///     print("Status: \(response.status ?? "")")
+/// case .failure(let error):
+///     print("Upload failed: \(error)")
+/// }
+/// ```
+///
+/// ## Example: Upload Documents
+///
+/// ```swift
+/// // Upload a file (e.g., photo ID)
+/// let photoData = ... // Image data
+/// let fileResult = await kycService.postCustomerFile(
+///     file: photoData,
+///     jwtToken: jwtToken
+/// )
+///
+/// switch fileResult {
+/// case .success(let response):
+///     // Use file ID in PUT /customer request
+///     let fileId = response.id
+///
+///     let putRequest = PutCustomerInfoRequest(jwt: jwtToken)
+///     putRequest.account = userAccountId
+///     putRequest.photoIdFrontFileId = fileId
+///
+///     let result = await kycService.putCustomerInfo(request: putRequest)
+/// case .failure(let error):
+///     print("File upload failed: \(error)")
+/// }
+/// ```
+///
+/// ## Example: Verify Email/Phone
+///
+/// ```swift
+/// // Some anchors require verification of email or phone
+/// // First, submit the contact info
+/// let putRequest = PutCustomerInfoRequest(jwt: jwtToken)
+/// putRequest.account = userAccountId
+/// putRequest.emailAddress = "user@example.com"
+/// await kycService.putCustomerInfo(request: putRequest)
+///
+/// // User receives verification code via email
+/// // Submit the verification code
+/// let verifyRequest = PutCustomerVerificationRequest(
+///     id: customerId,
+///     jwt: jwtToken
+/// )
+/// verifyRequest.emailAddressVerification = "123456" // Code from email
+///
+/// let result = await kycService.putCustomerVerification(request: verifyRequest)
+/// ```
+///
+/// ## Example: Check KYC Status
+///
+/// ```swift
+/// let getRequest = GetCustomerInfoRequest(
+///     account: userAccountId,
+///     jwt: jwtToken
+/// )
+///
+/// let result = await kycService.getCustomerInfo(request: getRequest)
+/// if case .success(let response) = result {
+///     switch response.status {
+///     case "ACCEPTED":
+///         // KYC approved, can proceed with transactions
+///     case "PROCESSING":
+///         // KYC under review
+///     case "NEEDS_INFO":
+///         // Additional information required
+///     case "REJECTED":
+///         // KYC rejected
+///     default:
+///         break
+///     }
+/// }
+/// ```
+///
+/// ## Example: Set Status Callback
+///
+/// ```swift
+/// // Get notified when KYC status changes
+/// let callbackRequest = PutCustomerCallbackRequest(
+///     url: "https://yourapp.com/kyc-callback",
+///     jwt: jwtToken
+/// )
+///
+/// let result = await kycService.putCustomerCallback(request: callbackRequest)
+/// ```
+///
+/// ## Example: Delete Customer Data
+///
+/// ```swift
+/// // Delete all customer information (GDPR compliance)
+/// let result = await kycService.deleteCustomerInfo(
+///     account: userAccountId,
+///     jwt: jwtToken
+/// )
+/// ```
+///
+/// ## Error Handling
+///
+/// ```swift
+/// let result = await kycService.putCustomerInfo(request: putRequest)
+/// switch result {
+/// case .success(let response):
+///     // Handle success
+/// case .failure(let error):
+///     switch error {
+///     case .badRequest(let message):
+///         // Invalid field values or missing required fields
+///     case .unauthorized(let message):
+///         // JWT token invalid or expired
+///     case .notFound(let message):
+///         // Customer not found
+///     case .payloadTooLarge(let message):
+///         // File too large
+///     case .horizonError(let horizonError):
+///         // Network or server error
+///     }
+/// }
+/// ```
+///
+/// ## Integration with Other SEPs
+///
+/// SEP-0012 is typically used alongside:
+/// - **SEP-0010**: Required for authentication (JWT tokens)
+/// - **SEP-6**: Non-interactive deposits/withdrawals requiring KYC
+/// - **SEP-24**: Interactive deposits/withdrawals (may handle KYC in UI)
+/// - **SEP-31**: Cross-border payments requiring sender/receiver KYC
+///
+/// ## Data Privacy
+///
+/// - Customer data is sensitive and should be transmitted securely
+/// - Use HTTPS for all requests
+/// - Implement proper data retention policies
+/// - Provide data deletion functionality for GDPR compliance
+/// - Store JWT tokens securely
+///
+/// See also:
+/// - [SEP-0012 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)
+/// - [WebAuthenticator] for SEP-0010 authentication
+/// - [TransferServerService] for SEP-6 integration
+/// - [InteractiveService] for SEP-24 integration
 public class KycService: NSObject {
 
     public var kycServiceAddress: String
@@ -70,7 +271,7 @@ public class KycService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
-    /// Creates a KycService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates a KycService instance based on information from the stellar.toml file for a given domain.
     @available(*, renamed: "forDomain(domain:)")
     public static func forDomain(domain:String, completion:@escaping KycServiceClosure) {
         Task {
@@ -79,7 +280,7 @@ public class KycService: NSObject {
         }
     }
     
-    /// Creates a KycService instance based on information from [stellar.toml](https://www.stellar.org/developers/learn/concepts/stellar-toml.html) file for a given domain.
+    /// Creates a KycService instance based on information from the stellar.toml file for a given domain.
     public static func forDomain(domain:String) async -> KycServiceForDomainEnum {
         let kycServerKey = "KYC_SERVER"
         let transferServerKey = "TRANSFER_SERVER"

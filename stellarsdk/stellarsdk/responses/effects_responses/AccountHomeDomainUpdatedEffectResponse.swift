@@ -8,12 +8,13 @@
 
 import Foundation
 
-///  Represents an account home domain updated effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/accounts.html#home-domain "Home Domain")
+/// Represents an account home domain update effect.
+/// This effect occurs when an account's home domain is set or changed through a Set Options operation.
+/// The home domain is used to link the account to a domain name for federation and additional account information.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountHomeDomainUpdatedEffectResponse: EffectResponse {
-    
-    /// The home domain of the account.
+
+    /// The updated home domain of the account.
     public var homeDomain:String
     
     // Properties to encode and decode

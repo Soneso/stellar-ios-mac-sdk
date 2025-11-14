@@ -8,6 +8,16 @@
 
 import Foundation
 
+/// Response returned when initiating a deposit transaction.
+///
+/// This response is returned by GET /deposit and GET /deposit-exchange requests in SEP-6.
+/// It provides instructions for how to complete the deposit, including where to send the
+/// off-chain funds and any additional information needed.
+///
+/// The wallet should use the transaction ID to query the GET /transaction endpoint to check
+/// the status of the deposit.
+///
+/// See [SEP-6 Deposit](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#deposit-2)
 public struct DepositResponse: Decodable {
 
     /// (Deprecated, use instructions instead) Terse but complete instructions for how to deposit the asset. In the case of most cryptocurrencies it is just an address to which the deposit should be sent.
@@ -71,11 +81,17 @@ public struct DepositResponse: Decodable {
     
 }
 
+/// Instruction for completing the off-chain deposit.
+///
+/// Contains SEP-9 financial account fields that describe how to complete the deposit.
+/// Each instruction provides a value and description for a specific field.
+///
+/// See [SEP-6 Deposit Response](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#response)
 public struct DepositInstruction: Decodable {
 
     /// The value of the field.
     public var value:String
-    
+
     /// A human-readable description of the field. This can be used by an anchor
     /// to provide any additional information about fields that are not defined
     /// in the SEP-9 standard.
@@ -101,6 +117,11 @@ public struct DepositInstruction: Decodable {
 }
 
 
+/// Additional information about the deposit process.
+///
+/// Contains optional messages or details that provide context about the deposit.
+///
+/// See [SEP-6 Deposit Response](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#response)
 public struct ExtraInfo: Decodable {
 
     /// (optional) Additional details about the deposit process.

@@ -8,19 +8,25 @@
 
 import Foundation
 
-/// An enum used to diferentiate between successful and failed account details responses.
+/// Result enum for account details requests.
+///
+/// Represents either a successful account retrieval or an error.
 public enum AccountResponseEnum {
     case success(details: AccountResponse)
     case failure(error: HorizonRequestError)
 }
 
-/// An enum used to diferentiate between successful and failed data for account responses.
+/// Result enum for account data field requests.
+///
+/// Represents either successful retrieval of an account's data field or an error.
 public enum DataForAccountResponseEnum {
     case success(details: DataForAccountResponse)
     case failure(error: HorizonRequestError)
 }
 
-/// An enum used to diferentiate between successful and failed create test account responses.
+/// Result enum for test account creation requests.
+///
+/// Used for creating accounts on testnet and futurenet via Friendbot.
 public enum CreateTestAccountResponseEnum {
     case success(details: Any)
     case failure(error: HorizonRequestError)
@@ -28,12 +34,40 @@ public enum CreateTestAccountResponseEnum {
 
 /// A closure to be called with the response from a create test account request.
 public typealias CreateTestAccountClosure = (_ response:CreateTestAccountResponseEnum) -> (Void)
-/// A closure to be called with the response from a account details request.
+/// A closure to be called with the response from an account details request.
 public typealias AccountResponseClosure = (_ response:AccountResponseEnum) -> (Void)
-/// A closure to be called with the response from a data for account requrst.
+/// A closure to be called with the response from a data for account request.
 public typealias DataForAccountResponseClosure = (_ response:DataForAccountResponseEnum) -> (Void)
 
-/// Class that handles account related calls.
+/// Service for querying account information from the Stellar Horizon API.
+///
+/// The AccountService provides methods to retrieve account details, query account data fields,
+/// filter accounts by various criteria, and create test accounts on testnet and futurenet.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get account details
+/// let accountResponse = await sdk.accounts.getAccountDetails(accountId: "GACCOUNT...")
+/// switch accountResponse {
+/// case .success(let account):
+///     print("Sequence: \(account.sequenceNumber)")
+///     print("Balances: \(account.balances)")
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+///
+/// // Query accounts holding a specific asset
+/// let assetAccounts = await sdk.accounts.getAccounts(
+///     asset: "USD:GISSUER...",
+///     limit: 20
+/// )
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - AccountResponse for the account data structure
 open class AccountService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
@@ -47,7 +81,7 @@ open class AccountService: NSObject {
     }
     
     /// Provides information and links relating to a single account.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/accounts-single.html "Account Details")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter accountId: A stellar account ID for an already created account. An stellar account is created when min. one lumen has been sent to a new public key / account ID.
     /// - Parameter response: The closure to be called upon response.
@@ -60,12 +94,34 @@ open class AccountService: NSObject {
         }
     }
     
-    /// Provides information and links relating to a single account.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/accounts-single.html "Account Details")
+    /// Retrieves detailed information about a single Stellar account.
     ///
-    /// - Parameter accountId: A stellar account ID for an already created account. An stellar account is created when min. one lumen has been sent to a new public key / account ID.
-    /// - Parameter response: The closure to be called upon response.
+    /// Returns account data including balances, signers, thresholds, flags, sequence number,
+    /// and other account properties. Supports both regular accounts (G-addresses) and
+    /// muxed accounts (M-addresses).
     ///
+    /// - Parameter accountId: The Stellar account ID (public key). Accepts G-addresses for regular
+    ///                        accounts or M-addresses for muxed accounts. For muxed accounts, the
+    ///                        underlying ed25519 account is queried automatically.
+    ///
+    /// - Returns: AccountResponseEnum with account details on success or error on failure
+    ///
+    /// Example:
+    /// ```swift
+    /// let response = await sdk.accounts.getAccountDetails(accountId: "GACCOUNT...")
+    /// switch response {
+    /// case .success(let account):
+    ///     print("Sequence: \(account.sequenceNumber)")
+    ///     for balance in account.balances {
+    ///         print("\(balance.assetCode): \(balance.balance)")
+    ///     }
+    /// case .failure(let error):
+    ///     print("Error: \(error)")
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
     open func getAccountDetails(accountId: String) async -> AccountResponseEnum {
         var requestPath = "/accounts/\(accountId)"
         if accountId.hasPrefix("M"), let mux = try? accountId.decodeMuxedAccount() {
@@ -87,7 +143,7 @@ open class AccountService: NSObject {
     }
 
     /// Each account in the Stellar network can contain multiple key/value pairs associated with it. This fuction can be used to retrieve value of such a data key.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/data-for-account.html "Data for Account")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter accountId: A stellar account ID for an already created account. An stellar account is created when it has a minimum balance of 1 lumen.
     /// - Parameter key: Key name of the requested data field.
@@ -101,13 +157,38 @@ open class AccountService: NSObject {
         }
     }
     
-    /// Each account in the Stellar network can contain multiple key/value pairs associated with it. This fuction can be used to retrieve value of such a data key.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/data-for-account.html "Data for Account")
+    /// Retrieves a specific data entry from an account's key-value store.
     ///
-    /// - Parameter accountId: A stellar account ID for an already created account. An stellar account is created when it has a minimum balance of 1 lumen.
-    /// - Parameter key: Key name of the requested data field.
-    /// - Parameter response: The closure to be called upon response.
+    /// Each Stellar account can store arbitrary key-value pairs using the ManageDataOperation.
+    /// This method retrieves the base64-encoded value for a given key. Returns 404 if the
+    /// account doesn't exist or the key is not found.
     ///
+    /// - Parameters:
+    ///   - accountId: The Stellar account ID containing the data entry
+    ///   - key: The name of the data field to retrieve
+    ///
+    /// - Returns: DataForAccountResponseEnum with the base64-encoded value on success or error on failure
+    ///
+    /// Example:
+    /// ```swift
+    /// let response = await sdk.accounts.getDataForAccount(
+    ///     accountId: "GACCOUNT...",
+    ///     key: "user_email"
+    /// )
+    /// switch response {
+    /// case .success(let data):
+    ///     // Decode base64 value
+    ///     if let decoded = Data(base64Encoded: data.value) {
+    ///         print("Value: \(String(data: decoded, encoding: .utf8) ?? "")")
+    ///     }
+    /// case .failure(let error):
+    ///     print("Error: \(error)")
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
+    /// - ManageDataOperation for setting account data
     open func getDataForAccount(accountId: String, key: String) async -> DataForAccountResponseEnum {
         let requestPath = "/accounts/\(accountId)/data/\(key)"
         
@@ -145,17 +226,35 @@ open class AccountService: NSObject {
         }
     }
     
-    /// On Stellar’s test network, you can ask Friendbot, the Stellar friendly robot with a very fat wallet, to create an account for you.
-    /// To create such a test account, this fuction will send Friendbot the public key you created. Friendbot will create and fund a new account using that public key as the account ID.
+    /// Creates and funds a test account on Stellar's testnet using Friendbot.
     ///
+    /// Friendbot is a service that creates and funds new accounts on testnet with 10,000 XLM.
+    /// This is useful for testing and development. Only works on testnet, not on the public network.
     ///
-    /// - Parameter accountId: A Stellar account ID. This can be generated using the KeyPair class:
+    /// - Parameter accountId: A Stellar account ID (public key starting with G). Generate using
+    ///                        KeyPair.generateRandomKeyPair().accountId
     ///
-    ///                             let myKeyPair = try KeyPair.generateRandomKeyPair()
-    ///                             let accountId = myKeyPair.accountId
+    /// - Returns: CreateTestAccountResponseEnum with success or error
     ///
-    /// - Parameter response:  The closure to be called upon response.
+    /// Example:
+    /// ```swift
+    /// // Generate a new keypair
+    /// let keyPair = try KeyPair.generateRandomKeyPair()
+    /// let accountId = keyPair.accountId
     ///
+    /// // Create and fund the account on testnet
+    /// let response = await sdk.accounts.createTestAccount(accountId: accountId)
+    /// switch response {
+    /// case .success:
+    ///     print("Test account created: \(accountId)")
+    /// case .failure(let error):
+    ///     print("Error: \(error)")
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - createFutureNetTestAccount for creating accounts on futurenet
+    /// - [Stellar developer docs](https://developers.stellar.org)
     open func createTestAccount(accountId:String) async -> CreateTestAccountResponseEnum {
         
         let url = URL(string: "https://horizon-testnet.stellar.org/friendbot")
@@ -200,15 +299,30 @@ open class AccountService: NSObject {
         }
     }
     
-    /// Creates an account on futurenet
+    /// Creates and funds a test account on Stellar's futurenet using Friendbot.
     ///
-    /// - Parameter accountId: A Stellar account ID. This can be generated using the KeyPair class:
+    /// Futurenet is used for testing upcoming protocol features before they reach testnet.
+    /// This method creates and funds new accounts on futurenet for early testing.
     ///
-    ///                             let myKeyPair = try KeyPair.generateRandomKeyPair()
-    ///                             let accountId = myKeyPair.accountId
+    /// - Parameter accountId: A Stellar account ID (public key starting with G). Generate using
+    ///                        KeyPair.generateRandomKeyPair().accountId
     ///
-    /// - Parameter response:  The closure to be called upon response.
+    /// - Returns: CreateTestAccountResponseEnum with success or error
     ///
+    /// Example:
+    /// ```swift
+    /// let keyPair = try KeyPair.generateRandomKeyPair()
+    /// let response = await sdk.accounts.createFutureNetTestAccount(accountId: keyPair.accountId)
+    /// switch response {
+    /// case .success:
+    ///     print("Futurenet account created")
+    /// case .failure(let error):
+    ///     print("Error: \(error)")
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - createTestAccount for creating accounts on testnet
     open func createFutureNetTestAccount(accountId:String) async -> CreateTestAccountResponseEnum {
         
         let url = URL(string: "https://friendbot-futurenet.stellar.org")
@@ -240,7 +354,7 @@ open class AccountService: NSObject {
     ///
     /// To find all accounts who are trustees to an asset, pass the query parameter asset using the canonical representation for an issued assets which is Code:IssuerAccountID. Read more about canonical representation of assets in SEP-0011.
     ///
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/accounts.html "Accounts")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
     ///
@@ -259,21 +373,54 @@ open class AccountService: NSObject {
         }
     }
     
-    /// This endpoint allows filtering accounts who have a given signer or have a trustline to an asset. The result is a list of accounts.
+    /// Queries accounts with optional filtering by signer, asset, sponsor, or liquidity pool.
     ///
-    /// To find all accounts who are trustees to an asset, pass the query parameter asset using the canonical representation for an issued assets which is Code:IssuerAccountID. Read more about canonical representation of assets in SEP-0011.
+    /// This endpoint allows you to search for accounts that match specific criteria. All filter
+    /// parameters are optional - use them individually or in combination to narrow your search.
+    /// Results are returned as a paginated list.
     ///
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/accounts.html "Accounts")
+    /// - Parameters:
+    ///   - signer: Filter accounts that have this account as a signer
+    ///   - asset: Filter accounts with trustlines to this asset. Use canonical form "CODE:ISSUER"
+    ///            (e.g., "USD:GISSUER...") or "native" for XLM. See SEP-0011 for asset representation.
+    ///   - sponsor: Filter accounts sponsored by this account ID
+    ///   - liquidityPoolId: Filter accounts participating in this liquidity pool (L-address or hex)
+    ///   - cursor: Pagination cursor to start from. Use nil to start from the beginning.
+    ///   - order: Sort order - .ascending or .descending. Default is ascending.
+    ///   - limit: Maximum number of records per page. Default is 10, maximum is 200.
     ///
-    /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
+    /// - Returns: PageResponse containing matching accounts or error
     ///
-    /// - Parameter signer: Optional. Account ID.
-    /// - Parameter asset: Optional. An issued asset represented in coanolical form ("native" or "Code:IssuerAccountID").
-    /// - Parameter sponsor: Optional. Account ID.
-    /// - Parameter liquidityPoolId: Liquidity Pool ID
-    /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
-    /// - Parameter order: Optional. The order in which to return rows, “asc” or “desc”, ordered by assetCode then by assetIssuer.
-    /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
+    /// Example:
+    /// ```swift
+    /// // Find accounts holding a specific asset
+    /// let response = await sdk.accounts.getAccounts(
+    ///     asset: "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+    ///     limit: 50
+    /// )
+    /// switch response {
+    /// case .success(let page):
+    ///     for account in page.records {
+    ///         print("Account: \(account.accountId)")
+    ///     }
+    ///     // Load next page if available
+    ///     if page.hasNextPage() {
+    ///         let nextPage = await page.getNextPage()
+    ///     }
+    /// case .failure(let error):
+    ///     print("Error: \(error)")
+    /// }
+    ///
+    /// // Find accounts with a specific signer
+    /// let signerAccounts = await sdk.accounts.getAccounts(
+    ///     signer: "GSIGNER...",
+    ///     order: .descending
+    /// )
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
+    /// - PageResponse for pagination methods
     open func getAccounts(signer:String? = nil, asset:String? = nil, sponsor:String? = nil, liquidityPoolId:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<AccountResponse>.ResponseEnum {
         var requestPath = "/accounts"
         
@@ -311,10 +458,26 @@ open class AccountService: NSObject {
         }
     }
     
-    /// Loads accounts for a given url if valid. E.g. for a "next" link from a PageResponse<AccountResponse> object.
+    /// Loads accounts from a specific URL.
     ///
-    /// - Parameter url: The url to be used to load the accounts.
+    /// Used internally for pagination. Can be called directly with URLs from PageResponse
+    /// links (e.g., next, prev) to navigate paginated results.
     ///
+    /// - Parameter url: The complete URL to fetch accounts from. Typically obtained from
+    ///                  PageResponse.links.next.href or PageResponse.links.prev.href
+    ///
+    /// - Returns: PageResponse containing accounts or error
+    ///
+    /// Example:
+    /// ```swift
+    /// // Manual pagination using URL
+    /// if let nextUrl = accountsPage.links.next?.href {
+    ///     let nextPage = await sdk.accounts.getAccountsFromUrl(url: nextUrl)
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - PageResponse.getNextPage for automatic pagination
     open func getAccountsFromUrl(url:String) async -> PageResponse<AccountResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {

@@ -9,5 +9,5 @@
 import Foundation
 
 ///  Represents an inflation operation response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#inflation "Inflation Operation")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class InflationOperationResponse: OperationResponse {}

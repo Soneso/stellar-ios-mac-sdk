@@ -8,20 +8,67 @@
 
 import Foundation
 
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/page.html "Page")
+/// Generic paginated response wrapper for Horizon API list endpoints.
+///
+/// The Stellar Horizon API returns large result sets as pages to avoid overwhelming
+/// clients and servers. PageResponse provides the current page of results along with
+/// navigation links to access previous and next pages.
+///
+/// Pagination uses cursor-based navigation, where each record has a unique paging token.
+/// Results are ordered by the specified sort order (ascending or descending).
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// // Get first page of transactions
+/// let response = await sdk.transactions.getTransactions(
+///     limit: 20,
+///     order: .descending
+/// )
+///
+/// switch response {
+/// case .success(let page):
+///     // Process current page
+///     print("Fetched \(page.records.count) transactions")
+///
+///     for transaction in page.records {
+///         print("Hash: \(transaction.hash)")
+///     }
+///
+///     // Navigate to next page if available
+///     if page.hasNextPage() {
+///         let nextPage = await page.getNextPage()
+///         // Process next page...
+///     }
+///
+///     // Or get cursor for later pagination
+///     if let nextLink = page.links.next?.href {
+///         // Save cursor from URL for later use
+///     }
+///
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - PagingLinksResponse for navigation links
 public struct PageResponse<Element:Decodable>: Decodable {
-    
+
+    /// Result enum for page requests.
     public enum ResponseEnum {
         case success(page: PageResponse)
         case failure(error: HorizonRequestError)
     }
-    
+
     public typealias ResponseClosure = (_ response:ResponseEnum) -> (Void)
-    
-    /// A list of links related to this response.
+
+    /// Navigation links for this page including self, next, and prev URLs.
     public var links:PagingLinksResponse
-    
-    /// records found in the response.
+
+    /// Array of records returned in this page.
     public var records:[Element]
     
     // Properties to encode and decode

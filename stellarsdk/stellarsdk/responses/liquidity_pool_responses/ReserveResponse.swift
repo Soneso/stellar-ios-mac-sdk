@@ -8,9 +8,15 @@
 
 import Foundation
 
+/// Represents a reserve asset in a liquidity pool.
+/// Each liquidity pool maintains reserves of two assets that are used for trading.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ReserveResponse: NSObject, Decodable {
-    
+
+    /// The amount of the asset held in reserve.
     public var amount:String
+
+    /// The asset held in this reserve.
     public var asset:Asset
    
     

@@ -8,7 +8,8 @@
 
 import Foundation
 
-///  Represents an offer created effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/exchange.html#offers "Offer")
+/// Represents an offer creation effect.
+/// This effect occurs when a new offer to buy or sell assets is created on the Stellar decentralized exchange (DEX).
+/// Triggered by the Manage Sell Offer, Manage Buy Offer, or Create Passive Sell Offer operations.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class OfferCreatedEffectResponse: EffectResponse {}

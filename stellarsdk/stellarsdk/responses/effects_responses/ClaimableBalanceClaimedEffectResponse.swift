@@ -8,15 +8,20 @@
 
 import Foundation
 
+/// Represents a claimable balance claimed effect.
+/// This effect occurs when a claimable balance is successfully claimed by an eligible claimant.
+/// The balance is transferred to the claimant's account and removed from the ledger.
+/// Triggered by the Claim Claimable Balance operation.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimableBalanceClaimedEffectResponse: EffectResponse {
-    
-    // unique ID of claimable balance
+
+    /// The unique identifier of the claimable balance that was claimed.
     public var balanceId:String
-    
-    /// asset available to be claimed (in canonical form)
+
+    /// The asset that was claimed.
     public var asset:Asset
-    
-    /// amount available to be claimed
+
+    /// The amount that was claimed.
     public var amount:String
     
     // Properties to encode and decode

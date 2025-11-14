@@ -9,8 +9,7 @@
 import Foundation
 
 ///  Represents an asset response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/assets-all.html "All Assets Request")
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/asset.html "Asset")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class AssetResponse: NSObject, Decodable {
     
     /// A list of links related to this asset.
@@ -24,13 +23,17 @@ public class AssetResponse: NSObject, Decodable {
     
      /// The issuer of this asset. Nil if assetType is "native"
     public var assetIssuer:String?
-    
+
+    /// Statistics about the number of accounts holding this asset by authorization status.
     public var accounts:AssetAccounts
-    
+
+    /// The number of claimable balances holding this asset.
     public var numClaimableBalances:Int
-    
+
+    /// Statistics about the total amounts held by accounts by authorization status.
     public var balances:AssetBalances
-    
+
+    /// The total amount of this asset held in claimable balances.
     public var claimableBalancesAmount:Decimal
     
     /// The flags on this asset of types: auth_required, auth_revocable, auth_immutable.
@@ -38,12 +41,17 @@ public class AssetResponse: NSObject, Decodable {
     
     /// A paging token suitable for use as the cursor parameter to assets collection resources.
     public var pagingToken:String
-    
+
+    /// The number of liquidity pools that include this asset.
     public var numLiquidityPools:Int
+
+    /// The total amount of this asset held in liquidity pools.
     public var liquidityPoolsAmount:String
-    
-    // soroban
+
+    /// The number of Soroban smart contracts that hold this asset. Optional, only present for Soroban-enabled networks.
     public var numContracts:Int?
+
+    /// The total amount of this asset held in Soroban smart contracts. Optional, only present for Soroban-enabled networks.
     public var contractsAmount:String?
     
     // Properties to encode and decode
@@ -89,10 +97,17 @@ public class AssetResponse: NSObject, Decodable {
     }
 }
 
+/// Statistics about the number of accounts holding an asset, categorized by authorization status.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AssetAccounts: NSObject, Decodable {
-    
+
+    /// The number of accounts authorized to hold and transact with this asset.
     public var authorized:Int
+
+    /// The number of accounts authorized to maintain liabilities but not to perform other operations with this asset.
     public var authorizedToMaintainLiabilities:Int
+
+    /// The number of accounts that are not authorized to hold or transact with this asset.
     public var unauthorized:Int
    
     
@@ -116,10 +131,17 @@ public class AssetAccounts: NSObject, Decodable {
     }
 }
 
+/// Statistics about the total amounts of an asset held by accounts, categorized by authorization status.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AssetBalances: NSObject, Decodable {
-    
+
+    /// The total amount held by accounts that are authorized to hold and transact with this asset.
     public var authorized:Decimal
+
+    /// The total amount held by accounts that are authorized to maintain liabilities but not to perform other operations with this asset.
     public var authorizedToMaintainLiabilities:Decimal
+
+    /// The total amount held by accounts that are not authorized to hold or transact with this asset.
     public var unauthorized:Decimal
    
     

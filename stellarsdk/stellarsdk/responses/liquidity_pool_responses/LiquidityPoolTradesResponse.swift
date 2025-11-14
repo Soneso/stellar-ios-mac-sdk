@@ -8,9 +8,15 @@
 
 import Foundation
 
+/// Represents a paginated collection of trades for a liquidity pool.
+/// This response contains trade records and navigation links for pagination.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolTradesResponse: NSObject, Decodable {
-    
+
+    /// Navigation links for this page of trades.
     public var links:LiquidityPoolTradesLinksResponse
+
+    /// Array of trade records for this liquidity pool.
     public var records:[TradeResponse]
     
     private var embeddedRecords:EmbeddedResponseService

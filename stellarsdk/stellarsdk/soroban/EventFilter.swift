@@ -8,8 +8,51 @@
 
 import Foundation
 
-/// Part of the getEvents request
-/// https://developers.stellar.org/network/soroban-rpc/api-reference/methods/getEvents
+/// Filter criteria for querying contract events.
+///
+/// EventFilter allows you to narrow event queries by:
+/// - Event type (system, contract, or diagnostic)
+/// - Specific contract IDs
+/// - Event topic patterns
+///
+/// Use filters to reduce the amount of data returned and focus on events relevant
+/// to your application. Multiple filters can be combined, and events matching any
+/// filter will be included in results.
+///
+/// Limitations:
+/// - Maximum 5 contract IDs per request
+/// - Maximum 5 topic filters per request
+///
+/// Example:
+/// ```swift
+/// // Filter events from specific contracts
+/// let contractFilter = EventFilter(
+///     type: "contract",
+///     contractIds: ["CCONTRACT123...", "CCONTRACT456..."]
+/// )
+///
+/// // Filter by event topics
+/// let topicFilter = TopicFilter(segmentMatchers: [
+///     "transfer",  // Topic 0: event name
+///     "*",         // Topic 1: any value
+///     "GADDR..."   // Topic 2: specific address
+/// ])
+/// let filter = EventFilter(
+///     type: "contract",
+///     topics: [topicFilter]
+/// )
+///
+/// // Query events with filter
+/// let response = await server.getEvents(
+///     startLedger: 1000000,
+///     eventFilters: [contractFilter]
+/// )
+/// ```
+///
+/// See also:
+/// - [SorobanServer.getEvents] for querying events
+/// - [TopicFilter] for topic-based filtering
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class EventFilter {
     
     /// (optional) A comma separated list of event types (system, contract, or diagnostic) used to filter events. If omitted, all event types are included.

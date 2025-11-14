@@ -8,11 +8,21 @@
 
 import Foundation
 
+/// Represents a claim claimable balance operation response.
+/// This operation claims a claimable balance entry, transferring the asset amount to the claimant's account.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimClaimableBalanceOperationResponse: OperationResponse {
-    
+
+    /// ID of the claimable balance being claimed.
     public var balanceId:String
+
+    /// Account ID of the claimant claiming the balance.
     public var claimantAccountId:String
+
+    /// Multiplexed account address of the claimant (if used).
     public var claimantMuxed:String?
+
+    /// ID of the multiplexed account (if used).
     public var claimantMuxedId:String?
     
     // Properties to encode and decode

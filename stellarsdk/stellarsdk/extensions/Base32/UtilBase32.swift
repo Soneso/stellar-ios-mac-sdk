@@ -30,24 +30,57 @@ import Foundation
 
 // MARK: - Base32 Data <-> String
 
+/// Encodes data to base32 string using the standard alphabet.
+///
+/// Uses the standard base32 alphabet (A-Z, 2-7) as defined in RFC 4648.
+///
+/// - Parameter data: Data to encode
+/// - Returns: Base32-encoded string
+///
+/// Example:
+/// ```swift
+/// let data = Data([1, 2, 3, 4, 5])
+/// let encoded = base32Encode(data)
+/// ```
 public func base32Encode(_ data: Data) -> String {
     return data.withUnsafeBytes {
         base32encode(UnsafeRawPointer($0), data.count, alphabetEncodeTable)
     }
 }
 
+/// Encodes data to base32 string using the extended hex alphabet.
+///
+/// Uses the extended hex alphabet (0-9, A-V) as defined in RFC 4648.
+///
+/// - Parameter data: Data to encode
+/// - Returns: Base32hex-encoded string
 public func base32HexEncode(_ data: Data) -> String {
     return data.withUnsafeBytes {
         base32encode(UnsafeRawPointer($0), data.count, extendedHexAlphabetEncodeTable)
     }
 }
 
+/// Decodes a base32 string to data using the standard alphabet.
+///
+/// - Parameter string: Base32-encoded string
+/// - Returns: Decoded data, or nil if the string is invalid
+///
+/// Example:
+/// ```swift
+/// if let decoded = base32DecodeToData("AEBAGBA") {
+///     // Use decoded data
+/// }
+/// ```
 public func base32DecodeToData(_ string: String) -> Data? {
     return base32decode(string, alphabetDecodeTable).flatMap {
         Data(bytes: UnsafePointer<UInt8>($0), count: $0.count)
     }
 }
 
+/// Decodes a base32hex string to data using the extended hex alphabet.
+///
+/// - Parameter string: Base32hex-encoded string
+/// - Returns: Decoded data, or nil if the string is invalid
 public func base32HexDecodeToData(_ string: String) -> Data? {
     return base32decode(string, extendedHexAlphabetDecodeTable).flatMap {
         Data(bytes: UnsafePointer<UInt8>($0), count: $0.count)
@@ -56,18 +89,34 @@ public func base32HexDecodeToData(_ string: String) -> Data? {
 
 // MARK: - Base32 [UInt8] <-> String
 
+/// Encodes a byte array to base32 string using the standard alphabet.
+///
+/// - Parameter array: Byte array to encode
+/// - Returns: Base32-encoded string
 public func base32Encode(_ array: [UInt8]) -> String {
     return base32encode(array, array.count, alphabetEncodeTable)
 }
 
+/// Encodes a byte array to base32 string using the extended hex alphabet.
+///
+/// - Parameter array: Byte array to encode
+/// - Returns: Base32hex-encoded string
 public func base32HexEncode(_ array: [UInt8]) -> String {
     return base32encode(array, array.count, extendedHexAlphabetEncodeTable)
 }
 
+/// Decodes a base32 string to a byte array using the standard alphabet.
+///
+/// - Parameter string: Base32-encoded string
+/// - Returns: Decoded byte array, or nil if the string is invalid
 public func base32Decode(_ string: String) -> [UInt8]? {
     return base32decode(string, alphabetDecodeTable)
 }
 
+/// Decodes a base32hex string to a byte array using the extended hex alphabet.
+///
+/// - Parameter string: Base32hex-encoded string
+/// - Returns: Decoded byte array, or nil if the string is invalid
 public func base32HexDecode(_ string: String) -> [UInt8]? {
     return base32decode(string, extendedHexAlphabetDecodeTable)
 }

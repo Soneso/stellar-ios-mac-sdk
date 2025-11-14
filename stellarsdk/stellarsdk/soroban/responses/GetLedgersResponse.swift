@@ -9,7 +9,7 @@
 import Foundation
 
 /// Response for the getLedgers request
-/// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+/// See: [Stellar developer docs](https://developers.stellar.org)
 public class GetLedgersResponse: NSObject, Decodable {
 
     /// Array of ledger information

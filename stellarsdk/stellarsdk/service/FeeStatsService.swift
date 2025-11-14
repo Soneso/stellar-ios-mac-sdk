@@ -8,7 +8,7 @@
 
 import Foundation
 
-/// An enum used to diferentiate between successful and failed fee stats responses.
+/// Result enum for fee statistics requests.
 public enum FeeStatsResponseEnum {
     case success(details: FeeStatsResponse)
     case failure(error: HorizonRequestError)
@@ -17,7 +17,28 @@ public enum FeeStatsResponseEnum {
 /// A closure to be called with the response from a fee stats request.
 public typealias FeeStatsResponseClosure = (_ response:FeeStatsResponseEnum) -> (Void)
 
-/// Class that handles fee stats related calls.
+/// Service for querying network fee statistics from the Stellar Horizon API.
+///
+/// Provides current fee statistics including min, mode, and percentile fees from recent ledgers.
+/// Use this to determine appropriate fee levels for transaction submission.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// let response = await sdk.feeStats.getFeeStats()
+/// switch response {
+/// case .success(let feeStats):
+///     print("Min fee: \(feeStats.minAcceptedFee)")
+///     print("Mode fee: \(feeStats.modeAcceptedFee)")
+///     print("P90 fee: \(feeStats.feeCharged.p90)")
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
 open class FeeStatsService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
@@ -31,7 +52,7 @@ open class FeeStatsService: NSObject {
     }
     
     /// This endpoint gives useful information about per-operation fee stats in the last 5 ledgers. It can be used to predict a fee set on the transaction that will be submitted to the network.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/fee-stats.html "Fee stats")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter response: The closure to be called upon response.
     ///
@@ -44,7 +65,7 @@ open class FeeStatsService: NSObject {
     }
     
     /// This endpoint gives useful information about per-operation fee stats in the last 5 ledgers. It can be used to predict a fee set on the transaction that will be submitted to the network.
-    /// See [Horizon API] (https://www.stellar.org/developers/horizon/reference/endpoints/fee-stats.html "Fee stats")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter response: The closure to be called upon response.
     ///

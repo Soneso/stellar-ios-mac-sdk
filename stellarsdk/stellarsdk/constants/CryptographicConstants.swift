@@ -32,7 +32,7 @@ public struct CryptographicConstants {
 
     /// Size of CRC-16 checksum in bytes (2 bytes)
     /// The CRC-16 checksum is appended to StrKey encoded data
-    /// Reference: https://developers.stellar.org/docs/encyclopedia/strkey
+    /// Reference: [Stellar developer docs](https://developers.stellar.org)
     public static let CRC16_SIZE = 2
 
     /// Number of iterations per byte in CRC-16 calculation (8 iterations)

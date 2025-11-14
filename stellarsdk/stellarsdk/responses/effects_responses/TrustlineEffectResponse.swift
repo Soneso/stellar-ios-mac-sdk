@@ -6,26 +6,28 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-///  Represents an account trustline effect response. Superclass for trustline created, updated, removed, authorized and deauthorized effects.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/assets.html#trustlines "Trustlines")
+/// Base class for trustline effect responses.
+/// Represents changes to account trustlines, which enable accounts to hold and trade non-native assets.
+/// Trustlines are established through Change Trust operations and can be authorized or modified by asset issuers.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class TrustlineEffectResponse: EffectResponse {
-    
-    /// The limit for which the account trusts the issuing account.
+
+    /// The maximum amount of the asset that the account is willing to hold.
     public var limit:String
-    
-    /// The asset type of the asset refered by the trustline. E.g. native
+
+    /// The asset type referenced by the trustline.
     public var assetType:String
-    
-    /// The asset code of the asset refered by the trustline. E.g. BTC, nil if native
+
+    /// The asset code referenced by the trustline. Nil for native assets.
     public var assetCode:String?
-    
-    /// The issuer of the asset used by the trustline. Nil if asset type is "native"
+
+    /// The issuer account ID of the asset. Nil for native assets.
     public var assetIssuer:String?
-    
+
+    /// The account establishing the trustline.
     public var trustor:String?
-    
-    /// Liquidity Pool ID if asste type is liquidity_pool_shares
+
+    /// Liquidity pool ID if the asset type is liquidity_pool_shares.
     public var liquidityPoolId:String?
     
     // Properties to encode and decode

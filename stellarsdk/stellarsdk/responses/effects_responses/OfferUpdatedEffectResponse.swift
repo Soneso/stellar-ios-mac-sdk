@@ -8,7 +8,8 @@
 
 import Foundation
 
-///  Represents an offer updated effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/exchange.html#offers "Offers")
+/// Represents an offer update effect.
+/// This effect occurs when an existing offer is modified or partially filled on the Stellar decentralized exchange (DEX).
+/// Triggered by the Manage Sell Offer or Manage Buy Offer operations, or when an offer is partially matched.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class OfferUpdatedEffectResponse: EffectResponse {}

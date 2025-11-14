@@ -8,12 +8,25 @@
 
 import Foundation
 
-///  Represents a data for account response from the Horizon API, conating a single data value associated with a given account and requested key.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/endpoints/data-for-account.html "Data for account")
+/// Represents a single data entry value from an account's key-value data store.
+///
+/// Accounts can store arbitrary key-value pairs (up to 64 bytes per value). This response
+/// contains the value for a specific key requested via the Horizon API. Values are base64 encoded.
+///
+/// Data entries are used for storing metadata like:
+/// - Domain verification proofs
+/// - Off-chain data references
+/// - Application-specific configuration
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - AccountResponse for the complete account data dictionary
 public class DataForAccountResponse: NSObject, Decodable {
-    
-    /// The base64-encoded value for the requested key.
+
+    /// Base64-encoded value for the requested key. Decode to access the raw bytes.
     public var value:String
+
+    /// Account ID sponsoring this data entry's base reserve. Nil if not sponsored.
     public var sponsor:String?
     
     // Properties to encode and decode

@@ -8,25 +8,58 @@
 
 import Foundation
 
+/// Errors that can occur during base16 encoding or decoding.
 public enum Base16EncodingError: Error {
+    /// The input string has an odd number of characters.
     case invalidLength
+
+    /// The input string contains invalid hexadecimal characters.
     case invalidByteString(String)
+
+    /// The input data cannot be decoded as UTF-8 string.
     case invalidStringEncoding
 }
 
+/// Extension providing base16 (hexadecimal) encoding and decoding for Data.
+///
+/// This extension provides methods to encode data as hexadecimal strings and decode
+/// hexadecimal strings back to data. Supports both uppercase and lowercase formats.
+///
+/// Example:
+/// ```swift
+/// let data = Data([182, 239, 215, 173])
+/// let hex = data.base16EncodedString() // "b6efd7ad"
+/// let hexUpper = data.base16EncodedString(options: [.uppercase]) // "B6EFD7AD"
+///
+/// let decoded = try Data(base16Encoded: "b6efd7ad") // Returns original data
+/// ```
 public extension Data {
+    /// Options for base16 encoding.
     enum Base16EncodingOptions {
+        /// Use uppercase letters (A-F) instead of lowercase (a-f).
         case uppercase
     }
 
+    /// Encodes data to a base16 (hexadecimal) string.
+    ///
+    /// - Parameter options: Encoding options
+    /// - Returns: Hexadecimal string representation
     func base16EncodedString(options: [Base16EncodingOptions] = []) -> String {
         map { String(format: Self.format(options: options), $0) }.joined()
     }
 
+    /// Encodes data to base16 format as Data (UTF-8 bytes of hex string).
+    ///
+    /// - Parameter options: Encoding options
+    /// - Returns: UTF-8 encoded hexadecimal string as Data
     func base16EncodedData(options: [Base16EncodingOptions] = []) -> Data {
         Data(base16EncodedString(options: options).utf8)
     }
 
+    /// Creates data from a base16 (hexadecimal) encoded string.
+    ///
+    /// - Parameter string: Hexadecimal string (even length, case insensitive)
+    /// - Throws: Base16EncodingError if the string is invalid
     init(base16Encoded string: String) throws {
         let stringLength = string.count
 
@@ -55,6 +88,10 @@ public extension Data {
         self = Data(data)
     }
 
+    /// Creates data from base16 (hexadecimal) encoded UTF-8 Data.
+    ///
+    /// - Parameter data: UTF-8 encoded hexadecimal string as Data
+    /// - Throws: Base16EncodingError if the data is invalid
     init(base16Encoded data: Data) throws {
         guard let string = String(data: data, encoding: .utf8) else {
             throw Base16EncodingError.invalidStringEncoding

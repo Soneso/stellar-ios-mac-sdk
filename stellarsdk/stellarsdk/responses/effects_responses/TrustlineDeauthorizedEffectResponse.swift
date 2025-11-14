@@ -8,7 +8,8 @@
 
 import Foundation
 
-///  Represents a trustline deauthorized effect response. See superclass TrustlineEffect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/assets.html#trustlines "Trustlines")
+/// Represents a trustline deauthorization effect.
+/// This effect occurs when an asset issuer revokes authorization for another account to hold its asset through an Allow Trust or Set Trust Line Flags operation.
+/// The account can no longer receive or send the asset.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class TrustlineDeauthorizedEffectResponse: TrustlineEffectResponse {}

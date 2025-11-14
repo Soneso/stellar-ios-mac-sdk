@@ -1,60 +1,87 @@
-//
-//  PutCustomerInfoRequest.swift
-//  stellarsdk
-//
-//
-//  Created by Christian Rogobete on 24.05.23.
-//  Copyright © 2023 Soneso. All rights reserved.
-//
-
 import Foundation
 
+/// Request parameters for uploading customer information via SEP-0012.
+///
+/// This struct encapsulates all the parameters needed to upload KYC information to an anchor
+/// in an authenticated and idempotent fashion. The endpoint is used to register new customers
+/// or update existing customer information. It supports submitting SEP-9 fields for natural
+/// persons, organizations, financial accounts, and cards, as well as custom fields and files.
+///
+/// When uploading binary fields such as photo_id_front, the request uses multipart/form-data
+/// content type. Binary fields should be submitted after all other fields as some web servers
+/// require this for proper stream processing.
+///
+/// See also:
+/// - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)
+/// - [SEP-0009](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md)
 public struct PutCustomerInfoRequest {
 
-    /// (optional) The id value returned from a previous call to this endpoint. If specified, no other parameter is required.
-    public var id:String?
-    
-    /// (deprecated, optional) The server should infer the account from the sub value in the SEP-10 JWT to identify the customer. The account parameter is only used for backwards compatibility, and if explicitly provided in the request body it should match the sub value of the decoded SEP-10 JWT.
-    public var account:String?
-    
-    /// The JWT previously sent by the anchor via the /jwt endpoint via SEP-10 authentication
+    /// JWT previously received from the anchor via the SEP-10 authentication flow.
     public var jwt:String
-    
-    /// (optional) the client-generated memo that uniquely identifies the customer. If a memo is present in the decoded SEP-10 JWT's sub value, it must match this parameter value. If a muxed account is used as the JWT's sub value, memos sent in requests must match the 64-bit integer subaccount ID of the muxed account.
+
+    /// The id value returned from a previous call to this endpoint.
+    /// If specified, no other parameter is required.
+    public var id:String?
+
+    /// The server should infer the account from the sub value in the SEP-10 JWT to identify the customer.
+    /// The account parameter is only used for backwards compatibility, and if explicitly provided in
+    /// the request body it should match the sub value of the decoded SEP-10 JWT.
+    public var account:String?
+
+    /// The client-generated memo that uniquely identifies the customer.
+    /// If a memo is present in the decoded SEP-10 JWT's sub value, it must match this parameter value.
+    /// If a muxed account is used as the JWT's sub value, memos sent in requests must match the
+    /// 64-bit integer subaccount ID of the muxed account.
     public var memo:String?
-    
-    /// (deprecated, optional) type of memo. One of text, id or hash. Deprecated because memos should always be of type id, although anchors should continue to support this parameter for outdated clients. If hash, memo should be base64-encoded. If a memo is present in the decoded SEP-10 JWT's sub value, this parameter can be ignored.
+
+    /// Type of memo. One of text, id or hash.
+    /// Deprecated because memos should always be of type id, although anchors should continue to
+    /// support this parameter for outdated clients. If hash, memo should be base64-encoded.
+    /// If a memo is present in the decoded SEP-10 JWT's sub value, this parameter can be ignored.
     public var memoType:String?
-    
-    /// (optional) The type of the customer as defined in the Type Specification: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#type-specification
+
+    /// The type of the customer as defined in the SEP-12 Type Specification.
+    /// Different types of customers may require different KYC fields.
     public var type:String?
-    
-    /// (optional) The transaction id with which the customer's info is associated. When information
-    /// from the customer depends on the transaction (e.g., more information is required for larger amounts)
+
+    /// The transaction id with which the customer's info is associated.
+    /// This is used when information from the customer depends on the transaction,
+    /// such as when more information is required for larger amounts.
     public var transactionId:String?
-    
-    /// one or more of the fields listed in SEP-9
+
+    /// One or more of the natural person KYC fields as defined in SEP-9.
     public var fields:[KYCNaturalPersonFieldsEnum]?
-    
-    /// one or more of the organization fields listed in SEP-9
+
+    /// One or more of the organization KYC fields as defined in SEP-9.
     public var organizationFields:[KYCOrganizationFieldsEnum]?
-    
-    /// one or more of the financial account fields listed in SEP-9
+
+    /// One or more of the financial account KYC fields as defined in SEP-9.
     public var financialAccountFields:[KYCFinancialAccountFieldsEnum]?
-    
-    /// one or more of the card fields listed in SEP-9
+
+    /// One or more of the card KYC fields as defined in SEP-9.
     public var cardFields:[KYCCardFieldsEnum]?
-    
-    /// extra fields to send
+
+    /// Additional custom fields to be submitted with the request.
     public var extraFields:[String:String]?
-    
-    /// extra files to send
+
+    /// Additional custom binary files to be submitted with the request.
     public var extraFiles:[String:Data]?
-    
+
+    /// Creates a new customer information upload request.
+    ///
+    /// - Parameters:
+    ///   - jwt: JWT previously received from the anchor via SEP-10 authentication
     public init(jwt:String) {
         self.jwt = jwt
     }
-    
+
+    /// Converts the request parameters to a dictionary of data for multipart form submission.
+    ///
+    /// This method processes all KYC fields and organizes them according to SEP-9 requirements.
+    /// Binary fields (such as photo_id_front) are collected separately and placed at the end
+    /// of the parameters dictionary to comply with web server requirements for stream processing.
+    ///
+    /// - Returns: Dictionary mapping parameter names to their Data representations
     public func toParameters() -> [String:Data] {
         var parameters = [String:Data]()
         if let id = id {
@@ -132,8 +159,8 @@ public struct PutCustomerInfoRequest {
                 parameters[key] = value.data(using: .utf8)
             }
         }
-        
-        // put files at the end
+
+        /// Binary fields must be placed at the end for proper stream processing
         for (key, value) in collectedFiles {
             parameters[key] = value
         }

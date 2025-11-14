@@ -8,9 +8,13 @@
 
 import Foundation
 
+/// Represents a sequence number bump effect.
+/// This effect occurs when an account's sequence number is manually bumped to a higher value.
+/// Triggered by the Bump Sequence operation, which can be used to invalidate future transactions or implement time bounds.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class SequenceBumpedEffectResponse: EffectResponse {
 
-    // The new sequence
+    /// The new sequence number after the bump.
     public var newSequence:String
     
     // Properties to encode and decode

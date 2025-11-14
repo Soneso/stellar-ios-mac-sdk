@@ -8,7 +8,35 @@
 
 import Foundation
 
-/// Generates Mnemonic with corresponding Stellar Keypair.
+/// Implements SEP-0005 - Key Derivation Methods for Stellar Accounts.
+///
+/// This class provides BIP-39 mnemonic generation and BIP-44 hierarchical deterministic key
+/// derivation for Stellar accounts. It allows creating multiple accounts from a single seed phrase,
+/// enabling secure wallet backups and account management.
+///
+/// ## Typical Usage
+///
+/// ```swift
+/// // Generate a 12-word mnemonic
+/// let mnemonic = WalletUtils.generate12WordMnemonic()
+///
+/// // Derive first account (index 0)
+/// let keyPair0 = try WalletUtils.createKeyPair(
+///     mnemonic: mnemonic,
+///     passphrase: nil,
+///     index: 0
+/// )
+///
+/// // Derive second account (index 1)
+/// let keyPair1 = try WalletUtils.createKeyPair(
+///     mnemonic: mnemonic,
+///     passphrase: nil,
+///     index: 1
+/// )
+/// ```
+///
+/// See also:
+/// - [SEP-0005 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)
 public final class WalletUtils {
     
     /// Generates a 12 word Mnemonic.

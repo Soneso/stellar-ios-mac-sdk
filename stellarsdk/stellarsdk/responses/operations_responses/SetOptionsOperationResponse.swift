@@ -9,36 +9,43 @@
 import Foundation
 
 ///  Represents a set options operation response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#set-options "Set Options Operation")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class SetOptionsOperationResponse: OperationResponse {
     
-    /// The sum weight for the low threshold.
+    /// Threshold for low-security operations.
     public var lowThreshold:Int?
-    
-    /// The sum weight for the medium threshold.
+
+    /// Threshold for medium-security operations.
     public var medThreshold:Int?
-    
-    /// The sum weight for the high threshold.
+
+    /// Threshold for high-security operations.
     public var highThreshold:Int?
-    
-    /// The inflation destination account.
+
+    /// Account ID designated to receive inflation.
     public var inflationDestination:String?
-    
-    /// The home domain used for reverse federation lookup
+
+    /// Home domain used for reverse federation lookup.
     public var homeDomain:String?
-    
-    /// The public key of the new signer.
+
+    /// Public key of the signer being added or modified.
     public var signerKey:String?
-    
-    /// The weight of the new signer (1-255).
+
+    /// Weight of the signer (0-255). Weight of 0 removes the signer.
     public var signerWeight:Int?
-    
-    /// The weight of the master key (1-255).
+
+    /// Weight of the master key (0-255).
     public var masterKeyWeight:Int?
-    
+
+    /// Account flags being set (numeric values).
     public var setFlags:[Int]?
+
+    /// Account flags being set (string values).
     public var setFlagsS:[String]?
+
+    /// Account flags being cleared (numeric values).
     public var clearFlags:[Int]?
+
+    /// Account flags being cleared (string values).
     public var clearFlagsS:[String]?
     
     

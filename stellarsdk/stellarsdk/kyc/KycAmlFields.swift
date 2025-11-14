@@ -8,6 +8,8 @@
 
 import Foundation
 
+/// Field keys for natural person KYC information as defined in SEP-0009.
+/// These keys are used to identify customer data fields in SEP-0012 KYC requests.
 public enum KYCNaturalPersonFieldKey {
     static let lastName = "last_name"
     static let firstName = "first_name"
@@ -45,6 +47,9 @@ public enum KYCNaturalPersonFieldKey {
     static let referralId = "referral_id"
 }
 
+/// KYC field values for natural person customer information as defined in SEP-0009.
+/// This enum represents all standard fields that can be submitted in PUT /customer requests for individual customers.
+/// Each case contains the field value and converts it to the appropriate multipart/form-data format.
 public enum KYCNaturalPersonFieldsEnum {
     /// Family or last name
     case lastName(String)
@@ -52,31 +57,31 @@ public enum KYCNaturalPersonFieldsEnum {
     case firstName(String)
     /// Middle name or other additional name
     case additionalName(String)
-    /// country code for current address
+    /// Country code for current address in ISO 3166-1 alpha-3 format
     case addressCountryCode(String)
-    /// name of state/province/region/prefecture
+    /// Name of state/province/region/prefecture
     case stateOrProvince(String)
-    /// name of city/town
+    /// Name of city/town
     case city(String)
     /// Postal or other code identifying user's locale
     case postalCode(String)
-    /// Entire address (country, state, postal code, street address, etc...) as a multi-line string
+    /// Entire address (country, state, postal code, street address, etc.) as a multi-line string
     case address(String)
     /// Mobile phone number with country code, in E.164 format
     case mobileNumber(String)
-    /// Expected format of the mobile_number field. E.g.: E.164, hash, etc... In case this field is not specified, receiver will assume it's in E.164 format
+    /// Expected format of the mobile_number field (E.164, hash, etc.). Defaults to E.164 if not specified
     case mobileNumberFormat(String)
     /// Email address
     case emailAddress(String)
     /// Date of birth, e.g. 1976-07-04
     case birthDate(Date)
-    /// Place of birth (city, state, country; as on passport)
+    /// Place of birth (city, state, country; as shown on passport)
     case birthPlace(String)
-    /// ISO Code of country of birth
+    /// Country of birth in ISO 3166-1 alpha-3 format
     case birthCountryCode(String)
-    /// Tax identifier of user in their country (social security number in US)
+    /// Tax identifier in customer's country (social security number in US)
     case taxId(String)
-    /// Name of the tax ID (SSN or ITIN in the US)
+    /// Name of the tax ID type (SSN or ITIN in the US)
     case taxIdName(String)
     /// Occupation ISCO code
     case occupation(Int)
@@ -84,11 +89,11 @@ public enum KYCNaturalPersonFieldsEnum {
     case employerName(String)
     /// Address of employer
     case employerAddress(String)
-    /// primary language
+    /// Primary language in ISO 639-1 format
     case languageCode(String)
-    /// passport, drivers_license, id_card, etc...
+    /// Type of ID document (passport, drivers_license, id_card, etc.)
     case idType(String)
-    /// country issuing passport or photo ID as ISO 3166-1 alpha-3 code
+    /// Country issuing passport or photo ID in ISO 3166-1 alpha-3 format
     case idCountryCode(String)
     /// ID issue date
     case idIssueDate(String)
@@ -104,15 +109,15 @@ public enum KYCNaturalPersonFieldsEnum {
     case notaryApprovalOfPhotoId(Data)
     /// IP address of customer's computer
     case ipAddress(String)
-    /// Image of a utility bill, bank statement or similar with the user's name and address
+    /// Image of a utility bill, bank statement or similar document with the user's name and address
     case photoProofResidence(Data)
-    /// "male", "female", or "other"
+    /// Customer's gender (male, female, or other)
     case sex(String)
     /// Image of user's proof of income document
     case proofOfIncome(Data)
-    /// video or image file of user as a liveness proof
+    /// Video or image file of user as a liveness proof
     case proofOfLiveness(Data)
-    /// video or image file of user as a liveness proof
+    /// Referral ID used to identify the source of the customer
     case referralId(String)
     
     var parameter:(String, Data) {
@@ -191,6 +196,8 @@ public enum KYCNaturalPersonFieldsEnum {
     }
 }
 
+/// Field keys for financial account information as defined in SEP-0009.
+/// These keys are used to identify banking and financial account data fields in SEP-0012 KYC requests.
 public enum KYCFinancialAccountFieldKey {
     static let bankName = "bank_name"
     static let bankAccountType = "bank_account_type"
@@ -209,10 +216,13 @@ public enum KYCFinancialAccountFieldKey {
 
 }
 
+/// KYC field values for financial account information as defined in SEP-0009.
+/// This enum represents banking and financial account fields that can be submitted in PUT /customer requests
+/// for receiving deposits or payments. Each case contains the field value and converts it to the appropriate format.
 public enum KYCFinancialAccountFieldsEnum {
-    /// Name of the bank. May be necessary in regions that don't have a unified routing system.
+    /// Name of the bank. May be necessary in regions that don't have a unified routing system
     case bankName(String)
-    /// "checking" or "savings"
+    /// Type of bank account (checking or savings)
     case bankAccountType(String)
     /// Number identifying bank account
     case bankAccountNumber(String)
@@ -222,21 +232,21 @@ public enum KYCFinancialAccountFieldsEnum {
     case bankPhoneNumber(String)
     /// Number identifying bank branch
     case bankBranchNumber(String)
-    /// A destination tag/memo used to identify a transaction
+    /// Destination tag/memo used to identify a transaction
     case externalTransferMemo(String)
-    /// Bank account number for Mexico
+    /// Bank account number for Mexico (CLABE format)
     case clabeNumber(String)
-    /// Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU). The unique key for every bank account in Argentina used for receiving deposits.
+    /// Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU). Unique key for bank accounts in Argentina used for receiving deposits
     case cbuNumber(String)
-    /// The alias for a Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU).
+    /// Alias for a Clave Bancaria Uniforme (CBU) or Clave Virtual Uniforme (CVU)
     case cbuAlias(String)
-    /// Mobile phone number in E.164 format with which a mobile money account is associated. Note that this number may be distinct from the same customer's mobile_number.
+    /// Mobile phone number in E.164 format associated with a mobile money account. May be distinct from the customer's mobile_number
     case mobileMoneyNumber(String)
-    /// Name of the mobile money service provider.
+    /// Name of the mobile money service provider
     case mobileMoneyProvider(String)
     /// Address for a cryptocurrency account
     case cryptoAddress(String)
-    /// A destination tag/memo used to identify a transaction
+    /// Destination tag/memo used to identify a cryptocurrency transaction
     case cryptoMemo(String)
     
     var parameter:(String, Data) {
@@ -275,6 +285,9 @@ public enum KYCFinancialAccountFieldsEnum {
     }
 }
 
+/// Field keys for organization KYC information as defined in SEP-0009.
+/// These keys are used to identify corporate/business customer data fields in SEP-0012 KYC requests.
+/// All keys use the "organization." prefix to distinguish them from natural person fields.
 public enum KYCOrganizationFieldKey {
     static let name = "organization.name"
     static let VATNumber = "organization.VAT_number"
@@ -286,7 +299,7 @@ public enum KYCOrganizationFieldKey {
     static let photoIncorporationDoc = "organization.photo_incorporation_doc"
     static let photoProofAddress = "organization.photo_proof_address"
     static let addressCountryCode = "organization.address_country_code"
-    static let stateOrProvice = "organization.state_or_province"
+    static let stateOrProvince = "organization.state_or_province"
     static let city = "organization.city"
     static let postalCode = "organization.postal_code"
     static let directorName = "organization.director_name"
@@ -295,8 +308,11 @@ public enum KYCOrganizationFieldKey {
     static let phone = "organization.phone"
 }
 
+/// KYC field values for organization customer information as defined in SEP-0009.
+/// This enum represents corporate/business entity fields that can be submitted in PUT /customer requests
+/// for organizational customers. Each case contains the field value and converts it to the appropriate format.
 public enum KYCOrganizationFieldsEnum {
-    /// Full organiation name as on the incorporation papers
+    /// Full organization name as shown on incorporation papers
     case name(String)
     /// Organization VAT number
     case VATNumber(String)
@@ -304,25 +320,25 @@ public enum KYCOrganizationFieldsEnum {
     case registrationNumber(String)
     /// Date the organization was registered
     case registrationDate(String)
-    /// Organization registered address
+    /// Organization's registered address
     case registeredAddress(String)
-    /// Organization shareholder number
+    /// Number of shareholders in the organization
     case numberOfShareholders(Int)
-    /// Can be an organization or a person and should be queried recursively up to the ultimate beneficial owners (with KYC information for natural persons such as above)
+    /// Name of shareholder. Can be an organization or person and should be queried recursively up to ultimate beneficial owners
     case shareholderName(String)
     /// Image of incorporation documents
     case photoIncorporationDoc(Data)
-    /// Image of a utility bill, bank statement with the organization's name and address
+    /// Image of a utility bill or bank statement with the organization's name and address
     case photoProofAddress(Data)
-    /// country code for current address
+    /// Country code for organization's address in ISO 3166-1 alpha-3 format
     case addressCountryCode(String)
-    /// name of state/province/region/prefecture
-    case stateOrProvice(String)
-    /// name of city/town
+    /// Name of state/province/region/prefecture
+    case stateOrProvince(String)
+    /// Name of city/town
     case city(String)
     /// Postal or other code identifying organization's locale
     case postalCode(String)
-    /// Organization registered managing director (the rest of the information should be queried as an individual using the fields above)
+    /// Organization's registered managing director. Additional information should be queried as an individual using natural person fields
     case directorName(String)
     /// Organization website
     case website(String)
@@ -354,8 +370,8 @@ public enum KYCOrganizationFieldsEnum {
                 return (KYCOrganizationFieldKey.photoProofAddress, value)
             case .addressCountryCode(let value):
                 return (KYCOrganizationFieldKey.addressCountryCode, value.data(using: .utf8)!)
-            case .stateOrProvice(let value):
-                return (KYCOrganizationFieldKey.stateOrProvice, value.data(using: .utf8)!)
+            case .stateOrProvince(let value):
+                return (KYCOrganizationFieldKey.stateOrProvince, value.data(using: .utf8)!)
             case .city(let value):
                 return (KYCOrganizationFieldKey.city, value.data(using: .utf8)!)
             case .postalCode(let value):
@@ -373,6 +389,9 @@ public enum KYCOrganizationFieldsEnum {
     }
 }
 
+/// Field keys for payment card information as defined in SEP-0009.
+/// These keys are used to identify credit/debit card data fields in SEP-0012 KYC requests.
+/// All keys use the "card." prefix to distinguish them from other field types.
 public enum KYCCardFieldKey {
     static let number = "card.number"
     static let expirationDate = "card.expiration_date"
@@ -387,28 +406,31 @@ public enum KYCCardFieldKey {
     static let token = "card.token"
 }
 
+/// KYC field values for payment card information as defined in SEP-0009.
+/// This enum represents credit/debit card fields that can be submitted in PUT /customer requests
+/// for card-based payment methods. Each case contains the field value and converts it to the appropriate format.
 public enum KYCCardFieldsEnum {
     /// Card number
     case number(String)
-    /// Expiration month and year in YY-MM format (e.g. 29-11, November 2029)
+    /// Expiration month and year in YY-MM format (e.g. 29-11 for November 2029)
     case expirationDate(String)
-    /// CVC number (Digits on the back of the card)
+    /// CVC security code (digits on the back of the card)
     case cvc(String)
     /// Name of the card holder
     case holderName(String)
-    /// Brand of the card/network it operates within (e.g. Visa, Mastercard, AmEx, etc.)
+    /// Brand of the card/network it operates within (Visa, Mastercard, AmEx, etc.)
     case network(String)
     /// Billing address postal code
     case postalCode(String)
-    /// Billing address country code in ISO 3166-1 alpha-2 code (e.g. US)
+    /// Billing address country code in ISO 3166-1 alpha-2 format (e.g. US)
     case countryCode(String)
-    /// Name of state/province/region/prefecture is ISO 3166-2 format
+    /// Billing address state/province/region/prefecture in ISO 3166-2 format
     case stateOrProvince(String)
-    /// Name of city/town
+    /// Billing address city/town
     case city(String)
-    /// Entire address (country, state, postal code, street address, etc...) as a multi-line string
+    /// Complete billing address (country, state, postal code, street address, etc.) as a multi-line string
     case address(String)
-    /// Token representation of the card in some external payment system (e.g. Stripe)
+    /// Token representation of the card in an external payment system (e.g. Stripe)
     case token(String)
     
     var parameter:(String, Data) {

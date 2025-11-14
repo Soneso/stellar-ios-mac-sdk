@@ -9,31 +9,31 @@
 import Foundation
 
 ///  Represents a create passive operation response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/operation.html#create-passive-offer "Create Passive Operation")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class CreatePassiveOfferOperationResponse: OperationResponse {
         
-    /// Amount of asset to be sold.
+    /// Amount of the selling asset offered.
     public var amount:String
-    
-    /// Price to buy a buying asset
+
+    /// Price of 1 unit of selling asset in terms of buying asset (decimal).
     public var price:String
-    
+
     /// Type of asset to buy (native / alphanum4 / alphanum12).
     public var buyingAssetType:String
-    
-    /// The code of asset to buy.
+
+    /// Code of the asset to buy.
     public var buyingAssetCode:String?
-    
-    /// The issuer of asset to buy.
+
+    /// Issuer of the asset to buy.
     public var buyingAssetIssuer:String?
-    
-    /// Type of asset to sell (native / alphanum4 / alphanum12)
+
+    /// Type of asset to sell (native / alphanum4 / alphanum12).
     public var sellingAssetType:String
-    
-    /// The code of asset to sell.
+
+    /// Code of the asset to sell.
     public var sellingAssetCode:String?
-    
-    /// The issuer of asset to sell.
+
+    /// Issuer of the asset to sell.
     public var sellingAssetIssuer:String?
     
     // Properties to encode and decode

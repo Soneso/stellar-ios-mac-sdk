@@ -8,8 +8,14 @@
 
 import Foundation
 
+/// Represents a liquidity pool removal effect.
+/// This effect occurs when a liquidity pool is removed from the ledger.
+/// A pool is removed when all shares have been withdrawn and no reserves remain.
+/// Triggered by the Change Trust operation with limit set to zero.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolRemovedEffectResponse: EffectResponse {
-    
+
+    /// The unique identifier of the liquidity pool that was removed.
     public var liquidityPoolId:String
     
     // Properties to encode and decode

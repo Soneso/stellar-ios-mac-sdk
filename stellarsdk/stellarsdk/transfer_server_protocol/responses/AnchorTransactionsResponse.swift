@@ -8,6 +8,11 @@
 
 import Foundation
 
+/// The type of transaction.
+///
+/// Indicates whether the transaction is a deposit, withdrawal, or an exchange variant.
+///
+/// See [SEP-6 Transaction](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
 public enum AnchorTransactionKind: String {
     case deposit = "deposit"
     case depositExchange = "deposit-exchange"
@@ -15,6 +20,12 @@ public enum AnchorTransactionKind: String {
     case withdrawalExchange = "withdrawal-exchange"
 }
 
+/// The processing status of a deposit or withdrawal transaction.
+///
+/// These statuses track the lifecycle of a transaction from initiation through completion,
+/// including various pending states that require action from different parties.
+///
+/// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
 public enum AnchorTransactionStatus: String {
     /// deposit/withdrawal fully completed
     case completed = "completed"
@@ -52,9 +63,15 @@ public enum AnchorTransactionStatus: String {
     case expired = "expired"
 }
 
+/// Response returned when requesting transaction history.
+///
+/// This response is returned by GET /transactions requests in SEP-6 and contains a list
+/// of transactions for the authenticated user.
+///
+/// See [SEP-6 Transaction History](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
 public struct AnchorTransactionsResponse: Decodable {
 
-    ///Transactions
+    /// List of transactions
     public var transactions: [AnchorTransaction]
     
     /// Properties to encode and decode
@@ -73,9 +90,15 @@ public struct AnchorTransactionsResponse: Decodable {
     }
 }
 
+/// Response returned when requesting a single transaction.
+///
+/// This response is returned by GET /transaction requests in SEP-6 and contains details
+/// about a specific transaction.
+///
+/// See [SEP-6 Single Historical Transaction](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#single-historical-transaction)
 public struct AnchorTransactionResponse: Decodable {
 
-    ///Transaction
+    /// Transaction details
     public var transaction: AnchorTransaction
     
     /// Properties to encode and decode
@@ -94,8 +117,15 @@ public struct AnchorTransactionResponse: Decodable {
     }
 }
 
+/// Details about a specific deposit or withdrawal transaction.
+///
+/// Contains comprehensive information about a transaction including its status, amounts,
+/// fees, and timestamps. This structure is used in both transaction history and single
+/// transaction responses.
+///
+/// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
 public struct AnchorTransaction: Decodable {
-    
+
     /// Unique, anchor-generated id for the deposit/withdrawal
     public var id:String
     
@@ -313,8 +343,15 @@ public struct AnchorTransaction: Decodable {
     }
 }
 
+/// Information about fields that need to be updated for a transaction.
+///
+/// Returned when transaction status is pending_transaction_info_update, indicating
+/// additional information is required to proceed.
+///
+/// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
 public struct RequiredInfoUpdates: Decodable {
-    
+
+    /// Fields that require updates, keyed by field name.
     public var fields: [String:AnchorField]?
     
     /// Properties to encode and decode
@@ -333,6 +370,12 @@ public struct RequiredInfoUpdates: Decodable {
     }
 }
 
+/// Detailed breakdown of fees charged for a transaction.
+///
+/// Provides a comprehensive view of all fees applied, including the total fee amount,
+/// the asset in which fees are charged, and optional itemized details.
+///
+/// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
 public struct FeeDetails: Decodable {
 
     /// The total amount of fee applied.
@@ -366,6 +409,12 @@ public struct FeeDetails: Decodable {
     }
 }
 
+/// Individual fee component in the fee breakdown.
+///
+/// Provides details about a specific fee component, allowing anchors to show
+/// itemized pricing to users.
+///
+/// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
 public struct FeeDetailsDetails: Decodable {
 
     /// The name of the fee, for example ACH fee, Brazilian conciliation fee, Service fee, etc.
@@ -399,8 +448,14 @@ public struct FeeDetailsDetails: Decodable {
     }
 }
 
+/// Information about refunds associated with a transaction.
+///
+/// Describes any on or off-chain refunds that have been issued for the transaction,
+/// including the total refunded amount and individual refund payments.
+///
+/// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
 public struct Refunds: Decodable {
-    
+
     /// The total amount refunded to the user, in units of amount_in_asset. If a full refund was issued, this amount should match amount_in.
     public var amountRefunded:String
     
@@ -430,8 +485,14 @@ public struct Refunds: Decodable {
     }
 }
 
+/// Details about an individual refund payment.
+///
+/// Represents a single refund payment that was made back to the user, either on-chain
+/// via Stellar or off-chain through an external payment system.
+///
+/// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
 public struct RefundPayment: Decodable {
-    
+
     /// The payment ID that can be used to identify the refund payment.
     /// This is either a Stellar transaction hash or an off-chain payment identifier,
     /// such as a reference number provided to the user when the refund was initiated.

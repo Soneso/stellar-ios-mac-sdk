@@ -8,21 +8,30 @@
 
 import Foundation
 
-///  Represents the account flags.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/account.html "Account")
-///  See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/accounts.html#flags "Account flags")
-///  Currently there are three flags, used by issuers of assets: Authorization required, Authorization revocable and Authorization immutable.
+/// Represents account authorization flags set on asset issuer accounts.
+///
+/// These flags control how the issuer can manage who holds their asset. Issuers can require
+/// authorization, enable revocation, make flags immutable, or enable clawback functionality.
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - AccountResponse for complete account information
 public class AccountFlagsResponse: NSObject, Decodable {
-    
-    /// Requires the issuing account to give other accounts permission before they can hold the issuing account’s credit.
+
+    /// If true, requires the issuer to explicitly authorize accounts before they can hold this asset.
+    /// Used for regulated assets requiring KYC/AML compliance.
     public let authRequired:Bool
-    
-    /// Allows the issuing account to revoke its credit held by other accounts.
+
+    /// If true, allows the issuer to revoke authorization and freeze assets held by accounts.
+    /// The account can no longer perform operations with the frozen asset.
     public let authRevocable:Bool
-    
-    /// If this is set then none of the authorization flags can be set and the account can never be deleted.
+
+    /// If true, none of the authorization flags can be changed and the account cannot be deleted.
+    /// This provides permanent guarantees about asset behavior.
     public let authImmutable:Bool
-    
+
+    /// If true, enables the issuer to clawback (burn) asset balances from other accounts.
+    /// Used for regulated assets requiring recovery or compliance enforcement.
     public let authClawbackEnabled:Bool
     
     

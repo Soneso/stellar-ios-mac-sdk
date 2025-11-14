@@ -8,17 +8,24 @@
 
 import Foundation
 
-/// Represents the links connected to a trade response.
-/// See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/trade.html "Trade")
+/// Navigation links for trade-related resources.
+///
+/// Provides hypermedia links to resources associated with a trade, including
+/// the base and counter accounts involved and the operation that executed the trade.
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - TradeResponse for complete trade details
+/// - LinkResponse for individual link structure
 public class TradeLinksResponse: NSObject, Decodable {
-    
-    /// Link to details about the base account.
+
+    /// Link to the account that provided the base asset in the trade.
     public var base:LinkResponse
-    
-    /// Link to details about the counter account
+
+    /// Link to the account that provided the counter asset in the trade.
     public var counter:LinkResponse
-    
-    /// Link to the operation of the assets bought and sold.
+
+    /// Link to the operation (Manage Buy Offer, Manage Sell Offer, or Path Payment) that executed this trade.
     public var operation:LinkResponse
     
     // Properties to encode and decode.

@@ -8,10 +8,12 @@
 
 import Foundation
 
-///  Represents a path payment strict send operation response.
+/// Represents a path payment strict send operation response.
+/// This operation sends a path payment where the source amount is specified, and the destination amount varies within a minimum limit.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class PathPaymentStrictSendOperationResponse:PathPaymentOperationResponse {
-    
-    /// The minimum amount of destination asset expected to be received.
+
+    /// Minimum amount expected to be received by the destination.
     public var destinationMin:String?
     
     // Properties to encode and decode

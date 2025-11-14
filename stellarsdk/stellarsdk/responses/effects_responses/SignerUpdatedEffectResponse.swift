@@ -8,8 +8,9 @@
 
 import Foundation
 
-///  Represents an account signer creted effect response. See superclass SignerEffect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/accounts.html#signers "Account Signer")
+/// Represents a signer update effect.
+/// This effect occurs when an existing signer's weight is modified through a Set Options operation.
+/// Changing a signer's weight affects the multi-signature authorization requirements.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class SignerUpdatedEffectResponse: SignerEffectResponse {}
 

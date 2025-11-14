@@ -8,20 +8,62 @@
 
 import Foundation
 
-/// Represents a payment operation. Sends an amount in a specific asset to a destination account.
-/// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html#payment, "Payment Operation").
+/// Represents a payment operation that sends an asset from one account to another.
+///
+/// PaymentOperation is one of the most common operations on the Stellar network. It sends a
+/// specified amount of an asset (native XLM or issued assets) from the source account to a
+/// destination account. The destination account must already exist and, for non-native assets,
+/// must have a trustline established for that asset.
+///
+/// The payment operation will fail if:
+/// - The destination account does not exist
+/// - The destination lacks a trustline for non-native assets
+/// - The source account has insufficient balance
+/// - The destination account would exceed asset limits
+/// - The asset issuer has authorization controls that prevent the transfer
+///
+/// Example:
+/// ```swift
+/// // Send 100 XLM
+/// let payment = try PaymentOperation(
+///     sourceAccountId: nil,
+///     destinationAccountId: "GDEST...",
+///     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE),
+///     amount: 100.0
+/// )
+///
+/// // Send 50 USD (issued asset)
+/// let usd = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4,
+///                 code: "USD",
+///                 issuer: "GISSUER...")!
+/// let usdPayment = try PaymentOperation(
+///     sourceAccountId: nil,
+///     destinationAccountId: "GDEST...",
+///     asset: usd,
+///     amount: 50.0
+/// )
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class PaymentOperation:Operation {
-    
+
+    /// The destination account that will receive the payment.
     public let destinationAccountId:String
+
+    /// The asset being sent.
     public let asset:Asset
+
+    /// The amount of the asset to send (in decimal format).
     public let amount:Decimal
-    
-    /// Creates a new PaymentOperation object.
+
+    /// Creates a new PaymentOperation.
     ///
-    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
-    /// - Parameter destinationAccountId: Account address that receives the payment. Must start with "G" and must be valid, otherwise this will throw an exception.
-    /// - Parameter asset: Asset to send to the destination account.
-    /// - Parameter amount: Amount of the aforementioned asset to send.
+    /// - Parameter sourceAccountId: Optional source account. If nil, uses the transaction source account.
+    /// - Parameter destinationAccountId: The account that will receive the payment (G-address or M-address)
+    /// - Parameter asset: The asset to send (native XLM or issued asset)
+    /// - Parameter amount: The amount to send in decimal format
+    /// - Throws: An error if the destination account ID is invalid
     public init(sourceAccountId:String?, destinationAccountId:String, asset:Asset, amount:Decimal) throws {
         
         let mux = try destinationAccountId.decodeMuxedAccount()

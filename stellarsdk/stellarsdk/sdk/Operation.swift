@@ -8,17 +8,62 @@
 
 import Foundation
 
-/// Superclass for operations. You should never use this class directly. Please use one of its subclasses.
-/// See [Stellar Guides] (https://www.stellar.org/developers/guides/concepts/operations.html, "Operations")
-/// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/list-of-operations.html, "List of Operations")
+/// Base class for all Stellar operations.
+///
+/// Operations are the building blocks of Stellar transactions. Each operation represents a
+/// specific action on the Stellar network such as sending payments, creating accounts, or
+/// managing offers. Operations are grouped into transactions and submitted to the network.
+///
+/// You should never instantiate this class directly. Instead, use one of its subclasses that
+/// represent specific operation types. Each operation can optionally specify a source account
+/// that differs from the transaction's source account.
+///
+/// Common operation types:
+/// - PaymentOperation: Send assets between accounts
+/// - CreateAccountOperation: Create and fund new accounts
+/// - ChangeTrustOperation: Establish trustlines for assets
+/// - ManageSellOfferOperation: Create or modify sell offers
+/// - ManageBuyOfferOperation: Create or modify buy offers
+/// - SetOptionsOperation: Configure account settings
+/// - And many more...
+///
+/// Operation-level source accounts:
+/// When an operation specifies a source account, that account will be used as the source for
+/// that specific operation instead of the transaction's source account. This is useful for
+/// multi-signature transactions or channel accounts.
+///
+/// Example:
+/// ```swift
+/// // Payment operation using transaction source account
+/// let payment1 = try PaymentOperation(
+///     sourceAccountId: nil,
+///     destinationAccountId: "GDEST...",
+///     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE),
+///     amount: 100.0
+/// )
+///
+/// // Payment operation using different source account
+/// let payment2 = try PaymentOperation(
+///     sourceAccountId: "GSOURCE...",
+///     destinationAccountId: "GDEST...",
+///     asset: Asset(type: AssetType.ASSET_TYPE_NATIVE),
+///     amount: 50.0
+/// )
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
 public class Operation {
+    /// The source account for this operation. If nil, uses the transaction's source account.
     public private (set) var sourceAccountId:String? //"G..." or "M..."
+
+    /// The XDR representation of the source account (supports muxed accounts).
     public private (set) var sourceAccountXdr: MuxedAccountXDR?
-        
+
     /// Creates a new operation object.
     ///
-    /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
-    ///
+    /// - Parameter sourceAccountId: Optional source account for this operation. If provided, must be a valid
+    ///   account ID (G-address or M-address). If nil or invalid, the transaction's source account will be used.
     public init(sourceAccountId:String?) {
         
         if let saId = sourceAccountId, let mux = try? saId.decodeMuxedAccount() {

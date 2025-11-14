@@ -9,26 +9,91 @@
 import Foundation
 import ed25519C
 
-/// Holds a Stellar keypair.
+/// Holds a Stellar keypair consisting of a public key and an optional private key.
+///
+/// KeyPair represents an Ed25519 keypair used for signing transactions and verifying signatures
+/// on the Stellar network. A keypair can be created with or without a private key:
+/// - With private key: Used for signing transactions (full keypair)
+/// - Without private key: Used for verification only (public key only)
+///
+/// The public key is encoded as a Stellar account ID starting with 'G' (or 'M' for muxed accounts).
+/// The private key (seed) is encoded as a secret seed starting with 'S'.
+///
+/// Security considerations:
+/// - Never share or expose secret seeds
+/// - Store secret seeds securely using the iOS Keychain or equivalent secure storage
+/// - Never commit secret seeds to version control
+/// - Use KeyPair objects without private keys when only verification is needed
+/// - Clear sensitive data from memory when no longer needed
+///
+/// Example:
+/// ```swift
+/// // Generate a random keypair
+/// let keyPair = try KeyPair.generateRandomKeyPair()
+/// print("Account ID: \(keyPair.accountId)")
+/// print("Secret Seed: \(keyPair.secretSeed)")
+///
+/// // Create keypair from existing secret seed
+/// let existingKeyPair = try KeyPair(secretSeed: "SXXX...")
+///
+/// // Create public-only keypair for verification
+/// let publicOnlyKeyPair = try KeyPair(accountId: "GXXX...")
+///
+/// // Sign data
+/// let signature = keyPair.sign(data)
+///
+/// // Verify signature
+/// let isValid = try publicOnlyKeyPair.verify(signature: signature, message: data)
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
 public final class KeyPair {
+    /// The Ed25519 public key.
     public let publicKey: PublicKey
+
+    /// The Ed25519 private key. Nil if this is a public-only keypair.
     public let privateKey: PrivateKey?
+
+    /// The seed used to generate this keypair. Nil if created from raw keys or account ID.
     public private(set) var seed:Seed?
 
-    /// Human readable Stellar account ID.
+    /// Human readable Stellar account ID (G-address).
+    ///
+    /// This is the base32-encoded public key with version byte and checksum.
     public var accountId: String {
         get {
             return publicKey.accountId
         }
     }
-    /// Human readable Stellar secret seed.
+    /// Human readable Stellar secret seed (S-address).
+    ///
+    /// This is the base32-encoded private key with version byte and checksum.
+    /// Returns nil if this keypair was created without a seed.
+    ///
+    /// Warning: Keep secret seeds secure. Never expose them in logs or transmit them insecurely.
     public var secretSeed: String! {
         get {
             return seed?.secret
         }
     }
-    
-    /// Generates a random Stellar keypair.
+
+    /// Generates a new random Stellar keypair.
+    ///
+    /// Creates a cryptographically secure random Ed25519 keypair suitable for
+    /// creating new Stellar accounts. The keypair includes both public and private keys.
+    ///
+    /// - Returns: A new KeyPair with randomly generated keys
+    /// - Throws: An error if random key generation fails
+    ///
+    /// Example:
+    /// ```swift
+    /// let keyPair = try KeyPair.generateRandomKeyPair()
+    /// print("New account: \(keyPair.accountId)")
+    /// // Securely store keyPair.secretSeed
+    /// ```
+    ///
+    /// Warning: Store the secret seed securely immediately after generation.
     public static func generateRandomKeyPair() throws -> KeyPair {
         let seed = try Seed()
         let keyPair = KeyPair(seed: seed)
@@ -39,26 +104,34 @@ public final class KeyPair {
     
     /// Creates a new KeyPair from the given public and private keys.
     ///
-    /// - Parameter publicKey: The public key
-    /// - Parameter publicKey: The private key. Optional, if nil creates a new KeyPair without a private key.
-    ///
+    /// - Parameter publicKey: The Ed25519 public key
+    /// - Parameter privateKey: The Ed25519 private key. If nil, creates a public-only keypair that cannot sign.
     public init(publicKey: PublicKey, privateKey: PrivateKey?) {
         self.publicKey = publicKey
         self.privateKey = privateKey
     }
 
-    /// Creates a new Stellar KeyPair from a Stellar account ID. The new KeyPair is without a private key.
+    /// Creates a new Stellar KeyPair from a Stellar account ID.
     ///
-    /// - Parameter accountId: The Stellar account ID.
+    /// Creates a public-only keypair that can be used for signature verification but
+    /// cannot sign transactions. The account ID must be a valid G-address or M-address.
     ///
+    /// - Parameter accountId: The Stellar account ID (G-address or M-address)
+    /// - Throws: An error if the account ID is invalid
     public convenience init(accountId: String) throws {
         let publicKeyFromAccountId = try PublicKey(accountId: accountId)
         self.init(publicKey: publicKeyFromAccountId, privateKey:nil)
     }
     
-    /// Creates a new Stellar keypair from a Stellar secret seed. The new KeyPair contains public and private key.
+    /// Creates a new Stellar keypair from a Stellar secret seed.
     ///
-    /// - Parameter secretSeed: the Stellar secret seed.
+    /// Creates a full keypair with both public and private keys from an existing
+    /// secret seed (S-address). This keypair can sign transactions.
+    ///
+    /// - Parameter secretSeed: The Stellar secret seed (S-address)
+    /// - Throws: An error if the secret seed is invalid
+    ///
+    /// Warning: Handle secret seeds with care. Avoid logging or transmitting them insecurely.
     public convenience init(secretSeed: String) throws {
         let seedFromSecret = try Seed(secret:secretSeed)
         self.init(seed: seedFromSecret)
@@ -114,10 +187,13 @@ public final class KeyPair {
     
     /// Sign the provided data with the keypair's private key.
     ///
-    /// - Parameter message: The data to sign.
+    /// Uses the Ed25519 signature algorithm to sign the message. If this keypair
+    /// does not have a private key, returns an empty signature (all zeros).
     ///
-    /// - Returns signed bytes, "empty" byte array containing only 0 if the private key for this keypair is null.
+    /// - Parameter message: The data to sign
+    /// - Returns: The 64-byte Ed25519 signature, or 64 zero bytes if no private key
     ///
+    /// Warning: Only sign trusted data. Signatures prove you authorized specific content.
     public func sign(_ message: [UInt8]) -> [UInt8] {
 
         var signature = [UInt8](repeating: 0, count: StellarProtocolConstants.ED25519_SIGNATURE_SIZE)

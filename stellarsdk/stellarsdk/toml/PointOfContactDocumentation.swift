@@ -8,6 +8,24 @@
 
 import Foundation
 
+/// Represents point of contact information from a stellar.toml file.
+///
+/// This class parses and provides access to the PRINCIPALS section of a domain's
+/// stellar.toml file. It contains information about key individuals associated with
+/// the organization, such as executives, directors, or other responsible parties.
+///
+/// The PRINCIPALS section helps establish accountability and trust by identifying
+/// real people behind an organization. This includes their contact information,
+/// social media accounts for verification, and cryptographic hashes of identity
+/// verification photos.
+///
+/// Developers use this class to display information about who is responsible for
+/// an asset or service, enabling users to verify the legitimacy of an organization
+/// through the identities of its key personnel.
+///
+/// See also:
+/// - [StellarToml] for the main stellar.toml parser
+/// - [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 public class PointOfContactDocumentation {
 
     private enum Keys: String {
@@ -44,7 +62,10 @@ public class PointOfContactDocumentation {
     
     /// SHA-256 hash of a verification photo of principal. Should be well-lit and contain: principal holding ID card and signed, dated, hand-written message stating I, $NAME, am a principal of $ORG_NAME, a Stellar token issuer with address $ISSUER_ADDRESS.
     public var verificationPhotoHash: String?
-    
+
+    /// Initializes point of contact documentation from a parsed TOML document.
+    ///
+    /// - Parameter toml: The parsed TOML document containing principal information
     public init(fromToml toml:Toml) {
         name = toml.string(Keys.name.rawValue)
         email = toml.string(Keys.email.rawValue)

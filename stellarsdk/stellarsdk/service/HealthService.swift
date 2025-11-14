@@ -8,7 +8,7 @@
 
 import Foundation
 
-/// An enum used to differentiate between successful and failed health check responses.
+/// Result enum for health check requests.
 public enum HealthCheckResponseEnum {
     case success(details: HealthCheckResponse)
     case failure(error: HorizonRequestError)
@@ -17,9 +17,27 @@ public enum HealthCheckResponseEnum {
 /// A closure to be called with the response from a health check request.
 public typealias HealthCheckResponseClosure = (_ response: HealthCheckResponseEnum) -> (Void)
 
-/// Class that handles health check related calls.
-/// The health endpoint provides information about the health status of the Horizon server,
-/// including database connectivity and Stellar Core status.
+/// Service for checking Horizon server health status.
+///
+/// The health endpoint provides information about the Horizon server's operational status,
+/// including database connectivity and Stellar Core synchronization. Useful for monitoring
+/// and determining if the server is ready to handle requests.
+///
+/// Example usage:
+/// ```swift
+/// let sdk = StellarSDK()
+///
+/// let response = await sdk.health.getHealthCheck()
+/// switch response {
+/// case .success(let health):
+///     print("Status: \(health.status)")
+/// case .failure(let error):
+///     print("Health check failed: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
 open class HealthService: NSObject {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
@@ -41,7 +59,7 @@ open class HealthService: NSObject {
     /// - 200 OK: if all health checks pass (database connected, core up, and core synced)
     /// - 503 Service Unavailable: if any health check fails
     ///
-    /// See [Horizon API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/health "Health Check")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter response: The closure to be called upon response.
     ///
@@ -62,7 +80,7 @@ open class HealthService: NSObject {
     /// - 200 OK: if all health checks pass (database connected, core up, and core synced)
     /// - 503 Service Unavailable: if any health check fails
     ///
-    /// See [Horizon API](https://developers.stellar.org/docs/data/horizon/api-reference/resources/health "Health Check")
+    /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Returns: HealthCheckResponseEnum indicating success or failure
     ///

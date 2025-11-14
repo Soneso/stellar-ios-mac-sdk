@@ -8,9 +8,15 @@
 
 import Foundation
 
+/// Represents a price ratio in a liquidity pool.
+/// The price is represented as a fraction with a numerator and denominator.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolPriceResponse: NSObject, Decodable {
-    
+
+    /// The numerator of the price fraction.
     public var n:Int
+
+    /// The denominator of the price fraction.
     public var d:Int
     
     // Properties to encode and decode

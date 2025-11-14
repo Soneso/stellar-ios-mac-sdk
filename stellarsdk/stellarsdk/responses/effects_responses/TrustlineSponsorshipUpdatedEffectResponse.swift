@@ -8,16 +8,26 @@
 
 import Foundation
 
+/// Represents a trustline sponsorship update effect.
+/// This effect occurs when the sponsoring account for a trustline's base reserve changes.
+/// The sponsorship is transferred from one sponsor to another.
+/// Triggered by the Revoke Sponsorship operation.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class TrustlineSponsorshipUpdatedEffectResponse: EffectResponse {
-    
-    // new sponsor of a trustline
+
+    /// The account ID of the new sponsor.
     public var newSponsor:String
-    
-    //  former sponsor of a trustline
+
+    /// The account ID of the former sponsor.
     public var formerSponsor:String
-    
+
+    /// The asset identifier for the trustline.
     public var asset:String?
+
+    /// The asset type for the trustline.
     public var assetType:String?
+
+    /// The liquidity pool ID if the trustline is for liquidity pool shares.
     public var liquidityPoolId:String?
     
     // Properties to encode and decode

@@ -8,6 +8,8 @@
 
 import Foundation
 
-///  Represents an account removed effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
+/// Represents an account removal effect.
+/// This effect occurs when an account is merged into another account through an Account Merge operation.
+/// The account's remaining balance is transferred to the destination account, and the source account is removed from the ledger.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class AccountRemovedEffectResponse: EffectResponse {}

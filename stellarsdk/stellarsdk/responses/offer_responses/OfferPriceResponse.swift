@@ -9,14 +9,15 @@
 import Foundation
 
 
-///  Represents an offer price_r attribute.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/offer.html "offer")
+/// Represents an offer price_r attribute as a fraction.
+/// The price represents how many units of the buying asset are needed to purchase one unit of the selling asset.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class OfferPriceResponse: NSObject, Decodable {
-    
-    /// represent the buy price of the currencies on offer.
+
+    /// The numerator of the price fraction.
     public var numerator:Int32
-    
-    /// represent the sell price of the currencies on offer.
+
+    /// The denominator of the price fraction.
     public var denominator:Int32
     
     // Properties to encode and decode

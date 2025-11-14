@@ -14,7 +14,17 @@ import CommonCrypto
 
 import Foundation
 
+/// Extension providing SHA-256 hashing functionality for strings.
 public extension String {
+    /// Computes the SHA-256 hash of the string.
+    ///
+    /// Converts the string to UTF-8 data and computes its SHA-256 hash using CommonCrypto.
+    ///
+    /// Example:
+    /// ```swift
+    /// let message = "Hello, Stellar!"
+    /// let hash = message.sha256Hash
+    /// ```
     var sha256Hash: Data {
         get {
              let data = self.data(using: .utf8)!

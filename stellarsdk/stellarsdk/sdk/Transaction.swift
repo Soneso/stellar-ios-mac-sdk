@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a Transaction in Stellar network.
-/// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/transactions.html, "Transactions")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class Transaction {
     
     public static let minBaseFee:UInt32 = 100

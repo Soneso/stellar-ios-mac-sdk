@@ -8,8 +8,17 @@
 
 import Foundation
 
+/// Navigation links for liquidity pool trade-related resources.
+///
+/// Provides hypermedia links to resources associated with liquidity pool trades.
+/// Currently only includes a self reference to the trades resource.
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - LiquidityPoolResponse for complete details
 public class LiquidityPoolTradesLinksResponse: NSObject, Decodable {
-    
+
+    /// Link to this liquidity pool trades resource (self reference).
     public var selflink:LinkResponse
     
     // Properties to encode and decode.

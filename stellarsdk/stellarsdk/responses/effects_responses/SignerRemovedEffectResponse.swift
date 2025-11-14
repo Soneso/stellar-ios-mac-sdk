@@ -8,9 +8,10 @@
 
 import Foundation
 
-///  Represents an account signer creted effect response. See superclass SignerEffect.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
-///  See [Stellar guides](https://www.stellar.org/developers/guides/concepts/accounts.html#signers "Account Signer")
+/// Represents a signer removal effect.
+/// This effect occurs when a signer is removed from an account through a Set Options operation.
+/// The removed signer can no longer authorize transactions for the account.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class SignerRemovedEffectResponse: SignerEffectResponse {}
 
 

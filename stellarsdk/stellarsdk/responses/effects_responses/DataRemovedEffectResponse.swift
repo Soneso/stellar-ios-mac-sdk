@@ -8,11 +8,14 @@
 
 import Foundation
 
-///  Represents a data created effect response.
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/effect.html "Effect")
+/// Represents a data entry removal effect.
+/// This effect occurs when a key-value pair is deleted from an account's data entries.
+/// Account data entries allow accounts to store arbitrary data on the ledger.
+/// Triggered by the Manage Data operation with a null value.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class DataRemovedEffectResponse: EffectResponse {
-    
-    // name of the account data removed
+
+    /// The name (key) of the data entry removed.
     public var name:String
     
     // Properties to encode and decode

@@ -9,7 +9,7 @@
 import Foundation
 
 ///  Represents a orderbook offer(bids/asks).
-///  See [Horizon API](https://www.stellar.org/developers/horizon/reference/resources/orderbook.html "Orderbook")
+///  See [Stellar developer docs](https://developers.stellar.org)
 public class OrderbookOfferResponse: NSObject, Decodable {
     
     /// An object of a number numerator and number denominator that represent the buy and sell price of the currencies on offer.

@@ -8,16 +8,23 @@
 
 import Foundation
 
+/// Extension providing HTTP query parameter conversion for Dictionary.
 extension Dictionary {
-    
-    /// Build string representation of HTTP parameter dictionary of keys and objects
+
+    /// Builds a URL query string from dictionary key-value pairs.
     ///
-    /// This percent escapes in compliance with RFC 3986
+    /// Converts a dictionary into a URL-encoded query string in the format "key1=value1&key2=value2".
+    /// Percent encodes values in compliance with RFC 3986.
     ///
-    /// http://www.ietf.org/rfc/rfc3986.txt
+    /// - Returns: URL-encoded query string, or nil if conversion fails
     ///
-    /// - returns: String representation in the form of key1=value1&key2=value2 where the keys and values are percent escaped
-    
+    /// Example:
+    /// ```swift
+    /// let params = ["limit": "10", "order": "desc"]
+    /// let query = params.stringFromHttpParameters() // "limit=10&order=desc"
+    /// ```
+    ///
+    /// See: [RFC 3986](http://www.ietf.org/rfc/rfc3986.txt) for URL encoding specification.
     func stringFromHttpParameters() -> String? {
         let parameterArray = map { key, value -> String in
             guard let key = key as? String else { return "" }

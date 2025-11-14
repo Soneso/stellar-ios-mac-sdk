@@ -8,89 +8,140 @@
 
 import Foundation
 
-/// An enum used to diferentiate between successful and failed post challenge responses.
+/// Response enum for health check requests.
+///
+/// Represents the result of a Soroban RPC health check operation.
 public enum GetHealthResponseEnum {
     case success(response: GetHealthResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for network information requests.
+///
+/// Returned when querying general information about the Soroban network configuration.
 public enum GetNetworkResponseEnum {
     case success(response: GetNetworkResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for fee statistics requests.
+///
+/// Contains inclusion fee statistics used for transaction prioritization and spam prevention.
 public enum GetFeeStatsResponseEnum {
     case success(response: GetFeeStatsResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for version information requests.
+///
+/// Returns RPC and Captive Core version information.
 public enum GetVersionInfoResponseEnum {
     case success(response: GetVersionInfoResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for ledger entries requests.
+///
+/// Used when reading the current value of ledger entries directly, including contract state.
 public enum GetLedgerEntriesResponseEnum {
     case success(response: GetLedgerEntriesResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for latest ledger requests.
+///
+/// Returns information about the most recent known ledger.
 public enum GetLatestLedgerResponseEnum {
     case success(response: GetLatestLedgerResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
-
+/// Response enum for transaction simulation requests.
+///
+/// Contains simulation results including return values, resource costs, and ledger footprint
+/// for a contract invocation without submitting to the network.
 public enum SimulateTransactionResponseEnum {
     case success(response: SimulateTransactionResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for transaction submission requests.
+///
+/// Returned when submitting a transaction to the Soroban network.
+/// Note that submission does not wait for completion.
 public enum SendTransactionResponseEnum {
     case success(response: SendTransactionResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for transaction status requests.
+///
+/// Used to poll for transaction completion status after submission.
 public enum GetTransactionResponseEnum {
     case success(response: GetTransactionResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for transactions list requests.
+///
+/// Returns a paginated list of transactions starting from a specified ledger.
 public enum GetTransactionsResponseEnum {
     case success(response: GetTransactionsResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for events query requests.
+///
+/// Returns contract events emitted within a specified ledger range.
 public enum GetEventsResponseEnum {
     case success(response: GetEventsResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for account nonce requests.
+///
+/// Returns the current nonce for an account.
 public enum GetNonceResponseEnum {
     case success(response: UInt64)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for ledgers list requests.
+///
+/// Returns a paginated list of ledgers starting from a specified point.
 public enum GetLedgersResponseEnum {
     case success(response: GetLedgersResponse)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for contract code requests.
+///
+/// Returns the WebAssembly bytecode for a deployed contract.
 public enum GetContractCodeResponseEnum {
     case success(response: ContractCodeEntryXDR)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for contract information requests.
+///
+/// Returns parsed contract metadata including spec entries, environment info, and contract metadata.
 public enum GetContractInfoEnum {
     case success(response: SorobanContractInfo)
     case parsingFailure(error: SorobanContractParserError)
     case rpcFailure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for account information requests.
+///
+/// Returns minimal account information needed for transaction construction.
 public enum GetAccountResponseEnum {
     case success(response: Account)
     case failure(error: SorobanRpcRequestError)
 }
 
+/// Response enum for contract data requests.
+///
+/// Returns the current value of contract storage entries.
 public enum GetContractDataResponseEnum {
     case success(response: LedgerEntry)
     case failure(error: SorobanRpcRequestError)
@@ -124,9 +175,47 @@ private enum RpcResult {
 /// A closure to be called when a HTTP response is received
 private typealias RpcResponseClosure = (_ response:RpcResult) -> (Void)
 
-/// This class helps you to connect to a local or remote soroban rpc server
-/// and send requests to the server. It parses the results and provides
-/// corresponding response objects.
+/// Soroban RPC client for interacting with smart contracts on the Stellar network.
+///
+/// SorobanServer provides access to Soroban RPC endpoints for smart contract operations including:
+/// - Contract invocation simulation and submission
+/// - Reading contract state and ledger entries
+/// - Querying contract events
+/// - Transaction status polling
+/// - Network and fee information
+///
+/// Initialize with your Soroban RPC endpoint URL. For testnet, use the public RPC endpoint
+/// or run your own RPC server. For production, always use a reliable RPC provider.
+///
+/// Example usage:
+/// ```swift
+/// // Connect to testnet RPC
+/// let server = SorobanServer(endpoint: "https://soroban-testnet.stellar.org")
+///
+/// // Get network information
+/// let networkResponse = await server.getNetwork()
+/// switch networkResponse {
+/// case .success(let network):
+///     print("Network passphrase: \(network.passphrase)")
+/// case .failure(let error):
+///     print("Error: \(error)")
+/// }
+///
+/// // Simulate a contract invocation
+/// let simulateRequest = SimulateTransactionRequest(transaction: transaction)
+/// let simResponse = await server.simulateTransaction(simulateTxRequest: simulateRequest)
+/// switch simResponse {
+/// case .success(let simulation):
+///     print("Resource cost: \(simulation.cost)")
+/// case .failure(let error):
+///     print("Simulation failed: \(error)")
+/// }
+/// ```
+///
+/// See also:
+/// - [Stellar developer docs](https://developers.stellar.org)
+/// - [SorobanClient] for high-level contract interaction
+/// - [AssembledTransaction] for transaction construction
 public class SorobanServer {
     private let endpoint: String
     private let jsonDecoder = JSONDecoder()
@@ -249,7 +338,7 @@ public class SorobanServer {
     /// For Soroban transactions and Stellar transactions, they each have their own inclusion fees
     /// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
     /// during network traffic surge.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getFeeStats
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "getFeeStats()")
     public func getFeeStats(completion:@escaping GetFeeStatsResponseClosure) {
         Task {
@@ -263,7 +352,7 @@ public class SorobanServer {
     /// For Soroban transactions and Stellar transactions, they each have their own inclusion fees
     /// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
     /// during network traffic surge.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getFeeStats
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     public func getFeeStats() async -> GetFeeStatsResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "getFeeStats"))
@@ -292,7 +381,7 @@ public class SorobanServer {
     
     /// Version information about the RPC and Captive core. RPC manages its own,
     /// pared-down version of Stellar Core optimized for its own subset of needs.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getVersionInfo
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "getVersionInfo()")
     public func getVersionInfo(completion:@escaping GetVersionInfoResponseClosure) {
         Task {
@@ -303,7 +392,7 @@ public class SorobanServer {
     
     /// Version information about the RPC and Captive core. RPC manages its own,
     /// pared-down version of Stellar Core optimized for its own subset of needs.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getVersionInfo
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     public func getVersionInfo() async -> GetVersionInfoResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "getVersionInfo"))
@@ -414,7 +503,7 @@ public class SorobanServer {
     /// The getLedgers method return a detailed list of ledgers starting from
     /// the user specified starting point that you can paginate as long as the pages
     /// fall within the history retention of their corresponding RPC provider.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "getLedgers(startLedger:paginationOptions:format:)")
     public func getLedgers(startLedger: UInt32, paginationOptions: PaginationOptions? = nil, format: String? = nil, completion: @escaping GetLedgersResponseClosure) {
         Task {
@@ -427,7 +516,7 @@ public class SorobanServer {
     /// The getLedgers method return a detailed list of ledgers starting from
     /// the user specified starting point that you can paginate as long as the pages
     /// fall within the history retention of their corresponding RPC provider.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getLedgers
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     public func getLedgers(startLedger: UInt32, paginationOptions: PaginationOptions? = nil, format: String? = nil) async -> GetLedgersResponseEnum {
 
         let result = await request(body: try? buildRequestJson(method: "getLedgers", args: buildLedgersRequestParams(startLedger: startLedger, paginationOptions: paginationOptions, format: format)))
@@ -669,8 +758,38 @@ public class SorobanServer {
         }
     }
     
-    /// Submit a trial contract invocation to get back return values, expected ledger footprint, and expected costs.
-    /// See: https://soroban.stellar.org/api/methods/simulateTransaction
+    /// Simulates a contract invocation without submitting to the network.
+    ///
+    /// Transaction simulation is essential for Soroban contract interactions. It provides:
+    /// - Return values from read-only contract calls
+    /// - Resource consumption estimates (CPU instructions, memory, ledger I/O)
+    /// - Required ledger footprint for the transaction
+    /// - Authorization requirements for multi-party transactions
+    ///
+    /// Always simulate before submitting write transactions to ensure they will succeed
+    /// and to obtain the correct resource limits and footprint.
+    ///
+    /// - Parameter simulateTxRequest: The simulation request containing the transaction to simulate
+    /// - Parameter completion: Callback with simulation results or error
+    ///
+    /// Example:
+    /// ```swift
+    /// let request = SimulateTransactionRequest(transaction: transaction)
+    /// server.simulateTransaction(simulateTxRequest: request) { response in
+    ///     switch response {
+    ///     case .success(let simulation):
+    ///         if let result = simulation.results?.first {
+    ///             print("Contract returned: \(result.returnValue)")
+    ///         }
+    ///         print("Cost: \(simulation.cost)")
+    ///     case .failure(let error):
+    ///         print("Simulation error: \(error)")
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "simulateTransaction(simulateTxRequest:)")
     public func simulateTransaction(simulateTxRequest: SimulateTransactionRequest, completion:@escaping SimulateTransactionResponseClosure) {
         Task {
@@ -678,9 +797,38 @@ public class SorobanServer {
             completion(result)
         }
     }
-    
-    /// Submit a trial contract invocation to get back return values, expected ledger footprint, and expected costs.
-    /// See: https://soroban.stellar.org/api/methods/simulateTransaction
+
+    /// Simulates a contract invocation without submitting to the network.
+    ///
+    /// Transaction simulation is essential for Soroban contract interactions. It provides:
+    /// - Return values from read-only contract calls
+    /// - Resource consumption estimates (CPU instructions, memory, ledger I/O)
+    /// - Required ledger footprint for the transaction
+    /// - Authorization requirements for multi-party transactions
+    ///
+    /// Always simulate before submitting write transactions to ensure they will succeed
+    /// and to obtain the correct resource limits and footprint.
+    ///
+    /// - Parameter simulateTxRequest: The simulation request containing the transaction to simulate
+    /// - Returns: SimulateTransactionResponseEnum with simulation results or error
+    ///
+    /// Example:
+    /// ```swift
+    /// let request = SimulateTransactionRequest(transaction: transaction)
+    /// let response = await server.simulateTransaction(simulateTxRequest: request)
+    /// switch response {
+    /// case .success(let simulation):
+    ///     if let result = simulation.results?.first {
+    ///         print("Contract returned: \(result.returnValue)")
+    ///     }
+    ///     print("Cost: \(simulation.cost)")
+    /// case .failure(let error):
+    ///     print("Simulation error: \(error)")
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
     public func simulateTransaction(simulateTxRequest: SimulateTransactionRequest) async -> SimulateTransactionResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "simulateTransaction", args: simulateTxRequest.buildRequestParams()))
@@ -707,10 +855,38 @@ public class SorobanServer {
         }
     }
     
-    /// Submit a real transaction to the stellar network. This is the only way to make changes “on-chain”.
-    /// Unlike Horizon, this does not wait for transaction completion. It simply validates and enqueues the transaction.
-    /// Clients should call getTransaction to learn about transaction success/failure.
-    /// See: https://soroban.stellar.org/api/methods/sendTransaction
+    /// Submits a transaction to the Stellar network for execution.
+    ///
+    /// This is the only way to make on-chain changes with smart contracts. Before calling this:
+    /// 1. Simulate the transaction with simulateTransaction
+    /// 2. Add the resource limits and footprint from simulation
+    /// 3. Sign the transaction with all required signers
+    ///
+    /// Important: Unlike Horizon, this method does not wait for transaction completion.
+    /// It validates and enqueues the transaction, then returns immediately. Use getTransaction
+    /// to poll for completion status.
+    ///
+    /// - Parameter transaction: The signed transaction to submit
+    /// - Parameter completion: Callback with submission result or error
+    ///
+    /// Example:
+    /// ```swift
+    /// // After simulation and signing
+    /// server.sendTransaction(transaction: signedTransaction) { response in
+    ///     switch response {
+    ///     case .success(let result):
+    ///         print("Transaction hash: \(result.hash)")
+    ///         print("Status: \(result.status)")
+    ///         // Poll for completion
+    ///     case .failure(let error):
+    ///         print("Submission failed: \(error)")
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
+    /// - getTransaction(transactionHash:) for status polling
     @available(*, renamed: "sendTransaction(transaction:)")
     public func sendTransaction(transaction: Transaction, completion:@escaping SendTransactionResponseClosure) {
         Task {
@@ -718,11 +894,38 @@ public class SorobanServer {
             completion(result)
         }
     }
-    
-    /// Submit a real transaction to the stellar network. This is the only way to make changes “on-chain”.
-    /// Unlike Horizon, this does not wait for transaction completion. It simply validates and enqueues the transaction.
-    /// Clients should call getTransaction to learn about transaction success/failure.
-    /// See: https://soroban.stellar.org/api/methods/sendTransaction
+
+    /// Submits a transaction to the Stellar network for execution.
+    ///
+    /// This is the only way to make on-chain changes with smart contracts. Before calling this:
+    /// 1. Simulate the transaction with simulateTransaction
+    /// 2. Add the resource limits and footprint from simulation
+    /// 3. Sign the transaction with all required signers
+    ///
+    /// Important: Unlike Horizon, this method does not wait for transaction completion.
+    /// It validates and enqueues the transaction, then returns immediately. Use getTransaction
+    /// to poll for completion status.
+    ///
+    /// - Parameter transaction: The signed transaction to submit
+    /// - Returns: SendTransactionResponseEnum with submission result or error
+    ///
+    /// Example:
+    /// ```swift
+    /// // After simulation and signing
+    /// let response = await server.sendTransaction(transaction: signedTransaction)
+    /// switch response {
+    /// case .success(let result):
+    ///     print("Transaction hash: \(result.hash)")
+    ///     print("Status: \(result.status)")
+    ///     // Poll for completion
+    /// case .failure(let error):
+    ///     print("Submission failed: \(error)")
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
+    /// - getTransaction(transactionHash:) for status polling
     public func sendTransaction(transaction: Transaction) async -> SendTransactionResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "sendTransaction", args: ["transaction": transaction.encodedEnvelope()]))
@@ -749,8 +952,51 @@ public class SorobanServer {
         }
     }
     
-    /// Clients will poll this to tell when the transaction has been completed.
-    /// See: https://soroban.stellar.org/api/methods/getTransaction
+    /// Polls for transaction completion status.
+    ///
+    /// After submitting a transaction with sendTransaction, use this method to check
+    /// if the transaction has been included in a ledger and whether it succeeded or failed.
+    ///
+    /// Transaction lifecycle:
+    /// 1. PENDING: Transaction received but not yet in a ledger
+    /// 2. SUCCESS: Transaction successfully executed
+    /// 3. FAILED: Transaction failed during execution
+    /// 4. NOT_FOUND: Transaction not found (may have expired)
+    ///
+    /// Poll this endpoint until status is SUCCESS or FAILED. Typical polling interval is 1-2 seconds.
+    ///
+    /// - Parameter transactionHash: The transaction hash returned from sendTransaction
+    /// - Parameter completion: Callback with transaction status or error
+    ///
+    /// Example:
+    /// ```swift
+    /// func pollTransaction(hash: String) {
+    ///     server.getTransaction(transactionHash: hash) { response in
+    ///         switch response {
+    ///         case .success(let txInfo):
+    ///             switch txInfo.status {
+    ///             case GetTransactionResponse.STATUS_SUCCESS:
+    ///                 print("Transaction succeeded!")
+    ///                 if let result = txInfo.resultValue {
+    ///                     print("Return value: \(result)")
+    ///                 }
+    ///             case GetTransactionResponse.STATUS_FAILED:
+    ///                 print("Transaction failed: \(txInfo.resultXdr ?? "")")
+    ///             default:
+    ///                 // Still pending, poll again
+    ///                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+    ///                     pollTransaction(hash: hash)
+    ///                 }
+    ///             }
+    ///         case .failure(let error):
+    ///             print("Error: \(error)")
+    ///         }
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "getTransaction(transactionHash:)")
     public func getTransaction(transactionHash:String, completion:@escaping GetTransactionResponseClosure) {
         Task {
@@ -758,9 +1004,46 @@ public class SorobanServer {
             completion(result)
         }
     }
-    
-    /// Clients will poll this to tell when the transaction has been completed.
-    /// See: https://soroban.stellar.org/api/methods/getTransaction
+
+    /// Polls for transaction completion status.
+    ///
+    /// After submitting a transaction with sendTransaction, use this method to check
+    /// if the transaction has been included in a ledger and whether it succeeded or failed.
+    ///
+    /// Transaction lifecycle:
+    /// 1. PENDING: Transaction received but not yet in a ledger
+    /// 2. SUCCESS: Transaction successfully executed
+    /// 3. FAILED: Transaction failed during execution
+    /// 4. NOT_FOUND: Transaction not found (may have expired)
+    ///
+    /// Poll this endpoint until status is SUCCESS or FAILED. Typical polling interval is 1-2 seconds.
+    ///
+    /// - Parameter transactionHash: The transaction hash returned from sendTransaction
+    /// - Returns: GetTransactionResponseEnum with transaction status or error
+    ///
+    /// Example:
+    /// ```swift
+    /// let response = await server.getTransaction(transactionHash: hash)
+    /// switch response {
+    /// case .success(let txInfo):
+    ///     switch txInfo.status {
+    ///     case GetTransactionResponse.STATUS_SUCCESS:
+    ///         print("Transaction succeeded!")
+    ///         if let result = txInfo.resultValue {
+    ///             print("Return value: \(result)")
+    ///         }
+    ///     case GetTransactionResponse.STATUS_FAILED:
+    ///         print("Transaction failed: \(txInfo.resultXdr ?? "")")
+    ///     default:
+    ///         print("Still pending...")
+    ///     }
+    /// case .failure(let error):
+    ///     print("Error: \(error)")
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
     public func getTransaction(transactionHash:String) async -> GetTransactionResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "getTransaction", args: ["hash": transactionHash]))
@@ -790,7 +1073,7 @@ public class SorobanServer {
     /// The getTransactions method return a detailed list of transactions starting from
     /// the user specified starting point that you can paginate as long as the pages
     /// fall within the history retention of their corresponding RPC provider.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "getTransactions(startLedger:paginationOptions:)")
     public func getTransactions(startLedger:Int? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetTransactionsResponseClosure) {
         Task {
@@ -802,7 +1085,7 @@ public class SorobanServer {
     /// The getTransactions method return a detailed list of transactions starting from
     /// the user specified starting point that you can paginate as long as the pages
     /// fall within the history retention of their corresponding RPC provider.
-    /// See: https://developers.stellar.org/docs/data/rpc/api-reference/methods/getTransactions
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     public func getTransactions(startLedger:Int? = nil, paginationOptions:PaginationOptions? = nil) async -> GetTransactionsResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "getTransactions", args: buildTransactionssRequestParams(startLedger: startLedger, paginationOptions: paginationOptions)))
@@ -829,12 +1112,54 @@ public class SorobanServer {
         }
     }
     
-    /// Clients can request a filtered list of events emitted by a given ledger range.
-    /// Soroban-RPC will support querying within a maximum 24 hours of recent ledgers.
-    /// Note, this could be used by the client to only prompt a refresh when there is a new ledger with relevant events. It should also be used by backend Dapp components to "ingest" events into their own database for querying and serving.
-    /// If making multiple requests, clients should deduplicate any events received, based on the event's unique id field. This prevents double-processing in the case of duplicate events being received.
-    /// By default soroban-rpc retains the most recent 24 hours of events.
-    /// See: https://soroban.stellar.org/api/methods/getEvents
+    /// Queries contract events emitted within a specified ledger range.
+    ///
+    /// Contract events provide a way for smart contracts to emit structured data that can be
+    /// queried by off-chain applications. Use this method to:
+    /// - Monitor contract state changes
+    /// - Track token transfers in custom assets
+    /// - Build event-driven applications
+    /// - Populate application databases with on-chain data
+    ///
+    /// Important notes:
+    /// - By default, Soroban RPC retains only the most recent 24 hours of events
+    /// - Deduplicate events by their unique ID to prevent double-processing
+    /// - Use filters to narrow results to specific contracts or event types
+    ///
+    /// - Parameter startLedger: Starting ledger sequence number (optional)
+    /// - Parameter endLedger: Ending ledger sequence number (optional)
+    /// - Parameter eventFilters: Filters to narrow event results by contract ID or topics
+    /// - Parameter paginationOptions: Pagination settings for large result sets
+    /// - Parameter completion: Callback with events or error
+    ///
+    /// Example:
+    /// ```swift
+    /// // Query all events from a specific contract
+    /// let filter = EventFilter(
+    ///     type: "contract",
+    ///     contractIds: ["CCONTRACT123..."]
+    /// )
+    /// server.getEvents(
+    ///     startLedger: 1000000,
+    ///     eventFilters: [filter],
+    ///     paginationOptions: PaginationOptions(limit: 100)
+    /// ) { response in
+    ///     switch response {
+    ///     case .success(let eventsResponse):
+    ///         for event in eventsResponse.events {
+    ///             print("Event ID: \(event.id)")
+    ///             print("Topics: \(event.topic)")
+    ///             print("Value: \(event.value)")
+    ///         }
+    ///     case .failure(let error):
+    ///         print("Error: \(error)")
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     @available(*, renamed: "getEvents(startLedger:eventFilters:paginationOptions:)")
     public func getEvents(startLedger:Int? = nil, endLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
         Task {
@@ -842,13 +1167,54 @@ public class SorobanServer {
             completion(result)
         }
     }
-    
-    /// Clients can request a filtered list of events emitted by a given ledger range.
-    /// Soroban-RPC will support querying within a maximum 24 hours of recent ledgers.
-    /// Note, this could be used by the client to only prompt a refresh when there is a new ledger with relevant events. It should also be used by backend Dapp components to "ingest" events into their own database for querying and serving.
-    /// If making multiple requests, clients should deduplicate any events received, based on the event's unique id field. This prevents double-processing in the case of duplicate events being received.
-    /// By default soroban-rpc retains the most recent 24 hours of events.
-    /// See: https://soroban.stellar.org/api/methods/getEvents
+
+    /// Queries contract events emitted within a specified ledger range.
+    ///
+    /// Contract events provide a way for smart contracts to emit structured data that can be
+    /// queried by off-chain applications. Use this method to:
+    /// - Monitor contract state changes
+    /// - Track token transfers in custom assets
+    /// - Build event-driven applications
+    /// - Populate application databases with on-chain data
+    ///
+    /// Important notes:
+    /// - By default, Soroban RPC retains only the most recent 24 hours of events
+    /// - Deduplicate events by their unique ID to prevent double-processing
+    /// - Use filters to narrow results to specific contracts or event types
+    ///
+    /// - Parameter startLedger: Starting ledger sequence number (optional)
+    /// - Parameter endLedger: Ending ledger sequence number (optional)
+    /// - Parameter eventFilters: Filters to narrow event results by contract ID or topics
+    /// - Parameter paginationOptions: Pagination settings for large result sets
+    /// - Returns: GetEventsResponseEnum with events or error
+    ///
+    /// Example:
+    /// ```swift
+    /// // Query all events from a specific contract
+    /// let filter = EventFilter(
+    ///     type: "contract",
+    ///     contractIds: ["CCONTRACT123..."]
+    /// )
+    /// let response = await server.getEvents(
+    ///     startLedger: 1000000,
+    ///     eventFilters: [filter],
+    ///     paginationOptions: PaginationOptions(limit: 100)
+    /// )
+    /// switch response {
+    /// case .success(let eventsResponse):
+    ///     for event in eventsResponse.events {
+    ///         print("Event ID: \(event.id)")
+    ///         print("Topics: \(event.topic)")
+    ///         print("Value: \(event.value)")
+    ///     }
+    /// case .failure(let error):
+    ///     print("Error: \(error)")
+    /// }
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
+    /// - [Stellar developer docs](https://developers.stellar.org)
     public func getEvents(startLedger:Int? = nil, endLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) async -> GetEventsResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, endLedger: endLedger, eventFilters: eventFilters, paginationOptions: paginationOptions)))

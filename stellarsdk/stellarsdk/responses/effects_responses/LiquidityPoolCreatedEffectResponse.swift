@@ -8,8 +8,14 @@
 
 import Foundation
 
+/// Represents a liquidity pool creation effect.
+/// This effect occurs when a new liquidity pool is created on the Stellar network.
+/// Liquidity pools enable automated market making for asset pairs on the decentralized exchange.
+/// Triggered by the Change Trust operation with a liquidity pool asset.
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class LiquidityPoolCreatedEffectResponse: EffectResponse {
-    
+
+    /// The liquidity pool details.
     public var liquidityPool:LiquidityPoolEffectResponse
     
     // Properties to encode and decode

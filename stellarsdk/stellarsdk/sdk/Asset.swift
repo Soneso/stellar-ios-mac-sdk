@@ -9,7 +9,7 @@
 import Foundation
 
 /// Base Asset class.
-/// See [Stellar Guides] (https://www.stellar.org/developers/learn/concepts/assets.html, "Assets")
+/// See [Stellar developer docs](https://developers.stellar.org)
 public class Asset
 {
     public let type:Int32

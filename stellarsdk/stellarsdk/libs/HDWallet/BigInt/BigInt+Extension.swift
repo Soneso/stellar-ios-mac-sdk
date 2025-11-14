@@ -9,6 +9,13 @@
 import Foundation
 
 extension BInt {
+
+    /// Converts the big integer to binary data representation.
+    ///
+    /// Encodes the big integer as big-endian bytes. Used in BIP-32 key derivation
+    /// to convert derived key factors into binary format.
+    ///
+    /// - Returns: Big-endian byte representation of the integer
     var data: Data {
         let count = limbs.count
         var data = Data(count: count * 8)
@@ -24,11 +31,22 @@ extension BInt {
         
         return data
     }
-    
+
+    /// Creates a big integer from a hexadecimal string.
+    ///
+    /// - Parameter hex: A hexadecimal string (without "0x" prefix)
+    ///
+    /// - Returns: A BInt if the hex string is valid, nil otherwise
     init?(hex: String) {
         self.init(number: hex.lowercased(), withBase: 16)
     }
-    
+
+    /// Creates a big integer from binary data.
+    ///
+    /// Interprets the data as a big-endian unsigned integer. Used in BIP-32 key
+    /// derivation to convert HMAC output into big integer form for cryptographic operations.
+    ///
+    /// - Parameter data: Binary data to interpret as a big-endian integer
     init(data: Data) {
         let n = data.count
         guard n > 0 else {

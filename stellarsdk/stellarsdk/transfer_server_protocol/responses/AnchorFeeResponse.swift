@@ -8,6 +8,15 @@
 
 import Foundation
 
+/// Response returned when requesting fee information for a transaction.
+///
+/// This response is returned by GET /fee requests in SEP-6 (deprecated endpoint).
+/// It provides the fee that would be charged for a specific deposit or withdrawal amount.
+///
+/// Note: This endpoint is deprecated. Anchors should use the fee information in the
+/// GET /info response or the fee_details field in transaction responses instead.
+///
+/// See [SEP-6 Fee](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#fee)
 public struct AnchorFeeResponse: Decodable {
 
     /// The total fee (in units of the asset involved) that would be charged to deposit/withdraw the specified amount of asset_code.
