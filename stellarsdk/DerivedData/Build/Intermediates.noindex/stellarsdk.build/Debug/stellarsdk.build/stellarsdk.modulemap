@@ -1,0 +1,4 @@
+module stellarsdk {
+header "stellarsdk-Swift.h"
+export *
+}
