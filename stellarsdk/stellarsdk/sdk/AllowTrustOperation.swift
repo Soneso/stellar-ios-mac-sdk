@@ -11,10 +11,13 @@ import Foundation
 /// Represents an allow trust operation. Updates the authorized flag of an existing trustline. This can only be called by the issuer of a trustline's asset. The issuer can only clear the authorized flag if the issuer has the AUTH_REVOCABLE_FLAG set. Otherwise, the issuer can only set the authorized flag.
 /// See [Stellar developer docs](https://developers.stellar.org)
 public class AllowTrustOperation:Operation {
-    
+
+    /// The account of the recipient of the trustline.
     public let trustor:KeyPair
+    /// The asset code of the trustline.
     public let assetCode:String
-    public let authorize:UInt32 // 0, or any bitwise combination of TrustLineFlags
+    /// Flag indicating whether the trustline is authorized. 0, or any bitwise combination of TrustLineFlags.
+    public let authorize:UInt32
     
     /// Creates a new AllowTrustOperation object.
     ///

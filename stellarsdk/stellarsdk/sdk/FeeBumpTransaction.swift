@@ -8,22 +8,32 @@
 
 import Foundation
 
+/// Errors that can occur when creating fee bump transactions.
 public enum FeeBumpTransactionError: Error {
+    /// Fee is smaller than the minimum base fee required by the network.
     case feeSmallerThanBaseFee(message: String)
+    /// Fee is smaller than the inner transaction's fee.
     case feeSmallerThanInnerTransactionFee(message: String)
 }
 
 /// Represents a Fee Bump Transaction in Stellar network.
 /// See https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md
 public class FeeBumpTransaction {
-    
+
+    /// The maximum fee willing to pay for the fee bump transaction in stroops.
     public let fee:UInt64
+    /// The account paying the fee for the bumped transaction.
     public let sourceAccount:TransactionAccount
+    /// The account ID of the source account paying the fee.
     public let sourceAccountId:String
+    /// The transaction being fee-bumped.
     public let innerTransaction:Transaction
+    /// The XDR representation of this fee bump transaction.
     public private(set) var feeBumpTransactionXDR:FeeBumpTransactionXDR
+    /// The XDR representation of the inner transaction.
     public private(set) var innerTransactionXDR:FeeBumpTransactionXDR.InnerTransactionXDR
-    
+
+    /// The base64-encoded XDR string of this fee bump transaction.
     public var xdrEncoded: String? {
         get {
             return feeBumpTransactionXDR.xdrEncoded
@@ -76,22 +86,25 @@ public class FeeBumpTransaction {
         
         try self.feeBumpTransactionXDR.sign(keyPair: keyPair, network: network)
     }
-    
+
+    /// Adds a pre-computed signature to the fee bump transaction without requiring the private key.
     public func addSignature(signature:DecoratedSignatureXDR) -> Void {
         self.feeBumpTransactionXDR.addSignature(signature: signature)
     }
-    
-    /// Returns the base64 encoded transaction envelope xdr to be used to post the transaction. Transaction need to have at least one signature before they can be sent to the stellar network.
+
+    /// Returns the base64-encoded transaction envelope XDR for submission to the network.
     public func encodedEnvelope() throws -> String {
         return try feeBumpTransactionXDR.encodedEnvelope()
     }
-    
+
+    /// Computes and returns the transaction hash as a hex-encoded string for the specified network.
     public func getTransactionHash(network:Network) throws -> String {
         let transactionHash = try [UInt8](feeBumpTransactionXDR.hash(network: network))
         let str = Data(transactionHash).hexEncodedString()
         return str
     }
-    
+
+    /// Computes and returns the transaction hash as Data for the specified network.
     public func getTransactionHashData(network:Network) throws -> Data {
         let transactionHash = try [UInt8](feeBumpTransactionXDR.hash(network: network))
         let data = Data(transactionHash)

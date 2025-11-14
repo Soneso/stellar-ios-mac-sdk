@@ -108,12 +108,9 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     fileprivate var onErrorCallback: ((NSError?) -> Void)?
     fileprivate var onMessageCallback: ((_ id: String?, _ event: String?, _ data: String?) -> Void)?
 
-    /// Current connection state of the EventSource.
-    ///
-    /// Indicates whether the connection is connecting, open, or closed. This property
-    /// is read-only from outside the class and updates automatically as the connection
-    /// state changes.
+    /// Current connection state (connecting, open, or closed) of the Server-Sent Events stream.
     open internal(set) var readyState: EventSourceState
+    /// Milliseconds to wait before attempting reconnection after connection failure.
     open fileprivate(set) var retryTime = 3000
     fileprivate var eventListeners = Dictionary<String, (_ id: String?, _ event: String?, _ data: String?) -> Void>()
     fileprivate var headers: Dictionary<String, String>
@@ -195,13 +192,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     
     //Mark: Close
 
-    /// Closes the EventSource connection and invalidates the underlying URLSession.
-    ///
-    /// After calling this method, the EventSource will no longer receive events and
-    /// will not attempt to reconnect. The connection state transitions to `closed`.
-    ///
-    /// - Note: This method should be called when you no longer need to receive events
-    ///         to free up resources and close the network connection.
+    /// Closes the Server-Sent Events connection and prevents automatic reconnection.
     open func close() {
         self.readyState = EventSourceState.closed
         self.urlSession?.invalidateAndCancel()
@@ -353,8 +344,9 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     open func events() -> Array<String> {
         return Array(self.eventListeners.keys)
     }
-    
+
     //MARK: URLSessionDataDelegate
+    /// URLSessionDataDelegate method called when data is received from the stream.
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         if self.receivedMessageToClose(dataTask.response as? HTTPURLResponse) {
             return
@@ -368,7 +360,8 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         let eventStream = extractEventsFromBuffer()
         self.parseEventStream(eventStream)
     }
-    
+
+    /// URLSessionDataDelegate method called when the initial response is received from the server.
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
         completionHandler(URLSession.ResponseDisposition.allow)
         
@@ -381,7 +374,8 @@ open class EventSource: NSObject, URLSessionDataDelegate {
             self?.onOpenCallback?(response as? HTTPURLResponse)
         }
     }
-    
+
+    /// URLSessionDelegate method called when the connection completes or encounters an error.
     open func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         self.readyState = EventSourceState.closed
         
@@ -564,7 +558,8 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     fileprivate func trim(_ string: String) -> String {
         return string.trimmingCharacters(in: CharacterSet.whitespaces)
     }
-    
+
+    /// Generates a Basic Authentication header value from username and password.
     class open func basicAuth(_ username: String, password: String) -> String {
         let authString = "\(username):\(password)"
         let authData = authString.data(using: String.Encoding.utf8)

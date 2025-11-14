@@ -22,14 +22,19 @@ public let MessageMaximumLength = 300
 
 /// An enum used to differentiate between a successful and a failed transaction setup.
 public enum SetupTransactionXDREnum {
+    /// Successfully parsed and constructed the transaction XDR from the URI.
     case success(transactionXDR: TransactionXDR?)
+    /// Failed to setup the transaction from the URI.
     case failure(error: HorizonRequestError)
 }
 
 /// An enum used to differentiate between a successful and a failed transaction submission.
 public enum SubmitTransactionEnum {
+    /// Transaction submitted successfully to the network.
     case success
+    /// Transaction requires a memo for the destination account per SEP-0029.
     case destinationRequiresMemo(destinationAccountId: String)
+    /// Transaction submission failed due to an error.
     case failure(error: HorizonRequestError)
 }
 

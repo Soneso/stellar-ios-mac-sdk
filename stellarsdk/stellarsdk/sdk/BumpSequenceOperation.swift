@@ -8,8 +8,10 @@
 
 import Foundation
 
+/// Represents a Stellar bump sequence operation which increases an account's sequence number.
 public class BumpSequenceOperation: Operation {
 
+    /// The new sequence number to bump to.
     public let bumpTo:Int64
     
     /// Creates a new BumpSequenceOperation object.

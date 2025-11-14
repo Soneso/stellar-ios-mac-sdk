@@ -8,16 +8,19 @@
 
 import Foundation
 
+/// Streams operation data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
 public class OperationsStreamItem: NSObject {
     private var streamingHelper: StreamingHelper
     private var requestUrl: String
     let operationsFactory = OperationsFactory()
-    
+
+    /// Creates a new operations stream for the specified Horizon API endpoint.
     public init(requestUrl:String) {
         streamingHelper = StreamingHelper()
         self.requestUrl = requestUrl
     }
-    
+
+    /// Establishes the SSE connection and delivers operation responses as they arrive from Horizon.
     public func onReceive(response:@escaping StreamResponseEnum<OperationResponse>.ResponseClosure) {
         streamingHelper.streamFrom(requestUrl:requestUrl) { [weak self] (helperResponse) -> (Void) in
             switch helperResponse {
@@ -39,6 +42,7 @@ public class OperationsStreamItem: NSObject {
         }
     }
     
+    /// Closes the event stream and releases resources.
     public func closeStream() {
         streamingHelper.close()
     }

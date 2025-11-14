@@ -19,10 +19,15 @@ import Foundation
 /// - returnHash:  A 32 byte hash intended to be interpreted as the hash of the transaction the sender is refunding.
 ///
 public enum Memo {
+    /// No memo attached to the transaction.
     case none
+    /// Text memo containing up to 28 bytes of ASCII or UTF-8 encoded string data.
     case text (String)
+    /// Numeric identifier memo containing a 64-bit unsigned integer.
     case id (UInt64)
+    /// Hash memo containing 32 bytes of arbitrary binary data.
     case hash (Data)
+    /// Return hash memo containing 32 bytes representing the hash of a transaction being refunded.
     case returnHash (Data)
 }
 

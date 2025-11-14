@@ -42,7 +42,10 @@ import Foundation
 /// See also:
 /// - [SorobanServer] for RPC operations that may throw these errors
 public enum SorobanRpcRequestError: Error {
+    /// HTTP request to the Soroban RPC server failed.
     case requestFailed(message: String)
+    /// RPC server returned an error response.
     case errorResponse(errorData:[String: Any])
+    /// Failed to parse the RPC response data.
     case parsingResponseFailed(message:String, responseData:Data)
 }

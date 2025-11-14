@@ -1,17 +1,20 @@
 import Foundation
 
+/// Streams offer data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
 public class OffersStreamItem: NSObject {
     private var streamingHelper: StreamingHelper
     private var requestUrl: String
     private let jsonDecoder = JSONDecoder()
-    
+
+    /// Creates a new offers stream for the specified Horizon API endpoint.
     public init(requestUrl:String) {
         streamingHelper = StreamingHelper()
         self.requestUrl = requestUrl
-        
+
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
-    
+
+    /// Establishes the SSE connection and delivers offer responses as they arrive from Horizon.
     public func onReceive(response:@escaping StreamResponseEnum<OfferResponse>.ResponseClosure) {
         streamingHelper.streamFrom(requestUrl:requestUrl) { [weak self] (helperResponse) -> (Void) in
             switch helperResponse {
@@ -32,6 +35,7 @@ public class OffersStreamItem: NSObject {
         }
     }
     
+    /// Closes the event stream and releases resources.
     public func closeStream() {
         streamingHelper.close()
     }

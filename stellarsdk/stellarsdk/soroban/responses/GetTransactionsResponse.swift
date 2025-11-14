@@ -8,8 +8,10 @@
 
 import Foundation
 
+/// Response containing an array of Soroban transaction records from RPC queries.
 public class GetTransactionsResponse: NSObject, Decodable {
-    
+
+    /// Array of transaction records from Soroban RPC.
     public var transactions:[TransactionInfo]
     
     /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
@@ -51,6 +53,7 @@ public class GetTransactionsResponse: NSObject, Decodable {
     }
 }
 
+/// Detailed information about a Soroban transaction including status, ledger, and result XDR.
 public class TransactionInfo: NSObject, Decodable {
     
     /// Indicates whether the transaction was successful or not.

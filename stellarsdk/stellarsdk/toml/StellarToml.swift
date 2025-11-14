@@ -29,13 +29,17 @@ public enum TomlCurrencyLoadError: Error {
 
 /// An enum used to diferentiate between successful and failed toml for domain responses.
 public enum TomlForDomainEnum {
+    /// Successfully loaded and parsed stellar.toml file from the domain.
     case success(response: StellarToml)
+    /// Failed to load or parse the stellar.toml file from the domain.
     case failure(error: TomlFileError)
 }
 
 /// An enum used to diferentiate between successful and failed toml for domain responses.
 public enum TomlCurrencyFromUrlEnum {
+    /// Successfully loaded and parsed currency TOML from the linked URL per SEP-0001.
     case success(response: CurrencyDocumentation)
+    /// Failed to load or parse the currency TOML from the linked URL.
     case failure(error: TomlCurrencyLoadError)
 }
 
@@ -95,10 +99,15 @@ public typealias TomlCurrencyFromUrlClosure = (_ response:TomlCurrencyFromUrlEnu
 /// - Supported version: 2.7.0
 public class StellarToml {
 
+    /// Service endpoints and signing keys from the stellar.toml ACCOUNT section.
     public var accountInformation: AccountInformation
+    /// Organization and issuer metadata from the stellar.toml DOCUMENTATION section.
     public var issuerDocumentation: IssuerDocumentation
+    /// Key personnel and support contact information from the stellar.toml PRINCIPALS section.
     public var pointsOfContact: [PointOfContactDocumentation] = []
+    /// Supported asset definitions and metadata from the stellar.toml CURRENCIES section.
     public var currenciesDocumentation: [CurrencyDocumentation] = []
+    /// Validator node configuration and history archives from the stellar.toml VALIDATORS section.
     public var validatorsInformation: [ValidatorInformation] = []
     
     /**
@@ -149,6 +158,7 @@ public class StellarToml {
         
     }
     
+    /// Loads stellar.toml from a domain using callback-based completion (deprecated).
     @available(*, renamed: "from(domain:secure:)")
     public static func from(domain: String, secure: Bool = true, completion:@escaping TomlFileClosure) {
         Task {
@@ -156,8 +166,8 @@ public class StellarToml {
             completion(result)
         }
     }
-    
-    
+
+    /// Loads and parses stellar.toml file from a domain per SEP-0001.
     public static func from(domain: String, secure: Bool = true) async -> TomlForDomainEnum {
         guard let url = URL(string: "\(secure ? "https://" : "http://")\(domain)/.well-known/stellar.toml") else {
             return .failure(error: .invalidDomain)

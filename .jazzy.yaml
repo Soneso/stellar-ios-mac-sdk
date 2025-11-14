@@ -21,4 +21,4 @@ theme: fullwidth
 author: Soneso
 author_url: https://soneso.com
 copyright: '© 2025 Soneso. All rights reserved.'
-hide_documentation_coverage: true
+hide_documentation_coverage: false

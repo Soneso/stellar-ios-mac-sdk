@@ -11,6 +11,7 @@ import Foundation
 /// Represents an account in Stellar network with it's sequence number.
 public class Account: TransactionAccount
 {
+    /// The keypair associated with this account.
     public private (set) var keyPair: KeyPair
     public private (set) var sequenceNumber: Int64
     
@@ -23,7 +24,8 @@ public class Account: TransactionAccount
         self.keyPair = keyPair
         self.sequenceNumber = sequenceNumber
     }
-    
+
+    /// Creates an Account from account ID string and sequence number.
     public init(accountId: String, sequenceNumber: Int64) throws {
         self.keyPair = try KeyPair(accountId: accountId)
         self.sequenceNumber = sequenceNumber
@@ -42,7 +44,8 @@ public class Account: TransactionAccount
     public func decrementSequenceNumber() {
         sequenceNumber -= 1
     }
-    
+
+    /// The Stellar account ID for this account.
     public var accountId:String {
         return keyPair.accountId
     }

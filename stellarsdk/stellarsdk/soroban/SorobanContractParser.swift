@@ -146,8 +146,14 @@ public class SorobanContractParser {
 /// Environment Meta, Contract Spec Entries and Contract Meta Entries.
 /// See also: [Stellar developer docs](https://developers.stellar.org)
 public class SorobanContractInfo {
+
+    /// Environment interface version the contract was compiled against.
     public let envInterfaceVersion:UInt64
+
+    /// Raw contract specification entries defining types, functions, and events.
     public let specEntries:[SCSpecEntryXDR]
+
+    /// Key-value metadata entries from the contract's custom section.
     public let metaEntries: [String: String]
 
     /// List of SEPs (Stellar Ecosystem Proposals) supported by the contract.
@@ -178,6 +184,7 @@ public class SorobanContractInfo {
     /// Contains all event specifications exported by the contract.
     public let events: [SCSpecEventV0XDR]
 
+    /// Creates contract info from environment interface version, spec entries, and metadata entries.
     public init(envInterfaceVersion:UInt64, specEntries:[SCSpecEntryXDR], metaEntries: [String: String]) {
         self.envInterfaceVersion = envInterfaceVersion
         self.specEntries = specEntries
@@ -271,7 +278,10 @@ public class SorobanContractInfo {
 
 /// Thrown if the SorobanContractParser failed parsing the given byte code.
 public enum SorobanContractParserError: Error {
+    /// The provided byte code is invalid or corrupted.
     case invalidByteCode
+    /// The contract environment metadata section could not be found in the byte code.
     case environmentMetaNotFound
+    /// The contract specification entries section could not be found in the byte code.
     case specEntriesNotFound
 }

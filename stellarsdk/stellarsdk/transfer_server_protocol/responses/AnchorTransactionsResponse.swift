@@ -14,9 +14,13 @@ import Foundation
 ///
 /// See [SEP-6 Transaction](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
 public enum AnchorTransactionKind: String {
+    /// Standard deposit operation without asset conversion.
     case deposit = "deposit"
+    /// Deposit operation with cross-asset conversion using SEP-38.
     case depositExchange = "deposit-exchange"
+    /// Standard withdrawal operation without asset conversion.
     case withdrawal = "withdrawal"
+    /// Withdrawal operation with cross-asset conversion using SEP-38.
     case withdrawalExchange = "withdrawal-exchange"
 }
 

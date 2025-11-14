@@ -10,7 +10,9 @@ import Foundation
 
 /// Result enum for payment path finding requests.
 public enum PaymentPathsResponseEnum {
+    /// Successfully found payment paths with routing details.
     case success(details: FindPaymentPathsResponse)
+    /// Request failed with Horizon error.
     case failure(error: HorizonRequestError)
 }
 
@@ -60,6 +62,7 @@ public class PaymentPathsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
+    /// Finds payment paths from source to destination account for a specified amount.
     @available(*, renamed: "findPaymentPaths(destinationAccount:destinationAssetType:destinationAssetCode:destinationAssetIssuer:destinationAmount:sourceAccount:)")
     open func findPaymentPaths(destinationAccount:String, destinationAssetType:String, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String, sourceAccount:String, response:@escaping FindPaymentPathsResponseClosure) {
         Task {
@@ -67,8 +70,8 @@ public class PaymentPathsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Finds payment paths from source to destination account for a specified amount.
     open func findPaymentPaths(destinationAccount:String, destinationAssetType:String, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String, sourceAccount:String) async -> PaymentPathsResponseEnum {
         
         var requestPath = "/paths"
@@ -232,7 +235,8 @@ public class PaymentPathsService: NSObject {
         
         return await findPaymentPathsFrom(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
-    
+
+    /// Internal method to retrieve payment paths from a specific Horizon endpoint URL.
     @available(*, renamed: "findPaymentPathsFrom(url:)")
     func findPaymentPathsFrom(url:String, response:@escaping FindPaymentPathsResponseClosure) {
         Task {
@@ -240,8 +244,8 @@ public class PaymentPathsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Internal method to retrieve payment paths from a specific Horizon endpoint URL.
     func findPaymentPathsFrom(url:String) async -> PaymentPathsResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {

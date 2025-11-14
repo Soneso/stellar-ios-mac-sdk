@@ -48,6 +48,7 @@ public class TradeAggregationsService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
+    /// Retrieves aggregated trade statistics for an asset pair over a time interval.
     @available(*, renamed: "getTradeAggregations(startTime:endTime:resolution:baseAssetType:baseAssetCode:baseAssetIssuer:counterAssetType:counterAssetCode:counterAssetIssuer:order:limit:)")
     open func getTradeAggregations(startTime:Int64? = nil, endTime:Int64? = nil, resolution:Int64? = nil, baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeAggregationResponse>.ResponseClosure) {
         Task {
@@ -55,8 +56,8 @@ public class TradeAggregationsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves aggregated trade statistics for an asset pair over a time interval.
     open func getTradeAggregations(startTime:Int64? = nil, endTime:Int64? = nil, resolution:Int64? = nil, baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeAggregationResponse>.ResponseEnum {
         
         var requestPath = "/trade_aggregations"
@@ -81,6 +82,7 @@ public class TradeAggregationsService: NSObject {
         return await getTradeAggregationsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    /// Retrieves trade aggregations from a specific Horizon URL.
     @available(*, renamed: "getTradeAggregationsFromUrl(url:)")
     open func getTradeAggregationsFromUrl(url:String, response:@escaping PageResponse<TradeAggregationResponse>.ResponseClosure) {
         Task {
@@ -88,8 +90,8 @@ public class TradeAggregationsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves trade aggregations from a specific Horizon URL.
     open func getTradeAggregationsFromUrl(url:String) async -> PageResponse<TradeAggregationResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {

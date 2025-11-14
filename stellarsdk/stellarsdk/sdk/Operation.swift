@@ -147,7 +147,8 @@ public class Operation {
             throw StellarSDKError.invalidArgument(message: "Unknown operation body \(operationXDR.body)")
         }
     }
-    
+
+    /// Encodes the operation to a base64-encoded XDR string for serialization or transmission.
     public func toXDRBase64() throws -> String {
         let xdr = try toXDR()
         return try Data(XDREncoder.encode(xdr)).base64EncodedString()

@@ -11,15 +11,23 @@ import Foundation
 /// Represents a Transaction in Stellar network.
 /// See [Stellar developer docs](https://developers.stellar.org)
 public class Transaction {
-    
+
+    /// The minimum fee per operation in stroops. Currently set to 100 stroops.
     public static let minBaseFee:UInt32 = 100
+    /// The transaction fee in stroops (1 stroop = 0.0000001 XLM).
     public private(set) var fee:UInt32
+    /// The account that originates the transaction.
     public let sourceAccount:TransactionAccount
+    /// The list of operations contained in this transaction.
     public private(set) var operations:[Operation]
+    /// Optional extra information attached to the transaction.
     public private(set) var memo:Memo
+    /// Transaction validity constraints as defined in CAP-21.
     public private(set) var preconditions:TransactionPreconditions?
+    /// The XDR representation of this transaction.
     public private(set) var transactionXDR:TransactionXDR
-    
+
+    /// The base64-encoded XDR string of this transaction.
     public var xdrEncoded: String? {
         get {
             return transactionXDR.xdrEncoded
@@ -75,9 +83,10 @@ public class Transaction {
                                              ext: tExt)
         
         self.sourceAccount.incrementSequenceNumber()
-        
+
     }
-    
+
+    /// Deprecated initializer that uses TimeBounds instead of TransactionPreconditions.
     @available(*, deprecated, message: "use init with preconditions instead")
     public convenience init(sourceAccount:TransactionAccount, operations:[Operation], memo:Memo?, timeBounds:TimeBounds?, maxOperationFee:UInt32 = Transaction.minBaseFee) throws {
         let precond = TransactionPreconditions(timeBounds:timeBounds)
@@ -146,38 +155,44 @@ public class Transaction {
         
         try self.transactionXDR.sign(keyPair: keyPair, network: network)
     }
-    
+
+    /// Adds a pre-computed signature to the transaction without requiring the private key.
     public func addSignature(signature:DecoratedSignatureXDR) -> Void {
         self.transactionXDR.addSignature(signature: signature)
     }
-    
-    /// Returns the base64 encoded transaction envelope xdr to be used to post the transaction. Transaction need to have at least one signature before they can be sent to the stellar network.
+
+    /// Returns the base64-encoded transaction envelope XDR for submission to the network.
     public func encodedEnvelope() throws -> String {
         return try transactionXDR.encodedEnvelope()
     }
-    
+
+    /// Computes and returns the transaction hash as a hex-encoded string for the specified network.
     public func getTransactionHash(network:Network) throws -> String {
         let transactionHash = try [UInt8](transactionXDR.hash(network: network))
         let str = Data(transactionHash).hexEncodedString()
         return str
     }
-    
+
+    /// Computes and returns the transaction hash as Data for the specified network.
     public func getTransactionHashData(network:Network) throws -> Data {
         let transactionHash = try [UInt8](transactionXDR.hash(network: network))
         let data = Data(transactionHash)
         return data
     }
-    
+
+    /// Sets the Soroban transaction data extension for smart contract invocations.
     public func setSorobanTransactionData(data: SorobanTransactionDataXDR) {
         let ext = TransactionExtXDR.sorobanTransactionData(data)
         transactionXDR.ext = ext
     }
-    
+
+    /// Adds additional resource fee in stroops for Soroban smart contract operations.
     public func addResourceFee(resourceFee:UInt32) {
         fee += resourceFee
         transactionXDR.fee = fee
     }
-    
+
+    /// Sets Soroban authorization entries for all InvokeHostFunction operations in this transaction.
     public func setSorobanAuth(auth:[SorobanAuthorizationEntryXDR]?) {
         var authToSet = auth
         if (authToSet == nil) {
@@ -194,12 +209,14 @@ public class Transaction {
             transactionXDR.operations[i].setSorobanAuth(auth: authToSet!)
         }
     }
-    
+
+    /// Updates the transaction memo. If nil, sets memo to none.
     public func setMemo(memo:Memo? = nil) {
         self.memo = memo ?? Memo.none
         transactionXDR.memo = self.memo.toXDR()
     }
-    
+
+    /// Updates the transaction preconditions. If nil, removes all preconditions.
     public func setPreconditions(preconditions:TransactionPreconditions? = nil) {
         self.preconditions = preconditions
         var condXdr = PreconditionsXDR.none
@@ -208,12 +225,14 @@ public class Transaction {
         }
         transactionXDR.cond = condXdr
     }
-    
+
+    /// Sets the total transaction fee in stroops. Use this to override the calculated fee.
     public func setFee(fee:UInt32) {
         self.fee = fee
         transactionXDR.fee = self.fee
     }
-    
+
+    /// Appends an operation to the transaction's operation list.
     public func addOperation(operation:Operation) throws {
         self.operations.append(operation)
         self.transactionXDR.operations.append(try operation.toXDR())

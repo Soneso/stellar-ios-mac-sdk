@@ -1,15 +1,18 @@
 import Foundation
 
+/// Streams orderbook data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
 public class OrderbookStreamItem: NSObject {
     private var streamingHelper: StreamingHelper
     private var requestUrl: String
     private let jsonDecoder = JSONDecoder()
-    
+
+    /// Creates a new orderbook stream for the specified Horizon API endpoint.
     public init(requestUrl:String) {
         streamingHelper = StreamingHelper()
         self.requestUrl = requestUrl
     }
-    
+
+    /// Establishes the SSE connection and delivers orderbook responses as they arrive from Horizon.
     public func onReceive(response:@escaping StreamResponseEnum<OrderbookResponse>.ResponseClosure) {
         streamingHelper.streamFrom(requestUrl:requestUrl) { [weak self] (helperResponse) -> (Void) in
             switch helperResponse {
@@ -30,6 +33,7 @@ public class OrderbookStreamItem: NSObject {
         }
     }
     
+    /// Closes the event stream and releases resources.
     public func closeStream() {
         streamingHelper.close()
     }

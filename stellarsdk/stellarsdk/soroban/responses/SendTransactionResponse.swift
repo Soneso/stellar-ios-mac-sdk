@@ -47,13 +47,17 @@ import Foundation
 /// - [GetTransactionResponse] for polling transaction status
 /// - [Stellar developer docs](https://developers.stellar.org)
 public class SendTransactionResponse: NSObject, Decodable {
-    
+
+    /// Transaction pending in queue.
     public static let STATUS_PENDING = "PENDING"
+    /// Transaction is a duplicate submission.
     public static let STATUS_DUPLICATE = "DUPLICATE"
+    /// Temporary failure, retry submission.
     public static let STATUS_TRY_AGAIN_LATER = "TRY_AGAIN_LATER"
+    /// Transaction submission error.
     public static let STATUS_ERROR = "ERROR"
-    
-    /// The transaction hash (in an hex-encoded string)
+
+    /// The transaction hash identifier.
     public var transactionId:String
     
     /// the current status of the transaction by hash, one of: PENDING, DUPLICATE, TRY_AGAIN_LATER, ERROR
@@ -70,9 +74,10 @@ public class SendTransactionResponse: NSObject, Decodable {
     
     /// (optional) If the transaction status is ERROR, this will be the raw TransactionResult XDR struct containing details on why stellar-core rejected the transaction.
     public var errorResult:TransactionResultXDR?
-    
+
+    /// Base64-encoded XDR of the transaction error result if the transaction failed.
     public var errorResultXdr:String?
-    
+
     /// (optional) If the transaction status is ERROR, this field may be present. Each entry is a raw DiagnosticEvent XDR struct containing details on why stellar-core rejected the transaction.
     public var diagnosticEvents:[DiagnosticEventXDR]?
     

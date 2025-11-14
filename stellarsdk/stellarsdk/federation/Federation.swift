@@ -8,15 +8,19 @@
 
 import Foundation
 
-/// An enum used to diferentiate between successful and failed resolve address responses.
+/// Result enum for federation address resolution requests.
 public enum ResolveResponseEnum {
+    /// Successfully resolved Stellar address to account ID and memo
     case success(response: ResolveAddressResponse)
+    /// Failed to resolve address, contains error information
     case failure(error: FederationError)
 }
 
-/// An enum used to diferentiate between successful and failed federation for domain responses.
+/// Result enum for federation server discovery requests.
 public enum FederationForDomainEnum {
+    /// Successfully discovered federation server from stellar.toml
     case success(response: Federation)
+    /// Failed to discover federation server, contains error information
     case failure(error: FederationError)
 }
 
@@ -67,11 +71,13 @@ public typealias FederationClosure = (_ response:FederationForDomainEnum) -> (Vo
 /// - [SEP-0002 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)
 /// - [StellarToml] for discovering federation servers
 public class Federation: NSObject {
-    
+
+    /// The URL of the SEP-2 federation server endpoint for resolving addresses.
     public var federationAddress: String
     private let serviceHelper: ServiceHelper
     private let jsonDecoder = JSONDecoder()
-    
+
+    /// Initializes a new Federation instance with the specified federation server endpoint URL.
     public init(federationAddress:String) {
         self.federationAddress = federationAddress
         self.serviceHelper = ServiceHelper(baseURL: federationAddress)

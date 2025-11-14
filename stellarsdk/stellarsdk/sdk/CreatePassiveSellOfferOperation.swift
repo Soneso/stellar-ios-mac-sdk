@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Represents a Stellar passive sell offer operation that creates offers without taking existing offers.
 public class CreatePassiveSellOfferOperation:CreatePassiveOfferOperation {
     
 }

@@ -18,6 +18,7 @@
     Abstraction for TOML key paths
 */
 public struct Path: Hashable, Equatable {
+    /// Array of path segments.
     internal(set) public var components: [String]
 
     init(_ components: [String]) {

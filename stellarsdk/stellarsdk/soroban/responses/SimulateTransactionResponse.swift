@@ -64,8 +64,8 @@ import Foundation
 /// - [SorobanServer.simulateTransaction] for invoking simulation
 /// - [Stellar developer docs](https://developers.stellar.org)
 public class SimulateTransactionResponse: NSObject, Decodable {
-    
-    /// (optional) - This array will only have one element: the result for the Host Function invocation. Only present on successful simulation (i.e. no error) of InvokeHostFunction operations.
+
+    /// Simulation results including resource costs, return values, and auth requirements.
     public var results:[SimulateTransactionResult]?
     
     /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
@@ -120,7 +120,8 @@ public class SimulateTransactionResponse: NSObject, Decodable {
         restorePreamble = try values.decodeIfPresent(RestorePreamble.self, forKey: .restorePreamble)
         stateChanges = try values.decodeIfPresent([LedgerEntryChange].self, forKey: .stateChanges)
     }
-    
+
+    /// The ledger footprint indicating which ledger entries will be read or written during transaction execution.
     public var footprint:Footprint? {
         if let fxdr = transactionData?.resources.footprint {
             return Footprint(xdrFootprint: fxdr)
@@ -183,11 +184,16 @@ public class RestorePreamble: NSObject, Decodable {
     }
 }
 
+/// Represents a change to a ledger entry as a result of transaction simulation.
 public class LedgerEntryChange: NSObject, Decodable {
-    
+
+    /// Type of ledger entry change.
     public var type:String
+    /// Ledger entry key identifier.
     public var key:LedgerKeyXDR
+    /// Ledger entry state before change.
     public var before:LedgerEntryXDR?
+    /// Ledger entry state after change.
     public var after:LedgerEntryXDR?
 
     private enum CodingKeys: String, CodingKey {

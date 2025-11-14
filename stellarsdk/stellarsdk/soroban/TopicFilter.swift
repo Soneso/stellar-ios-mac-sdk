@@ -38,9 +38,11 @@ import Foundation
 /// - [SorobanServer.getEvents] for querying events
 /// - [Stellar developer docs](https://developers.stellar.org)
 public class TopicFilter {
-    
+
+    /// Topic segment matching patterns using exact values or wildcards for event filtering.
     public let segmentMatchers: [String]
-    
+
+    /// Creates a topic filter with segment matchers for filtering contract events by topic values.
     public init(segmentMatchers:[String]) {
         self.segmentMatchers = segmentMatchers
     }

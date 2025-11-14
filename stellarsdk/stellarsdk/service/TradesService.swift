@@ -8,8 +8,9 @@
 
 import Foundation
 
-/// Defines trade stream filter options.
+/// Defines trade stream filter options for real-time DEX trade updates.
 public enum TradesChange {
+    /// Streams all trades filtered by base and counter asset pair
     case allTrades(baseAssetType:String?,
                    baseAssetCode:String?,
                    baseAssetIssuer:String?,
@@ -19,6 +20,7 @@ public enum TradesChange {
                    cursor:String?,
                    order:Order?,
                    limit: Int?)
+    /// Streams trades where the specified account participated
     case tradesForAccount(account:String, cursor:String?)
 }
 
@@ -65,6 +67,7 @@ public class TradesService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
+    /// Retrieves trades filtered by asset pair, offer ID, or trade type with optional pagination parameters.
     @available(*, renamed: "getTrades(baseAssetType:baseAssetCode:baseAssetIssuer:counterAssetType:counterAssetCode:counterAssetIssuer:offerId:tradeType:cursor:order:limit:)")
     open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, tradeType:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
         Task {
@@ -72,8 +75,8 @@ public class TradesService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves trades filtered by asset pair, offer ID, or trade type with optional pagination parameters.
     open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, tradeType:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
         
         var requestPath = "/trades"
@@ -98,6 +101,7 @@ public class TradesService: NSObject {
         return await getTradesFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    /// Retrieves all trades for a specific account with optional pagination parameters.
     @available(*, renamed: "getTrades(forAccount:from:order:limit:)")
     open func getTrades(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
         Task {
@@ -105,8 +109,8 @@ public class TradesService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves all trades for a specific account with optional pagination parameters.
     open func getTrades(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
         var requestPath = "/accounts/" + accountId + "/trades"
         
@@ -123,6 +127,7 @@ public class TradesService: NSObject {
         return await getTradesFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    /// Retrieves trades from a specific Horizon URL.
     @available(*, renamed: "getTradesFromUrl(url:)")
     func getTradesFromUrl(url:String, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
         Task {
@@ -130,8 +135,8 @@ public class TradesService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves trades from a specific Horizon URL.
     func getTradesFromUrl(url:String) async -> PageResponse<TradeResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {
@@ -146,10 +151,8 @@ public class TradesService: NSObject {
             return .failure(error:error)
         }
     }
-    
-    /// Allows to stream SSE events from horizon.
-    /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events. This mode will keep the connection to horizon open and horizon will continue to return responses as ledgers close.
-    ///
+
+    /// Streams real-time trade updates via Server-Sent Events from Horizon.
     open func stream(for tradesType:TradesChange) -> TradesStreamItem {
         var subpath:String!
         switch tradesType {

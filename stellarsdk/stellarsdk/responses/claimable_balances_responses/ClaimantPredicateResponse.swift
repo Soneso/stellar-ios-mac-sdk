@@ -13,7 +13,7 @@ import Foundation
 /// See [Stellar developer docs](https://developers.stellar.org)
 public class ClaimantPredicateResponse: NSObject, Decodable {
 
-    /// If true, the predicate is satisfied without any conditions.
+    /// Indicates whether the claimable balance can be claimed without any conditions.
     public var unconditional:Bool?
 
     /// A list of predicates that must all be satisfied (logical AND).
@@ -66,7 +66,8 @@ public class ClaimantPredicateResponse: NSObject, Decodable {
             beforeRelativeTime = relBefore
         }
     }
-    
+
+    /// Prints a human-readable representation of the predicate structure to the console.
     public func printPredicate() {
         print("{")
         if let u = unconditional {

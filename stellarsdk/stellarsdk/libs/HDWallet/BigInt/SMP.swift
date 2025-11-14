@@ -110,7 +110,9 @@ import Foundation
 //	Digit of the number. The least significant digit is stored at index 0, the most significant
 //	digit is stored at the last index.
 
+/// Array of limbs representing a multi-precision integer in base 2^64.
 public typealias Limbs  = [UInt64]
+/// Single limb component of a multi-precision integer.
 public typealias Limb   =  UInt64
 
 //	A digit is a number in base 10^18. This is the biggest possible base that
@@ -118,7 +120,9 @@ public typealias Limb   =  UInt64
 //	the base is a whole number and a power of ten . Digits are required for printing BInt
 //	numbers. Limbs are converted into Digits first, and then printed.
 
+/// Array of digits representing a multi-precision integer in base 10^18 for decimal output.
 public typealias Digits = [UInt64]
+/// Single digit component in base 10^18 for decimal representation.
 public typealias Digit  =  UInt64
 
 //	MARK: - Imports
@@ -180,10 +184,10 @@ public struct BInt:
 	internal var sign  = false
 	internal var limbs = Limbs()
 
-	// Required by protocol Numeric
+	/// Required by protocol Numeric
 	public typealias Magnitude = UInt64
 
-	// Required by protocol Numeric
+	/// The absolute magnitude of the integer as a UInt64.
 	public var magnitude: UInt64
 	{
 		return self.limbs[0]
@@ -204,7 +208,7 @@ public struct BInt:
 		return 1 + (self.limbs.count * MemoryLayout<Limb>.size * 8)
 	}
 
-	/// Returns a formated human readable string that says how much space (in bytes, kilobytes, megabytes, or gigabytes) the BInt occupies.
+	/// Returns a formatted human readable string that says how much space (in bytes, kilobytes, megabytes, or gigabytes) the BInt occupies.
 	public var sizeDescription: String
 	{
 		// One bit for the sign, plus the size of the limbs.
@@ -322,7 +326,7 @@ public struct BInt:
 		self.init(value)
 	}
 
-	// Required by protocol Numeric
+	/// Required by protocol Numeric
 	public init?<T>(exactly source: T) where T : BinaryInteger
 	{
 		self.init(Int(source))
@@ -370,6 +374,7 @@ public struct BInt:
 	//
 	//
 
+	/// String representation of the BInt in decimal format.
 	public var description: String
 	{
 		return (self.sign ? "-" : "").appending(self.limbs.decimalRepresentation)
@@ -429,6 +434,7 @@ public struct BInt:
 		return (self.sign, self.limbs)
 	}
 
+	/// Hash value for BInt based on sign and limbs representation.
 	public var hashValue: Int
 	{
 		return "\(self.sign)\(self.limbs)".hashValue
@@ -647,7 +653,7 @@ public struct BInt:
 		return x
 	}
 
-	// Required by protocol Numeric
+	/// Required by protocol Numeric
 	public static func +=(lhs: inout BInt, rhs: BInt)
 	{
 		if lhs.sign == rhs.sign
@@ -663,7 +669,7 @@ public struct BInt:
 		if lhs.isZero() { lhs.sign = false }
 	}
 
-	// Required by protocol Numeric
+	/// Required by protocol Numeric
 	public static func +(lhs: BInt, rhs: BInt) -> BInt
 	{
 		var lhs = lhs
@@ -687,13 +693,13 @@ public struct BInt:
 	//
 	//
 
-	// Required by protocol SignedNumeric
+	/// Negates the value by flipping its sign.
 	public mutating func negate()
 	{
 		if self.isNotZero() { self.sign = !self.sign }
 	}
 
-	// Required by protocol SignedNumeric
+	/// Required by protocol SignedNumeric
 	public static prefix func -(n: BInt) -> BInt
 	{
 		var n = n
@@ -711,7 +717,7 @@ public struct BInt:
 	//
 	//
 
-	// Required by protocol Numeric
+	/// Required by protocol Numeric
 	public static func -(lhs: BInt, rhs: BInt) -> BInt
 	{
 		return lhs + -rhs
@@ -720,7 +726,7 @@ public struct BInt:
 	static func -(lhs:  Int, rhs: BInt) -> BInt { return BInt(lhs) - rhs }
 	static func -(lhs: BInt, rhs:  Int) -> BInt { return lhs - BInt(rhs) }
 
-	// Required by protocol Numeric
+	/// Required by protocol Numeric
 	public static func -=(lhs: inout BInt, rhs: BInt) { lhs += -rhs                        }
 	static func -=(lhs: inout  Int, rhs: BInt)  { lhs  = (BInt(lhs) - rhs).toInt()! }
 	static func -=(lhs: inout BInt, rhs:  Int)  { lhs -= BInt(rhs)                  }
@@ -735,7 +741,7 @@ public struct BInt:
 	//
 	//
 
-	// Required by protocol Numeric
+	/// Required by protocol Numeric
 	public static func *(lhs: BInt, rhs: BInt) -> BInt
 	{
 		let sign = !(lhs.sign == rhs.sign || lhs.isZero() || rhs.isZero())
@@ -745,7 +751,7 @@ public struct BInt:
 	static func *(lhs: Int, rhs: BInt) -> BInt { return BInt(lhs) * rhs }
 	static func *(lhs: BInt, rhs: Int) -> BInt { return lhs * BInt(rhs) }
 
-	// Required by protocol SignedNumeric
+	/// Required by protocol SignedNumeric
 	public static func *=(lhs: inout BInt, rhs: BInt) { lhs = lhs * rhs                  }
 	static func *=(lhs: inout  Int, rhs: BInt) { lhs = (BInt(lhs) * rhs).toInt()! }
 	static func *=(lhs: inout BInt, rhs:  Int) { lhs = lhs * BInt(rhs)            }
@@ -838,7 +844,7 @@ public struct BInt:
 	//
 	//
 
-	// Required by protocol Equatable
+	/// Required by protocol Equatable
 	public static func ==(lhs: BInt, rhs: BInt) -> Bool
 	{
 		if lhs.sign != rhs.sign { return false }
@@ -867,7 +873,7 @@ public struct BInt:
 
 	static func !=<T: BinaryInteger>(lhs: T, rhs: BInt) -> Bool { return rhs != lhs }
 
-	// Required by protocol Comparable
+	/// Required by protocol Comparable
 	public static func <(lhs: BInt, rhs: BInt) -> Bool
 	{
 		if lhs.sign != rhs.sign { return lhs.sign }
@@ -896,17 +902,17 @@ public struct BInt:
 	static func <(lhs:  Int, rhs: BInt) -> Bool { return BInt(lhs) < rhs }
 	static func <(lhs: BInt, rhs:  Int) -> Bool { return lhs < BInt(rhs) }
 
-	// Required by protocol Comparable
+	/// Required by protocol Comparable
 	public static func >(lhs: BInt, rhs: BInt) -> Bool { return rhs < lhs       }
 	static func >(lhs:  Int, rhs: BInt) -> Bool { return BInt(lhs) > rhs }
 	static func >(lhs: BInt, rhs:  Int) -> Bool { return lhs > BInt(rhs) }
 
-	// Required by protocol Comparable
+	/// Required by protocol Comparable
 	public static func <=(lhs: BInt, rhs: BInt) -> Bool { return !(rhs < lhs)       }
 	static func <=(lhs:  Int, rhs: BInt) -> Bool { return !(rhs < BInt(lhs)) }
 	static func <=(lhs: BInt, rhs:  Int) -> Bool { return !(BInt(rhs) < lhs) }
 
-	// Required by protocol Comparable
+	/// Required by protocol Comparable
 	public static func >=(lhs: BInt, rhs: BInt) -> Bool { return !(lhs < rhs)       }
 	static func >=(lhs:  Int, rhs: BInt) -> Bool { return !(BInt(lhs) < rhs) }
 	static func >=(lhs: BInt, rhs:  Int) -> Bool { return !(lhs < BInt(rhs)) }
@@ -2211,7 +2217,9 @@ public struct BDouble:
 	var numerator = Limbs()
 	var denominator = Limbs()
 
+	/// Absolute value type for BDouble operations.
 	public typealias Magnitude = Double
+	/// The absolute magnitude of the rational number as a Double.
 	public var magnitude: Double = 0.0
 
 	//
@@ -2373,9 +2381,7 @@ public struct BDouble:
 	//
 	//
 
-	/**
-	 * returns the current value in a fraction format
-	 */
+	/// String representation of the rational number in fraction format.
 	public var description: String
 	{
 		return self.fractionDescription
@@ -2494,6 +2500,7 @@ public struct BDouble:
 		return res
 	}
 
+	/// Hash value for BDouble based on sign, numerator, and denominator.
 	public var hashValue: Int
 	{
 		return "\(self.sign)\(self.numerator)\(self.denominator)".hashValue
@@ -2508,7 +2515,7 @@ public struct BDouble:
 	}
 
 	/**
-	 * Returns a formated human readable string that says how much space
+	 * Returns a formatted human readable string that says how much space
 	 * (in bytes, kilobytes, megabytes, or gigabytes) the BDouble occupies
 	*/
 	public var sizeDescription: String
@@ -2536,10 +2543,14 @@ public struct BDouble:
 		return (self.sign, self.numerator, self.denominator)
 	}
 
+	/// Returns true if value is positive.
 	public func isPositive() -> Bool { return !self.sign }
+	/// Returns true if value is negative.
 	public func isNegative() -> Bool { return self.sign }
+	/// Returns true if value is zero.
 	public func isZero() -> Bool { return self.numerator.equalTo(0) }
 
+	/// Reduces the fraction to its simplest form.
 	public mutating func minimize()
 	{
 		if self.numerator.equalTo(0)
@@ -2557,10 +2568,7 @@ public struct BDouble:
 		}
 	}
 
-	/**
-	 * If the right side of the decimal is greater than 0.5 then it will round up (ceil),
-	 * otherwise round down (floor) to the nearest BInt
-	 */
+	/// Rounds to the nearest integer value.
 	public func rounded() -> BInt
 	{
 		if self.isZero() {
@@ -2648,9 +2656,7 @@ public struct BDouble:
 	//
 	//
 
-	/**
-	 * makes the current value negative
-	 */
+	/// Negates the value by flipping its sign.
 	public mutating func negate()
 	{
 		if !self.isZero()

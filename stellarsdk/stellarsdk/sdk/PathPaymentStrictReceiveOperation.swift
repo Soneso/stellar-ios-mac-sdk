@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Represents a Stellar path payment operation guaranteeing exact destination amount received.
 public class PathPaymentStrictReceiveOperation:PathPaymentOperation
 {
     

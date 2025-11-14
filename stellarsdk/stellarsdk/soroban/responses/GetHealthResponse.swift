@@ -40,6 +40,8 @@ public class GetHealthResponse: NSObject, Decodable {
     }
 }
 
+/// Constants representing possible health status values for Soroban RPC nodes.
 public struct HealthStatus {
+    /// Soroban RPC node is operational.
     public static let HEALTHY: String = "healthy"
 }

@@ -175,28 +175,41 @@ import Foundation
 /// transaction is invoked by yet another party, check out in the SorobanClientTest.atomicSwapTest()
 ///
 public class AssembledTransaction {
-    
+
+    /// Unconstructed transaction envelope that can be modified before simulation.
     public var raw:Transaction?
-    public var tx:Transaction?
+
+    /// Whether the transaction has been signed by the source account.
+    public var signed:Transaction?
+
+    /// Soroban RPC simulation result containing resource costs, events, and return values.
     public var simulationResponse:SimulateTransactionResponse?
+
     private var simulationResult:SimulateHostFunctionResult?
     private let server:SorobanServer
-    public var signed:Transaction?
+
+    /// Built transaction ready for submission with simulation results and resource limits applied.
+    public var tx:Transaction?
+
+    /// Configuration options for transaction assembly including network, contract, and method parameters.
     public let options:AssembledTransactionOptions
-    
+
+    /// Creates a new assembled transaction with specified configuration options.
     public init(options: AssembledTransactionOptions) {
         self.options = options
         self.server = SorobanServer(endpoint: options.clientOptions.rpcUrl)
         self.server.enableLogging = options.enableServerLogging
     }
-    
+
+    /// Builds an assembled transaction for invoking a contract method with automatic simulation.
     public static func build(options:AssembledTransactionOptions) async throws -> AssembledTransaction {
 
         let invokeContractHostFunction = try InvokeHostFunctionOperation.forInvokingContract(contractId: options.clientOptions.contractId, functionName: options.method, functionArguments: options.arguments ?? [])
         
         return try await AssembledTransaction.buildWithOp(operation: invokeContractHostFunction, options: options)
     }
-    
+
+    /// Builds an assembled transaction from a custom invoke host function operation.
     public static func buildWithOp(operation: InvokeHostFunctionOperation, options:AssembledTransactionOptions) async throws -> AssembledTransaction {
         let aTx = AssembledTransaction(options: options)
         let sourceAccount = try await aTx.getSourceAccount()
@@ -210,7 +223,8 @@ public class AssembledTransaction {
 
         return aTx
     }
-    
+
+    /// Simulates the transaction to calculate resource requirements and validate execution.
     public func simulate(restore:Bool? = nil) async throws {
         if tx == nil {
             if raw == nil {
@@ -225,7 +239,7 @@ public class AssembledTransaction {
         case .success(let response):
             simulationResponse = response
             if let err =  response.error, response.restorePreamble == nil {
-                throw AssembledTransactionError.simulationFailed(message: "Simulatiuon failed with error: \(err)")
+                throw AssembledTransactionError.simulationFailed(message: "Simulation failed with error: \(err)")
             }
         case .failure(let error):
             throw error
@@ -259,19 +273,22 @@ public class AssembledTransaction {
             }
         }
     }
-    
+
+    /// Restores expired contract state using the restore preamble from simulation.
     public func restoreFootprint(restorePreamble:RestorePreamble) async throws -> GetTransactionResponse {
         let restoreTx = try await AssembledTransaction.buildFootprintRestoreTransaction(options: options, transactionData: restorePreamble.transactionData, fee: restorePreamble.minResourceFee)
         return try await restoreTx.signAndSend()
     }
-    
+
+    /// Signs the transaction with source account and submits it to the network.
     public func signAndSend(sourceAccountKeyPair:KeyPair? = nil, force:Bool = false) async throws -> GetTransactionResponse {
         if signed == nil {
             try sign(sourceAccountKeyPair: sourceAccountKeyPair, force: force)
         }
         return try await send()
     }
-    
+
+    /// Signs the transaction envelope with the source account keypair.
     public func sign(sourceAccountKeyPair:KeyPair? = nil, force:Bool = false) throws {
         if tx == nil {
             throw AssembledTransactionError.notYetSimulated(message: "Transaction has not yet been simulated")
@@ -305,6 +322,8 @@ public class AssembledTransaction {
         signed = clonedTx
     }
     
+    /// Submits the signed transaction to the network and polls until completion.
+    /// Returns the final transaction status including success/failure and return value.
     public func send() async throws -> GetTransactionResponse {
         guard let signedTx = signed else {
             throw AssembledTransactionError.notYetSigned(message: "The transaction has not yet been signed. Run `sign` first, or use `signAndSend` instead.")
@@ -321,9 +340,10 @@ public class AssembledTransaction {
         case .failure(let error):
             throw error
         }
-        
+
     }
-    
+
+    /// Returns account IDs that need to sign authorization entries for multi-auth workflows.
     public func needsNonInvokerSigningBy(includeAlreadySigned:Bool = false) throws -> [String] {
         guard let transaction = tx else {
             throw AssembledTransactionError.notYetSimulated(message: "Transaction has not yet been simulated")
@@ -349,6 +369,8 @@ public class AssembledTransaction {
         return needed
     }
     
+    /// Determines if this is a read-only call requiring no signatures or network submission.
+    /// Returns true if the call has no auth entries and writes no ledger data.
     public func isReadCall() throws -> Bool {
         let res = try getSimulationData()
         let authsCount = res.auth != nil ? res.auth!.count : 0
@@ -356,6 +378,8 @@ public class AssembledTransaction {
         return authsCount == 0 && writeLength == 0
     }
     
+    /// Retrieves parsed simulation data including auth entries and return value.
+    /// Throws if transaction has not been simulated or simulation failed.
     public func getSimulationData() throws -> SimulateHostFunctionResult {
         if simulationResult != nil {
             return simulationResult!
@@ -383,7 +407,8 @@ public class AssembledTransaction {
         
         return simulationResult!
     }
-    
+
+    /// Signs authorization entries for multi-party transactions using keypair or callback.
     public func signAuthEntries(signerKeyPair:KeyPair, authorizeEntryCallback:((_:SorobanAuthorizationEntryXDR, _:Network) async throws -> SorobanAuthorizationEntryXDR)? = nil, validUntilLedgerSeq:UInt32? = nil) async throws {
         let signerAddress = signerKeyPair.accountId
         

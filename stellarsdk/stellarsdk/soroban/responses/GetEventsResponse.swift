@@ -56,6 +56,7 @@ import Foundation
 /// - [EventFilter] for filtering events
 public class GetEventsResponse: NSObject, Decodable {
     
+    /// Contract events returned from Soroban RPC matching the query filters.
     public var events:[EventInfo]
     
     /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.

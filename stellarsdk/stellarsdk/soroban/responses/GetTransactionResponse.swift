@@ -61,9 +61,12 @@ import Foundation
 /// - [SorobanServer.getTransaction] for polling transaction status
 /// - [Stellar developer docs](https://developers.stellar.org)
 public class GetTransactionResponse: NSObject, Decodable {
-    
+
+    /// Transaction was successfully included in a ledger and executed.
     public static let STATUS_SUCCESS = "SUCCESS"
+    /// Transaction not found in Soroban RPC (may be pending or expired).
     public static let STATUS_NOT_FOUND = "NOT_FOUND"
+    /// Transaction failed during execution.
     public static let STATUS_FAILED = "FAILED"
     
     /// The current status of the transaction by hash, one of: SUCCESS, NOT_FOUND, FAILED

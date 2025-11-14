@@ -11,32 +11,59 @@ import Foundation
 /// Enumeration of all Stellar operation types.
 /// Each operation type corresponds to a specific action that can be performed on the Stellar network.
 public enum OperationType: Int32 {
+    /// Creates and funds a new account with a starting balance.
     case accountCreated = 0
+    /// Sends native or non-native assets from source account to destination account.
     case payment = 1
+    /// Sends assets along a path while receiving a specific destination amount (deprecated, use pathPaymentStrictReceive).
     case pathPayment = 2
+    /// Creates or updates an offer to sell an asset at a specific price.
     case manageSellOffer = 3
+    /// Creates a passive sell offer that does not take existing offers at the same price.
     case createPassiveSellOffer = 4
+    /// Sets various account options including signers, thresholds, and flags.
     case setOptions = 5
+    /// Creates, updates, or deletes a trustline for an asset.
     case changeTrust = 6
+    /// Authorizes or deauthorizes another account to hold an asset (deprecated, use setTrustLineFlags).
     case allowTrust = 7
+    /// Merges source account into destination account, transferring all funds.
     case accountMerge = 8
+    /// Runs the weekly inflation process (deprecated and removed from protocol).
     case inflation = 9
+    /// Sets, modifies, or deletes a key-value data entry on an account.
     case manageData = 10
+    /// Bumps forward the sequence number of the source account.
     case bumpSequence = 11
+    /// Creates or updates an offer to buy an asset with a specific buying amount.
     case manageBuyOffer = 12
+    /// Sends a specific amount of an asset along a path, allowing destination amount to vary.
     case pathPaymentStrictSend = 13
+    /// Creates a claimable balance entry that can be claimed by specified claimants.
     case createClaimableBalance = 14
+    /// Claims a claimable balance, transferring funds to the claiming account.
     case claimClaimableBalance = 15
+    /// Begins sponsoring the reserves of operations in a transaction.
     case beginSponsoringFutureReserves = 16
+    /// Ends the sponsorship context started by beginSponsoringFutureReserves.
     case endSponsoringFutureReserves = 17
+    /// Revokes sponsorship of a ledger entry or signer, transferring reserve responsibility.
     case revokeSponsorship = 18
+    /// Claws back a specified amount of an asset from a holding account.
     case clawback = 19
+    /// Claws back a claimable balance, returning funds to the asset issuer.
     case clawbackClaimableBalance = 20
+    /// Sets flags on a trustline including authorized, authorized to maintain liabilities, and clawback enabled.
     case setTrustLineFlags = 21
+    /// Deposits assets into a liquidity pool in exchange for pool shares.
     case liquidityPoolDeposit = 22
+    /// Withdraws assets from a liquidity pool by redeeming pool shares.
     case liquidityPoolWithdraw = 23
+    /// Invokes a smart contract function on the Soroban runtime.
     case invokeHostFunction = 24
+    /// Extends the time-to-live of Soroban contract data or code entries.
     case extendFootprintTTL = 25
+    /// Restores archived Soroban contract data or code entries.
     case restoreFootprint = 26
 }
 

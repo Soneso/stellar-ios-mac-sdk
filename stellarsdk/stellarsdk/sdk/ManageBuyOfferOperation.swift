@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Represents a Stellar manage buy offer operation creating or modifying offers with fixed buy amounts.
 public class ManageBuyOfferOperation:ManageOfferOperation {
     
     /// Creates a new ManageOfferOperation object.

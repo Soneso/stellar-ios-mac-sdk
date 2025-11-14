@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// Response containing Soroban RPC server version and commit information.
 public class GetVersionInfoResponse: NSObject, Decodable {
     
     /// The version of the RPC server.s

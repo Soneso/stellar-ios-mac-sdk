@@ -8,8 +8,9 @@
 
 import Foundation
 
-/// Defines offer stream filter options.
+/// Defines offer stream filter options for real-time DEX offer updates.
 public enum OffersChange {
+    /// Streams all offers filtered by asset pair, seller, or sponsor
     case allOffers(seller:String?,
                    sellingAssetType:String,
                    sellingAssetCode:String?,
@@ -20,16 +21,20 @@ public enum OffersChange {
                    sponsor:String?,
                    cursor:String?,
                    order:Order?)
+    /// Streams offers created by the specified account
     case offersForAccount(account:String,
                           cursor:String?)
 }
 
 /// Result enum for offer details requests.
 public enum OfferResponseEnum {
+    /// Successfully retrieved offer details
     case success(details: OfferResponse)
+    /// Failed to retrieve offer, contains error details
     case failure(error: HorizonRequestError)
 }
 
+/// Callback closure for retrieving offer details from the Stellar decentralized exchange.
 public typealias OfferResponseClosure = (_ response:OfferResponseEnum) -> (Void)
 
 /// Service for querying offer information from the Stellar Horizon API.
@@ -70,6 +75,7 @@ public class OffersService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
+    /// Retrieves all offers created by a specific account with optional pagination parameters.
     @available(*, renamed: "getOffers(forAccount:cursor:order:limit:)")
     open func getOffers(forAccount accountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {
         Task {
@@ -77,8 +83,8 @@ public class OffersService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves all offers created by a specific account with optional pagination parameters.
     open func getOffers(forAccount accountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<OfferResponse>.ResponseEnum {
         var requestPath = "/accounts/" + accountId + "/offers"
         
@@ -163,6 +169,7 @@ public class OffersService: NSObject {
         return await getOffersFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
+    /// Retrieves offers from a specific Horizon URL.
     @available(*, renamed: "getOffersFromUrl(url:)")
     func getOffersFromUrl(url:String, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {
         Task {
@@ -170,8 +177,8 @@ public class OffersService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves offers from a specific Horizon URL.
     func getOffersFromUrl(url:String) async -> PageResponse<OfferResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {
@@ -186,10 +193,8 @@ public class OffersService: NSObject {
             return .failure(error:error)
         }
     }
-    
-    /// Allows to stream SSE events from horizon.
-    /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events. This mode will keep the connection to horizon open and horizon will continue to return responses as ledgers close.
-    ///
+
+    /// Streams real-time offer updates via Server-Sent Events from Horizon.
     open func stream(for offersType:OffersChange) -> OffersStreamItem {
         var subpath:String!
         switch offersType {
@@ -235,17 +240,7 @@ public class OffersService: NSObject {
         return streamItem
     }
 
-    /// Allows to stream trades for a specific offer using SSE (Server-Sent Events).
-    /// This mode will keep the connection to horizon open and horizon will continue to return
-    /// trade responses as new trades occur for this offer.
-    ///
-    /// See [Stellar developer docs](https://developers.stellar.org)
-    ///
-    /// - Parameter offerId: The ID of the Offer
-    /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from. Use "now" to stream only new trades.
-    /// - Parameter order: Optional. The order in which to return rows, "asc" or "desc"
-    /// - Parameter limit: Optional. Maximum number of records to return.
-    ///
+    /// Streams real-time trade updates for a specific offer via Server-Sent Events.
     open func streamTrades(forOffer offerId: String, cursor: String? = nil, order: Order? = nil, limit: Int? = nil) -> TradesStreamItem {
         var requestPath = "/offers/" + offerId + "/trades"
 
@@ -348,6 +343,7 @@ public class OffersService: NSObject {
         return await getTradesFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
 
+    /// Retrieves trades from a specific Horizon URL.
     @available(*, renamed: "getTradesFromUrl(url:)")
     func getTradesFromUrl(url: String, response: @escaping PageResponse<TradeResponse>.ResponseClosure) {
         Task {
@@ -356,6 +352,7 @@ public class OffersService: NSObject {
         }
     }
 
+    /// Retrieves trades from a specific Horizon URL.
     func getTradesFromUrl(url: String) async -> PageResponse<TradeResponse>.ResponseEnum {
         let jsonDecoder = JSONDecoder()
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)

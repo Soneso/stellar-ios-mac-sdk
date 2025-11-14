@@ -8,13 +8,19 @@
 
 import Foundation
 
-/// Defines effect stream filter options.
+/// Defines effect stream filter options for real-time effect updates.
 public enum EffectsChange {
+    /// Streams all effects from the network
     case allEffects(cursor:String?)
+    /// Streams effects that changed the specified account
     case effectsForAccount(account:String, cursor:String?)
+    /// Streams effects that occurred in the specified ledger
     case effectsForLedger(ledger:String, cursor:String?)
+    /// Streams effects produced by the specified operation
     case effectsForOperation(operation:String, cursor:String?)
+    /// Streams effects produced by the specified transaction
     case effectsForTransaction(transaction:String, cursor:String?)
+    /// Streams effects affecting the specified liquidity pool
     case effectsForLiquidityPool(liquidityPool:String, cursor:String?)
 }
 
@@ -109,8 +115,14 @@ public class EffectsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves all effects that changed a specific account with pagination support.
+    /// - Parameters:
+    ///   - accountId: The Stellar account ID
+    ///   - cursor: Pagination cursor for next page
+    ///   - order: Sort order (.ascending or .descending)
+    ///   - limit: Maximum number of records to return (default 10, max 200)
+    /// - Returns: PageResponse containing effects for the account or error
     open func getEffects(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<EffectResponse>.ResponseEnum {
         let path = "/accounts/" + accountId + "/effects"
         return await getEffects(onPath: path, from:cursor, order:order, limit:limit)
@@ -246,9 +258,7 @@ public class EffectsService: NSObject {
         return await getEffects(onPath: path, from:cursor, order:order, limit:limit)
     }
     
-    /// Allows to stream SSE events from horizon.
-    /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events. This mode will keep the connection to horizon open and horizon will continue to return responses as ledgers close.
-    ///
+    /// Streams real-time effect updates via Server-Sent Events from Horizon.
     open func stream(for transactionsType:EffectsChange) -> EffectsStreamItem {
         var subpath:String!
         switch transactionsType {
@@ -302,8 +312,14 @@ public class EffectsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Internal method to retrieve effects from a specific path with pagination parameters.
+    /// - Parameters:
+    ///   - path: The request path for the effects endpoint
+    ///   - cursor: Pagination cursor for next page
+    ///   - order: Sort order (.ascending or .descending)
+    ///   - limit: Maximum number of records to return
+    /// - Returns: PageResponse containing effects or error
     private func getEffects(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<EffectResponse>.ResponseEnum {
         var requestPath = path
         
@@ -319,7 +335,8 @@ public class EffectsService: NSObject {
         
         return await getEffectsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
-    
+
+    /// Loads effects from a specific URL with callback closure. Deprecated in favor of async/await version.
     @available(*, renamed: "getEffectsFromUrl(url:)")
     open func getEffectsFromUrl(url:String, response:@escaping PageResponse<EffectResponse>.ResponseClosure) {
         Task {
@@ -327,8 +344,10 @@ public class EffectsService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Loads effects from a specific URL for pagination.
+    /// - Parameter url: The complete URL to fetch effects from (typically from PageResponse links)
+    /// - Returns: PageResponse containing effects or error
     open func getEffectsFromUrl(url:String) async -> PageResponse<EffectResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {

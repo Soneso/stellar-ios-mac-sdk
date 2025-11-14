@@ -617,12 +617,18 @@ public class ContractSpec {
     }
 }
 
-/// Errors that can occur when working with ContractSpec
+/// Errors that occur when parsing, validating, or converting Soroban contract specifications.
 public enum ContractSpecError: Error {
+    /// Specified contract function name does not exist in the contract specification.
     case functionNotFound(name: String)
+    /// Required function argument is missing from the provided arguments.
     case argumentNotFound(name: String)
+    /// Contract specification entry for the given name was not found.
     case entryNotFound(name: String)
+    /// Provided value type does not match the expected contract specification type.
     case invalidType(message: String)
+    /// Failed to convert between native Swift types and Soroban contract values.
     case conversionFailed(message: String)
+    /// Enum value provided does not match any defined cases in the contract specification.
     case invalidEnumValue(message: String)
 }

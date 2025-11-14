@@ -18,10 +18,12 @@ public struct Sep30Request {
     /// Each identity can have multiple authentication methods.
     public var identities:[Sep30RequestIdentity]
 
+    /// Creates a new SEP-30 request for account recovery.
     public init(identities:[Sep30RequestIdentity]) {
         self.identities = identities
     }
 
+    /// Converts the request to a JSON-compatible dictionary for API submission.
     public func toJson() -> [String : Any] {
         var identitiesJson = [[String : Any]]();
         for identity in identities {
@@ -46,12 +48,13 @@ public struct Sep30RequestIdentity {
     /// At least one method must be provided. Authentication with any method grants full account access.
     public var authMethods:[Sep30AuthMethod]
 
-
+    /// Creates a new identity with role and authentication methods.
     public init(role:String, authMethods:[Sep30AuthMethod]) {
         self.role = role
         self.authMethods = authMethods
     }
 
+    /// Converts the identity to a JSON-compatible dictionary for API submission.
     public func toJson() -> [String : Any] {
         var authJson = [[String : Any]]();
         for auth in authMethods {
@@ -76,11 +79,13 @@ public struct Sep30AuthMethod {
     /// Format depends on type: Stellar address for stellar_address, phone number for phone_number, email address for email.
     public var value:String
 
+    /// Creates a new authentication method with type and value.
     public init(type:String, value:String) {
         self.type = type
         self.value = value
     }
 
+    /// Converts the authentication method to a JSON-compatible dictionary.
     public func toJson() -> [String : Any] {
         return ["type": type, "value": value]
     }

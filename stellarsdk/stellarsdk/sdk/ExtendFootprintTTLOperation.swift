@@ -8,15 +8,19 @@
 
 import Foundation
 
+/// Extends the time-to-live of contract state entries in Soroban by the specified number of ledgers.
 public class ExtendFootprintTTLOperation:Operation {
-    
+
+    /// The number of ledgers past the LCL by which to extend the validity of the ledger keys in this transaction.
     public let extendTo:UInt32
 
+    /// Creates a new extend footprint TTL operation to extend contract state entry validity.
     public init(ledgersToExpire:UInt32, sourceAccountId:String? = nil) {
         self.extendTo = ledgersToExpire;
         super.init(sourceAccountId: sourceAccountId)
     }
-    
+
+    /// Creates an extend footprint TTL operation from XDR representation.
     public init(fromXDR:ExtendFootprintTTLOpXDR, sourceAccountId:String?) {
         
         self.extendTo = fromXDR.extendTo

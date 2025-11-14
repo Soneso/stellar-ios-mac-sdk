@@ -11,7 +11,8 @@ import Foundation
 /// Establishes the is-sponsoring-future-reserves-for relationship between the source account and sponsoredID.
 /// See [Stellar developer docs](https://developers.stellar.org).
 public class BeginSponsoringFutureReservesOperation:Operation {
-    
+
+    /// The account that will have its reserves sponsored.
     public let sponsoredId:String
     
     /// Creates a new BeginSponsoringFutureReservesOperation object.

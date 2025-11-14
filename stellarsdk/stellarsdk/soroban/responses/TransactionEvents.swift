@@ -8,9 +8,16 @@
 
 import Foundation
 
+/// Container for Soroban transaction diagnostic and execution events in XDR format.
 public class TransactionEvents: NSObject, Decodable {
+
+    /// XDR-encoded diagnostic events for debugging transaction execution.
     public var diagnosticEventsXdr:[String]?
+
+    /// XDR-encoded transaction events emitted during execution.
     public var transactionEventsXdr:[String]?
+
+    /// XDR-encoded contract events grouped by operation index.
     public var contractEventsXdr:[[String]]?
     
     private enum CodingKeys: String, CodingKey {

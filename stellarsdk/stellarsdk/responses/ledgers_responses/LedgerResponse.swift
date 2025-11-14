@@ -11,8 +11,8 @@ import Foundation
 ///  Represents a ledger response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
 public class LedgerResponse: NSObject, Decodable {
-    
-    /// A list of links related to this ledger.
+
+    /// Hypermedia links to related Horizon resources.
     public var links:LedgerLinksResponse
     
     /// Unique identifier for this ledger.
@@ -62,9 +62,10 @@ public class LedgerResponse: NSObject, Decodable {
     
     /// The protocol version that the stellar network was running when this ledger was committed.
     public var protocolVersion:Decimal
-    
+
+    /// Base64-encoded XDR of the ledger header structure.
     public var headerXdr:String;
-    
+
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case links = "_links"

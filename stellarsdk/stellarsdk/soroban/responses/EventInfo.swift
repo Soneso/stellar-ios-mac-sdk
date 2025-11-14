@@ -40,7 +40,7 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 public class EventInfo: NSObject, Decodable {
     
-    /// The type of event emission. Possible values: contract, diagnostic,  system
+    /// Event type identifier (contract, diagnostic, or system).
     public var type:String
     
     /// Sequence number of the ledger in which this event was emitted.
@@ -54,10 +54,11 @@ public class EventInfo: NSObject, Decodable {
     
     /// Unique identifier for this event.
     public var id:String
-    
+
+    /// Deprecated for protocol version 23+. Indicates if the event was emitted during a successful contract invocation.
     @available(*, deprecated, message: "Deprecated for protocol version >= 23. If true the event was emitted during a successful contract call.")
     public var inSuccessfulContractCall:Bool?
-    
+
     /// List containing the topic this event was emitted with. [XdrSCVal as base64|]
     public var topic:[String]
     

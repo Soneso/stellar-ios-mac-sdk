@@ -8,68 +8,99 @@
 
 import Foundation
 
-/// Endpoint errors.
+/// Errors that occur during WebAuthenticator initialization.
 public enum WebAuthenticatorError: Error {
+    /// The provided domain is not a valid URL or domain format.
     case invalidDomain
+    /// The stellar.toml file could not be parsed or is malformed.
     case invalidToml
+    /// The stellar.toml file does not specify a WEB_AUTH_ENDPOINT.
     case noAuthEndpoint
 }
 
 /// Challenge validation errors.
 public enum ChallengeValidationError: Error {
+    /// The transaction sequence number is not 0 as required by SEP-10.
     case sequenceNumberNot0
+    /// The source account of an operation does not match the expected account.
     case invalidSourceAccount
+    /// An operation is missing the required source account field.
     case sourceAccountNotFound
+    /// An operation type is not allowed in the challenge transaction.
     case invalidOperationType
+    /// The number of operations in the challenge transaction is invalid.
     case invalidOperationCount
+    /// The home domain in the challenge does not match the expected domain.
     case invalidHomeDomain
+    /// The transaction time bounds are invalid or expired.
     case invalidTimeBounds
+    /// The server signature on the challenge transaction is invalid.
     case invalidSignature
+    /// The required server signature is missing from the challenge transaction.
     case signatureNotFound
+    /// General validation failure occurred during challenge verification.
     case validationFailure
+    /// The transaction type is not supported for SEP-10 challenges.
     case invalidTransactionType
+    /// The web_auth_domain value does not match the authentication endpoint domain.
     case invalidWebAuthDomain
+    /// Both a memo and muxed source account were provided, which is not allowed.
     case memoAndMuxedSourceAccountFound
+    /// The memo type in the challenge transaction is not the expected type.
     case invalidMemoType
+    /// The memo value does not match the expected value.
     case invalidMemoValue
 }
 
 /// Possible errors received from a JWT token response.
 public enum GetJWTTokenError: Error {
+    /// Network or server request failed during SEP-10 authentication flow.
     case requestError(HorizonRequestError)
+    /// Failed to parse server response or transaction data.
     case parsingError(Error)
+    /// Challenge transaction validation failed due to security or protocol violation.
     case validationErrorError(ChallengeValidationError)
+    /// Failed to sign the challenge transaction with the provided signing key.
     case signingError
-    
 }
 
-/// An enum used to diferentiate between successful and failed WebAuthenticator for domain responses.
+/// Result enum for creating a WebAuthenticator instance from a domain's stellar.toml file.
 public enum WebAuthenticatorForDomainEnum {
+    /// Successfully created WebAuthenticator instance with endpoint from stellar.toml.
     case success(response: WebAuthenticator)
+    /// Failed to create authenticator due to invalid domain, malformed TOML, or missing WEB_AUTH_ENDPOINT.
     case failure(error: WebAuthenticatorError)
 }
 
-/// An enum used to diferentiate between successful and failed get challenge responses.
+/// Result enum for SEP-10 challenge transaction requests.
 public enum ChallengeResponseEnum {
+    /// Successfully retrieved challenge transaction from authentication server.
     case success(challenge: String)
+    /// Failed to retrieve challenge due to network or server error.
     case failure(error: HorizonRequestError)
 }
 
-/// An enum used to diferentiate between successful and failed post challenge responses.
+/// Result enum for submitting signed challenge transactions.
 public enum SendChallengeResponseEnum {
+    /// Successfully submitted signed challenge and received JWT authentication token.
     case success(jwtToken: String)
+    /// Failed to submit signed challenge due to invalid signature or server error.
     case failure(error: HorizonRequestError)
 }
 
-/// An enum used to diferentiate between successful and failed get JWT token responses.
+/// Result enum for complete SEP-10 authentication flow.
 public enum GetJWTTokenResponseEnum {
+    /// Successfully completed SEP-10 authentication and received JWT token.
     case success(jwtToken: String)
+    /// Failed to complete authentication due to request, validation, or signing error.
     case failure(error: GetJWTTokenError)
 }
 
-/// Challenge validation response enum.
+/// Result enum for challenge transaction validation.
 public enum ChallengeValidationResponseEnum {
+    /// Challenge transaction passed all SEP-10 validation requirements.
     case success
+    /// Challenge validation failed due to security or protocol violation.
     case failure(error: ChallengeValidationError)
 }
 
@@ -216,11 +247,16 @@ public typealias GetJWTTokenResponseClosure = (_ response:GetJWTTokenResponseEnu
 /// - [SEP-0010 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)
 /// - [StellarToml] for discovering authentication endpoints
 public class WebAuthenticator {
+    /// The URL of the SEP-10 web authentication endpoint for obtaining JWT tokens.
     public let authEndpoint: String
+    /// The server's public signing key used to validate challenge transaction signatures.
     public let serverSigningKey: String
     private let serviceHelper: ServiceHelper
+    /// The Stellar network used for authentication and transaction validation.
     public let network: Network
+    /// The server's home domain hosting the stellar.toml configuration file.
     public let serverHomeDomain: String
+    /// Grace period in seconds for validating challenge transaction time bounds (default: 5 minutes).
     public let gracePeriod:UInt64 = SEPConstants.WEBAUTH_GRACE_PERIOD_SECONDS
     
     /// Get a WebAuthenticator instange from a domain
@@ -273,7 +309,7 @@ public class WebAuthenticator {
         }
     }
     
-    /// Init a WebAuthenticator instange
+    /// Initializes a WebAuthenticator instance with explicit configuration parameters.
     ///
     /// - Parameter authEndpoint: Endpoint to be used for the authentication procedure. Usually taken from stellar.toml.
     /// - Parameter network: The network used.
@@ -375,6 +411,12 @@ public class WebAuthenticator {
         }
     }
     
+    /// Requests a challenge transaction from the SEP-10 authentication server.
+    /// - Parameter forAccount: The Stellar account ID to authenticate
+    /// - Parameter memo: Optional ID memo for muxed accounts
+    /// - Parameter homeDomain: Optional anchor domain for verification
+    /// - Parameter clientDomain: Optional client domain for mutual authentication
+    /// - Parameter completion: Closure called with challenge response
     @available(*, renamed: "getChallenge(forAccount:memo:homeDomain:clientDomain:)")
     public func getChallenge(forAccount accountId:String, memo:UInt64? = nil, homeDomain:String? = nil, clientDomain:String? = nil, completion:@escaping ChallengeResponseClosure) {
         Task {
@@ -382,8 +424,13 @@ public class WebAuthenticator {
             completion(result)
         }
     }
-    
-    
+
+    /// Requests a SEP-10 challenge transaction from the authentication server.
+    /// - Parameter forAccount: The Stellar account ID to authenticate
+    /// - Parameter memo: Optional ID memo. Required for muxed accounts starting with G, prohibited for accounts starting with M
+    /// - Parameter homeDomain: Optional anchor domain for verification
+    /// - Parameter clientDomain: Optional client domain for mutual authentication
+    /// - Returns: ChallengeResponseEnum with base64-encoded challenge transaction or error
     public func getChallenge(forAccount accountId:String, memo:UInt64? = nil, homeDomain:String? = nil, clientDomain:String? = nil) async -> ChallengeResponseEnum {
         
         var path = (homeDomain != nil) ? "?account=\(accountId)&home_domain=\(homeDomain!)" : "?account=\(accountId)"
@@ -418,7 +465,15 @@ public class WebAuthenticator {
             return .failure(error: error)
         }
     }
-    
+
+    /// Validates a SEP-10 challenge transaction according to protocol specifications.
+    /// - Parameter transactionEnvelopeXDR: The challenge transaction envelope to validate
+    /// - Parameter userAccountId: The expected user account ID
+    /// - Parameter memo: Expected memo value for non-muxed accounts
+    /// - Parameter serverSigningKey: The server's public signing key
+    /// - Parameter clientDomainAccount: Expected client domain account for mutual authentication
+    /// - Parameter timeBoundsGracePeriod: Grace period in seconds for time bounds validation
+    /// - Returns: ChallengeValidationResponseEnum indicating success or specific validation error
     public func isValidChallenge(transactionEnvelopeXDR: TransactionEnvelopeXDR, userAccountId: String, memo:UInt64? = nil, serverSigningKey: String, clientDomainAccount:String? = nil, timeBoundsGracePeriod:UInt64? = nil) -> ChallengeValidationResponseEnum {
         do {
             switch transactionEnvelopeXDR {
@@ -542,7 +597,11 @@ public class WebAuthenticator {
             return .failure(error: .validationFailure)
         }
     }
-    
+
+    /// Signs a challenge transaction with the provided keypairs.
+    /// - Parameter transactionEnvelopeXDR: The transaction envelope to sign
+    /// - Parameter keyPairs: Array of keypairs to sign the transaction with
+    /// - Returns: Base64-encoded signed transaction XDR, or nil if signing fails
     public func signTransaction(transactionEnvelopeXDR: TransactionEnvelopeXDR, keyPairs:[KeyPair]) -> String? {
         let envelopeXDR = transactionEnvelopeXDR
         do {
@@ -569,7 +628,10 @@ public class WebAuthenticator {
             return nil
         }
     }
-    
+
+    /// Submits a signed challenge transaction to the authentication server.
+    /// - Parameter base64EnvelopeXDR: Base64-encoded signed transaction envelope
+    /// - Parameter completion: Closure called with JWT token response or error
     @available(*, renamed: "sendCompletedChallenge(base64EnvelopeXDR:)")
     public func sendCompletedChallenge(base64EnvelopeXDR: String, completion:@escaping SendChallengeResponseClosure) {
         Task {
@@ -577,8 +639,10 @@ public class WebAuthenticator {
             completion(result)
         }
     }
-    
-    
+
+    /// Submits a signed challenge transaction to the authentication server to obtain a JWT token.
+    /// - Parameter base64EnvelopeXDR: Base64-encoded signed transaction envelope
+    /// - Returns: SendChallengeResponseEnum with JWT token on success or error details on failure
     public func sendCompletedChallenge(base64EnvelopeXDR: String) async -> SendChallengeResponseEnum {
         let json = ["transaction": base64EnvelopeXDR]
         let jsonData = try? JSONSerialization.data(withJSONObject: json)

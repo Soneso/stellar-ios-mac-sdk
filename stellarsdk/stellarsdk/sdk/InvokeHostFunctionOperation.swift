@@ -8,30 +8,36 @@
 
 import Foundation
 
-// Invokes soroban host function. Used to install (deploy), create and invoke smart contracts.
+/// Invokes Soroban host functions for smart contract deployment, creation, and invocation operations.
 public class InvokeHostFunctionOperation:Operation {
-    
+
+    /// The host function to invoke.
     public let hostFunction:HostFunctionXDR
+    /// The authorizations required to execute the host function.
     public var auth:[SorobanAuthorizationEntryXDR] = []
-    
+
+    /// Creates a new invoke host function operation with specified parameters.
     public init(hostFunction:HostFunctionXDR, auth:[SorobanAuthorizationEntryXDR] = [], sourceAccountId:String? = nil) {
         self.hostFunction = hostFunction;
         self.auth = auth;
         super.init(sourceAccountId: sourceAccountId)
     }
-    
+
+    /// Creates an operation to invoke a function on a deployed smart contract.
     public static func forInvokingContract(contractId:String, functionName:String, functionArguments:[SCValXDR] = [], sourceAccountId:String? = nil, auth: [SorobanAuthorizationEntryXDR]? = nil) throws -> InvokeHostFunctionOperation {
         let invoekArgs = InvokeContractArgsXDR(contractAddress: try SCAddressXDR(contractId:contractId),
                                                functionName: functionName, args: functionArguments)
         let hostFunction = HostFunctionXDR.invokeContract(invoekArgs)
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
     }
-    
+
+    /// Creates an operation to upload Wasm bytecode for contract deployment.
     public static func forUploadingContractWasm(contractCode:Data, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         let hostFunction = HostFunctionXDR.uploadContractWasm(contractCode)
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
     }
-    
+
+    /// Creates an operation to instantiate a contract from uploaded Wasm using contract ID preimage.
     public static func forCreatingContract(wasmId:String, address: SCAddressXDR, salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         var saltToSet = salt
         if saltToSet == nil {
@@ -45,7 +51,7 @@ public class InvokeHostFunctionOperation:Operation {
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
     }
     
-    /// only avaliable for protocol version >= 22
+    /// Creates an operation to instantiate a contract with constructor arguments (protocol >= 22).
     public static func forCreatingContractWithConstructor(wasmId:String, address: SCAddressXDR, constructorArguments:[SCValXDR] = [], salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         var saltToSet = salt
         if saltToSet == nil {
@@ -58,7 +64,8 @@ public class InvokeHostFunctionOperation:Operation {
         let hostFunction = HostFunctionXDR.createContractV2(createContractV2Args)
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
     }
-    
+
+    /// Creates an operation to deploy a Stellar Asset Contract using a source account address.
     public static func forDeploySACWithSourceAccount(address: SCAddressXDR, salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         var saltToSet = salt
         if saltToSet == nil {
@@ -72,7 +79,8 @@ public class InvokeHostFunctionOperation:Operation {
         let hostFunction = HostFunctionXDR.createContract(createContractArgs)
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
     }
-    
+
+    /// Creates an operation to deploy a Stellar Asset Contract for a specific asset.
     public static func forDeploySACWithAsset(asset:Asset, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         let contractIDPreimage = ContractIDPreimageXDR.fromAsset(try asset.toXDR())
         let executable = ContractExecutableXDR.token

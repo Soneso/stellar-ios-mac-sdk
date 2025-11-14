@@ -9,26 +9,26 @@
 import Foundation
 
 /// Result enum for account details requests.
-///
-/// Represents either a successful account retrieval or an error.
 public enum AccountResponseEnum {
+    /// Successfully retrieved account details from Horizon
     case success(details: AccountResponse)
+    /// Failed to retrieve account details, contains error information
     case failure(error: HorizonRequestError)
 }
 
 /// Result enum for account data field requests.
-///
-/// Represents either successful retrieval of an account's data field or an error.
 public enum DataForAccountResponseEnum {
+    /// Successfully retrieved account data field value
     case success(details: DataForAccountResponse)
+    /// Failed to retrieve account data field, contains error information
     case failure(error: HorizonRequestError)
 }
 
 /// Result enum for test account creation requests.
-///
-/// Used for creating accounts on testnet and futurenet via Friendbot.
 public enum CreateTestAccountResponseEnum {
+    /// Successfully created and funded test account via Friendbot
     case success(details: Any)
+    /// Failed to create test account, contains error information
     case failure(error: HorizonRequestError)
 }
 

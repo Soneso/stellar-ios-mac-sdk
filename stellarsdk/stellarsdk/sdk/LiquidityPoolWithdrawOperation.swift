@@ -8,11 +8,16 @@
 
 import Foundation
 
+/// Represents a Stellar liquidity pool withdraw operation for removing liquidity from AMM pools.
 public class LiquidityPoolWithdrawOperation:Operation {
-    
+
+    /// The liquidity pool ID.
     public let liquidityPoolId:String
+    /// Amount of pool shares to withdraw.
     public let amount: Decimal
+    /// Minimum amount of first asset to withdraw.
     public let minAmountA: Decimal
+    /// Minimum amount of second asset to withdraw.
     public let minAmountB: Decimal
 
     /// Creates a new LiquidityPoolDepositOperation object.

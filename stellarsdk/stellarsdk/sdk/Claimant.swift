@@ -8,12 +8,12 @@
 
 import Foundation
 
-// Claimant class which helps the creation of claimable balances.
-// See: [Stellar developer docs](https://developers.stellar.org)
-// The default behavior of this class it to create claimants with an unconditional predicate if none is passed.
+/// Represents a claimant authorized to claim a claimable balance with optional predicates.
 public class Claimant {
-    
+
+    /// The account ID that can claim the balance.
     public final let destination:String
+    /// The conditions that must be met for the destination to claim the balance.
     public final let predicate:ClaimPredicateXDR
     
     /// Constructor

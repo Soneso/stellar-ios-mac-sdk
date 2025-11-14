@@ -16,22 +16,19 @@
 
 import Foundation
 
-/**
-    Error thrown when a TOML syntax error is encountered
-
-    - DuplicateKey: Document contains a duplicate key
-    - InvalidDateFormat: Date string is not a supported format
-    - InvalidEscapeSequence: Unsupported escape sequence used in string
-    - InvalidUnicodeCharacter: Non-existant unicode character specified
-    - MixedArrayType: Array is composed of multiple types, members must all be the same type
-    - SyntaxError: Document cannot be parsed due to a syntax error
-*/
+/// Errors that occur when parsing TOML documents.
 public enum TomlError: Error {
+    /// TOML document contains a duplicate key definition.
     case DuplicateKey(String)
+    /// Date string does not conform to RFC 3339 or supported TOML date formats.
     case InvalidDateFormat(String)
+    /// String literal contains an unsupported escape sequence.
     case InvalidEscapeSequence(String)
+    /// Unicode escape sequence references a non-existent Unicode code point.
     case InvalidUnicodeCharacter(Int)
+    /// Array contains mixed types when TOML requires homogeneous arrays.
     case MixedArrayType(String)
+    /// TOML document contains syntax errors and cannot be parsed.
     case SyntaxError(String)
 }
 
@@ -44,10 +41,14 @@ protocol SetValueProtocol {
 */
 public class Toml: CustomStringConvertible, SetValueProtocol {
     private var data: [Path: Any]
+    /// Set of all key paths in the TOML document.
     private(set) public var keyNames: Set<Path>
+    /// Optional prefix path for scoped table access.
     private(set) public var prefixPath: Path?
+    /// Set of all table paths in the TOML document.
     private(set) public var tableNames: Set<Path>
 
+    /// Creates an empty TOML document.
     public init() {
         data = [Path: Any]()
         keyNames = Set<Path>()

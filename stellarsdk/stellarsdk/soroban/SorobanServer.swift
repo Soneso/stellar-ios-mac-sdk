@@ -12,7 +12,9 @@ import Foundation
 ///
 /// Represents the result of a Soroban RPC health check operation.
 public enum GetHealthResponseEnum {
+    /// Successfully retrieved health status from Soroban RPC.
     case success(response: GetHealthResponse)
+    /// Failed to retrieve health status, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -20,7 +22,9 @@ public enum GetHealthResponseEnum {
 ///
 /// Returned when querying general information about the Soroban network configuration.
 public enum GetNetworkResponseEnum {
+    /// Successfully retrieved network information from Soroban RPC.
     case success(response: GetNetworkResponse)
+    /// Failed to retrieve network information, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -28,7 +32,9 @@ public enum GetNetworkResponseEnum {
 ///
 /// Contains inclusion fee statistics used for transaction prioritization and spam prevention.
 public enum GetFeeStatsResponseEnum {
+    /// Successfully retrieved fee statistics from Soroban RPC.
     case success(response: GetFeeStatsResponse)
+    /// Failed to retrieve fee statistics, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -36,7 +42,9 @@ public enum GetFeeStatsResponseEnum {
 ///
 /// Returns RPC and Captive Core version information.
 public enum GetVersionInfoResponseEnum {
+    /// Successfully retrieved version information from Soroban RPC.
     case success(response: GetVersionInfoResponse)
+    /// Failed to retrieve version information, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -44,7 +52,9 @@ public enum GetVersionInfoResponseEnum {
 ///
 /// Used when reading the current value of ledger entries directly, including contract state.
 public enum GetLedgerEntriesResponseEnum {
+    /// Successfully retrieved ledger entries from Soroban RPC.
     case success(response: GetLedgerEntriesResponse)
+    /// Failed to retrieve ledger entries, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -52,7 +62,9 @@ public enum GetLedgerEntriesResponseEnum {
 ///
 /// Returns information about the most recent known ledger.
 public enum GetLatestLedgerResponseEnum {
+    /// Successfully retrieved latest ledger information from Soroban RPC.
     case success(response: GetLatestLedgerResponse)
+    /// Failed to retrieve latest ledger information, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -61,7 +73,9 @@ public enum GetLatestLedgerResponseEnum {
 /// Contains simulation results including return values, resource costs, and ledger footprint
 /// for a contract invocation without submitting to the network.
 public enum SimulateTransactionResponseEnum {
+    /// Successfully simulated transaction on Soroban RPC.
     case success(response: SimulateTransactionResponse)
+    /// Failed to simulate transaction, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -70,7 +84,9 @@ public enum SimulateTransactionResponseEnum {
 /// Returned when submitting a transaction to the Soroban network.
 /// Note that submission does not wait for completion.
 public enum SendTransactionResponseEnum {
+    /// Successfully submitted transaction to Soroban RPC.
     case success(response: SendTransactionResponse)
+    /// Failed to submit transaction, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -78,7 +94,9 @@ public enum SendTransactionResponseEnum {
 ///
 /// Used to poll for transaction completion status after submission.
 public enum GetTransactionResponseEnum {
+    /// Successfully retrieved transaction status from Soroban RPC.
     case success(response: GetTransactionResponse)
+    /// Failed to retrieve transaction status, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -86,7 +104,9 @@ public enum GetTransactionResponseEnum {
 ///
 /// Returns a paginated list of transactions starting from a specified ledger.
 public enum GetTransactionsResponseEnum {
+    /// Successfully retrieved transactions list from Soroban RPC.
     case success(response: GetTransactionsResponse)
+    /// Failed to retrieve transactions list, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -94,7 +114,9 @@ public enum GetTransactionsResponseEnum {
 ///
 /// Returns contract events emitted within a specified ledger range.
 public enum GetEventsResponseEnum {
+    /// Successfully retrieved contract events from Soroban RPC.
     case success(response: GetEventsResponse)
+    /// Failed to retrieve contract events, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -102,7 +124,9 @@ public enum GetEventsResponseEnum {
 ///
 /// Returns the current nonce for an account.
 public enum GetNonceResponseEnum {
+    /// Successfully retrieved account nonce from Soroban RPC.
     case success(response: UInt64)
+    /// Failed to retrieve account nonce, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -110,7 +134,9 @@ public enum GetNonceResponseEnum {
 ///
 /// Returns a paginated list of ledgers starting from a specified point.
 public enum GetLedgersResponseEnum {
+    /// Successfully retrieved ledgers list from Soroban RPC.
     case success(response: GetLedgersResponse)
+    /// Failed to retrieve ledgers list, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -118,7 +144,9 @@ public enum GetLedgersResponseEnum {
 ///
 /// Returns the WebAssembly bytecode for a deployed contract.
 public enum GetContractCodeResponseEnum {
+    /// Successfully retrieved contract code from Soroban RPC.
     case success(response: ContractCodeEntryXDR)
+    /// Failed to retrieve contract code, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -126,8 +154,11 @@ public enum GetContractCodeResponseEnum {
 ///
 /// Returns parsed contract metadata including spec entries, environment info, and contract metadata.
 public enum GetContractInfoEnum {
+    /// Successfully retrieved and parsed contract information from Soroban RPC.
     case success(response: SorobanContractInfo)
+    /// Failed to parse contract bytecode, error details in associated value.
     case parsingFailure(error: SorobanContractParserError)
+    /// Failed to retrieve contract information from RPC, error details in associated value.
     case rpcFailure(error: SorobanRpcRequestError)
 }
 
@@ -135,7 +166,9 @@ public enum GetContractInfoEnum {
 ///
 /// Returns minimal account information needed for transaction construction.
 public enum GetAccountResponseEnum {
+    /// Successfully retrieved account information from Soroban RPC.
     case success(response: Account)
+    /// Failed to retrieve account information, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
@@ -143,36 +176,56 @@ public enum GetAccountResponseEnum {
 ///
 /// Returns the current value of contract storage entries.
 public enum GetContractDataResponseEnum {
+    /// Successfully retrieved contract data from Soroban RPC.
     case success(response: LedgerEntry)
+    /// Failed to retrieve contract data, error details in associated value.
     case failure(error: SorobanRpcRequestError)
 }
 
-/// A closure to be called with the response from a post challenge request.
+/// Callback closure for Soroban RPC health check operations.
 public typealias GetHealthResponseClosure = (_ response:GetHealthResponseEnum) -> (Void)
+/// Callback closure for retrieving Soroban network information.
 public typealias GetNetworkResponseClosure = (_ response:GetNetworkResponseEnum) -> (Void)
+/// Callback closure for retrieving Soroban fee statistics.
 public typealias GetFeeStatsResponseClosure = (_ response:GetFeeStatsResponseEnum) -> (Void)
+/// Callback closure for retrieving Soroban RPC version information.
 public typealias GetVersionInfoResponseClosure = (_ response:GetVersionInfoResponseEnum) -> (Void)
+/// Callback closure for retrieving ledger entries from Soroban state.
 public typealias GetLedgerEntriesResponseClosure = (_ response:GetLedgerEntriesResponseEnum) -> (Void)
+/// Callback closure for retrieving the latest ledger information from Soroban.
 public typealias GetLatestLedgerResponseClosure = (_ response:GetLatestLedgerResponseEnum) -> (Void)
+/// Callback closure for simulating Soroban smart contract transactions.
 public typealias SimulateTransactionResponseClosure = (_ response:SimulateTransactionResponseEnum) -> (Void)
+/// Callback closure for submitting Soroban transactions to the network.
 public typealias SendTransactionResponseClosure = (_ response:SendTransactionResponseEnum) -> (Void)
+/// Callback closure for retrieving a single Soroban transaction by hash.
 public typealias GetTransactionResponseClosure = (_ response:GetTransactionResponseEnum) -> (Void)
+/// Callback closure for retrieving multiple Soroban transactions.
 public typealias GetTransactionsResponseClosure = (_ response:GetTransactionsResponseEnum) -> (Void)
+/// Callback closure for retrieving contract events from Soroban.
 public typealias GetEventsResponseClosure = (_ response:GetEventsResponseEnum) -> (Void)
+/// Callback closure for retrieving the current nonce for an account.
 public typealias GetNonceResponseClosure = (_ response:GetNonceResponseEnum) -> (Void)
+/// Callback closure for retrieving Soroban smart contract code.
 public typealias GetContractCodeResponseClosure = (_ response:GetContractCodeResponseEnum) -> (Void)
+/// Callback closure for retrieving Soroban smart contract information.
 public typealias GetContractInfoClosure = (_ response:GetContractInfoEnum) -> (Void)
+/// Callback closure for retrieving Soroban account information.
 public typealias GetAccountResponseClosure = (_ response:GetAccountResponseEnum) -> (Void)
+/// Callback closure for retrieving Soroban smart contract data entries.
 public typealias GetContractDataResponseClosure = (_ response:GetContractDataResponseEnum) -> (Void)
+/// Callback closure for retrieving multiple ledgers from Soroban.
 public typealias GetLedgersResponseClosure = (_ response:GetLedgersResponseEnum) -> (Void)
 
-/// An enum to diferentiate between succesful and failed responses
+/// Internal result type distinguishing successful RPC responses from errors.
+/// Used for internal HTTP request handling before type-specific parsing.
 private enum RpcResult {
     case success(data: Data)
     case failure(error: SorobanRpcRequestError)
 }
 
-/// A closure to be called when a HTTP response is received
+/// Callback closure for internal HTTP response handling.
+/// Invoked when raw RPC response data is received before decoding.
 private typealias RpcResponseClosure = (_ response:RpcResult) -> (Void)
 
 /// Soroban RPC client for interacting with smart contracts on the Stellar network.
@@ -217,14 +270,21 @@ private typealias RpcResponseClosure = (_ response:RpcResult) -> (Void)
 /// - [SorobanClient] for high-level contract interaction
 /// - [AssembledTransaction] for transaction construction
 public class SorobanServer {
+    /// Soroban RPC endpoint URL for all network requests.
     private let endpoint: String
+    /// JSON decoder instance for parsing RPC responses.
     private let jsonDecoder = JSONDecoder()
-    
+
+    /// HTTP header name for SDK version identification.
     static let clientVersionHeader = "X-Client-Version"
+    /// HTTP header name for SDK client name identification.
     static let clientNameHeader = "X-Client-Name"
+    /// HTTP header name for application name identification.
     static let clientApplicationNameHeader = "X-App-Name"
+    /// HTTP header name for application version identification.
     static let clientApplicationVersionHeader = "X-App-Version"
 
+    /// Automatically populated HTTP headers for RPC requests including SDK and application metadata.
     lazy var requestHeaders: [String: String] = {
         var headers: [String: String] = [:]
 
@@ -246,7 +306,8 @@ public class SorobanServer {
 
         return headers
     }()
-    
+
+    /// Enable detailed request/response logging for debugging. Default: false.
     public var enableLogging = false
     
     /// Init a SorobanServer instance
@@ -1241,6 +1302,8 @@ public class SorobanServer {
         }
     }
     
+    /// Constructs request parameters for the getEvents RPC call.
+    /// Assembles ledger range, event filters, and pagination settings into a parameter dictionary.
     private func buildEventsRequestParams(startLedger:Int? = nil, endLedger:Int?=nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
         var result: [String : Any] = [:]
         
@@ -1268,6 +1331,8 @@ public class SorobanServer {
         return result;
     }
     
+    /// Constructs request parameters for the getTransactions RPC call.
+    /// Combines starting ledger and pagination options into the RPC request parameter dictionary.
     private func buildTransactionssRequestParams(startLedger:Int? = nil, paginationOptions:PaginationOptions? = nil) -> [String : Any] {
         var result: [String : Any] = [:]
 
@@ -1283,6 +1348,8 @@ public class SorobanServer {
         return result;
     }
 
+    /// Constructs request parameters for the getLedgers RPC call.
+    /// Assembles starting ledger, XDR format preference, and pagination settings into the request parameter dictionary.
     private func buildLedgersRequestParams(startLedger: UInt32, paginationOptions: PaginationOptions? = nil, format: String? = nil) -> [String : Any] {
         var result: [String : Any] = [:]
 
@@ -1301,6 +1368,8 @@ public class SorobanServer {
         return result
     }
     
+    /// Builds a JSON-RPC 2.0 request body for Soroban RPC calls.
+    /// Constructs the standard JSON-RPC envelope with method name, parameters, and unique request ID.
     private func buildRequestJson(method:String, args:Any? = nil) throws -> Data? {
         var result: [String : Any] = [
             "jsonrpc": "2.0",
@@ -1316,6 +1385,8 @@ public class SorobanServer {
     }
     
     
+    /// Legacy callback-based HTTP request wrapper for Soroban RPC calls.
+    /// Deprecated in favor of async/await variant. Forwards to async implementation.
     @available(*, renamed: "request(body:)")
     private func request(body: Data?, completion: @escaping RpcResponseClosure) {
         Task {
@@ -1324,7 +1395,8 @@ public class SorobanServer {
         }
     }
     
-    
+    /// Executes HTTP POST request to Soroban RPC endpoint with JSON-RPC 2.0 protocol.
+    /// Handles request headers, response validation, and error mapping for all RPC operations.
     private func request(body: Data?) async -> RpcResult {
         
         let url = URL(string: endpoint)!

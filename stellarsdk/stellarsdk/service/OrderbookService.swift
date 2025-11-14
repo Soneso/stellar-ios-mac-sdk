@@ -8,12 +8,17 @@
 
 import Foundation
 
+/// Result enum for orderbook requests.
 public enum OrderbookResponseEnum {
+    /// Successful orderbook retrieval with bid and ask details.
     case success(details: OrderbookResponse)
+    /// Request failed with Horizon error.
     case failure(error: HorizonRequestError)
 }
 
+/// Configuration for orderbook streaming filters.
 public enum OrderbookChange {
+    /// Stream orderbook updates for a specific trading pair.
     case orderbook(sellingAssetType:String,
                    sellingAssetCode:String?,
                    sellingAssetIssuer:String?,
@@ -68,6 +73,7 @@ public class OrderbookService: NSObject {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
+    /// Retrieves current orderbook bids and asks for a trading pair.
     @available(*, renamed: "getOrderbook(sellingAssetType:sellingAssetCode:sellingAssetIssuer:buyingAssetType:buyingAssetCode:buyingAssetIssuer:limit:)")
     open func getOrderbook(sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, limit:Int? = nil, response:@escaping OrderbookResponseClosure) {
         Task {
@@ -75,8 +81,8 @@ public class OrderbookService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Retrieves current orderbook bids and asks for a trading pair.
     open func getOrderbook(sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, limit:Int? = nil) async -> OrderbookResponseEnum {
         
         var requestPath = "/order_book"
@@ -96,7 +102,8 @@ public class OrderbookService: NSObject {
         
         return await getOrderbookFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
-    
+
+    /// Loads orderbook data from a specific URL for pagination.
     @available(*, renamed: "getOrderbookFromUrl(url:)")
     func getOrderbookFromUrl(url:String, response:@escaping OrderbookResponseClosure) {
         Task {
@@ -104,8 +111,8 @@ public class OrderbookService: NSObject {
             response(result)
         }
     }
-    
-    
+
+    /// Loads orderbook data from a specific URL for pagination.
     func getOrderbookFromUrl(url:String) async -> OrderbookResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {
@@ -120,10 +127,8 @@ public class OrderbookService: NSObject {
             return .failure(error:error)
         }
     }
-    
-    /// Allows to stream SSE events from horizon.
-    /// Certain endpoints in Horizon can be called in streaming mode using Server-Sent Events. This mode will keep the connection to horizon open and horizon will continue to return responses as ledgers close.
-    ///
+
+    /// Streams real-time orderbook updates via Server-Sent Events for a trading pair.
     open func stream(for orderbookType:OrderbookChange) -> OrderbookStreamItem {
         var subpath:String!
         switch orderbookType {
