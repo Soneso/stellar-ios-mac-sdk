@@ -33,6 +33,15 @@ xcrun docc process-archive \
     --output-path ./api-docs \
     --hosting-base-path /stellar-ios-mac-sdk
 
+# Fix root index.html to use correct base path for GitHub Pages
+echo "Fixing root index.html for GitHub Pages..."
+sed -i '' -e 's|var baseUrl = "/"|var baseUrl = "/stellar-ios-mac-sdk/"|g' \
+    -e 's|href="/favicon.ico"|href="/stellar-ios-mac-sdk/favicon.ico"|g' \
+    -e 's|href="/favicon.svg"|href="/stellar-ios-mac-sdk/favicon.svg"|g' \
+    -e 's|src="/js/|src="/stellar-ios-mac-sdk/js/|g' \
+    -e 's|href="/css/|href="/stellar-ios-mac-sdk/css/|g' \
+    ./api-docs/index.html
+
 echo ""
 echo "Documentation generated successfully!"
 echo ""
