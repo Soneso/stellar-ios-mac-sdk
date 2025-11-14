@@ -23,7 +23,7 @@
         <a class="header-link" href="../index.html">
           stellarsdk 2.8.0 Docs
         </a>
-        
+         (98% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -2157,7 +2157,7 @@ the server to resume streaming from where it left off.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L101-L575">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L101-L570">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2179,11 +2179,7 @@ the server to resume streaming from where it left off.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Current connection state of the EventSource.</p>
-
-<p>Indicates whether the connection is connecting, open, or closed. This property
-is read-only from outside the class and updates automatically as the connection
-state changes.</p>
+                        <p>Current connection state (connecting, open, or closed) of the Server-Sent Events stream.</p>
 
                       </div>
                       <div class="declaration">
@@ -2195,7 +2191,7 @@ state changes.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L116">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L112">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2213,7 +2209,7 @@ state changes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Milliseconds to wait before attempting reconnection after connection failure.</p>
 
                       </div>
                       <div class="declaration">
@@ -2225,7 +2221,7 @@ state changes.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L117">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L114">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2296,7 +2292,7 @@ server. Custom headers can be provided for authentication or other purposes.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L143-L162">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L140-L159">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2314,16 +2310,7 @@ server. Custom headers can be provided for authentication or other purposes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Closes the EventSource connection and invalidates the underlying URLSession.</p>
-
-<p>After calling this method, the EventSource will no longer receive events and
-will not attempt to reconnect. The connection state transitions to <code>closed</code>.</p>
-<div class="aside aside-note">
-    <p class="aside-title">Note</p>
-    This method should be called when you no longer need to receive events
-    to free up resources and close the network connection.
-
-</div>
+                        <p>Closes the Server-Sent Events connection and prevents automatic reconnection.</p>
 
                       </div>
                       <div class="declaration">
@@ -2335,7 +2322,7 @@ will not attempt to reconnect. The connection state transitions to <code>closed<
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L205-L209">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L196-L200">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2394,7 +2381,7 @@ is successfully established and transitions to the <code>open</code> state.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L243-L245">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L234-L236">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2459,7 +2446,7 @@ callback was registered, it will be immediately invoked with that error.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L269-L276">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L260-L267">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2521,7 +2508,7 @@ to this handler with event type &ldquo;message&rdquo;.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L302-L304">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L293-L295">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2602,7 +2589,7 @@ that can be handled separately.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L335-L337">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L326-L328">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2654,7 +2641,7 @@ to a handler.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L345-L347">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L336-L338">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2689,7 +2676,7 @@ to a handler.</p>
       Does not include the default &ldquo;message&rdquo; event type handled by <code>onMessage</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L353-L355">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L344-L346">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2720,7 +2707,7 @@ to a handler.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>URLSessionDataDelegate method called when data is received from the stream.</p>
 
                       </div>
                       <div class="declaration">
@@ -2732,7 +2719,7 @@ to a handler.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L358-L370">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L350-L362">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2750,7 +2737,7 @@ to a handler.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>URLSessionDataDelegate method called when the initial response is received from the server.</p>
 
                       </div>
                       <div class="declaration">
@@ -2762,7 +2749,7 @@ to a handler.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L372-L383">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L365-L376">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2780,7 +2767,7 @@ to a handler.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>URLSessionDelegate method called when the connection completes or encounters an error.</p>
 
                       </div>
                       <div class="declaration">
@@ -2792,7 +2779,7 @@ to a handler.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L385-L409">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L379-L403">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2823,7 +2810,7 @@ to a handler.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Generates a Basic Authentication header value from username and password.</p>
 
                       </div>
                       <div class="declaration">
@@ -2835,7 +2822,7 @@ to a handler.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L568-L574">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/EventSource.swift#L563-L569">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

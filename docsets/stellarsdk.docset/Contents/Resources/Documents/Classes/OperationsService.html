@@ -23,7 +23,7 @@
         <a class="header-link" href="../index.html">
           stellarsdk 2.8.0 Docs
         </a>
-        
+         (98% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -2113,7 +2113,7 @@ and streaming of real-time operation updates.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L58-L296">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L67-L324">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2135,19 +2135,20 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves all operations from Horizon API with pagination support. Deprecated in favor of async/await version.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperations</span><span class="p">(</span><span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getOperations(from:order:limit:includeFailed:join:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperations</span><span class="p">(</span><span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L71-L76">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L81-L86">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2168,7 +2169,8 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves all operations from Horizon API with pagination support using async/await pattern.
+Returns paginated list of operations filtered by cursor, order, limit, and optional join parameter for related resources.</p>
 
                       </div>
                       <div class="declaration">
@@ -2180,7 +2182,7 @@ and streaming of real-time operation updates.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L79-L82">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L90-L93">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2198,19 +2200,20 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves operations for a specific account with pagination support. Deprecated in favor of async/await version.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperations</span><span class="p">(</span><span class="n">forAccount</span> <span class="nv">accountId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getOperations(forAccount:from:order:limit:includeFailed:join:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperations</span><span class="p">(</span><span class="n">forAccount</span> <span class="nv">accountId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L85-L90">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L97-L102">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2231,7 +2234,8 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves operations for a specific account using async/await pattern.
+Returns paginated operations filtered by account ID, cursor, order, limit, and optional parameters for failed transactions and related resources.</p>
 
                       </div>
                       <div class="declaration">
@@ -2243,7 +2247,7 @@ and streaming of real-time operation updates.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L93-L96">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L106-L109">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2261,19 +2265,20 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves operations for a specific claimable balance with pagination support. Deprecated in favor of async/await version.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperations</span><span class="p">(</span><span class="n">forClaimableBalance</span> <span class="nv">claimableBalanceId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getOperations(forClaimableBalance:from:order:limit:includeFailed:join:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperations</span><span class="p">(</span><span class="n">forClaimableBalance</span> <span class="nv">claimableBalanceId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L99-L104">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L113-L118">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2294,7 +2299,8 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves operations for a specific claimable balance using async/await pattern. Supports both encoded and hex claimable balance IDs.
+Returns paginated operations filtered by claimable balance ID, cursor, order, limit, and optional parameters for failed transactions and related resources.</p>
 
                       </div>
                       <div class="declaration">
@@ -2306,7 +2312,7 @@ and streaming of real-time operation updates.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L107-L115">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L122-L130">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2324,19 +2330,20 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves operations for a specific ledger sequence with pagination support. Deprecated in favor of async/await version.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperations</span><span class="p">(</span><span class="n">forLedger</span> <span class="nv">ledger</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getOperations(forLedger:from:order:limit:includeFailed:join:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperations</span><span class="p">(</span><span class="n">forLedger</span> <span class="nv">ledger</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L118-L123">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L134-L139">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2357,7 +2364,8 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves operations for a specific ledger sequence using async/await pattern.
+Returns paginated operations filtered by ledger sequence number, cursor, order, limit, and optional parameters for failed transactions and related resources.</p>
 
                       </div>
                       <div class="declaration">
@@ -2369,7 +2377,7 @@ and streaming of real-time operation updates.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L126-L129">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L143-L146">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2387,19 +2395,20 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves operations for a specific transaction hash with pagination support. Deprecated in favor of async/await version.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperations</span><span class="p">(</span><span class="n">forTransaction</span> <span class="nv">hash</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getOperations(forTransaction:from:order:limit:includeFailed:join:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperations</span><span class="p">(</span><span class="n">forTransaction</span> <span class="nv">hash</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L132-L137">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L150-L155">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2420,7 +2429,8 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves operations for a specific transaction hash using async/await pattern.
+Returns paginated operations filtered by transaction hash, cursor, order, limit, and optional parameters for failed transactions and related resources.</p>
 
                       </div>
                       <div class="declaration">
@@ -2432,7 +2442,7 @@ and streaming of real-time operation updates.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L140-L143">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L159-L162">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2450,19 +2460,20 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves operations for a specific liquidity pool with pagination support. Deprecated in favor of async/await version.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperations</span><span class="p">(</span><span class="n">forLiquidityPool</span> <span class="nv">liquidityPoolId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getOperations(forLiquidityPool:from:order:limit:includeFailed:join:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperations</span><span class="p">(</span><span class="n">forLiquidityPool</span> <span class="nv">liquidityPoolId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L146-L151">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L166-L171">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2483,7 +2494,8 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves operations for a specific liquidity pool using async/await pattern. Supports both encoded and hex liquidity pool IDs.
+Returns paginated operations filtered by liquidity pool ID, cursor, order, limit, and optional parameters for failed transactions and related resources.</p>
 
                       </div>
                       <div class="declaration">
@@ -2495,7 +2507,7 @@ and streaming of real-time operation updates.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L154-L161">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L175-L182">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2513,19 +2525,20 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves detailed information for a specific operation by ID. Deprecated in favor of async/await version.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperationDetails</span><span class="p">(</span><span class="nv">operationId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk31OperationDetailsResponseClosurea">OperationDetailsResponseClosure</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getOperationDetails(operationId:includeFailed:join:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperationDetails</span><span class="p">(</span><span class="nv">operationId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">includeFailed</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">join</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk31OperationDetailsResponseClosurea">OperationDetailsResponseClosure</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L164-L169">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L186-L191">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2546,7 +2559,8 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves detailed information for a specific operation by ID using async/await pattern.
+Returns operation details including type-specific data, with optional parameters for failed transactions and related resources.</p>
 
                       </div>
                       <div class="declaration">
@@ -2558,7 +2572,7 @@ and streaming of real-time operation updates.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L172-L196">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L195-L219">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2576,7 +2590,7 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Streams real-time operation updates via Server-Sent Events from Horizon.</p>
 
                       </div>
                       <div class="declaration">
@@ -2588,7 +2602,7 @@ and streaming of real-time operation updates.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L198-L244">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L222-L268">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2606,19 +2620,20 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves operations from a complete URL with pagination navigation support. Deprecated in favor of async/await version.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperationsFromUrl</span><span class="p">(</span><span class="nv">url</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getOperationsFromUrl(url:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getOperationsFromUrl</span><span class="p">(</span><span class="nv">url</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/OperationResponse.html">OperationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L274-L279">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L301-L306">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2639,7 +2654,8 @@ and streaming of real-time operation updates.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves operations from a complete URL using async/await pattern. Useful for pagination navigation with next/prev links.
+Fetches and parses operations from the specified Horizon API URL, returning paginated results or error.</p>
 
                       </div>
                       <div class="declaration">
@@ -2651,7 +2667,7 @@ and streaming of real-time operation updates.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L282-L295">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/OperationsService.swift#L310-L323">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

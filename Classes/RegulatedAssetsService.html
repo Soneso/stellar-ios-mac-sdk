@@ -23,7 +23,7 @@
         <a class="header-link" href="../index.html">
           stellarsdk 2.8.0 Docs
         </a>
-        
+         (98% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -2128,7 +2128,7 @@ transfers, ensuring compliance with securities regulations and KYC/AML requireme
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L121-L340">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L121-L342">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2150,7 +2150,7 @@ transfers, ensuring compliance with securities regulations and KYC/AML requireme
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The parsed stellar.toml file containing asset and issuer information.</p>
+                        <p>The parsed stellar.toml configuration containing regulated asset definitions and approval server URLs.</p>
 
                       </div>
                       <div class="declaration">
@@ -2412,19 +2412,20 @@ transfers, ensuring compliance with securities regulations and KYC/AML requireme
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Checks if authorization is required for a regulated asset (deprecated, use async version).</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">authorizationRequired</span><span class="p">(</span><span class="nv">asset</span><span class="p">:</span> <span class="kt"><a href="../Classes/RegulatedAsset.html">RegulatedAsset</a></span><span class="p">,</span> <span class="nv">completion</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk28AuthorizationRequiredClosurea">AuthorizationRequiredClosure</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"authorizationRequired(asset:﹚"</span><span class="p">)</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">authorizationRequired</span><span class="p">(</span><span class="nv">asset</span><span class="p">:</span> <span class="kt"><a href="../Classes/RegulatedAsset.html">RegulatedAsset</a></span><span class="p">,</span> <span class="nv">completion</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk28AuthorizationRequiredClosurea">AuthorizationRequiredClosure</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L214-L219">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L215-L220">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2482,7 +2483,7 @@ transfers, ensuring compliance with securities regulations and KYC/AML requireme
                         <p><code><a href="../Enums/AuthorizationRequiredEnum.html">AuthorizationRequiredEnum</a></code> indicating whether authorization is required or if the check failed.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L227-L240">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L228-L241">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2513,7 +2514,7 @@ transfers, ensuring compliance with securities regulations and KYC/AML requireme
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L244-L249">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L245-L250">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2546,7 +2547,7 @@ transfers, ensuring compliance with securities regulations and KYC/AML requireme
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L252-L297">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L253-L298">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2564,19 +2565,20 @@ transfers, ensuring compliance with securities regulations and KYC/AML requireme
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Posts action data to SEP-08 action URL (deprecated, use async version).</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">postAction</span><span class="p">(</span><span class="nv">url</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">actionFields</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span> <span class="p">:</span> <span class="kt">Any</span><span class="p">],</span> <span class="nv">completion</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk22PostSep08ActionClosurea">PostSep08ActionClosure</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"postAction(url:actionFields:﹚"</span><span class="p">)</span>
+<span class="kd">public</span> <span class="kd">func</span> <span class="nf">postAction</span><span class="p">(</span><span class="nv">url</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">actionFields</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span> <span class="p">:</span> <span class="kt">Any</span><span class="p">],</span> <span class="nv">completion</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk22PostSep08ActionClosurea">PostSep08ActionClosure</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L300-L305">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L302-L307">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2647,7 +2649,7 @@ to provide additional information before transaction approval can proceed.</p>
                         <p><code><a href="../Enums/PostSep08ActionEnum.html">PostSep08ActionEnum</a></code> indicating the result of the action submission.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L315-L338">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L317-L340">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

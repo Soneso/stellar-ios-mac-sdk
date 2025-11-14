@@ -23,7 +23,7 @@
         <a class="header-link" href="../index.html">
           stellarsdk 2.8.0 Docs
         </a>
-        
+         (98% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -2120,7 +2120,7 @@ Events are used to communicate contract state changes and actions to off-chain s
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L41-L108">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L41-L109">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2142,7 +2142,7 @@ Events are used to communicate contract state changes and actions to off-chain s
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The type of event emission. Possible values: contract, diagnostic,  system</p>
+                        <p>Event type identifier (contract, diagnostic, or system).</p>
 
                       </div>
                       <div class="declaration">
@@ -2292,19 +2292,20 @@ Events are used to communicate contract state changes and actions to off-chain s
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Deprecated for protocol version 23+. Indicates if the event was emitted during a successful contract invocation.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">inSuccessfulContractCall</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Deprecated for protocol version &gt;= 23. If true the event was emitted during a successful contract call."</span><span class="p">)</span>
+<span class="kd">public</span> <span class="k">var</span> <span class="nv">inSuccessfulContractCall</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L59">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L60">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2334,7 +2335,7 @@ Events are used to communicate contract state changes and actions to off-chain s
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L62">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L63">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2364,7 +2365,7 @@ Events are used to communicate contract state changes and actions to off-chain s
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L65">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L66">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2394,7 +2395,7 @@ Events are used to communicate contract state changes and actions to off-chain s
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L68">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L69">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2424,7 +2425,7 @@ Events are used to communicate contract state changes and actions to off-chain s
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L71">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L72">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2454,7 +2455,7 @@ Events are used to communicate contract state changes and actions to off-chain s
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L74">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L75">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2484,7 +2485,7 @@ Events are used to communicate contract state changes and actions to off-chain s
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L77">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L78">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2513,7 +2514,7 @@ Events are used to communicate contract state changes and actions to off-chain s
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L93-L107">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/EventInfo.swift#L94-L108">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

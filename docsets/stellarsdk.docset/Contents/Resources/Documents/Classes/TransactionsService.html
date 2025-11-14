@@ -23,7 +23,7 @@
         <a class="header-link" href="../index.html">
           stellarsdk 2.8.0 Docs
         </a>
-        
+         (98% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -2116,7 +2116,7 @@ and asynchronous transaction submission modes.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L87-L575">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L106-L758">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2138,19 +2138,75 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves a paginated list of all transactions from Horizon.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactions</span><span class="p">(</span><span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/TransactionResponse.html">TransactionResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getTransactions(cursor:order:limit:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactions</span><span class="p">(</span><span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/TransactionResponse.html">TransactionResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cursor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional cursor for pagination continuation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>order</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional sort order (ascending or descending by ledger sequence).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>limit</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional maximum number of records to return (default 10, max 200).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with paginated transaction results or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L100-L105">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L125-L130">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2171,7 +2227,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves a paginated list of all transactions from Horizon using async/await.</p>
 
                       </div>
                       <div class="declaration">
@@ -2182,8 +2238,55 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cursor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional cursor for pagination continuation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>order</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional sort order (ascending or descending by ledger sequence).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>limit</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional maximum number of records to return (default 10, max 200).</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Page response containing transaction records or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L108-L111">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L138-L141">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2201,19 +2304,87 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves transactions for a specific account.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactions</span><span class="p">(</span><span class="n">forAccount</span> <span class="nv">accountId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/TransactionResponse.html">TransactionResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getTransactions(forAccount:from:order:limit:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactions</span><span class="p">(</span><span class="n">forAccount</span> <span class="nv">accountId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/TransactionResponse.html">TransactionResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>accountId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Stellar account ID to query transactions for.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cursor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional cursor for pagination continuation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>order</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional sort order (ascending or descending by ledger sequence).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>limit</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional maximum number of records to return (default 10, max 200).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with paginated transaction results or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L114-L119">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L151-L156">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2234,7 +2405,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves transactions for a specific account using async/await.</p>
 
                       </div>
                       <div class="declaration">
@@ -2245,8 +2416,67 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>accountId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Stellar account ID to query transactions for.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cursor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional cursor for pagination continuation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>order</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional sort order (ascending or descending by ledger sequence).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>limit</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional maximum number of records to return (default 10, max 200).</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Page response containing transaction records or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L122-L126">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L165-L169">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2264,19 +2494,87 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves transactions for a specific claimable balance.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactions</span><span class="p">(</span><span class="n">forClaimableBalance</span> <span class="nv">claimableBalanceId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/TransactionResponse.html">TransactionResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getTransactions(forClaimableBalance:from:order:limit:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactions</span><span class="p">(</span><span class="n">forClaimableBalance</span> <span class="nv">claimableBalanceId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/TransactionResponse.html">TransactionResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>claimableBalanceId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The claimable balance ID (hex or B-prefixed format).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cursor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional cursor for pagination continuation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>order</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional sort order (ascending or descending by ledger sequence).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>limit</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional maximum number of records to return (default 10, max 200).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with paginated transaction results or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L129-L134">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L179-L184">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2297,7 +2595,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves transactions for a specific claimable balance using async/await.</p>
 
                       </div>
                       <div class="declaration">
@@ -2308,8 +2606,67 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>claimableBalanceId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The claimable balance ID (hex or B-prefixed format, auto-decoded).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cursor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional cursor for pagination continuation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>order</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional sort order (ascending or descending by ledger sequence).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>limit</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional maximum number of records to return (default 10, max 200).</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Page response containing transaction records or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L137-L145">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L193-L201">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2327,19 +2684,87 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves transactions for a specific liquidity pool.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactions</span><span class="p">(</span><span class="n">forLiquidityPool</span> <span class="nv">liquidityPoolId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/TransactionResponse.html">TransactionResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getTransactions(forLiquidityPool:from:order:limit:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactions</span><span class="p">(</span><span class="n">forLiquidityPool</span> <span class="nv">liquidityPoolId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/TransactionResponse.html">TransactionResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>liquidityPoolId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The liquidity pool ID (hex or L-prefixed format).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cursor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional cursor for pagination continuation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>order</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional sort order (ascending or descending by ledger sequence).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>limit</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional maximum number of records to return (default 10, max 200).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with paginated transaction results or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L148-L153">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L211-L216">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2360,7 +2785,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves transactions for a specific liquidity pool using async/await.</p>
 
                       </div>
                       <div class="declaration">
@@ -2371,8 +2796,67 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>liquidityPoolId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The liquidity pool ID (hex or L-prefixed format, auto-decoded).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cursor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional cursor for pagination continuation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>order</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional sort order (ascending or descending by ledger sequence).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>limit</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional maximum number of records to return (default 10, max 200).</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Page response containing transaction records or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L155-L162">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L225-L232">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2390,19 +2874,87 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves transactions for a specific ledger sequence.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactions</span><span class="p">(</span><span class="n">forLedger</span> <span class="nv">ledger</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/TransactionResponse.html">TransactionResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getTransactions(forLedger:from:order:limit:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactions</span><span class="p">(</span><span class="n">forLedger</span> <span class="nv">ledger</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="n">from</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/TransactionResponse.html">TransactionResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>ledger</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The ledger sequence number or &ldquo;latest&rdquo; for the most recent ledger.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cursor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional cursor for pagination continuation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>order</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional sort order (ascending or descending by ledger sequence).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>limit</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional maximum number of records to return (default 10, max 200).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with paginated transaction results or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L165-L170">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L242-L247">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2423,7 +2975,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves transactions for a specific ledger sequence using async/await.</p>
 
                       </div>
                       <div class="declaration">
@@ -2434,8 +2986,67 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>ledger</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The ledger sequence number or &ldquo;latest&rdquo; for the most recent ledger.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cursor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional cursor for pagination continuation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>order</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional sort order (ascending or descending by ledger sequence).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>limit</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional maximum number of records to return (default 10, max 200).</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Page response containing transaction records or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L173-L176">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L256-L259">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2453,19 +3064,51 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves detailed information for a specific transaction by hash.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactionDetails</span><span class="p">(</span><span class="nv">transactionHash</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk33TransactionDetailsResponseClosurea">TransactionDetailsResponseClosure</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getTransactionDetails(transactionHash:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactionDetails</span><span class="p">(</span><span class="nv">transactionHash</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk33TransactionDetailsResponseClosurea">TransactionDetailsResponseClosure</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transactionHash</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The unique transaction hash identifier.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with transaction details or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L179-L184">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L266-L271">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2486,7 +3129,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves detailed information for a specific transaction by hash using async/await.</p>
 
                       </div>
                       <div class="declaration">
@@ -2497,8 +3140,31 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transactionHash</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The unique transaction hash identifier.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Transaction details or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L187-L203">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L276-L292">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2516,19 +3182,63 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Submits a transaction to the Stellar network with optional SEP-29 memo validation.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">submitTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="kt"><a href="../Classes/Transaction.html">Transaction</a></span><span class="p">,</span> <span class="nv">skipMemoRequiredCheck</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk30TransactionPostResponseClosurea">TransactionPostResponseClosure</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"submitTransaction(transaction:skipMemoRequiredCheck:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">submitTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="kt"><a href="../Classes/Transaction.html">Transaction</a></span><span class="p">,</span> <span class="nv">skipMemoRequiredCheck</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk30TransactionPostResponseClosurea">TransactionPostResponseClosure</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transaction</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The signed transaction to submit.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>skipMemoRequiredCheck</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Set to true to bypass SEP-29 memo requirement validation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with submission result, memo requirement notice, or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L206-L211">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L300-L305">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2549,7 +3259,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Submits a transaction to the Stellar network with optional SEP-29 memo validation using async/await.</p>
 
                       </div>
                       <div class="declaration">
@@ -2560,8 +3270,43 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transaction</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The signed transaction to submit.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>skipMemoRequiredCheck</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Set to true to bypass SEP-29 memo requirement validation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Submission result, memo requirement notice, or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L214-L222">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L312-L320">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2579,19 +3324,63 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Submits a transaction asynchronously, returning immediately after validation without waiting for ledger inclusion.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">submitAsyncTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="kt"><a href="../Classes/Transaction.html">Transaction</a></span><span class="p">,</span> <span class="nv">skipMemoRequiredCheck</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk35TransactionPostAsyncResponseClosurea">TransactionPostAsyncResponseClosure</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"submitAsyncTransaction(transaction:skipMemoRequiredCheck:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">submitAsyncTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="kt"><a href="../Classes/Transaction.html">Transaction</a></span><span class="p">,</span> <span class="nv">skipMemoRequiredCheck</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk35TransactionPostAsyncResponseClosurea">TransactionPostAsyncResponseClosure</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transaction</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The signed transaction to submit.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>skipMemoRequiredCheck</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Set to true to bypass SEP-29 memo requirement validation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with async submission result, memo requirement notice, or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L225-L230">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L328-L333">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2612,7 +3401,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Submits a transaction asynchronously using async/await, returning immediately after validation.</p>
 
                       </div>
                       <div class="declaration">
@@ -2623,8 +3412,43 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transaction</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The signed transaction to submit.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>skipMemoRequiredCheck</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Set to true to bypass SEP-29 memo requirement validation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Async submission result, memo requirement notice, or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L233-L236">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L340-L343">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2642,19 +3466,51 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Submits a fee-bump transaction to replace an existing transaction with higher fees.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">submitFeeBumpTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="kt"><a href="../Classes/FeeBumpTransaction.html">FeeBumpTransaction</a></span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk30TransactionPostResponseClosurea">TransactionPostResponseClosure</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"submitFeeBumpTransaction(transaction:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">submitFeeBumpTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="kt"><a href="../Classes/FeeBumpTransaction.html">FeeBumpTransaction</a></span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk30TransactionPostResponseClosurea">TransactionPostResponseClosure</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transaction</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The signed fee-bump transaction to submit.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with submission result or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L239-L244">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L350-L355">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2675,7 +3531,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Submits a fee-bump transaction using async/await to replace an existing transaction with higher fees.</p>
 
                       </div>
                       <div class="declaration">
@@ -2686,8 +3542,31 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transaction</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The signed fee-bump transaction to submit.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Submission result or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L246-L249">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L360-L363">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2705,19 +3584,51 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Submits a fee-bump transaction asynchronously, returning immediately after validation.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">submitFeeBumpAsyncTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="kt"><a href="../Classes/FeeBumpTransaction.html">FeeBumpTransaction</a></span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk35TransactionPostAsyncResponseClosurea">TransactionPostAsyncResponseClosure</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"submitFeeBumpAsyncTransaction(transaction:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">submitFeeBumpAsyncTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="kt"><a href="../Classes/FeeBumpTransaction.html">FeeBumpTransaction</a></span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk35TransactionPostAsyncResponseClosurea">TransactionPostAsyncResponseClosure</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transaction</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The signed fee-bump transaction to submit.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with async submission result or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L252-L257">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L370-L375">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2738,7 +3649,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Submits a fee-bump transaction asynchronously using async/await, returning immediately after validation.</p>
 
                       </div>
                       <div class="declaration">
@@ -2749,8 +3660,31 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transaction</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The signed fee-bump transaction to submit.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Async submission result or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L259-L267">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L380-L388">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2768,19 +3702,63 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Posts a transaction envelope directly to Horizon with optional SEP-29 memo validation.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">postTransaction</span><span class="p">(</span><span class="nv">transactionEnvelope</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">skipMemoRequiredCheck</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk30TransactionPostResponseClosurea">TransactionPostResponseClosure</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"postTransaction(transactionEnvelope:skipMemoRequiredCheck:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">postTransaction</span><span class="p">(</span><span class="nv">transactionEnvelope</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">skipMemoRequiredCheck</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk30TransactionPostResponseClosurea">TransactionPostResponseClosure</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transactionEnvelope</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The base64-encoded transaction envelope XDR.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>skipMemoRequiredCheck</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Set to true to bypass SEP-29 memo requirement validation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with submission result, memo requirement notice, or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L270-L275">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L396-L401">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2801,7 +3779,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Posts a transaction envelope directly to Horizon with optional SEP-29 memo validation using async/await.</p>
 
                       </div>
                       <div class="declaration">
@@ -2812,8 +3790,43 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transactionEnvelope</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The base64-encoded transaction envelope XDR.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>skipMemoRequiredCheck</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Set to true to bypass SEP-29 memo requirement validation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Submission result, memo requirement notice, or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L278-L292">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L408-L422">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2831,19 +3844,63 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Posts a transaction envelope asynchronously, returning immediately after validation.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">postTransactionAsync</span><span class="p">(</span><span class="nv">transactionEnvelope</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">skipMemoRequiredCheck</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk35TransactionPostAsyncResponseClosurea">TransactionPostAsyncResponseClosure</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"postTransactionAsync(transactionEnvelope:skipMemoRequiredCheck:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">postTransactionAsync</span><span class="p">(</span><span class="nv">transactionEnvelope</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">skipMemoRequiredCheck</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk35TransactionPostAsyncResponseClosurea">TransactionPostAsyncResponseClosure</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transactionEnvelope</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The base64-encoded transaction envelope XDR.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>skipMemoRequiredCheck</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Set to true to bypass SEP-29 memo requirement validation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with async submission result, memo requirement notice, or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L295-L300">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L430-L435">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2864,7 +3921,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Posts a transaction envelope asynchronously using async/await, returning immediately after validation.</p>
 
                       </div>
                       <div class="declaration">
@@ -2875,8 +3932,43 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transactionEnvelope</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The base64-encoded transaction envelope XDR.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>skipMemoRequiredCheck</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Set to true to bypass SEP-29 memo requirement validation.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Async submission result, memo requirement notice, or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L302-L317">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L442-L457">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2894,7 +3986,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Streams real-time transaction updates via Server-Sent Events from Horizon.</p>
 
                       </div>
                       <div class="declaration">
@@ -2906,7 +3998,7 @@ and asynchronous transaction submission modes.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L492-L524">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L656-L688">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2924,19 +4016,51 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves transactions from a complete Horizon URL, useful for pagination navigation.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactionsFromUrl</span><span class="p">(</span><span class="nv">url</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/TransactionResponse.html">TransactionResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getTransactionsFromUrl(url:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTransactionsFromUrl</span><span class="p">(</span><span class="nv">url</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/TransactionResponse.html">TransactionResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>url</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The complete Horizon URL to fetch transactions from.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>response</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Callback with paginated transaction results or error.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L552-L557">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L733-L738">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2957,7 +4081,7 @@ and asynchronous transaction submission modes.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves transactions from a complete Horizon URL using async/await, useful for pagination navigation.</p>
 
                       </div>
                       <div class="declaration">
@@ -2968,8 +4092,31 @@ and asynchronous transaction submission modes.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>url</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The complete Horizon URL to fetch transactions from.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Page response containing transaction records or error.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L560-L574">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TransactionsService.swift#L743-L757">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

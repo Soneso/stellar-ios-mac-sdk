@@ -23,7 +23,7 @@
         <a class="header-link" href="../index.html">
           stellarsdk 2.8.0 Docs
         </a>
-        
+         (98% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -2085,7 +2085,7 @@ If the source account is not sponsored or is sponsored by the owner of the speci
 See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L14-L101">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L14-L125">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2107,7 +2107,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>The ledger key identifying the ledger entry whose sponsorship is being modified.</p>
 
                       </div>
                       <div class="declaration">
@@ -2119,7 +2119,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L16">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L17">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2137,7 +2137,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>The account ID of the signer whose sponsorship is being modified.</p>
 
                       </div>
                       <div class="declaration">
@@ -2149,7 +2149,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L17">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L19">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2167,7 +2167,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>The signer key whose sponsorship is being modified.</p>
 
                       </div>
                       <div class="declaration">
@@ -2179,7 +2179,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L18">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L21">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2228,7 +2228,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L23-L28">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L26-L31">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2288,7 +2288,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L32-L37">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L35-L40">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2306,7 +2306,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Creates a ledger key for revoking sponsorship of an account entry.</p>
 
                       </div>
                       <div class="declaration">
@@ -2317,8 +2317,31 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>accountId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The account ID whose sponsorship will be revoked.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A ledger key identifying the account entry.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L39-L43">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L45-L49">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2336,7 +2359,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Creates a ledger key for revoking sponsorship of a data entry.</p>
 
                       </div>
                       <div class="declaration">
@@ -2347,8 +2370,43 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>accountId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The account ID that owns the data entry.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>dataName</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The name of the data entry whose sponsorship will be revoked.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A ledger key identifying the data entry.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L45-L49">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L56-L60">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2366,7 +2424,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Creates a ledger key for revoking sponsorship of a trustline entry.</p>
 
                       </div>
                       <div class="declaration">
@@ -2377,8 +2435,43 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>accountId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The account ID that owns the trustline.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>asset</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The asset of the trustline whose sponsorship will be revoked.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A ledger key identifying the trustline entry.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L51-L55">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L67-L71">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2396,7 +2489,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Creates a ledger key for revoking sponsorship of a claimable balance entry.</p>
 
                       </div>
                       <div class="declaration">
@@ -2407,8 +2500,31 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>balanceId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The claimable balance ID whose sponsorship will be revoked.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A ledger key identifying the claimable balance entry.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L57-L60">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L76-L79">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2426,7 +2542,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Creates a ledger key for revoking sponsorship of an offer entry.</p>
 
                       </div>
                       <div class="declaration">
@@ -2437,8 +2553,43 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>sellerAccountId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The account ID of the seller who owns the offer.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>offerId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The offer ID whose sponsorship will be revoked.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A ledger key identifying the offer entry.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L62-L66">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L86-L90">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2499,7 +2650,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a>.</p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L72-L85">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/RevokeSponsorshipOperation.swift#L96-L109">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

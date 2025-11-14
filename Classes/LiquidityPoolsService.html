@@ -23,7 +23,7 @@
         <a class="header-link" href="../index.html">
           stellarsdk 2.8.0 Docs
         </a>
-        
+         (98% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -2111,7 +2111,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L53-L196">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L59-L207">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2133,19 +2133,20 @@ reserves of two assets and allows swapping between them at algorithmically deter
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves details for a specific liquidity pool by its ID.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPool</span><span class="p">(</span><span class="nv">poolId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk35LiquidityPoolDetailsResponseClosurea">LiquidityPoolDetailsResponseClosure</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getLiquidityPool(poolId:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPool</span><span class="p">(</span><span class="nv">poolId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk35LiquidityPoolDetailsResponseClosurea">LiquidityPoolDetailsResponseClosure</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L68-L73">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L75-L80">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2166,7 +2167,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves details for a specific liquidity pool by its ID.</p>
 
                       </div>
                       <div class="declaration">
@@ -2178,7 +2179,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L76-L94">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L83-L101">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2196,19 +2197,20 @@ reserves of two assets and allows swapping between them at algorithmically deter
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves all liquidity pools with optional pagination parameters.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPools</span><span class="p">(</span><span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/LiquidityPoolResponse.html">LiquidityPoolResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getLiquidityPools(cursor:order:limit:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPools</span><span class="p">(</span><span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/LiquidityPoolResponse.html">LiquidityPoolResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L97-L102">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L105-L110">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2229,7 +2231,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves all liquidity pools with optional pagination parameters.</p>
 
                       </div>
                       <div class="declaration">
@@ -2241,7 +2243,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L105-L119">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L113-L127">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2259,19 +2261,20 @@ reserves of two assets and allows swapping between them at algorithmically deter
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves liquidity pools filtered by reserve assets with optional pagination parameters.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPools</span><span class="p">(</span><span class="nv">reserveAssetA</span><span class="p">:</span> <span class="kt"><a href="../Classes/Asset.html">Asset</a></span><span class="p">,</span> <span class="nv">reserveAssetB</span><span class="p">:</span> <span class="kt"><a href="../Classes/Asset.html">Asset</a></span><span class="p">,</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/LiquidityPoolResponse.html">LiquidityPoolResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getLiquidityPools(reserveAssetA:reserveAssetB:cursor:order:limit:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPools</span><span class="p">(</span><span class="nv">reserveAssetA</span><span class="p">:</span> <span class="kt"><a href="../Classes/Asset.html">Asset</a></span><span class="p">,</span> <span class="nv">reserveAssetB</span><span class="p">:</span> <span class="kt"><a href="../Classes/Asset.html">Asset</a></span><span class="p">,</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/LiquidityPoolResponse.html">LiquidityPoolResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L122-L127">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L131-L136">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2292,7 +2295,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves liquidity pools filtered by reserve assets with optional pagination parameters.</p>
 
                       </div>
                       <div class="declaration">
@@ -2304,7 +2307,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L130-L145">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L139-L154">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2322,19 +2325,20 @@ reserves of two assets and allows swapping between them at algorithmically deter
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves trade history for a specific liquidity pool.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPoolTrades</span><span class="p">(</span><span class="nv">poolId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk34LiquidityPoolTradesResponseClosurea">LiquidityPoolTradesResponseClosure</a></span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getLiquidityPoolTrades(poolId:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPoolTrades</span><span class="p">(</span><span class="nv">poolId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Typealiases.html#/s:10stellarsdk34LiquidityPoolTradesResponseClosurea">LiquidityPoolTradesResponseClosure</a></span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L148-L153">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L158-L163">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2355,7 +2359,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves trade history for a specific liquidity pool.</p>
 
                       </div>
                       <div class="declaration">
@@ -2367,7 +2371,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L156-L170">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L166-L180">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2385,19 +2389,20 @@ reserves of two assets and allows swapping between them at algorithmically deter
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves liquidity pools from a specific Horizon URL.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPoolsFromUrl</span><span class="p">(</span><span class="nv">url</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/LiquidityPoolResponse.html">LiquidityPoolResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="nv">renamed</span><span class="p">:</span> <span class="s">"getLiquidityPoolsFromUrl(url:﹚"</span><span class="p">)</span>
+<span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPoolsFromUrl</span><span class="p">(</span><span class="nv">url</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">response</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Classes/LiquidityPoolResponse.html">LiquidityPoolResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseClosure</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L173-L178">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L184-L189">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2418,7 +2423,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Retrieves liquidity pools from a specific Horizon URL.</p>
 
                       </div>
                       <div class="declaration">
@@ -2430,7 +2435,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L181-L195">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L192-L206">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

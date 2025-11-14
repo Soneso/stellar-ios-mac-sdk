@@ -23,7 +23,7 @@
         <a class="header-link" href="../index.html">
           stellarsdk 2.8.0 Docs
         </a>
-        
+         (98% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -2129,7 +2129,7 @@ The private key (seed) is encoded as a secret seed starting with &lsquo;S&rsquo;
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L51-L276">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L51-L284">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2860,7 +2860,11 @@ Per the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/ca
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Signs payload data and returns a decorated signature with XOR-ed hint per CAP-40.</p>
+
+<p>Unlike signDecorated(), this method XORs the signature hint with the last 4 bytes of the payload,
+as required for payload signers per CAP-40 specification. The hint helps identify the signer without
+revealing the full public key or payload.</p>
 
                       </div>
                       <div class="declaration">
@@ -2871,8 +2875,31 @@ Per the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/ca
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>signerPayload</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The payload data to sign</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A DecoratedSignatureXDR with XOR-ed hint and Ed25519 signature</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L260-L262">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L268-L270">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2942,7 +2969,7 @@ Per the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/ca
                         <p>True if they match, false otherwise.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L273-L275">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L281-L283">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

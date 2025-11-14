@@ -23,7 +23,7 @@
         <a class="header-link" href="../index.html">
           stellarsdk 2.8.0 Docs
         </a>
-        
+         (98% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -2080,10 +2080,11 @@
 
                 </div>
               </div>
-            <p>Undocumented</p>
+            <p>Utility class for creating signer keys used in multi-signature account configurations.
+Supports ED25519 public keys, SHA256 hashes, pre-authorized transactions, and signed payloads.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L11-L42">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L13-L60">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2105,7 +2106,7 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Creates an ED25519 public key signer from a key pair.</p>
 
                       </div>
                       <div class="declaration">
@@ -2116,8 +2117,31 @@
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>keyPair</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The key pair containing the public key to use as a signer.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A signer key representing the ED25519 public key.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L13-L15">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L18-L20">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2135,7 +2159,7 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Creates an ED25519 public key signer from an account ID.</p>
 
                       </div>
                       <div class="declaration">
@@ -2146,8 +2170,31 @@
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>accountId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Stellar account ID to use as a signer.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A signer key representing the ED25519 public key.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L17-L20">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L25-L28">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2165,7 +2212,7 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Creates a SHA256 hash signer for hash-based authorization.</p>
 
                       </div>
                       <div class="declaration">
@@ -2176,8 +2223,31 @@
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>hash</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The SHA256 hash value to use as a signer.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A signer key representing the hash.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L22-L25">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L33-L36">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2195,7 +2265,7 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Undocumented</p>
+                        <p>Creates a pre-authorized transaction signer that authorizes a specific transaction.</p>
 
                       </div>
                       <div class="declaration">
@@ -2206,8 +2276,43 @@
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>transaction</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The transaction to pre-authorize.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>network</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The network on which the transaction will be submitted.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A signer key representing the pre-authorized transaction hash.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L27-L30">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L43-L46">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2225,7 +2330,7 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Data model for the <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0040.md#xdr-changes">signed payload signer </a></p>
+                        <p>Creates a signed payload signer that combines an account ID with custom payload data (CAP-40).</p>
 
                       </div>
                       <div class="declaration">
@@ -2236,8 +2341,43 @@
 
                         </div>
                       </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>accountId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Stellar account ID to use as the signer.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>payload</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The custom payload data (max 64 bytes).</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A signer key representing the signed payload.</p>
+                      </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L35-L41">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Signer.swift#L53-L59">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
