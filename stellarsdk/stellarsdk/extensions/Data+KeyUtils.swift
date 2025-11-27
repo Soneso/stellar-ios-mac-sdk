@@ -92,10 +92,10 @@ extension Data {
     private func encodeCheck(versionByte:VersionByte) throws -> String {
         var versionByteRaw = versionByte.rawValue
         let versionByteData = Data(bytes: &versionByteRaw, count: MemoryLayout.size(ofValue: versionByte))
-        let payload = NSMutableData(data: versionByteData)
+        var payload = Data(versionByteData)
         payload.append(Data(self.bytes))
-        let checksumedData = (payload as Data).crc16Data()
-        
+        let checksumedData = payload.crc16Data()
+
         return checksumedData.base32EncodedString.replacingOccurrences(of: "=", with: "")
     }
     

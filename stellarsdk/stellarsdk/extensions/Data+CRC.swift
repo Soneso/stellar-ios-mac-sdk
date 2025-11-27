@@ -77,10 +77,10 @@ extension Data {
         var crc = crc16()
         let crcData = Data(bytes: &crc, count: MemoryLayout.size(ofValue: crc))
 
-        let checksumedData = NSMutableData(data: self)
+        var checksumedData = Data(self)
         checksumedData.append(crcData)
 
-        return checksumedData as Data
+        return checksumedData
     }
 
 }

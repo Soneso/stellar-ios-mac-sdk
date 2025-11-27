@@ -103,7 +103,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     
     let url: URL
     fileprivate let lastEventIDKey: String
-    fileprivate let receivedString: NSString?
+    fileprivate let receivedString: String?
     fileprivate var onOpenCallback: ((HTTPURLResponse?) -> Void)?
     fileprivate var onErrorCallback: ((NSError?) -> Void)?
     fileprivate var onMessageCallback: ((_ id: String?, _ event: String?, _ data: String?) -> Void)?
@@ -118,7 +118,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     internal var task: URLSessionDataTask?
     fileprivate var operationQueue: OperationQueue
     fileprivate var errorBeforeSetErrorCallBack: NSError?
-    internal let receivedDataBuffer: NSMutableData
+    internal var receivedDataBuffer: Data
     fileprivate let uniqueIdentifier: String
     fileprivate let validNewlineCharacters = ["\r\n", "\n", "\r"]
     
@@ -144,7 +144,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         self.readyState = EventSourceState.closed
         self.operationQueue = OperationQueue()
         self.receivedString = nil
-        self.receivedDataBuffer = NSMutableData()
+        self.receivedDataBuffer = Data()
         
         let port = String(self.url.port ?? 80)
         let relativePath = self.url.relativePath
@@ -410,43 +410,34 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     //MARK: Helpers
     fileprivate func extractEventsFromBuffer() -> [String] {
         var events = [String]()
-        
-        // Find first occurrence of delimiter
-        var searchRange =  NSRange(location: 0, length: receivedDataBuffer.length)
+
+        var searchRange = receivedDataBuffer.startIndex..<receivedDataBuffer.endIndex
         while let foundRange = searchForEventInRange(searchRange) {
-            // Append event
-            if foundRange.location > searchRange.location {
-                let dataChunk = receivedDataBuffer.subdata(
-                    with: NSRange(location: searchRange.location, length: foundRange.location - searchRange.location)
-                )
-                
+            if foundRange.lowerBound > searchRange.lowerBound {
+                let dataChunk = receivedDataBuffer[searchRange.lowerBound..<foundRange.lowerBound]
+
                 if let text = String(bytes: dataChunk, encoding: .utf8) {
                     events.append(text)
                 }
             }
-            // Search for next occurrence of delimiter
-            searchRange.location = foundRange.location + foundRange.length
-            searchRange.length = receivedDataBuffer.length - searchRange.location
+            let nextStart = foundRange.upperBound
+            searchRange = nextStart..<receivedDataBuffer.endIndex
         }
-        
-        // Remove the found events from the buffer
-        self.receivedDataBuffer.replaceBytes(in: NSRange(location: 0, length: searchRange.location), withBytes: nil, length: 0)
-        
+
+        self.receivedDataBuffer.removeSubrange(receivedDataBuffer.startIndex..<searchRange.lowerBound)
+
         return events
     }
     
-    fileprivate func searchForEventInRange(_ searchRange: NSRange) -> NSRange? {
+    fileprivate func searchForEventInRange(_ searchRange: Range<Data.Index>) -> Range<Data.Index>? {
         let delimiters = validNewlineCharacters.map { "\($0)\($0)".data(using: String.Encoding.utf8)! }
-        
+
         for delimiter in delimiters {
-            let foundRange = receivedDataBuffer.range(of: delimiter,
-                                                      options: NSData.SearchOptions(),
-                                                      in: searchRange)
-            if foundRange.location != NSNotFound {
-                return foundRange
+            if let range = receivedDataBuffer.range(of: delimiter, options: [], in: searchRange) {
+                return range
             }
         }
-        
+
         return nil
     }
     
@@ -462,7 +453,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
                 continue
             }
             
-            if (event as NSString).contains("retry:") {
+            if event.contains("retry:") {
                 if let reconnectTime = parseRetryTime(event) {
                     self.retryTime = reconnectTime
                 }
@@ -533,18 +524,19 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     }
     
     fileprivate func parseKeyValuePair(_ line: String) -> (String?, String?) {
-        var key: NSString?, value: NSString?
         let scanner = Scanner(string: line)
-        scanner.scanUpTo(":", into: &key)
-        scanner.scanString(":", into: nil)
-        
+        let key = scanner.scanUpToString(":")
+        _ = scanner.scanString(":")
+
+        var value: String?
         for newline in validNewlineCharacters {
-            if scanner.scanUpTo(newline, into: &value) {
+            if let scannedValue = scanner.scanUpToString(newline) {
+                value = scannedValue
                 break
             }
         }
-        
-        return (key as String?, value as String?)
+
+        return (key, value)
     }
     
     fileprivate func parseRetryTime(_ eventString: String) -> Int? {

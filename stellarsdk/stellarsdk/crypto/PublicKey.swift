@@ -36,10 +36,10 @@ public class PublicKey: XDRCodable {
         get {
             var versionByte = VersionByte.ed25519PublicKey.rawValue
             let versionByteData = Data(bytes: &versionByte, count: MemoryLayout.size(ofValue: versionByte))
-            let payload = NSMutableData(data: versionByteData)
+            var payload = Data(versionByteData)
             payload.append(Data(self.bytes))
-            let checksumedData = (payload as Data).crc16Data()
-            
+            let checksumedData = payload.crc16Data()
+
             return checksumedData.base32EncodedString
         }
     }
