@@ -377,19 +377,19 @@ class ServiceHelper: NSObject {
             return .failure(error: .requestFailed(message: "Invalid URL: \(url)", horizonErrorResponse: nil))
         }
         var urlRequest = URLRequest(url: url1)
-        
+
         horizonRequestHeaders.forEach {
             urlRequest.addValue($0.value, forHTTPHeaderField: $0.key)
         }
-        
+
         if let contentType = contentType {
             urlRequest.addValue(contentType, forHTTPHeaderField: "Content-Type")
         }
-        
+
         if let token = jwtToken {
             urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        
+
         switch method {
         case .get:
             break
@@ -405,172 +405,93 @@ class ServiceHelper: NSObject {
             urlRequest.httpMethod = "PATCH"
             urlRequest.httpBody = body
         }
-        
-        return await withCheckedContinuation { continuation in
-            let task = URLSession.shared.dataTask(with: urlRequest) { data, response, error in
-                if let error = error {
-                    continuation.resume(returning: .failure(error:.requestFailed(message:error.localizedDescription, horizonErrorResponse: nil)))
-                    return
-                }
-                
-                if let httpResponse = response as? HTTPURLResponse {
-                    var message:String!
-                    if let data = data {
-                        message = String(data: data, encoding: String.Encoding.utf8)
-                        if message == nil {
-                            message = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
-                        }
-                    } else {
-                        message = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
-                    }
-                    
-                    switch httpResponse.statusCode {
-                    case 200, 201, 202:
-                        break
-                    case 400: // Bad request
-                        if let data = data {
-                            do {
-                                let badRequestErrorResponse = try self.jsonDecoder.decode(BadRequestErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.badRequest(message:message, horizonErrorResponse:badRequestErrorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.badRequest(message:message, horizonErrorResponse:nil)))
-                        return
-                    case 401: // Unauthorized
-                        continuation.resume(returning: .failure(error:.unauthorized(message: message)))
-                        return
-                    case 403: // Forbidden
-                        if let data = data {
-                            do {
-                                let forbiddenErrorResponse = try self.jsonDecoder.decode(ForbiddenErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.forbidden(message:message, horizonErrorResponse:forbiddenErrorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.forbidden(message:message, horizonErrorResponse:nil)))
-                        return
-                    case 404: // Not found
-                        if let data = data {
-                            do {
-                                let notFoundErrorResponse = try self.jsonDecoder.decode(NotFoundErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.notFound(message:message, horizonErrorResponse:notFoundErrorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.notFound(message:message, horizonErrorResponse:nil)))
-                        return
-                    case 406: // Not acceptable
-                        if let data = data {
-                            do {
-                                let notAcceptableErrorResponse = try self.jsonDecoder.decode(NotAcceptableErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.notAcceptable(message:message, horizonErrorResponse:notAcceptableErrorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.notAcceptable(message:message, horizonErrorResponse:nil)))
-                        return
-                    case 409: // Duplicate
-                        if let data = data {
-                            do {
-                                let duplicateErrorResponse = try self.jsonDecoder.decode(DuplicateErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.duplicate(message:message, horizonErrorResponse:duplicateErrorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.duplicate(message:message, horizonErrorResponse:nil)))
-                        return
-                    case 410: // Gone
-                        if let data = data {
-                            do {
-                                let beforeHistoryErrorResponse = try self.jsonDecoder.decode(BeforeHistoryErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.beforeHistory(message:message, horizonErrorResponse:beforeHistoryErrorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.beforeHistory(message:message, horizonErrorResponse:nil)))
-                        return
-                    case 413: // Payload too large
-                        if let data = data {
-                            do {
-                                let errorResponse = try self.jsonDecoder.decode(PayloadTooLargeErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.payloadTooLarge(message:message, horizonErrorResponse:errorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.payloadTooLarge(message:message, horizonErrorResponse:nil)))
-                        return
-                    case 429: // Too many requests
-                        if let data = data {
-                            do {
-                                let rateLimitExceededErrorResponse = try self.jsonDecoder.decode(RateLimitExceededErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.rateLimitExceeded(message:message, horizonErrorResponse:rateLimitExceededErrorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.rateLimitExceeded(message:message, horizonErrorResponse:nil)))
-                        return
-                    case 500: // Internal server error
-                        if let data = data {
-                            do {
-                                let internalServerErrorResponse = try self.jsonDecoder.decode(InternalServerErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.internalServerError(message:message, horizonErrorResponse:internalServerErrorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.internalServerError(message:message, horizonErrorResponse:nil)))
-                        return
-                    case 501: // Not implemented
-                        if let data = data {
-                            do {
-                                let notImplementedErrorResponse = try self.jsonDecoder.decode(NotImplementedErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.notImplemented(message:message, horizonErrorResponse:notImplementedErrorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.notImplemented(message:message, horizonErrorResponse:nil)))
-                        return
-                    case 503: // Service unavailable
-                        if let data = data {
-                            do {
-                                let staleHistoryErrorResponse = try self.jsonDecoder.decode(StaleHistoryErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.staleHistory(message:message, horizonErrorResponse:staleHistoryErrorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.staleHistory(message:message, horizonErrorResponse:nil)))
-                        return
-                    case 504: // Timout
-                        if let data = data {
-                            do {
-                                let timeoutErrorResponse = try self.jsonDecoder.decode(TimeoutErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.timeout(message:message, horizonErrorResponse:timeoutErrorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.staleHistory(message:message, horizonErrorResponse:nil)))
-                        return
-                    default:
-                        if let data = data {
-                            do {
-                                let errorResponse = try self.jsonDecoder.decode(ErrorResponse.self, from: data)
-                                continuation.resume(returning: .failure(error:.requestFailed(message:message, horizonErrorResponse:errorResponse)))
-                                return
-                            } catch {}
-                        }
-                        continuation.resume(returning: .failure(error:.requestFailed(message:message, horizonErrorResponse:nil)))
-                        return
-                    }
-                }
-                
-                if let data = data {
-                    continuation.resume(returning: .success(data: data))
-                } else {
-                    continuation.resume(returning: .failure(error:.emptyResponse))
-                }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: urlRequest)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return .failure(error: .emptyResponse)
             }
-            
-            task.resume()
+
+            var message: String!
+            message = String(data: data, encoding: String.Encoding.utf8)
+            if message == nil {
+                message = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
+            }
+
+            switch httpResponse.statusCode {
+            case 200, 201, 202:
+                return .success(data: data)
+            case 400:
+                if let badRequestErrorResponse = try? self.jsonDecoder.decode(BadRequestErrorResponse.self, from: data) {
+                    return .failure(error: .badRequest(message: message, horizonErrorResponse: badRequestErrorResponse))
+                }
+                return .failure(error: .badRequest(message: message, horizonErrorResponse: nil))
+            case 401:
+                return .failure(error: .unauthorized(message: message))
+            case 403:
+                if let forbiddenErrorResponse = try? self.jsonDecoder.decode(ForbiddenErrorResponse.self, from: data) {
+                    return .failure(error: .forbidden(message: message, horizonErrorResponse: forbiddenErrorResponse))
+                }
+                return .failure(error: .forbidden(message: message, horizonErrorResponse: nil))
+            case 404:
+                if let notFoundErrorResponse = try? self.jsonDecoder.decode(NotFoundErrorResponse.self, from: data) {
+                    return .failure(error: .notFound(message: message, horizonErrorResponse: notFoundErrorResponse))
+                }
+                return .failure(error: .notFound(message: message, horizonErrorResponse: nil))
+            case 406:
+                if let notAcceptableErrorResponse = try? self.jsonDecoder.decode(NotAcceptableErrorResponse.self, from: data) {
+                    return .failure(error: .notAcceptable(message: message, horizonErrorResponse: notAcceptableErrorResponse))
+                }
+                return .failure(error: .notAcceptable(message: message, horizonErrorResponse: nil))
+            case 409:
+                if let duplicateErrorResponse = try? self.jsonDecoder.decode(DuplicateErrorResponse.self, from: data) {
+                    return .failure(error: .duplicate(message: message, horizonErrorResponse: duplicateErrorResponse))
+                }
+                return .failure(error: .duplicate(message: message, horizonErrorResponse: nil))
+            case 410:
+                if let beforeHistoryErrorResponse = try? self.jsonDecoder.decode(BeforeHistoryErrorResponse.self, from: data) {
+                    return .failure(error: .beforeHistory(message: message, horizonErrorResponse: beforeHistoryErrorResponse))
+                }
+                return .failure(error: .beforeHistory(message: message, horizonErrorResponse: nil))
+            case 413:
+                if let errorResponse = try? self.jsonDecoder.decode(PayloadTooLargeErrorResponse.self, from: data) {
+                    return .failure(error: .payloadTooLarge(message: message, horizonErrorResponse: errorResponse))
+                }
+                return .failure(error: .payloadTooLarge(message: message, horizonErrorResponse: nil))
+            case 429:
+                if let rateLimitExceededErrorResponse = try? self.jsonDecoder.decode(RateLimitExceededErrorResponse.self, from: data) {
+                    return .failure(error: .rateLimitExceeded(message: message, horizonErrorResponse: rateLimitExceededErrorResponse))
+                }
+                return .failure(error: .rateLimitExceeded(message: message, horizonErrorResponse: nil))
+            case 500:
+                if let internalServerErrorResponse = try? self.jsonDecoder.decode(InternalServerErrorResponse.self, from: data) {
+                    return .failure(error: .internalServerError(message: message, horizonErrorResponse: internalServerErrorResponse))
+                }
+                return .failure(error: .internalServerError(message: message, horizonErrorResponse: nil))
+            case 501:
+                if let notImplementedErrorResponse = try? self.jsonDecoder.decode(NotImplementedErrorResponse.self, from: data) {
+                    return .failure(error: .notImplemented(message: message, horizonErrorResponse: notImplementedErrorResponse))
+                }
+                return .failure(error: .notImplemented(message: message, horizonErrorResponse: nil))
+            case 503:
+                if let staleHistoryErrorResponse = try? self.jsonDecoder.decode(StaleHistoryErrorResponse.self, from: data) {
+                    return .failure(error: .staleHistory(message: message, horizonErrorResponse: staleHistoryErrorResponse))
+                }
+                return .failure(error: .staleHistory(message: message, horizonErrorResponse: nil))
+            case 504:
+                if let timeoutErrorResponse = try? self.jsonDecoder.decode(TimeoutErrorResponse.self, from: data) {
+                    return .failure(error: .timeout(message: message, horizonErrorResponse: timeoutErrorResponse))
+                }
+                return .failure(error: .timeout(message: message, horizonErrorResponse: nil))
+            default:
+                if let errorResponse = try? self.jsonDecoder.decode(ErrorResponse.self, from: data) {
+                    return .failure(error: .requestFailed(message: message, horizonErrorResponse: errorResponse))
+                }
+                return .failure(error: .requestFailed(message: message, horizonErrorResponse: nil))
+            }
+        } catch {
+            return .failure(error: .requestFailed(message: error.localizedDescription, horizonErrorResponse: nil))
         }
     }
 }

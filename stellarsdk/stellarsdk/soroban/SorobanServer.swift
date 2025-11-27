@@ -1398,57 +1398,45 @@ public class SorobanServer {
     /// Executes HTTP POST request to Soroban RPC endpoint with JSON-RPC 2.0 protocol.
     /// Handles request headers, response validation, and error mapping for all RPC operations.
     private func request(body: Data?) async -> RpcResult {
-        
         let url = URL(string: endpoint)!
         var urlRequest = URLRequest(url: url)
-        
+
         requestHeaders.forEach {
             urlRequest.addValue($0.value, forHTTPHeaderField: $0.key)
         }
-        urlRequest.addValue( "application/json", forHTTPHeaderField: "Content-Type")
-        
+        urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
         urlRequest.httpMethod = "POST"
         if let body = body {
             urlRequest.httpBody = body
         }
-        
-        return await withCheckedContinuation { continuation in
-            let task = URLSession.shared.dataTask(with: urlRequest) { data, response, error in
-                if let error = error {
-                    continuation.resume(returning: .failure(error:.requestFailed(message:error.localizedDescription)))
-                    return
-                }
-                
-                if let data = data, self.enableLogging {
-                    let log = String(decoding: data, as: UTF8.self)
-                    print(log)
-                }
-                
-                if let httpResponse = response as? HTTPURLResponse {
-                    var message:String!
-                    if let data = data {
-                        message = String(data: data, encoding: String.Encoding.utf8)
-                    }
-                    if message == nil {
-                        message = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
-                    }
-                    
-                    switch httpResponse.statusCode {
-                    case 200, 201, 202:
-                        break
-                    default:
-                        continuation.resume(returning: .failure(error:.requestFailed(message:message)))
-                        return
-                    }
-                }
-                if let data = data {
-                    continuation.resume(returning: .success(data: data))
-                } else {
-                    continuation.resume(returning: .failure(error:.requestFailed(message:"empty response")))
-                }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: urlRequest)
+
+            if enableLogging {
+                let log = String(decoding: data, as: UTF8.self)
+                print(log)
             }
-            
-            task.resume()
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return .failure(error: .requestFailed(message: "Invalid response"))
+            }
+
+            var message: String!
+            message = String(data: data, encoding: String.Encoding.utf8)
+            if message == nil {
+                message = HTTPURLResponse.localizedString(forStatusCode: httpResponse.statusCode)
+            }
+
+            switch httpResponse.statusCode {
+            case 200, 201, 202:
+                return .success(data: data)
+            default:
+                return .failure(error: .requestFailed(message: message))
+            }
+        } catch {
+            return .failure(error: .requestFailed(message: error.localizedDescription))
         }
     }
 }

@@ -231,7 +231,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     ///     }
     /// }
     /// ```
-    open func onOpen(_ onOpenCallback: @escaping ((HTTPURLResponse?) -> Void)) {
+    open func onOpen(_ onOpenCallback: @escaping (HTTPURLResponse?) -> Void) {
         self.onOpenCallback = onOpenCallback
     }
 
@@ -257,11 +257,13 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     ///
     /// - Note: The EventSource automatically attempts to reconnect after errors
     ///         unless explicitly closed.
-    open func onError(_ onErrorCallback: @escaping ((NSError?) -> Void)) {
+    open func onError(_ onErrorCallback: @escaping (NSError?) -> Void) {
         self.onErrorCallback = onErrorCallback
 
         if let errorBeforeSet = self.errorBeforeSetErrorCallBack {
-            self.onErrorCallback?(errorBeforeSet)
+            DispatchQueue.main.async {
+                self.onErrorCallback?(errorBeforeSet)
+            }
             self.errorBeforeSetErrorCallBack = nil
         }
     }
@@ -290,7 +292,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     ///     print("Received ledger: \(ledger.sequence)")
     /// }
     /// ```
-    open func onMessage(_ onMessageCallback: @escaping ((_ id: String?, _ event: String?, _ data: String?) -> Void)) {
+    open func onMessage(_ onMessageCallback: @escaping (_ id: String?, _ event: String?, _ data: String?) -> Void) {
         self.onMessageCallback = onMessageCallback
     }
 
@@ -323,7 +325,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     ///
     /// - Note: Only one handler can be registered per event type. Registering a new handler
     ///         for an event type will replace any existing handler for that type.
-    open func addEventListener(_ event: String, handler: @escaping ((_ id: String?, _ event: String?, _ data: String?) -> Void)) {
+    open func addEventListener(_ event: String, handler: @escaping (_ id: String?, _ event: String?, _ data: String?) -> Void) {
         self.eventListeners[event] = handler
     }
 
@@ -560,6 +562,46 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     
     fileprivate func trim(_ string: String) -> String {
         return string.trimmingCharacters(in: CharacterSet.whitespaces)
+    }
+
+    /// Creates an AsyncStream for receiving Server-Sent Events.
+    ///
+    /// This method provides a modern async/await alternative to the callback-based API.
+    /// Use this when you prefer structured concurrency over callbacks.
+    ///
+    /// - Returns: An AsyncStream that yields tuples of (id, event, data) for each message
+    ///
+    /// Example:
+    /// ```swift
+    /// let eventSource = EventSource(url: "https://horizon.stellar.org/ledgers?cursor=now")
+    /// let stream = eventSource.eventStream()
+    ///
+    /// for await (id, event, data) in stream {
+    ///     print("Event: \(event ?? "message")")
+    ///     if let ledgerData = data?.data(using: .utf8) {
+    ///         // Process ledger data
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// - Note: The stream will continue until the EventSource is closed or an error occurs.
+    ///         Only one AsyncStream should be active per EventSource instance.
+    open func eventStream() -> AsyncStream<(id: String?, event: String?, data: String?)> {
+        AsyncStream { continuation in
+            self.onMessage { id, event, data in
+                continuation.yield((id: id, event: event, data: data))
+            }
+
+            self.onError { error in
+                continuation.finish()
+            }
+
+            continuation.onTermination = { @Sendable [weak self] _ in
+                DispatchQueue.main.async {
+                    self?.close()
+                }
+            }
+        }
     }
 
     /// Generates a Basic Authentication header value from username and password.

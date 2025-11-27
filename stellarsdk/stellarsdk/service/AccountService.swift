@@ -256,29 +256,21 @@ open class AccountService: NSObject {
     /// - createFutureNetTestAccount for creating accounts on futurenet
     /// - [Stellar developer docs](https://developers.stellar.org)
     open func createTestAccount(accountId:String) async -> CreateTestAccountResponseEnum {
-        
         let url = URL(string: "https://horizon-testnet.stellar.org/friendbot")
         let components = NSURLComponents(url: url!, resolvingAgainstBaseURL: false)
         let item = URLQueryItem(name: "addr", value: accountId)
         components?.queryItems = [item]
-        
-        
-        return await withCheckedContinuation { continuation in
-            let task = URLSession.shared.dataTask(with: components!.url!) { data, httpResponse, error in
-                guard error == nil else {
-                    continuation.resume(returning: .failure(error: HorizonRequestError.requestFailed(message: error!.localizedDescription, horizonErrorResponse: nil)))
-                    return
-                }
-                guard let data1 = data else {
-                    continuation.resume(returning: .failure(error: HorizonRequestError.emptyResponse))
-                    return
-                }
-                
-                let json = try! JSONSerialization.jsonObject(with: data1, options: [])
-                continuation.resume(returning: .success(details: json))
-            }
-            
-            task.resume()
+
+        guard let requestURL = components?.url else {
+            return .failure(error: HorizonRequestError.requestFailed(message: "Invalid URL", horizonErrorResponse: nil))
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: requestURL)
+            let json = try JSONSerialization.jsonObject(with: data, options: [])
+            return .success(details: json)
+        } catch {
+            return .failure(error: HorizonRequestError.requestFailed(message: error.localizedDescription, horizonErrorResponse: nil))
         }
     }
     
@@ -324,29 +316,21 @@ open class AccountService: NSObject {
     /// See also:
     /// - createTestAccount for creating accounts on testnet
     open func createFutureNetTestAccount(accountId:String) async -> CreateTestAccountResponseEnum {
-        
         let url = URL(string: "https://friendbot-futurenet.stellar.org")
         let components = NSURLComponents(url: url!, resolvingAgainstBaseURL: false)
         let item = URLQueryItem(name: "addr", value: accountId)
         components?.queryItems = [item]
-        
-        
-        return await withCheckedContinuation { continuation in
-            let task = URLSession.shared.dataTask(with: components!.url!) { data, httpResponse, error in
-                guard error == nil else {
-                    continuation.resume(returning: .failure(error: HorizonRequestError.requestFailed(message: error!.localizedDescription, horizonErrorResponse: nil)))
-                    return
-                }
-                guard let data1 = data else {
-                    continuation.resume(returning: .failure(error: HorizonRequestError.emptyResponse))
-                    return
-                }
-                
-                let json = try! JSONSerialization.jsonObject(with: data1, options: [])
-                continuation.resume(returning: .success(details: json))
-            }
-            
-            task.resume()
+
+        guard let requestURL = components?.url else {
+            return .failure(error: HorizonRequestError.requestFailed(message: "Invalid URL", horizonErrorResponse: nil))
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: requestURL)
+            let json = try JSONSerialization.jsonObject(with: data, options: [])
+            return .success(details: json)
+        } catch {
+            return .failure(error: HorizonRequestError.requestFailed(message: error.localizedDescription, horizonErrorResponse: nil))
         }
     }
     

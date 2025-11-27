@@ -17,7 +17,7 @@ final class StrKeyTest: XCTestCase {
     override func setUp() {
         super.setUp()
         accountIdEncoded = keyPair.accountId
-        seedEncoded = keyPair.secretSeed
+        seedEncoded = keyPair.secretSeed ?? ""
     }
     
     func testDecodeCheck() throws {
