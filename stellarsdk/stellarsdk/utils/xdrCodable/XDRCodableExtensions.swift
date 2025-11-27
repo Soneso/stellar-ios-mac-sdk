@@ -77,16 +77,16 @@ func isOptional(_ instance: Any) -> Bool {
 /// - Parameter any: Value to unwrap
 /// - Returns: Unwrapped value, or nil if the Optional is nil
 func unwrap(any:Any) -> Any? {
-    
+
     let mi = Mirror(reflecting: any)
     if mi.displayStyle != .optional {
         return any
     }
-    
-    if mi.children.count == 0 { return nil }
-    let (_, some) = mi.children.first!
+
+    guard let first = mi.children.first else { return nil }
+    let (_, some) = first
     return some
-    
+
 }
 
 /// Extension making Array conform to XDRCodable when elements are XDRCodable.

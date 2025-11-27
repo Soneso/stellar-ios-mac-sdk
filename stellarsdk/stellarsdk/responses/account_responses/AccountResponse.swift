@@ -151,7 +151,10 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
         accountId = try values.decode(String.self, forKey: .accountId)
         self.keyPair = try KeyPair(accountId: accountId)
         let sequenceNumberString = try values.decode(String.self, forKey: .sequenceNumber)
-        sequenceNumber = Int64(sequenceNumberString)!
+        guard let seqNum = Int64(sequenceNumberString) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid sequence number format")
+        }
+        sequenceNumber = seqNum
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         subentryCount = try values.decode(UInt.self, forKey: .subentryCount)
         thresholds = try values.decode(AccountThresholdsResponse.self, forKey: .thresholds)

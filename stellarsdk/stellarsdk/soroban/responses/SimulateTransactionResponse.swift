@@ -131,19 +131,19 @@ public class SimulateTransactionResponse: NSObject, Decodable {
     
     /// The soroban authorization entries if available.
     public var sorobanAuth:[SorobanAuthorizationEntryXDR]? {
-        if(results != nil && results!.count > 0) {
-            let auth = results![0].auth
-            do {
-                var res:[SorobanAuthorizationEntryXDR] = []
-                for base64Xdr in auth {
-                    res.append(try SorobanAuthorizationEntryXDR(fromBase64: base64Xdr))
-                }
-                return res
-            } catch {
-                return nil
-            }
+        guard let results = results, let firstResult = results.first else {
+            return nil
         }
-        return nil;
+        let auth = firstResult.auth
+        do {
+            var res:[SorobanAuthorizationEntryXDR] = []
+            for base64Xdr in auth {
+                res.append(try SorobanAuthorizationEntryXDR(fromBase64: base64Xdr))
+            }
+            return res
+        } catch {
+            return nil
+        }
     }
     
     /// true if the simulation detected expired ledger entries which requires restoring with the submission of a RestoreFootprint

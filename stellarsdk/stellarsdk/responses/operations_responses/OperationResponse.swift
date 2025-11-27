@@ -138,7 +138,10 @@ public class OperationResponse: NSObject, Decodable {
         sourceAccountMuxedId = try values.decodeIfPresent(String.self, forKey: .sourceAccountMuxedId)
         operationTypeString = try values.decode(String.self, forKey: .operationTypeString)
         let typeIInt = try values.decode(Int.self, forKey: .operationType) as Int
-        operationType = OperationType(rawValue: Int32(typeIInt))!
+        guard let opType = OperationType(rawValue: Int32(typeIInt)) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Unknown operation type: \(typeIInt)")
+        }
+        operationType = opType
         createdAt = try values.decode(Date.self, forKey: .createdAt)
         transactionHash = try values.decode(String.self, forKey: .transactionHash)
         transactionSuccessful = try values.decode(Bool.self, forKey: .transactionSuccessful)

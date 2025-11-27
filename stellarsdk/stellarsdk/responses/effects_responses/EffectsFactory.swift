@@ -27,23 +27,33 @@ class EffectsFactory: NSObject {
     func effectsFromResponseData(data: Data) throws -> PageResponse<EffectResponse> {
         var effectsList = [EffectResponse]()
         var links: PagingLinksResponse
-        
+
         do {
-            let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
-            
-            for record in json["_embedded"]!["records"] as! [[String:AnyObject]] {
+            guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] else {
+                throw HorizonRequestError.parsingResponseFailed(message: "Invalid JSON structure")
+            }
+
+            guard let embedded = json["_embedded"] as? [String:AnyObject],
+                  let records = embedded["records"] as? [[String:AnyObject]] else {
+                throw HorizonRequestError.parsingResponseFailed(message: "Missing or invalid _embedded.records")
+            }
+
+            for record in records {
                 let jsonRecord = try JSONSerialization.data(withJSONObject: record, options: .prettyPrinted)
                 let effect = try effectFromData(data: jsonRecord)
                 effectsList.append(effect)
             }
-            
-            let linksJson = try JSONSerialization.data(withJSONObject: json["_links"]!, options: .prettyPrinted)
+
+            guard let linksObject = json["_links"] else {
+                throw HorizonRequestError.parsingResponseFailed(message: "Missing _links")
+            }
+            let linksJson = try JSONSerialization.data(withJSONObject: linksObject, options: .prettyPrinted)
             links = try jsonDecoder.decode(PagingLinksResponse.self, from: linksJson)
-            
+
         } catch {
             throw HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)
         }
-        
+
         return PageResponse<EffectResponse>(records: effectsList, links: links)
     }
     
@@ -55,10 +65,15 @@ class EffectsFactory: NSObject {
      - Throws: HorizonRequestError.parsingResponseFailed if the JSON cannot be parsed or contains an unknown effect type.
      */
     func effectFromData(data: Data) throws -> EffectResponse {
-        let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
+        guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid JSON structure")
+        }
         // The appropriate subclass is selected based on the effect type_i field in the JSON.
-        
-        if let type = EffectType(rawValue: json["type_i"] as! Int) {
+
+        guard let typeInt = json["type_i"] as? Int else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Missing or invalid type_i field")
+        }
+        if let type = EffectType(rawValue: typeInt) {
             switch type {
             case .accountCreated:
                 let effect = try jsonDecoder.decode(AccountCreatedEffectResponse.self, from: data)

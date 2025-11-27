@@ -72,7 +72,7 @@ public final class KeyPair {
     /// Returns nil if this keypair was created without a seed.
     ///
     /// Warning: Keep secret seeds secure. Never expose them in logs or transmit them insecurely.
-    public var secretSeed: String! {
+    public var secretSeed: String? {
         get {
             return seed?.secret
         }

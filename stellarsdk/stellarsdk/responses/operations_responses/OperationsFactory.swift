@@ -26,32 +26,47 @@ class OperationsFactory: NSObject {
     func operationsFromResponseData(data: Data) throws -> PageResponse<OperationResponse> {
         var operationsList = [OperationResponse]()
         var links: PagingLinksResponse
-        
+
         do {
-            let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
-            
-            for record in json["_embedded"]!["records"] as! [[String:AnyObject]] {
+            guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] else {
+                throw HorizonRequestError.parsingResponseFailed(message: "Invalid JSON structure")
+            }
+
+            guard let embedded = json["_embedded"] as? [String:AnyObject],
+                  let records = embedded["records"] as? [[String:AnyObject]] else {
+                throw HorizonRequestError.parsingResponseFailed(message: "Missing or invalid _embedded.records")
+            }
+
+            for record in records {
                 let jsonRecord = try JSONSerialization.data(withJSONObject: record, options: .prettyPrinted)
                 let operation = try operationFromData(data: jsonRecord)
                 operationsList.append(operation)
             }
-            
-            let linksJson = try JSONSerialization.data(withJSONObject: json["_links"]!, options: .prettyPrinted)
+
+            guard let linksObject = json["_links"] else {
+                throw HorizonRequestError.parsingResponseFailed(message: "Missing _links")
+            }
+            let linksJson = try JSONSerialization.data(withJSONObject: linksObject, options: .prettyPrinted)
             links = try jsonDecoder.decode(PagingLinksResponse.self, from: linksJson)
-            
+
         } catch {
             throw HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)
         }
-        
+
         return PageResponse<OperationResponse>(records: operationsList, links: links)
     }
     
     func operationFromData(data: Data) throws -> OperationResponse {
-        
+
         // The class to be used depends on the effect type coded in its json reresentation.
         //print(String(data: data, encoding: .utf8)!)
-        let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
-        if let type = OperationType(rawValue: Int32(json["type_i"] as! Int)) {
+        guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid JSON structure")
+        }
+        guard let typeInt = json["type_i"] as? Int else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Missing or invalid type_i field")
+        }
+        if let type = OperationType(rawValue: Int32(typeInt)) {
             switch type {
             case .accountCreated:
                 return try jsonDecoder.decode(AccountCreatedOperationResponse.self, from: data)

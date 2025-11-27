@@ -44,7 +44,10 @@ public class AccountCreatedOperationResponse: OperationResponse {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         let balanceString = try values.decode(String.self, forKey: .startingBalance)
-        startingBalance = Decimal(string: balanceString)!
+        guard let balance = Decimal(string: balanceString) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid starting_balance format")
+        }
+        startingBalance = balance
         funder = try values.decode(String.self, forKey: .funder)
         funderMuxed = try values.decodeIfPresent(String.self, forKey: .funderMuxed)
         funderMuxedId = try values.decodeIfPresent(String.self, forKey: .funderMuxedId)

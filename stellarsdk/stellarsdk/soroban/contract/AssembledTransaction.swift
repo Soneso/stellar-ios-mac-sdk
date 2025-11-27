@@ -313,9 +313,12 @@ public class AssembledTransaction {
         if !neededAccountSigners.isEmpty {
             throw AssembledTransactionError.multipleSignersRequired(message: "Transaction requires signatures from multiple signers. See `needsNonInvokerSigningBy` for details.")
         }
-     
+
         // clone tx
-        let envelopeXdr = try tx!.encodedEnvelope()
+        guard let transaction = tx else {
+            throw AssembledTransactionError.notYetSimulated(message: "Transaction has not yet been simulated")
+        }
+        let envelopeXdr = try transaction.encodedEnvelope()
         let clonedTx = try Transaction(envelopeXdr: envelopeXdr)
         
         try clonedTx.sign(keyPair: signerKp, network: options.clientOptions.network)
@@ -353,7 +356,7 @@ public class AssembledTransaction {
             throw AssembledTransactionError.unexpectedTxType(message: "Unexpected Transaction type; no operations found.")
         }
         var needed:[String] = []
-        guard let invokeHostFuncOp = ops.first! as? InvokeHostFunctionOperation else {
+        guard let firstOp = ops.first, let invokeHostFuncOp = firstOp as? InvokeHostFunctionOperation else {
             throw AssembledTransactionError.unexpectedTxType(message: "Unexpected Transaction type; no invoke host function operations found.")
         }
         let authEntries = invokeHostFuncOp.auth
@@ -455,7 +458,10 @@ public class AssembledTransaction {
                 authEntries[i] = entry
             }
         }
-        tx!.setSorobanAuth(auth: authEntries)
+        guard let transaction = tx else {
+            throw AssembledTransactionError.notYetSimulated(message: "Transaction has not yet been simulated")
+        }
+        transaction.setSorobanAuth(auth: authEntries)
     }
     
     private func pollStatus(transactionId:String) async throws -> GetTransactionResponse {
@@ -478,7 +484,10 @@ public class AssembledTransaction {
                 throw error
             }
         }
-        return statusResponse!
+        guard let response = statusResponse else {
+            throw AssembledTransactionError.pollInterrupted(message: "Failed to get transaction status")
+        }
+        return response
     }
     
     private static func buildFootprintRestoreTransaction(options:AssembledTransactionOptions, transactionData:SorobanTransactionDataXDR, fee:UInt32) async throws -> AssembledTransaction {
@@ -490,7 +499,10 @@ public class AssembledTransaction {
         let preconditions = TransactionPreconditions(timeBounds:timeBounds)
         restoreTx.raw = try Transaction(sourceAccount: sourceAccount, operations: [restoreOp], memo: nil, preconditions: preconditions, maxOperationFee: fee)
         restoreTx.tx = restoreTx.raw
-        restoreTx.tx!.setSorobanTransactionData(data: transactionData)
+        guard let transaction = restoreTx.tx else {
+            throw AssembledTransactionError.notYetSimulated(message: "Failed to build restore transaction")
+        }
+        transaction.setSorobanTransactionData(data: transactionData)
         try await restoreTx.simulate(restore: false)
         return restoreTx
     }

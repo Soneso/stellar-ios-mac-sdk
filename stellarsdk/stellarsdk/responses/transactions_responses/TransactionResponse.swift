@@ -206,13 +206,17 @@ public class TransactionResponse: NSObject, Decodable {
         }
         
         signatures = try values.decode([String].self, forKey: .signatures)
-        
+
         let encodedEnvelope = try values.decode(String.self, forKey: .envelopeXDR)
-        let data = Data(base64Encoded: encodedEnvelope)!
+        guard let data = Data(base64Encoded: encodedEnvelope) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid base64 in envelope_xdr")
+        }
         transactionEnvelope = try XDRDecoder.decode(TransactionEnvelopeXDR.self, data:data)
-        
+
         let encodedResult = try values.decode(String.self, forKey: .transactionResult)
-        let resultData = Data(base64Encoded: encodedResult)!
+        guard let resultData = Data(base64Encoded: encodedResult) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid base64 in result_xdr")
+        }
         transactionResult = try XDRDecoder.decode(TransactionResultXDR.self, data:resultData)
         
         let encodedMeta = try values.decodeIfPresent(String.self, forKey: .transactionMeta)
@@ -222,7 +226,9 @@ public class TransactionResponse: NSObject, Decodable {
         
         let encodedFeeMeta = try values.decodeIfPresent(String.self, forKey: .feeMeta)
         if let feeMetaXdrStr = encodedFeeMeta {
-            let feeMetaData = Data(base64Encoded: feeMetaXdrStr)!
+            guard let feeMetaData = Data(base64Encoded: feeMetaXdrStr) else {
+                throw HorizonRequestError.parsingResponseFailed(message: "Invalid base64 in fee_meta")
+            }
             feeMeta = try XDRDecoder.decode(LedgerEntryChangesXDR.self, data:feeMetaData)
         }
         

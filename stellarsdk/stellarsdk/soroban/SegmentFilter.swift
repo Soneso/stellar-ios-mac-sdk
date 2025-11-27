@@ -79,16 +79,20 @@ public class SegmentFilter {
     /// - Returns: Dictionary containing wildcard and/or scval parameters
     public func buildRequestParams() -> [String : Any] {
         var result: [String : Any] = [:]
-        if wildcard != nil {
-            result["wildcard"] = wildcard!
+        if let wildcard = wildcard {
+            result["wildcard"] = wildcard
         }
         // scval
-        if (scval != nil && scval!.count > 0) {
+        if let scval = scval, !scval.isEmpty {
             var arr:[String] = []
-            for val in scval! {
-                arr.append(val.xdrEncoded!)
+            for val in scval {
+                if let encoded = val.xdrEncoded {
+                    arr.append(encoded)
+                }
             }
-            result["scval"] = arr
+            if !arr.isEmpty {
+                result["scval"] = arr
+            }
         }
         return result;
     }

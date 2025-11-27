@@ -74,21 +74,21 @@ public class EventFilter {
     /// Converts the filter into request parameters for the Soroban RPC API.
     public func buildRequestParams() -> [String : Any] {
         var result: [String : Any] = [:]
-        if type != nil {
-            result["type"] = type!
+        if let type = type {
+            result["type"] = type
         }
         // contractIds
-        if (contractIds != nil && contractIds!.count > 0) {
+        if let contractIds = contractIds, !contractIds.isEmpty {
             var arr:[String] = []
-            for contractId in contractIds! {
+            for contractId in contractIds {
                 arr.append(contractId)
             }
             result["contractIds"] = arr
         }
         // topics
-        if (topics != nil && topics!.count > 0) { // TODO: Test this!
+        if let topics = topics, !topics.isEmpty {
             var arr:[[String]] = []
-            for topic in topics! {
+            for topic in topics {
                 arr.append(topic.segmentMatchers)
             }
             result["topics"] = arr

@@ -187,7 +187,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res =  await service.getAssetsFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -196,7 +199,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getAccountsFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -205,7 +211,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getTradesFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -214,7 +223,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getOffersFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -223,7 +235,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getLedgersFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -232,7 +247,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getPaymentsFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -241,7 +259,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getTransactionsFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -250,7 +271,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getEffectsFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -263,29 +287,61 @@ public struct PageResponse<Element:Decodable>: Decodable {
     private func getRecordsFrom(url:String, response:@escaping ResponseClosure) {
         switch Element.self {
             case is AssetResponse.Type:
+                guard let typedResponse = response as? PageResponse<AssetResponse>.ResponseClosure else {
+                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
+                    return
+                }
                 let service = AssetsService(baseURL:"")
-                service.getAssetsFromUrl(url:url, response:response as! PageResponse<AssetResponse>.ResponseClosure)
+                service.getAssetsFromUrl(url:url, response:typedResponse)
             case is AccountResponse.Type:
+                guard let typedResponse = response as? PageResponse<AccountResponse>.ResponseClosure else {
+                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
+                    return
+                }
                 let service = AccountService(baseURL:"")
-                service.getAccountsFromUrl(url:url, response:response as! PageResponse<AccountResponse>.ResponseClosure)
+                service.getAccountsFromUrl(url:url, response:typedResponse)
             case is TradeResponse.Type:
+                guard let typedResponse = response as? PageResponse<TradeResponse>.ResponseClosure else {
+                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
+                    return
+                }
                 let service = TradesService(baseURL:"")
-                service.getTradesFromUrl(url:url, response:response as! PageResponse<TradeResponse>.ResponseClosure)
+                service.getTradesFromUrl(url:url, response:typedResponse)
             case is OfferResponse.Type:
+                guard let typedResponse = response as? PageResponse<OfferResponse>.ResponseClosure else {
+                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
+                    return
+                }
                 let service = OffersService(baseURL:"")
-                service.getOffersFromUrl(url: url, response:response as! PageResponse<OfferResponse>.ResponseClosure)
+                service.getOffersFromUrl(url: url, response:typedResponse)
             case is LedgerResponse.Type:
+                guard let typedResponse = response as? PageResponse<LedgerResponse>.ResponseClosure else {
+                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
+                    return
+                }
                 let service = LedgersService(baseURL:"")
-                service.getLedgersFromUrl(url: url, response:response as! PageResponse<LedgerResponse>.ResponseClosure)
+                service.getLedgersFromUrl(url: url, response:typedResponse)
             case is OperationResponse.Type:
+                guard let typedResponse = response as? PageResponse<OperationResponse>.ResponseClosure else {
+                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
+                    return
+                }
                 let service = PaymentsService(baseURL:"")
-                service.getPaymentsFromUrl(url: url, response:response as! PageResponse<OperationResponse>.ResponseClosure)
+                service.getPaymentsFromUrl(url: url, response:typedResponse)
             case is TransactionResponse.Type:
+                guard let typedResponse = response as? PageResponse<TransactionResponse>.ResponseClosure else {
+                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
+                    return
+                }
                 let service = TransactionsService(baseURL:"")
-                service.getTransactionsFromUrl(url: url, response:response as! PageResponse<TransactionResponse>.ResponseClosure)
+                service.getTransactionsFromUrl(url: url, response:typedResponse)
             case is EffectResponse.Type:
+                guard let typedResponse = response as? PageResponse<EffectResponse>.ResponseClosure else {
+                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
+                    return
+                }
                 let service = EffectsService(baseURL:"")
-                service.getEffectsFromUrl(url: url, response:response as! PageResponse<EffectResponse>.ResponseClosure)
+                service.getEffectsFromUrl(url: url, response:typedResponse)
             default:
                 assertionFailure("You should implement this case:\(Element.self)")
         }

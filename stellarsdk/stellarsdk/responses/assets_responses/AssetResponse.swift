@@ -87,7 +87,10 @@ public class AssetResponse: NSObject, Decodable {
         numClaimableBalances = try values.decode(Int.self, forKey: .numClaimableBalances)
         balances = try values.decode(AssetBalances.self, forKey: .balances)
         let claimableBalancesAmountString = try values.decode(String.self, forKey: .claimableBalancesAmount) as String
-        claimableBalancesAmount = Decimal(string: claimableBalancesAmountString)!
+        guard let cbAmount = Decimal(string: claimableBalancesAmountString) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid claimable_balances_amount format")
+        }
+        claimableBalancesAmount = cbAmount
         flags = try values.decode(AccountFlagsResponse.self, forKey: .flags)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         numLiquidityPools = try values.decode(Int.self, forKey: .numLiquidityPools)
@@ -160,10 +163,19 @@ public class AssetBalances: NSObject, Decodable {
     public required init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         let authorizedString = try values.decode(String.self, forKey: .authorized) as String
-        authorized = Decimal(string: authorizedString)!
+        guard let auth = Decimal(string: authorizedString) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid authorized format")
+        }
+        authorized = auth
         let authorizedToMaintainLiabilitiesString = try values.decode(String.self, forKey: .authorizedToMaintainLiabilities) as String
-        authorizedToMaintainLiabilities = Decimal(string: authorizedToMaintainLiabilitiesString)!
+        guard let authMaint = Decimal(string: authorizedToMaintainLiabilitiesString) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid authorized_to_maintain_liabilities format")
+        }
+        authorizedToMaintainLiabilities = authMaint
         let unauthorizedString = try values.decode(String.self, forKey: .unauthorized) as String
-        unauthorized = Decimal(string: unauthorizedString)!
+        guard let unauth = Decimal(string: unauthorizedString) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid unauthorized format")
+        }
+        unauthorized = unauth
     }
 }

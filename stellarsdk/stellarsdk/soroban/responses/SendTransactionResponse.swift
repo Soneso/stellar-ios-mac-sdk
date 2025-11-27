@@ -105,10 +105,11 @@ public class SendTransactionResponse: NSObject, Decodable {
         
         let diagnosticEventsXdr = try values.decodeIfPresent([String].self, forKey: .diagnosticEventsXdr)
         if let xdrEntries = diagnosticEventsXdr {
-            diagnosticEvents = []
+            var events: [DiagnosticEventXDR] = []
             for xdrEntry in xdrEntries {
-                diagnosticEvents!.append(try DiagnosticEventXDR(fromBase64: xdrEntry))
+                events.append(try DiagnosticEventXDR(fromBase64: xdrEntry))
             }
+            diagnosticEvents = events
         }
     }
 }

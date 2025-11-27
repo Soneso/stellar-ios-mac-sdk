@@ -71,27 +71,27 @@ public class SorobanContractParser {
         if (specBytesStr == nil) {
             specBytesStr = end(input: bytesString, from: "contractspecv0")
         }
-        if (specBytesStr == nil) {
+        guard var spec = specBytesStr else {
             return nil
         }
-        
+
         var specEntries:[SCSpecEntryXDR] = []
-        while !specBytesStr!.isEmpty {
-            if let specBytes = specBytesStr?.data(using: .isoLatin1) {
+        while !spec.isEmpty {
+            if let specBytes = spec.data(using: .isoLatin1) {
                 let xdrDecoder = XDRDecoder.init(data: [UInt8](specBytes))
                 if let entry = try? SCSpecEntryXDR(from: xdrDecoder) {
                     specEntries.append(entry)
                     if let enc = try? XDREncoder.encode(entry),
                        let entryBytesString = String(data: Data(enc), encoding: .isoLatin1),
-                       let remaining = end(input: specBytesStr!, from: entryBytesString) {
-                        specBytesStr = remaining
+                       let remaining = end(input: spec, from: entryBytesString) {
+                        spec = remaining
                         continue
                     }
                 }
             }
             break
         }
-        
+
         return specEntries
     }
     
@@ -104,12 +104,12 @@ public class SorobanContractParser {
             metaBytesStr = end(input: bytesString, from: "contractmetav0")
         }
         var result: [String: String] = [:]
-        if (metaBytesStr == nil) {
+        guard var meta = metaBytesStr else {
             return result
         }
-        
-        while !metaBytesStr!.isEmpty {
-            if let metaBytes = metaBytesStr?.data(using: .isoLatin1) {
+
+        while !meta.isEmpty {
+            if let metaBytes = meta.data(using: .isoLatin1) {
                 let xdrDecoder = XDRDecoder.init(data: [UInt8](metaBytes))
                 if let entry = try? SCMetaEntryXDR(from: xdrDecoder) {
                     switch entry {
@@ -117,8 +117,8 @@ public class SorobanContractParser {
                         result[sCMetaV0XDR.key] = sCMetaV0XDR.value
                         if let enc = try? XDREncoder.encode(entry),
                            let entryBytesString = String(data: Data(enc), encoding: .isoLatin1),
-                           let remaining = end(input: metaBytesStr!, from: entryBytesString) {
-                            metaBytesStr = remaining
+                           let remaining = end(input: meta, from: entryBytesString) {
+                            meta = remaining
                             continue
                         }
                     }
@@ -126,7 +126,7 @@ public class SorobanContractParser {
             }
             break
         }
-        
+
         return result
     }
     

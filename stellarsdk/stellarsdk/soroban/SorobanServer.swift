@@ -661,10 +661,10 @@ public class SorobanServer {
             let response = await self.getLedgerEntries(base64EncodedKeys: [ledgerKeyBase64])
             switch response {
             case .success(let response):
-                if (response.entries.isEmpty) {
+                guard let firstEntry = response.entries.first else {
                     return .failure(error: .requestFailed(message: "could not extract wasm id"))
                 }
-                let data = try? LedgerEntryDataXDR(fromBase64: response.entries.first!.xdr)
+                let data = try? LedgerEntryDataXDR(fromBase64: firstEntry.xdr)
                 if let contractData = data?.contractData, let wasmId = contractData.val.contractInstance?.executable.wasm?.wrapped.hexEncodedString() {
                     let response = await self.getContractCodeForWasmId(wasmId: wasmId)
                     switch response {
@@ -763,8 +763,8 @@ public class SorobanServer {
                 switch response {
                 case .success(let response):
                     var data:LedgerEntryDataXDR?
-                    if (response.entries.count > 0) {
-                        data = try? LedgerEntryDataXDR(fromBase64: response.entries.first!.xdr)
+                    if let firstEntry = response.entries.first {
+                        data = try? LedgerEntryDataXDR(fromBase64: firstEntry.xdr)
                     }
                     if let accountData = data?.account {
                         let account = Account(keyPair: KeyPair(publicKey: accountData.accountID), sequenceNumber: accountData.sequenceNumber);
@@ -1316,17 +1316,17 @@ public class SorobanServer {
         }
         
         // filters
-        if (eventFilters != nil && eventFilters!.count > 0) {
+        if let eventFilters = eventFilters, !eventFilters.isEmpty {
             var arr:[[String : Any]] = []
-            for event in eventFilters! {
+            for event in eventFilters {
                 arr.append(event.buildRequestParams())
             }
             result["filters"] = arr
         }
-        
+
         // pagination options
-        if (paginationOptions != nil) {
-            result["pagination"] = paginationOptions!.buildRequestParams()
+        if let paginationOptions = paginationOptions {
+            result["pagination"] = paginationOptions.buildRequestParams()
         }
         return result;
     }
@@ -1341,8 +1341,8 @@ public class SorobanServer {
         }
 
         // pagination options
-        if (paginationOptions != nil) {
-            result["pagination"] = paginationOptions!.buildRequestParams()
+        if let paginationOptions = paginationOptions {
+            result["pagination"] = paginationOptions.buildRequestParams()
         }
 
         return result;

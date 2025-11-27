@@ -182,6 +182,9 @@ public class EffectResponse: NSObject, Decodable {
         accountMuxedId = try values.decodeIfPresent(String.self, forKey: .accountMuxedId)
         effectTypeString = try values.decode(String.self, forKey: .effectTypeString)
         let typeIInt = try values.decode(Int.self, forKey: .effectType) as Int
-        effectType = EffectType(rawValue: typeIInt)!
+        guard let eType = EffectType(rawValue: typeIInt) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Unknown effect type: \(typeIInt)")
+        }
+        effectType = eType
     }
 }

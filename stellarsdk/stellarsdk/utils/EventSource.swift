@@ -175,13 +175,13 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         
         self.readyState = EventSourceState.connecting
         self.urlSession = newSession(configuration)
-        self.task = urlSession!.dataTask(with: self.url)
-        
+        self.task = urlSession?.dataTask(with: self.url)
+
         self.resumeSession()
     }
-    
+
     internal func resumeSession() {
-        self.task!.resume()
+        self.task?.resume()
     }
     
     internal func newSession(_ configuration: URLSessionConfiguration) -> Foundation.URLSession {
@@ -382,8 +382,11 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         if self.receivedMessageToClose(task.response as? HTTPURLResponse) {
             return
         }
-        
-        if error == nil || (error! as NSError).code != -999 {
+
+        if let nsError = error as NSError?, nsError.code == -999 {
+            // User cancelled (-999), don't reconnect
+        } else {
+            // For all other errors or nil error, attempt reconnection
             let nanoseconds = Double(self.retryTime) / 1000.0 * Double(NSEC_PER_SEC)
             let delayTime = DispatchTime.now() + Double(Int64(nanoseconds)) / Double(NSEC_PER_SEC)
             DispatchQueue.main.asyncAfter(deadline: delayTime) { [weak self] in
@@ -562,9 +565,11 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     /// Generates a Basic Authentication header value from username and password.
     class open func basicAuth(_ username: String, password: String) -> String {
         let authString = "\(username):\(password)"
-        let authData = authString.data(using: String.Encoding.utf8)
-        let base64String = authData!.base64EncodedString(options: [])
-        
+        guard let authData = authString.data(using: String.Encoding.utf8) else {
+            return "Basic "
+        }
+        let base64String = authData.base64EncodedString(options: [])
+
         return "Basic \(base64String)"
     }
 }
