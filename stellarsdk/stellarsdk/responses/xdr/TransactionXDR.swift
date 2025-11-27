@@ -76,7 +76,7 @@ public struct TransactionXDR: XDRCodable {
     }
     
     public func hash(network:Network) throws -> Data {
-        return try signatureBase(network: network).sha256()
+        return try signatureBase(network: network).sha256Hash
     }
     
     public func toEnvelopeXDR() throws -> TransactionEnvelopeXDR {
@@ -621,7 +621,7 @@ public struct SorobanAuthorizationEntryXDR: XDRCodable {
         let preimage = HashIDPreimageXDR.sorobanAuthorization(authPreimage)
         
         let encoded = try XDREncoder.encode(preimage)
-        let payload = Data(bytes: encoded, count: encoded.count).sha256()
+        let payload = Data(bytes: encoded, count: encoded.count).sha256Hash
         let signature = signer.sign([UInt8](payload))
         let accountEd25519Signature = AccountEd25519Signature(publicKey: signer.publicKey, signature: signature)
         let sigVal = SCValXDR(accountEd25519Signature: accountEd25519Signature)

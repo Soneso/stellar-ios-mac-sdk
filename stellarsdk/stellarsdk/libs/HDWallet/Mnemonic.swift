@@ -53,7 +53,9 @@ public final class Mnemonic {
     public static func create(strength: Strength = .normal, language: WordList = .english) -> String {
         let byteCount = strength.rawValue / 8
         var bytes = Data(count: byteCount)
-        _ = bytes.withUnsafeMutableBytes { SecRandomCopyBytes(kSecRandomDefault, byteCount, $0) }
+        bytes.withUnsafeMutableBytes { buffer in
+            _ = SecRandomCopyBytes(kSecRandomDefault, byteCount, buffer.baseAddress!)
+        }
         return create(entropy: bytes, language: language)
     }
     
@@ -68,7 +70,7 @@ public final class Mnemonic {
     /// - Returns: A space-separated mnemonic phrase
     public static func create(entropy: Data, language: WordList = .english) -> String {
         let entropybits = String(entropy.flatMap { ("00000000" + String($0, radix: 2)).suffix(8) })
-        let hashBits = String(entropy.sha256().flatMap { ("00000000" + String($0, radix: 2)).suffix(8) })
+        let hashBits = String(entropy.sha256Hash.flatMap { ("00000000" + String($0, radix: 2)).suffix(8) })
         let checkSum = String(hashBits.prefix((entropy.count * 8) / 32))
 
         let words = language.words
@@ -105,14 +107,14 @@ public final class Mnemonic {
     /// - Store the passphrase securely if used; it cannot be recovered
     public static func createSeed(mnemonic: String, withPassphrase passphrase: String = "") -> Data {
         guard let password = mnemonic.decomposedStringWithCompatibilityMapping.data(using: .utf8) else {
-            fatalError("Nomalizing password failed in \(self)")
+            fatalError("Normalizing password failed in \(self)")
         }
-        
+
         guard let salt = ("mnemonic" + passphrase).decomposedStringWithCompatibilityMapping.data(using: .utf8) else {
-            fatalError("Nomalizing salt failed in \(self)")
+            fatalError("Normalizing salt failed in \(self)")
         }
-        
-        return HDCrypto.PBKDF2SHA512(password: password.bytes, salt: salt.bytes)
+
+        return HDCrypto.PBKDF2SHA512(password: Array(password), salt: Array(salt))
     }
 }
 

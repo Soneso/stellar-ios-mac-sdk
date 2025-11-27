@@ -8,6 +8,45 @@
 
 import Foundation
 
+/// Extension providing base64 decoding for byte arrays.
+extension Array where Element == UInt8 {
+    /// Creates a byte array from a base64-encoded string.
+    ///
+    /// - Parameter base64: Base64-encoded string
+    /// - Returns: Array of decoded bytes, or empty array if decoding fails
+    init(base64: String) {
+        guard let data = Data(base64Encoded: base64) else {
+            self = []
+            return
+        }
+        self = Array(data)
+    }
+
+    /// Creates a byte array from a hexadecimal string.
+    ///
+    /// - Parameter hex: Hexadecimal string (with or without 0x prefix)
+    /// - Returns: Array of decoded bytes
+    init(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "0x", with: "")
+
+        var byteArray = [UInt8]()
+        var index = hexSanitized.startIndex
+
+        while index < hexSanitized.endIndex {
+            let nextIndex = hexSanitized.index(index, offsetBy: 2, limitedBy: hexSanitized.endIndex) ?? hexSanitized.endIndex
+            let byteString = hexSanitized[index..<nextIndex]
+
+            if let byte = UInt8(byteString, radix: 16) {
+                byteArray.append(byte)
+            }
+            index = nextIndex
+        }
+
+        self = byteArray
+    }
+}
+
 /// Extension providing Stellar key encoding utilities for Data.
 ///
 /// This extension allows encoding binary key data into Stellar's StrKey format, which uses
@@ -23,7 +62,19 @@ import Foundation
 ///
 /// See: [SEP-0023](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0023.md) for StrKey specification.
 extension Data {
-    
+
+    /// Creates Data from a hexadecimal string.
+    ///
+    /// - Parameter hex: Hexadecimal string (with or without 0x prefix)
+    init(hex: String) {
+        self = Data(Array<UInt8>(hex: hex))
+    }
+
+    /// Converts Data to an array of UInt8 bytes.
+    var bytes: [UInt8] {
+        return Array(self)
+    }
+
     /// Encodes data to strkey ed25519 public key ("G...").
     public func encodeEd25519PublicKey() throws -> String {
         return try encodeCheck(versionByte: .ed25519PublicKey)

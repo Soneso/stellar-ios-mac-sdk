@@ -160,10 +160,12 @@ public class URISchemeValidator: NSObject {
     private func getPayload(forUriScheme uri: String) -> [UInt8] {
         var prefixSelectorBytes = [UInt8](repeating: 0, count: 36)
         prefixSelectorBytes[35] = 4
-        
+
         let prefix = URISchemePrefix
-        let uriWithPrefixBytes: [UInt8] = prefix.bytes + uri.bytes
-        
+        let prefixData = prefix.data(using: .utf8) ?? Data()
+        let uriData = uri.data(using: .utf8) ?? Data()
+        let uriWithPrefixBytes: [UInt8] = Array(prefixData) + Array(uriData)
+
         return prefixSelectorBytes + uriWithPrefixBytes
     }
     
@@ -171,9 +173,9 @@ public class URISchemeValidator: NSObject {
     private func sign(url: String, signerKeyPair: KeyPair) -> String? {
         let payloadBytes = getPayload(forUriScheme: url)
         let signatureBytes = signerKeyPair.sign(payloadBytes)
-        let base64Signature = signatureBytes.toBase64()
-        let urlEncodedBase64Signature = base64Signature?.urlEncoded
-        
+        let base64Signature = Data(signatureBytes).base64EncodedString()
+        let urlEncodedBase64Signature = base64Signature.urlEncoded
+
         return urlEncodedBase64Signature
     }
 }

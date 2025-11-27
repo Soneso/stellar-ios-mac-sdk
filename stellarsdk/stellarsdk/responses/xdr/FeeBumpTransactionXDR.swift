@@ -93,7 +93,7 @@ public struct FeeBumpTransactionXDR: XDRCodable {
     }
     
     public func hash(network:Network) throws -> Data {
-        return try signatureBase(network: network).sha256()
+        return try signatureBase(network: network).sha256Hash
     }
     
     public func toEnvelopeXDR() throws -> TransactionEnvelopeXDR {

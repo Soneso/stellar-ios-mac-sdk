@@ -6,13 +6,8 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-#if XC9
-import CSwiftyCommonCrypto
-#else
-import CommonCrypto
-#endif
-
 import Foundation
+import CommonCrypto
 
 /// Extension providing SHA-256 hashing functionality for strings.
 public extension String {
