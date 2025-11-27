@@ -55,10 +55,10 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 public class Operation {
     /// The source account for this operation. If nil, uses the transaction's source account.
-    public private (set) var sourceAccountId:String? //"G..." or "M..."
+    public private(set) var sourceAccountId:String? //"G..." or "M..."
 
     /// The XDR representation of the source account (supports muxed accounts).
-    public private (set) var sourceAccountXdr: MuxedAccountXDR?
+    public private(set) var sourceAccountXdr: MuxedAccountXDR?
 
     /// Creates a new operation object.
     ///

@@ -306,26 +306,34 @@ class ServiceHelper: NSObject {
         }()
         let httpBody: Data = {
             var body = Data()
-            
+
             if let parameters = parameters {
                 for (rawName, rawValue) in parameters {
                     if !body.isEmpty {
-                        body.append("\r\n".data(using: .utf8)!)
+                        if let newlineData = "\r\n".data(using: .utf8) {
+                            body.append(newlineData)
+                        }
                     }
-                    
-                    body.append("--\(boundary)\r\n".data(using: .utf8)!)
-                    
+
+                    if let boundaryData = "--\(boundary)\r\n".data(using: .utf8) {
+                        body.append(boundaryData)
+                    }
+
                     guard rawName.canBeConverted(to: .utf8), let disposition = "Content-Disposition: form-data; name=\"\(rawName)\"\r\n".data(using: .utf8) else {
                         continue
                     }
                     body.append(disposition)
-                    body.append("\r\n".data(using: .utf8)!)
+                    if let newlineData = "\r\n".data(using: .utf8) {
+                        body.append(newlineData)
+                    }
                     body.append(rawValue)
                 }
             }
-            
-            body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
-            
+
+            if let closingBoundaryData = "\r\n--\(boundary)--\r\n".data(using: .utf8) {
+                body.append(closingBoundaryData)
+            }
+
             return body
         }()
         let requestUrl = requestUrlWithPath(path: path)
@@ -365,7 +373,9 @@ class ServiceHelper: NSObject {
     
     
     open func requestFromUrl(url: String, method: HTTPMethod, contentType:String? = nil, jwtToken:String? = nil, body:Data? = nil) async -> Result {
-        let url1 = URL(string: url)!
+        guard let url1 = URL(string: url) else {
+            return .failure(error: .requestFailed(message: "Invalid URL: \(url)", horizonErrorResponse: nil))
+        }
         var urlRequest = URLRequest(url: url1)
         
         horizonRequestHeaders.forEach {

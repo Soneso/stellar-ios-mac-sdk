@@ -310,13 +310,13 @@ public class TransactionsService: NSObject {
     ///   - skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation.
     /// - Returns: Submission result, memo requirement notice, or error.
     open func submitTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostResponseEnum {
-        var envelope:String? = nil
+        let envelope: String
         do {
             envelope = try transaction.encodedEnvelope()
         } catch {
             return .failure(error: .requestFailed(message: "could not encode transaction", horizonErrorResponse: nil))
         }
-        return await postTransaction(transactionEnvelope: envelope!, skipMemoRequiredCheck: skipMemoRequiredCheck)
+        return await postTransaction(transactionEnvelope: envelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
     }
     
     /// Submits a transaction asynchronously, returning immediately after validation without waiting for ledger inclusion.
@@ -338,7 +338,12 @@ public class TransactionsService: NSObject {
     ///   - skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation.
     /// - Returns: Async submission result, memo requirement notice, or error.
     open func submitAsyncTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostAsyncResponseEnum {
-        let envelope = try! transaction.encodedEnvelope()
+        let envelope: String
+        do {
+            envelope = try transaction.encodedEnvelope()
+        } catch {
+            return .failure(error: .requestFailed(message: "could not encode transaction", horizonErrorResponse: nil))
+        }
         return await postTransactionAsync(transactionEnvelope: envelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
     }
     
@@ -358,7 +363,12 @@ public class TransactionsService: NSObject {
     /// - Parameter transaction: The signed fee-bump transaction to submit.
     /// - Returns: Submission result or error.
     open func submitFeeBumpTransaction(transaction:FeeBumpTransaction) async -> TransactionPostResponseEnum {
-        let envelope = try! transaction.encodedEnvelope()
+        let envelope: String
+        do {
+            envelope = try transaction.encodedEnvelope()
+        } catch {
+            return .failure(error: .requestFailed(message: "could not encode fee bump transaction", horizonErrorResponse: nil))
+        }
         return await postTransactionCore(transactionEnvelope: envelope)
     }
     
@@ -654,7 +664,7 @@ public class TransactionsService: NSObject {
 
     /// Streams real-time transaction updates via Server-Sent Events from Horizon.
     open func stream(for transactionsType:TransactionsChange) -> TransactionsStreamItem {
-        var subpath:String!
+        var subpath: String
         switch transactionsType {
         case .allTransactions(let cursor):
             subpath = "/transactions"

@@ -24,9 +24,9 @@ public class ManageBuyOfferOperation:ManageOfferOperation {
         super.init(sourceAccountId:sourceAccountId, selling:selling, buying: buying, amount:amount, price:price, offerId:offerId)
     }
     
-    /// Creates a new ManageSellOfferOperation object from the given ManageOfferOperationXDR object.
+    /// Creates a new ManageBuyOfferOperation object from the given ManageOfferOperationXDR object.
     ///
-    /// - Parameter fromXDR: the ManageOfferOperationXDR object to be used to create a new ManageSellOfferOperation object.
+    /// - Parameter fromXDR: the ManageOfferOperationXDR object to be used to create a new ManageBuyOfferOperation object.
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     public override init(fromXDR:ManageOfferOperationXDR, sourceAccountId:String?) {
         super.init(fromXDR: fromXDR, sourceAccountId: sourceAccountId)

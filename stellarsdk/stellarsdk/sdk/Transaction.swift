@@ -73,7 +73,12 @@ public class Transaction {
         if let pc = preconditions {
             condXdr = pc.toXdr()
         }
-        let tExt = sorobanTransactionData != nil ? TransactionExtXDR.sorobanTransactionData(sorobanTransactionData!) : TransactionExtXDR.void
+        let tExt: TransactionExtXDR
+        if let sorobanData = sorobanTransactionData {
+            tExt = TransactionExtXDR.sorobanTransactionData(sorobanData)
+        } else {
+            tExt = TransactionExtXDR.void
+        }
         self.transactionXDR = TransactionXDR(sourceAccount: muxedAccount,
                                              seqNum: self.sourceAccount.incrementedSequenceNumber(),
                                              cond: condXdr,
@@ -194,19 +199,16 @@ public class Transaction {
 
     /// Sets Soroban authorization entries for all InvokeHostFunction operations in this transaction.
     public func setSorobanAuth(auth:[SorobanAuthorizationEntryXDR]?) {
-        var authToSet = auth
-        if (authToSet == nil) {
-            authToSet = []
-        }
-        
+        let authToSet = auth ?? []
+
         for operation in operations {
             if let op = operation as? InvokeHostFunctionOperation {
-                op.auth = authToSet!
+                op.auth = authToSet
             }
         }
-        
+
         for i in 0...transactionXDR.operations.count - 1 {
-            transactionXDR.operations[i].setSorobanAuth(auth: authToSet!)
+            transactionXDR.operations[i].setSorobanAuth(auth: authToSet)
         }
     }
 

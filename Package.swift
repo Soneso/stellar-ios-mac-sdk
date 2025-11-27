@@ -1,11 +1,11 @@
-// swift-tools-version:5.3
+// swift-tools-version:6.0
 import PackageDescription
 
 let package = Package(
     name: "stellarsdk",
     platforms: [
-        .macOS(.v10_15),
-        .iOS(.v13),
+        .macOS(.v12),
+        .iOS(.v15),
     ],
     products: [
         .library(
@@ -24,6 +24,9 @@ let package = Package(
                 "Info.plist",
                 "stellarsdk.h",
                 "libs/ed25519-C"
+            ],
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
             ]
         ),
         .target(

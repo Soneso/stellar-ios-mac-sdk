@@ -22,7 +22,10 @@ public class OffersStreamItem: NSObject {
                 response(.open)
             case .response(let id, let data):
                 do {
-                    let jsonData = data.data(using: .utf8)!
+                    guard let jsonData = data.data(using: .utf8) else {
+                        response(.error(error: HorizonRequestError.parsingResponseFailed(message: "Failed to convert response data to UTF8")))
+                        return
+                    }
                     guard let offers = try self?.jsonDecoder.decode(OfferResponse.self, from: jsonData) else { return }
                     response(.response(id: id, data: offers))
                 } catch {

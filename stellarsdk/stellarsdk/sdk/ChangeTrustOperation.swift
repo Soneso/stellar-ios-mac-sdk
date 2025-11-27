@@ -42,13 +42,13 @@ public class ChangeTrustOperation:Operation {
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let assetXDR = try asset.toChangeTrustAssetXDR()
-        var limitXDR: Int64!
+        let limitXDR: Int64
         if let limit = limit {
             limitXDR = Operation.toXDRAmount(amount: limit)
         } else {
             limitXDR = Int64.max
         }
-        
+
         return OperationBodyXDR.changeTrust(ChangeTrustOperationXDR(asset:assetXDR,
                                                                     limit:limitXDR))
     }

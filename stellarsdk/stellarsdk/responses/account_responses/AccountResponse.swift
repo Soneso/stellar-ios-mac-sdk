@@ -66,7 +66,7 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
     public var keyPair: KeyPair
 
     /// Current sequence number. Must be incremented for each transaction from this account.
-    public private (set) var sequenceNumber: Int64
+    public private(set) var sequenceNumber: Int64
 
     /// Number of subentries (trustlines, offers, data entries, etc.) owned by this account.
     /// Affects the minimum balance requirement.

@@ -99,27 +99,19 @@ public class SetOptionsOperation:Operation {
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
 
-        
-        if signer != nil && signerWeight != nil {
-            return OperationBodyXDR.setOptions(SetOptionsOperationXDR(inflationDestination: inflationDestination?.publicKey,
-                                                                      clearFlags: clearFlags,
-                                                                      setFlags: setFlags,
-                                                                      masterWeight: masterKeyWeight,
-                                                                      lowThreshold: lowThreshold,
-                                                                      medThreshold: mediumThreshold,
-                                                                      highThreshold: highThreshold,
-                                                                      homeDomain: homeDomain,
-                                                                      signer:SignerXDR(key: signer!, weight: signerWeight!)))
-        } else {
-            return OperationBodyXDR.setOptions(SetOptionsOperationXDR(inflationDestination: inflationDestination?.publicKey,
-                                                                      clearFlags: clearFlags,
-                                                                      setFlags: setFlags,
-                                                                      masterWeight: masterKeyWeight,
-                                                                      lowThreshold: lowThreshold,
-                                                                      medThreshold: mediumThreshold,
-                                                                      highThreshold: highThreshold,
-                                                                      homeDomain: homeDomain,
-                                                                      signer:nil))
+        var signerXDR: SignerXDR? = nil
+        if let signer = signer, let signerWeight = signerWeight {
+            signerXDR = SignerXDR(key: signer, weight: signerWeight)
         }
+
+        return OperationBodyXDR.setOptions(SetOptionsOperationXDR(inflationDestination: inflationDestination?.publicKey,
+                                                                  clearFlags: clearFlags,
+                                                                  setFlags: setFlags,
+                                                                  masterWeight: masterKeyWeight,
+                                                                  lowThreshold: lowThreshold,
+                                                                  medThreshold: mediumThreshold,
+                                                                  highThreshold: highThreshold,
+                                                                  homeDomain: homeDomain,
+                                                                  signer: signerXDR))
     }
 }

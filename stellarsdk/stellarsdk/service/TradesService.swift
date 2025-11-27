@@ -154,7 +154,7 @@ public class TradesService: NSObject {
 
     /// Streams real-time trade updates via Server-Sent Events from Horizon.
     open func stream(for tradesType:TradesChange) -> TradesStreamItem {
-        var subpath:String!
+        var subpath: String
         switch tradesType {
         case .allTrades(let baseAssetType,
                         let baseAssetCode,

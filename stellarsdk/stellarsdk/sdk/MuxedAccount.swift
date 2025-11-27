@@ -12,9 +12,9 @@ import Foundation
 public class MuxedAccount: Account
 {
     /// The optional subaccount ID for multiplexed accounts (CAP-27).
-    public private (set) var id: UInt64?
+    public private(set) var id: UInt64?
     /// The XDR representation of this muxed account.
-    public private (set) var xdr: MuxedAccountXDR
+    public private(set) var xdr: MuxedAccountXDR
 
     /// Human readable Stellar ed25519 or med25519 account ID.
     public override var accountId: String {

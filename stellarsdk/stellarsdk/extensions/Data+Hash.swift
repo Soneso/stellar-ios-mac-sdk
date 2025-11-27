@@ -17,26 +17,23 @@ import Foundation
 /// Extension providing SHA-256 hashing functionality for strings.
 public extension String {
     /// Computes the SHA-256 hash of the string.
-    ///
-    /// Converts the string to UTF-8 data and computes its SHA-256 hash using CommonCrypto.
-    ///
-    /// Example:
-    /// ```swift
-    /// let message = "Hello, Stellar!"
-    /// let hash = message.sha256Hash
-    /// ```
     var sha256Hash: Data {
-        get {
-             let data = self.data(using: .utf8)!
-             var digest = Data(count: Int(CC_SHA256_DIGEST_LENGTH))
+        let data = self.data(using: .utf8)!
+        return data.sha256Hash
+    }
+}
 
-             _ = digest.withUnsafeMutableBytes { (digestBytes) in
-                 data.withUnsafeBytes { (stringBytes) in
-                 CC_SHA256(stringBytes, CC_LONG(data.count), digestBytes)
-             }
-         }
-         return digest
-         }
-     }
+/// Extension providing SHA-256 hashing functionality for Data.
+public extension Data {
+    /// Computes the SHA-256 hash of the data.
+    var sha256Hash: Data {
+        var digest = Data(count: Int(CC_SHA256_DIGEST_LENGTH))
+        _ = digest.withUnsafeMutableBytes { digestBytes in
+            self.withUnsafeBytes { dataBytes in
+                CC_SHA256(dataBytes.baseAddress, CC_LONG(self.count), digestBytes.baseAddress?.assumingMemoryBound(to: UInt8.self))
+            }
+        }
+        return digest
+    }
 }
 
