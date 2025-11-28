@@ -13,13 +13,13 @@ import Foundation
 /// Sponsorship allows one account to pay the base reserve for another account's signer.
 /// Triggered by the Begin Sponsoring Future Reserves and End Sponsoring Future Reserves operations.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class SignerSponsorshipCreatedEffectResponse: EffectResponse {
+public class SignerSponsorshipCreatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The public key of the signer being sponsored.
-    public var signer:String
+    public let signer:String
 
     /// The account ID of the sponsor paying the signer's base reserve.
-    public var sponsor:String
+    public let sponsor:String
     
     
     // Properties to encode and decode

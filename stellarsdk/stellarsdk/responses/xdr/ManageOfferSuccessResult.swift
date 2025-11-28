@@ -14,7 +14,7 @@ public enum ManageOfferEffect: Int32 {
     case deleted = 2
 }
 
-public enum ManageOfferSuccessResultOfferXDR: Encodable {
+public enum ManageOfferSuccessResultOfferXDR: Encodable, Sendable {
     case created(OfferEntryXDR)
     case updated
     
@@ -29,9 +29,9 @@ public enum ManageOfferSuccessResultOfferXDR: Encodable {
     }
 }
 
-public struct ManageOfferSuccessResultXDR: XDRCodable {
-    public var offersClaimed:[ClaimAtomXDR]
-    public var offer:ManageOfferSuccessResultOfferXDR?
+public struct ManageOfferSuccessResultXDR: XDRCodable, Sendable {
+    public let offersClaimed: [ClaimAtomXDR]
+    public var offer: ManageOfferSuccessResultOfferXDR?
     
     public init(offersClaimed: [ClaimAtomXDR], offer:ManageOfferSuccessResultOfferXDR?) {
         self.offersClaimed = offersClaimed

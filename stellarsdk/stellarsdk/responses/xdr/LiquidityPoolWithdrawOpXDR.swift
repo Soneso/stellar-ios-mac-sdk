@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct LiquidityPoolWithdrawOpXDR: XDRCodable {
+public struct LiquidityPoolWithdrawOpXDR: XDRCodable, Sendable {
     public let liquidityPoolID:WrappedData32
     public let amount: Int64
     public let minAmountA: Int64

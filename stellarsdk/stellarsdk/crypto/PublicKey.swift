@@ -28,7 +28,7 @@ import ed25519C
 /// - Public keys can be safely shared and are meant to be public
 /// - They do not grant access to accounts on their own
 /// - Used to verify that operations were signed by the corresponding private key
-public class PublicKey: XDRCodable {
+public final class PublicKey: XDRCodable, Sendable {
     private let buffer: [UInt8]
     
     /// Human readable Stellar account ID.

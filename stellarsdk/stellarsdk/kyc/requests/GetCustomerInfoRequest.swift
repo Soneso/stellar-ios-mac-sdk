@@ -9,7 +9,7 @@ import Foundation
 ///
 /// See also:
 /// - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)
-public struct GetCustomerInfoRequest {
+public struct GetCustomerInfoRequest: Sendable {
 
     /// JWT previously received from the anchor via the SEP-10 authentication flow.
     public var jwt:String

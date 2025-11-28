@@ -22,7 +22,7 @@ public enum LiquidityPoolDepositResulCode: Int32 {
     case poolFull = -7 // pool reserves are full
 }
 
-public enum LiquidityPoolDepositResultXDR: XDRCodable {
+public enum LiquidityPoolDepositResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

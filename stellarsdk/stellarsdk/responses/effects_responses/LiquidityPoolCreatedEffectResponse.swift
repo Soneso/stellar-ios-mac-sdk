@@ -13,10 +13,10 @@ import Foundation
 /// Liquidity pools enable automated market making for asset pairs on the decentralized exchange.
 /// Triggered by the Change Trust operation with a liquidity pool asset.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class LiquidityPoolCreatedEffectResponse: EffectResponse {
+public class LiquidityPoolCreatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The liquidity pool details.
-    public var liquidityPool:LiquidityPoolEffectResponse
+    public let liquidityPool:LiquidityPoolEffectResponse
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

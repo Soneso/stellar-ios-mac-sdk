@@ -22,4 +22,4 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
-public class NotFoundErrorResponse: ErrorResponse {}
+public class NotFoundErrorResponse: ErrorResponse, @unchecked Sendable {}

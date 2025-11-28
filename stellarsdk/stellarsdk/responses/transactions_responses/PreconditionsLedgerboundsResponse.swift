@@ -25,7 +25,7 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - TransactionPreconditionsResponse for all precondition types
 /// - PreconditionsTimeBoundsResponse for time-based constraints
-public class PreconditionsLedgerBoundsResponse: NSObject, Decodable {
+public struct PreconditionsLedgerBoundsResponse: Decodable, Sendable {
 
     /// Minimum ledger sequence number. Transaction invalid before this ledger. Value 0 means no minimum.
     public var minLedger:Int
@@ -38,7 +38,7 @@ public class PreconditionsLedgerBoundsResponse: NSObject, Decodable {
         case maxLedger = "max_ledger"
     }
     
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         minLedger = try values.decode(Int.self, forKey: .minLedger)
         maxLedger = try values.decode(Int.self, forKey: .maxLedger)

@@ -21,7 +21,7 @@ public enum AllowTrustResultCode: Int32 {
     case lowReserve = -6 // claimable balances can't be created on revoke due to low reserves
 }
 
-public enum AllowTrustResultXDR: XDRCodable {
+public enum AllowTrustResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

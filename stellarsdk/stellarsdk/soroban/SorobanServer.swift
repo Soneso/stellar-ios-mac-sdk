@@ -269,7 +269,7 @@ private typealias RpcResponseClosure = (_ response:RpcResult) -> (Void)
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [SorobanClient] for high-level contract interaction
 /// - [AssembledTransaction] for transaction construction
-public class SorobanServer {
+public class SorobanServer: @unchecked Sendable {
     /// Soroban RPC endpoint URL for all network requests.
     private let endpoint: String
     /// JSON decoder instance for parsing RPC responses.

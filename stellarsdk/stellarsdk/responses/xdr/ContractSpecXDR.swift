@@ -41,7 +41,7 @@ public enum SCSpecType: Int32 {
     case udt = 2000
 }
 
-public struct SCSpecTypeOptionXDR: XDRCodable {
+public struct SCSpecTypeOptionXDR: XDRCodable, Sendable {
     public let valueType: SCSpecTypeDefXDR
     
     public init(valueType:SCSpecTypeDefXDR) {
@@ -59,7 +59,7 @@ public struct SCSpecTypeOptionXDR: XDRCodable {
     }
 }
 
-public struct SCSpecTypeResultXDR: XDRCodable {
+public struct SCSpecTypeResultXDR: XDRCodable, Sendable {
     public let okType: SCSpecTypeDefXDR
     public let errorType: SCSpecTypeDefXDR
     
@@ -81,7 +81,7 @@ public struct SCSpecTypeResultXDR: XDRCodable {
     }
 }
 
-public struct SCSpecTypeVecXDR: XDRCodable {
+public struct SCSpecTypeVecXDR: XDRCodable, Sendable {
     public let elementType: SCSpecTypeDefXDR
     
     public init(elementType:SCSpecTypeDefXDR) {
@@ -99,7 +99,7 @@ public struct SCSpecTypeVecXDR: XDRCodable {
     }
 }
 
-public struct SCSpecTypeMapXDR: XDRCodable {
+public struct SCSpecTypeMapXDR: XDRCodable, Sendable {
     public let keyType: SCSpecTypeDefXDR
     public let valueType: SCSpecTypeDefXDR
     
@@ -121,7 +121,7 @@ public struct SCSpecTypeMapXDR: XDRCodable {
     }
 }
 
-public struct SCSpecTypeBytesNXDR: XDRCodable {
+public struct SCSpecTypeBytesNXDR: XDRCodable, Sendable {
     public let n: UInt32
     
     public init(n:UInt32) {
@@ -140,7 +140,7 @@ public struct SCSpecTypeBytesNXDR: XDRCodable {
 }
 
 
-public struct SCSpecTypeTupleXDR: XDRCodable {
+public struct SCSpecTypeTupleXDR: XDRCodable, Sendable {
     public let valueTypes: [SCSpecTypeDefXDR]
     
     public init(valueTypes:[SCSpecTypeDefXDR]) {
@@ -158,7 +158,7 @@ public struct SCSpecTypeTupleXDR: XDRCodable {
     }
 }
 
-public struct SCSpecTypeUDTXDR: XDRCodable {
+public struct SCSpecTypeUDTXDR: XDRCodable, Sendable {
     public let name: String
     
     public init(name:String) {
@@ -176,7 +176,7 @@ public struct SCSpecTypeUDTXDR: XDRCodable {
     }
 }
 
-public indirect enum SCSpecTypeDefXDR: XDRCodable {
+public indirect enum SCSpecTypeDefXDR: XDRCodable, Sendable {
 
     case val
     case bool
@@ -337,7 +337,7 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable {
     }
 }
 
-public struct SCSpecUDTStructFieldV0XDR: XDRCodable {
+public struct SCSpecUDTStructFieldV0XDR: XDRCodable, Sendable {
     public let doc: String
     public let name: String
     public let type: SCSpecTypeDefXDR
@@ -363,7 +363,7 @@ public struct SCSpecUDTStructFieldV0XDR: XDRCodable {
     }
 }
 
-public struct SCSpecUDTStructV0XDR: XDRCodable {
+public struct SCSpecUDTStructV0XDR: XDRCodable, Sendable {
     public let doc: String
     public let lib: String
     public let name: String
@@ -393,7 +393,7 @@ public struct SCSpecUDTStructV0XDR: XDRCodable {
     }
 }
 
-public struct SCSpecUDTUnionCaseVoidV0XDR: XDRCodable {
+public struct SCSpecUDTUnionCaseVoidV0XDR: XDRCodable, Sendable {
     public let doc: String
     public let name: String
     
@@ -415,7 +415,7 @@ public struct SCSpecUDTUnionCaseVoidV0XDR: XDRCodable {
     }
 }
 
-public struct SCSpecUDTUnionCaseTupleV0XDR: XDRCodable {
+public struct SCSpecUDTUnionCaseTupleV0XDR: XDRCodable, Sendable {
     public let doc: String
     public let name: String
     public let type: [SCSpecTypeDefXDR]
@@ -446,7 +446,7 @@ public enum SCSpecUDTUnionCaseV0Kind: Int32 {
     case tupleV0 = 1
 }
 
-public enum SCSpecUDTUnionCaseV0XDR: XDRCodable {
+public enum SCSpecUDTUnionCaseV0XDR: XDRCodable, Sendable {
 
     case voidV0(SCSpecUDTUnionCaseVoidV0XDR)
     case tupleV0(SCSpecUDTUnionCaseTupleV0XDR)
@@ -490,7 +490,7 @@ public enum SCSpecUDTUnionCaseV0XDR: XDRCodable {
     }
 }
 
-public struct SCSpecUDTUnionV0XDR: XDRCodable {
+public struct SCSpecUDTUnionV0XDR: XDRCodable, Sendable {
     public let doc: String
     public let lib: String
     public let name: String
@@ -520,7 +520,7 @@ public struct SCSpecUDTUnionV0XDR: XDRCodable {
     }
 }
 
-public struct SCSpecUDTEnumCaseV0XDR: XDRCodable {
+public struct SCSpecUDTEnumCaseV0XDR: XDRCodable, Sendable {
     public let doc: String
     public let name: String
     public let value: UInt32
@@ -546,7 +546,7 @@ public struct SCSpecUDTEnumCaseV0XDR: XDRCodable {
     }
 }
 
-public struct SCSpecUDTEnumV0XDR: XDRCodable {
+public struct SCSpecUDTEnumV0XDR: XDRCodable, Sendable {
     public let doc: String
     public let lib: String
     public let name: String
@@ -576,7 +576,7 @@ public struct SCSpecUDTEnumV0XDR: XDRCodable {
     }
 }
 
-public struct SCSpecUDTErrorEnumV0XDR: XDRCodable {
+public struct SCSpecUDTErrorEnumV0XDR: XDRCodable, Sendable {
     public let doc: String
     public let lib: String
     public let name: String
@@ -606,7 +606,7 @@ public struct SCSpecUDTErrorEnumV0XDR: XDRCodable {
     }
 }
 
-public struct SCSpecFunctionInputV0XDR: XDRCodable {
+public struct SCSpecFunctionInputV0XDR: XDRCodable, Sendable {
     public let doc: String
     public let name: String
     public let type: SCSpecTypeDefXDR
@@ -632,7 +632,7 @@ public struct SCSpecFunctionInputV0XDR: XDRCodable {
     }
 }
 
-public struct SCSpecFunctionV0XDR: XDRCodable {
+public struct SCSpecFunctionV0XDR: XDRCodable, Sendable {
     public let doc: String
     public let name: String
     public let inputs: [SCSpecFunctionInputV0XDR]
@@ -662,7 +662,7 @@ public struct SCSpecFunctionV0XDR: XDRCodable {
     }
 }
 
-public struct SCSpecEventV0XDR: XDRCodable {
+public struct SCSpecEventV0XDR: XDRCodable, Sendable {
     public let doc: String
     public let lib: String
     public let name: String
@@ -704,18 +704,18 @@ public struct SCSpecEventV0XDR: XDRCodable {
     }
 }
 
-public enum SCSpecEventDataFormat: Int32 {
+public enum SCSpecEventDataFormat: Int32, Sendable {
     case singleValue = 0
     case vec = 1
     case map = 2
 }
 
-public enum SCSpecEventParamLocationV0: Int32 {
+public enum SCSpecEventParamLocationV0: Int32, Sendable {
     case data = 0
     case topicList = 1
 }
 
-public struct SCSpecEventParamV0XDR: XDRCodable {
+public struct SCSpecEventParamV0XDR: XDRCodable, Sendable {
     public let doc: String
     public let name: String
     public let type: SCSpecTypeDefXDR
@@ -758,7 +758,7 @@ public enum SCSpecEntryKind: Int32 {
     case entryEventV0 = 5
 }
 
-public enum SCSpecEntryXDR: XDRCodable {
+public enum SCSpecEntryXDR: XDRCodable, Sendable {
 
     case functionV0(SCSpecFunctionV0XDR)
     case structV0(SCSpecUDTStructV0XDR)

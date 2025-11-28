@@ -15,31 +15,31 @@ import Foundation
 /// It is the first endpoint wallets should call to understand what operations are supported.
 ///
 /// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
-public struct AnchorInfoResponse: Decodable {
+public struct AnchorInfoResponse: Decodable , Sendable {
 
     /// Information about assets available for deposit, keyed by asset code.
-    public var deposit: [String:DepositAsset]?
+    public let deposit: [String:DepositAsset]?
 
     /// Information about assets available for deposit with exchange, keyed by asset code.
-    public var depositExchange: [String:DepositExchangeAsset]?
+    public let depositExchange: [String:DepositExchangeAsset]?
 
     /// Information about assets available for withdrawal, keyed by asset code.
-    public var withdraw: [String:WithdrawAsset]?
+    public let withdraw: [String:WithdrawAsset]?
 
     /// Information about assets available for withdrawal with exchange, keyed by asset code.
-    public var withdrawExchange: [String:WithdrawExchangeAsset]?
+    public let withdrawExchange: [String:WithdrawExchangeAsset]?
 
     /// Information about the GET /transactions endpoint support.
-    public var transactions: AnchorTransactionsInfo?
+    public let transactions: AnchorTransactionsInfo?
 
     /// Information about the GET /transaction endpoint support.
-    public var transaction: AnchorTransactionInfo?
+    public let transaction: AnchorTransactionInfo?
 
     /// Information about the GET /fee endpoint support.
-    public var fee: AnchorFeeInfo?
+    public let fee: AnchorFeeInfo?
 
     /// Feature flags indicating additional anchor capabilities.
-    public var features: AnchorFeatureFlags?
+    public let features: AnchorFeatureFlags?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -78,28 +78,28 @@ public struct AnchorInfoResponse: Decodable {
 /// authentication requirements, and any required fields for deposit transactions.
 ///
 /// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
-public struct DepositAsset: Decodable {
+public struct DepositAsset: Decodable , Sendable {
 
     /// true if SEP-6 deposit for this asset is supported
-    public var enabled: Bool
+    public let enabled: Bool
     
     /// Optional. true if client must be authenticated before accessing the deposit endpoint for this asset. false if not specified.
-    public var authenticationRequired: Bool?
+    public let authenticationRequired: Bool?
     
     /// Optional fixed (flat) fee for deposit, in units of the Stellar asset.  Nil if there is no fee or the fee schedule is complex.
-    public var feeFixed: Double?
+    public let feeFixed: Double?
     
     /// Optional percentage fee for deposit, in percentage points of the Stellar asset. Nil if there is no fee or the fee schedule is complex.
-    public var feePercent: Double?
+    public let feePercent: Double?
     
     /// Optional minimum amount. No limit if not specified.
-    public var minAmount:Double?
+    public let minAmount:Double?
     
     /// Optional maximum amount. No limit if not specified.
-    public var maxAmount:Double?
+    public let maxAmount:Double?
     
     /// (Deprecated) Accepting personally identifiable information through request parameters is a security risk due to web server request logging. KYC information should be supplied to the Anchor via SEP-12).
-    public var fields: [String:AnchorField]?
+    public let fields: [String:AnchorField]?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -141,16 +141,16 @@ public struct DepositAsset: Decodable {
 /// Allows users to deposit one off-chain asset and receive a different on-chain Stellar asset.
 ///
 /// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
-public struct DepositExchangeAsset: Decodable {
+public struct DepositExchangeAsset: Decodable , Sendable {
 
     /// true if SEP-6 deposit for this asset is supported
-    public var enabled: Bool
+    public let enabled: Bool
     
     /// Optional. true if client must be authenticated before accessing the deposit endpoint for this asset. false if not specified.
-    public var authenticationRequired: Bool?
+    public let authenticationRequired: Bool?
     
     /// (Deprecated) Accepting personally identifiable information through request parameters is a security risk due to web server request logging. KYC information should be supplied to the Anchor via SEP-12).
-    public var fields: [String:AnchorField]?
+    public let fields: [String:AnchorField]?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -182,25 +182,25 @@ public struct DepositExchangeAsset: Decodable {
 /// authentication requirements, and supported withdrawal types with their required fields.
 ///
 /// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
-public struct WithdrawAsset: Decodable {
+public struct WithdrawAsset: Decodable , Sendable {
 
     /// true if SEP-6 withdrawal for this asset is supported
-    public var enabled: Bool
+    public let enabled: Bool
     
     /// Optional. true if client must be authenticated before accessing  the withdraw endpoint for this asset. false if not specified.
-    public var authenticationRequired: Bool?
+    public let authenticationRequired: Bool?
     
     /// Optional fixed (flat) fee for withdraw, in units of the Stellar asset. Nil if there is no fee or the fee schedule is complex.
-    public var feeFixed: Double?
+    public let feeFixed: Double?
     
     /// Optional percentage fee for withdraw, in percentage points of the Stellar asset. Null if there is no fee or the fee schedule is complex.
-    public var feePercent: Double?
+    public let feePercent: Double?
     
     /// Optional minimum amount. No limit if not specified.
-    public var minAmount:Double?
+    public let minAmount:Double?
     
     /// Optional maximum amount. No limit if not specified.
-    public var maxAmount:Double?
+    public let maxAmount:Double?
     
     /// A field with each type of withdrawal supported for that asset as a key.
     /// Each type can specify a fields object explaining what fields
@@ -213,7 +213,7 @@ public struct WithdrawAsset: Decodable {
     /// the /transaction endpoint to get the fields needed to complete the
     /// transaction in required_customer_info_updates and then use SEP-12 to
     /// collect the information from the user.
-    public var types: [String:WithdrawType]?
+    public let types: [String:WithdrawType]?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -253,12 +253,12 @@ public struct WithdrawAsset: Decodable {
 /// Allows users to exchange one on-chain Stellar asset and withdraw a different off-chain asset.
 ///
 /// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
-public struct WithdrawExchangeAsset: Decodable {
+public struct WithdrawExchangeAsset: Decodable , Sendable {
     /// true if SEP-6 withdrawal for this asset is supported
-    public var enabled: Bool
+    public let enabled: Bool
     
     /// Optional. true if client must be authenticated before accessing the withdraw endpoint for this asset. false if not specified.
-    public var authenticationRequired: Bool?
+    public let authenticationRequired: Bool?
 
     /// A field with each type of withdrawal supported for that asset as a key.
     /// Each type can specify a fields object explaining what fields
@@ -271,7 +271,7 @@ public struct WithdrawExchangeAsset: Decodable {
     /// the /transaction endpoint to get the fields needed to complete the
     /// transaction in required_customer_info_updates and then use SEP-12 to
     /// collect the information from the user.
-    public var types: [String:WithdrawType]?
+    public let types: [String:WithdrawType]?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -303,14 +303,14 @@ public struct WithdrawExchangeAsset: Decodable {
 /// Anchors should use SEP-9 financial account fields where possible but can define custom fields.
 ///
 /// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
-public struct AnchorField: Decodable {
+public struct AnchorField: Decodable , Sendable {
 
     /// Human-readable description explaining what this field is for.
-    public var description: String?
+    public let description: String?
     /// Indicates whether this field is optional for the user to provide.
-    public var optional: Bool?
+    public let optional: Bool?
     /// List of allowed values for this field, if constrained to specific options.
-    public var choices: [String]?
+    public let choices: [String]?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -338,10 +338,10 @@ public struct AnchorField: Decodable {
 /// field requirements. This structure specifies which fields are needed for a particular withdrawal type.
 ///
 /// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
-public struct WithdrawType: Decodable {
+public struct WithdrawType: Decodable , Sendable {
 
     /// Additional fields required for this withdrawal type, keyed by field name.
-    public var fields: [String:AnchorField]?
+    public let fields: [String:AnchorField]?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -365,12 +365,12 @@ public struct WithdrawType: Decodable {
 /// and if authentication is required to access it.
 ///
 /// See [SEP-6 Transaction History](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
-public struct AnchorTransactionsInfo: Decodable {
+public struct AnchorTransactionsInfo: Decodable , Sendable {
 
     /// Indicates whether the GET /transactions endpoint is supported by the anchor.
-    public var enabled: Bool
+    public let enabled: Bool
     /// Indicates whether authentication is required to access the transactions endpoint.
-    public var authenticationRequired:Bool?
+    public let authenticationRequired:Bool?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -396,12 +396,12 @@ public struct AnchorTransactionsInfo: Decodable {
 /// and if authentication is required to access it.
 ///
 /// See [SEP-6 Single Transaction](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#single-historical-transaction)
-public struct AnchorTransactionInfo: Decodable {
+public struct AnchorTransactionInfo: Decodable , Sendable {
 
     /// Indicates whether the GET /transaction endpoint is supported by the anchor.
-    public var enabled: Bool
+    public let enabled: Bool
     /// Indicates whether authentication is required to access the transaction endpoint.
-    public var authenticationRequired:Bool?
+    public let authenticationRequired:Bool?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -427,12 +427,12 @@ public struct AnchorTransactionInfo: Decodable {
 /// and if authentication is required to access it.
 ///
 /// See [SEP-6 Fee](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#fee)
-public struct AnchorFeeInfo: Decodable {
+public struct AnchorFeeInfo: Decodable , Sendable {
 
     /// Indicates whether the GET /fee endpoint is supported by the anchor.
-    public var enabled: Bool
+    public let enabled: Bool
     /// Indicates whether authentication is required to access the fee endpoint.
-    public var authenticationRequired:Bool?
+    public let authenticationRequired:Bool?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -458,32 +458,28 @@ public struct AnchorFeeInfo: Decodable {
 /// SEP-6 requirements, such as account creation and claimable balance support.
 ///
 /// See [SEP-6 Info](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#info)
-public struct AnchorFeatureFlags: Decodable {
+public struct AnchorFeatureFlags: Decodable , Sendable {
 
     /// Whether or not the anchor supports creating accounts for users requesting deposits. Defaults to true.
-    public var accountCreation: Bool = true
-    
+    public let accountCreation: Bool
+
     /// Whether or not the anchor supports sending deposit funds as claimable balances. This is relevant for users of Stellar accounts without a trustline to the requested asset. Defaults to false.
-    public var claimableBalances: Bool = false
-    
+    public let claimableBalances: Bool
+
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
         case accountCreation = "account_creation"
         case claimableBalances = "claimable_balances"
     }
-    
+
     /**
      Initializer - creates a new instance by decoding from the given decoder.
-     
+
      - Parameter decoder: The decoder containing the data
      */
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        if let enabled = try values.decodeIfPresent(Bool.self, forKey: .accountCreation) {
-            accountCreation = enabled
-        }
-        if let enabled = try values.decodeIfPresent(Bool.self, forKey: .claimableBalances) {
-            claimableBalances = enabled
-        }
+        accountCreation = try values.decodeIfPresent(Bool.self, forKey: .accountCreation) ?? true
+        claimableBalances = try values.decodeIfPresent(Bool.self, forKey: .claimableBalances) ?? false
     }
 }

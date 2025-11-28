@@ -12,22 +12,22 @@ import Foundation
 /// This endpoint provides information about transaction fees and network capacity usage
 /// from the last ledger, helping clients determine appropriate fee levels for transactions.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class FeeStatsResponse: NSObject, Decodable {
+public struct FeeStatsResponse: Decodable, Sendable {
 
     /// The sequence number of the last ledger.
-    public var lastLedger:String
+    public let lastLedger:String
 
     /// The base fee as defined in the last ledger, in stroops.
-    public var lastLedgerBaseFee:String
+    public let lastLedgerBaseFee:String
 
     /// The capacity usage of the ledger, from 0 to 1 representing the percentage of maximum capacity.
-    public var ledgerCapacityUsage:String
+    public let ledgerCapacityUsage:String
 
     /// Statistics about fees actually charged in recent ledgers.
-    public var feeCharged:FeeChargedResponse
+    public let feeCharged:FeeChargedResponse
 
     /// Statistics about maximum fees willing to be paid in recent ledgers.
-    public var maxFee:MaxFeeResponse
+    public let maxFee:MaxFeeResponse
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
@@ -38,7 +38,7 @@ public class FeeStatsResponse: NSObject, Decodable {
         case maxFee = "max_fee"
     }
     
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         lastLedger = try values.decode(String.self, forKey: .lastLedger)

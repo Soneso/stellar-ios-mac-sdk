@@ -21,7 +21,7 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountThresholdsResponse for threshold requirements
-public class AccountSignerResponse: NSObject, Decodable {
+public struct AccountSignerResponse: Decodable, Sendable {
 
     /// Signature weight of this signer. Range: 0-255. Combined with other signers to meet thresholds.
     public var weight:Int
@@ -48,7 +48,7 @@ public class AccountSignerResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         weight = try values.decode(Int.self, forKey: .weight)
         key = try values.decode(String.self, forKey: .key)

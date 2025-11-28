@@ -50,11 +50,11 @@ public typealias FindPaymentPathsResponseClosure = (_ response:PaymentPathsRespo
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - PathPaymentOperation for executing path payments
-public class PaymentPathsService: NSObject {
+public class PaymentPathsService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
     }
     

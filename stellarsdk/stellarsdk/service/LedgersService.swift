@@ -48,11 +48,11 @@ public typealias LedgerDetailsResponseClosure = (_ response:LedgerDetailsRespons
 ///
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class LedgersService: NSObject {
+public class LedgersService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }

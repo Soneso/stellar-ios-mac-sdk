@@ -13,7 +13,7 @@ import Foundation
 /// Indicates whether the transaction is a deposit, withdrawal, or an exchange variant.
 ///
 /// See [SEP-6 Transaction](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
-public enum AnchorTransactionKind: String {
+public enum AnchorTransactionKind: String, Sendable {
     /// Standard deposit operation without asset conversion.
     case deposit = "deposit"
     /// Deposit operation with cross-asset conversion using SEP-38.
@@ -30,7 +30,7 @@ public enum AnchorTransactionKind: String {
 /// including various pending states that require action from different parties.
 ///
 /// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
-public enum AnchorTransactionStatus: String {
+public enum AnchorTransactionStatus: String, Sendable {
     /// deposit/withdrawal fully completed
     case completed = "completed"
     /// deposit/withdrawal has been submitted to external network, but is not yet confirmed. This is the status when waiting on Bitcoin or other external crypto network to complete a transaction, or when waiting on a bank transfer.
@@ -73,10 +73,10 @@ public enum AnchorTransactionStatus: String {
 /// of transactions for the authenticated user.
 ///
 /// See [SEP-6 Transaction History](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
-public struct AnchorTransactionsResponse: Decodable {
+public struct AnchorTransactionsResponse: Decodable , Sendable {
 
     /// List of transactions
-    public var transactions: [AnchorTransaction]
+    public let transactions: [AnchorTransaction]
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -100,10 +100,10 @@ public struct AnchorTransactionsResponse: Decodable {
 /// about a specific transaction.
 ///
 /// See [SEP-6 Single Historical Transaction](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#single-historical-transaction)
-public struct AnchorTransactionResponse: Decodable {
+public struct AnchorTransactionResponse: Decodable , Sendable {
 
     /// Transaction details
-    public var transaction: AnchorTransaction
+    public let transaction: AnchorTransaction
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -128,115 +128,115 @@ public struct AnchorTransactionResponse: Decodable {
 /// transaction responses.
 ///
 /// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
-public struct AnchorTransaction: Decodable {
+public struct AnchorTransaction: Decodable , Sendable {
 
     /// Unique, anchor-generated id for the deposit/withdrawal
-    public var id:String
+    public let id:String
     
     /// deposit, deposit-exchange, withdrawal or withdrawal-exchange.
-    public var kind:AnchorTransactionKind
+    public let kind:AnchorTransactionKind
     
     /// Processing status of deposit/withdrawal
-    public var status:AnchorTransactionStatus
+    public let status:AnchorTransactionStatus
     
     /// (optional) Estimated number of seconds until a status change is expected.
-    public var statusEta:Int?
+    public let statusEta:Int?
     
     /// (optional) A URL the user can visit if they want more information about their account / status.
-    public var moreInfoUrl:String?
+    public let moreInfoUrl:String?
     
     /// (optional) Amount received by anchor at start of transaction as a string with up to 7 decimals. Excludes any fees charged before the anchor received the funds. Should be equals to quote.sell_asset if a quote_id was used.
-    public var amountIn:String?
+    public let amountIn:String?
     
     /// (optional) The asset received or to be received by the Anchor. Must be present if the deposit/withdraw was made using quotes. The value must be in SEP-38 Asset Identification Format.
-    public var amountInAsset:String?
+    public let amountInAsset:String?
     
     /// (optional) Amount sent by anchor to user at end of transaction as a string with up to 7 decimals. Excludes amount converted to XLM to fund account and any external fees. Should be equals to quote.buy_asset if a quote_id was used.
-    public var amountOut:String?
+    public let amountOut:String?
     
     /// (optional) The asset delivered or to be delivered to the user. Must be present if the deposit/withdraw was made using quotes. The value must be in SEP-38 Asset Identification Format.
-    public var amountOutAsset:String?
+    public let amountOutAsset:String?
     
     /// (deprecated, optional) Amount of fee charged by anchor. Should be equals to quote.fee.total if a quote_id was used.
-    public var amountFee:String?
+    public let amountFee:String?
     
     ///(deprecated, optional) The asset in which fees are calculated in. Must be present if the deposit/withdraw was made using quotes. The value must be in SEP-38 Asset Identification Format. Should be equals to quote.fee.asset if a quote_id was used.
-    public var amountFeeAsset:String?
+    public let amountFeeAsset:String?
     
     /// Description of fee charged by the anchor.  If quote_id is present, it should match the referenced quote's fee object.
-    public var feeDetails:FeeDetails?
+    public let feeDetails:FeeDetails?
     
     /// (optional) The ID of the quote used to create this transaction. Should be present if a quote_id was included in the POST /transactions request. Clients should be aware though that the quote_id may not be present in older implementations.
-    public var quoteId:String?
+    public let quoteId:String?
     
     /// (optional) Sent from address (perhaps BTC, IBAN, or bank account in the case of a deposit, Stellar address in the case of a withdrawal).
-    public var from:String?
+    public let from:String?
     
     /// (optional) Sent to address (perhaps BTC, IBAN, or bank account in the case of a withdrawal, Stellar address in the case of a deposit).
-    public var to:String?
+    public let to:String?
     
     /// (optional) Extra information for the external account involved. It could be a bank routing number, BIC, or store number for example.
-    public var externalExtra:String?
+    public let externalExtra:String?
     
     /// (optional) Text version of external_extra. This is the name of the bank or store.
-    public var externalExtraText:String?
+    public let externalExtraText:String?
     
     /// (optional) If this is a deposit, this is the memo (if any) used to transfer the asset to the to Stellar address
-    public var depositMemo:String?
+    public let depositMemo:String?
     
     /// (optional) Type for the deposit_memo.
-    public var depositMemoType:String?
+    public let depositMemoType:String?
     
     /// (optional) If this is a withdrawal, this is the anchor's Stellar account that the user transferred (or will transfer) their issued asset to.
-    public var withdrawAnchorAccount:String?
+    public let withdrawAnchorAccount:String?
     
     /// (optional) Memo used when the user transferred to withdraw_anchor_account.
-    public var withdrawMemo:String?
+    public let withdrawMemo:String?
     
     /// (optional) Memo type for withdraw_memo.
-    public var withdrawMemoType:String?
+    public let withdrawMemoType:String?
     
     /// (optional) start date and time of transaction
-    public var startedAt:Date?
+    public let startedAt:Date?
     
     /// (optional) The date and time of transaction reaching the current status.
-    public var updatedAt:Date?
+    public let updatedAt:Date?
     
     /// (optional) completion date and time of transaction
-    public var completedAt:Date?
+    public let completedAt:Date?
     
     /// (optional) The date and time by when the user action is required. In certain statuses, such as pending_user_transfer_start or incomplete, anchor waits for the user action and
     /// user_action_required_by field should be used to show the time anchors gives for the user to make an action before transaction will automatically be moved into
     /// a different status (such as expired or to be refunded). user_action_required_by should only be specified for statuses where user action is required, and omitted for all other.
     /// Anchor should specify the action waited on using message or more_info_url.
-    public var userActionRequiredBy:Date?
+    public let userActionRequiredBy:Date?
     
     /// (optional) transaction_id on Stellar network of the transfer that either completed the deposit or started the withdrawal
-    public var stellarTransactionId:String?
+    public let stellarTransactionId:String?
     
     /// (optional) ID of transaction on external network that either started the deposit or completed the withdrawal
-    public var externalTransactionId:String?
+    public let externalTransactionId:String?
     
     /// (optional) Human readable explanation of transaction status, if needed.
-    public var message:String?
+    public let message:String?
     
     /// (deprecated, optional) This field is deprecated in favor of the refunds object. True if the transaction was refunded in full. False if the transaction was partially refunded or not refunded. For more details about any refunds, see the refunds object.
-    public var refunded:Bool?
+    public let refunded:Bool?
     
     /// (optional) An object describing any on or off-chain refund associated with this transaction.
-    public var refunds:Refunds?
+    public let refunds:Refunds?
     
     /// (optional) A human-readable message indicating any errors that require updated information from the user.
-    public var requiredInfoMessage:String?
+    public let requiredInfoMessage:String?
     
     /// (optional) A set of fields that require update from the user described in the same format as /info. This field is only relevant when status is pending_transaction_info_update
-    public var requiredInfoUpdates:RequiredInfoUpdates?
+    public let requiredInfoUpdates:RequiredInfoUpdates?
     
     /// (optional) JSON object containing the SEP-9 financial account fields that describe how to complete the off-chain deposit in the same format as the /deposit response. This field should be present if the instructions were provided in the /deposit response or if it could not have been previously provided synchronously. This field should only be present once the status becomes pending_user_transfer_start, not while the transaction has any statuses that precede it such as incomplete, pending_anchor, or pending_customer_info_update.
-    public var instructions:[String:DepositInstruction]?
+    public let instructions:[String:DepositInstruction]?
     
     /// (optional) ID of the Claimable Balance used to send the asset initially requested. Only relevant for deposit transactions.
-    public var claimableBalanceId:String?
+    public let claimableBalanceId:String?
         
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -353,10 +353,10 @@ public struct AnchorTransaction: Decodable {
 /// additional information is required to proceed.
 ///
 /// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
-public struct RequiredInfoUpdates: Decodable {
+public struct RequiredInfoUpdates: Decodable , Sendable {
 
     /// Fields that require updates, keyed by field name.
-    public var fields: [String:AnchorField]?
+    public let fields: [String:AnchorField]?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -380,18 +380,18 @@ public struct RequiredInfoUpdates: Decodable {
 /// the asset in which fees are charged, and optional itemized details.
 ///
 /// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
-public struct FeeDetails: Decodable {
+public struct FeeDetails: Decodable , Sendable {
 
     /// The total amount of fee applied.
-    public var total:String
+    public let total:String
     
     /// The asset in which the fee is applied, represented through the Asset Identification Format.
-    public var asset:String
+    public let asset:String
     
     /// (optional) An array of objects detailing the fees that were used to
     /// calculate the conversion price. This can be used to datail the price
     /// components for the end-user.
-    public var details:[FeeDetailsDetails]?
+    public let details:[FeeDetailsDetails]?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -419,17 +419,17 @@ public struct FeeDetails: Decodable {
 /// itemized pricing to users.
 ///
 /// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
-public struct FeeDetailsDetails: Decodable {
+public struct FeeDetailsDetails: Decodable , Sendable {
 
     /// The name of the fee, for example ACH fee, Brazilian conciliation fee, Service fee, etc.
-    public var name:String
+    public let name:String
     
     /// The amount of asset applied. If fee_details.details is provided,
     /// sum(fee_details.details.amount) should be equals fee_details.total.
-    public var amount:String
+    public let amount:String
     
     /// (optional) A text describing the fee.
-    public var description:String?
+    public let description:String?
     
 
     /// Properties to encode and decode
@@ -458,16 +458,16 @@ public struct FeeDetailsDetails: Decodable {
 /// including the total refunded amount and individual refund payments.
 ///
 /// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
-public struct Refunds: Decodable {
+public struct Refunds: Decodable , Sendable {
 
     /// The total amount refunded to the user, in units of amount_in_asset. If a full refund was issued, this amount should match amount_in.
-    public var amountRefunded:String
+    public let amountRefunded:String
     
     /// The total amount charged in fees for processing all refund payments, in units of amount_in_asset. The sum of all fee values in the payments object list should equal this value.
-    public var amountFee:String
+    public let amountFee:String
     
     /// A list of objects containing information on the individual payments made back to the user as refunds.
-    public var payments:[RefundPayment]?
+    public let payments:[RefundPayment]?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -495,22 +495,22 @@ public struct Refunds: Decodable {
 /// via Stellar or off-chain through an external payment system.
 ///
 /// See [SEP-6 Transaction Object](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#transaction-history)
-public struct RefundPayment: Decodable {
+public struct RefundPayment: Decodable , Sendable {
 
     /// The payment ID that can be used to identify the refund payment.
     /// This is either a Stellar transaction hash or an off-chain payment identifier,
     /// such as a reference number provided to the user when the refund was initiated.
     /// This id is not guaranteed to be unique.
-    public var id:String
+    public let id:String
     
     /// stellar or external.
-    public var idType:String
+    public let idType:String
     
     /// The amount sent back to the user for the payment identified by id, in units of amount_in_asset.
-    public var amount:String
+    public let amount:String
     
     /// The amount charged as a fee for processing the refund, in units of amount_in_asset.
-    public var fee:String
+    public let fee:String
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

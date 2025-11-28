@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct UploadContractWasmArgsXDR: XDRCodable {
+public struct UploadContractWasmArgsXDR: XDRCodable, Sendable {
     public let code: Data
     
     public init(code:Data) {
@@ -26,7 +26,7 @@ public struct UploadContractWasmArgsXDR: XDRCodable {
     }
 }
 
-public struct FromEd25519PublicKeyXDR: XDRCodable {
+public struct FromEd25519PublicKeyXDR: XDRCodable, Sendable {
     public let key: WrappedData32
     public let signature: Data
     public let salt: WrappedData32
@@ -52,8 +52,8 @@ public struct FromEd25519PublicKeyXDR: XDRCodable {
     }
 }
 
-public struct InvokeHostFunctionOpXDR: XDRCodable {
-    public var hostFunction: HostFunctionXDR
+public struct InvokeHostFunctionOpXDR: XDRCodable, Sendable {
+    public let hostFunction: HostFunctionXDR
     public var auth: [SorobanAuthorizationEntryXDR]
     
     public init(hostFunction: HostFunctionXDR, auth: [SorobanAuthorizationEntryXDR]) {

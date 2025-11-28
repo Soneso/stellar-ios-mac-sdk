@@ -13,13 +13,13 @@ import Foundation
 /// The account becomes responsible for paying the data entry's base reserve.
 /// Triggered by the Revoke Sponsorship operation.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class DataSponsorshipRemovedEffectResponse: EffectResponse {
+public class DataSponsorshipRemovedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The name (key) of the data entry whose sponsorship is being removed.
-    public var dataName:String
+    public let dataName:String
 
     /// The account ID of the former sponsor.
-    public var formerSponsor:String
+    public let formerSponsor:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

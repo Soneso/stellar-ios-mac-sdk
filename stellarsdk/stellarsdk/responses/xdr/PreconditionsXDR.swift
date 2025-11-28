@@ -14,7 +14,7 @@ public enum PreconditionType: Int32 {
     case v2 = 2
 }
 
-public enum PreconditionsXDR: XDRCodable {
+public enum PreconditionsXDR: XDRCodable, Sendable {
     case none
     case time (TimeBoundsXDR)
     case v2 (PreconditionsV2XDR)
@@ -62,7 +62,7 @@ public enum PreconditionsXDR: XDRCodable {
     }
 }
 
-public struct LedgerBoundsXDR: XDRCodable {
+public struct LedgerBoundsXDR: XDRCodable, Sendable {
     public let minLedger:UInt32
     public let maxLedger: UInt32
     
@@ -84,7 +84,7 @@ public struct LedgerBoundsXDR: XDRCodable {
     }
 }
 
-public struct PreconditionsV2XDR: XDRCodable {
+public struct PreconditionsV2XDR: XDRCodable, Sendable {
     public let timeBounds:TimeBoundsXDR?
     public let ledgerBounds: LedgerBoundsXDR?
     public let sequenceNumber: Int64?

@@ -12,4 +12,4 @@ import Foundation
 /// This effect occurs when a new offer to buy or sell assets is created on the Stellar decentralized exchange (DEX).
 /// Triggered by the Manage Sell Offer, Manage Buy Offer, or Create Passive Sell Offer operations.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class OfferCreatedEffectResponse: EffectResponse {}
+public class OfferCreatedEffectResponse: EffectResponse, @unchecked Sendable {}

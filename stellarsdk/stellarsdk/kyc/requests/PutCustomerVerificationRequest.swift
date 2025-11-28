@@ -21,7 +21,7 @@ import Foundation
 ///
 /// See also:
 /// - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)
-public struct PutCustomerVerificationRequest {
+public struct PutCustomerVerificationRequest: Sendable {
 
     /// The ID of the customer as returned in the response of a previous PUT request.
     public var id:String

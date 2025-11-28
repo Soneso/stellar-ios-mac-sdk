@@ -12,7 +12,7 @@ import Foundation
 /// Contains information about the pool's state, including reserves, shares, and fee structure.
 /// Used as a nested object in liquidity pool effect responses.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class LiquidityPoolEffectResponse: NSObject, Decodable {
+public struct LiquidityPoolEffectResponse: Decodable, Sendable {
 
     /// The unique identifier of the liquidity pool.
     public var poolId:String
@@ -47,7 +47,7 @@ public class LiquidityPoolEffectResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         poolId = try values.decode(String.self, forKey: .poolId)

@@ -10,76 +10,76 @@ import Foundation
 
 ///  Represents a trade response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class TradeResponse: NSObject, Decodable {
+public struct TradeResponse: Decodable, Sendable {
     
     /// A list of links related to this trade.
-    public var links:TradeLinksResponse
+    public let links:TradeLinksResponse
     
     /// Unique identifier for this trade.
-    public var id:String
+    public let id:String
     
     /// Paging token suitable for use as a cursor parameter.
-    public var pagingToken:String
+    public let pagingToken:String
     
     /// An ISO 8601 formatted string of when the ledger with this trade was closed.
-    public var ledgerCloseTime:Date
+    public let ledgerCloseTime:Date
         
     /// Type: "orderbook" or "liquidity_pool"
-    public var tradeType:String
+    public let tradeType:String
     
     /// if type is "orderbook"
-    public var offerId:String?
+    public let offerId:String?
     
     /// if type is "orderbook"
-    public var baseOfferId:String?
+    public let baseOfferId:String?
     
     /// if type is "liquidity_pool"
-    public var baseLiquidityPoolId:String?
+    public let baseLiquidityPoolId:String?
 
     /// if type is "liquidity_pool"
-    public var liquidityPoolFeeBp:Int?
+    public let liquidityPoolFeeBp:Int?
     
     /// base party of this trade
-    public var baseAccount:String?
+    public let baseAccount:String?
     
     /// amount of base asset that was moved from base_account to counter_account
-    public var baseAmount:String
+    public let baseAmount:String
     
     /// type of base asset
-    public var baseAssetType:String
+    public let baseAssetType:String
     
     /// code of base asset
-    public var baseAssetCode:String?
+    public let baseAssetCode:String?
     
     /// issuer of base asset
-    public var baseAssetIssuer:String?
+    public let baseAssetIssuer:String?
     
     /// if type is "orderbook"
-    public var counterOfferId:String?
+    public let counterOfferId:String?
     
     /// counter party of this trade
-    public var counterAccount:String?
+    public let counterAccount:String?
     
     /// amount of counter asset that was moved from counter_account to base_account
-    public var counterAmount:String
+    public let counterAmount:String
     
     /// type of counter asset
-    public var counterAssetType:String
+    public let counterAssetType:String
     
     /// code of counter asset
-    public var counterAssetCode:String?
+    public let counterAssetCode:String?
     
     /// issuer of counter asset
-    public var counterAssetIssuer:String?
+    public let counterAssetIssuer:String?
     
     /// if type is "liquidity_pool"
-    public var counterLiquidityPoolId:String?
+    public let counterLiquidityPoolId:String?
     
     /// An object of a number numerator and number denominator that represents the original offer price. To derive the price, divide n by d.
-    public var price:TradePrice
+    public let price:TradePrice
     
     /// indicates which party of the trade made the sell offer
-    public var baseIsSeller:Bool
+    public let baseIsSeller:Bool
     
     private enum CodingKeys: String, CodingKey {
         
@@ -113,17 +113,14 @@ public class TradeResponse: NSObject, Decodable {
      
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         links = try values.decode(TradeLinksResponse.self, forKey: .links)
         id = try values.decode(String.self, forKey: .id)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
-        
-        tradeType = "orderbook"
-        if let decodedTradeType = try values.decodeIfPresent(String.self, forKey: .tradeType) {
-            tradeType = decodedTradeType
-        }
+
+        tradeType = try values.decodeIfPresent(String.self, forKey: .tradeType) ?? "orderbook"
         offerId = try values.decodeIfPresent(String.self, forKey: .offerId)
         baseOfferId = try values.decodeIfPresent(String.self, forKey: .baseOfferId)
         baseLiquidityPoolId = try values.decodeIfPresent(String.self, forKey: .baseLiquidityPoolId)

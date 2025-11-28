@@ -16,7 +16,7 @@ public struct MemoType {
     static let MEMO_TYPE_RETURN: Int32 = 4
 }
 
-public enum MemoXDR: XDRCodable {
+public enum MemoXDR: XDRCodable, Sendable {
     case none
     case text (String)
     case id (UInt64)

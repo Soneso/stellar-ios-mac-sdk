@@ -13,22 +13,22 @@ import Foundation
 /// Contracts can hold and manage Stellar assets as part of their execution.
 /// Triggered by Invoke Host Function operations that transfer assets from contracts.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ContractDebitedEffectResponse: EffectResponse {
+public class ContractDebitedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The contract ID sending the debit.
-    public var contract:String
+    public let contract:String
 
     /// The amount debited from the contract.
-    public var amount:String
+    public let amount:String
 
     /// The asset type debited from the contract (e.g., native, credit_alphanum4, credit_alphanum12).
-    public var assetType:String
+    public let assetType:String
 
     /// The asset code debited from the contract. Nil for native assets.
-    public var assetCode:String?
+    public let assetCode:String?
 
     /// The issuer account ID of the asset. Nil for native assets.
-    public var assetIssuer:String?
+    public let assetIssuer:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

@@ -17,7 +17,7 @@ public enum RestoreFootprintResultCode: Int32 {
     case resourceLimitExceeded = -2
 }
 
-public enum RestoreFootprintResultXDR: XDRCodable {
+public enum RestoreFootprintResultXDR: XDRCodable, Sendable {
 
     case success
     case malformed

@@ -37,7 +37,7 @@ import Foundation
 ///
 /// See also:
 /// - [SEP-0005 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)
-public final class WalletUtils {
+public final class WalletUtils: Sendable {
     
     /// Generates a 12 word Mnemonic.
     public static func generate12WordMnemonic(language: WordList = .english) -> String {

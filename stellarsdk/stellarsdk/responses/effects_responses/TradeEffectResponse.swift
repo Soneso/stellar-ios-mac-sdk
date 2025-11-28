@@ -10,43 +10,43 @@
 /// This effect occurs when a trade is executed on the Stellar decentralized exchange (DEX).
 /// Triggered when offers are matched through Manage Sell Offer, Manage Buy Offer, or Path Payment operations.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class TradeEffectResponse: EffectResponse {
+public class TradeEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The account ID of the seller in the trade.
-    public var seller:String
+    public let seller:String
 
     /// The multiplexed account address if the seller is a muxed account.
-    public var sellerMuxed:String?
+    public let sellerMuxed:String?
 
     /// The multiplexed account ID if the seller is a muxed account.
-    public var sellerMuxedId:String?
+    public let sellerMuxedId:String?
 
     /// The ID of the offer that was matched.
-    public var offerId:String
+    public let offerId:String
 
     /// The amount of the asset sold.
-    public var soldAmount:String
+    public let soldAmount:String
 
     /// The type of the sold asset (e.g., native, credit_alphanum4, credit_alphanum12).
-    public var soldAssetType:String
+    public let soldAssetType:String
 
     /// The code of the sold asset. Nil for native assets.
-    public var soldAssetCode:String?
+    public let soldAssetCode:String?
 
     /// The issuer account ID of the sold asset. Nil for native assets.
-    public var soldAssetIssuer:String?
+    public let soldAssetIssuer:String?
 
     /// The amount of the asset bought.
-    public var boughtAmount:String
+    public let boughtAmount:String
 
     /// The type of the bought asset (e.g., native, credit_alphanum4, credit_alphanum12).
-    public var boughtAssetType:String
+    public let boughtAssetType:String
 
     /// The code of the bought asset. Nil for native assets.
-    public var boughtAssetCode:String?
+    public let boughtAssetCode:String?
 
     /// The issuer account ID of the bought asset. Nil for native assets.
-    public var boughtAssetIssuer:String?
+    public let boughtAssetIssuer:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

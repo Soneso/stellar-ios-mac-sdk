@@ -38,45 +38,45 @@ import Foundation
 /// See also:
 /// - [GetEventsResponse] for querying events
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class EventInfo: NSObject, Decodable {
-    
+public struct EventInfo: Decodable, Sendable {
+
     /// Event type identifier (contract, diagnostic, or system).
-    public var type:String
-    
+    public let type:String
+
     /// Sequence number of the ledger in which this event was emitted.
-    public var ledger:Int
-    
+    public let ledger:Int
+
     ///  ISO8601 timestamp of the ledger closing time.
-    public var ledgerClosedAt:String
-    
+    public let ledgerClosedAt:String
+
     /// StrKey representation of the contract address that emitted this event.
-    public var contractId:String
-    
+    public let contractId:String
+
     /// Unique identifier for this event.
-    public var id:String
+    public let id:String
 
     /// Deprecated for protocol version 23+. Indicates if the event was emitted during a successful contract invocation.
     @available(*, deprecated, message: "Deprecated for protocol version >= 23. If true the event was emitted during a successful contract call.")
-    public var inSuccessfulContractCall:Bool?
+    public let inSuccessfulContractCall:Bool?
 
     /// List containing the topic this event was emitted with. [XdrSCVal as base64|]
-    public var topic:[String]
-    
+    public let topic:[String]
+
     /// The emitted body value of the event (serialized in a base64 string - XdrSCVal).
-    public var value:String
-    
+    public let value:String
+
     /// The emitted body value of the event as XdrSCVal
-    public var valueXdr:SCValXDR
-    
+    public let valueXdr:SCValXDR
+
     /// The transaction which triggered this event.
-    public var txHash:String
-    
+    public let txHash:String
+
     /// The operation at which an event occurred. Only available for protocol version >= 23
-    public var opIndex:Int?
-    
+    public let opIndex:Int?
+
     /// The transaction at which an event occurred. Only available for protocol version >= 23
-    public var txIndex:Int?
-    
+    public let txIndex:Int?
+
     private enum CodingKeys: String, CodingKey {
         case type
         case ledger
@@ -91,7 +91,7 @@ public class EventInfo: NSObject, Decodable {
         case txIndex
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         type = try values.decode(String.self, forKey: .type)
         ledger = try values.decode(Int.self, forKey: .ledger)

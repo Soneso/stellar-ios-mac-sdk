@@ -18,13 +18,13 @@ import Foundation
 /// to an external web interface.
 ///
 /// See [SEP-6 Customer Information Needed](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#response-3)
-public struct CustomerInformationNeededNonInteractive: Decodable {
+public struct CustomerInformationNeededNonInteractive: Decodable , Sendable {
 
     /// Always set to non_interactive_customer_info_needed
-    public var type:String
+    public let type:String
 
     /// A list of field names that need to be transmitted to the /customer endpoint for the deposit to proceed.
-    public var fields:[String]
+    public let fields:[String]
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

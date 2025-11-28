@@ -8,7 +8,7 @@ import Foundation
 /// See also:
 /// - [InteractiveService.getTransactions] for the method that uses this request
 /// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
-public struct Sep24TransactionsRequest {
+public struct Sep24TransactionsRequest: Sendable {
 
     /// JWT previously received from the anchor via the SEP-10 authentication flow.
     public var jwt:String

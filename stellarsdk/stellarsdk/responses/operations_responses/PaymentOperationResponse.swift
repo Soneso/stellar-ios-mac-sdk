@@ -10,37 +10,37 @@ import Foundation
 
 ///  Represents a payment operation response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class PaymentOperationResponse: OperationResponse {
+public class PaymentOperationResponse: OperationResponse, @unchecked Sendable {
     
     /// Amount of the asset sent.
-    public var amount:String
+    public let amount:String
 
     /// Asset type (native / alphanum4 / alphanum12).
-    public var assetType:String
+    public let assetType:String
 
     /// Asset code being sent.
-    public var assetCode:String?
+    public let assetCode:String?
 
     /// Asset issuer.
-    public var assetIssuer:String?
+    public let assetIssuer:String?
 
     /// Account ID of the payment sender.
-    public var from:String
+    public let from:String
 
     /// Multiplexed account address of the sender (if used).
-    public var fromMuxed:String?
+    public let fromMuxed:String?
 
     /// ID of the multiplexed sender account (if used).
-    public var fromMuxedId:String?
+    public let fromMuxedId:String?
 
     /// Account ID of the payment recipient.
-    public var to:String
+    public let to:String
 
     /// Multiplexed account address of the recipient (if used).
-    public var toMuxed:String?
+    public let toMuxed:String?
 
     /// ID of the multiplexed recipient account (if used).
-    public var toMuxedId:String?
+    public let toMuxedId:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

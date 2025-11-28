@@ -11,31 +11,31 @@ import Foundation
 /// Represents a set trustline flags operation response.
 /// This operation allows an asset issuer to set or clear flags on a trustline, controlling authorization and clawback capabilities.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class SetTrustLineFlagsOperationResponse: OperationResponse {
+public class SetTrustLineFlagsOperationResponse: OperationResponse, @unchecked Sendable {
 
     /// Account ID of the trustline holder.
-    public var trustor:String
+    public let trustor:String
 
     /// Asset type (native / alphanum4 / alphanum12).
-    public var assetType:String
+    public let assetType:String
 
     /// Asset code.
-    public var assetCode:String?
+    public let assetCode:String?
 
     /// Asset issuer.
-    public var assetIssuer:String?
+    public let assetIssuer:String?
 
     /// Flags being set (numeric values).
-    public var setFlags:[Int]?
+    public let setFlags:[Int]?
 
     /// Flags being set (string values).
-    public var setFlagsS:[String]?
+    public let setFlagsS:[String]?
 
     /// Flags being cleared (numeric values).
-    public var clearFlags:[Int]?
+    public let clearFlags:[Int]?
 
     /// Flags being cleared (string values).
-    public var clearFlagsS:[String]?
+    public let clearFlagsS:[String]?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

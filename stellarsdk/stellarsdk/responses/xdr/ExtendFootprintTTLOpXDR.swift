@@ -8,9 +8,9 @@
 
 import Foundation
 
-public struct ExtendFootprintTTLOpXDR: XDRCodable {
+public struct ExtendFootprintTTLOpXDR: XDRCodable, Sendable {
     public var ext: ExtensionPoint
-    public var extendTo: UInt32
+    public let extendTo: UInt32
     
     public init(ext: ExtensionPoint, extendTo: UInt32) {
         self.ext = ext

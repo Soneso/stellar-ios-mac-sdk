@@ -13,19 +13,19 @@ import Foundation
 /// It includes the predicate conditions that must be met for the claimant to claim the balance.
 /// Triggered by the Create Claimable Balance operation.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ClaimableBalanceClaimantCreatedEffectResponse: EffectResponse {
+public class ClaimableBalanceClaimantCreatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The unique identifier of the claimable balance.
-    public var balanceId:String
+    public let balanceId:String
 
     /// The asset available to be claimed.
-    public var asset:Asset
+    public let asset:Asset
 
     /// The amount available to be claimed.
-    public var amount:String
+    public let amount:String
 
     /// The predicate conditions that must be met for the claimant to claim the balance.
-    public var predicate:ClaimantPredicateResponse
+    public let predicate:ClaimantPredicateResponse
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

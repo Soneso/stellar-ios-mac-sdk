@@ -11,13 +11,13 @@ import Foundation
 /// Represents a paginated collection of trades for a liquidity pool.
 /// This response contains trade records and navigation links for pagination.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class LiquidityPoolTradesResponse: NSObject, Decodable {
+public struct LiquidityPoolTradesResponse: Decodable, Sendable {
 
     /// Navigation links for this page of trades.
-    public var links:LiquidityPoolTradesLinksResponse
+    public let links:LiquidityPoolTradesLinksResponse
 
     /// Array of trade records for this liquidity pool.
-    public var records:[TradeResponse]
+    public let records:[TradeResponse]
     
     private var embeddedRecords:EmbeddedResponseService
     struct EmbeddedResponseService: Decodable {
@@ -39,7 +39,7 @@ public class LiquidityPoolTradesResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         links = try values.decode(LiquidityPoolTradesLinksResponse.self, forKey: .links)

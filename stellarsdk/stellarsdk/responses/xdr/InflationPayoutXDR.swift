@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct InflationPayoutXDR: XDRCodable {
+public struct InflationPayoutXDR: XDRCodable, Sendable {
     public let destination: PublicKey
     public let amount:Int64
     

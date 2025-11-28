@@ -11,49 +11,49 @@ import Foundation
 /// Represents the distribution of maximum fees that users were willing to pay for transactions in recent ledgers.
 /// All values are in stroops (1 stroop = 0.0000001 XLM).
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class MaxFeeResponse: NSObject, Decodable {
+public struct MaxFeeResponse: Decodable, Sendable {
 
     /// The maximum fee users were willing to pay in recent ledgers, in stroops.
-    public var max:String
+    public let max:String
 
     /// The minimum fee users were willing to pay in recent ledgers, in stroops.
-    public var min:String
+    public let min:String
 
     /// The most common maximum fee users were willing to pay in recent ledgers, in stroops.
-    public var mode:String
+    public let mode:String
 
     /// The 10th percentile of maximum fees users were willing to pay, in stroops.
-    public var p10:String
+    public let p10:String
 
     /// The 20th percentile of maximum fees users were willing to pay, in stroops.
-    public var p20:String
+    public let p20:String
 
     /// The 30th percentile of maximum fees users were willing to pay, in stroops.
-    public var p30:String
+    public let p30:String
 
     /// The 40th percentile of maximum fees users were willing to pay, in stroops.
-    public var p40:String
+    public let p40:String
 
     /// The 50th percentile (median) of maximum fees users were willing to pay, in stroops.
-    public var p50:String
+    public let p50:String
 
     /// The 60th percentile of maximum fees users were willing to pay, in stroops.
-    public var p60:String
+    public let p60:String
 
     /// The 70th percentile of maximum fees users were willing to pay, in stroops.
-    public var p70:String
+    public let p70:String
 
     /// The 80th percentile of maximum fees users were willing to pay, in stroops.
-    public var p80:String
+    public let p80:String
 
     /// The 90th percentile of maximum fees users were willing to pay, in stroops.
-    public var p90:String
+    public let p90:String
 
     /// The 95th percentile of maximum fees users were willing to pay, in stroops.
-    public var p95:String
+    public let p95:String
 
     /// The 99th percentile of maximum fees users were willing to pay, in stroops.
-    public var p99:String
+    public let p99:String
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
@@ -73,7 +73,7 @@ public class MaxFeeResponse: NSObject, Decodable {
         case p99
     }
     
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         max = try values.decode(String.self, forKey: .max)

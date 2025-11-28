@@ -20,4 +20,4 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
-public class NotAcceptableErrorResponse: ErrorResponse {}
+public class NotAcceptableErrorResponse: ErrorResponse, @unchecked Sendable {}

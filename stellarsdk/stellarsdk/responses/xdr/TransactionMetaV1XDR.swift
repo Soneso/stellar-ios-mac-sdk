@@ -8,9 +8,9 @@
 
 import Foundation
 
-public struct TransactionMetaV1XDR: XDRCodable {
+public struct TransactionMetaV1XDR: XDRCodable, Sendable {
 
-    public var txChanges:LedgerEntryChangesXDR
+    public let txChanges: LedgerEntryChangesXDR
     private var operations:[OperationMetaXDR]
     
     public init(from decoder: Decoder) throws {

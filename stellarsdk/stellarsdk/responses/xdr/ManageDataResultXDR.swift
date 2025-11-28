@@ -19,7 +19,7 @@ public enum ManageDataResultCode: Int32 {
     case invalidName = -4 // Name not a valid string
 }
 
-public enum ManageDataResultXDR: XDRCodable {
+public enum ManageDataResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

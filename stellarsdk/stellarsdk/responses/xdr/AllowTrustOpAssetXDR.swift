@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum AllowTrustOpAssetXDR: XDRCodable {
+public enum AllowTrustOpAssetXDR: XDRCodable, Sendable {
     case alphanum4 (AlphaATO4XDR)
     case alphanum12 (AlphaATO12XDR)
     
@@ -41,7 +41,7 @@ public enum AllowTrustOpAssetXDR: XDRCodable {
         }
     }
     
-    public struct AlphaATO4XDR: XDRCodable {
+    public struct AlphaATO4XDR: XDRCodable, Sendable {
         let assetCode: WrappedData4
         
         init(assetCode: WrappedData4) {
@@ -54,7 +54,7 @@ public enum AllowTrustOpAssetXDR: XDRCodable {
         }
     }
     
-    public struct AlphaATO12XDR: XDRCodable {
+    public struct AlphaATO12XDR: XDRCodable, Sendable {
         let assetCode: WrappedData12
         
         init(assetCode: WrappedData12) {

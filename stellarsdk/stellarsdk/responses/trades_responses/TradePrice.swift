@@ -9,31 +9,31 @@
 import Foundation
 
 /// Represents a trade price as a fraction with numerator and denominator.
-public class TradePrice: Decodable {
+public struct TradePrice: Decodable, Sendable {
 
     /// Numerator of price fraction.
-    public final let n:String
+    public let n:String
 
     /// Denominator of price fraction.
-    public final let d:String
+    public let d:String
 
     /// Creates a trade price from numerator and denominator strings.
     public init(numerator:String, denominator:String) {
         self.n = numerator
         self.d = denominator
     }
-    
+
     private enum CodingKeys: String, CodingKey {
         case n
         case d
     }
-    
+
     /**
      Initializer - creates a new instance by decoding from the given decoder.
-     
+
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         if let nInt = try? values.decodeIfPresent(Int32.self, forKey: .n) {

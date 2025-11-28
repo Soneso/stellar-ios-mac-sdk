@@ -37,16 +37,16 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - PageResponse for paginated results
 /// - LinkResponse for individual link details
-public class PagingLinksResponse: NSObject, Decodable {
+public struct PagingLinksResponse: Decodable, Sendable {
 
     /// Link to the current page with all original query parameters.
-    public var selflink:LinkResponse
+    public let selflink:LinkResponse
 
     /// Link to the next page of results. Nil if this is the last page.
-    public var next:LinkResponse?
+    public let next:LinkResponse?
 
     /// Link to the previous page of results. Nil if this is the first page.
-    public var prev:LinkResponse?
+    public let prev:LinkResponse?
     
     
     // Properties to encode and decode.
@@ -61,7 +61,7 @@ public class PagingLinksResponse: NSObject, Decodable {
      
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         selflink = try values.decode(LinkResponse.self, forKey: .selflink)
         next = try values.decodeIfPresent(LinkResponse.self, forKey: .next)

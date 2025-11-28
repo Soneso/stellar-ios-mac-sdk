@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class FeeBumpTransactionEnvelopeXDR: NSObject, XDRCodable {
+public class FeeBumpTransactionEnvelopeXDR: NSObject, XDRCodable, @unchecked Sendable {
     public let tx: FeeBumpTransactionXDR
     public var signatures: [DecoratedSignatureXDR]
     

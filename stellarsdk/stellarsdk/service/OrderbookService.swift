@@ -61,11 +61,11 @@ public typealias OrderbookResponseClosure = (_ response:OrderbookResponseEnum) -
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - OffersService for individual offers
-public class OrderbookService: NSObject {
+public class OrderbookService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
     }
     

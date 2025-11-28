@@ -8,9 +8,9 @@
 
 import Foundation
 
-public struct BumpSequenceOperationXDR: XDRCodable {
+public struct BumpSequenceOperationXDR: XDRCodable, Sendable {
 
-    public var bumpTo:Int64
+    public let bumpTo: Int64
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()

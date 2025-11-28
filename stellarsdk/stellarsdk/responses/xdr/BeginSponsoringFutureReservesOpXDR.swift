@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct BeginSponsoringFutureReservesOpXDR: XDRCodable {
+public struct BeginSponsoringFutureReservesOpXDR: XDRCodable, Sendable {
     public let sponsoredId: PublicKey
     
     public init(sponsoredId: PublicKey) {

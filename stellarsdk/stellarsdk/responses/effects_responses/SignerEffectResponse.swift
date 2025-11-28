@@ -13,16 +13,16 @@ import Foundation
 /// Signers allow an account to be controlled by multiple keys with configurable weights.
 /// Triggered by the Set Options operation.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class SignerEffectResponse: EffectResponse {
+public class SignerEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// Public key of the signer.
-    public var publicKey:String
+    public let publicKey:String
 
     /// Weight assigned to the signer's public key for transaction authorization.
-    public var weight:Int
+    public let weight:Int
 
     /// The signer key in its encoded form.
-    public var key: String?
+    public let key: String?
 
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {

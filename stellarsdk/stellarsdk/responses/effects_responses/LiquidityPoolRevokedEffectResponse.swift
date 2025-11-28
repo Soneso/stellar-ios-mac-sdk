@@ -13,16 +13,16 @@ import Foundation
 /// The pool shares are revoked and the reserves are returned.
 /// Triggered by the Set Trust Line Flags or Allow Trust operations.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class LiquidityPoolRevokedEffectResponse: EffectResponse {
+public class LiquidityPoolRevokedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The liquidity pool details.
-    public var liquidityPool:LiquidityPoolEffectResponse
+    public let liquidityPool:LiquidityPoolEffectResponse
 
     /// The asset reserves revoked from the pool.
-    public var reservesRevoked:[ReserveResponse]
+    public let reservesRevoked:[ReserveResponse]
 
     /// The number of pool shares revoked.
-    public var sharesRevoked:String
+    public let sharesRevoked:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

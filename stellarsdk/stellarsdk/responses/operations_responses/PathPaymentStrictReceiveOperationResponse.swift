@@ -11,10 +11,10 @@ import Foundation
 /// Represents a path payment strict receive operation response.
 /// This operation sends a path payment where the destination amount is specified, and the source amount varies within a maximum limit.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class PathPaymentStrictReceiveOperationResponse:PathPaymentOperationResponse {
+public class PathPaymentStrictReceiveOperationResponse:PathPaymentOperationResponse, @unchecked Sendable {
 
     /// Maximum amount willing to send.
-    public var sourceMax:String?
+    public let sourceMax:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

@@ -12,19 +12,19 @@ import Foundation
 /// This effect occurs when an account receives a payment or other credit operation.
 /// Triggered by Payment, Path Payment, Create Claimable Balance claim, and other operations.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class AccountCreditedEffectResponse: EffectResponse {
+public class AccountCreditedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The amount credited to the account.
-    public var amount:String
+    public let amount:String
 
     /// The asset type credited to this account (e.g., native, credit_alphanum4, credit_alphanum12).
-    public var assetType:String
+    public let assetType:String
 
     /// The asset code credited to the account. Nil for native assets.
-    public var assetCode:String?
+    public let assetCode:String?
 
     /// The issuer account ID of the asset credited to the account. Nil for native assets.
-    public var assetIssuer:String?
+    public let assetIssuer:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

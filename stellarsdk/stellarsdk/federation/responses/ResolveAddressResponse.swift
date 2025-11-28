@@ -43,17 +43,17 @@ import Foundation
 /// ```
 ///
 /// See [SEP-0002 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)
-public struct ResolveAddressResponse: Decodable {
+public struct ResolveAddressResponse: Decodable , Sendable {
 
     /// The Stellar address in the format "username*domain.tld".
     ///
     /// Examples: "alice*testanchor.stellar.org", "bob@email.com*example.com", "+14155550100*stellar.org"
-    public var stellarAddress:String?
+    public let stellarAddress:String?
 
     /// The Stellar account ID (public key) associated with the address.
     ///
     /// Format: G followed by 55 additional characters (56 total), e.g., "GACCOUNT..."
-    public var accountId:String?
+    public let accountId:String?
 
     /// The type of memo that must be attached to transactions sent to this address.
     ///
@@ -64,7 +64,7 @@ public struct ResolveAddressResponse: Decodable {
     ///
     /// When present, the corresponding memo value must be included in all transactions
     /// to this destination to ensure proper crediting.
-    public var memoType:String?
+    public let memoType:String?
 
     /// The memo value that must be attached to transactions sent to this address.
     ///
@@ -75,7 +75,7 @@ public struct ResolveAddressResponse: Decodable {
     ///
     /// Always provided as a string type, even for "id" memoType, to support parsing in
     /// languages without native big number support. Required when memoType is present.
-    public var memo:String?
+    public let memo:String?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

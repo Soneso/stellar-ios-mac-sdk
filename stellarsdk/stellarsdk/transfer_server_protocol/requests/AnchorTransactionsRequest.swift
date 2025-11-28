@@ -9,7 +9,7 @@ import Foundation
 ///
 /// See also:
 /// - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
-public struct AnchorTransactionsRequest {
+public struct AnchorTransactionsRequest: Sendable {
 
     /// The code of the asset of interest.
     /// Examples: BTC, ETH, USD, INR, etc.
@@ -61,7 +61,7 @@ public struct AnchorTransactionsRequest {
 ///
 /// See also:
 /// - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
-public struct AnchorTransactionRequest {
+public struct AnchorTransactionRequest: Sendable {
 
     /// JWT previously received from the anchor via the SEP-10 authentication flow.
     public var jwt:String?

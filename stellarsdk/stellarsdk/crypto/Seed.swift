@@ -23,7 +23,7 @@ import ed25519C
 /// - Seeds must be stored securely (use iOS Keychain or equivalent)
 /// - Never expose seeds in logs, network requests, or version control
 /// - Seeds encoded as secret seeds start with 'S' and are base32-encoded
-public class Seed {
+public final class Seed: Sendable {
     private let buffer: [UInt8]
 
     /// Internal initializer that skips validation.

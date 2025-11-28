@@ -12,13 +12,13 @@ import Foundation
 /// Represents an offer price_r attribute as a fraction.
 /// The price represents how many units of the buying asset are needed to purchase one unit of the selling asset.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class OfferPriceResponse: NSObject, Decodable {
+public struct OfferPriceResponse: Decodable, Sendable {
 
     /// The numerator of the price fraction.
-    public var numerator:Int32
+    public let numerator:Int32
 
     /// The denominator of the price fraction.
-    public var denominator:Int32
+    public let denominator:Int32
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
@@ -31,7 +31,7 @@ public class OfferPriceResponse: NSObject, Decodable {
      
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         numerator = try values.decode(Int32.self, forKey: .numerator)

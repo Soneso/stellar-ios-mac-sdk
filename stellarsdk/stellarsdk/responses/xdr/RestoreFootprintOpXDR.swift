@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct RestoreFootprintOpXDR: XDRCodable {
+public struct RestoreFootprintOpXDR: XDRCodable, Sendable {
     public var ext: ExtensionPoint
     
     public init(ext: ExtensionPoint) {

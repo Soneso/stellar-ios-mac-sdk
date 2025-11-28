@@ -69,43 +69,43 @@ public enum OperationType: Int32 {
 
 /// Represents an operation response. Superclass for all other operation response classes.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class OperationResponse: NSObject, Decodable {
+public class OperationResponse: Decodable, @unchecked Sendable {
 
      /// A list of links related to this operation.
-    public var links:OperationLinksResponse
-    
+    public let links:OperationLinksResponse
+
     /// ID of the operation.
-    public var id:String
+    public let id:String
 
     /// A paging token, specifying where the returned records start from.
-    public var pagingToken:String
+    public let pagingToken:String
 
     /// Account ID of the source account that originated this operation.
-    public var sourceAccount:String
+    public let sourceAccount:String
 
     /// Multiplexed account address of the source account (if used).
-    public var sourceAccountMuxed:String?
+    public let sourceAccountMuxed:String?
 
     /// ID of the multiplexed source account (if used).
-    public var sourceAccountMuxedId:String?
+    public let sourceAccountMuxedId:String?
 
     /// Type of the operation as a human readable string.
-    public var operationTypeString:String
+    public let operationTypeString:String
 
     /// Type of the operation. See OperationType enum.
-    public var operationType:OperationType
+    public let operationType:OperationType
 
     /// Date when the operation was created.
-    public var createdAt:Date
+    public let createdAt:Date
 
     /// Transaction hash containing this operation.
-    public var transactionHash:String
+    public let transactionHash:String
 
     /// Indicates whether the transaction containing this operation was successful.
-    public var transactionSuccessful:Bool
+    public let transactionSuccessful:Bool
 
     /// The transaction containing this operation (included if requested via join parameter).
-    public var transaction: TransactionResponse?
+    public let transaction: TransactionResponse?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

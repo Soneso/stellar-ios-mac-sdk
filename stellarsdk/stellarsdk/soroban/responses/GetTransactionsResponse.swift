@@ -9,26 +9,26 @@
 import Foundation
 
 /// Response containing an array of Soroban transaction records from RPC queries.
-public class GetTransactionsResponse: NSObject, Decodable {
+public struct GetTransactionsResponse: Decodable, Sendable {
 
     /// Array of transaction records from Soroban RPC.
-    public var transactions:[TransactionInfo]
-    
+    public let transactions:[TransactionInfo]
+
     /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
-    public var latestLedger:Int
-    
+    public let latestLedger:Int
+
     /// The unix timestamp of the close time of the latest ledger known to Soroban RPC at the time it handled the request.
-    public var latestLedgerCloseTimestamp:Int
-    
+    public let latestLedgerCloseTimestamp:Int
+
     /// The sequence number of the oldest ledger ingested by Soroban RPC at the time it handled the request.
-    public var oldestLedger:Int
-    
+    public let oldestLedger:Int
+
     /// The unix timestamp of the close time of the oldest ledger ingested by Soroban RPC at the time it handled the request.
-    public var oldestLedgerCloseTimestamp:Int
-    
+    public let oldestLedgerCloseTimestamp:Int
+
     /// For pagination
-    public var cursor:String?
-    
+    public let cursor:String?
+
     private enum CodingKeys: String, CodingKey {
         case transactions
         case latestLedger
@@ -38,7 +38,7 @@ public class GetTransactionsResponse: NSObject, Decodable {
         case cursor
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         if let txs = try? values.decode([TransactionInfo].self, forKey: .transactions) {
             transactions = txs
@@ -54,40 +54,40 @@ public class GetTransactionsResponse: NSObject, Decodable {
 }
 
 /// Detailed information about a Soroban transaction including status, ledger, and result XDR.
-public class TransactionInfo: NSObject, Decodable {
-    
+public struct TransactionInfo: Decodable, Sendable {
+
     /// Indicates whether the transaction was successful or not.
-    public var status:String
-    
+    public let status:String
+
     /// The 1-based index of the transaction among all transactions included in the ledger.
-    public var applicationOrder:Int
-    
+    public let applicationOrder:Int
+
     /// Indicates whether the transaction was fee bumped.
-    public var feeBump:Bool
-    
+    public let feeBump:Bool
+
     /// A base64 encoded string of the raw TransactionEnvelope XDR struct for this transaction.
-    public var envelopeXdr:String
-    
+    public let envelopeXdr:String
+
     /// A base64 encoded string of the raw TransactionResult XDR struct for this transaction.
-    public var resultXdr:String
-    
+    public let resultXdr:String
+
     /// A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
-    public var resultMetaXdr:String
-    
+    public let resultMetaXdr:String
+
     /// (optional) A base64 encoded slice of xdr.DiagnosticEvent. This is only present if the ENABLE_SOROBAN_DIAGNOSTIC_EVENTS has been enabled in the stellar-core config.
-    public var diagnosticEventsXdr:[String]?
-    
+    public let diagnosticEventsXdr:[String]?
+
     /// The sequence number of the ledger which included the transaction.
-    public var ledger:Int
-    
+    public let ledger:Int
+
     /// The unix timestamp of when the transaction was included in the ledger.
-    public var createdAt:Int
-    
+    public let createdAt:Int
+
     /// hex-encoded transaction hash string. Only available for protocol version >= 22
-    public var txHash:String?
-    
+    public let txHash:String?
+
     /// events for the transaction. Only available for protocol version >= 23
-    public var events:TransactionEvents?
+    public let events:TransactionEvents?
     
     private enum CodingKeys: String, CodingKey {
         case status
@@ -103,7 +103,7 @@ public class TransactionInfo: NSObject, Decodable {
         case events
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         status = try values.decode(String.self, forKey: .status)
         applicationOrder = try values.decode(Int.self, forKey: .applicationOrder)

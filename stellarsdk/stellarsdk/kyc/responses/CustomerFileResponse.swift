@@ -18,22 +18,22 @@ import Foundation
 /// For example, if uploading a photo ID front, use "photo_id_front_file_id" in the request.
 ///
 /// See [SEP-12 Customer Files](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-files)
-public struct CustomerFileResponse: Decodable {
+public struct CustomerFileResponse: Decodable , Sendable {
 
     /// Unique identifier for the object.
-    public var fileId:String
+    public let fileId:String
     
     /// The Content-Type of the file.
-    public var contentType:String
+    public let contentType:String
     
     /// The size in bytes of the file object.
-    public var size:Int
+    public let size:Int
     
     /// (optional) The date and time the file will be discarded by the server if not referenced by the client in a PUT /customer request.
-    public var expiresAt:Date?
+    public let expiresAt:Date?
     
     /// (optional) The id of the customer this file is associated with. If the customer record does not yet exist this will be null.
-    public var customerId:String?
+    public let customerId:String?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

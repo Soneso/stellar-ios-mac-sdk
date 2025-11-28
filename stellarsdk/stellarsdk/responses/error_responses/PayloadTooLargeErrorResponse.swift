@@ -22,4 +22,4 @@ import Foundation
 ///
 /// See also:
 /// - ErrorResponse for common error properties
-public class PayloadTooLargeErrorResponse: ErrorResponse {}
+public class PayloadTooLargeErrorResponse: ErrorResponse, @unchecked Sendable {}

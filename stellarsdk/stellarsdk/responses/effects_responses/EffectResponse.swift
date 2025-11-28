@@ -124,34 +124,34 @@ public enum EffectType: Int {
 /// Effects represent specific changes that occur to the ledger as a result of operations in successfully submitted transactions.
 /// Each operation can produce multiple effects, and this class provides common properties shared by all effect types.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class EffectResponse: NSObject, Decodable {
+public class EffectResponse: Decodable, @unchecked Sendable {
     
     /// A list of links related to this effect.
-    public var links:EffectLinksResponse
-    
+    public let links:EffectLinksResponse
+
     /// ID of the effect.
-    public var id:String
-    
+    public let id:String
+
     /// Date of the effect.
-    public var createdAt:String
-    
+    public let createdAt:String
+
     /// A paging token, specifying where the returned records start from.
-    public var pagingToken:String
-    
+    public let pagingToken:String
+
     /// Account ID of the account the effect belongs to.
-    public var account:String
+    public let account:String
 
     /// The multiplexed account address if the account is a muxed account.
-    public var accountMuxed:String?
+    public let accountMuxed:String?
 
     /// The multiplexed account ID if the account is a muxed account.
-    public var accountMuxedId:String?
-    
+    public let accountMuxedId:String?
+
     /// Type of the effect as a human readable string.
-    public var effectTypeString:String
-    
+    public let effectTypeString:String
+
     /// Type of the effect (int) see enum EffectType.
-    public var effectType:EffectType
+    public let effectType:EffectType
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

@@ -12,5 +12,5 @@ import Foundation
 /// This effect occurs when an existing signer's weight is modified through a Set Options operation.
 /// Changing a signer's weight affects the multi-signature authorization requirements.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class SignerUpdatedEffectResponse: SignerEffectResponse {}
+public class SignerUpdatedEffectResponse: SignerEffectResponse, @unchecked Sendable {}
 

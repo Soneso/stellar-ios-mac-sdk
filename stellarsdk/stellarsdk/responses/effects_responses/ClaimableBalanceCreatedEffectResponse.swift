@@ -13,16 +13,16 @@ import Foundation
 /// Claimable balances allow an account to set aside funds to be claimed by specific recipients at a later time.
 /// Triggered by the Create Claimable Balance operation.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ClaimableBalanceCreatedEffectResponse: EffectResponse {
+public class ClaimableBalanceCreatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The unique identifier of the claimable balance.
-    public var balanceId:String
+    public let balanceId:String
 
     /// The asset available to be claimed.
-    public var asset:Asset
+    public let asset:Asset
 
     /// The amount available to be claimed.
-    public var amount:String
+    public let amount:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

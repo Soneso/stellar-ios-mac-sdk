@@ -10,7 +10,7 @@ import Foundation
 
 ///  Represents a ledger response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class LedgerResponse: NSObject, Decodable {
+public struct LedgerResponse: Decodable, Sendable {
 
     /// Hypermedia links to related Horizon resources.
     public var links:LedgerLinksResponse
@@ -94,7 +94,7 @@ public class LedgerResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         links = try values.decode(LedgerLinksResponse.self, forKey: .links)

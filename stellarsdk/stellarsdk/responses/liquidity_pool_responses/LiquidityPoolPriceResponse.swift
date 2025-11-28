@@ -11,13 +11,13 @@ import Foundation
 /// Represents a price ratio in a liquidity pool.
 /// The price is represented as a fraction with a numerator and denominator.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class LiquidityPoolPriceResponse: NSObject, Decodable {
+public struct LiquidityPoolPriceResponse: Decodable, Sendable {
 
     /// The numerator of the price fraction.
-    public var n:Int
+    public let n:Int
 
     /// The denominator of the price fraction.
-    public var d:Int
+    public let d:Int
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
@@ -30,7 +30,7 @@ public class LiquidityPoolPriceResponse: NSObject, Decodable {
      
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         n = try values.decode(Int.self, forKey: .n)

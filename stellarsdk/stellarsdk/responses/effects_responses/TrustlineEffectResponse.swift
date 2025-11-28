@@ -10,25 +10,25 @@
 /// Represents changes to account trustlines, which enable accounts to hold and trade non-native assets.
 /// Trustlines are established through Change Trust operations and can be authorized or modified by asset issuers.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class TrustlineEffectResponse: EffectResponse {
+public class TrustlineEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The maximum amount of the asset that the account is willing to hold.
-    public var limit:String
+    public let limit:String
 
     /// The asset type referenced by the trustline.
-    public var assetType:String
+    public let assetType:String
 
     /// The asset code referenced by the trustline. Nil for native assets.
-    public var assetCode:String?
+    public let assetCode:String?
 
     /// The issuer account ID of the asset. Nil for native assets.
-    public var assetIssuer:String?
+    public let assetIssuer:String?
 
     /// The account establishing the trustline.
-    public var trustor:String?
+    public let trustor:String?
 
     /// Liquidity pool ID if the asset type is liquidity_pool_shares.
-    public var liquidityPoolId:String?
+    public let liquidityPoolId:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

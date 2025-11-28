@@ -10,31 +10,31 @@ import Foundation
 
 ///  Represents a create passive operation response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class CreatePassiveOfferOperationResponse: OperationResponse {
+public class CreatePassiveOfferOperationResponse: OperationResponse, @unchecked Sendable {
         
     /// Amount of the selling asset offered.
-    public var amount:String
+    public let amount:String
 
     /// Price of 1 unit of selling asset in terms of buying asset (decimal).
-    public var price:String
+    public let price:String
 
     /// Type of asset to buy (native / alphanum4 / alphanum12).
-    public var buyingAssetType:String
+    public let buyingAssetType:String
 
     /// Code of the asset to buy.
-    public var buyingAssetCode:String?
+    public let buyingAssetCode:String?
 
     /// Issuer of the asset to buy.
-    public var buyingAssetIssuer:String?
+    public let buyingAssetIssuer:String?
 
     /// Type of asset to sell (native / alphanum4 / alphanum12).
-    public var sellingAssetType:String
+    public let sellingAssetType:String
 
     /// Code of the asset to sell.
-    public var sellingAssetCode:String?
+    public let sellingAssetCode:String?
 
     /// Issuer of the asset to sell.
-    public var sellingAssetIssuer:String?
+    public let sellingAssetIssuer:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

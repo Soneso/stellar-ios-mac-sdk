@@ -12,37 +12,37 @@ import Foundation
 /// Liquidity pools are automated market makers that enable decentralized trading
 /// by maintaining reserves of two assets and allowing users to swap between them.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class LiquidityPoolResponse: NSObject, Decodable {
+public struct LiquidityPoolResponse: Decodable, Sendable {
 
     /// A list of links related to this liquidity pool.
-    public var links:LiquidityPoolLinksResponse
+    public let links:LiquidityPoolLinksResponse
 
     /// Unique identifier for this liquidity pool.
-    public var poolId:String
+    public let poolId:String
 
     /// The fee charged for swaps in this pool, in basis points.
-    public var fee:Int64
+    public let fee:Int64
 
     /// The type of liquidity pool. Currently only "constant_product" is supported.
-    public var type:String
+    public let type:String
 
     /// The number of trustlines to this liquidity pool.
-    public var totalTrustlines:String
+    public let totalTrustlines:String
 
     /// The total number of pool shares issued.
-    public var totalShares:String
+    public let totalShares:String
 
     /// The reserves of assets in this liquidity pool.
-    public var reserves:[ReserveResponse]
+    public let reserves:[ReserveResponse]
 
     /// Paging token suitable for use as a cursor parameter.
-    public var pagingToken:String
+    public let pagingToken:String
 
     /// The sequence number of the ledger in which this liquidity pool was last modified.
-    public var lastModifiedLedger:Int
+    public let lastModifiedLedger:Int
 
     /// An ISO 8601 formatted string of when this liquidity pool was last modified.
-    public var lastModifiedTime:String?
+    public let lastModifiedTime:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -63,7 +63,7 @@ public class LiquidityPoolResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         links = try values.decode(LiquidityPoolLinksResponse.self, forKey: .links)

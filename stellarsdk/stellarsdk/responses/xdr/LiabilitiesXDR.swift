@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct LiabilitiesXDR: XDRCodable {
+public struct LiabilitiesXDR: XDRCodable, Sendable {
     public let buying: Int64
     public let selling: Int64
     

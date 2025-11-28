@@ -10,25 +10,25 @@ import Foundation
 
 /// Response for the getLedgers request
 /// See: [Stellar developer docs](https://developers.stellar.org)
-public class GetLedgersResponse: NSObject, Decodable {
+public struct GetLedgersResponse: Decodable, Sendable {
 
     /// Array of ledger information
-    public var ledgers: [LedgerInfo]
+    public let ledgers: [LedgerInfo]
 
     /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
-    public var latestLedger: UInt32
+    public let latestLedger: UInt32
 
     /// The unix timestamp of the close time of the latest ledger known to Soroban RPC at the time it handled the request.
-    public var latestLedgerCloseTime: Int64
+    public let latestLedgerCloseTime: Int64
 
     /// The sequence number of the oldest ledger ingested by Soroban RPC at the time it handled the request.
-    public var oldestLedger: UInt32
+    public let oldestLedger: UInt32
 
     /// The unix timestamp of the close time of the oldest ledger ingested by Soroban RPC at the time it handled the request.
-    public var oldestLedgerCloseTime: Int64
+    public let oldestLedgerCloseTime: Int64
 
     /// A cursor value for use in pagination
-    public var cursor: String
+    public let cursor: String
 
     private enum CodingKeys: String, CodingKey {
         case ledgers
@@ -39,7 +39,7 @@ public class GetLedgersResponse: NSObject, Decodable {
         case cursor
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
 
         if let ledgersArray = try? values.decode([LedgerInfo].self, forKey: .ledgers) {

@@ -30,7 +30,7 @@ import Foundation
 ///
 /// - Note: All logging is done to standard output using Swift's print function.
 ///         Consider implementing custom log handlers if you need to redirect or filter output.
-public final class StellarSDKLog {
+public final class StellarSDKLog: Sendable {
 
     /// Prints a detailed Horizon request error message to the console.
     ///

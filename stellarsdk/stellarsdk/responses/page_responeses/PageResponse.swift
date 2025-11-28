@@ -55,7 +55,7 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - PagingLinksResponse for navigation links
-public struct PageResponse<Element:Decodable>: Decodable {
+public struct PageResponse<Element:Decodable & Sendable>: Decodable, Sendable {
 
     /// Result enum for paginated responses.
     public enum ResponseEnum {

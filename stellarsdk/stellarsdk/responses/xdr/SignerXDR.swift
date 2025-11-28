@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct SignerXDR: XDRCodable {
+public struct SignerXDR: XDRCodable, Sendable {
     public let key: SignerKeyXDR;
     public let weight: UInt32
     

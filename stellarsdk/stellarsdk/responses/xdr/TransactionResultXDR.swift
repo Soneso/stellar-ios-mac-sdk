@@ -6,7 +6,7 @@
 //  Copyright © 2018 Soneso. All rights reserved.
 //
 
-public enum TransactionResultCode: Int32 {
+public enum TransactionResultCode: Int32, Sendable {
     case feeBumpInnerSuccess = 1
     case success = 0 // all operations succeeded
     case failed = -1 // one of the operations failed (none were applied)
@@ -28,7 +28,7 @@ public enum TransactionResultCode: Int32 {
     case sorobanInvalid = -17 // soroban-specific preconditions were not met
 }
 
-public enum TransactionResultBodyXDR: Encodable {
+public enum TransactionResultBodyXDR: Encodable, Sendable {
     case success([OperationResultXDR])
     case failed([OperationResultXDR])
     case feeBumpInnerSuccess(InnerTransactionResultPair)
@@ -92,9 +92,9 @@ public enum TransactionResultBodyXDR: Encodable {
     }
 }
 
-public struct InnerTransactionResultPair: XDRCodable {
-    public var hash:WrappedData32
-    public var result:InnerTransactionResultXDR
+public struct InnerTransactionResultPair: XDRCodable, Sendable {
+    public let hash: WrappedData32
+    public let result: InnerTransactionResultXDR
     
     public init(hash:WrappedData32, result:InnerTransactionResultXDR) {
         self.hash = hash
@@ -114,10 +114,10 @@ public struct InnerTransactionResultPair: XDRCodable {
     }
 }
 
-public struct TransactionResultXDR: XDRCodable {
-    public var feeCharged:Int64
-    public var resultBody:TransactionResultBodyXDR?
-    public var code:TransactionResultCode
+public struct TransactionResultXDR: XDRCodable, Sendable {
+    public let feeCharged: Int64
+    public let resultBody: TransactionResultBodyXDR?
+    public let code: TransactionResultCode
     public let reserved: Int32 = 0
     
     public init(feeCharged:Int64, resultBody:TransactionResultBodyXDR?, code:TransactionResultCode) {
@@ -175,7 +175,7 @@ public struct TransactionResultXDR: XDRCodable {
     
 }
 
-public enum InnerTransactionResultBodyXDR: Encodable {
+public enum InnerTransactionResultBodyXDR: Encodable, Sendable {
     case success([OperationResultXDR])
     case failed([OperationResultXDR])
     case tooEarly
@@ -231,10 +231,10 @@ public enum InnerTransactionResultBodyXDR: Encodable {
     }
 }
 
-public struct InnerTransactionResultXDR: XDRCodable {
-    public var feeCharged:Int64
-    public var resultBody:InnerTransactionResultBodyXDR?
-    public var code:TransactionResultCode
+public struct InnerTransactionResultXDR: XDRCodable, Sendable {
+    public let feeCharged: Int64
+    public let resultBody: InnerTransactionResultBodyXDR?
+    public let code: TransactionResultCode
     public let reserved: Int32 = 0
     
     public init(feeCharged:Int64, resultBody:InnerTransactionResultBodyXDR?, code:TransactionResultCode) {
@@ -268,11 +268,11 @@ public struct InnerTransactionResultXDR: XDRCodable {
             case .badMinSeqAgeOrGap: resultBody = .badMinSeqAgeOrGap
             case .malformed: resultBody = .malformed
             case .sorobanInvalid: resultBody = .sorobanInvalid
-            default:
-                break
+            case .feeBumpInnerSuccess, .feeBumpInnerFailed:
+                resultBody = nil
         }
         _ = try container.decode(Int32.self)
-        
+
     }
     
     public func encode(to encoder: Encoder) throws {

@@ -48,7 +48,7 @@ import ed25519C
 ///
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
-public final class KeyPair {
+public final class KeyPair: @unchecked Sendable {
     /// The Ed25519 public key.
     public let publicKey: PublicKey
 

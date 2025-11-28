@@ -16,7 +16,7 @@ public struct CryptoKeyType {
     static let KEY_TYPE_MUXED_ED25519: Int32 = 0x100
 }
 
-public enum MuxedAccountXDR: XDRCodable {
+public enum MuxedAccountXDR: XDRCodable, Sendable {
     case ed25519([UInt8])
     case med25519 (MuxedAccountMed25519XDR)
     

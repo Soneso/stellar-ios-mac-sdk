@@ -18,7 +18,7 @@ public enum ClawbackClaimableBalanceResultCode: Int32 {
     case notClawbackEnabled = -3
 }
 
-public enum ClawbackClaimableBalanceResultXDR: XDRCodable {
+public enum ClawbackClaimableBalanceResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

@@ -24,12 +24,12 @@ public struct AccountFlags {
     public static let AUTH_CLAWBACK_ENABLED_FLAG: UInt32 = 8
 }
 
-public struct AccountEntryXDR: XDRCodable {
+public struct AccountEntryXDR: XDRCodable, Sendable {
     let accountID: PublicKey
     public let balance: Int64
     public let sequenceNumber: Int64
     public let numSubEntries:UInt32
-    public var inflationDest: PublicKey?
+    public let inflationDest: PublicKey?
     public let flags:UInt32 // see AccountFlags
     public let homeDomain:String
     public let thresholds:WrappedData4
@@ -79,7 +79,7 @@ public struct AccountEntryXDR: XDRCodable {
     }
 }
 
-public enum AccountEntryExtXDR: XDRCodable {
+public enum AccountEntryExtXDR: XDRCodable, Sendable {
     case void
     case accountEntryExtensionV1 (AccountEntryExtensionV1)
     
@@ -119,7 +119,7 @@ public enum AccountEntryExtXDR: XDRCodable {
     
 }
 
-public struct AccountEntryExtensionV1: XDRCodable {
+public struct AccountEntryExtensionV1: XDRCodable, Sendable {
     public let liabilities: LiabilitiesXDR
     public let reserved: AccountEntryExtV1XDR
     
@@ -142,7 +142,7 @@ public struct AccountEntryExtensionV1: XDRCodable {
     }
 }
 
-public enum AccountEntryExtV1XDR: XDRCodable {
+public enum AccountEntryExtV1XDR: XDRCodable, Sendable {
     case void
     case accountEntryExtensionV2 (AccountEntryExtensionV2)
     
@@ -182,11 +182,11 @@ public enum AccountEntryExtV1XDR: XDRCodable {
     
 }
 
-public struct AccountEntryExtensionV2: XDRCodable {
+public struct AccountEntryExtensionV2: XDRCodable, Sendable {
     public var numSponsored: UInt32 = 0
     public var numSponsoring: UInt32 = 0
-    public var signerSponsoringIDs:[PublicKey?]
-    public var reserved:AccountEntryExtV2XDR
+    public var signerSponsoringIDs: [PublicKey?]
+    public let reserved: AccountEntryExtV2XDR
     
     public init(numSponsored: UInt32, numSponsoring: UInt32, signerSponsoringIDs:[PublicKey?]) {
         self.numSponsored = numSponsored
@@ -234,7 +234,7 @@ public struct AccountEntryExtensionV2: XDRCodable {
     }
 }
 
-public enum AccountEntryExtV2XDR : XDRCodable {
+public enum AccountEntryExtV2XDR : XDRCodable, Sendable {
     case void
     case accountEntryExtensionV3 (AccountEntryExtensionV3)
     
@@ -273,7 +273,7 @@ public enum AccountEntryExtV2XDR : XDRCodable {
     }
 }
 
-public struct AccountEntryExtensionV3: XDRCodable {
+public struct AccountEntryExtensionV3: XDRCodable, Sendable {
     public var ext: ExtensionPoint
     public var seqLedger: UInt32 = 0
     public var seqTime: UInt64 = 0
@@ -301,7 +301,7 @@ public struct AccountEntryExtensionV3: XDRCodable {
     }
 }
 
-public enum ExtensionPoint : XDRCodable {
+public enum ExtensionPoint : XDRCodable, Sendable {
     case void
     
     public init(from decoder: Decoder) throws {

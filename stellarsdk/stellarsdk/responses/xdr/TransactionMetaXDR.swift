@@ -16,7 +16,7 @@ public enum TransactionMetaType: Int32 {
     case transactionMetaV4 = 4
 }
 
-public enum TransactionMetaXDR: XDRCodable {
+public enum TransactionMetaXDR: XDRCodable, Sendable {
     case operations ([OperationMetaXDR])
     case transactionMetaV1 (TransactionMetaV1XDR)
     case transactionMetaV2 (TransactionMetaV2XDR)

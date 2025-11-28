@@ -16,10 +16,10 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - LiquidityPoolResponse for complete details
-public class LiquidityPoolTradesLinksResponse: NSObject, Decodable {
+public struct LiquidityPoolTradesLinksResponse: Decodable, Sendable {
 
     /// Link to this liquidity pool trades resource (self reference).
-    public var selflink:LinkResponse
+    public let selflink:LinkResponse
     
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
@@ -31,7 +31,7 @@ public class LiquidityPoolTradesLinksResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         selflink = try values.decode(LinkResponse.self, forKey: .selflink)
     }

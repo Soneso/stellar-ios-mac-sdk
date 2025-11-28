@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum HashIDPreimageXDR: XDRCodable {
+public enum HashIDPreimageXDR: XDRCodable, Sendable {
     case operationId(OperationID)
     case revokeId(RevokeID)
     case contractID(HashIDPreimageContractIDXDR)
@@ -64,7 +64,7 @@ public enum HashIDPreimageXDR: XDRCodable {
     }
 }
 
-public struct OperationID: XDRCodable {
+public struct OperationID: XDRCodable, Sendable {
     let sourceAccount: MuxedAccountXDR
     let seqNum: Int64
     let opNum: UInt64
@@ -83,7 +83,7 @@ public struct OperationID: XDRCodable {
     }
 }
 
-public struct RevokeID: XDRCodable {
+public struct RevokeID: XDRCodable, Sendable {
     let sourceAccount: MuxedAccountXDR
     let seqNum: Int64
     let opNum: UInt64
@@ -108,7 +108,7 @@ public struct RevokeID: XDRCodable {
     }
 }
 
-public struct HashIDPreimageContractIDXDR: XDRCodable {
+public struct HashIDPreimageContractIDXDR: XDRCodable, Sendable {
     
     let networkID: WrappedData32
     let contractIDPreimage: ContractIDPreimageXDR
@@ -125,7 +125,7 @@ public struct HashIDPreimageContractIDXDR: XDRCodable {
     }
 }
 
-public struct HashIDPreimageSorobanAuthorizationXDR: XDRCodable {
+public struct HashIDPreimageSorobanAuthorizationXDR: XDRCodable, Sendable {
 
     let networkID: WrappedData32
     let nonce: Int64

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct OperationMetaV2XDR: XDRCodable {
+public struct OperationMetaV2XDR: XDRCodable, Sendable {
     public let ext: ExtensionPoint
     public let changes: LedgerEntryChangesXDR
     public let events: [ContractEventXDR]

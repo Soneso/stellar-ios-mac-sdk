@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct MuxedAccountMed25519XDR: XDRCodable {
+public struct MuxedAccountMed25519XDR: XDRCodable, Sendable {
     public let id: UInt64
     public let sourceAccountEd25519: [UInt8]
     
@@ -53,7 +53,7 @@ public struct MuxedAccountMed25519XDR: XDRCodable {
     
 }
 
-public struct MuxedAccountMed25519XDRInverted: XDRCodable {
+public struct MuxedAccountMed25519XDRInverted: XDRCodable, Sendable {
     public let id: UInt64
     public let sourceAccountEd25519: [UInt8]
     

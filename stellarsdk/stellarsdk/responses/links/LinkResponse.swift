@@ -36,14 +36,14 @@ import Foundation
 /// See also:
 /// - [HAL Specification](https://en.wikipedia.org/wiki/Hypertext_Application_Language)
 /// - PagingLinksResponse for pagination links
-public class LinkResponse: NSObject, Decodable {
+public struct LinkResponse: Decodable, Sendable {
 
     /// URL of the linked resource. May contain URI template placeholders if templated is true.
-    public var href:String
+    public let href:String
 
     /// If true, href contains URI template variables that must be substituted with values.
     /// Common variables: {cursor}, {limit}, {order}. If false or nil, href is a direct URL.
-    public var templated:Bool?
+    public let templated:Bool?
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
@@ -56,7 +56,7 @@ public class LinkResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         href = try values.decode(String.self, forKey: .href)
         templated = try values.decodeIfPresent(Bool.self, forKey: .templated)

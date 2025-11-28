@@ -55,11 +55,11 @@ public enum EffectsChange {
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - EffectResponse for effect data structures
-public class EffectsService: NSObject {
+public class EffectsService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let effectsFactory = EffectsFactory()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
     }
     

@@ -12,4 +12,4 @@ import Foundation
 /// This effect occurs when an existing offer is cancelled or fully filled on the Stellar decentralized exchange (DEX).
 /// Triggered by the Manage Sell Offer or Manage Buy Offer operations, or when an offer is completely matched.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class OfferRemovedEffectResponse: EffectResponse {}
+public class OfferRemovedEffectResponse: EffectResponse, @unchecked Sendable {}

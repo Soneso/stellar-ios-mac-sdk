@@ -10,14 +10,14 @@ import Foundation
 
 /// Base Asset class.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class Asset
+public class Asset: @unchecked Sendable
 {
     /// The type of asset (native, alphanum4, alphanum12, or pool share).
     public let type:Int32
     /// The asset code (e.g., "USD", "BTC"). Nil for native assets.
-    public private(set) var code:String?
+    public let code:String?
     /// The issuer keypair for this asset. Nil for native assets.
-    public private(set) var issuer:KeyPair?
+    public let issuer:KeyPair?
     
     /// Creates an Asset object based on the given type, code and issuer. Assets can have the types: native, alphanumeric 4, alphanumeric 12. The asset of type native has no code and no issuer. Assets of type alphanumeric 4, alphanumeric 12 must have a code and an issuer.
     ///
@@ -39,9 +39,11 @@ public class Asset
                 self.code = code
                 self.issuer = issuer
             case AssetType.ASSET_TYPE_NATIVE:
-                break
+                self.code = nil
+                self.issuer = nil
             case AssetType.ASSET_TYPE_POOL_SHARE:
-                break
+                self.code = nil
+                self.issuer = nil
             default:
                 return nil
         }
@@ -150,11 +152,11 @@ public class Asset
 }
 
 /// Asset subclass supporting liquidity pool shares for change trust operations.
-public class ChangeTrustAsset : Asset {
+public class ChangeTrustAsset : Asset, @unchecked Sendable {
     /// The first asset in a liquidity pool pair. Nil for non-pool assets.
-    public private(set) var assetA:Asset?
+    public let assetA:Asset?
     /// The second asset in a liquidity pool pair. Nil for non-pool assets.
-    public private(set) var assetB:Asset?
+    public let assetB:Asset?
 
     /// Creates a liquidity pool asset from two underlying assets in correct lexicographic order.
     public init?(assetA:Asset, assetB:Asset) throws {
@@ -198,6 +200,8 @@ public class ChangeTrustAsset : Asset {
     }
     
     public override init?(type:Int32, code:String? = nil, issuer:KeyPair? = nil) {
+        self.assetA = nil
+        self.assetB = nil
         super.init(type: type, code: code, issuer: issuer)
     }
 

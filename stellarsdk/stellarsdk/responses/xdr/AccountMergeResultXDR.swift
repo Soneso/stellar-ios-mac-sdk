@@ -22,7 +22,7 @@ public enum AccountMergeResultCode: Int32 {
     case isSponsor = -7 // can't merge account that is a sponsor
 }
 
-public enum AccountMergeResultXDR: XDRCodable {
+public enum AccountMergeResultXDR: XDRCodable, Sendable {
     case success(Int32, Int64)
     case empty (Int32)
     

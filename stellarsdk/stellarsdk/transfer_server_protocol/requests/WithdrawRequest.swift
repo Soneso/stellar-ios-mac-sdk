@@ -15,7 +15,7 @@ import Foundation
 /// See also:
 /// - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
 /// - [SEP-0012](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md)
-public struct WithdrawRequest {
+public struct WithdrawRequest: Sendable {
 
     /// Type of withdrawal.
     /// Can be: crypto, bank_account, cash, mobile, bill_payment or other custom values.

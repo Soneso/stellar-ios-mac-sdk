@@ -12,10 +12,10 @@ import Foundation
 /// This effect occurs when a new account is created on the Stellar network through a Create Account operation.
 /// The source account must fund the new account with a minimum balance to cover the base reserve.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class AccountCreatedEffectResponse: EffectResponse {
+public class AccountCreatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The starting balance of the newly created account in lumens (XLM).
-    public var startingBalance:String
+    public let startingBalance:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

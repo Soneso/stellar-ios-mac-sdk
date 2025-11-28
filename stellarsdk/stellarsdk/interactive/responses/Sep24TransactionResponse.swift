@@ -7,10 +7,10 @@ import Foundation
 /// See also:
 /// - [Sep24TransactionsRequest] for the corresponding request
 /// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
-public struct Sep24TransactionsResponse: Decodable {
+public struct Sep24TransactionsResponse: Decodable , Sendable {
 
     /// List of transactions.
-    public var transactions: [Sep24Transaction]
+    public let transactions: [Sep24Transaction]
 
     /// Properties to encode and decode.
     private enum CodingKeys: String, CodingKey {
@@ -33,10 +33,10 @@ public struct Sep24TransactionsResponse: Decodable {
 /// See also:
 /// - [Sep24TransactionRequest] for the corresponding request
 /// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
-public struct Sep24TransactionResponse: Decodable {
+public struct Sep24TransactionResponse: Decodable , Sendable {
 
     /// The transaction details.
-    public var transaction: Sep24Transaction
+    public let transaction: Sep24Transaction
 
     /// Properties to encode and decode.
     private enum CodingKeys: String, CodingKey {
@@ -59,113 +59,113 @@ public struct Sep24TransactionResponse: Decodable {
 ///
 /// See also:
 /// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
-public struct Sep24Transaction: Decodable {
+public struct Sep24Transaction: Decodable , Sendable {
 
     /// Unique, anchor-generated id for the deposit/withdrawal.
-    public var id:String
+    public let id:String
 
     /// Type of transaction: deposit or withdrawal.
-    public var kind:String
+    public let kind:String
 
     /// Processing status of deposit/withdrawal.
-    public var status:String
+    public let status:String
     
     /// Estimated number of seconds until a status change is expected.
-    public var statusEta:Int?
+    public let statusEta:Int?
 
     /// True if the anchor has verified the user's KYC information for this transaction.
-    public var kycVerified:Bool?
+    public let kycVerified:Bool?
 
     /// A URL that is opened by wallets after the interactive flow is complete. It can include banking information for users to start deposits, the status of the transaction, or any other information the user might need to know about the transaction.
-    public var moreInfoUrl:String?
+    public let moreInfoUrl:String?
 
     /// Amount received by anchor at start of transaction as a string with up to 7 decimals. Excludes any fees charged before the anchor received the funds.
-    public var amountIn:String?
+    public let amountIn:String?
 
     /// The asset received or to be received by the Anchor. Must be present if the deposit/withdraw was made using non-equivalent assets.
     /// The value must be in SEP-38 Asset Identification Format.
-    public var amountInAsset:String?
+    public let amountInAsset:String?
 
     /// Amount sent by anchor to user at end of transaction as a string with up to 7 decimals.
     /// Excludes amount converted to XLM to fund account and any external fees.
-    public var amountOut:String?
+    public let amountOut:String?
 
     /// The asset delivered or to be delivered to the user. Must be present if the deposit/withdraw was made using non-equivalent assets.
     /// The value must be in SEP-38 Asset Identification Format.
-    public var amountOutAsset:String?
+    public let amountOutAsset:String?
 
     /// Amount of fee charged by anchor.
-    public var amountFee:String?
+    public let amountFee:String?
 
     /// The asset in which fees are calculated in. Must be present if the deposit/withdraw was made using non-equivalent assets.
     /// The value must be in SEP-38 Asset Identification Format.
-    public var amountFeeAsset:String?
+    public let amountFeeAsset:String?
 
     /// The ID of the quote used when creating this transaction. Should be present if a quote_id
     /// was included in the POST /transactions/deposit/interactive or POST /transactions/withdraw/interactive request.
     /// Clients should be aware that the quote_id may not be present in older implementations.
-    public var quoteId:String?
+    public let quoteId:String?
 
     /// Start date and time of transaction.
-    public var startedAt:Date
+    public let startedAt:Date
 
     /// Completion date and time of transaction.
-    public var completedAt:Date?
+    public let completedAt:Date?
 
     /// The date and time of transaction reaching the current status.
-    public var updatedAt:Date?
+    public let updatedAt:Date?
 
     /// The date and time by when the user action is required. In certain statuses, such as pending_user_transfer_start or incomplete, anchor waits for the user action and
     /// user_action_required_by field should be used to show the time anchors gives for the user to make an action before transaction will automatically be moved into
     /// a different status (such as expired or to be refunded). user_action_required_by should only be specified for statuses where user action is required, and omitted for all other.
     /// Anchor should specify the action waited on using message or more_info_url.
-    public var userActionRequiredBy:Date?
+    public let userActionRequiredBy:Date?
 
     /// Transaction_id on Stellar network of the transfer that either completed the deposit or started the withdrawal.
-    public var stellarTransactionId:String?
+    public let stellarTransactionId:String?
 
     /// ID of transaction on external network that either started the deposit or completed the withdrawal.
-    public var externalTransactionId:String?
+    public let externalTransactionId:String?
 
     /// Human readable explanation of transaction status, if needed.
-    public var message:String?
+    public let message:String?
 
 
     /// Deprecated. This field is deprecated in favor of the refunds object and the refunded status.
     /// True if the transaction was refunded in full. False if the transaction was partially refunded or not refunded.
     /// For more details about any refunds, see the refunds object.
-    public var refunded:Bool?
+    public let refunded:Bool?
 
     /// An object describing any on or off-chain refund associated with this transaction.
-    public var refunds:Sep24Refund?
+    public let refunds:Sep24Refund?
 
     /// In case of deposit: Sent from address, perhaps BTC, IBAN, or bank account.
     /// In case of withdraw: Stellar address the assets were withdrawn from.
-    public var from:String?
+    public let from:String?
 
     /// In case of deposit: Stellar address the deposited assets were sent to.
     /// In case of withdraw: Sent to address (perhaps BTC, IBAN, or bank account in the case of a withdrawal, Stellar address in the case of a deposit).
-    public var to:String?
+    public let to:String?
 
 
     /// This is the memo (if any) used to transfer the asset to the to Stellar address. Deposit transactions only.
-    public var depositMemo:String?
+    public let depositMemo:String?
 
     /// Type for the deposit_memo. Deposit transactions only.
-    public var depositMemoType:String?
+    public let depositMemoType:String?
 
     /// ID of the Claimable Balance used to send the asset initially requested. Deposit transactions only.
-    public var claimableBalanceId:String?
+    public let claimableBalanceId:String?
 
     /// If this is a withdrawal, this is the anchor's Stellar account that the user transferred (or will transfer) their asset to. Withdrawal transactions only.
-    public var withdrawAnchorAccount:String?
+    public let withdrawAnchorAccount:String?
 
     /// Memo used when the user transferred to withdraw_anchor_account.
     /// Assigned null if the withdraw is not ready to receive payment, for example if KYC is not completed. Withdrawal transactions only.
-    public var withdrawMemo:String?
+    public let withdrawMemo:String?
 
     /// Memo type for withdraw_memo. Withdrawal transactions only.
-    public var withdrawMemoType:String?
+    public let withdrawMemoType:String?
 
     /// Properties to encode and decode.
     private enum CodingKeys: String, CodingKey {
@@ -272,18 +272,18 @@ public struct Sep24Transaction: Decodable {
 /// See also:
 /// - [Sep24Transaction] for the parent transaction
 /// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
-public struct Sep24Refund: Decodable {
+public struct Sep24Refund: Decodable , Sendable {
 
     /// The total amount refunded to the user, in units of amount_in_asset.
     /// If a full refund was issued, this amount should match amount_in.
-    public var amountRefunded:String
+    public let amountRefunded:String
 
     /// The total amount charged in fees for processing all refund payments, in units of amount_in_asset.
     /// The sum of all fee values in the payments object list should equal this value.
-    public var amountFee:String
+    public let amountFee:String
 
     /// A list of objects containing information on the individual payments made back to the user as refunds.
-    public var payments:[Sep24RefundPayment]?
+    public let payments:[Sep24RefundPayment]?
 
     /// Properties to encode and decode.
     private enum CodingKeys: String, CodingKey {
@@ -310,22 +310,22 @@ public struct Sep24Refund: Decodable {
 /// See also:
 /// - [Sep24Refund] for the parent refund object
 /// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
-public struct Sep24RefundPayment: Decodable {
+public struct Sep24RefundPayment: Decodable , Sendable {
 
     /// The payment ID that can be used to identify the refund payment.
     /// This is either a Stellar transaction hash or an off-chain payment identifier,
     /// such as a reference number provided to the user when the refund was initiated.
     /// This id is not guaranteed to be unique.
-    public var id:String
+    public let id:String
 
     /// Payment type: stellar or external.
-    public var idType:String
+    public let idType:String
 
     /// The amount sent back to the user for the payment identified by id, in units of amount_in_asset.
-    public var amount:String
+    public let amount:String
 
     /// The amount charged as a fee for processing the refund, in units of amount_in_asset.
-    public var fee:String
+    public let fee:String
 
     /// Properties to encode and decode.
     private enum CodingKeys: String, CodingKey {

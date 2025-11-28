@@ -13,13 +13,13 @@ import Foundation
 /// Account data entries allow accounts to store arbitrary data on the ledger.
 /// Triggered by the Manage Data operation.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class DataUpdatedEffectResponse: EffectResponse {
+public class DataUpdatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The name (key) of the data entry updated.
-    public var name:String
+    public let name:String
 
     /// The base64-encoded value of the data entry after the update.
-    public var value:String
+    public let value:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

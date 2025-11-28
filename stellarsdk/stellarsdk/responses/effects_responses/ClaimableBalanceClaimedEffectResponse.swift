@@ -13,16 +13,16 @@ import Foundation
 /// The balance is transferred to the claimant's account and removed from the ledger.
 /// Triggered by the Claim Claimable Balance operation.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ClaimableBalanceClaimedEffectResponse: EffectResponse {
+public class ClaimableBalanceClaimedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The unique identifier of the claimable balance that was claimed.
-    public var balanceId:String
+    public let balanceId:String
 
     /// The asset that was claimed.
-    public var asset:Asset
+    public let asset:Asset
 
     /// The amount that was claimed.
-    public var amount:String
+    public let amount:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

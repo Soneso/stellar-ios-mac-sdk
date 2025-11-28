@@ -12,6 +12,6 @@ import Foundation
 /// This effect occurs when a signer is removed from an account through a Set Options operation.
 /// The removed signer can no longer authorize transactions for the account.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class SignerRemovedEffectResponse: SignerEffectResponse {}
+public class SignerRemovedEffectResponse: SignerEffectResponse, @unchecked Sendable {}
 
 

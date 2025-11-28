@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum LedgerEntryDataXDR: XDRCodable {
+public enum LedgerEntryDataXDR: XDRCodable, Sendable {
     case account (AccountEntryXDR)
     case trustline (TrustlineEntryXDR)
     case offer (OfferEntryXDR)
@@ -196,7 +196,7 @@ public enum LedgerEntryDataXDR: XDRCodable {
     }
 }
 
-public struct ContractDataEntryXDR: XDRCodable {
+public struct ContractDataEntryXDR: XDRCodable, Sendable {
     public let ext: ExtensionPoint
     public let contract: SCAddressXDR
     public let key: SCValXDR
@@ -237,10 +237,10 @@ public struct ContractDataEntryXDR: XDRCodable {
     }
 }
 
-public struct ContractCodeEntryXDR: XDRCodable {
+public struct ContractCodeEntryXDR: XDRCodable, Sendable {
     public var ext: ContractCodeEntryExt
-    public var hash: WrappedData32
-    public var code: Data
+    public let hash: WrappedData32
+    public let code: Data
     
     public init(ext: ContractCodeEntryExt, hash: WrappedData32, code:Data) {
         self.ext = ext
@@ -264,18 +264,18 @@ public struct ContractCodeEntryXDR: XDRCodable {
     }
 }
 
-public struct ContractCodeCostInputsXDR: XDRCodable {
+public struct ContractCodeCostInputsXDR: XDRCodable, Sendable {
     public var ext:ExtensionPoint
-    public var nInstructions: UInt32
-    public var nFunctions: UInt32
-    public var nGlobals: UInt32
-    public var nTableEntries: UInt32
-    public var nTypes: UInt32
-    public var nDataSegments: UInt32
-    public var nElemSegments: UInt32
-    public var nImports: UInt32
-    public var nExports: UInt32
-    public var nDataSegmentBytes: UInt32
+    public let nInstructions: UInt32
+    public let nFunctions: UInt32
+    public let nGlobals: UInt32
+    public let nTableEntries: UInt32
+    public let nTypes: UInt32
+    public let nDataSegments: UInt32
+    public let nElemSegments: UInt32
+    public let nImports: UInt32
+    public let nExports: UInt32
+    public let nDataSegmentBytes: UInt32
     
     public init(ext: ExtensionPoint, nInstructions: UInt32, nFunctions: UInt32, nGlobals: UInt32, nTableEntries: UInt32, nTypes: UInt32, nDataSegments: UInt32, nElemSegments: UInt32, nImports: UInt32, nExports: UInt32, nDataSegmentBytes: UInt32) {
         self.ext = ext
@@ -323,9 +323,9 @@ public struct ContractCodeCostInputsXDR: XDRCodable {
     }
 }
 
-public struct ContractCodeEntryExtV1: XDRCodable {
+public struct ContractCodeEntryExtV1: XDRCodable, Sendable {
     public var ext:ExtensionPoint
-    public var costInputs: ContractCodeCostInputsXDR
+    public let costInputs: ContractCodeCostInputsXDR
     
     public init(ext: ExtensionPoint, costInputs: ContractCodeCostInputsXDR) {
         self.ext = ext
@@ -345,7 +345,7 @@ public struct ContractCodeEntryExtV1: XDRCodable {
     }
 }
 
-public enum ContractCodeEntryExt: XDRCodable {
+public enum ContractCodeEntryExt: XDRCodable, Sendable {
     case void
     case v1 (ContractCodeEntryExtV1)
     
@@ -387,16 +387,16 @@ public enum ContractCodeEntryExt: XDRCodable {
 // Bandwidth related data settings for contracts.
 // We consider bandwidth to only be consumed by the transaction envelopes, hence
 // this concerns only transaction sizes.
-public struct ConfigSettingContractBandwidthV0XDR: XDRCodable {
+public struct ConfigSettingContractBandwidthV0XDR: XDRCodable, Sendable {
     
     // Maximum sum of all transaction sizes in the ledger in bytes
-    public var ledgerMaxTxsSizeBytes: UInt32
+    public let ledgerMaxTxsSizeBytes: UInt32
     
     // Maximum size in bytes for a transaction
-    public var txMaxSizeBytes: UInt32
+    public let txMaxSizeBytes: UInt32
     
     // Fee for 1 KB of transaction size
-    public var feeTxSize1KB: Int64
+    public let feeTxSize1KB: Int64
 
     public init(ledgerMaxTxsSizeBytes: UInt32, txMaxSizeBytes: UInt32, feeTxSize1KB: Int64) {
         self.ledgerMaxTxsSizeBytes = ledgerMaxTxsSizeBytes
@@ -420,19 +420,19 @@ public struct ConfigSettingContractBandwidthV0XDR: XDRCodable {
 }
 
 // "Compute" settings for contracts (instructions and memory).
-public struct ConfigSettingContractComputeV0XDR: XDRCodable {
+public struct ConfigSettingContractComputeV0XDR: XDRCodable, Sendable {
 
     // Maximum instructions per ledger
-    public var ledgerMaxInstructions: Int64
+    public let ledgerMaxInstructions: Int64
     
     // Maximum instructions per transaction
-    public var txMaxInstructions: Int64
+    public let txMaxInstructions: Int64
     
     // Cost of 10000 instructions
-    public var feeRatePerInstructionsIncrement: Int64
+    public let feeRatePerInstructionsIncrement: Int64
     
     // Memory limit per transaction. Unlike instructions, there is no fee for memory, just the limit.
-    public var txMemoryLimit: UInt32
+    public let txMemoryLimit: UInt32
 
     public init(ledgerMaxInstructions: Int64, txMaxInstructions: Int64, feeRatePerInstructionsIncrement: Int64, txMemoryLimit: UInt32) {
         self.ledgerMaxInstructions = ledgerMaxInstructions
@@ -459,10 +459,10 @@ public struct ConfigSettingContractComputeV0XDR: XDRCodable {
 }
 
 // Historical data (pushed to core archives) settings for contracts.
-public struct ConfigSettingContractHistoricalDataV0XDR: XDRCodable {
+public struct ConfigSettingContractHistoricalDataV0XDR: XDRCodable, Sendable {
     
     // Fee for storing 1KB in archives
-    public var feeHistorical1KB: Int64
+    public let feeHistorical1KB: Int64
 
     public init(feeHistorical1KB: Int64) {
         self.feeHistorical1KB = feeHistorical1KB
@@ -480,54 +480,54 @@ public struct ConfigSettingContractHistoricalDataV0XDR: XDRCodable {
 }
 
 // Ledger access settings for contracts.
-public struct ConfigSettingContractLedgerCostV0XDR: XDRCodable {
+public struct ConfigSettingContractLedgerCostV0XDR: XDRCodable, Sendable {
 
     // Maximum number of disk entry read operations per ledger
-    public var ledgerMaxDiskReadEntries: UInt32
+    public let ledgerMaxDiskReadEntries: UInt32
     
     // Maximum number of bytes of disk reads that can be performed per ledger
-    public var ledgerMaxDiskReadBytes: UInt32
+    public let ledgerMaxDiskReadBytes: UInt32
     
     // Maximum number of ledger entry write operations per ledger
-    public var ledgerMaxWriteLedgerEntries: UInt32
+    public let ledgerMaxWriteLedgerEntries: UInt32
     
     // Maximum number of bytes that can be written per ledger
-    public var ledgerMaxWriteBytes: UInt32
+    public let ledgerMaxWriteBytes: UInt32
     
     // Maximum number of disk entry read operations per transaction
-    public var txMaxDiskReadEntries: UInt32
+    public let txMaxDiskReadEntries: UInt32
     
     // Maximum number of bytes of disk reads that can be performed per transaction
-    public var txMaxDiskReadBytes: UInt32
+    public let txMaxDiskReadBytes: UInt32
     
     // Maximum number of ledger entry write operations per transaction
-    public var txMaxWriteLedgerEntries: UInt32
+    public let txMaxWriteLedgerEntries: UInt32
     
     // Maximum number of bytes that can be written per transaction
-    public var txMaxWriteBytes: UInt32
+    public let txMaxWriteBytes: UInt32
     
     // Fee per disk ledger entry read
-    public var feeDiskReadLedgerEntry: Int64
+    public let feeDiskReadLedgerEntry: Int64
     
     // Fee per ledger entry write
-    public var feeWriteLedgerEntry: Int64
+    public let feeWriteLedgerEntry: Int64
     
     // Fee for reading 1KB disk
-    public var feeDiskRead1KB: Int64
+    public let feeDiskRead1KB: Int64
     
     // The following parameters determine the write fee per 1KB.
     
     // Rent fee grows linearly until soroban state reaches this size
-    public var sorobanStateTargetSizeBytes: Int64
+    public let sorobanStateTargetSizeBytes: Int64
     
     // Fee per 1KB rent when the soroban state is empty
-    public var rentFee1KBSorobanStateSizeLow: Int64
+    public let rentFee1KBSorobanStateSizeLow: Int64
     
     // Fee per 1KB rent when the soroban state has reached `sorobanStateTargetSizeBytes`
-    public var rentFee1KBSorobanStateSizeHigh: Int64
+    public let rentFee1KBSorobanStateSizeHigh: Int64
     
     // Rent fee multiplier for any additional data past the first `sorobanStateTargetSizeBytes`
-    public var sorobanStateRentFeeGrowthFactor: UInt32
+    public let sorobanStateRentFeeGrowthFactor: UInt32
 
     public init(ledgerMaxDiskReadEntries: UInt32, ledgerMaxDiskReadBytes: UInt32, ledgerMaxWriteLedgerEntries: UInt32, ledgerMaxWriteBytes: UInt32, txMaxDiskReadEntries: UInt32, txMaxDiskReadBytes: UInt32, txMaxWriteLedgerEntries: UInt32, txMaxWriteBytes: UInt32, feeDiskReadLedgerEntry: Int64, feeWriteLedgerEntry: Int64, feeDiskRead1KB: Int64, sorobanStateTargetSizeBytes: Int64, rentFee1KBSorobanStateSizeLow: Int64, rentFee1KBSorobanStateSizeHigh: Int64, sorobanStateRentFeeGrowthFactor: UInt32) {
         self.ledgerMaxDiskReadEntries = ledgerMaxDiskReadEntries
@@ -587,13 +587,13 @@ public struct ConfigSettingContractLedgerCostV0XDR: XDRCodable {
 }
 
 // Contract event-related settings.
-public struct ConfigSettingContractEventsV0XDR: XDRCodable {
+public struct ConfigSettingContractEventsV0XDR: XDRCodable, Sendable {
     
     // Maximum size of events that a contract call can emit.
-    public var txMaxContractEventsSizeBytes: UInt32
+    public let txMaxContractEventsSizeBytes: UInt32
     
     // Fee for generating 1KB of contract events.
-    public var feeContractEvents1KB: Int64
+    public let feeContractEvents1KB: Int64
 
     public init(txMaxContractEventsSizeBytes: UInt32, feeContractEvents1KB: Int64) {
         self.txMaxContractEventsSizeBytes = txMaxContractEventsSizeBytes
@@ -613,10 +613,10 @@ public struct ConfigSettingContractEventsV0XDR: XDRCodable {
     }
 }
 
-public struct ContractCostParamEntryXDR: XDRCodable {
+public struct ContractCostParamEntryXDR: XDRCodable, Sendable {
     public var ext: ExtensionPoint
-    public var constTerm: Int64
-    public var linearTerm: Int64
+    public let constTerm: Int64
+    public let linearTerm: Int64
 
     public init(ext:ExtensionPoint, constTerm: Int64, linearTerm: Int64) {
         self.ext = ext
@@ -639,8 +639,8 @@ public struct ContractCostParamEntryXDR: XDRCodable {
     }
 }
 
-public struct ContractCostParamsXDR: XDRCodable {
-    public var entries:[ContractCostParamEntryXDR]
+public struct ContractCostParamsXDR: XDRCodable, Sendable {
+    public let entries: [ContractCostParamEntryXDR]
     
     public init(entries: [ContractCostParamEntryXDR]) {
         self.entries = entries
@@ -656,11 +656,11 @@ public struct ContractCostParamsXDR: XDRCodable {
     }
 }
 
-public struct EvictionIteratorXDR: XDRCodable {
+public struct EvictionIteratorXDR: XDRCodable, Sendable {
 
-    public var bucketListLevel: UInt32
-    public var isCurrBucket: Bool
-    public var bucketFileOffset: UInt64
+    public let bucketListLevel: UInt32
+    public let isCurrBucket: Bool
+    public let bucketFileOffset: UInt64
 
     public init(bucketListLevel: UInt32, isCurrBucket: Bool, bucketFileOffset: UInt64) {
         self.bucketListLevel = bucketListLevel
@@ -684,13 +684,13 @@ public struct EvictionIteratorXDR: XDRCodable {
 }
 
 // Settings for running the contract transactions in parallel.
-public struct ConfigSettingContractParallelComputeV0: XDRCodable {
+public struct ConfigSettingContractParallelComputeV0: XDRCodable, Sendable {
 
     // Maximum number of clusters with dependent transactions allowed in a
     // stage of parallel tx set component.
     // This effectively sets the lower bound on the number of physical threads
     // necessary to effectively apply transaction sets in parallel.
-    public var ledgerMaxDependentTxClusters: UInt32
+    public let ledgerMaxDependentTxClusters: UInt32
 
     public init(ledgerMaxDependentTxClusters: UInt32) {
         self.ledgerMaxDependentTxClusters = ledgerMaxDependentTxClusters
@@ -708,15 +708,15 @@ public struct ConfigSettingContractParallelComputeV0: XDRCodable {
 }
 
 // Ledger access settings for contracts.
-public struct ConfigSettingContractLedgerCostExtV0: XDRCodable {
+public struct ConfigSettingContractLedgerCostExtV0: XDRCodable, Sendable {
 
     // Maximum number of RO+RW entries in the transaction footprint.
-    public var txMaxFootprintEntries: UInt32
+    public let txMaxFootprintEntries: UInt32
     
     // Fee per 1 KB of data written to the ledger.
     // Unlike the rent fee, this is a flat fee that is charged for any ledger
     // write, independent of the type of the entry being written.
-    public var feeWrite1KB: Int64
+    public let feeWrite1KB: Int64
 
     public init(txMaxFootprintEntries: UInt32, feeWrite1KB: Int64) {
         self.txMaxFootprintEntries = txMaxFootprintEntries
@@ -736,13 +736,13 @@ public struct ConfigSettingContractLedgerCostExtV0: XDRCodable {
     }
 }
 
-public struct ConfigSettingSCPTiming: XDRCodable {
+public struct ConfigSettingSCPTiming: XDRCodable, Sendable {
 
-    public var ledgerTargetCloseTimeMilliseconds: UInt32
-    public var nominationTimeoutInitialMilliseconds: UInt32
-    public var nominationTimeoutIncrementMilliseconds: UInt32
-    public var ballotTimeoutInitialMilliseconds: UInt32
-    public var ballotTimeoutIncrementMilliseconds: UInt32
+    public let ledgerTargetCloseTimeMilliseconds: UInt32
+    public let nominationTimeoutInitialMilliseconds: UInt32
+    public let nominationTimeoutIncrementMilliseconds: UInt32
+    public let ballotTimeoutInitialMilliseconds: UInt32
+    public let ballotTimeoutIncrementMilliseconds: UInt32
 
     public init(ledgerTargetCloseTimeMilliseconds: UInt32,
                 nominationTimeoutInitialMilliseconds: UInt32,
@@ -776,7 +776,7 @@ public struct ConfigSettingSCPTiming: XDRCodable {
 }
 
 
-public enum ConfigSettingEntryXDR: XDRCodable {
+public enum ConfigSettingEntryXDR: XDRCodable, Sendable {
     case contractMaxSizeBytes(Int32)
     case contractCompute(ConfigSettingContractComputeV0XDR)
     case contractLedgerCost(ConfigSettingContractLedgerCostV0XDR)
@@ -907,30 +907,30 @@ public enum ConfigSettingEntryXDR: XDRCodable {
     }
 }
 
-public struct StateArchivalSettingsXDR: XDRCodable {
+public struct StateArchivalSettingsXDR: XDRCodable, Sendable {
 
-    public var maxEntryTTL: UInt32
-    public var minTemporaryTTL: UInt32
-    public var minPersistentTTL: UInt32
+    public let maxEntryTTL: UInt32
+    public let minTemporaryTTL: UInt32
+    public let minPersistentTTL: UInt32
     
     // rent_fee = wfee_rate_average / rent_rate_denominator_for_type
-    public var persistentRentRateDenominator: Int64
-    public var tempRentRateDenominator: Int64
+    public let persistentRentRateDenominator: Int64
+    public let tempRentRateDenominator: Int64
     
     // max number of entries that emit archival meta in a single ledger
-    public var maxEntriesToArchive: UInt32
+    public let maxEntriesToArchive: UInt32
     
     // Number of snapshots to use when calculating average live Soroban State size
-    public var liveSorobanStateSizeWindowSampleSize: UInt32
+    public let liveSorobanStateSizeWindowSampleSize: UInt32
     
     // How often to sample the live Soroban State size for the average, in ledgers
-    public var liveSorobanStateSizeWindowSamplePeriod: UInt32
+    public let liveSorobanStateSizeWindowSamplePeriod: UInt32
     
     // Maximum number of bytes that we scan for eviction per ledger
-    public var evictionScanSize: UInt32
+    public let evictionScanSize: UInt32
     
     // Lowest BucketList level to be scanned to evict entries
-    public var startingEvictionScanLevel: UInt32
+    public let startingEvictionScanLevel: UInt32
 
     public init(maxEntryTTL: UInt32, minTemporaryTTL: UInt32, minPersistentTTL: UInt32, persistentRentRateDenominator: Int64, tempRentRateDenominator: Int64, maxEntriesToArchive: UInt32, liveSorobanStateSizeWindowSampleSize: UInt32, liveSorobanStateSizeWindowSamplePeriod: UInt32, evictionScanSize: UInt32, startingEvictionScanLevel: UInt32) {
         self.maxEntryTTL = maxEntryTTL
@@ -975,10 +975,10 @@ public struct StateArchivalSettingsXDR: XDRCodable {
 }
 
 // General “Soroban execution lane” settings
-public struct ConfigSettingContractExecutionLanesV0XDR: XDRCodable {
+public struct ConfigSettingContractExecutionLanesV0XDR: XDRCodable, Sendable {
 
     // maximum number of Soroban transactions per ledger
-    public var ledgerMaxTxCount: UInt32
+    public let ledgerMaxTxCount: UInt32
 
     public init(ledgerMaxTxCount: UInt32) {
         self.ledgerMaxTxCount = ledgerMaxTxCount
@@ -995,10 +995,10 @@ public struct ConfigSettingContractExecutionLanesV0XDR: XDRCodable {
     }
 }
 
-public struct ConfigUpgradeSetKeyXDR: XDRCodable {
+public struct ConfigUpgradeSetKeyXDR: XDRCodable, Sendable {
 
-    public var contractID: WrappedData32
-    public var contentHash: WrappedData32
+    public let contractID: WrappedData32
+    public let contentHash: WrappedData32
 
     public init(contractID: WrappedData32, contentHash: WrappedData32) {
         self.contractID = contractID

@@ -17,7 +17,7 @@
 /**
     Abstraction for TOML key paths
 */
-public struct Path: Hashable, Equatable {
+public struct Path: Hashable, Equatable , Sendable {
     /// Array of path segments.
     internal(set) public var components: [String]
 

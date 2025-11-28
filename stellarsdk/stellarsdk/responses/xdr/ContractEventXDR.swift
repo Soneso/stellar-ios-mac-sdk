@@ -14,11 +14,11 @@ public enum ContractEventType: Int32 {
     case diagnostic = 2
 }
 
-public struct ContractEventXDR: XDRCodable {
+public struct ContractEventXDR: XDRCodable, Sendable {
     public var ext: ExtensionPoint
-    public var hash: WrappedData32?
-    public var type: Int32 //ContractEventType
-    public var body: ContractEventBodyXDR
+    public let hash: WrappedData32?
+    public let type: Int32 //ContractEventType
+    public let body: ContractEventBodyXDR
     
     public init(ext:ExtensionPoint, hash:WrappedData32? = nil, type:Int32, body:ContractEventBodyXDR) {
         self.ext = ext
@@ -33,6 +33,8 @@ public struct ContractEventXDR: XDRCodable {
         let hashPresent = try container.decode(UInt32.self)
         if hashPresent != 0 {
             self.hash = try container.decode(WrappedData32.self)
+        } else {
+            self.hash = nil
         }
         type = try container.decode(Int32.self)
         body = try container.decode(ContractEventBodyXDR.self)
@@ -55,9 +57,9 @@ public struct ContractEventXDR: XDRCodable {
     }
 }
 
-public struct ContractEventBodyV0XDR: XDRCodable {
-    public var topics: [SCValXDR]
-    public var data: SCValXDR
+public struct ContractEventBodyV0XDR: XDRCodable, Sendable {
+    public let topics: [SCValXDR]
+    public let data: SCValXDR
     
     public init(topics:[SCValXDR], data:SCValXDR) {
         self.topics = topics
@@ -77,7 +79,7 @@ public struct ContractEventBodyV0XDR: XDRCodable {
     }
 }
 
-public enum ContractEventBodyXDR: XDRCodable {
+public enum ContractEventBodyXDR: XDRCodable, Sendable {
     case v0 (ContractEventBodyV0XDR)
     
     
@@ -109,9 +111,9 @@ public enum ContractEventBodyXDR: XDRCodable {
     }
 }
 
-public struct DiagnosticEventXDR: XDRCodable {
-    public var inSuccessfulContractCall: Bool
-    public var event: ContractEventXDR
+public struct DiagnosticEventXDR: XDRCodable, Sendable {
+    public let inSuccessfulContractCall: Bool
+    public let event: ContractEventXDR
     
     public init(inSuccessfulContractCall:Bool, event:ContractEventXDR) {
         self.inSuccessfulContractCall = inSuccessfulContractCall

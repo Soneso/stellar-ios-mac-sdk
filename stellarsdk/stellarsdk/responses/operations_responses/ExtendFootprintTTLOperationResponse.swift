@@ -11,10 +11,10 @@ import Foundation
 /// Represents an extend footprint TTL operation response.
 /// This Soroban operation extends the time-to-live (TTL) of ledger entries specified in the transaction's footprint, preventing them from being archived.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ExtendFootprintTTLOperationResponse: OperationResponse {
+public class ExtendFootprintTTLOperationResponse: OperationResponse, @unchecked Sendable {
 
     /// New ledger number at which the entries will expire.
-    public var extendTo:Int
+    public let extendTo:Int
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

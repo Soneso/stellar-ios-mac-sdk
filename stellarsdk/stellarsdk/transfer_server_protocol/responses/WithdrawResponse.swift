@@ -18,37 +18,37 @@ import Foundation
 /// the status of the withdrawal.
 ///
 /// See [SEP-6 Withdraw](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#withdraw-2)
-public struct WithdrawResponse: Decodable {
+public struct WithdrawResponse: Decodable , Sendable {
 
     /// (optional) The account the user should send its token back to. This field can be omitted if the anchor cannot provide this information at the time of the request.
-    public var accountId:String?
+    public let accountId:String?
     
     /// (optional) type of memo to attach to transaction, one of text, id or hash
-    public var memoType:String?
+    public let memoType:String?
     
     /// (optional) Value of memo to attach to transaction, for hash this should be base64-encoded. The anchor should use this memo to match the Stellar transaction with the database entry associated created to represent it.
-    public var memo:String?
+    public let memo:String?
     
     /// (optional) The anchor's ID for this withdrawal. The wallet will use this ID to query the /transaction endpoint to check status of the request.
-    public var id:String?
+    public let id:String?
     
     /// (optional) Estimate of how long the withdrawal will take to credit in seconds.
-    public var eta:Int?
+    public let eta:Int?
     
     /// (optional) Minimum amount of an asset that a user can withdraw.
-    public var minAmount:Double?
+    public let minAmount:Double?
     
     /// (optional) Maximum amount of asset that a user can withdraw.
-    public var maxAmount:Double?
+    public let maxAmount:Double?
     
     /// (optional) If there is a fee for withdraw. In units of the withdrawn asset.
-    public var feeFixed:Double?
+    public let feeFixed:Double?
     
     /// (optional) If there is a percent fee for withdraw.
-    public var feePercent:Double?
+    public let feePercent:Double?
     
     /// (optional) Any additional data needed as an input for this withdraw, example: Bank Name.
-    public var extraInfo:ExtraInfo?
+    public let extraInfo:ExtraInfo?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

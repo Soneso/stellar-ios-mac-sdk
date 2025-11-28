@@ -16,10 +16,10 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - ClaimableBalanceResponse for complete details
-public class ClaimableBalanceLinksResponse: NSObject, Decodable {
+public struct ClaimableBalanceLinksResponse: Decodable, Sendable {
 
     /// Link to this claimable balance resource (self reference).
-    public var selflink:LinkResponse
+    public let selflink:LinkResponse
     
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
@@ -31,7 +31,7 @@ public class ClaimableBalanceLinksResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         selflink = try values.decode(LinkResponse.self, forKey: .selflink)
     }

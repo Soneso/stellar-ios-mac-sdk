@@ -10,19 +10,19 @@ import Foundation
 
 ///  Represents a orderbook response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class OrderbookResponse: NSObject, Decodable {
+public struct OrderbookResponse: Decodable, Sendable {
     
     /// An array of prices and amounts accounts are willing to buy for the given selling and buying pair.
-    public var bids:[OrderbookOfferResponse]
+    public let bids:[OrderbookOfferResponse]
     
     /// An array of prices and amounts accounts are willing to sell for the given selling and buying pair.
-    public var asks:[OrderbookOfferResponse]
+    public let asks:[OrderbookOfferResponse]
     
     /// The Asset this offer wants to sell.
-    public var selling:OfferAssetResponse
+    public let selling:OfferAssetResponse
     
     /// The Asset this offer wants to buy.
-    public var buying:OfferAssetResponse
+    public let buying:OfferAssetResponse
     
     private enum CodingKeys: String, CodingKey {
         
@@ -37,7 +37,7 @@ public class OrderbookResponse: NSObject, Decodable {
      
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         bids = try values.decode(Array.self, forKey: .bids)

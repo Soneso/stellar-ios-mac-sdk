@@ -10,13 +10,13 @@ import Foundation
 
 ///  Represents a manage data operation response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class ManageDataOperationResponse: OperationResponse {
+public class ManageDataOperationResponse: OperationResponse, @unchecked Sendable {
     
     /// Name of the data entry (key in the name/value pair).
-    public var name:String
+    public let name:String
 
     /// Base64-encoded value of the data entry. Empty string to delete the entry.
-    public var value:String
+    public let value:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

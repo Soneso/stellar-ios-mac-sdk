@@ -12,4 +12,4 @@ import Foundation
 /// This effect occurs when an asset issuer revokes authorization for another account to hold its asset through an Allow Trust or Set Trust Line Flags operation.
 /// The account can no longer receive or send the asset.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class TrustlineDeauthorizedEffectResponse: TrustlineEffectResponse {}
+public class TrustlineDeauthorizedEffectResponse: TrustlineEffectResponse, @unchecked Sendable {}

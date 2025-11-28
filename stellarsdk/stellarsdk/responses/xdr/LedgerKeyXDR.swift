@@ -29,7 +29,7 @@ public enum ConfigSettingID: Int32 {
     case scpTiming = 16
 }
 
-public enum LedgerKeyXDR: XDRCodable {
+public enum LedgerKeyXDR: XDRCodable, Sendable {
     case account (LedgerKeyAccountXDR)
     case trustline (LedgerKeyTrustLineXDR)
     case offer (LedgerKeyOfferXDR)
@@ -133,7 +133,7 @@ public enum LedgerKeyXDR: XDRCodable {
     }
 }
 
-public struct LiquidityPoolIDXDR: XDRCodable {
+public struct LiquidityPoolIDXDR: XDRCodable, Sendable {
     public let liquidityPoolID:WrappedData32
     
     public init(from decoder: Decoder) throws {
@@ -155,16 +155,16 @@ public struct LiquidityPoolIDXDR: XDRCodable {
     }
 }
 
-public enum ContractDataDurability: Int32 {
+public enum ContractDataDurability: Int32, Sendable {
     case temporary = 0
     case persistent = 1
 }
 
 
-public struct LedgerKeyContractDataXDR: XDRCodable {
-    public var contract:SCAddressXDR
-    public var key:SCValXDR
-    public var durability:ContractDataDurability
+public struct LedgerKeyContractDataXDR: XDRCodable, Sendable {
+    public let contract: SCAddressXDR
+    public let key: SCValXDR
+    public let durability: ContractDataDurability
     
     public init(contract: SCAddressXDR, key: SCValXDR, durability: ContractDataDurability) {
         self.contract = contract
@@ -193,8 +193,8 @@ public struct LedgerKeyContractDataXDR: XDRCodable {
     }
 }
 
-public struct LedgerKeyContractCodeXDR: XDRCodable {
-    public var hash:WrappedData32
+public struct LedgerKeyContractCodeXDR: XDRCodable, Sendable {
+    public let hash: WrappedData32
     
     public init(hash: WrappedData32) {
         self.hash = hash
@@ -215,8 +215,8 @@ public struct LedgerKeyContractCodeXDR: XDRCodable {
     }
 }
 
-public struct LedgerKeyTTLXDR: XDRCodable {
-    public var keyHash:WrappedData32
+public struct LedgerKeyTTLXDR: XDRCodable, Sendable {
+    public let keyHash: WrappedData32
     
     public init(keyHash: WrappedData32) {
         self.keyHash = keyHash

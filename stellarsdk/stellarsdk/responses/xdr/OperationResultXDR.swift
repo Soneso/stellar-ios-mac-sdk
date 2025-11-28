@@ -18,7 +18,7 @@ public enum OperationResultCode: Int32 {
     case tooManySponsoring = -6 // account is sponsoring too many entries
 }
 
-public enum OperationResultXDR: XDRCodable {
+public enum OperationResultXDR: XDRCodable, Sendable {
     case createAccount(Int32, CreateAccountResultXDR)
     case payment(Int32, PaymentResultXDR)
     case pathPayment(Int32, PathPaymentResultXDR)

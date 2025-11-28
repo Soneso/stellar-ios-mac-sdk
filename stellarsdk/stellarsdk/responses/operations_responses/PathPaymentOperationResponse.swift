@@ -10,52 +10,52 @@ import Foundation
 
 ///  Represents a path payment operation response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class PathPaymentOperationResponse: OperationResponse {
+public class PathPaymentOperationResponse: OperationResponse, @unchecked Sendable {
     
     /// Amount received by the destination.
-    public var amount:String
+    public let amount:String
 
     /// Amount sent from the source.
-    public var sourceAmount:String
+    public let sourceAmount:String
 
     /// Account ID of the payment sender.
-    public var from:String
+    public let from:String
 
     /// Multiplexed account address of the sender (if used).
-    public var fromMuxed:String?
+    public let fromMuxed:String?
 
     /// ID of the multiplexed sender account (if used).
-    public var fromMuxedId:String?
+    public let fromMuxedId:String?
 
     /// Account ID of the payment recipient.
-    public var to:String
+    public let to:String
 
     /// Multiplexed account address of the recipient (if used).
-    public var toMuxed:String?
+    public let toMuxed:String?
 
     /// ID of the multiplexed recipient account (if used).
-    public var toMuxedId:String?
+    public let toMuxedId:String?
 
     /// Destination asset type (native / alphanum4 / alphanum12).
-    public var assetType:String
+    public let assetType:String
 
     /// Destination asset code.
-    public var assetCode:String?
+    public let assetCode:String?
 
     /// Destination asset issuer.
-    public var assetIssuer:String?
+    public let assetIssuer:String?
 
     /// Source asset type (native / alphanum4 / alphanum12).
-    public var sourceAssetType:String?
+    public let sourceAssetType:String?
 
     /// Source asset code.
-    public var sourceAssetCode:String?
+    public let sourceAssetCode:String?
 
     /// Source asset issuer.
-    public var sourceAssetIssuer:String?
+    public let sourceAssetIssuer:String?
 
     /// Path of asset conversions from source to destination.
-    public var path:[OfferAssetResponse]?
+    public let path:[OfferAssetResponse]?
 
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

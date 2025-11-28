@@ -8,7 +8,7 @@ import Foundation
 /// See also:
 /// - [InteractiveService.getFee] for the method that uses this request
 /// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
-public struct Sep24FeeRequest {
+public struct Sep24FeeRequest: Sendable {
 
     /// Kind of operation (deposit or withdraw).
     public var operation:String

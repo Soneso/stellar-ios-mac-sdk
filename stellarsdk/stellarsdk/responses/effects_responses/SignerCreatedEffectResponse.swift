@@ -12,4 +12,4 @@ import Foundation
 /// This effect occurs when a new signer is added to an account through a Set Options operation.
 /// The new signer can be used for multi-signature authorization of transactions.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class SignerCreatedEffectResponse: SignerEffectResponse {}
+public class SignerCreatedEffectResponse: SignerEffectResponse, @unchecked Sendable {}

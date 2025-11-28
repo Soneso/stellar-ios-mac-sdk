@@ -10,17 +10,17 @@ import Foundation
 
 /// Represents an asset in an offer (either the selling or buying asset).
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class OfferAssetResponse: NSObject, Decodable {
+public struct OfferAssetResponse: Decodable, Sendable {
 
     /// The asset type. Possible values: native, credit_alphanum4, credit_alphanum12.
     /// See also Constants.AssetType.
-    public var assetType:String
+    public let assetType:String
 
     /// The asset code, e.g. USD or BTC. Nil if assetType is "native".
-    public var assetCode:String?
+    public let assetCode:String?
 
     /// The account ID of the asset issuer. Nil if assetType is "native".
-    public var assetIssuer:String?
+    public let assetIssuer:String?
     
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
@@ -34,7 +34,7 @@ public class OfferAssetResponse: NSObject, Decodable {
      
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         assetType = try values.decode(String.self, forKey: .assetType)
         assetCode = try values.decodeIfPresent(String.self, forKey: .assetCode)

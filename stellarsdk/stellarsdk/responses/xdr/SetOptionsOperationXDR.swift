@@ -8,16 +8,16 @@
 
 import Foundation
 
-public struct SetOptionsOperationXDR: XDRCodable {
-    public var inflationDestination: PublicKey?
-    public var clearFlags: UInt32?
-    public var setFlags: UInt32?
-    public var masterWeight: UInt32?
-    public var lowThreshold: UInt32?
-    public var medThreshold: UInt32?
-    public var highThreshold: UInt32?
-    public var homeDomain: String?
-    public var signer: SignerXDR?
+public struct SetOptionsOperationXDR: XDRCodable, Sendable {
+    public let inflationDestination: PublicKey?
+    public let clearFlags: UInt32?
+    public let setFlags: UInt32?
+    public let masterWeight: UInt32?
+    public let lowThreshold: UInt32?
+    public let medThreshold: UInt32?
+    public let highThreshold: UInt32?
+    public let homeDomain: String?
+    public let signer: SignerXDR?
     
     public init(from decoder: Decoder) throws {
         //var container = try decoder.unkeyedContainer()

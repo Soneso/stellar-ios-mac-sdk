@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct DataEntryXDR: XDRCodable {
+public struct DataEntryXDR: XDRCodable, Sendable {
     public let accountID: PublicKey
     public let dataName: String
     public let dataValue: Data

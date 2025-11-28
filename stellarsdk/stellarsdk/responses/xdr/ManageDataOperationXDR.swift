@@ -8,9 +8,9 @@
 
 import Foundation
 
-public struct ManageDataOperationXDR: XDRCodable {
+public struct ManageDataOperationXDR: XDRCodable, Sendable {
     public let dataName: String
-    public var dataValue: Data?
+    public let dataValue: Data?
     
     public init(dataName: String, dataValue: Data?) {
         self.dataName = dataName

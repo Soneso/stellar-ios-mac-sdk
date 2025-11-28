@@ -8,10 +8,10 @@ import Foundation
 /// See also:
 /// - [Sep24FeeRequest] for the corresponding request
 /// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
-public struct Sep24FeeResponse: Decodable {
+public struct Sep24FeeResponse: Decodable , Sendable {
 
     /// The total fee (in units of the asset involved) that would be charged to deposit/withdraw the specified amount of asset_code.
-    public var fee:Double
+    public let fee:Double
 
 
     /// Properties to encode and decode.

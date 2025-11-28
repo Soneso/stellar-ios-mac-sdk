@@ -51,11 +51,11 @@ public enum PaymentsChange {
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - OperationResponse for payment operation types
-public class PaymentsService: NSObject {
+public class PaymentsService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let operationsFactory = OperationsFactory()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
     }
     

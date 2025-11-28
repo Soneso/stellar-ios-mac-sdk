@@ -16,10 +16,10 @@ import Foundation
 /// If no files are found for the specified identifier, an empty list is returned.
 ///
 /// See [SEP-12 Customer Files GET](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#get-request)
-public struct GetCustomerFilesResponse: Decodable {
+public struct GetCustomerFilesResponse: Decodable , Sendable {
 
     /// A list of file objects
-    public var files:[CustomerFileResponse]
+    public let files:[CustomerFileResponse]
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

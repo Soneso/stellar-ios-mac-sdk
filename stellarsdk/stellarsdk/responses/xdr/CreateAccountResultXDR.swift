@@ -19,7 +19,7 @@ public enum CreateAccountResultCode: Int32 {
     case alreadyExists = -4 // account already exists
 }
 
-public enum CreateAccountResultXDR: XDRCodable {
+public enum CreateAccountResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

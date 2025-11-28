@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct TransactionV0XDR: XDRCodable {
+public struct TransactionV0XDR: XDRCodable, Sendable {
     public let sourceAccountEd25519: [UInt8]
     public let fee: UInt32
     public let seqNum: Int64

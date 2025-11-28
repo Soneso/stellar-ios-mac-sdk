@@ -9,12 +9,12 @@
 import Foundation
 
 ///  This class creates the different types of operation response classes depending on the operation type value from json.
-class OperationsFactory: NSObject {
-    
+class OperationsFactory {
+
     /// The json decoder used to parse the received json response from the Horizon API.
     let jsonDecoder = JSONDecoder()
-    
-    override init() {
+
+    init() {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     

@@ -24,7 +24,7 @@ public enum SetOptionsResultCode: Int32 {
     case invalidHomeDomain = -9 // malformed home domain
 }
 
-public enum SetOptionsResultXDR: XDRCodable {
+public enum SetOptionsResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

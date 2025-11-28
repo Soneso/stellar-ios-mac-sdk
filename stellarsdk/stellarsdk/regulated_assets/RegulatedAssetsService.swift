@@ -118,19 +118,19 @@ public typealias PostSep08ActionClosure = (_ response:PostSep08ActionEnum) -> (V
 /// See also:
 /// - [SEP-0008 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md)
 /// - [StellarToml] for discovering regulated assets
-public class RegulatedAssetsService: NSObject {
+public class RegulatedAssetsService {
 
     /// The parsed stellar.toml configuration containing regulated asset definitions and approval server URLs.
-    public var tomlData:StellarToml
+    public let tomlData:StellarToml
 
     /// The Stellar network this service operates on.
-    public var network:Network
+    public let network:Network
 
     /// The StellarSDK instance used for Horizon API interactions.
-    public var sdk:StellarSDK
+    public let sdk:StellarSDK
 
     /// List of regulated assets discovered from the stellar.toml file.
-    public var regulatedAssets:[RegulatedAsset] = []
+    public let regulatedAssets:[RegulatedAsset]
 
     private let jsonDecoder = JSONDecoder()
 
@@ -171,15 +171,17 @@ public class RegulatedAssetsService: NSObject {
                 throw RegulatedAssetsServiceError.invalidToml
             }
         }
-        
+
+        var tempRegulatedAssets:[RegulatedAsset] = []
         for currency in tomlData.currenciesDocumentation {
             if let code = currency.code, let issuer = currency.issuer, let regulated = currency.regulated, regulated, let approvalServer = currency.approvalServer {
                 let type = code.count <= 4 ? AssetType.ASSET_TYPE_CREDIT_ALPHANUM4 : AssetType.ASSET_TYPE_CREDIT_ALPHANUM12
                 if let asset = try RegulatedAsset(type:type, assetCode: code, issuerId: issuer, approvalServer:approvalServer, approvalCriteria: currency.approvalCriteria) {
-                    regulatedAssets.append(asset)
+                    tempRegulatedAssets.append(asset)
                 }
             }
         }
+        self.regulatedAssets = tempRegulatedAssets
     }
     
     /// Creates a RegulatedAssetsService instance based on information from the stellar.toml file for a given domain.
@@ -345,18 +347,18 @@ public class RegulatedAssetsService: NSObject {
 ///
 /// A regulated asset is defined in stellar.toml with the `regulated` flag set to true
 /// and includes an approval server URL where transactions must be submitted for validation.
-public class RegulatedAsset:Asset {
+public class RegulatedAsset:Asset, @unchecked Sendable {
     /// The asset code (e.g., "USD", "EURT").
-    public var assetCode:String
+    public let assetCode:String
 
     /// The Stellar account ID of the asset issuer.
-    public var issuerId:String
+    public let issuerId:String
 
     /// The URL of the approval server for transaction validation.
-    public var approvalServer:String
+    public let approvalServer:String
 
     /// Optional criteria description for when transactions require approval.
-    public var approvalCriteria:String?
+    public let approvalCriteria:String?
 
     /// Creates a new regulated asset instance.
     ///
@@ -397,7 +399,7 @@ public enum RegulatedAssetsServiceError: Error {
 ///
 /// The approval server has validated and signed the transaction. The client should
 /// submit it to the Stellar network.
-public struct Sep08PostTransactionSuccess: Decodable {
+public struct Sep08PostTransactionSuccess: Decodable , Sendable {
     /// The approved transaction envelope in base64-encoded XDR format.
     public var tx: String
 
@@ -426,7 +428,7 @@ public struct Sep08PostTransactionSuccess: Decodable {
 ///
 /// The approval server has revised the transaction (e.g., added fees or compliance signatures)
 /// and signed it. The client should submit the revised transaction to the network.
-public struct Sep08PostTransactionRevised: Decodable {
+public struct Sep08PostTransactionRevised: Decodable , Sendable {
     /// The revised and signed transaction envelope in base64-encoded XDR format.
     public var tx: String
 
@@ -455,7 +457,7 @@ public struct Sep08PostTransactionRevised: Decodable {
 ///
 /// The approval server is processing the transaction but has not yet made a decision.
 /// The client should wait and retry after the specified timeout.
-public struct Sep08PostTransactionPending: Decodable {
+public struct Sep08PostTransactionPending: Decodable , Sendable {
     /// Number of seconds the client should wait before retrying.
     public var timeout: Int = 0
 
@@ -486,7 +488,7 @@ public struct Sep08PostTransactionPending: Decodable {
 ///
 /// The approval server requires additional information from the user (e.g., KYC data).
 /// The client should collect the required information and POST it to the action URL.
-public struct Sep08PostTransactionActionRequired: Decodable {
+public struct Sep08PostTransactionActionRequired: Decodable , Sendable {
     /// Human-readable description of the action required.
     public var message: String
 
@@ -528,7 +530,7 @@ public struct Sep08PostTransactionActionRequired: Decodable {
 /// Response when a transaction is rejected by the approval server.
 ///
 /// The transaction does not meet the issuer's compliance requirements and cannot be approved.
-public struct Sep08PostTransactionRejected: Decodable {
+public struct Sep08PostTransactionRejected: Decodable , Sendable {
     /// Human-readable explanation of why the transaction was rejected.
     public var error: String
     
@@ -552,7 +554,7 @@ public struct Sep08PostTransactionRejected: Decodable {
 /// Internal response struct used to determine the status of a transaction post.
 ///
 /// Used for parsing the initial status field before decoding into the specific response type.
-public struct Sep08PostTransactionStatusResponse: Decodable {
+public struct Sep08PostTransactionStatusResponse: Decodable , Sendable {
     /// The status value (success, revised, pending, action_required, or rejected).
     public var status: String?
     
@@ -576,7 +578,7 @@ public struct Sep08PostTransactionStatusResponse: Decodable {
 /// Internal response struct used to determine the result of an action post.
 ///
 /// Used for parsing the result field to determine if action is complete or if another URL should be followed.
-public struct Sep08PostActionResultResponse: Decodable {
+public struct Sep08PostActionResultResponse: Decodable , Sendable {
     /// The result value (no_further_action_required or follow_next_url).
     public var result: String?
     
@@ -600,7 +602,7 @@ public struct Sep08PostActionResultResponse: Decodable {
 /// Response when an action post requires following another URL.
 ///
 /// The action was processed, but the client should follow the next URL for additional steps.
-public struct Sep08PostActionNextUrl: Decodable {
+public struct Sep08PostActionNextUrl: Decodable , Sendable {
     /// The next URL the client should navigate to or process.
     public var nextUrl: String
 

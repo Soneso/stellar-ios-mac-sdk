@@ -20,7 +20,7 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - InnerTransactionResponse for the wrapped transaction details
 /// - TransactionResponse for complete transaction information
-public class FeeBumpTransactionResponse: NSObject, Decodable {
+public struct FeeBumpTransactionResponse: Decodable, Sendable {
 
     /// Hex-encoded SHA-256 hash of the fee bump transaction (the outer transaction hash).
     public var transactionHash:String // hash
@@ -33,7 +33,7 @@ public class FeeBumpTransactionResponse: NSObject, Decodable {
         case signatures
     }
     
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         transactionHash = try values.decode(String.self, forKey: .transactionHash)
         signatures = try values.decode([String].self, forKey: .signatures)

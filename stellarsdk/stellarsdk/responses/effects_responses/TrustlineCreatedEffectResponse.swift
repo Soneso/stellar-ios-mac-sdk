@@ -12,4 +12,4 @@ import Foundation
 /// This effect occurs when an account establishes a new trustline to an asset through a Change Trust operation.
 /// Trustlines are required to hold and trade non-native assets on the Stellar network.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class TrustlineCreatedEffectResponse: TrustlineEffectResponse {}
+public class TrustlineCreatedEffectResponse: TrustlineEffectResponse, @unchecked Sendable {}

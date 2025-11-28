@@ -24,7 +24,7 @@ public enum PaymentResultCode: Int32 {
     case noIssuer = -9 // missing issuer on asset
 }
 
-public enum PaymentResultXDR: XDRCodable {
+public enum PaymentResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

@@ -19,7 +19,7 @@ public struct ClaimableBalanceFlags {
     public static let CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG: UInt32 = 1
 }
 
-public enum ClaimableBalanceIDXDR: XDRCodable {
+public enum ClaimableBalanceIDXDR: XDRCodable, Sendable {
     case claimableBalanceIDTypeV0(WrappedData32)
     
     
@@ -86,7 +86,7 @@ public enum ClaimableBalanceIDXDR: XDRCodable {
     }
 }
 
-public struct ClaimableBalanceEntryXDR: XDRCodable {
+public struct ClaimableBalanceEntryXDR: XDRCodable, Sendable {
     public let claimableBalanceID: ClaimableBalanceIDXDR
     public let claimants:[ClaimantXDR]
     public let asset:AssetXDR
@@ -113,7 +113,7 @@ public struct ClaimableBalanceEntryXDR: XDRCodable {
     }
 }
 
-public enum ClaimableBalanceEntryExtXDR: XDRCodable {
+public enum ClaimableBalanceEntryExtXDR: XDRCodable, Sendable {
     case void
     case claimableBalanceEntryExtensionV1 (ClaimableBalanceEntryExtensionV1)
     
@@ -152,8 +152,8 @@ public enum ClaimableBalanceEntryExtXDR: XDRCodable {
     }
 }
 
-public struct ClaimableBalanceEntryExtensionV1: XDRCodable {
-    public var reserved: Int32 = 0
+public struct ClaimableBalanceEntryExtensionV1: XDRCodable, Sendable {
+    public let reserved: Int32 = 0
     public let flags:UInt32 // see ClaimableBalanceFlags
     
     public init(flags: UInt32) {
@@ -162,7 +162,7 @@ public struct ClaimableBalanceEntryExtensionV1: XDRCodable {
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        reserved = try container.decode(Int32.self)
+        _ = try container.decode(Int32.self)
         flags = try container.decode(UInt32.self)
     }
     

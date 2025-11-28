@@ -46,7 +46,7 @@ import Foundation
 /// - [SorobanServer.sendTransaction] for submitting transactions
 /// - [GetTransactionResponse] for polling transaction status
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class SendTransactionResponse: NSObject, Decodable {
+public struct SendTransactionResponse: Decodable, Sendable {
 
     /// Transaction pending in queue.
     public static let STATUS_PENDING = "PENDING"
@@ -58,29 +58,29 @@ public class SendTransactionResponse: NSObject, Decodable {
     public static let STATUS_ERROR = "ERROR"
 
     /// The transaction hash identifier.
-    public var transactionId:String
-    
+    public let transactionId:String
+
     /// the current status of the transaction by hash, one of: PENDING, DUPLICATE, TRY_AGAIN_LATER, ERROR
-    public var status:String
-    
+    public let status:String
+
     /// The latest ledger known to Soroban-RPC at the time it handled the sendTransaction() request.
-    public var latestLedger:Int
-    
+    public let latestLedger:Int
+
     /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the sendTransaction() request.
-    public var latestLedgerCloseTime:String
-    
+    public let latestLedgerCloseTime:String
+
     /// (optional) If the transaction was rejected immediately, this will be an error object.
-    public var error:TransactionStatusError?
-    
+    public let error:TransactionStatusError?
+
     /// (optional) If the transaction status is ERROR, this will be the raw TransactionResult XDR struct containing details on why stellar-core rejected the transaction.
-    public var errorResult:TransactionResultXDR?
+    public let errorResult:TransactionResultXDR?
 
     /// Base64-encoded XDR of the transaction error result if the transaction failed.
-    public var errorResultXdr:String?
+    public let errorResultXdr:String?
 
     /// (optional) If the transaction status is ERROR, this field may be present. Each entry is a raw DiagnosticEvent XDR struct containing details on why stellar-core rejected the transaction.
-    public var diagnosticEvents:[DiagnosticEventXDR]?
-    
+    public let diagnosticEvents:[DiagnosticEventXDR]?
+
     private enum CodingKeys: String, CodingKey {
         case transactionId = "hash"
         case status
@@ -91,7 +91,7 @@ public class SendTransactionResponse: NSObject, Decodable {
         case diagnosticEventsXdr
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         transactionId = try values.decode(String.self, forKey: .transactionId)
         status = try values.decode(String.self, forKey: .status)
@@ -101,8 +101,11 @@ public class SendTransactionResponse: NSObject, Decodable {
         if let errorResultXdrStr = try values.decodeIfPresent(String.self, forKey: .errorResultXdr) {
             errorResultXdr = errorResultXdrStr
             errorResult = try? TransactionResultXDR.fromXdr(base64: errorResultXdrStr)
+        } else {
+            errorResultXdr = nil
+            errorResult = nil
         }
-        
+
         let diagnosticEventsXdr = try values.decodeIfPresent([String].self, forKey: .diagnosticEventsXdr)
         if let xdrEntries = diagnosticEventsXdr {
             var events: [DiagnosticEventXDR] = []
@@ -110,6 +113,8 @@ public class SendTransactionResponse: NSObject, Decodable {
                 events.append(try DiagnosticEventXDR(fromBase64: xdrEntry))
             }
             diagnosticEvents = events
+        } else {
+            diagnosticEvents = nil
         }
     }
 }

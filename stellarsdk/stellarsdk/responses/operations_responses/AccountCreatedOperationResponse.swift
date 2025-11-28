@@ -10,22 +10,22 @@ import Foundation
 
 ///  Represents an account created operation response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class AccountCreatedOperationResponse: OperationResponse {
+public class AccountCreatedOperationResponse: OperationResponse, @unchecked Sendable {
 
     /// Amount the account was funded with (starting balance).
-    public var startingBalance:Decimal
+    public let startingBalance:Decimal
 
     /// Account ID that funded the new account.
-    public var funder:String
+    public let funder:String
 
     /// Multiplexed account address of the funder (if used).
-    public var funderMuxed:String?
+    public let funderMuxed:String?
 
     /// ID of the multiplexed funder account (if used).
-    public var funderMuxedId:String?
+    public let funderMuxedId:String?
 
     /// Account ID of the newly created account.
-    public var account:String
+    public let account:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

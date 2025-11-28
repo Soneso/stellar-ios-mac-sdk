@@ -21,7 +21,7 @@ public struct EnvelopeType {
     static let ENVELOPE_TYPE_SOROBAN_AUTHORIZATION: Int32 = 9
 }
 
-public enum TransactionEnvelopeXDR: XDRCodable {
+public enum TransactionEnvelopeXDR: XDRCodable, Sendable {
     case v0 (TransactionV0EnvelopeXDR)
     case v1 (TransactionV1EnvelopeXDR)
     case feeBump (FeeBumpTransactionEnvelopeXDR)

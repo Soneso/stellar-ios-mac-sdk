@@ -17,22 +17,22 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - LedgerResponse for complete ledger details
 /// - LinkResponse for individual link structure
-public class LedgerLinksResponse: NSObject, Decodable {
+public struct LedgerLinksResponse: Decodable, Sendable {
 
     /// Link to this ledger resource (self reference).
-    public var selflink:LinkResponse
+    public let selflink:LinkResponse
 
     /// Templated link to effects that occurred in this ledger. Supports cursor, order, and limit.
-    public var effects:LinkResponse
+    public let effects:LinkResponse
 
     /// Templated link to operations included in this ledger. Supports cursor, order, and limit.
-    public var operations:LinkResponse
+    public let operations:LinkResponse
 
     /// Templated link to payment operations in this ledger. Supports cursor, order, and limit.
-    public var payments:LinkResponse
+    public let payments:LinkResponse
 
     /// Templated link to transactions included in this ledger. Supports cursor, order, and limit.
-    public var transactions:LinkResponse
+    public let transactions:LinkResponse
     
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
@@ -48,7 +48,7 @@ public class LedgerLinksResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         selflink = try values.decode(LinkResponse.self, forKey: .selflink)
         effects = try values.decode(LinkResponse.self, forKey: .effects)

@@ -11,4 +11,4 @@
 /// The inflation destination specifies which account receives inflation payouts on behalf of this account.
 /// Note: Inflation is deprecated and no longer active on the Stellar network.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class AccountInflationDestinationUpdatedEffectResponse: EffectResponse {}
+public class AccountInflationDestinationUpdatedEffectResponse: EffectResponse, @unchecked Sendable {}

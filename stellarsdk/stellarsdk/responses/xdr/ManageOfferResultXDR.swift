@@ -29,7 +29,7 @@ public enum ManageOfferResultCode: Int32 {
     case lowReserve = -12 // not enough funds to create a new Offer
 }
 
-public enum ManageOfferResultXDR: XDRCodable {
+public enum ManageOfferResultXDR: XDRCodable, Sendable {
     case success(Int32, ManageOfferSuccessResultXDR)
     case empty (Int32)
     

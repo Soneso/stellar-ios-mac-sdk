@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum OperationBodyXDR: XDRCodable {
+public enum OperationBodyXDR: XDRCodable, Sendable {
     case createAccount (CreateAccountOperationXDR)
     case payment (PaymentOperationXDR)
     case pathPayment (PathPaymentOperationXDR)

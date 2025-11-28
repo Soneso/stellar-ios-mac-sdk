@@ -27,7 +27,7 @@ enum Result {
 typealias ResponseClosure = (_ response:Result) -> (Void)
 
 /// End class responsible with the HTTP connection to the Horizon server
-class ServiceHelper: NSObject {
+class ServiceHelper: @unchecked Sendable {
     static let HorizonClientVersionHeader = "X-Client-Version"
     static let HorizonClientNameHeader = "X-Client-Name"
     static let HorizonClientApplicationNameHeader = "X-App-Name"
@@ -60,7 +60,7 @@ class ServiceHelper: NSObject {
     private let baseUrlQueryItems: [URLQueryItem]?
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         baseURL = ""
         baseUrlQueryItems = nil
     }

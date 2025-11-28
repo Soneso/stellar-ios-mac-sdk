@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct DecoratedSignatureXDR: XDRCodable {
+public struct DecoratedSignatureXDR: XDRCodable, Sendable {
     public let hint: WrappedData4;
     public let signature: Data
     

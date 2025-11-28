@@ -10,4 +10,4 @@ import Foundation
 
 ///  Represents an inflation operation response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class InflationOperationResponse: OperationResponse {}
+public class InflationOperationResponse: OperationResponse, @unchecked Sendable {}

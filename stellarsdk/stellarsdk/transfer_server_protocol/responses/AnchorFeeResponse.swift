@@ -17,10 +17,10 @@ import Foundation
 /// GET /info response or the fee_details field in transaction responses instead.
 ///
 /// See [SEP-6 Fee](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#fee)
-public struct AnchorFeeResponse: Decodable {
+public struct AnchorFeeResponse: Decodable , Sendable {
 
     /// The total fee (in units of the asset involved) that would be charged to deposit/withdraw the specified amount of asset_code.
-    public var fee:Double
+    public let fee:Double
     
     
     /// Properties to encode and decode

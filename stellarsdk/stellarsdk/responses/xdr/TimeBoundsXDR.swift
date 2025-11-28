@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct TimeBoundsXDR: XDRCodable {
+public struct TimeBoundsXDR: XDRCodable, Sendable {
     public let minTime: UInt64
     public let maxTime: UInt64
     

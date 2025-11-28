@@ -11,8 +11,7 @@ import Foundation
 /// Response returned from successfully submitting a transaction to Horizon.
 ///
 /// This is returned when a transaction is successfully submitted and included in a ledger.
-/// It extends TransactionResponse with all transaction details including the result,
-/// operations, fees, and metadata.
+/// It contains all transaction details including the result, operations, fees, and metadata.
 ///
 /// For asynchronous transaction submission, see SubmitTransactionAsyncResponse instead.
 ///
@@ -20,6 +19,4 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - TransactionResponse for all available properties
 /// - SubmitTransactionAsyncResponse for async submission
-public class SubmitTransactionResponse: TransactionResponse {
-
-}
+public typealias SubmitTransactionResponse = TransactionResponse

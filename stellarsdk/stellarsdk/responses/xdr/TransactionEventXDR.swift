@@ -11,7 +11,7 @@ import Foundation
 // Transaction-level events happen at different stages of the ledger apply flow
 // (as opposed to the operation events that all happen atomically after a transaction is applied).
 // This enum represents the possible stages during which an event has been emitted.
-public enum TransactionEventStage: Int32 {
+public enum TransactionEventStage: Int32, Sendable {
     // The event has happened before any one of the transactions has its operations applied.
     case beforeAllTxs = 0
     
@@ -24,7 +24,7 @@ public enum TransactionEventStage: Int32 {
 
 // Represents a transaction-level event in metadata.
 // Currently this is limited to the fee events (when fee is charged or refunded).
-public struct TransactionEventXDR: XDRCodable {
+public struct TransactionEventXDR: XDRCodable, Sendable {
     
     // Stage at which an event has occurred.
     public let stage: TransactionEventStage

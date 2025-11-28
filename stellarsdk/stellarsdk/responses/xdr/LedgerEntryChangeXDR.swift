@@ -25,7 +25,7 @@ public enum LedgerEntryChangeType: Int32 {
     case ledgerEntryRestore = 4
 }
 
-public enum LedgerEntryChangeXDR: XDRCodable {
+public enum LedgerEntryChangeXDR: XDRCodable, Sendable {
     case created (LedgerEntryXDR)
     case updated (LedgerEntryXDR)
     case removed (LedgerKeyXDR)

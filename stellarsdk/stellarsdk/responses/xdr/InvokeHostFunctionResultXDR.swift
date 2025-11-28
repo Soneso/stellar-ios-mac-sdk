@@ -20,7 +20,7 @@ public enum InvokeHostFunctionResultCode: Int32 {
     case insufficientRefundableFee = -5
 }
 
-public enum InvokeHostFunctionResultXDR: XDRCodable {
+public enum InvokeHostFunctionResultXDR: XDRCodable, Sendable {
     case success(WrappedData32) // sha256 (InvokeHostFunctionSuccessPreImageXDR)
     case malformed
     case trapped

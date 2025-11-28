@@ -48,11 +48,11 @@ public typealias ClaimableBalanceDetailsResponseClosure = (_ response:ClaimableB
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - CreateClaimableBalanceOperation for creating claimable balances
-public class ClaimableBalancesService: NSObject {
+public class ClaimableBalancesService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }

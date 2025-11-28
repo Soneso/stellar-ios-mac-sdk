@@ -17,13 +17,13 @@ import Foundation
 /// Note: Interactive components of SEP-6 are deprecated in favor of SEP-24.
 ///
 /// See [SEP-6 Customer Information Needed](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#response-3)
-public struct CustomerInformationNeededInteractive: Decodable {
+public struct CustomerInformationNeededInteractive: Decodable , Sendable {
 
     /// Always set to non_interactive_customer_info_needed
-    public var type:String
+    public let type:String
 
     /// URL hosted by the anchor. The wallet should show this URL to the user either as a popup or an iframe.
-    public var url:String
+    public let url:String
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

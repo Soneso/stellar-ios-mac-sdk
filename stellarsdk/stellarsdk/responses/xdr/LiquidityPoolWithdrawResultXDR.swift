@@ -20,7 +20,7 @@ public enum LiquidityPoolWithdrawResulCode: Int32 {
     case underMinimum = -5 // didn't withdraw enough
 }
 
-public enum LiquidityPoolWithdrawResultXDR: XDRCodable {
+public enum LiquidityPoolWithdrawResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

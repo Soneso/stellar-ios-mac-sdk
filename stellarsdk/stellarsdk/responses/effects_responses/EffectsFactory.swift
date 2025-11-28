@@ -12,7 +12,7 @@ import Foundation
 /// This factory parses the effect type from the JSON response and instantiates the appropriate effect subclass.
 /// Effects represent specific changes that occur to the ledger as a result of operations in successfully submitted transactions.
 /// See [Stellar developer docs](https://developers.stellar.org)
-class EffectsFactory: NSObject {
+class EffectsFactory {
 
     /// The JSON decoder used to parse effect responses from the Horizon API.
     let jsonDecoder = JSONDecoder()

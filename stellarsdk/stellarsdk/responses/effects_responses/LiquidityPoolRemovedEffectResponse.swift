@@ -13,10 +13,10 @@ import Foundation
 /// A pool is removed when all shares have been withdrawn and no reserves remain.
 /// Triggered by the Change Trust operation with limit set to zero.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class LiquidityPoolRemovedEffectResponse: EffectResponse {
+public class LiquidityPoolRemovedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The unique identifier of the liquidity pool that was removed.
-    public var liquidityPoolId:String
+    public let liquidityPoolId:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

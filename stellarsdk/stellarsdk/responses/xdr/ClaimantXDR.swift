@@ -12,7 +12,7 @@ public enum ClaimantType: Int32 {
     case claimantTypeV0 = 0
 }
 
-public enum ClaimantXDR: XDRCodable {
+public enum ClaimantXDR: XDRCodable, Sendable {
     case claimantTypeV0(ClaimantV0XDR)
     
     
@@ -49,7 +49,7 @@ public enum ClaimantXDR: XDRCodable {
 }
 
 
-public struct ClaimantV0XDR: XDRCodable {
+public struct ClaimantV0XDR: XDRCodable, Sendable {
     let accountID: PublicKey
     let predicate: ClaimPredicateXDR
     

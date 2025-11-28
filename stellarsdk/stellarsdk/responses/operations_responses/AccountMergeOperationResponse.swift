@@ -10,25 +10,25 @@ import Foundation
 
 ///  Represents an account merge operation response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class AccountMergeOperationResponse: OperationResponse {
+public class AccountMergeOperationResponse: OperationResponse, @unchecked Sendable {
     
     /// Account ID of the account that has been merged (deleted).
-    public var account:String
+    public let account:String
 
     /// Multiplexed account address of the merged account (if used).
-    public var accountMuxed:String?
+    public let accountMuxed:String?
 
     /// ID of the multiplexed merged account (if used).
-    public var accountMuxedId:String?
+    public let accountMuxedId:String?
 
     /// Account ID where funds of the merged account were transferred.
-    public var into:String
+    public let into:String
 
     /// Multiplexed account address of the destination account (if used).
-    public var intoMuxed:String?
+    public let intoMuxed:String?
 
     /// ID of the multiplexed destination account (if used).
-    public var intoMuxedId:String?
+    public let intoMuxedId:String?
     
      // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

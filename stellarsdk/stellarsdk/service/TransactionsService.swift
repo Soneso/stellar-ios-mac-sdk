@@ -103,11 +103,11 @@ public typealias CheckMemoRequiredResponseClosure = (_ response:CheckMemoRequire
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [SEP-29 Memo Required](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0029.md)
-public class TransactionsService: NSObject {
+public class TransactionsService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
     }
     

@@ -9,7 +9,7 @@
 import Foundation
 
 
-public struct LiquidityPoolDepositOpXDR: XDRCodable {
+public struct LiquidityPoolDepositOpXDR: XDRCodable, Sendable {
     public let liquidityPoolID:WrappedData32
     public let maxAmountA: Int64
     public let maxAmountB: Int64

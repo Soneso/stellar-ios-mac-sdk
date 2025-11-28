@@ -45,25 +45,25 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - HorizonRequestError for error enum types
-public class ErrorResponse: NSObject, Decodable {
+public class ErrorResponse: Decodable, @unchecked Sendable {
 
     /// URL identifier for the error type. Can be visited for more information.
-    public var type:String
+    public let type:String
 
     /// Short human-readable summary of the error.
-    public var title:String
+    public let title:String
 
     /// HTTP status code (400, 404, 429, 500, etc.).
-    public var httpStatusCode:UInt
+    public let httpStatusCode:UInt
 
     /// Detailed description of the error and potential solutions.
-    public var detail:String
+    public let detail:String
 
     /// Unique request ID for correlating with server logs. Useful for support requests.
-    public var instance:String?
+    public let instance:String?
 
     /// Additional error context including transaction result codes and XDR data.
-    public var extras:ErrorResponseExtras?
+    public let extras:ErrorResponseExtras?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -95,18 +95,18 @@ public class ErrorResponse: NSObject, Decodable {
 ///
 /// Contains transaction-specific debugging data including XDR representations
 /// and result codes from Stellar Core.
-public class ErrorResponseExtras: Decodable {
+public class ErrorResponseExtras: Decodable, @unchecked Sendable {
     /// Base64-encoded XDR of the transaction envelope that failed.
-    public var envelopeXdr: String?
+    public let envelopeXdr: String?
 
     /// Base64-encoded XDR of the transaction result from Stellar Core.
-    public var resultXdr: String?
+    public let resultXdr: String?
 
     /// Parsed result codes indicating why the transaction or operations failed.
-    public var resultCodes: ErrorResultCodes?
+    public let resultCodes: ErrorResultCodes?
 
     /// Hash of the submitted transaction.
-    public var txHash: String?
+    public let txHash: String?
 
     private enum CodingKeys: String, CodingKey {
         case envelopeXdr = "envelope_xdr"
@@ -136,12 +136,12 @@ public class ErrorResponseExtras: Decodable {
 /// - tx_insufficient_balance: Not enough XLM to pay fee
 ///
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ErrorResultCodes: Decodable {
+public class ErrorResultCodes: Decodable, @unchecked Sendable {
     /// Transaction-level result code (e.g., "tx_failed", "tx_bad_seq").
-    public var transaction: String?
+    public let transaction: String?
 
     /// Array of operation result codes, one per operation. Indicates which operations failed.
-    public var operations: [String]?
+    public let operations: [String]?
     
     private enum CodingKeys: String, CodingKey {
         case transaction
@@ -170,4 +170,4 @@ public class ErrorResultCodes: Decodable {
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
-public class TimeoutErrorResponse: ErrorResponse {}
+public class TimeoutErrorResponse: ErrorResponse, @unchecked Sendable {}

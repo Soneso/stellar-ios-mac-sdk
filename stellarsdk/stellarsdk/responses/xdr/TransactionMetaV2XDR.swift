@@ -8,11 +8,11 @@
 
 import Foundation
 
-public struct TransactionMetaV2XDR: XDRCodable {
+public struct TransactionMetaV2XDR: XDRCodable, Sendable {
     
-    public var txChangesBefore:LedgerEntryChangesXDR
+    public let txChangesBefore: LedgerEntryChangesXDR
     public var operations:[OperationMetaXDR]
-    public var txChangesAfter:LedgerEntryChangesXDR
+    public let txChangesAfter: LedgerEntryChangesXDR
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()

@@ -20,7 +20,7 @@ public enum SetTrustLineFlagsResultCode: Int32 {
     case lowReserve = -5 //  claimable balances can't be created on revoke due to low reserves
 }
 
-public enum SetTrustLineFlagsResultXDR: XDRCodable {
+public enum SetTrustLineFlagsResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

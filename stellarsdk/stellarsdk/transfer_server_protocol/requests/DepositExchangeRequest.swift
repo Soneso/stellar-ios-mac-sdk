@@ -13,7 +13,7 @@ import Foundation
 /// See also:
 /// - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
 /// - [SEP-0038](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)
-public struct DepositExchangeRequest {
+public struct DepositExchangeRequest: Sendable {
 
     /// The code of the on-chain asset the user wants to receive from the anchor after making
     /// an off-chain deposit. The value passed must match one of the codes listed in the

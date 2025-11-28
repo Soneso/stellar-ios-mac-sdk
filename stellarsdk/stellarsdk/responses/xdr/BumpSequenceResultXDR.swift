@@ -16,7 +16,7 @@ public enum BumpSequenceResultCode: Int32 {
     case bad_seq = -1 // `bumpTo` is not within bounds
 }
 
-public enum BumpSequenceResultXDR: XDRCodable {
+public enum BumpSequenceResultXDR: XDRCodable, Sendable {
 
     case success (Int32)
     case empty (Int32)

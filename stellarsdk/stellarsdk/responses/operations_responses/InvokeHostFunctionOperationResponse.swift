@@ -11,22 +11,22 @@ import Foundation
 /// Represents an invoke host function operation response.
 /// This Soroban operation invokes a smart contract function on the Stellar network.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class InvokeHostFunctionOperationResponse: OperationResponse {
+public class InvokeHostFunctionOperationResponse: OperationResponse, @unchecked Sendable {
 
     /// Type of host function being invoked (e.g., InvokeContract, CreateContract).
-    public var function:String
+    public let function:String
 
     /// Contract address or deployment address.
-    public var address:String
+    public let address:String
 
     /// Salt used for contract deployment.
-    public var salt:String
+    public let salt:String
 
     /// Parameters passed to the function.
-    public var parameters:[ParameterResponse]?
+    public let parameters:[ParameterResponse]?
 
     /// Asset balance changes resulting from the invocation.
-    public var assetBalanceChanges:[AssetBalanceChange]?
+    public let assetBalanceChanges:[AssetBalanceChange]?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -54,13 +54,13 @@ public class InvokeHostFunctionOperationResponse: OperationResponse {
 }
 
 /// Represents a parameter passed to a Soroban contract function.
-public class ParameterResponse: NSObject, Decodable {
+public final class ParameterResponse: Decodable, Sendable {
 
     /// Parameter type.
-    public var type:String
+    public let type:String
 
     /// Parameter value.
-    public var value:String
+    public let value:String
    
     
     // Properties to encode and decode
@@ -85,31 +85,31 @@ public class ParameterResponse: NSObject, Decodable {
 }
 
 /// Represents an asset balance change resulting from a Soroban contract invocation.
-public class AssetBalanceChange: NSObject, Decodable {
+public final class AssetBalanceChange: Decodable, Sendable {
 
     /// Asset type (native / alphanum4 / alphanum12).
-    public var assetType:String
+    public let assetType:String
 
     /// Asset code (if not native).
-    public var assetCode:String?
+    public let assetCode:String?
 
     /// Asset issuer (if not native).
-    public var assetIssuer:String?
+    public let assetIssuer:String?
 
     /// Type of balance change (transfer, mint, burn, etc.).
-    public var type:String
+    public let type:String
 
     /// Source account of the transfer (if applicable).
-    public var from:String?
+    public let from:String?
 
     /// Destination account of the transfer.
-    public var to:String
+    public let to:String
 
     /// Amount transferred or changed.
-    public var amount:String
+    public let amount:String
 
     /// Multiplexed ID of the destination account (if used).
-    public var destinationMuxedId:String?
+    public let destinationMuxedId:String?
    
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

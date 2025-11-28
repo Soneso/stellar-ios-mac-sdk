@@ -21,7 +21,7 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountResponse for the complete account data dictionary
-public class DataForAccountResponse: NSObject, Decodable {
+public struct DataForAccountResponse: Decodable, Sendable {
 
     /// Base64-encoded value for the requested key. Decode to access the raw bytes.
     public var value:String
@@ -40,7 +40,7 @@ public class DataForAccountResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         value = try values.decode(String.self, forKey: .value)
         sponsor = try values.decodeIfPresent(String.self, forKey: .sponsor)

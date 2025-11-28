@@ -53,11 +53,11 @@ public enum TradesChange {
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - TradeAggregationsService for aggregated trade statistics
-public class TradesService: NSObject {
+public class TradesService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }

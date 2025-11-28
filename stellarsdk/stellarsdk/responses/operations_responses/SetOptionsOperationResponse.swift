@@ -10,43 +10,43 @@ import Foundation
 
 ///  Represents a set options operation response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class SetOptionsOperationResponse: OperationResponse {
+public class SetOptionsOperationResponse: OperationResponse, @unchecked Sendable {
     
     /// Threshold for low-security operations.
-    public var lowThreshold:Int?
+    public let lowThreshold:Int?
 
     /// Threshold for medium-security operations.
-    public var medThreshold:Int?
+    public let medThreshold:Int?
 
     /// Threshold for high-security operations.
-    public var highThreshold:Int?
+    public let highThreshold:Int?
 
     /// Account ID designated to receive inflation.
-    public var inflationDestination:String?
+    public let inflationDestination:String?
 
     /// Home domain used for reverse federation lookup.
-    public var homeDomain:String?
+    public let homeDomain:String?
 
     /// Public key of the signer being added or modified.
-    public var signerKey:String?
+    public let signerKey:String?
 
     /// Weight of the signer (0-255). Weight of 0 removes the signer.
-    public var signerWeight:Int?
+    public let signerWeight:Int?
 
     /// Weight of the master key (0-255).
-    public var masterKeyWeight:Int?
+    public let masterKeyWeight:Int?
 
     /// Account flags being set (numeric values).
-    public var setFlags:[Int]?
+    public let setFlags:[Int]?
 
     /// Account flags being set (string values).
-    public var setFlagsS:[String]?
+    public let setFlagsS:[String]?
 
     /// Account flags being cleared (numeric values).
-    public var clearFlags:[Int]?
+    public let clearFlags:[Int]?
 
     /// Account flags being cleared (string values).
-    public var clearFlagsS:[String]?
+    public let clearFlagsS:[String]?
     
     
     // Properties to encode and decode

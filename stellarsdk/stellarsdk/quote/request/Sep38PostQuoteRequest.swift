@@ -15,7 +15,7 @@ import Foundation
 /// or `buyAmount` must be specified, but not both.
 ///
 /// See [SEP-38: Quote Service](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)
-public struct Sep38PostQuoteRequest {
+public struct Sep38PostQuoteRequest: Sendable {
 
     /// The context in which the quote is being requested.
     ///

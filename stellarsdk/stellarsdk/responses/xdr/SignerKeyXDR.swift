@@ -15,7 +15,7 @@ public enum SignerKeyType: Int32 {
     case signedPayload = 3
 }
 
-public enum SignerKeyXDR: XDRCodable {
+public enum SignerKeyXDR: XDRCodable, Sendable {
     case ed25519 (WrappedData32)
     case preAuthTx (WrappedData32)
     case hashX (WrappedData32)
@@ -70,7 +70,7 @@ public enum SignerKeyXDR: XDRCodable {
     }
 }
 
-public struct Ed25519SignedPayload: XDRCodable, Equatable {
+public struct Ed25519SignedPayload: XDRCodable, Equatable, Sendable {
     public let ed25519: WrappedData32
     public let payload: Data
     

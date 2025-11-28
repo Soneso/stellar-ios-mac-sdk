@@ -64,11 +64,11 @@ public typealias OperationDetailsResponseClosure = (_ response:OperationDetailsR
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - OperationResponse for operation data structures
-public class OperationsService: NSObject {
+public class OperationsService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let operationsFactory = OperationsFactory()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
     }
     

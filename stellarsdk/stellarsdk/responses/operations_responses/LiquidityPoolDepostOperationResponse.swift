@@ -11,31 +11,31 @@ import Foundation
 /// Represents a liquidity pool deposit operation response.
 /// This operation deposits assets into a liquidity pool, providing liquidity to the pool in exchange for pool shares.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class LiquidityPoolDepostOperationResponse: OperationResponse {
+public class LiquidityPoolDepostOperationResponse: OperationResponse, @unchecked Sendable {
 
     /// ID of the liquidity pool receiving the deposit.
-    public var liquidityPoolId:String
+    public let liquidityPoolId:String
 
     /// Maximum amounts of each reserve asset that can be deposited.
-    public var reservesMax:[ReserveResponse]
+    public let reservesMax:[ReserveResponse]
 
     /// Minimum price (as decimal).
-    public var minPrice:String
+    public let minPrice:String
 
     /// Minimum price as a rational number (numerator/denominator).
-    public var minPriceR:LiquidityPoolPriceResponse
+    public let minPriceR:LiquidityPoolPriceResponse
 
     /// Maximum price (as decimal).
-    public var maxPrice:String
+    public let maxPrice:String
 
     /// Maximum price as a rational number (numerator/denominator).
-    public var maxPriceR:LiquidityPoolPriceResponse
+    public let maxPriceR:LiquidityPoolPriceResponse
 
     /// Actual amounts deposited for each reserve.
-    public var reservesDeposited:[ReserveResponse]
+    public let reservesDeposited:[ReserveResponse]
 
     /// Amount of pool shares received in exchange for the deposit.
-    public var sharesReceived:String
+    public let sharesReceived:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

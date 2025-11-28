@@ -19,7 +19,7 @@ public enum ClawbackResultCode: Int32 {
     case unterfunded = -4
 }
 
-public enum ClawbackResultXDR: XDRCodable {
+public enum ClawbackResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

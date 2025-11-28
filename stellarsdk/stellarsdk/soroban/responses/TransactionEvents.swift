@@ -9,28 +9,28 @@
 import Foundation
 
 /// Container for Soroban transaction diagnostic and execution events in XDR format.
-public class TransactionEvents: NSObject, Decodable {
+public struct TransactionEvents: Decodable, Sendable {
 
     /// XDR-encoded diagnostic events for debugging transaction execution.
-    public var diagnosticEventsXdr:[String]?
+    public let diagnosticEventsXdr:[String]?
 
     /// XDR-encoded transaction events emitted during execution.
-    public var transactionEventsXdr:[String]?
+    public let transactionEventsXdr:[String]?
 
     /// XDR-encoded contract events grouped by operation index.
-    public var contractEventsXdr:[[String]]?
-    
+    public let contractEventsXdr:[[String]]?
+
     private enum CodingKeys: String, CodingKey {
         case diagnosticEventsXdr
         case transactionEventsXdr
         case contractEventsXdr
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         diagnosticEventsXdr = try values.decodeIfPresent([String].self, forKey: .diagnosticEventsXdr)
         transactionEventsXdr = try values.decodeIfPresent([String].self, forKey: .transactionEventsXdr)
         contractEventsXdr = try values.decodeIfPresent([[String]].self, forKey: .contractEventsXdr)
-        
+
     }
 }

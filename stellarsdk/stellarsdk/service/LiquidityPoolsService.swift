@@ -56,11 +56,11 @@ public typealias LiquidityPoolTradesResponseClosure = (_ response:LiquidityPoolT
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - LiquidityPoolDepositOperation and LiquidityPoolWithdrawOperation
-public class LiquidityPoolsService: NSObject {
+public class LiquidityPoolsService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }

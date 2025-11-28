@@ -16,7 +16,7 @@ public struct AssetType {
     public static let ASSET_TYPE_POOL_SHARE: Int32 = 3
 }
 
-public struct Alpha4XDR: XDRCodable {
+public struct Alpha4XDR: XDRCodable, Sendable {
     let assetCode: WrappedData4
     let issuer: PublicKey
     
@@ -49,7 +49,7 @@ public struct Alpha4XDR: XDRCodable {
     }
 }
 
-public struct Alpha12XDR: XDRCodable {
+public struct Alpha12XDR: XDRCodable, Sendable {
     let assetCode: WrappedData12
     let issuer: PublicKey
     
@@ -83,7 +83,7 @@ public struct Alpha12XDR: XDRCodable {
     }
 }
 
-public enum AssetXDR: XDRCodable {
+public enum AssetXDR: XDRCodable, Sendable {
     case native
     case alphanum4 (Alpha4XDR)
     case alphanum12 (Alpha12XDR)
