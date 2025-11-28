@@ -62,14 +62,6 @@ public enum TransactionsChange {
     case transactionsForLedger(ledger:String, cursor:String?)
 }
 
-/// Callback closure for retrieving transaction details from the Stellar network.
-public typealias TransactionDetailsResponseClosure = (_ response:TransactionDetailsResponseEnum) -> (Void)
-/// Callback closure for synchronous transaction submission operations.
-public typealias TransactionPostResponseClosure = (_ response:TransactionPostResponseEnum) -> (Void)
-/// Callback closure for asynchronous transaction submission operations.
-public typealias TransactionPostAsyncResponseClosure = (_ response:TransactionPostAsyncResponseEnum) -> (Void)
-/// Callback closure for checking if destination accounts require memos.
-public typealias CheckMemoRequiredResponseClosure = (_ response:CheckMemoRequiredResponseEnum) -> (Void)
 
 /// Service for querying and submitting transactions on the Stellar network.
 ///
@@ -116,52 +108,23 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Retrieves a paginated list of all transactions from Horizon.
-    /// - Parameters:
-    ///   - cursor: Optional cursor for pagination continuation.
-    ///   - order: Optional sort order (ascending or descending by ledger sequence).
-    ///   - limit: Optional maximum number of records to return (default 10, max 200).
-    ///   - response: Callback with paginated transaction results or error.
-    @available(*, renamed: "getTransactions(cursor:order:limit:)")
-    open func getTransactions(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
-        Task {
-            let result = await getTransactions(cursor: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-    
-    /// Retrieves a paginated list of all transactions from Horizon using async/await.
-    /// - Parameters:
-    ///   - cursor: Optional cursor for pagination continuation.
-    ///   - order: Optional sort order (ascending or descending by ledger sequence).
-    ///   - limit: Optional maximum number of records to return (default 10, max 200).
-    /// - Returns: Page response containing transaction records or error.
+    ///
+    /// - Parameter cursor: Optional cursor for pagination continuation
+    /// - Parameter order: Optional sort order (ascending or descending by ledger sequence)
+    /// - Parameter limit: Optional maximum number of records to return (default 10, max 200)
+    /// - Returns: PageResponse containing transaction records or error
     open func getTransactions(cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
         let path = "/transactions"
         return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
     
     /// Retrieves transactions for a specific account.
-    /// - Parameters:
-    ///   - accountId: The Stellar account ID to query transactions for.
-    ///   - cursor: Optional cursor for pagination continuation.
-    ///   - order: Optional sort order (ascending or descending by ledger sequence).
-    ///   - limit: Optional maximum number of records to return (default 10, max 200).
-    ///   - response: Callback with paginated transaction results or error.
-    @available(*, renamed: "getTransactions(forAccount:from:order:limit:)")
-    open func getTransactions(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
-        Task {
-            let result = await getTransactions(forAccount: accountId, from: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-    
-    /// Retrieves transactions for a specific account using async/await.
-    /// - Parameters:
-    ///   - accountId: The Stellar account ID to query transactions for.
-    ///   - cursor: Optional cursor for pagination continuation.
-    ///   - order: Optional sort order (ascending or descending by ledger sequence).
-    ///   - limit: Optional maximum number of records to return (default 10, max 200).
-    /// - Returns: Page response containing transaction records or error.
+    ///
+    /// - Parameter accountId: The Stellar account ID to query transactions for
+    /// - Parameter cursor: Optional cursor for pagination continuation
+    /// - Parameter order: Optional sort order (ascending or descending by ledger sequence)
+    /// - Parameter limit: Optional maximum number of records to return (default 10, max 200)
+    /// - Returns: PageResponse containing transaction records or error
     open func getTransactions(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum
     {
         let path = "/accounts/" + accountId + "/transactions"
@@ -169,27 +132,12 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Retrieves transactions for a specific claimable balance.
-    /// - Parameters:
-    ///   - claimableBalanceId: The claimable balance ID (hex or B-prefixed format).
-    ///   - cursor: Optional cursor for pagination continuation.
-    ///   - order: Optional sort order (ascending or descending by ledger sequence).
-    ///   - limit: Optional maximum number of records to return (default 10, max 200).
-    ///   - response: Callback with paginated transaction results or error.
-    @available(*, renamed: "getTransactions(forClaimableBalance:from:order:limit:)")
-    open func getTransactions(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
-        Task {
-            let result = await getTransactions(forClaimableBalance: claimableBalanceId, from: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-    
-    /// Retrieves transactions for a specific claimable balance using async/await.
-    /// - Parameters:
-    ///   - claimableBalanceId: The claimable balance ID (hex or B-prefixed format, auto-decoded).
-    ///   - cursor: Optional cursor for pagination continuation.
-    ///   - order: Optional sort order (ascending or descending by ledger sequence).
-    ///   - limit: Optional maximum number of records to return (default 10, max 200).
-    /// - Returns: Page response containing transaction records or error.
+    ///
+    /// - Parameter claimableBalanceId: The claimable balance ID (hex or B-prefixed format, auto-decoded)
+    /// - Parameter cursor: Optional cursor for pagination continuation
+    /// - Parameter order: Optional sort order (ascending or descending by ledger sequence)
+    /// - Parameter limit: Optional maximum number of records to return (default 10, max 200)
+    /// - Returns: PageResponse containing transaction records or error
     open func getTransactions(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
         var id = claimableBalanceId
         if claimableBalanceId.hasPrefix("B"),
@@ -201,27 +149,12 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Retrieves transactions for a specific liquidity pool.
-    /// - Parameters:
-    ///   - liquidityPoolId: The liquidity pool ID (hex or L-prefixed format).
-    ///   - cursor: Optional cursor for pagination continuation.
-    ///   - order: Optional sort order (ascending or descending by ledger sequence).
-    ///   - limit: Optional maximum number of records to return (default 10, max 200).
-    ///   - response: Callback with paginated transaction results or error.
-    @available(*, renamed: "getTransactions(forLiquidityPool:from:order:limit:)")
-    open func getTransactions(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
-        Task {
-            let result = await getTransactions(forLiquidityPool: liquidityPoolId, from: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-    
-    /// Retrieves transactions for a specific liquidity pool using async/await.
-    /// - Parameters:
-    ///   - liquidityPoolId: The liquidity pool ID (hex or L-prefixed format, auto-decoded).
-    ///   - cursor: Optional cursor for pagination continuation.
-    ///   - order: Optional sort order (ascending or descending by ledger sequence).
-    ///   - limit: Optional maximum number of records to return (default 10, max 200).
-    /// - Returns: Page response containing transaction records or error.
+    ///
+    /// - Parameter liquidityPoolId: The liquidity pool ID (hex or L-prefixed format, auto-decoded)
+    /// - Parameter cursor: Optional cursor for pagination continuation
+    /// - Parameter order: Optional sort order (ascending or descending by ledger sequence)
+    /// - Parameter limit: Optional maximum number of records to return (default 10, max 200)
+    /// - Returns: PageResponse containing transaction records or error
     open func getTransactions(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
         var lidHex = liquidityPoolId
         if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
@@ -232,47 +165,21 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Retrieves transactions for a specific ledger sequence.
-    /// - Parameters:
-    ///   - ledger: The ledger sequence number or "latest" for the most recent ledger.
-    ///   - cursor: Optional cursor for pagination continuation.
-    ///   - order: Optional sort order (ascending or descending by ledger sequence).
-    ///   - limit: Optional maximum number of records to return (default 10, max 200).
-    ///   - response: Callback with paginated transaction results or error.
-    @available(*, renamed: "getTransactions(forLedger:from:order:limit:)")
-    open func getTransactions(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
-        Task {
-            let result = await getTransactions(forLedger: ledger, from: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-    
-    /// Retrieves transactions for a specific ledger sequence using async/await.
-    /// - Parameters:
-    ///   - ledger: The ledger sequence number or "latest" for the most recent ledger.
-    ///   - cursor: Optional cursor for pagination continuation.
-    ///   - order: Optional sort order (ascending or descending by ledger sequence).
-    ///   - limit: Optional maximum number of records to return (default 10, max 200).
-    /// - Returns: Page response containing transaction records or error.
+    ///
+    /// - Parameter ledger: The ledger sequence number or "latest" for the most recent ledger
+    /// - Parameter cursor: Optional cursor for pagination continuation
+    /// - Parameter order: Optional sort order (ascending or descending by ledger sequence)
+    /// - Parameter limit: Optional maximum number of records to return (default 10, max 200)
+    /// - Returns: PageResponse containing transaction records or error
     open func getTransactions(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
         let path = "/ledgers/" + ledger + "/transactions"
         return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
     
     /// Retrieves detailed information for a specific transaction by hash.
-    /// - Parameters:
-    ///   - transactionHash: The unique transaction hash identifier.
-    ///   - response: Callback with transaction details or error.
-    @available(*, renamed: "getTransactionDetails(transactionHash:)")
-    open func getTransactionDetails(transactionHash:String, response:@escaping TransactionDetailsResponseClosure) {
-        Task {
-            let result = await getTransactionDetails(transactionHash: transactionHash)
-            response(result)
-        }
-    }
-    
-    /// Retrieves detailed information for a specific transaction by hash using async/await.
-    /// - Parameter transactionHash: The unique transaction hash identifier.
-    /// - Returns: Transaction details or error.
+    ///
+    /// - Parameter transactionHash: The unique transaction hash identifier (hex-encoded)
+    /// - Returns: TransactionDetailsResponseEnum with transaction details or error
     open func getTransactionDetails(transactionHash:String) async -> TransactionDetailsResponseEnum {
         let requestPath = "/transactions/" + transactionHash
 
@@ -292,23 +199,10 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Submits a transaction to the Stellar network with optional SEP-29 memo validation.
-    /// - Parameters:
-    ///   - transaction: The signed transaction to submit.
-    ///   - skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation.
-    ///   - response: Callback with submission result, memo requirement notice, or error.
-    @available(*, renamed: "submitTransaction(transaction:skipMemoRequiredCheck:)")
-    open func submitTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostResponseClosure) {
-        Task {
-            let result = await submitTransaction(transaction: transaction, skipMemoRequiredCheck: skipMemoRequiredCheck)
-            response(result)
-        }
-    }
-    
-    /// Submits a transaction to the Stellar network with optional SEP-29 memo validation using async/await.
-    /// - Parameters:
-    ///   - transaction: The signed transaction to submit.
-    ///   - skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation.
-    /// - Returns: Submission result, memo requirement notice, or error.
+    ///
+    /// - Parameter transaction: The signed transaction to submit
+    /// - Parameter skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation (default: false)
+    /// - Returns: TransactionPostResponseEnum with submission result, memo requirement notice, or error
     open func submitTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostResponseEnum {
         let envelope: String
         do {
@@ -319,24 +213,13 @@ public class TransactionsService: @unchecked Sendable {
         return await postTransaction(transactionEnvelope: envelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
     }
     
-    /// Submits a transaction asynchronously, returning immediately after validation without waiting for ledger inclusion.
-    /// - Parameters:
-    ///   - transaction: The signed transaction to submit.
-    ///   - skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation.
-    ///   - response: Callback with async submission result, memo requirement notice, or error.
-    @available(*, renamed: "submitAsyncTransaction(transaction:skipMemoRequiredCheck:)")
-    open func submitAsyncTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostAsyncResponseClosure) {
-        Task {
-            let result = await submitAsyncTransaction(transaction: transaction, skipMemoRequiredCheck: skipMemoRequiredCheck)
-            response(result)
-        }
-    }
-    
-    /// Submits a transaction asynchronously using async/await, returning immediately after validation.
-    /// - Parameters:
-    ///   - transaction: The signed transaction to submit.
-    ///   - skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation.
-    /// - Returns: Async submission result, memo requirement notice, or error.
+    /// Submits a transaction asynchronously, returning immediately after validation.
+    ///
+    /// The transaction is validated and queued but the method returns before ledger inclusion.
+    ///
+    /// - Parameter transaction: The signed transaction to submit
+    /// - Parameter skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation (default: false)
+    /// - Returns: TransactionPostAsyncResponseEnum with async submission result, memo requirement notice, or error
     open func submitAsyncTransaction(transaction:Transaction, skipMemoRequiredCheck:Bool = false) async -> TransactionPostAsyncResponseEnum {
         let envelope: String
         do {
@@ -348,20 +231,9 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Submits a fee-bump transaction to replace an existing transaction with higher fees.
-    /// - Parameters:
-    ///   - transaction: The signed fee-bump transaction to submit.
-    ///   - response: Callback with submission result or error.
-    @available(*, renamed: "submitFeeBumpTransaction(transaction:)")
-    open func submitFeeBumpTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostResponseClosure) {
-        Task {
-            let result = await submitFeeBumpTransaction(transaction: transaction)
-            response(result)
-        }
-    }
-    
-    /// Submits a fee-bump transaction using async/await to replace an existing transaction with higher fees.
-    /// - Parameter transaction: The signed fee-bump transaction to submit.
-    /// - Returns: Submission result or error.
+    ///
+    /// - Parameter transaction: The signed fee-bump transaction to submit
+    /// - Returns: TransactionPostResponseEnum with submission result or error
     open func submitFeeBumpTransaction(transaction:FeeBumpTransaction) async -> TransactionPostResponseEnum {
         let envelope: String
         do {
@@ -373,20 +245,9 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Submits a fee-bump transaction asynchronously, returning immediately after validation.
-    /// - Parameters:
-    ///   - transaction: The signed fee-bump transaction to submit.
-    ///   - response: Callback with async submission result or error.
-    @available(*, renamed: "submitFeeBumpAsyncTransaction(transaction:)")
-    open func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction, response:@escaping TransactionPostAsyncResponseClosure) {
-        Task {
-            let result = await submitFeeBumpAsyncTransaction(transaction: transaction)
-            response(result)
-        }
-    }
-    
-    /// Submits a fee-bump transaction asynchronously using async/await, returning immediately after validation.
-    /// - Parameter transaction: The signed fee-bump transaction to submit.
-    /// - Returns: Async submission result or error.
+    ///
+    /// - Parameter transaction: The signed fee-bump transaction to submit
+    /// - Returns: TransactionPostAsyncResponseEnum with async submission result or error
     open func submitFeeBumpAsyncTransaction(transaction:FeeBumpTransaction) async -> TransactionPostAsyncResponseEnum {
         var envelope:String? = nil
         do {
@@ -398,23 +259,10 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Posts a transaction envelope directly to Horizon with optional SEP-29 memo validation.
-    /// - Parameters:
-    ///   - transactionEnvelope: The base64-encoded transaction envelope XDR.
-    ///   - skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation.
-    ///   - response: Callback with submission result, memo requirement notice, or error.
-    @available(*, renamed: "postTransaction(transactionEnvelope:skipMemoRequiredCheck:)")
-    open func postTransaction(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostResponseClosure) {
-        Task {
-            let result = await postTransaction(transactionEnvelope: transactionEnvelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
-            response(result)
-        }
-    }
-    
-    /// Posts a transaction envelope directly to Horizon with optional SEP-29 memo validation using async/await.
-    /// - Parameters:
-    ///   - transactionEnvelope: The base64-encoded transaction envelope XDR.
-    ///   - skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation.
-    /// - Returns: Submission result, memo requirement notice, or error.
+    ///
+    /// - Parameter transactionEnvelope: The base64-encoded transaction envelope XDR
+    /// - Parameter skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation (default: false)
+    /// - Returns: TransactionPostResponseEnum with submission result, memo requirement notice, or error
     open func postTransaction(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false) async -> TransactionPostResponseEnum {
         if !skipMemoRequiredCheck, let transaction = try? Transaction(envelopeXdr: transactionEnvelope) {
             let checkMemoRequiredEnum = await checkMemoRequired(transaction: transaction)
@@ -432,23 +280,10 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Posts a transaction envelope asynchronously, returning immediately after validation.
-    /// - Parameters:
-    ///   - transactionEnvelope: The base64-encoded transaction envelope XDR.
-    ///   - skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation.
-    ///   - response: Callback with async submission result, memo requirement notice, or error.
-    @available(*, renamed: "postTransactionAsync(transactionEnvelope:skipMemoRequiredCheck:)")
-    open func postTransactionAsync(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false, response:@escaping TransactionPostAsyncResponseClosure) {
-        Task {
-            let result = await postTransactionAsync(transactionEnvelope: transactionEnvelope, skipMemoRequiredCheck: skipMemoRequiredCheck)
-            response(result)
-        }
-    }
-    
-    /// Posts a transaction envelope asynchronously using async/await, returning immediately after validation.
-    /// - Parameters:
-    ///   - transactionEnvelope: The base64-encoded transaction envelope XDR.
-    ///   - skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation.
-    /// - Returns: Async submission result, memo requirement notice, or error.
+    ///
+    /// - Parameter transactionEnvelope: The base64-encoded transaction envelope XDR
+    /// - Parameter skipMemoRequiredCheck: Set to true to bypass SEP-29 memo requirement validation (default: false)
+    /// - Returns: TransactionPostAsyncResponseEnum with async submission result, memo requirement notice, or error
     open func postTransactionAsync(transactionEnvelope:String, skipMemoRequiredCheck:Bool = false) async -> TransactionPostAsyncResponseEnum {
 
         if !skipMemoRequiredCheck, let transaction = try? Transaction(envelopeXdr: transactionEnvelope) {
@@ -467,20 +302,12 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Checks if a transaction requires a memo according to SEP-29 requirements.
-    /// - Parameters:
-    ///   - transaction: The transaction to validate for memo requirements.
-    ///   - response: Callback indicating if memo is required, not required, or error.
-    @available(*, renamed: "checkMemoRequired(transaction:)")
-    private func checkMemoRequired(transaction: Transaction, response:@escaping CheckMemoRequiredResponseClosure) {
-        Task {
-            let result = await checkMemoRequired(transaction: transaction)
-            response(result)
-        }
-    }
-    
-    /// Checks if a transaction requires a memo according to SEP-29 requirements using async/await.
-    /// - Parameter transaction: The transaction to validate for memo requirements.
-    /// - Returns: Indication if memo is required, not required, or error.
+    ///
+    /// Examines payment, path payment, and account merge operations to find destination accounts
+    /// that have the `config.memo_required` flag set.
+    ///
+    /// - Parameter transaction: The transaction to validate for memo requirements
+    /// - Returns: CheckMemoRequiredResponseEnum indicating if memo is required, not required, or error
     private func checkMemoRequired(transaction: Transaction) async -> CheckMemoRequiredResponseEnum {
         if transaction.memo != Memo.none {
             return .noMemoRequired
@@ -513,20 +340,9 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Recursively checks destination accounts for SEP-29 memo requirements.
-    /// - Parameters:
-    ///   - destinations: Array of destination account IDs to check.
-    ///   - response: Callback indicating if memo is required, not required, or error.
-    @available(*, renamed: "checkMemoRequiredForDestinations(destinations:)")
-    private func checkMemoRequiredForDestinations(destinations: [String], response:@escaping CheckMemoRequiredResponseClosure) {
-        Task {
-            let result = await checkMemoRequiredForDestinations(destinations: destinations)
-            response(result)
-        }
-    }
-    
-    /// Recursively checks destination accounts for SEP-29 memo requirements using async/await.
-    /// - Parameter destinations: Array of destination account IDs to check.
-    /// - Returns: Indication if memo is required, not required, or error.
+    ///
+    /// - Parameter destinations: Array of destination account IDs to check
+    /// - Returns: CheckMemoRequiredResponseEnum indicating if memo is required, not required, or error
     private func checkMemoRequiredForDestinations(destinations: [String]) async -> CheckMemoRequiredResponseEnum {
 
         var remainingDestinations = destinations
@@ -565,20 +381,9 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Core transaction submission to Horizon without SEP-29 validation.
-    /// - Parameters:
-    ///   - transactionEnvelope: The base64-encoded transaction envelope XDR.
-    ///   - response: Callback with submission result or error.
-    @available(*, renamed: "postTransactionCore(transactionEnvelope:)")
-    private func postTransactionCore(transactionEnvelope:String, response:@escaping TransactionPostResponseClosure) {
-        Task {
-            let result = await postTransactionCore(transactionEnvelope: transactionEnvelope)
-            response(result)
-        }
-    }
-    
-    /// Core transaction submission to Horizon without SEP-29 validation using async/await.
-    /// - Parameter transactionEnvelope: The base64-encoded transaction envelope XDR.
-    /// - Returns: Submission result or error.
+    ///
+    /// - Parameter transactionEnvelope: The base64-encoded transaction envelope XDR
+    /// - Returns: TransactionPostResponseEnum with submission result or error
     private func postTransactionCore(transactionEnvelope:String) async -> TransactionPostResponseEnum {
 
         let requestPath = "/transactions"
@@ -605,20 +410,9 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Core async transaction submission to Horizon without SEP-29 validation.
-    /// - Parameters:
-    ///   - transactionEnvelope: The base64-encoded transaction envelope XDR.
-    ///   - response: Callback with async submission result or error.
-    @available(*, renamed: "postTransactionAsyncCore(transactionEnvelope:)")
-    private func postTransactionAsyncCore(transactionEnvelope:String, response:@escaping TransactionPostAsyncResponseClosure) {
-        Task {
-            let result = await postTransactionAsyncCore(transactionEnvelope: transactionEnvelope)
-            response(result)
-        }
-    }
-    
-    /// Core async transaction submission to Horizon without SEP-29 validation using async/await.
-    /// - Parameter transactionEnvelope: The base64-encoded transaction envelope XDR.
-    /// - Returns: Async submission result or error.
+    ///
+    /// - Parameter transactionEnvelope: The base64-encoded transaction envelope XDR
+    /// - Returns: TransactionPostAsyncResponseEnum with async submission result or error
     private func postTransactionAsyncCore(transactionEnvelope:String) async -> TransactionPostAsyncResponseEnum {
 
         let requestPath = "/transactions_async"
@@ -663,6 +457,9 @@ public class TransactionsService: @unchecked Sendable {
     }
 
     /// Streams real-time transaction updates via Server-Sent Events from Horizon.
+    ///
+    /// - Parameter transactionsType: The filter specifying which transactions to stream (all, by account, claimable balance, or ledger)
+    /// - Returns: TransactionsStreamItem for receiving streaming transaction updates
     open func stream(for transactionsType:TransactionsChange) -> TransactionsStreamItem {
         var subpath: String
         switch transactionsType {
@@ -698,27 +495,12 @@ public class TransactionsService: @unchecked Sendable {
     }
     
     /// Internal method to retrieve transactions from a specific Horizon API path.
-    /// - Parameters:
-    ///   - path: The Horizon API path to query.
-    ///   - cursor: Optional cursor for pagination continuation.
-    ///   - order: Optional sort order (ascending or descending by ledger sequence).
-    ///   - limit: Optional maximum number of records to return.
-    ///   - response: Callback with paginated transaction results or error.
-    @available(*, renamed: "getTransactions(onPath:from:order:limit:)")
-    private func getTransactions(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
-        Task {
-            let result = await getTransactions(onPath: path, from: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-    
-    /// Internal method to retrieve transactions from a specific Horizon API path using async/await.
-    /// - Parameters:
-    ///   - path: The Horizon API path to query.
-    ///   - cursor: Optional cursor for pagination continuation.
-    ///   - order: Optional sort order (ascending or descending by ledger sequence).
-    ///   - limit: Optional maximum number of records to return.
-    /// - Returns: Page response containing transaction records or error.
+    ///
+    /// - Parameter path: The Horizon API path to query
+    /// - Parameter cursor: Optional cursor for pagination continuation
+    /// - Parameter order: Optional sort order (ascending or descending by ledger sequence)
+    /// - Parameter limit: Optional maximum number of records to return
+    /// - Returns: PageResponse containing transaction records or error
     private func getTransactions(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
         var requestPath = path
 
@@ -735,21 +517,12 @@ public class TransactionsService: @unchecked Sendable {
         return await getTransactionsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
-    /// Retrieves transactions from a complete Horizon URL, useful for pagination navigation.
-    /// - Parameters:
-    ///   - url: The complete Horizon URL to fetch transactions from.
-    ///   - response: Callback with paginated transaction results or error.
-    @available(*, renamed: "getTransactionsFromUrl(url:)")
-    open func getTransactionsFromUrl(url:String, response:@escaping PageResponse<TransactionResponse>.ResponseClosure) {
-        Task {
-            let result = await getTransactionsFromUrl(url: url)
-            response(result)
-        }
-    }
-    
-    /// Retrieves transactions from a complete Horizon URL using async/await, useful for pagination navigation.
-    /// - Parameter url: The complete Horizon URL to fetch transactions from.
-    /// - Returns: Page response containing transaction records or error.
+    /// Retrieves transactions from a complete Horizon URL.
+    ///
+    /// Useful for pagination navigation with "next" or "prev" links from a PageResponse.
+    ///
+    /// - Parameter url: The complete Horizon URL to fetch transactions from
+    /// - Returns: PageResponse containing transaction records or error
     open func getTransactionsFromUrl(url:String) async -> PageResponse<TransactionResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {

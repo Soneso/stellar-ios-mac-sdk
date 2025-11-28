@@ -89,7 +89,7 @@ public enum SendChallengeResponseEnum {
 }
 
 /// Result enum for complete SEP-10 authentication flow.
-public enum GetJWTTokenResponseEnum {
+public enum GetJWTTokenResponseEnum: Sendable {
     /// Successfully completed SEP-10 authentication and received JWT token.
     case success(jwtToken: String)
     /// Failed to complete authentication due to request, validation, or signing error.
@@ -103,18 +103,6 @@ public enum ChallengeValidationResponseEnum {
     /// Challenge validation failed due to security or protocol violation.
     case failure(error: ChallengeValidationError)
 }
-
-/// A closure to be called with the response from a WebAuthenticator for domain request.
-public typealias WebAuthenticatorClosure = (_ response:WebAuthenticatorForDomainEnum) -> (Void)
-
-/// A closure to be called with the response from a get challenge request.
-public typealias ChallengeResponseClosure = (_ response:ChallengeResponseEnum) -> (Void)
-
-/// A closure to be called with the response from a post challenge request.
-public typealias SendChallengeResponseClosure = (_ response:SendChallengeResponseEnum) -> (Void)
-
-/// A closure to be called with the response from a get JWT token request.
-public typealias GetJWTTokenResponseClosure = (_ response:GetJWTTokenResponseEnum) -> (Void)
 
 /// Implements SEP-0010 - Stellar Web Authentication.
 ///
@@ -246,7 +234,7 @@ public typealias GetJWTTokenResponseClosure = (_ response:GetJWTTokenResponseEnu
 /// See also:
 /// - [SEP-0010 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)
 /// - [StellarToml] for discovering authentication endpoints
-public class WebAuthenticator {
+public class WebAuthenticator: @unchecked Sendable {
     /// The URL of the SEP-10 web authentication endpoint for obtaining JWT tokens.
     public let authEndpoint: String
     /// The server's public signing key used to validate challenge transaction signatures.
@@ -258,20 +246,6 @@ public class WebAuthenticator {
     public let serverHomeDomain: String
     /// Grace period in seconds for validating challenge transaction time bounds (default: 5 minutes).
     public let gracePeriod:UInt64 = SEPConstants.WEBAUTH_GRACE_PERIOD_SECONDS
-    
-    /// Get a WebAuthenticator instange from a domain
-    ///
-    /// - Parameter domain: The domain from which to get the stellar information
-    /// - Parameter network: The network used.
-    /// - Parameter secure: The protocol used (http or https).
-    ///
-    @available(*, renamed: "from(domain:network:secure:)")
-    public static func from(domain: String, network:Network, secure: Bool = true, completion:@escaping WebAuthenticatorClosure) {
-        Task {
-            let result = await from(domain: domain, network: network, secure: secure)
-            completion(result)
-        }
-    }
     
     /// Creates a WebAuthenticator instance by fetching configuration from a domain's stellar.toml file.
     ///
@@ -323,23 +297,7 @@ public class WebAuthenticator {
         self.network = network
         self.serverHomeDomain = serverHomeDomain
     }
-    
-    /// Get JWT token for wallet
-    ///
-    /// - Parameter forUserAccount: account id of the user
-    /// - Parameter memo: ID memo of the client account if muxed and accountId starts with G
-    /// - Parameter signers: list of signers (keypairs including secret seed) of the client account
-    /// - Parameter homeDomain: domain of the server hosting it's stellar.toml
-    /// - Parameter clientDomain: domain of the client hosting it's stellar.toml
-    /// - Parameter clientDomainAccountKeyPair: Keypair of the client domain account including the seed (used for signing the transaction if client domain is provided)
-    @available(*, deprecated, message: "use jwtToken(forUserAccount:memo:signers:homeDomain:clientDomain:clientDomainAccountKeyPair:clientDomainSigningFunction:) instead")
-    public func jwtToken(forUserAccount accountId:String, memo:UInt64? = nil, signers:[KeyPair], homeDomain:String? = nil, clientDomain:String? = nil, clientDomainAccountKeyPair:KeyPair? = nil, completion:@escaping GetJWTTokenResponseClosure) {
-        Task {
-            let result = await jwtToken(forUserAccount: accountId, memo: memo, signers: signers, homeDomain: homeDomain, clientDomain: clientDomain, clientDomainAccountKeyPair: clientDomainAccountKeyPair)
-            completion(result)
-        }
-    }
-    
+
     /// Obtains a JWT token through the SEP-0010 authentication flow.
     ///
     /// This method handles the complete authentication workflow: requesting a challenge from the server,
@@ -411,20 +369,6 @@ public class WebAuthenticator {
         }
     }
     
-    /// Requests a challenge transaction from the SEP-10 authentication server.
-    /// - Parameter forAccount: The Stellar account ID to authenticate
-    /// - Parameter memo: Optional ID memo for muxed accounts
-    /// - Parameter homeDomain: Optional anchor domain for verification
-    /// - Parameter clientDomain: Optional client domain for mutual authentication
-    /// - Parameter completion: Closure called with challenge response
-    @available(*, renamed: "getChallenge(forAccount:memo:homeDomain:clientDomain:)")
-    public func getChallenge(forAccount accountId:String, memo:UInt64? = nil, homeDomain:String? = nil, clientDomain:String? = nil, completion:@escaping ChallengeResponseClosure) {
-        Task {
-            let result = await getChallenge(forAccount: accountId, memo: memo, homeDomain: homeDomain, clientDomain: clientDomain)
-            completion(result)
-        }
-    }
-
     /// Requests a SEP-10 challenge transaction from the authentication server.
     /// - Parameter forAccount: The Stellar account ID to authenticate
     /// - Parameter memo: Optional ID memo. Required for muxed accounts starting with G, prohibited for accounts starting with M
@@ -626,17 +570,6 @@ public class WebAuthenticator {
             }
         } catch _ {
             return nil
-        }
-    }
-
-    /// Submits a signed challenge transaction to the authentication server.
-    /// - Parameter base64EnvelopeXDR: Base64-encoded signed transaction envelope
-    /// - Parameter completion: Closure called with JWT token response or error
-    @available(*, renamed: "sendCompletedChallenge(base64EnvelopeXDR:)")
-    public func sendCompletedChallenge(base64EnvelopeXDR: String, completion:@escaping SendChallengeResponseClosure) {
-        Task {
-            let result = await sendCompletedChallenge(base64EnvelopeXDR: base64EnvelopeXDR)
-            completion(result)
         }
     }
 

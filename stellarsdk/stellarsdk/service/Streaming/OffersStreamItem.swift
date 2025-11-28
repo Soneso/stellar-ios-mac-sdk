@@ -1,17 +1,14 @@
 import Foundation
 
 /// Streams offer data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class OffersStreamItem: NSObject {
-    private var streamingHelper: StreamingHelper
-    private var requestUrl: String
-    private let jsonDecoder = JSONDecoder()
+public class OffersStreamItem: @unchecked Sendable {
+    private let streamingHelper: StreamingHelper
+    private let requestUrl: String
 
     /// Creates a new offers stream for the specified Horizon API endpoint.
     public init(requestUrl:String) {
         streamingHelper = StreamingHelper()
         self.requestUrl = requestUrl
-
-        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
 
     /// Establishes the SSE connection and delivers offer responses as they arrive from Horizon.
@@ -26,7 +23,9 @@ public class OffersStreamItem: NSObject {
                         response(.error(error: HorizonRequestError.parsingResponseFailed(message: "Failed to convert response data to UTF8")))
                         return
                     }
-                    guard let offers = try self?.jsonDecoder.decode(OfferResponse.self, from: jsonData) else { return }
+                    let jsonDecoder = JSONDecoder()
+                    jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                    let offers = try jsonDecoder.decode(OfferResponse.self, from: jsonData)
                     response(.response(id: id, data: offers))
                 } catch {
                     response(.error(error: HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)))

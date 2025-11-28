@@ -182,51 +182,12 @@ public enum GetContractDataResponseEnum {
     case failure(error: SorobanRpcRequestError)
 }
 
-/// Callback closure for Soroban RPC health check operations.
-public typealias GetHealthResponseClosure = (_ response:GetHealthResponseEnum) -> (Void)
-/// Callback closure for retrieving Soroban network information.
-public typealias GetNetworkResponseClosure = (_ response:GetNetworkResponseEnum) -> (Void)
-/// Callback closure for retrieving Soroban fee statistics.
-public typealias GetFeeStatsResponseClosure = (_ response:GetFeeStatsResponseEnum) -> (Void)
-/// Callback closure for retrieving Soroban RPC version information.
-public typealias GetVersionInfoResponseClosure = (_ response:GetVersionInfoResponseEnum) -> (Void)
-/// Callback closure for retrieving ledger entries from Soroban state.
-public typealias GetLedgerEntriesResponseClosure = (_ response:GetLedgerEntriesResponseEnum) -> (Void)
-/// Callback closure for retrieving the latest ledger information from Soroban.
-public typealias GetLatestLedgerResponseClosure = (_ response:GetLatestLedgerResponseEnum) -> (Void)
-/// Callback closure for simulating Soroban smart contract transactions.
-public typealias SimulateTransactionResponseClosure = (_ response:SimulateTransactionResponseEnum) -> (Void)
-/// Callback closure for submitting Soroban transactions to the network.
-public typealias SendTransactionResponseClosure = (_ response:SendTransactionResponseEnum) -> (Void)
-/// Callback closure for retrieving a single Soroban transaction by hash.
-public typealias GetTransactionResponseClosure = (_ response:GetTransactionResponseEnum) -> (Void)
-/// Callback closure for retrieving multiple Soroban transactions.
-public typealias GetTransactionsResponseClosure = (_ response:GetTransactionsResponseEnum) -> (Void)
-/// Callback closure for retrieving contract events from Soroban.
-public typealias GetEventsResponseClosure = (_ response:GetEventsResponseEnum) -> (Void)
-/// Callback closure for retrieving the current nonce for an account.
-public typealias GetNonceResponseClosure = (_ response:GetNonceResponseEnum) -> (Void)
-/// Callback closure for retrieving Soroban smart contract code.
-public typealias GetContractCodeResponseClosure = (_ response:GetContractCodeResponseEnum) -> (Void)
-/// Callback closure for retrieving Soroban smart contract information.
-public typealias GetContractInfoClosure = (_ response:GetContractInfoEnum) -> (Void)
-/// Callback closure for retrieving Soroban account information.
-public typealias GetAccountResponseClosure = (_ response:GetAccountResponseEnum) -> (Void)
-/// Callback closure for retrieving Soroban smart contract data entries.
-public typealias GetContractDataResponseClosure = (_ response:GetContractDataResponseEnum) -> (Void)
-/// Callback closure for retrieving multiple ledgers from Soroban.
-public typealias GetLedgersResponseClosure = (_ response:GetLedgersResponseEnum) -> (Void)
-
 /// Internal result type distinguishing successful RPC responses from errors.
 /// Used for internal HTTP request handling before type-specific parsing.
 private enum RpcResult {
     case success(data: Data)
     case failure(error: SorobanRpcRequestError)
 }
-
-/// Callback closure for internal HTTP response handling.
-/// Invoked when raw RPC response data is received before decoding.
-private typealias RpcResponseClosure = (_ response:RpcResult) -> (Void)
 
 /// Soroban RPC client for interacting with smart contracts on the Stellar network.
 ///
@@ -310,22 +271,11 @@ public class SorobanServer: @unchecked Sendable {
     /// Enable detailed request/response logging for debugging. Default: false.
     public var enableLogging = false
     
-    /// Init a SorobanServer instance
+    /// Creates a new Soroban RPC client instance.
     ///
-    /// - Parameter endpoint: Endpoint representing the url of the soroban rpc server to use
-    ///
+    /// - Parameter endpoint: URL of the Soroban RPC server to connect to
     public init(endpoint:String) {
         self.endpoint = endpoint
-    }
-    
-    /// General node health check request.
-    /// See: https://soroban.stellar.org/api/methods/getHealth
-    @available(*, renamed: "getHealth()")
-    public func getHealth(completion:@escaping GetHealthResponseClosure) {
-        Task {
-            let result = await getHealth()
-            completion(result)
-        }
     }
     
     /// General node health check request.
@@ -343,8 +293,8 @@ public class SorobanServer: @unchecked Sendable {
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
-                } else if let error = response["error"] as? [String: Any] {
-                    return .failure(error: .errorResponse(errorData: error))
+                } else if let errorDict = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(error: SorobanRpcError(fromDictionary: errorDict)))
                 } else {
                     return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
@@ -353,16 +303,6 @@ public class SorobanServer: @unchecked Sendable {
             }
         case .failure(let error):
             return .failure(error: error)
-        }
-    }
-    
-    /// General info about the currently configured network.
-    /// See: https://soroban.stellar.org/api/methods/getNetwork
-    @available(*, renamed: "getNetwork()")
-    public func getNetwork(completion:@escaping GetNetworkResponseClosure) {
-        Task {
-            let result = await getNetwork()
-            completion(result)
         }
     }
     
@@ -381,8 +321,8 @@ public class SorobanServer: @unchecked Sendable {
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
-                } else if let error = response["error"] as? [String: Any] {
-                    return .failure(error: .errorResponse(errorData: error))
+                } else if let errorDict = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(error: SorobanRpcError(fromDictionary: errorDict)))
                 } else {
                     return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
@@ -399,20 +339,9 @@ public class SorobanServer: @unchecked Sendable {
     /// For Soroban transactions and Stellar transactions, they each have their own inclusion fees
     /// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
     /// during network traffic surge.
-    /// See: [Stellar developer docs](https://developers.stellar.org)
-    @available(*, renamed: "getFeeStats()")
-    public func getFeeStats(completion:@escaping GetFeeStatsResponseClosure) {
-        Task {
-            let result = await getFeeStats()
-            completion(result)
-        }
-    }
-    
-    /// Statistics for charged inclusion fees. The inclusion fee statistics are calculated
-    /// from the inclusion fees that were paid for the transactions to be included onto the ledger.
-    /// For Soroban transactions and Stellar transactions, they each have their own inclusion fees
-    /// and own surge pricing. Inclusion fees are used to prevent spam and prioritize transactions
-    /// during network traffic surge.
+    ///
+    /// - Returns: Fee statistics for both Soroban and classic transactions
+    ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     public func getFeeStats() async -> GetFeeStatsResponseEnum {
         
@@ -427,8 +356,8 @@ public class SorobanServer: @unchecked Sendable {
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
-                } else if let error = response["error"] as? [String: Any] {
-                    return .failure(error: .errorResponse(errorData: error))
+                } else if let errorDict = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(error: SorobanRpcError(fromDictionary: errorDict)))
                 } else {
                     return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
@@ -442,17 +371,9 @@ public class SorobanServer: @unchecked Sendable {
     
     /// Version information about the RPC and Captive core. RPC manages its own,
     /// pared-down version of Stellar Core optimized for its own subset of needs.
-    /// See: [Stellar developer docs](https://developers.stellar.org)
-    @available(*, renamed: "getVersionInfo()")
-    public func getVersionInfo(completion:@escaping GetVersionInfoResponseClosure) {
-        Task {
-            let result = await getVersionInfo()
-            completion(result)
-        }
-    }
-    
-    /// Version information about the RPC and Captive core. RPC manages its own,
-    /// pared-down version of Stellar Core optimized for its own subset of needs.
+    ///
+    /// - Returns: Version details for RPC server and its embedded Stellar Core instance
+    ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     public func getVersionInfo() async -> GetVersionInfoResponseEnum {
         
@@ -467,8 +388,8 @@ public class SorobanServer: @unchecked Sendable {
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
-                } else if let error = response["error"] as? [String: Any] {
-                    return .failure(error: .errorResponse(errorData: error))
+                } else if let errorDict = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(error: SorobanRpcError(fromDictionary: errorDict)))
                 } else {
                     return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
@@ -480,21 +401,13 @@ public class SorobanServer: @unchecked Sendable {
         }
     }
     
-    /// For reading the current value of ledger entries directly. Allows you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry.
+    /// For reading the current value of ledger entries directly. Allows you to directly inspect the current state of a contract, a contract's code, or any other ledger entry.
     /// This is a backup way to access your contract data which may not be available via events or simulateTransaction.
     /// To fetch contract wasm byte-code, use the ContractCode ledger entry key.
-    /// See: https://soroban.stellar.org/api/methods/getLedgerEntries
-    @available(*, renamed: "getLedgerEntries(base64EncodedKeys:)")
-    public func getLedgerEntries(base64EncodedKeys: [String], completion:@escaping GetLedgerEntriesResponseClosure) {
-        Task {
-            let result = await getLedgerEntries(base64EncodedKeys: base64EncodedKeys)
-            completion(result)
-        }
-    }
-    
-    /// For reading the current value of ledger entries directly. Allows you to directly inspect the current state of a contract, a contract’s code, or any other ledger entry.
-    /// This is a backup way to access your contract data which may not be available via events or simulateTransaction.
-    /// To fetch contract wasm byte-code, use the ContractCode ledger entry key.
+    ///
+    /// - Parameter base64EncodedKeys: Array of base64-encoded LedgerKey XDR values
+    /// - Returns: Current values of the requested ledger entries
+    ///
     /// See: https://soroban.stellar.org/api/methods/getLedgerEntries
     public func getLedgerEntries(base64EncodedKeys: [String]) async -> GetLedgerEntriesResponseEnum {
         
@@ -509,8 +422,8 @@ public class SorobanServer: @unchecked Sendable {
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
-                } else if let error = response["error"] as? [String: Any] {
-                    return .failure(error: .errorResponse(errorData: error))
+                } else if let errorDict = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(error: SorobanRpcError(fromDictionary: errorDict)))
                 } else {
                     return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
@@ -523,16 +436,9 @@ public class SorobanServer: @unchecked Sendable {
     }
     
     /// For finding out the current latest known ledger of this node. This is a subset of the ledger info from Horizon.
-    /// See: https://soroban.stellar.org/api/methods/getLatestLedger
-    @available(*, renamed: "getLatestLedger()")
-    public func getLatestLedger(completion:@escaping GetLatestLedgerResponseClosure) {
-        Task {
-            let result = await getLatestLedger()
-            completion(result)
-        }
-    }
-    
-    /// For finding out the current latest known ledger of this node. This is a subset of the ledger info from Horizon.
+    ///
+    /// - Returns: Latest ledger sequence number and hash
+    ///
     /// See: https://soroban.stellar.org/api/methods/getLatestLedger
     public func getLatestLedger() async -> GetLatestLedgerResponseEnum {
 
@@ -547,8 +453,8 @@ public class SorobanServer: @unchecked Sendable {
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
-                } else if let error = response["error"] as? [String: Any] {
-                    return .failure(error: .errorResponse(errorData: error))
+                } else if let errorDict = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(error: SorobanRpcError(fromDictionary: errorDict)))
                 } else {
                     return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
@@ -564,19 +470,12 @@ public class SorobanServer: @unchecked Sendable {
     /// The getLedgers method return a detailed list of ledgers starting from
     /// the user specified starting point that you can paginate as long as the pages
     /// fall within the history retention of their corresponding RPC provider.
-    /// See: [Stellar developer docs](https://developers.stellar.org)
-    @available(*, renamed: "getLedgers(startLedger:paginationOptions:format:)")
-    public func getLedgers(startLedger: UInt32, paginationOptions: PaginationOptions? = nil, format: String? = nil, completion: @escaping GetLedgersResponseClosure) {
-        Task {
-            let result = await getLedgers(startLedger: startLedger, paginationOptions: paginationOptions, format: format)
-            completion(result)
-        }
-    }
-
-    /// Retrieve a list of ledgers starting from the specified starting point.
-    /// The getLedgers method return a detailed list of ledgers starting from
-    /// the user specified starting point that you can paginate as long as the pages
-    /// fall within the history retention of their corresponding RPC provider.
+    ///
+    /// - Parameter startLedger: Starting ledger sequence number
+    /// - Parameter paginationOptions: Pagination settings (limit, cursor)
+    /// - Parameter format: XDR encoding format preference
+    /// - Returns: List of ledger details within the requested range
+    ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     public func getLedgers(startLedger: UInt32, paginationOptions: PaginationOptions? = nil, format: String? = nil) async -> GetLedgersResponseEnum {
 
@@ -591,8 +490,8 @@ public class SorobanServer: @unchecked Sendable {
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
-                } else if let error = response["error"] as? [String: Any] {
-                    return .failure(error: .errorResponse(errorData: error))
+                } else if let errorDict = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(error: SorobanRpcError(fromDictionary: errorDict)))
                 } else {
                     return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
@@ -604,16 +503,10 @@ public class SorobanServer: @unchecked Sendable {
         }
     }
     
-    /// loads the contract code (wasm binary) for the given wasmId
-    @available(*, renamed: "getContractCodeForWasmId(wasmId:)")
-    public func getContractCodeForWasmId(wasmId: String, completion:@escaping GetContractCodeResponseClosure) {
-        Task {
-            let result = await getContractCodeForWasmId(wasmId: wasmId)
-            completion(result)
-        }
-    }
-    
-    /// loads the contract code (wasm binary) for the given wasmId
+    /// Loads the contract code (wasm binary) for the given wasmId.
+    ///
+    /// - Parameter wasmId: Hex-encoded hash of the contract WASM
+    /// - Returns: Contract code entry containing the WASM bytecode
     public func getContractCodeForWasmId(wasmId: String) async -> GetContractCodeResponseEnum {
         let contractCodeKey = LedgerKeyContractCodeXDR(wasmId: wasmId)
         let ledgerKey = LedgerKeyXDR.contractCode(contractCodeKey)
@@ -636,16 +529,10 @@ public class SorobanServer: @unchecked Sendable {
         }
     }
     
-    /// loads the contract code (wasm binary) for the given contractId
-    @available(*, renamed: "getContractCodeForContractId(contractId:)")
-    public func getContractCodeForContractId(contractId: String, completion:@escaping GetContractCodeResponseClosure) {
-        Task {
-            let result = await getContractCodeForContractId(contractId: contractId)
-            completion(result)
-        }
-    }
-    
-    /// loads the contract code (wasm binary) for the given contractId
+    /// Loads the contract code (wasm binary) for the given contractId.
+    ///
+    /// - Parameter contractId: Stellar contract address (C...)
+    /// - Returns: Contract code entry containing the WASM bytecode
     public func getContractCodeForContractId(contractId: String) async -> GetContractCodeResponseEnum {
         var contractDataKey:LedgerKeyContractDataXDR? = nil
         do {
@@ -687,16 +574,9 @@ public class SorobanServer: @unchecked Sendable {
     
     /// Loads contract source byte code for the given contractId and extracts
     /// the information (Environment Meta, Contract Spec, Contract Meta).
-    @available(*, renamed: "getContractInfoForContractId(contractId:)")
-    public func getContractInfoForContractId(contractId: String, completion:@escaping GetContractInfoClosure) {
-        Task {
-            let result = await getContractInfoForContractId(contractId: contractId)
-            completion(result)
-        }
-    }
-    
-    /// Loads contract source byte code for the given contractId and extracts
-    /// the information (Environment Meta, Contract Spec, Contract Meta).
+    ///
+    /// - Parameter contractId: Stellar contract address (C...)
+    /// - Returns: Parsed contract information including spec entries
     public func getContractInfoForContractId(contractId: String) async -> GetContractInfoEnum {
         let response = await getContractCodeForContractId(contractId: contractId)
         switch response {
@@ -716,16 +596,9 @@ public class SorobanServer: @unchecked Sendable {
     
     /// Loads contract source byte code for the given wasm id and extracts
     /// the information (Environment Meta, Contract Spec, Contract Meta).
-    @available(*, renamed: "getContractInfoForWasmId(wasmId:)")
-    public func getContractInfoForWasmId(wasmId: String, completion:@escaping GetContractInfoClosure) {
-        Task {
-            let result = await getContractInfoForWasmId(wasmId: wasmId)
-            completion(result)
-        }
-    }
-    
-    /// Loads contract source byte code for the given wasm id and extracts
-    /// the information (Environment Meta, Contract Spec, Contract Meta).
+    ///
+    /// - Parameter wasmId: Hex-encoded hash of the contract WASM
+    /// - Returns: Parsed contract information including spec entries
     public func getContractInfoForWasmId(wasmId: String) async -> GetContractInfoEnum {
         let response = await getContractCodeForWasmId(wasmId: wasmId)
         switch response {
@@ -744,17 +617,10 @@ public class SorobanServer: @unchecked Sendable {
     }
     
     /// Fetches a minimal set of current info about a Stellar account. Needed to get the current sequence
-    /// number for the account, so you can build a successful transaction. Fails if the account was not found or accountiId is invalid
-    @available(*, renamed: "getAccount(accountId:)")
-    public func getAccount(accountId:String, completion:@escaping GetAccountResponseClosure) {
-        Task {
-            let result = await getAccount(accountId: accountId)
-            completion(result)
-        }
-    }
-    
-    /// Fetches a minimal set of current info about a Stellar account. Needed to get the current sequence
-    /// number for the account, so you can build a successful transaction. Fails if the account was not found or accountiId is invalid
+    /// number for the account, so you can build a successful transaction. Fails if the account was not found or accountId is invalid.
+    ///
+    /// - Parameter accountId: Stellar account address (G...)
+    /// - Returns: Account object with current sequence number
     public func getAccount(accountId:String) async -> GetAccountResponseEnum {
         if let publicKey = try? PublicKey(accountId: accountId) {
             let accountKey = LedgerKeyXDR.account(LedgerKeyAccountXDR(accountID: publicKey))
@@ -785,15 +651,11 @@ public class SorobanServer: @unchecked Sendable {
     }
     
     /// Reads the current value of contract data ledger entries directly.
-    @available(*, renamed: "getContractData(contractId:key:durability:)")
-    public func getContractData(contractId: String, key: SCValXDR, durability: ContractDataDurability, completion:@escaping GetContractDataResponseClosure) {
-        Task {
-            let result = await getContractData(contractId: contractId, key: key, durability: durability)
-            completion(result)
-        }
-    }
-    
-    /// Reads the current value of contract data ledger entries directly.
+    ///
+    /// - Parameter contractId: Stellar contract address (C...)
+    /// - Parameter key: Storage key as SCVal
+    /// - Parameter durability: Storage durability type (persistent or temporary)
+    /// - Returns: Current value of the contract data entry
     public func getContractData(contractId: String, key: SCValXDR, durability: ContractDataDurability) async -> GetContractDataResponseEnum {
         if let contractAddress = try? SCAddressXDR.init(contractId: contractId) {
             let contractDataKey = LedgerKeyContractDataXDR(contract: contractAddress, key: key, durability: durability)
@@ -818,47 +680,7 @@ public class SorobanServer: @unchecked Sendable {
             return .failure(error: .requestFailed(message: "invalid contractId"))
         }
     }
-    
-    /// Simulates a contract invocation without submitting to the network.
-    ///
-    /// Transaction simulation is essential for Soroban contract interactions. It provides:
-    /// - Return values from read-only contract calls
-    /// - Resource consumption estimates (CPU instructions, memory, ledger I/O)
-    /// - Required ledger footprint for the transaction
-    /// - Authorization requirements for multi-party transactions
-    ///
-    /// Always simulate before submitting write transactions to ensure they will succeed
-    /// and to obtain the correct resource limits and footprint.
-    ///
-    /// - Parameter simulateTxRequest: The simulation request containing the transaction to simulate
-    /// - Parameter completion: Callback with simulation results or error
-    ///
-    /// Example:
-    /// ```swift
-    /// let request = SimulateTransactionRequest(transaction: transaction)
-    /// server.simulateTransaction(simulateTxRequest: request) { response in
-    ///     switch response {
-    ///     case .success(let simulation):
-    ///         if let result = simulation.results?.first {
-    ///             print("Contract returned: \(result.returnValue)")
-    ///         }
-    ///         print("Cost: \(simulation.cost)")
-    ///     case .failure(let error):
-    ///         print("Simulation error: \(error)")
-    ///     }
-    /// }
-    /// ```
-    ///
-    /// See also:
-    /// - [Stellar developer docs](https://developers.stellar.org)
-    @available(*, renamed: "simulateTransaction(simulateTxRequest:)")
-    public func simulateTransaction(simulateTxRequest: SimulateTransactionRequest, completion:@escaping SimulateTransactionResponseClosure) {
-        Task {
-            let result = await simulateTransaction(simulateTxRequest: simulateTxRequest)
-            completion(result)
-        }
-    }
-
+ 
     /// Simulates a contract invocation without submitting to the network.
     ///
     /// Transaction simulation is essential for Soroban contract interactions. It provides:
@@ -903,8 +725,8 @@ public class SorobanServer: @unchecked Sendable {
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
-                } else if let error = response["error"] as? [String: Any] {
-                    return .failure(error: .errorResponse(errorData: error))
+                } else if let errorDict = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(error: SorobanRpcError(fromDictionary: errorDict)))
                 } else {
                     return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
@@ -916,46 +738,6 @@ public class SorobanServer: @unchecked Sendable {
         }
     }
     
-    /// Submits a transaction to the Stellar network for execution.
-    ///
-    /// This is the only way to make on-chain changes with smart contracts. Before calling this:
-    /// 1. Simulate the transaction with simulateTransaction
-    /// 2. Add the resource limits and footprint from simulation
-    /// 3. Sign the transaction with all required signers
-    ///
-    /// Important: Unlike Horizon, this method does not wait for transaction completion.
-    /// It validates and enqueues the transaction, then returns immediately. Use getTransaction
-    /// to poll for completion status.
-    ///
-    /// - Parameter transaction: The signed transaction to submit
-    /// - Parameter completion: Callback with submission result or error
-    ///
-    /// Example:
-    /// ```swift
-    /// // After simulation and signing
-    /// server.sendTransaction(transaction: signedTransaction) { response in
-    ///     switch response {
-    ///     case .success(let result):
-    ///         print("Transaction hash: \(result.hash)")
-    ///         print("Status: \(result.status)")
-    ///         // Poll for completion
-    ///     case .failure(let error):
-    ///         print("Submission failed: \(error)")
-    ///     }
-    /// }
-    /// ```
-    ///
-    /// See also:
-    /// - [Stellar developer docs](https://developers.stellar.org)
-    /// - getTransaction(transactionHash:) for status polling
-    @available(*, renamed: "sendTransaction(transaction:)")
-    public func sendTransaction(transaction: Transaction, completion:@escaping SendTransactionResponseClosure) {
-        Task {
-            let result = await sendTransaction(transaction: transaction)
-            completion(result)
-        }
-    }
-
     /// Submits a transaction to the Stellar network for execution.
     ///
     /// This is the only way to make on-chain changes with smart contracts. Before calling this:
@@ -1000,8 +782,8 @@ public class SorobanServer: @unchecked Sendable {
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
-                } else if let error = response["error"] as? [String: Any] {
-                    return .failure(error: .errorResponse(errorData: error))
+                } else if let errorDict = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(error: SorobanRpcError(fromDictionary: errorDict)))
                 } else {
                     return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
@@ -1013,59 +795,6 @@ public class SorobanServer: @unchecked Sendable {
         }
     }
     
-    /// Polls for transaction completion status.
-    ///
-    /// After submitting a transaction with sendTransaction, use this method to check
-    /// if the transaction has been included in a ledger and whether it succeeded or failed.
-    ///
-    /// Transaction lifecycle:
-    /// 1. PENDING: Transaction received but not yet in a ledger
-    /// 2. SUCCESS: Transaction successfully executed
-    /// 3. FAILED: Transaction failed during execution
-    /// 4. NOT_FOUND: Transaction not found (may have expired)
-    ///
-    /// Poll this endpoint until status is SUCCESS or FAILED. Typical polling interval is 1-2 seconds.
-    ///
-    /// - Parameter transactionHash: The transaction hash returned from sendTransaction
-    /// - Parameter completion: Callback with transaction status or error
-    ///
-    /// Example:
-    /// ```swift
-    /// func pollTransaction(hash: String) {
-    ///     server.getTransaction(transactionHash: hash) { response in
-    ///         switch response {
-    ///         case .success(let txInfo):
-    ///             switch txInfo.status {
-    ///             case GetTransactionResponse.STATUS_SUCCESS:
-    ///                 print("Transaction succeeded!")
-    ///                 if let result = txInfo.resultValue {
-    ///                     print("Return value: \(result)")
-    ///                 }
-    ///             case GetTransactionResponse.STATUS_FAILED:
-    ///                 print("Transaction failed: \(txInfo.resultXdr ?? "")")
-    ///             default:
-    ///                 // Still pending, poll again
-    ///                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-    ///                     pollTransaction(hash: hash)
-    ///                 }
-    ///             }
-    ///         case .failure(let error):
-    ///             print("Error: \(error)")
-    ///         }
-    ///     }
-    /// }
-    /// ```
-    ///
-    /// See also:
-    /// - [Stellar developer docs](https://developers.stellar.org)
-    @available(*, renamed: "getTransaction(transactionHash:)")
-    public func getTransaction(transactionHash:String, completion:@escaping GetTransactionResponseClosure) {
-        Task {
-            let result = await getTransaction(transactionHash: transactionHash)
-            completion(result)
-        }
-    }
-
     /// Polls for transaction completion status.
     ///
     /// After submitting a transaction with sendTransaction, use this method to check
@@ -1084,22 +813,26 @@ public class SorobanServer: @unchecked Sendable {
     ///
     /// Example:
     /// ```swift
-    /// let response = await server.getTransaction(transactionHash: hash)
-    /// switch response {
-    /// case .success(let txInfo):
-    ///     switch txInfo.status {
-    ///     case GetTransactionResponse.STATUS_SUCCESS:
-    ///         print("Transaction succeeded!")
-    ///         if let result = txInfo.resultValue {
-    ///             print("Return value: \(result)")
+    /// func pollTransaction(hash: String) async {
+    ///     let response = await server.getTransaction(transactionHash: hash)
+    ///     switch response {
+    ///     case .success(let txInfo):
+    ///         switch txInfo.status {
+    ///         case GetTransactionResponse.STATUS_SUCCESS:
+    ///             print("Transaction succeeded!")
+    ///             if let result = txInfo.resultValue {
+    ///                 print("Return value: \(result)")
+    ///             }
+    ///         case GetTransactionResponse.STATUS_FAILED:
+    ///             print("Transaction failed: \(txInfo.resultXdr ?? "")")
+    ///         default:
+    ///             // Still pending, poll again
+    ///             try? await Task.sleep(nanoseconds: 1_000_000_000)
+    ///             await pollTransaction(hash: hash)
     ///         }
-    ///     case GetTransactionResponse.STATUS_FAILED:
-    ///         print("Transaction failed: \(txInfo.resultXdr ?? "")")
-    ///     default:
-    ///         print("Still pending...")
+    ///     case .failure(let error):
+    ///         print("Error: \(error)")
     ///     }
-    /// case .failure(let error):
-    ///     print("Error: \(error)")
     /// }
     /// ```
     ///
@@ -1118,8 +851,8 @@ public class SorobanServer: @unchecked Sendable {
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
-                } else if let error = response["error"] as? [String: Any] {
-                    return .failure(error: .errorResponse(errorData: error))
+                } else if let errorDict = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(error: SorobanRpcError(fromDictionary: errorDict)))
                 } else {
                     return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
@@ -1134,18 +867,11 @@ public class SorobanServer: @unchecked Sendable {
     /// The getTransactions method return a detailed list of transactions starting from
     /// the user specified starting point that you can paginate as long as the pages
     /// fall within the history retention of their corresponding RPC provider.
-    /// See: [Stellar developer docs](https://developers.stellar.org)
-    @available(*, renamed: "getTransactions(startLedger:paginationOptions:)")
-    public func getTransactions(startLedger:Int? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetTransactionsResponseClosure) {
-        Task {
-            let result = await getTransactions(startLedger: startLedger, paginationOptions: paginationOptions)
-            completion(result)
-        }
-    }
-    
-    /// The getTransactions method return a detailed list of transactions starting from
-    /// the user specified starting point that you can paginate as long as the pages
-    /// fall within the history retention of their corresponding RPC provider.
+    ///
+    /// - Parameter startLedger: Starting ledger sequence number
+    /// - Parameter paginationOptions: Pagination settings (limit, cursor)
+    /// - Returns: List of transactions within the requested range
+    ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     public func getTransactions(startLedger:Int? = nil, paginationOptions:PaginationOptions? = nil) async -> GetTransactionsResponseEnum {
         
@@ -1160,8 +886,8 @@ public class SorobanServer: @unchecked Sendable {
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
-                } else if let error = response["error"] as? [String: Any] {
-                    return .failure(error: .errorResponse(errorData: error))
+                } else if let errorDict = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(error: SorobanRpcError(fromDictionary: errorDict)))
                 } else {
                     return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
@@ -1173,62 +899,6 @@ public class SorobanServer: @unchecked Sendable {
         }
     }
     
-    /// Queries contract events emitted within a specified ledger range.
-    ///
-    /// Contract events provide a way for smart contracts to emit structured data that can be
-    /// queried by off-chain applications. Use this method to:
-    /// - Monitor contract state changes
-    /// - Track token transfers in custom assets
-    /// - Build event-driven applications
-    /// - Populate application databases with on-chain data
-    ///
-    /// Important notes:
-    /// - By default, Soroban RPC retains only the most recent 24 hours of events
-    /// - Deduplicate events by their unique ID to prevent double-processing
-    /// - Use filters to narrow results to specific contracts or event types
-    ///
-    /// - Parameter startLedger: Starting ledger sequence number (optional)
-    /// - Parameter endLedger: Ending ledger sequence number (optional)
-    /// - Parameter eventFilters: Filters to narrow event results by contract ID or topics
-    /// - Parameter paginationOptions: Pagination settings for large result sets
-    /// - Parameter completion: Callback with events or error
-    ///
-    /// Example:
-    /// ```swift
-    /// // Query all events from a specific contract
-    /// let filter = EventFilter(
-    ///     type: "contract",
-    ///     contractIds: ["CCONTRACT123..."]
-    /// )
-    /// server.getEvents(
-    ///     startLedger: 1000000,
-    ///     eventFilters: [filter],
-    ///     paginationOptions: PaginationOptions(limit: 100)
-    /// ) { response in
-    ///     switch response {
-    ///     case .success(let eventsResponse):
-    ///         for event in eventsResponse.events {
-    ///             print("Event ID: \(event.id)")
-    ///             print("Topics: \(event.topic)")
-    ///             print("Value: \(event.value)")
-    ///         }
-    ///     case .failure(let error):
-    ///         print("Error: \(error)")
-    ///     }
-    /// }
-    /// ```
-    ///
-    /// See also:
-    /// - [Stellar developer docs](https://developers.stellar.org)
-    /// - [Stellar developer docs](https://developers.stellar.org)
-    @available(*, renamed: "getEvents(startLedger:eventFilters:paginationOptions:)")
-    public func getEvents(startLedger:Int? = nil, endLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil, completion:@escaping GetEventsResponseClosure) {
-        Task {
-            let result = await getEvents(startLedger: startLedger, endLedger: endLedger, eventFilters: eventFilters, paginationOptions: paginationOptions)
-            completion(result)
-        }
-    }
-
     /// Queries contract events emitted within a specified ledger range.
     ///
     /// Contract events provide a way for smart contracts to emit structured data that can be
@@ -1275,7 +945,6 @@ public class SorobanServer: @unchecked Sendable {
     ///
     /// See also:
     /// - [Stellar developer docs](https://developers.stellar.org)
-    /// - [Stellar developer docs](https://developers.stellar.org)
     public func getEvents(startLedger:Int? = nil, endLedger:Int? = nil, eventFilters: [EventFilter]? = nil, paginationOptions:PaginationOptions? = nil) async -> GetEventsResponseEnum {
         
         let result = await request(body: try? buildRequestJson(method: "getEvents", args: buildEventsRequestParams(startLedger: startLedger, endLedger: endLedger, eventFilters: eventFilters, paginationOptions: paginationOptions)))
@@ -1289,8 +958,8 @@ public class SorobanServer: @unchecked Sendable {
                     } catch {
                         return .failure(error: .parsingResponseFailed(message: error.localizedDescription, responseData: data))
                     }
-                } else if let error = response["error"] as? [String: Any] {
-                    return .failure(error: .errorResponse(errorData: error))
+                } else if let errorDict = response["error"] as? [String: Any] {
+                    return .failure(error: .errorResponse(error: SorobanRpcError(fromDictionary: errorDict)))
                 } else {
                     return .failure(error: .parsingResponseFailed(message: "Invalid JSON", responseData: data))
                 }
@@ -1382,17 +1051,6 @@ public class SorobanServer: @unchecked Sendable {
         // id
         result["id"] = UUID().uuidString
         return try? JSONSerialization.data(withJSONObject: result)
-    }
-    
-    
-    /// Legacy callback-based HTTP request wrapper for Soroban RPC calls.
-    /// Deprecated in favor of async/await variant. Forwards to async implementation.
-    @available(*, renamed: "request(body:)")
-    private func request(body: Data?, completion: @escaping RpcResponseClosure) {
-        Task {
-            let result = await request(body: body)
-            completion(result)
-        }
     }
     
     /// Executes HTTP POST request to Soroban RPC endpoint with JSON-RPC 2.0 protocol.

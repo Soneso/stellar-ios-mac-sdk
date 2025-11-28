@@ -29,9 +29,6 @@ public enum OrderbookChange {
                    cursor: String?)
 }
 
-/// A closure to be called with the response from an orderbook request
-public typealias OrderbookResponseClosure = (_ response:OrderbookResponseEnum) -> (Void)
-
 /// Service for querying orderbook information from the Stellar Horizon API.
 ///
 /// The orderbook shows current bids and asks for a given asset pair on the Stellar DEX.
@@ -74,15 +71,15 @@ public class OrderbookService: @unchecked Sendable {
     }
     
     /// Retrieves current orderbook bids and asks for a trading pair.
-    @available(*, renamed: "getOrderbook(sellingAssetType:sellingAssetCode:sellingAssetIssuer:buyingAssetType:buyingAssetCode:buyingAssetIssuer:limit:)")
-    open func getOrderbook(sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, limit:Int? = nil, response:@escaping OrderbookResponseClosure) {
-        Task {
-            let result = await getOrderbook(sellingAssetType: sellingAssetType, sellingAssetCode: sellingAssetCode, sellingAssetIssuer: sellingAssetIssuer, buyingAssetType: buyingAssetType, buyingAssetCode: buyingAssetCode, buyingAssetIssuer: buyingAssetIssuer, limit: limit)
-            response(result)
-        }
-    }
-
-    /// Retrieves current orderbook bids and asks for a trading pair.
+    ///
+    /// - Parameter sellingAssetType: Type of the asset being sold: "native", "credit_alphanum4", or "credit_alphanum12"
+    /// - Parameter sellingAssetCode: Asset code if selling_asset_type is not "native"
+    /// - Parameter sellingAssetIssuer: Asset issuer if selling_asset_type is not "native"
+    /// - Parameter buyingAssetType: Type of the asset being bought: "native", "credit_alphanum4", or "credit_alphanum12"
+    /// - Parameter buyingAssetCode: Asset code if buying_asset_type is not "native"
+    /// - Parameter buyingAssetIssuer: Asset issuer if buying_asset_type is not "native"
+    /// - Parameter limit: Optional maximum number of bids/asks to return. Default: 20
+    /// - Returns: OrderbookResponseEnum with bids and asks or error
     open func getOrderbook(sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, limit:Int? = nil) async -> OrderbookResponseEnum {
         
         var requestPath = "/order_book"
@@ -103,16 +100,10 @@ public class OrderbookService: @unchecked Sendable {
         return await getOrderbookFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
 
-    /// Loads orderbook data from a specific URL for pagination.
-    @available(*, renamed: "getOrderbookFromUrl(url:)")
-    func getOrderbookFromUrl(url:String, response:@escaping OrderbookResponseClosure) {
-        Task {
-            let result = await getOrderbookFromUrl(url: url)
-            response(result)
-        }
-    }
-
-    /// Loads orderbook data from a specific URL for pagination.
+    /// Loads orderbook data from a specific URL.
+    ///
+    /// - Parameter url: The complete URL to fetch the orderbook from
+    /// - Returns: OrderbookResponseEnum with bids and asks or error
     func getOrderbookFromUrl(url:String) async -> OrderbookResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {
@@ -129,6 +120,9 @@ public class OrderbookService: @unchecked Sendable {
     }
 
     /// Streams real-time orderbook updates via Server-Sent Events for a trading pair.
+    ///
+    /// - Parameter orderbookType: The orderbook configuration specifying the trading pair to stream
+    /// - Returns: OrderbookStreamItem for receiving streaming orderbook updates
     open func stream(for orderbookType:OrderbookChange) -> OrderbookStreamItem {
         var subpath:String!
         switch orderbookType {

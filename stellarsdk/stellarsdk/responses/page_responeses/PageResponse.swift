@@ -65,9 +65,6 @@ public struct PageResponse<Element:Decodable & Sendable>: Decodable, Sendable {
         case failure(error: HorizonRequestError)
     }
 
-    /// Closure called with the result of a paginated request.
-    public typealias ResponseClosure = (_ response:ResponseEnum) -> (Void)
-
     /// Pagination links for next/prev pages.
     public var links:PagingLinksResponse
 
@@ -90,11 +87,9 @@ public struct PageResponse<Element:Decodable & Sendable>: Decodable, Sendable {
         }
     }
     
-    /**
-     Initializer - creates a new instance by decoding from the given decoder.
-     
-     - Parameter decoder: The decoder containing the data
-     */
+    /// Creates a new instance by decoding from the given decoder.
+    ///
+    /// - Parameter decoder: The decoder containing the data
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         self.links = try values.decode(PagingLinksResponse.self, forKey: .links)
@@ -102,50 +97,36 @@ public struct PageResponse<Element:Decodable & Sendable>: Decodable, Sendable {
         self.records = self.embeddedRecords.records
     }
     
-    /**
-     Initializer - creates a new instance with parameters
-     
-     - Parameter operations: The payment operations received from the Horizon API
-     - Parameter links: The links received from the Horizon API
-     */
+    /// Creates a new instance with the provided records and pagination links.
+    ///
+    /// - Parameter records: The records for this page
+    /// - Parameter links: The pagination links received from the Horizon API
     public init(records: [Element], links:PagingLinksResponse) {
         self.records = records
         self.embeddedRecords = EmbeddedResponseService(records: records)
         self.links = links
     }
     
-    /**
-     Checks if there is a previous page available.
-     
-     - Returns: true if a previous page is avialable
-     */
+    /// Checks if there is a previous page available.
+    ///
+    /// - Returns: true if a previous page is available
     public func hasPreviousPage() -> Bool {
         return links.prev != nil
     }
     
-    /**
-     Checks if there is a next page available.
-     
-     - Returns: true if a next page is avialable
-     */
+    /// Checks if there is a next page available.
+    ///
+    /// - Returns: true if a next page is available
     public func hasNextPage() -> Bool {
         return links.next != nil
     }
     
-    /**
-     Provides the next page if available. Before calling this, make sure there is a next page available by calling 'hasNextPage'.  If there is no next page available this fuction will respond with a 'HorizonRequestError.notFound" error.
-     
-     - Parameter response:   The closure to be called upon response.
-     */
-    @available(*, renamed: "getNextPage()")
-    public func getNextPage(response:@escaping ResponseClosure) {
-        Task {
-            let result = await getNextPage()
-            response(result)
-        }
-    }
-
     /// Fetches the next page of results if available.
+    ///
+    /// Before calling this, make sure there is a next page available by calling `hasNextPage()`.
+    /// If there is no next page available this function will respond with a `HorizonRequestError.notFound` error.
+    ///
+    /// - Returns: ResponseEnum with the next page of results, or an error
     public func getNextPage() async -> PageResponse<Element>.ResponseEnum {
         if let url = links.next?.href {
             return await getRecordsFrom(url: url)
@@ -154,24 +135,12 @@ public struct PageResponse<Element:Decodable & Sendable>: Decodable, Sendable {
         }
     }
     
-    /**
-     Provides the previous page if available. Before calling this, make sure there is a prevoius page available by calling 'hasPreviousPage'. If there is no prevoius page available this fuction will respond with a 'HorizonRequestError.notFound" error.
-     
-     - Parameter response:   The closure to be called upon response.
-     */
-    @available(*, renamed: "getPreviousPage()")
-    public func getPreviousPage(response:@escaping ResponseClosure) {
-        Task {
-            let result = await getPreviousPage()
-            response(result)
-        }
-    }
-    
-    /**
-     Provides the previous page if available. Before calling this, make sure there is a prevoius page available by calling 'hasPreviousPage'. If there is no prevoius page available this fuction will respond with a 'HorizonRequestError.notFound" error.
-     
-     - Parameter response:   The closure to be called upon response.
-     */
+    /// Fetches the previous page of results if available.
+    ///
+    /// Before calling this, make sure there is a previous page available by calling `hasPreviousPage()`.
+    /// If there is no previous page available this function will respond with a `HorizonRequestError.notFound` error.
+    ///
+    /// - Returns: ResponseEnum with the previous page of results, or an error
     public func getPreviousPage() async -> PageResponse<Element>.ResponseEnum {
         if let url = links.prev?.href {
             return await getRecordsFrom(url: url)
@@ -283,67 +252,4 @@ public struct PageResponse<Element:Decodable & Sendable>: Decodable, Sendable {
         }
     }
     
-    @available(*, renamed: "getRecordsFrom(url:)")
-    private func getRecordsFrom(url:String, response:@escaping ResponseClosure) {
-        switch Element.self {
-            case is AssetResponse.Type:
-                guard let typedResponse = response as? PageResponse<AssetResponse>.ResponseClosure else {
-                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
-                    return
-                }
-                let service = AssetsService(baseURL:"")
-                service.getAssetsFromUrl(url:url, response:typedResponse)
-            case is AccountResponse.Type:
-                guard let typedResponse = response as? PageResponse<AccountResponse>.ResponseClosure else {
-                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
-                    return
-                }
-                let service = AccountService(baseURL:"")
-                service.getAccountsFromUrl(url:url, response:typedResponse)
-            case is TradeResponse.Type:
-                guard let typedResponse = response as? PageResponse<TradeResponse>.ResponseClosure else {
-                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
-                    return
-                }
-                let service = TradesService(baseURL:"")
-                service.getTradesFromUrl(url:url, response:typedResponse)
-            case is OfferResponse.Type:
-                guard let typedResponse = response as? PageResponse<OfferResponse>.ResponseClosure else {
-                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
-                    return
-                }
-                let service = OffersService(baseURL:"")
-                service.getOffersFromUrl(url: url, response:typedResponse)
-            case is LedgerResponse.Type:
-                guard let typedResponse = response as? PageResponse<LedgerResponse>.ResponseClosure else {
-                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
-                    return
-                }
-                let service = LedgersService(baseURL:"")
-                service.getLedgersFromUrl(url: url, response:typedResponse)
-            case is OperationResponse.Type:
-                guard let typedResponse = response as? PageResponse<OperationResponse>.ResponseClosure else {
-                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
-                    return
-                }
-                let service = PaymentsService(baseURL:"")
-                service.getPaymentsFromUrl(url: url, response:typedResponse)
-            case is TransactionResponse.Type:
-                guard let typedResponse = response as? PageResponse<TransactionResponse>.ResponseClosure else {
-                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
-                    return
-                }
-                let service = TransactionsService(baseURL:"")
-                service.getTransactionsFromUrl(url: url, response:typedResponse)
-            case is EffectResponse.Type:
-                guard let typedResponse = response as? PageResponse<EffectResponse>.ResponseClosure else {
-                    response(.failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in response closure")))
-                    return
-                }
-                let service = EffectsService(baseURL:"")
-                service.getEffectsFromUrl(url: url, response:typedResponse)
-            default:
-                assertionFailure("You should implement this case:\(Element.self)")
-        }
-    }
 }

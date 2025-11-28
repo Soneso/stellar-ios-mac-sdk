@@ -38,13 +38,7 @@ public enum SubmitTransactionEnum {
     case failure(error: HorizonRequestError)
 }
 
-/// A closure to be called with the response from a transaction setup.
-public typealias SetupTransactionXDRClosure = (_ completion: SetupTransactionXDREnum) -> (Void)
-
-/// A closure to be called with the response from a transaction submission.
-public typealias SubmitTransactionClosure = (_ completion: SubmitTransactionEnum) -> (Void)
-
-/// A closure to be called for the confirmation of a transaction.
+/// Closure type for transaction confirmation callbacks. Returns true to proceed, false to cancel.
 public typealias TransactionConfirmationClosure = ((TransactionXDR) -> (Bool))
 
 /// Implements SEP-0007 - URI Scheme to Facilitate Delegated Signing.
@@ -79,19 +73,22 @@ public typealias TransactionConfirmationClosure = ((TransactionXDR) -> (Bool))
 public class URIScheme: NSObject {
     let sdk = StellarSDK()
     
-    /// This function is used to generate a URIScheme compliant URL to serve as a request to sign a transaction. It will URL-encode the given parameter values.
-    ///  see: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md#operation-tx
+    /// Generates a SEP-0007 compliant URI to request transaction signing.
     ///
-    /// - Parameter transactionXDR: A TransactionXDR object representing a transaction on the stellar network.
-    /// - Parameter replace: (optional) A  value that identifies the fields to be replaced in the xdr using the Txrep (SEP-0011) representation.
-    /// - Parameter callBack: (optional) A URL callback that will be used to send the transactionXDR to.
-    /// - Parameter publicKey: (optional) A publicKey that will be used to sign the url for.
-    /// - Parameter chain: (optional) Includes a single SEP-0007 request that spawned or triggered the creation of this SEP-0007 request
-    /// - Parameter message: (optional) A query parameter to indicate any additional information that the website or application wants to show the user in her wallet.
-    /// - Parameter networkPassphrase: (optional) Only needs to be set if this transaction is for other network than the public one.
-    /// - Parameter originDomain: (optional) A fully qualified domain name that specifies the originating domain of the URI request.
-    /// - Parameter signature: (optional) A signature of the hash of the URI request (excluding the signature field and value itself).
+    /// All parameter values are URL-encoded automatically.
     ///
+    /// - Parameter transactionXDR: A TransactionXDR object representing a transaction on the Stellar network
+    /// - Parameter replace: Optional value identifying fields to be replaced in the XDR using Txrep (SEP-0011) representation
+    /// - Parameter callBack: Optional URL callback where the signed transactionXDR will be sent (must be prefixed with "url:")
+    /// - Parameter publicKey: Optional public key that will be used to sign the transaction
+    /// - Parameter chain: Optional SEP-0007 request that spawned or triggered the creation of this request
+    /// - Parameter message: Optional message to display to the user in their wallet (max 300 characters)
+    /// - Parameter networkPassphrase: Optional network passphrase, only needed for non-public networks
+    /// - Parameter originDomain: Optional fully qualified domain name specifying the originating domain of the URI request
+    /// - Parameter signature: Optional signature of the hash of the URI request (excluding the signature field itself)
+    /// - Returns: A SEP-0007 compliant URI string for the transaction signing request
+    ///
+    /// See: [SEP-0007 tx operation](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md#operation-tx)
     public func getSignTransactionURI(transactionXDR: TransactionXDR,
                                       replace: String? = nil,
                                       callBack: String? = nil,
@@ -152,22 +149,25 @@ public class URIScheme: NSObject {
         return uriScheme
     }
     
-    /// This function is used to generate a URIScheme compliant URL to serve as a request to pay a specific address with a specific asset, regardless of the source asset used by the payer.
-    /// It will URL-encode the given parameter values. If memo is MEMO_HASH or MEMO_RETURN it will base64 encode it and the url encode it.
-    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md#operation-pay
+    /// Generates a SEP-0007 compliant URI to request a payment to a specific address.
     ///
-    /// - Parameter destination: A valid account ID or payment address that will be used as destination for the payment.
-    /// - Parameter amount: Amount that destination will receive.
-    /// - Parameter assetCode: Asset code (XLM if not present) destination will receive.
-    /// - Parameter assetIssuer: Account ID of asset issuer (XLM if not present) destination will receive.
-    /// - Parameter memo: A memo to be included in the payment / path payment.
-    /// - Parameter memoType: One of MEMO_TEXT, MEMO_ID,MEMO_HASH, MEMO_RETURN.
-    /// - Parameter callBack: A URL callback that will be used to send the transactionXDR to.
-    /// - Parameter message: A query parameter to indicate any additional information that the website or application wants to show the user in her wallet.
-    /// - Parameter networkPassphrase: Only needs to be set if this transaction is for other network than the public one.
-    /// - Parameter originDomain: A fully qualified domain name that specifies the originating domain of the URI request.
-    /// - Parameter signature: A signature of the hash of the URI request (excluding the signature field and value itself).
+    /// All parameter values are URL-encoded automatically. For MEMO_HASH or MEMO_RETURN memo types,
+    /// the memo is base64-encoded before URL encoding.
     ///
+    /// - Parameter destination: A valid account ID or payment address for the payment destination
+    /// - Parameter amount: Optional amount that the destination will receive
+    /// - Parameter assetCode: Optional asset code the destination will receive (defaults to XLM if not present)
+    /// - Parameter assetIssuer: Optional account ID of the asset issuer (required for non-native assets)
+    /// - Parameter memo: Optional memo to include in the payment
+    /// - Parameter memoType: Optional memo type: MEMO_TEXT, MEMO_ID, MEMO_HASH, or MEMO_RETURN (defaults to TEXT)
+    /// - Parameter callBack: Optional URL callback where the signed transactionXDR will be sent (must be prefixed with "url:")
+    /// - Parameter message: Optional message to display to the user in their wallet (max 300 characters)
+    /// - Parameter networkPassphrase: Optional network passphrase, only needed for non-public networks
+    /// - Parameter originDomain: Optional fully qualified domain name specifying the originating domain of the URI request
+    /// - Parameter signature: Optional signature of the hash of the URI request (excluding the signature field itself)
+    /// - Returns: A SEP-0007 compliant URI string for the payment request
+    ///
+    /// See: [SEP-0007 pay operation](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md#operation-pay)
     public func getPayOperationURI(destination: String,
                                    amount: Decimal? = nil,
                                    assetCode: String? = nil,
@@ -243,30 +243,16 @@ public class URIScheme: NSObject {
     }
     
     
-    /// This function signs the transaction and sends it to the network. It throws a 'HorizonRequestError' on validation error.
+    /// Signs and submits a transaction from a SEP-0007 URI to the Stellar network.
     ///
-    /// - Parameter forURL: A URIScheme compliant URL that was generated for the sign operation.
-    /// - Parameter signerKeyPair: The KeyPair of the signer account.
-    /// - Parameter transactionConfirmation: A closure to be used to confirm the transactionXDR it's valid.
+    /// Parses the transaction from the URI, optionally confirms it via the callback,
+    /// signs it with the provided key pair, and submits it to the network or callback URL.
     ///
-    @available(*, renamed: "signAndSubmitTransaction(forURL:signerKeyPair:network:transactionConfirmation:)")
-    public func signAndSubmitTransaction(forURL url: String,
-                                signerKeyPair keyPair: KeyPair,
-                                network: Network = .public,
-                                transactionConfirmation: TransactionConfirmationClosure? = nil,
-                                         completion: @escaping SubmitTransactionClosure) {
-        Task {
-            let result = await signAndSubmitTransaction(forURL: url, signerKeyPair: keyPair, network: network, transactionConfirmation: transactionConfirmation)
-            completion(result)
-        }
-    }
-    
-    /// This function signs the transaction and sends it to the network. It throws a 'HorizonRequestError' on validation error.
-    ///
-    /// - Parameter forURL: A URIScheme compliant URL that was generated for the sign operation.
-    /// - Parameter signerKeyPair: The KeyPair of the signer account.
-    /// - Parameter transactionConfirmation: A closure to be used to confirm the transactionXDR it's valid.
-    ///
+    /// - Parameter url: A SEP-0007 compliant URL containing the transaction to sign
+    /// - Parameter keyPair: The KeyPair of the signer account
+    /// - Parameter network: The Stellar network to use (defaults to public)
+    /// - Parameter transactionConfirmation: Optional closure to confirm the transaction before signing (return false to cancel)
+    /// - Returns: SubmitTransactionEnum indicating success, memo requirement, or failure
     public func signAndSubmitTransaction(forURL url: String,
                                          signerKeyPair keyPair: KeyPair,
                                          network: Network = .public,
@@ -286,16 +272,13 @@ public class URIScheme: NSObject {
         }
     }
     
-    /// Sends the transaction to the callback url or to the stellar network if callback url is not set
-    @available(*, renamed: "submitTransaction(transactionXDR:callback:keyPair:skipMemoRequiredCheck:)")
-    private func submitTransaction(transactionXDR: TransactionXDR?, callback: String? = nil, keyPair: KeyPair, skipMemoRequiredCheck:Bool = false, completion: @escaping SubmitTransactionClosure) {
-        Task {
-            let result = await submitTransaction(transactionXDR: transactionXDR, callback: callback, keyPair: keyPair, skipMemoRequiredCheck: skipMemoRequiredCheck)
-            completion(result)
-        }
-    }
-    
-    /// Sends the transaction to the callback url or to the stellar network if callback url is not set
+    /// Sends the transaction to the callback URL or to the Stellar network if no callback is set.
+    ///
+    /// - Parameter transactionXDR: The signed transaction XDR to submit
+    /// - Parameter callback: Optional callback URL (prefixed with "url:") to send the transaction to
+    /// - Parameter keyPair: The KeyPair used for signing
+    /// - Parameter skipMemoRequiredCheck: Whether to skip SEP-0029 memo requirement validation
+    /// - Returns: SubmitTransactionEnum indicating success, memo requirement, or failure
     private func submitTransaction(transactionXDR: TransactionXDR?, callback: String? = nil, keyPair: KeyPair, skipMemoRequiredCheck:Bool = false) async -> SubmitTransactionEnum {
         if let transactionEncodedEnvelope = try? transactionXDR?.encodedEnvelope() {
             if var callback = callback, callback.hasPrefix("url:") {
@@ -332,7 +315,11 @@ public class URIScheme: NSObject {
         }
     }
     
-    /// Gets the public key field value from the url.
+    /// Extracts a parameter value from a SEP-0007 URI.
+    ///
+    /// - Parameter param: The parameter to extract
+    /// - Parameter url: The SEP-0007 URI to parse
+    /// - Returns: The parameter value if found, nil otherwise
     public func getValue(forParam param: SignTransactionParams, fromURL url: String) -> String? {
         let fields = url.split(separator: "&")
         for field in fields {
@@ -344,7 +331,10 @@ public class URIScheme: NSObject {
         return nil
     }
     
-    /// Gets the transactionXDR field value from the url.
+    /// Extracts the raw XDR field value from a SEP-0007 URI.
+    ///
+    /// - Parameter url: The SEP-0007 URI to parse
+    /// - Returns: The URL-encoded XDR string if found, nil otherwise
     private func getTransactionXDRFieldValue(fromURL url: String) -> String? {
         let fields = url.split(separator: "&")
         for field in fields {
@@ -356,7 +346,10 @@ public class URIScheme: NSObject {
         return nil
     }
     
-    /// Gets the transactionXDR object corresponding to the xdr field value in the url.
+    /// Parses and returns the TransactionXDR object from a SEP-0007 URI.
+    ///
+    /// - Parameter url: The SEP-0007 URI containing the transaction XDR
+    /// - Returns: The decoded TransactionXDR object if successful, nil otherwise
     private func getTransactionXDR(fromURL url: String) -> TransactionXDR? {
         let base64UrlEncodedTransactionEnvelope = getTransactionXDRFieldValue(fromURL: url)
         let base64TransactionEnvelope = base64UrlEncodedTransactionEnvelope?.urlDecoded

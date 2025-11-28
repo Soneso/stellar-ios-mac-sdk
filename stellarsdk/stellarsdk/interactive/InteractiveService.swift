@@ -48,19 +48,6 @@ public enum Sep24TransactionResponseEnum {
     case failure(error: InteractiveServiceError)
 }
 
-/// Callback closure for discovering SEP-24 interactive service endpoints for a domain.
-public typealias InteractiveServiceClosure = (_ response:InteractiveServiceForDomainEnum) -> (Void)
-/// Callback closure for retrieving SEP-24 service information and supported assets.
-public typealias Sep24InfoResponseClosure = (_ response:Sep24InfoResponseEnum) -> (Void)
-/// Callback closure for retrieving SEP-24 deposit or withdrawal fee information.
-public typealias Sep24FeeResponseClosure = (_ response:Sep24FeeResponseEnum) -> (Void)
-/// Callback closure for initiating SEP-24 interactive deposit or withdrawal flows.
-public typealias Sep24InteractiveResponseClosure = (_ response:Sep24InteractiveResponseEnum) -> (Void)
-/// Callback closure for retrieving multiple SEP-24 transaction records.
-public typealias Sep24TransactionsResponseClosure = (_ response:Sep24TransactionsResponseEnum) -> (Void)
-/// Callback closure for retrieving a single SEP-24 transaction record by ID.
-public typealias Sep24TransactionResponseClosure = (_ response:Sep24TransactionResponseEnum) -> (Void)
-
 /// Implements SEP-0024 - Hosted Deposit and Withdrawal.
 ///
 /// This class provides an interactive flow for deposits and withdrawals where the anchor service
@@ -239,6 +226,8 @@ public class InteractiveService: NSObject {
     private let jsonDecoder = JSONDecoder()
 
     /// Initializes a new InteractiveService instance with the specified SEP-24 transfer server endpoint URL.
+    ///
+    /// - Parameter serviceAddress: The URL of the SEP-24 transfer server (e.g., "https://example.com/sep24")
     public init(serviceAddress:String) {
         self.serviceAddress = serviceAddress
         serviceHelper = ServiceHelper(baseURL: serviceAddress)
@@ -246,15 +235,11 @@ public class InteractiveService: NSObject {
     }
     
     /// Creates an InteractiveService instance based on information from the stellar.toml file for a given domain.
-    @available(*, renamed: "forDomain(domain:)")
-    public static func forDomain(domain:String, completion:@escaping InteractiveServiceClosure) {
-        Task {
-            let result = await forDomain(domain: domain)
-            completion(result)
-        }
-    }
-    
-    /// Creates an InteractiveService instance based on information from the stellar.toml file for a given domain.
+    ///
+    /// Fetches the stellar.toml file from `{domain}/.well-known/stellar.toml` and extracts the TRANSFER_SERVER_SEP0024 URL.
+    ///
+    /// - Parameter domain: The anchor's domain including scheme (e.g., "https://testanchor.stellar.org")
+    /// - Returns: InteractiveServiceForDomainEnum with the service instance, or an error
     public static func forDomain(domain:String) async -> InteractiveServiceForDomainEnum {
         let interactiveServerKey = "TRANSFER_SERVER_SEP0024"
         
@@ -278,22 +263,12 @@ public class InteractiveService: NSObject {
     }
     
     
-    /**
-     * Get the anchors basic info about what their TRANSFER_SERVER_SEP0024 support to wallets and clients.
-     * - Parameter language: (optional) Language code specified using ISO 639-1. description fields in the response should be in this language. Defaults to en.
-     */
-    @available(*, renamed: "info(language:)")
-    public func info(language: String? = nil, completion:@escaping Sep24InfoResponseClosure) {
-        Task {
-            let result = await info(language: language)
-            completion(result)
-        }
-    }
-    
-    /**
-     * Get the anchors basic info about what their TRANSFER_SERVER_SEP0024 support to wallets and clients.
-     * - Parameter language: (optional) Language code specified using ISO 639-1. description fields in the response should be in this language. Defaults to en.
-     */
+    /// Get the anchor's basic info about what their TRANSFER_SERVER_SEP0024 supports to wallets and clients.
+    ///
+    /// Returns information about supported assets, deposit/withdraw features, and fee structures.
+    ///
+    /// - Parameter language: Language code specified using ISO 639-1. Description fields in the response should be in this language. Defaults to "en".
+    /// - Returns: Sep24InfoResponseEnum with anchor capabilities, or an error
     public func info(language: String? = nil) async -> Sep24InfoResponseEnum {
         var requestPath = "/info"
         if let language = language {
@@ -315,28 +290,14 @@ public class InteractiveService: NSObject {
         }
     }
     
-    /**
-     * Get the anchor's to reported fee that would be charged for a given deposit or withdraw operation.
-     * This is important to allow an anchor to accurately report fees to a user even when the fee schedule is complex.
-     * If a fee can be fully expressed with the fee_fixed, fee_percent or fee_minimum fields in the /info response,
-     * then an anchor will not implement this endpoint.
-     * - Parameter request Sep24FeeRequest
-     */
-    @available(*, renamed: "fee(request:)")
-    public func fee(request: Sep24FeeRequest, completion:@escaping Sep24FeeResponseClosure) {
-        Task {
-            let result = await fee(request: request)
-            completion(result)
-        }
-    }
-    
-    /**
-     * Get the anchor's to reported fee that would be charged for a given deposit or withdraw operation.
-     * This is important to allow an anchor to accurately report fees to a user even when the fee schedule is complex.
-     * If a fee can be fully expressed with the fee_fixed, fee_percent or fee_minimum fields in the /info response,
-     * then an anchor will not implement this endpoint.
-     * - Parameter request Sep24FeeRequest
-     */
+    /// Get the anchor's reported fee that would be charged for a given deposit or withdraw operation.
+    ///
+    /// This is important to allow an anchor to accurately report fees to a user even when the fee schedule is complex.
+    /// If a fee can be fully expressed with the fee_fixed, fee_percent or fee_minimum fields in the /info response,
+    /// then an anchor will not implement this endpoint.
+    ///
+    /// - Parameter request: Sep24FeeRequest containing operation type, asset code, amount, and JWT token
+    /// - Returns: Sep24FeeResponseEnum with fee amount, or an error
     public func fee(request: Sep24FeeRequest) async -> Sep24FeeResponseEnum {
         var requestPath = "/fee?operation=\(request.operation)&asset_code=\(request.assetCode)&amount=\(request.amount)"
         
@@ -360,15 +321,11 @@ public class InteractiveService: NSObject {
     }
 
     /// Initiates a SEP-24 deposit transaction, returning an interactive URL for the user to complete KYC and deposit requirements.
-    @available(*, renamed: "deposit(request:)")
-    public func deposit(request: Sep24DepositRequest, completion:@escaping Sep24InteractiveResponseClosure) {
-        Task {
-            let result = await deposit(request: request)
-            completion(result)
-        }
-    }
-
-    /// Initiates a SEP-24 deposit transaction, returning an interactive URL for the user to complete KYC and deposit requirements.
+    ///
+    /// The user should be redirected to the returned URL to complete the deposit flow in the anchor's web interface.
+    ///
+    /// - Parameter request: Sep24DepositRequest containing asset code, destination account, and JWT token
+    /// - Returns: Sep24InteractiveResponseEnum with interactive URL and transaction ID, or an error
     public func deposit(request: Sep24DepositRequest) async -> Sep24InteractiveResponseEnum {
         let requestPath = "/transactions/deposit/interactive"
         
@@ -387,15 +344,11 @@ public class InteractiveService: NSObject {
     }
 
     /// Initiates a SEP-24 withdrawal transaction, returning an interactive URL for the user to provide withdrawal details and complete verification.
-    @available(*, renamed: "withdraw(request:)")
-    public func withdraw(request: Sep24WithdrawRequest, completion:@escaping Sep24InteractiveResponseClosure) {
-        Task {
-            let result = await withdraw(request: request)
-            completion(result)
-        }
-    }
-
-    /// Initiates a SEP-24 withdrawal transaction, returning an interactive URL for the user to provide withdrawal details and complete verification.
+    ///
+    /// The user should be redirected to the returned URL to complete the withdrawal flow in the anchor's web interface.
+    ///
+    /// - Parameter request: Sep24WithdrawRequest containing asset code, destination type, and JWT token
+    /// - Returns: Sep24InteractiveResponseEnum with interactive URL and transaction ID, or an error
     public func withdraw(request: Sep24WithdrawRequest) async -> Sep24InteractiveResponseEnum {
         let requestPath = "/transactions/withdraw/interactive"
         
@@ -414,15 +367,11 @@ public class InteractiveService: NSObject {
     }
 
     /// Retrieves a list of SEP-24 transactions for the authenticated user, filtered by asset code and optional parameters.
-    @available(*, renamed: "getTransactions(request:)")
-    public func getTransactions(request: Sep24TransactionsRequest,  completion:@escaping Sep24TransactionsResponseClosure) {
-        Task {
-            let result = await getTransactions(request: request)
-            completion(result)
-        }
-    }
-
-    /// Retrieves a list of SEP-24 transactions for the authenticated user, filtered by asset code and optional parameters.
+    ///
+    /// Use this to show transaction history or monitor multiple pending transactions.
+    ///
+    /// - Parameter request: Sep24TransactionsRequest containing asset code, filters, pagination options, and JWT token
+    /// - Returns: Sep24TransactionsResponseEnum with list of transactions, or an error
     public func getTransactions(request: Sep24TransactionsRequest) async -> Sep24TransactionsResponseEnum {
         var requestPath = "/transactions?asset_code=\(request.assetCode)"
         if let noOlderThanDate = request.noOlderThan {
@@ -458,15 +407,11 @@ public class InteractiveService: NSObject {
     }
 
     /// Retrieves the status and details of a single SEP-24 transaction by ID, Stellar transaction ID, or external transaction ID.
-    @available(*, renamed: "getTransaction(request:)")
-    public func getTransaction(request: Sep24TransactionRequest,  completion:@escaping Sep24TransactionResponseClosure) {
-        Task {
-            let result = await getTransaction(request: request)
-            completion(result)
-        }
-    }
-
-    /// Retrieves the status and details of a single SEP-24 transaction by ID, Stellar transaction ID, or external transaction ID.
+    ///
+    /// Use this to poll for transaction status updates during the deposit/withdrawal flow.
+    ///
+    /// - Parameter request: Sep24TransactionRequest containing transaction identifier(s) and JWT token
+    /// - Returns: Sep24TransactionResponseEnum with transaction details and status, or an error
     public func getTransaction(request: Sep24TransactionRequest) async -> Sep24TransactionResponseEnum {
         var requestPath = "/transaction?"
         

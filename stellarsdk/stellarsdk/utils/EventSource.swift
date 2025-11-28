@@ -98,7 +98,7 @@ public enum EventSourceState {
 /// - [W3C Server-Sent Events Specification](https://html.spec.whatwg.org/multipage/server-sent-events.html)
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [StreamingHelper] for simplified Horizon streaming integration
-open class EventSource: NSObject, URLSessionDataDelegate {
+open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
     static let DefaultsKey = "com.soneso.eventSource.lastEventId"
     
     let url: URL
@@ -106,13 +106,13 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     fileprivate let receivedString: String?
     fileprivate var onOpenCallback: ((HTTPURLResponse?) -> Void)?
     fileprivate var onErrorCallback: ((NSError?) -> Void)?
-    fileprivate var onMessageCallback: ((_ id: String?, _ event: String?, _ data: String?) -> Void)?
+    fileprivate var onMessageCallback: (@Sendable (_ id: String?, _ event: String?, _ data: String?) -> Void)?
 
     /// Current connection state (connecting, open, or closed) of the Server-Sent Events stream.
     open internal(set) var readyState: EventSourceState
     /// Milliseconds to wait before attempting reconnection after connection failure.
     open fileprivate(set) var retryTime = 3000
-    fileprivate var eventListeners = Dictionary<String, (_ id: String?, _ event: String?, _ data: String?) -> Void>()
+    fileprivate var eventListeners = Dictionary<String, @Sendable (_ id: String?, _ event: String?, _ data: String?) -> Void>()
     fileprivate var headers: Dictionary<String, String>
     internal var urlSession: Foundation.URLSession?
     internal var task: URLSessionDataTask?
@@ -158,7 +158,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         self.connect()
     }
     
-    //Mark: Connect
+    /// Establishes connection to the Server-Sent Events endpoint.
     func connect() {
         var additionalHeaders = self.headers
         if let eventID = self.lastEventID {
@@ -190,8 +190,6 @@ open class EventSource: NSObject, URLSessionDataDelegate {
                                      delegateQueue: operationQueue)
     }
     
-    //Mark: Close
-
     /// Closes the Server-Sent Events connection and prevents automatic reconnection.
     open func close() {
         self.readyState = EventSourceState.closed
@@ -211,8 +209,6 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         return false
     }
     
-    //Mark: EventListeners
-
     /// Registers a callback to be invoked when the connection opens.
     ///
     /// The callback is called on the main thread when the Server-Sent Events connection
@@ -292,7 +288,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     ///     print("Received ledger: \(ledger.sequence)")
     /// }
     /// ```
-    open func onMessage(_ onMessageCallback: @escaping (_ id: String?, _ event: String?, _ data: String?) -> Void) {
+    open func onMessage(_ onMessageCallback: @escaping @Sendable (_ id: String?, _ event: String?, _ data: String?) -> Void) {
         self.onMessageCallback = onMessageCallback
     }
 
@@ -325,7 +321,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     ///
     /// - Note: Only one handler can be registered per event type. Registering a new handler
     ///         for an event type will replace any existing handler for that type.
-    open func addEventListener(_ event: String, handler: @escaping (_ id: String?, _ event: String?, _ data: String?) -> Void) {
+    open func addEventListener(_ event: String, handler: @escaping @Sendable (_ id: String?, _ event: String?, _ data: String?) -> Void) {
         self.eventListeners[event] = handler
     }
 
@@ -347,7 +343,6 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         return Array(self.eventListeners.keys)
     }
 
-    //MARK: URLSessionDataDelegate
     /// URLSessionDataDelegate method called when data is received from the stream.
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         if self.receivedMessageToClose(dataTask.response as? HTTPURLResponse) {
@@ -407,7 +402,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         }
     }
     
-    //MARK: Helpers
+    /// Extracts complete events from the received data buffer.
     fileprivate func extractEventsFromBuffer() -> [String] {
         var events = [String]()
 
@@ -477,8 +472,9 @@ open class EventSource: NSObject, URLSessionDataDelegate {
             }
             
             if let event = parsedEvent.event, let data = parsedEvent.data, let eventHandler = self.eventListeners[event] {
+                let handler = eventHandler
                 DispatchQueue.main.async { [weak self] in
-                    eventHandler(self?.lastEventID, event, data)
+                    handler(self?.lastEventID, event, data)
                 }
             }
         }
@@ -597,6 +593,10 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     }
 
     /// Generates a Basic Authentication header value from username and password.
+    ///
+    /// - Parameter username: The username for authentication
+    /// - Parameter password: The password for authentication
+    /// - Returns: A properly formatted "Basic {base64}" authentication header value
     class open func basicAuth(_ username: String, password: String) -> String {
         let authString = "\(username):\(password)"
         guard let authData = authString.data(using: String.Encoding.utf8) else {

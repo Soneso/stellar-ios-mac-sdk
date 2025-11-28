@@ -15,7 +15,7 @@ import Foundation
 ///
 /// See also:
 /// - [SEP-0006 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
-public enum InformationNeededEnum {
+public enum InformationNeededEnum: Sendable {
     /// Non-interactive customer information is needed to complete the transfer.
     ///
     /// The anchor requires additional customer information fields to be submitted

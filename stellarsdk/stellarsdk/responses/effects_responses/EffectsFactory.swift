@@ -9,13 +9,14 @@
 import Foundation
 
 /// Factory class for creating effect response instances from Horizon API JSON data.
+///
 /// This factory parses the effect type from the JSON response and instantiates the appropriate effect subclass.
 /// Effects represent specific changes that occur to the ledger as a result of operations in successfully submitted transactions.
+///
+/// This class is thread-safe and can be used from multiple threads concurrently.
+///
 /// See [Stellar developer docs](https://developers.stellar.org)
-class EffectsFactory {
-
-    /// The JSON decoder used to parse effect responses from the Horizon API.
-    let jsonDecoder = JSONDecoder()
+final class EffectsFactory: Sendable {
 
     /**
      Parses a paginated collection of effects from Horizon API JSON data.
@@ -27,6 +28,7 @@ class EffectsFactory {
     func effectsFromResponseData(data: Data) throws -> PageResponse<EffectResponse> {
         var effectsList = [EffectResponse]()
         var links: PagingLinksResponse
+        let jsonDecoder = JSONDecoder()
 
         do {
             guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] else {
@@ -73,6 +75,8 @@ class EffectsFactory {
         guard let typeInt = json["type_i"] as? Int else {
             throw HorizonRequestError.parsingResponseFailed(message: "Missing or invalid type_i field")
         }
+
+        let jsonDecoder = JSONDecoder()
         if let type = EffectType(rawValue: typeInt) {
             switch type {
             case .accountCreated:

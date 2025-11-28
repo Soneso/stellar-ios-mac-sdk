@@ -16,9 +16,6 @@ public enum FeeStatsResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
-/// A closure to be called with the response from a fee stats request.
-public typealias FeeStatsResponseClosure = (_ response:FeeStatsResponseEnum) -> (Void)
-
 /// Service for querying network fee statistics from the Stellar Horizon API.
 ///
 /// Provides current fee statistics including min, mode, and percentile fees from recent ledgers.
@@ -56,20 +53,7 @@ open class FeeStatsService: @unchecked Sendable {
     /// This endpoint gives useful information about per-operation fee stats in the last 5 ledgers. It can be used to predict a fee set on the transaction that will be submitted to the network.
     /// See [Stellar developer docs](https://developers.stellar.org)
     ///
-    /// - Parameter response: The closure to be called upon response.
-    ///
-    @available(*, renamed: "getFeeStats()")
-    open func getFeeStats(response: @escaping FeeStatsResponseClosure) {
-        Task {
-            let result = await getFeeStats()
-            response(result)
-        }
-    }
-    
-    /// This endpoint gives useful information about per-operation fee stats in the last 5 ledgers. It can be used to predict a fee set on the transaction that will be submitted to the network.
-    /// See [Stellar developer docs](https://developers.stellar.org)
-    ///
-    /// - Parameter response: The closure to be called upon response.
+    /// - Returns: FeeStatsResponseEnum with fee statistics on success or error on failure
     ///
     open func getFeeStats() async -> FeeStatsResponseEnum {
         let requestPath = "/fee_stats"

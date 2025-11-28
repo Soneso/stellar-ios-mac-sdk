@@ -24,9 +24,6 @@ let package = Package(
                 "Info.plist",
                 "stellarsdk.h",
                 "libs/ed25519-C"
-            ],
-            swiftSettings: [
-                .swiftLanguageMode(.v5)
             ]
         ),
         .target(

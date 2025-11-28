@@ -16,9 +16,6 @@ public enum PaymentPathsResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
-/// A closure to be called with the response from a payment path request
-public typealias FindPaymentPathsResponseClosure = (_ response:PaymentPathsResponseEnum) -> (Void)
-
 /// Service for finding payment paths on the Stellar network.
 ///
 /// Payment paths allow sending one asset and having the recipient receive a different asset
@@ -63,15 +60,14 @@ public class PaymentPathsService: @unchecked Sendable {
     }
     
     /// Finds payment paths from source to destination account for a specified amount.
-    @available(*, renamed: "findPaymentPaths(destinationAccount:destinationAssetType:destinationAssetCode:destinationAssetIssuer:destinationAmount:sourceAccount:)")
-    open func findPaymentPaths(destinationAccount:String, destinationAssetType:String, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String, sourceAccount:String, response:@escaping FindPaymentPathsResponseClosure) {
-        Task {
-            let result = await findPaymentPaths(destinationAccount: destinationAccount, destinationAssetType: destinationAssetType, destinationAssetCode: destinationAssetCode, destinationAssetIssuer: destinationAssetIssuer, destinationAmount: destinationAmount, sourceAccount: sourceAccount)
-            response(result)
-        }
-    }
-
-    /// Finds payment paths from source to destination account for a specified amount.
+    ///
+    /// - Parameter destinationAccount: The destination account ID
+    /// - Parameter destinationAssetType: Type of destination asset: "native", "credit_alphanum4", or "credit_alphanum12"
+    /// - Parameter destinationAssetCode: Asset code if not "native"
+    /// - Parameter destinationAssetIssuer: Asset issuer if not "native"
+    /// - Parameter destinationAmount: The amount to be received by the destination
+    /// - Parameter sourceAccount: The source account ID
+    /// - Returns: PaymentPathsResponseEnum with available paths or error
     open func findPaymentPaths(destinationAccount:String, destinationAssetType:String, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String, sourceAccount:String) async -> PaymentPathsResponseEnum {
         
         var requestPath = "/paths"
@@ -91,56 +87,35 @@ public class PaymentPathsService: @unchecked Sendable {
         return await findPaymentPathsFrom(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
-    /// The Stellar Network allows payments to be made across assets through path payments. A path payment specifies a series of assets to route a payment through, from source asset (the asset debited from the payer) to destination asset (the asset credited to the payee).
-    /// See [Stellar developer docs](https://developers.stellar.org)
+    /// Finds strict receive payment paths from source to destination.
+    ///
+    /// The Stellar Network allows payments to be made across assets through path payments. A path payment
+    /// specifies a series of assets to route a payment through, from source asset (the asset debited from
+    /// the payer) to destination asset (the asset credited to the payee).
     ///
     /// A strict receive path search is specified using:
     /// - The source account id or source assets.
     /// - The asset and amount that the destination account should receive.
     ///
-    /// As part of the search, horizon will load a list of assets available to the source account id and will find any payment paths from those source assets to the desired destination asset. The search’s amount parameter will be used to determine if a given path can satisfy a payment of the desired amount.
-    /// 
-    /// - Parameter sourceAccount: optional. The sender’s account id. Any returned path must use an asset that the sender has a trustline to.
-    /// - Parameter sourceAssets: optional. A comma separated list of assets. Any returned path must use an asset included in this list. e.g. "USD:GAEDTJ4PPEFVW5XV2S7LUXBEHNQMX5Q2GM562RJGOQG7GVCE5H3HIB4V,native"
-    /// - Parameter destinationAccount: optional. The destination account that any returned path should use.
-    /// - Parameter destinationAssetType: optional The type of the destination asset e.g. "native", "credit_alphanum4" or "credit_alphanum12"
-    /// - Parameter destinationAssetCode: required if destinationAssetType is not native. e.g. "USD"
-    /// - Parameter destinationAssetIssuer: required if destination_asset_type is not native
+    /// As part of the search, Horizon will load a list of assets available to the source account id and
+    /// will find any payment paths from those source assets to the desired destination asset. The search's
+    /// amount parameter will be used to determine if a given path can satisfy a payment of the desired amount.
+    ///
+    /// The endpoint will not allow requests which provide both a source_account and a source_assets parameter.
+    /// All requests must provide one or the other.
+    ///
+    /// - Parameter sourceAccount: Optional. The sender's account id. Any returned path must use an asset that the sender has a trustline to.
+    /// - Parameter sourceAssets: Optional. A comma separated list of assets. Any returned path must use an asset included in this list. e.g. "USD:GAEDTJ4PPEFVW5XV2S7LUXBEHNQMX5Q2GM562RJGOQG7GVCE5H3HIB4V,native"
+    /// - Parameter destinationAccount: Optional. The destination account that any returned path should use.
+    /// - Parameter destinationAssetType: Optional. The type of the destination asset: "native", "credit_alphanum4", or "credit_alphanum12"
+    /// - Parameter destinationAssetCode: Required if destinationAssetType is not native. e.g. "USD"
+    /// - Parameter destinationAssetIssuer: Required if destinationAssetType is not native
     /// - Parameter destinationAmount: The amount, denominated in the destination asset, that any returned path should be able to satisfy
+    /// - Returns: PaymentPathsResponseEnum with available paths or error
     ///
-    /// The endpoint will not allow requests which provide both a source_account and a source_assets parameter. All requests must provide one or the other. The assets in source_assets are expected to be encoded using the following format:
+    /// Note: XLM should be represented as "native". Issued assets should be represented as "Code:IssuerAccountID".
     ///
-    /// XLM should be represented as "native". Issued assets should be represented as "Code:IssuerAccountID". "Code" must consist of alphanumeric ASCII characters.
-    /// This endpoint responds with a page of path resources
-    @available(*, renamed: "strictReceive(sourceAccount:sourceAssets:destinationAccount:destinationAssetType:destinationAssetCode:destinationAssetIssuer:destinationAmount:)")
-    open func strictReceive(sourceAccount:String? = nil, sourceAssets:String? = nil, destinationAccount:String? = nil, destinationAssetType:String? = nil, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String? = nil, response:@escaping FindPaymentPathsResponseClosure) {
-        Task {
-            let result = await strictReceive(sourceAccount: sourceAccount, sourceAssets: sourceAssets, destinationAccount: destinationAccount, destinationAssetType: destinationAssetType, destinationAssetCode: destinationAssetCode, destinationAssetIssuer: destinationAssetIssuer, destinationAmount: destinationAmount)
-            response(result)
-        }
-    }
-    
-    /// The Stellar Network allows payments to be made across assets through path payments. A path payment specifies a series of assets to route a payment through, from source asset (the asset debited from the payer) to destination asset (the asset credited to the payee).
-    /// See [Stellar developer docs](https://developers.stellar.org)
-    ///
-    /// A strict receive path search is specified using:
-    /// - The source account id or source assets.
-    /// - The asset and amount that the destination account should receive.
-    ///
-    /// As part of the search, horizon will load a list of assets available to the source account id and will find any payment paths from those source assets to the desired destination asset. The search’s amount parameter will be used to determine if a given path can satisfy a payment of the desired amount.
-    ///
-    /// - Parameter sourceAccount: optional. The sender’s account id. Any returned path must use an asset that the sender has a trustline to.
-    /// - Parameter sourceAssets: optional. A comma separated list of assets. Any returned path must use an asset included in this list. e.g. "USD:GAEDTJ4PPEFVW5XV2S7LUXBEHNQMX5Q2GM562RJGOQG7GVCE5H3HIB4V,native"
-    /// - Parameter destinationAccount: optional. The destination account that any returned path should use.
-    /// - Parameter destinationAssetType: optional The type of the destination asset e.g. "native", "credit_alphanum4" or "credit_alphanum12"
-    /// - Parameter destinationAssetCode: required if destinationAssetType is not native. e.g. "USD"
-    /// - Parameter destinationAssetIssuer: required if destination_asset_type is not native
-    /// - Parameter destinationAmount: The amount, denominated in the destination asset, that any returned path should be able to satisfy
-    ///
-    /// The endpoint will not allow requests which provide both a source_account and a source_assets parameter. All requests must provide one or the other. The assets in source_assets are expected to be encoded using the following format:
-    ///
-    /// XLM should be represented as "native". Issued assets should be represented as "Code:IssuerAccountID". "Code" must consist of alphanumeric ASCII characters.
-    /// This endpoint responds with a page of path resources
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     open func strictReceive(sourceAccount:String? = nil, sourceAssets:String? = nil, destinationAccount:String? = nil, destinationAssetType:String? = nil, destinationAssetCode:String? = nil, destinationAssetIssuer:String? = nil, destinationAmount:String? = nil) async -> PaymentPathsResponseEnum {
         
         var requestPath = "/paths/strict-receive"
@@ -162,60 +137,39 @@ public class PaymentPathsService: @unchecked Sendable {
         return await findPaymentPathsFrom(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
-    /// The Stellar Network allows payments to be made across assets through path payments. A path payment specifies a series of assets to route a payment through, from source asset (the asset debited from the payer) to destination asset (the asset credited to the payee).
-    /// See [Stellar developer docs](https://developers.stellar.org)
+    /// Finds strict send payment paths from source to destination.
     ///
-    /// A Path Payment Strict Send allows a user to specify the amount of the asset to send. The amount received will vary based on offers in the order books.
+    /// The Stellar Network allows payments to be made across assets through path payments. A path payment
+    /// specifies a series of assets to route a payment through, from source asset (the asset debited from
+    /// the payer) to destination asset (the asset credited to the payee).
+    ///
+    /// A Path Payment Strict Send allows a user to specify the amount of the asset to send. The amount
+    /// received will vary based on offers in the order books.
+    ///
     /// A path payment strict send search is specified using:
     /// - The destination account id or destination assets.
     /// - The source asset.
     /// - The source amount.
     ///
-    /// As part of the search, horizon will load a list of assets available to the source account id or use the assets passed in the request and will find any payment paths from those source assets to the desired destination asset. The source’s amount parameter will be used to determine if a given path can satisfy a payment of the desired amount.
+    /// As part of the search, Horizon will load a list of assets available to the source account id or use
+    /// the assets passed in the request and will find any payment paths from those source assets to the
+    /// desired destination asset. The source's amount parameter will be used to determine if a given path
+    /// can satisfy a payment of the desired amount.
     ///
-    /// - Parameter sourceAmount: optional. The amount, denominated in the source asset, that any returned path should be able to satisfy.
-    /// - Parameter sourceAssetType: optional The type of the source asset e.g. "native", "credit_alphanum4" or "credit_alphanum12"
-    /// - Parameter sourceAssetCode: required if sourceAssetType is not native. e.g. "USD"
-    /// - Parameter sourceAssetIssuer: required if sourceAssetType is not native
-    /// - Parameter destinationAccount: optional. The destination account that any returned path should use.
-    /// - Parameter destinationAssests: optional. A comma separated list of assets. Any returned path must use an asset included in this list. e.g. "USD:GAEDTJ4PPEFVW5XV2S7LUXBEHNQMX5Q2GM562RJGOQG7GVCE5H3HIB4V,native"
+    /// The endpoint will not allow requests which provide both a destination_account and destination_assets parameter.
+    /// All requests must provide one or the other.
     ///
-    /// The endpoint will not allow requests which provide both a destination_account and destination_assets parameter. All requests must provide one or the other. The assets in destination_assets are expected to be encoded using the following format:
-    
-    /// XLM should be represented as "native". Issued assets should be represented as "Code:IssuerAccountID". "Code" must consist of alphanumeric ASCII characters.
+    /// - Parameter sourceAmount: Optional. The amount, denominated in the source asset, that any returned path should be able to satisfy.
+    /// - Parameter sourceAssetType: Optional. The type of the source asset: "native", "credit_alphanum4", or "credit_alphanum12"
+    /// - Parameter sourceAssetCode: Required if sourceAssetType is not native. e.g. "USD"
+    /// - Parameter sourceAssetIssuer: Required if sourceAssetType is not native
+    /// - Parameter destinationAccount: Optional. The destination account that any returned path should use.
+    /// - Parameter destinationAssets: Optional. A comma separated list of assets. Any returned path must use an asset included in this list. e.g. "USD:GAEDTJ4PPEFVW5XV2S7LUXBEHNQMX5Q2GM562RJGOQG7GVCE5H3HIB4V,native"
+    /// - Returns: PaymentPathsResponseEnum with available paths or error
     ///
-    /// This endpoint responds with a page of path resources
-    @available(*, renamed: "strictSend(sourceAmount:sourceAssetType:sourceAssetCode:sourceAssetIssuer:destinationAccount:destinationAssets:)")
-    open func strictSend(sourceAmount:String? = nil, sourceAssetType:String? = nil, sourceAssetCode:String? = nil, sourceAssetIssuer:String? = nil, destinationAccount:String? = nil, destinationAssets:String? = nil, response:@escaping FindPaymentPathsResponseClosure) {
-        Task {
-            let result = await strictSend(sourceAmount: sourceAmount, sourceAssetType: sourceAssetType, sourceAssetCode: sourceAssetCode, sourceAssetIssuer: sourceAssetIssuer, destinationAccount: destinationAccount, destinationAssets: destinationAssets)
-            response(result)
-        }
-    }
-    
-    /// The Stellar Network allows payments to be made across assets through path payments. A path payment specifies a series of assets to route a payment through, from source asset (the asset debited from the payer) to destination asset (the asset credited to the payee).
-    /// See [Stellar developer docs](https://developers.stellar.org)
+    /// Note: XLM should be represented as "native". Issued assets should be represented as "Code:IssuerAccountID".
     ///
-    /// A Path Payment Strict Send allows a user to specify the amount of the asset to send. The amount received will vary based on offers in the order books.
-    /// A path payment strict send search is specified using:
-    /// - The destination account id or destination assets.
-    /// - The source asset.
-    /// - The source amount.
-    ///
-    /// As part of the search, horizon will load a list of assets available to the source account id or use the assets passed in the request and will find any payment paths from those source assets to the desired destination asset. The source’s amount parameter will be used to determine if a given path can satisfy a payment of the desired amount.
-    ///
-    /// - Parameter sourceAmount: optional. The amount, denominated in the source asset, that any returned path should be able to satisfy.
-    /// - Parameter sourceAssetType: optional The type of the source asset e.g. "native", "credit_alphanum4" or "credit_alphanum12"
-    /// - Parameter sourceAssetCode: required if sourceAssetType is not native. e.g. "USD"
-    /// - Parameter sourceAssetIssuer: required if sourceAssetType is not native
-    /// - Parameter destinationAccount: optional. The destination account that any returned path should use.
-    /// - Parameter destinationAssests: optional. A comma separated list of assets. Any returned path must use an asset included in this list. e.g. "USD:GAEDTJ4PPEFVW5XV2S7LUXBEHNQMX5Q2GM562RJGOQG7GVCE5H3HIB4V,native"
-    ///
-    /// The endpoint will not allow requests which provide both a destination_account and destination_assets parameter. All requests must provide one or the other. The assets in destination_assets are expected to be encoded using the following format:
-    
-    /// XLM should be represented as "native". Issued assets should be represented as "Code:IssuerAccountID". "Code" must consist of alphanumeric ASCII characters.
-    ///
-    /// This endpoint responds with a page of path resources
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     open func strictSend(sourceAmount:String? = nil, sourceAssetType:String? = nil, sourceAssetCode:String? = nil, sourceAssetIssuer:String? = nil, destinationAccount:String? = nil, destinationAssets:String? = nil) async -> PaymentPathsResponseEnum {
         
         var requestPath = "/paths/strict-send"
@@ -236,16 +190,10 @@ public class PaymentPathsService: @unchecked Sendable {
         return await findPaymentPathsFrom(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
 
-    /// Internal method to retrieve payment paths from a specific Horizon endpoint URL.
-    @available(*, renamed: "findPaymentPathsFrom(url:)")
-    func findPaymentPathsFrom(url:String, response:@escaping FindPaymentPathsResponseClosure) {
-        Task {
-            let result = await findPaymentPathsFrom(url: url)
-            response(result)
-        }
-    }
-
-    /// Internal method to retrieve payment paths from a specific Horizon endpoint URL.
+    /// Retrieves payment paths from a specific Horizon endpoint URL.
+    ///
+    /// - Parameter url: The complete URL to fetch payment paths from
+    /// - Returns: PaymentPathsResponseEnum with available paths or error
     func findPaymentPathsFrom(url:String) async -> PaymentPathsResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {

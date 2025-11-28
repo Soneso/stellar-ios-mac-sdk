@@ -9,9 +9,9 @@
 import Foundation
 
 /// Streams effect data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class EffectsStreamItem: NSObject {
-    private var streamingHelper: StreamingHelper
-    private var requestUrl: String
+public class EffectsStreamItem: @unchecked Sendable {
+    private let streamingHelper: StreamingHelper
+    private let requestUrl: String
     let effectsFactory = EffectsFactory()
 
     /// Creates a new effects stream for the specified Horizon API endpoint.

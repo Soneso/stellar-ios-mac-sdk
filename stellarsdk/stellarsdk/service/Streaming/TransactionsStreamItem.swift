@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents the possible responses from a Server-Sent Events (SSE) stream connection.
-public enum StreamResponseEnum<Data:Decodable> {
+public enum StreamResponseEnum<Data:Decodable>: Sendable where Data: Sendable {
     /// Stream connection established successfully.
     case open
     /// Data received from the stream with an event ID and decoded payload.
@@ -18,21 +18,18 @@ public enum StreamResponseEnum<Data:Decodable> {
     case error(error:Error?)
 
     /// Closure type for handling stream responses.
-    public typealias ResponseClosure = (_ response:StreamResponseEnum<Data>) -> (Void)
+    public typealias ResponseClosure = @Sendable (_ response:StreamResponseEnum<Data>) -> (Void)
 }
 
 /// Streams transaction data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class TransactionsStreamItem: NSObject {
-    private var streamingHelper: StreamingHelper
-    private var requestUrl: String
-    private let jsonDecoder = JSONDecoder()
+public class TransactionsStreamItem: @unchecked Sendable {
+    private let streamingHelper: StreamingHelper
+    private let requestUrl: String
 
     /// Creates a new transaction stream for the specified Horizon API endpoint.
     public init(requestUrl:String) {
         streamingHelper = StreamingHelper()
         self.requestUrl = requestUrl
-
-        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
 
     /// Establishes the SSE connection and delivers transaction responses as they arrive from Horizon.
@@ -47,7 +44,9 @@ public class TransactionsStreamItem: NSObject {
                         response(.error(error: HorizonRequestError.parsingResponseFailed(message: "Failed to convert response data to UTF8")))
                         return
                     }
-                    guard let transactions = try self?.jsonDecoder.decode(TransactionResponse.self, from: jsonData) else { return }
+                    let jsonDecoder = JSONDecoder()
+                    jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                    let transactions = try jsonDecoder.decode(TransactionResponse.self, from: jsonData)
                     response(.response(id: id, data: transactions))
                 } catch {
                     response(.error(error: HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)))

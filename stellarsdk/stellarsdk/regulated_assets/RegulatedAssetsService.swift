@@ -60,18 +60,6 @@ public enum PostSep08ActionEnum {
     case failure(error: HorizonRequestError)
 }
 
-/// Closure type for receiving RegulatedAssetsService creation results.
-public typealias RegulatedAssetsServiceClosure = (_ response:RegulatedAssetsServiceForDomainEnum) -> (Void)
-
-/// Closure type for receiving authorization requirement check results.
-public typealias AuthorizationRequiredClosure = (_ response:AuthorizationRequiredEnum) -> (Void)
-
-/// Closure type for receiving SEP-08 transaction post results.
-public typealias PostSep08TransactionClosure = (_ response:PostSep08TransactionEnum) -> (Void)
-
-/// Closure type for receiving SEP-08 action post results.
-public typealias PostSep08ActionClosure = (_ response:PostSep08ActionEnum) -> (Void)
-
 /// Implements SEP-0008 - Regulated Assets.
 ///
 /// This class enables issuers to validate and approve transactions involving regulated assets
@@ -185,15 +173,13 @@ public class RegulatedAssetsService {
     }
     
     /// Creates a RegulatedAssetsService instance based on information from the stellar.toml file for a given domain.
-    @available(*, renamed: "forDomain(domain:horizonUrl:network:)")
-    public static func forDomain(domain:String,  horizonUrl: String? = nil, network:Network? = nil, completion:@escaping RegulatedAssetsServiceClosure) {
-        Task {
-            let result = await forDomain(domain: domain, horizonUrl: horizonUrl, network: network)
-            completion(result)
-        }
-    }
-    
-    /// Creates a RegulatedAssetsService instance based on information from the stellar.toml file for a given domain.
+    ///
+    /// Fetches the stellar.toml file from `{domain}/.well-known/stellar.toml` and extracts regulated asset information.
+    ///
+    /// - Parameter domain: The issuer's domain including scheme (e.g., "https://issuer.example.com")
+    /// - Parameter horizonUrl: Optional custom Horizon API URL. If not provided, uses URL from TOML or network default.
+    /// - Parameter network: Optional network specification. If not provided, derives from TOML's network passphrase.
+    /// - Returns: RegulatedAssetsServiceForDomainEnum with the service instance, or an error
     public static func forDomain(domain:String,  horizonUrl: String? = nil, network:Network? = nil) async -> RegulatedAssetsServiceForDomainEnum {
         
         guard let url = URL(string: "\(domain)/.well-known/stellar.toml") else {
@@ -209,15 +195,6 @@ public class RegulatedAssetsService {
             
         } catch {
             return .failure(error: .invalidToml)
-        }
-    }
-
-    /// Checks if authorization is required for a regulated asset (deprecated, use async version).
-    @available(*, renamed: "authorizationRequired(asset:)")
-    public func authorizationRequired(asset: RegulatedAsset, completion:@escaping AuthorizationRequiredClosure) {
-        Task {
-            let result = await authorizationRequired(asset: asset)
-            completion(result)
         }
     }
 
@@ -243,15 +220,13 @@ public class RegulatedAssetsService {
     }
 
     /// Sends a transaction to be evaluated and signed by the approval server.
-    @available(*, renamed: "postTransaction(txB64Xdr:apporvalServer:)")
-    public func postTransaction(txB64Xdr: String, apporvalServer:String, completion:@escaping PostSep08TransactionClosure) {
-        Task {
-            let result = await postTransaction(txB64Xdr: txB64Xdr, apporvalServer: apporvalServer)
-            completion(result)
-        }
-    }
-    
-    /// Sends a transaction to be evaluated and signed by the approval server.
+    ///
+    /// The approval server validates the transaction against compliance requirements and may approve,
+    /// revise, reject, or request additional action from the user.
+    ///
+    /// - Parameter txB64Xdr: The transaction envelope in base64-encoded XDR format
+    /// - Parameter apporvalServer: The URL of the SEP-08 approval server
+    /// - Returns: PostSep08TransactionEnum with the approval result (success, revised, pending, actionRequired, or rejected)
     public func postTransaction(txB64Xdr: String, apporvalServer:String) async -> PostSep08TransactionEnum {
         var txRequest = [String : Any]();
         txRequest["tx"] = txB64Xdr;
@@ -296,15 +271,6 @@ public class RegulatedAssetsService {
             default:
                 return .failure(error: reqError)
             }
-        }
-    }
-
-    /// Posts action data to SEP-08 action URL (deprecated, use async version).
-    @available(*, renamed: "postAction(url:actionFields:)")
-    public func postAction(url: String, actionFields:[String : Any], completion:@escaping PostSep08ActionClosure) {
-        Task {
-            let result = await postAction(url: url, actionFields: actionFields)
-            completion(result)
         }
     }
 
@@ -412,11 +378,9 @@ public struct Sep08PostTransactionSuccess: Decodable , Sendable {
         case message
     }
     
-    /**
-     Initializer - creates a new instance by decoding from the given decoder.
-     
-     - Parameter decoder: The decoder containing the data
-     */
+    /// Initializer - creates a new instance by decoding from the given decoder.
+    ///
+    /// - Parameter decoder: The decoder containing the data
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         tx = try values.decode(String.self, forKey: .tx)
@@ -441,11 +405,9 @@ public struct Sep08PostTransactionRevised: Decodable , Sendable {
         case message
     }
     
-    /**
-     Initializer - creates a new instance by decoding from the given decoder.
-     
-     - Parameter decoder: The decoder containing the data
-     */
+    /// Initializer - creates a new instance by decoding from the given decoder.
+    ///
+    /// - Parameter decoder: The decoder containing the data
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         tx = try values.decode(String.self, forKey: .tx)
@@ -470,11 +432,9 @@ public struct Sep08PostTransactionPending: Decodable , Sendable {
         case message
     }
     
-    /**
-     Initializer - creates a new instance by decoding from the given decoder.
-     
-     - Parameter decoder: The decoder containing the data
-     */
+    /// Initializer - creates a new instance by decoding from the given decoder.
+    ///
+    /// - Parameter decoder: The decoder containing the data
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         if let rTimeout = try values.decodeIfPresent(Int.self, forKey: .timeout) {
@@ -509,17 +469,15 @@ public struct Sep08PostTransactionActionRequired: Decodable , Sendable {
         case actionMethod = "action_method"
         case actionFields = "action_fields"
     }
-    
-    /**
-     Initializer - creates a new instance by decoding from the given decoder.
-     
-     - Parameter decoder: The decoder containing the data
-     */
+
+    /// Initializer - creates a new instance by decoding from the given decoder.
+    ///
+    /// - Parameter decoder: The decoder containing the data
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         message = try values.decode(String.self, forKey: .message)
         actionUrl = try values.decode(String.self, forKey: .actionUrl)
-        
+
         if let method = try values.decodeIfPresent(String.self, forKey: .actionMethod) {
             actionMethod = method
         }
@@ -540,11 +498,9 @@ public struct Sep08PostTransactionRejected: Decodable , Sendable {
         case error
     }
     
-    /**
-     Initializer - creates a new instance by decoding from the given decoder.
-     
-     - Parameter decoder: The decoder containing the data
-     */
+    /// Initializer - creates a new instance by decoding from the given decoder.
+    ///
+    /// - Parameter decoder: The decoder containing the data
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         error = try values.decode(String.self, forKey: .error)
@@ -564,11 +520,9 @@ public struct Sep08PostTransactionStatusResponse: Decodable , Sendable {
         case status
     }
     
-    /**
-     Initializer - creates a new instance by decoding from the given decoder.
-     
-     - Parameter decoder: The decoder containing the data
-     */
+    /// Initializer - creates a new instance by decoding from the given decoder.
+    ///
+    /// - Parameter decoder: The decoder containing the data
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         status = try values.decodeIfPresent(String.self, forKey: .status)
@@ -588,11 +542,9 @@ public struct Sep08PostActionResultResponse: Decodable , Sendable {
         case result
     }
     
-    /**
-     Initializer - creates a new instance by decoding from the given decoder.
-     
-     - Parameter decoder: The decoder containing the data
-     */
+    /// Initializer - creates a new instance by decoding from the given decoder.
+    ///
+    /// - Parameter decoder: The decoder containing the data
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         result = try values.decodeIfPresent(String.self, forKey: .result)
@@ -615,11 +567,9 @@ public struct Sep08PostActionNextUrl: Decodable , Sendable {
         case message
     }
     
-    /**
-     Initializer - creates a new instance by decoding from the given decoder.
-     
-     - Parameter decoder: The decoder containing the data
-     */
+    /// Initializer - creates a new instance by decoding from the given decoder.
+    ///
+    /// - Parameter decoder: The decoder containing the data
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         nextUrl = try values.decode(String.self, forKey: .nextUrl)

@@ -8,7 +8,7 @@
 
 import Foundation
 
-/// An enum for HTTP methods
+/// HTTP methods supported for Horizon API requests.
 enum HTTPMethod {
     case get
     case post
@@ -17,16 +17,16 @@ enum HTTPMethod {
     case patch
 }
 
-/// An enum to diferentiate between succesful and failed responses
+/// Result type to differentiate between successful and failed HTTP responses.
 enum Result {
     case success(data: Data)
     case failure(error: HorizonRequestError)
 }
 
-/// A closure to be called when a HTTP response is received
-typealias ResponseClosure = (_ response:Result) -> (Void)
-
-/// End class responsible with the HTTP connection to the Horizon server
+/// Internal helper class responsible for HTTP connections to the Horizon server.
+///
+/// Handles all HTTP communication including GET, POST, PUT, PATCH, DELETE requests,
+/// multipart form data, JWT authentication, and Horizon-specific error handling.
 class ServiceHelper: @unchecked Sendable {
     static let HorizonClientVersionHeader = "X-Client-Version"
     static let HorizonClientNameHeader = "X-Client-Name"
@@ -81,6 +81,12 @@ class ServiceHelper: @unchecked Sendable {
         }
     }
     
+    /// Constructs a complete request URL by combining the base URL with the given path.
+    ///
+    /// Merges any query items from the base URL with those in the path.
+    ///
+    /// - Parameter path: The API endpoint path to append to the base URL
+    /// - Returns: The complete URL string for the request
     open func requestUrlWithPath(path: String) -> String {
         
         if let url = URL(string: self.baseURL + path), let components = URLComponents(url: url, resolvingAgainstBaseURL: false), let bQueryItems = self.baseUrlQueryItems {
@@ -98,204 +104,91 @@ class ServiceHelper: @unchecked Sendable {
         }
         return baseURL + path
     }
-    /// Performs a get request to the specified path.
-    ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - parameter response:   The closure to be called upon response.
-    @available(*, renamed: "GETRequestWithPath(path:jwtToken:)")
-    open func GETRequestWithPath(path: String, jwtToken:String? = nil, completion: @escaping ResponseClosure) {
-        Task {
-            let result = await GETRequestWithPath(path: path, jwtToken: jwtToken)
-            completion(result)
-        }
-    }
     
-    /// Performs a get request to the specified path.
+    /// Performs a GET request to the specified path.
     ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - returns Result
-    @available(*, renamed: "GETRequestWithPath(path:jwtToken:)")
+    /// - Parameter path: A path relative to the baseURL. URL parameters can be encoded in this parameter as you would do with regular URLs.
+    /// - Parameter jwtToken: Optional token to be set in the header as "Authorization: Bearer {token}"
+    /// - Returns: Result with response data on success or HorizonRequestError on failure
     open func GETRequestWithPath(path: String, jwtToken:String? = nil) async -> Result {
         let requestUrl = requestUrlWithPath(path: path)
         return await requestFromUrl(url: requestUrl, method: .get, jwtToken: jwtToken)
     }
 
-    /// Performs a get request to the specified path.
+    /// Performs a GET request to the specified URL.
     ///
-    /// - parameter path:  A URL for the request. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - parameter response:   The closure to be called upon response.
-    @available(*, renamed: "GETRequestFromUrl(url:jwtToken:)")
-    open func GETRequestFromUrl(url: String, jwtToken:String? = nil, completion: @escaping ResponseClosure) {
-        Task {
-            let result = await GETRequestFromUrl(url: url, jwtToken: jwtToken)
-            completion(result)
-        }
-    }
-    
-    /// Performs a get request to the specified path.
-    ///
-    /// - parameter path:  A URL for the request. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - returns Result
+    /// - Parameter url: A complete URL for the request. URL parameters can be encoded in this parameter as you would do with regular URLs.
+    /// - Parameter jwtToken: Optional token to be set in the header as "Authorization: Bearer {token}"
+    /// - Returns: Result with response data on success or HorizonRequestError on failure
     open func GETRequestFromUrl(url: String, jwtToken:String? = nil) async -> Result {
         return await requestFromUrl(url: url, method: .get, jwtToken: jwtToken)
     }
     
-    /// Performs a post request to the specified path.
+    /// Performs a POST request to the specified path.
     ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - parameter body:  An optional parameter with the data that should be contained in the request body
-    /// - parameter contentType:  An optional parameter with the content type to set
-    /// - parameter response:   The closure to be called upon response.
-    @available(*, renamed: "POSTRequestWithPath(path:jwtToken:body:contentType:)")
-    open func POSTRequestWithPath(path: String, jwtToken:String? = nil, body:Data? = nil, contentType:String? = nil, completion: @escaping ResponseClosure) {
-        Task {
-            let result = await POSTRequestWithPath(path: path, jwtToken: jwtToken, body: body, contentType: contentType)
-            completion(result)
-        }
-    }
-    
-    /// Performs a post request to the specified path.
-    ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - parameter body:  An optional parameter with the data that should be contained in the request body
-    /// - parameter contentType:  An optional parameter with the content type to set
-    /// - returns Result
+    /// - Parameter path: A path relative to the baseURL. URL parameters can be encoded in this parameter as you would do with regular URLs.
+    /// - Parameter jwtToken: Optional token to be set in the header as "Authorization: Bearer {token}"
+    /// - Parameter body: Optional data to be contained in the request body
+    /// - Parameter contentType: Optional content type to set in the request header
+    /// - Returns: Result with response data on success or HorizonRequestError on failure
     open func POSTRequestWithPath(path: String, jwtToken:String? = nil, body:Data? = nil, contentType:String? = nil) async -> Result {
         let requestUrl = requestUrlWithPath(path: path)
         return await requestFromUrl(url: requestUrl, method: .post, contentType: contentType, jwtToken: jwtToken, body: body)
     }
     
-    /// Performs a put request to the specified path.
+    /// Performs a PUT request to the specified path.
     ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - parameter body:  An optional parameter with the data that should be contained in the request body
-    /// - parameter contentType:  An optional parameter with the content type to set
-    /// - parameter response:   The closure to be called upon response.
-    @available(*, renamed: "PUTRequestWithPath(path:jwtToken:body:contentType:)")
-    open func PUTRequestWithPath(path: String, jwtToken:String? = nil, body:Data? = nil, contentType:String? = nil, completion: @escaping ResponseClosure) {
-        Task {
-            let result = await PUTRequestWithPath(path: path, jwtToken: jwtToken, body: body, contentType: contentType)
-            completion(result)
-        }
-    }
-    
-    /// Performs a put request to the specified path.
-    ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - parameter body:  An optional parameter with the data that should be contained in the request body
-    /// - parameter contentType:  An optional parameter with the content type to set
-    /// - returns Result
+    /// - Parameter path: A path relative to the baseURL. URL parameters can be encoded in this parameter as you would do with regular URLs.
+    /// - Parameter jwtToken: Optional token to be set in the header as "Authorization: Bearer {token}"
+    /// - Parameter body: Optional data to be contained in the request body
+    /// - Parameter contentType: Optional content type to set in the request header
+    /// - Returns: Result with response data on success or HorizonRequestError on failure
     open func PUTRequestWithPath(path: String, jwtToken:String? = nil, body:Data? = nil, contentType:String? = nil) async -> Result {
         let requestUrl = requestUrlWithPath(path: path)
         return await requestFromUrl(url: requestUrl, method: .put, contentType: contentType, jwtToken: jwtToken, body: body)
     }
     
-    /// Performs a patch request to the specified path.
+    /// Performs a PATCH request to the specified path.
     ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - parameter contentType:  An optional parameter representing the content type of the request
-    /// - parameter body:  An optional parameter with the data that should be contained in the request body
-    /// - parameter response:   The closure to be called upon response.
-    @available(*, renamed: "PATCHRequestWithPath(path:jwtToken:contentType:body:)")
-    open func PATCHRequestWithPath(path: String, jwtToken:String? = nil, contentType:String? = nil, body:Data? = nil, completion: @escaping ResponseClosure) {
-        Task {
-            let result = await PATCHRequestWithPath(path: path, jwtToken: jwtToken, contentType: contentType, body: body)
-            completion(result)
-        }
-    }
-    
-    /// Performs a patch request to the specified path.
-    ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - parameter contentType:  An optional parameter representing the content type of the request
-    /// - parameter body:  An optional parameter with the data that should be contained in the request body
-    /// - returns Result
+    /// - Parameter path: A path relative to the baseURL. URL parameters can be encoded in this parameter as you would do with regular URLs.
+    /// - Parameter jwtToken: Optional token to be set in the header as "Authorization: Bearer {token}"
+    /// - Parameter contentType: Optional content type to set in the request header
+    /// - Parameter body: Optional data to be contained in the request body
+    /// - Returns: Result with response data on success or HorizonRequestError on failure
     open func PATCHRequestWithPath(path: String, jwtToken:String? = nil, contentType:String? = nil, body:Data? = nil) async -> Result {
         let requestUrl = requestUrlWithPath(path: path)
         return await requestFromUrl(url: requestUrl, method: .patch, jwtToken: jwtToken, body: body)
     }
     
-    /// Performs a post request to the specified path.
+    /// Performs a multipart POST request to the specified path.
     ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - parameter response:   The closure to be called upon response.
-    @available(*, renamed: "POSTMultipartRequestWithPath(path:parameters:jwtToken:)")
-    open func POSTMultipartRequestWithPath(path: String, parameters:[String:Data]? = nil, jwtToken:String? = nil, completion: @escaping ResponseClosure) {
-        Task {
-            let result = await POSTMultipartRequestWithPath(path: path, parameters: parameters, jwtToken: jwtToken)
-            completion(result)
-        }
-    }
-    
-    /// Performs a post request to the specified path.
-    ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - returns Resut
+    /// - Parameter path: A path relative to the baseURL. URL parameters can be encoded in this parameter as you would do with regular URLs.
+    /// - Parameter parameters: Optional dictionary of form field names to data values for the multipart body
+    /// - Parameter jwtToken: Optional token to be set in the header as "Authorization: Bearer {token}"
+    /// - Returns: Result with response data on success or HorizonRequestError on failure
     open func POSTMultipartRequestWithPath(path: String, parameters:[String:Data]? = nil, jwtToken:String? = nil) async -> Result {
         return await multipartRequestWithPath(path: path, parameters: parameters, method: .post, jwtToken: jwtToken)
     }
     
-    /// Performs a put request to the specified path.
+    /// Performs a multipart PUT request to the specified path.
     ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - parameter response:   The closure to be called upon response.
-    @available(*, renamed: "PUTMultipartRequestWithPath(path:parameters:jwtToken:)")
-    open func PUTMultipartRequestWithPath(path: String, parameters:[String:Data]? = nil, jwtToken:String? = nil, completion: @escaping ResponseClosure) {
-        Task {
-            let result = await PUTMultipartRequestWithPath(path: path, parameters: parameters, jwtToken: jwtToken)
-            completion(result)
-        }
-    }
-    
-    
-    /// Performs a put request to the specified path.
-    ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - returns Resut
+    /// - Parameter path: A path relative to the baseURL. URL parameters can be encoded in this parameter as you would do with regular URLs.
+    /// - Parameter parameters: Optional dictionary of form field names to data values for the multipart body
+    /// - Parameter jwtToken: Optional token to be set in the header as "Authorization: Bearer {token}"
+    /// - Returns: Result with response data on success or HorizonRequestError on failure
     open func PUTMultipartRequestWithPath(path: String, parameters:[String:Data]? = nil, jwtToken:String? = nil) async -> Result {
         return await multipartRequestWithPath(path: path, parameters: parameters, method: .put, jwtToken: jwtToken)
     }
     
-    /// Performs a multipart request to the specified path using the passed http method
+    /// Performs a multipart request to the specified path using the given HTTP method.
     ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
-    /// - parameter method:  the http method to be used, e.g. .put, .post
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - parameter response:   The closure to be called upon response.
-    @available(*, renamed: "multipartRequestWithPath(path:parameters:method:jwtToken:)")
-    open func multipartRequestWithPath(path: String, parameters:[String:Data]? = nil, method: HTTPMethod, jwtToken:String? = nil, completion: @escaping ResponseClosure) {
-        Task {
-            let result = await multipartRequestWithPath(path: path, parameters: parameters, method: method, jwtToken: jwtToken)
-            completion(result)
-        }
-    }
-    
-    /// Performs a multipart request to the specified path using the passed http method
+    /// Constructs a multipart/form-data request body with proper boundaries and encoding.
     ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter parameters:  An optional parameter with the data that should be contained in the request body
-    /// - parameter method:  the http method to be used, e.g. .put, .post
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - returns Resut
+    /// - Parameter path: A path relative to the baseURL. URL parameters can be encoded in this parameter as you would do with regular URLs.
+    /// - Parameter parameters: Optional dictionary of form field names to data values for the multipart body
+    /// - Parameter method: The HTTP method to use (e.g., .put, .post)
+    /// - Parameter jwtToken: Optional token to be set in the header as "Authorization: Bearer {token}"
+    /// - Returns: Result with response data on success or HorizonRequestError on failure
     open func multipartRequestWithPath(path: String, parameters:[String:Data]? = nil, method: HTTPMethod, jwtToken:String? = nil) async -> Result {
         let boundary = String(format: "------------------------%08X%08X", arc4random(), arc4random())
         let contentType: String = {
@@ -340,38 +233,28 @@ class ServiceHelper: @unchecked Sendable {
         return await requestFromUrl(url: requestUrl, method: method, contentType: contentType, jwtToken: jwtToken, body: httpBody)
     }
     
-    /// Performs a delete request to the specified path.
+    /// Performs a DELETE request to the specified path.
     ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - parameter response:   The closure to be called upon response.
-    @available(*, renamed: "DELETERequestWithPath(path:jwtToken:)")
-    open func DELETERequestWithPath(path: String, jwtToken:String? = nil, completion: @escaping ResponseClosure) {
-        Task {
-            let result = await DELETERequestWithPath(path: path, jwtToken: jwtToken)
-            completion(result)
-        }
-    }
-    
-    /// Performs a delete request to the specified path.
-    ///
-    /// - parameter path:  A path relative to the baseURL. If URL parameters have to be sent they can be encoded in this parameter as you would do it with regular URLs.
-    /// - parameter jwtToken: token to be set in the header as Authorization: Bearer  token
-    /// - returns Resut
+    /// - Parameter path: A path relative to the baseURL. URL parameters can be encoded in this parameter as you would do with regular URLs.
+    /// - Parameter jwtToken: Optional token to be set in the header as "Authorization: Bearer {token}"
+    /// - Returns: Result with response data on success or HorizonRequestError on failure
     open func DELETERequestWithPath(path: String, jwtToken:String? = nil) async -> Result {
         let requestUrl = requestUrlWithPath(path: path)
         return await requestFromUrl(url: requestUrl, method: .delete, jwtToken: jwtToken)
     }
         
-    @available(*, renamed: "requestFromUrl(url:method:contentType:jwtToken:body:)")
-    open func requestFromUrl(url: String, method: HTTPMethod, contentType:String? = nil, jwtToken:String? = nil, body:Data? = nil, completion: @escaping ResponseClosure) {
-        Task {
-            let result = await requestFromUrl(url: url, method: method, contentType: contentType, jwtToken: jwtToken, body: body)
-            completion(result)
-        }
-    }
-    
-    
+    /// Performs an HTTP request to the specified URL.
+    ///
+    /// This is the core request method that handles all HTTP communication with Horizon.
+    /// It sets appropriate headers, handles authentication, and maps HTTP status codes
+    /// to specific HorizonRequestError types.
+    ///
+    /// - Parameter url: The complete URL for the request
+    /// - Parameter method: The HTTP method to use
+    /// - Parameter contentType: Optional content type to set in the request header
+    /// - Parameter jwtToken: Optional token to be set in the header as "Authorization: Bearer {token}"
+    /// - Parameter body: Optional data to be contained in the request body
+    /// - Returns: Result with response data on success or HorizonRequestError on failure
     open func requestFromUrl(url: String, method: HTTPMethod, contentType:String? = nil, jwtToken:String? = nil, body:Data? = nil) async -> Result {
         guard let url1 = URL(string: url) else {
             return .failure(error: .requestFailed(message: "Invalid URL: \(url)", horizonErrorResponse: nil))

@@ -24,11 +24,6 @@ public enum LiquidityPoolTradesResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
-/// Callback closure for retrieving liquidity pool details from the Stellar network.
-public typealias LiquidityPoolDetailsResponseClosure = (_ response:LiquidityPoolDetailsResponseEnum) -> (Void)
-/// Callback closure for retrieving liquidity pool trade history from the Stellar network.
-public typealias LiquidityPoolTradesResponseClosure = (_ response:LiquidityPoolTradesResponseEnum) -> (Void)
-
 /// Service for querying liquidity pools from the Stellar Horizon API.
 ///
 /// Liquidity pools enable automated market making (AMM) on Stellar. Each pool contains
@@ -71,15 +66,9 @@ public class LiquidityPoolsService: @unchecked Sendable {
     }
     
     /// Retrieves details for a specific liquidity pool by its ID.
-    @available(*, renamed: "getLiquidityPool(poolId:)")
-    open func getLiquidityPool(poolId:String, response:@escaping LiquidityPoolDetailsResponseClosure) {
-        Task {
-            let result = await getLiquidityPool(poolId: poolId)
-            response(result)
-        }
-    }
-
-    /// Retrieves details for a specific liquidity pool by its ID.
+    ///
+    /// - Parameter poolId: The liquidity pool ID (L-address or hex format)
+    /// - Returns: LiquidityPoolDetailsResponseEnum with pool details or error
     open func getLiquidityPool(poolId:String) async -> LiquidityPoolDetailsResponseEnum {
         var lidHex = poolId
         if poolId.hasPrefix("L"), let idHex = try? poolId.decodeLiquidityPoolIdToHex() {
@@ -101,15 +90,11 @@ public class LiquidityPoolsService: @unchecked Sendable {
     }
     
     /// Retrieves all liquidity pools with optional pagination parameters.
-    @available(*, renamed: "getLiquidityPools(cursor:order:limit:)")
-    open func getLiquidityPools(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
-        Task {
-            let result = await getLiquidityPools(cursor: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-
-    /// Retrieves all liquidity pools with optional pagination parameters.
+    ///
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
+    /// - Returns: PageResponse containing liquidity pools or error
     open func getLiquidityPools(cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<LiquidityPoolResponse>.ResponseEnum {
         var requestPath = "/liquidity_pools"
         
@@ -127,15 +112,13 @@ public class LiquidityPoolsService: @unchecked Sendable {
     }
     
     /// Retrieves liquidity pools filtered by reserve assets with optional pagination parameters.
-    @available(*, renamed: "getLiquidityPools(reserveAssetA:reserveAssetB:cursor:order:limit:)")
-    open func getLiquidityPools(reserveAssetA:Asset, reserveAssetB:Asset, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
-        Task {
-            let result = await getLiquidityPools(reserveAssetA: reserveAssetA, reserveAssetB: reserveAssetB, cursor: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-
-    /// Retrieves liquidity pools filtered by reserve assets with optional pagination parameters.
+    ///
+    /// - Parameter reserveAssetA: First reserve asset to filter by
+    /// - Parameter reserveAssetB: Second reserve asset to filter by
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
+    /// - Returns: PageResponse containing liquidity pools matching the reserve assets or error
     open func getLiquidityPools(reserveAssetA:Asset, reserveAssetB:Asset, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<LiquidityPoolResponse>.ResponseEnum {
         var requestPath = "/liquidity_pools"
         
@@ -154,15 +137,9 @@ public class LiquidityPoolsService: @unchecked Sendable {
     }
     
     /// Retrieves trade history for a specific liquidity pool.
-    @available(*, renamed: "getLiquidityPoolTrades(poolId:)")
-    open func getLiquidityPoolTrades(poolId:String, response:@escaping LiquidityPoolTradesResponseClosure) {
-        Task {
-            let result = await getLiquidityPoolTrades(poolId: poolId)
-            response(result)
-        }
-    }
-
-    /// Retrieves trade history for a specific liquidity pool.
+    ///
+    /// - Parameter poolId: The liquidity pool ID (L-address or hex format)
+    /// - Returns: LiquidityPoolTradesResponseEnum with trade history or error
     open func getLiquidityPoolTrades(poolId:String) async -> LiquidityPoolTradesResponseEnum {
         let requestPath = "/liquidity_pools/" + poolId + "/trades"
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
@@ -180,15 +157,11 @@ public class LiquidityPoolsService: @unchecked Sendable {
     }
     
     /// Retrieves liquidity pools from a specific Horizon URL.
-    @available(*, renamed: "getLiquidityPoolsFromUrl(url:)")
-    open func getLiquidityPoolsFromUrl(url:String, response:@escaping PageResponse<LiquidityPoolResponse>.ResponseClosure) {
-        Task {
-            let result = await getLiquidityPoolsFromUrl(url: url)
-            response(result)
-        }
-    }
-
-    /// Retrieves liquidity pools from a specific Horizon URL.
+    ///
+    /// Used for pagination. Pass URLs from PageResponse links (e.g., next, prev).
+    ///
+    /// - Parameter url: The complete URL to fetch liquidity pools from
+    /// - Returns: PageResponse containing liquidity pools or error
     open func getLiquidityPoolsFromUrl(url:String) async -> PageResponse<LiquidityPoolResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {

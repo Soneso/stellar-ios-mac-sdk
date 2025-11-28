@@ -1,17 +1,14 @@
 import Foundation
 
 /// Streams trade data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class TradesStreamItem: NSObject {
-    private var streamingHelper: StreamingHelper
-    private var requestUrl: String
-    private let jsonDecoder = JSONDecoder()
+public class TradesStreamItem: @unchecked Sendable {
+    private let streamingHelper: StreamingHelper
+    private let requestUrl: String
 
     /// Creates a new trades stream for the specified Horizon API endpoint.
     public init(requestUrl:String) {
         streamingHelper = StreamingHelper()
         self.requestUrl = requestUrl
-
-        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
 
     /// Establishes the SSE connection and delivers trade responses as they arrive from Horizon.
@@ -26,7 +23,9 @@ public class TradesStreamItem: NSObject {
                         response(.error(error: HorizonRequestError.parsingResponseFailed(message: "Failed to convert response data to UTF8")))
                         return
                     }
-                    guard let trades = try self?.jsonDecoder.decode(TradeResponse.self, from: jsonData) else { return }
+                    let jsonDecoder = JSONDecoder()
+                    jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                    let trades = try jsonDecoder.decode(TradeResponse.self, from: jsonData)
                     response(.response(id: id, data: trades))
                 } catch {
                     response(.error(error: HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)))

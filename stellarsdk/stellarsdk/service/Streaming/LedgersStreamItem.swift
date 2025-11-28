@@ -9,22 +9,19 @@
 import Foundation
 
 /// Streams ledger data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class LedgersStreamItem: NSObject {
-    private var streamingHelper: StreamingHelper
-    private var requestUrl: String
-    private let jsonDecoder = JSONDecoder()
+public class LedgersStreamItem: @unchecked Sendable {
+    private let streamingHelper: StreamingHelper
+    private let requestUrl: String
 
     /// Creates a new ledgers stream for the specified Horizon API endpoint.
     public init(requestUrl:String) {
         streamingHelper = StreamingHelper()
         self.requestUrl = requestUrl
-
-        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
 
     /// Establishes the SSE connection and delivers ledger responses as they arrive from Horizon.
     public func onReceive(response:@escaping StreamResponseEnum<LedgerResponse>.ResponseClosure) {
-        streamingHelper.streamFrom(requestUrl:requestUrl) { (helperResponse) -> (Void) in
+        streamingHelper.streamFrom(requestUrl:requestUrl) { [weak self] (helperResponse) -> (Void) in
             switch helperResponse {
             case .open:
                 response(.open)
@@ -34,13 +31,16 @@ public class LedgersStreamItem: NSObject {
                         response(.error(error: HorizonRequestError.parsingResponseFailed(message: "Failed to convert response data to UTF8")))
                         return
                     }
-                    let ledgers = try self.jsonDecoder.decode(LedgerResponse.self, from: jsonData)
+                    let jsonDecoder = JSONDecoder()
+                    jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+                    let ledgers = try jsonDecoder.decode(LedgerResponse.self, from: jsonData)
                     response(.response(id: id, data: ledgers))
                 } catch {
                     response(.error(error: HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)))
                 }
             case .error(let error):
-                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with url \(self.requestUrl): \(error?.localizedDescription ?? "nil")")))
+                let ledgerUrl = self?.requestUrl ?? "unknown"
+                response(.error(error: HorizonRequestError.errorOnStreamReceive(message: "Error from Horizon on stream with url \(ledgerUrl): \(error?.localizedDescription ?? "nil")")))
             }
         }
     }

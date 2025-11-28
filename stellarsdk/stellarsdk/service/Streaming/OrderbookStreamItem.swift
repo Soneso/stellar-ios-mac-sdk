@@ -1,10 +1,9 @@
 import Foundation
 
 /// Streams orderbook data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class OrderbookStreamItem: NSObject {
-    private var streamingHelper: StreamingHelper
-    private var requestUrl: String
-    private let jsonDecoder = JSONDecoder()
+public class OrderbookStreamItem: @unchecked Sendable {
+    private let streamingHelper: StreamingHelper
+    private let requestUrl: String
 
     /// Creates a new orderbook stream for the specified Horizon API endpoint.
     public init(requestUrl:String) {
@@ -24,7 +23,8 @@ public class OrderbookStreamItem: NSObject {
                         response(.error(error: HorizonRequestError.parsingResponseFailed(message: "Failed to convert response data to UTF8")))
                         return
                     }
-                    guard let orderbook = try self?.jsonDecoder.decode(OrderbookResponse.self, from: jsonData) else { return }
+                    let jsonDecoder = JSONDecoder()
+                    let orderbook = try jsonDecoder.decode(OrderbookResponse.self, from: jsonData)
                     response(.response(id: id, data: orderbook))
                 } catch {
                     response(.error(error: HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)))

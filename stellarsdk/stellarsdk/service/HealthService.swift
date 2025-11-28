@@ -16,9 +16,6 @@ public enum HealthCheckResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
-/// A closure to be called with the response from a health check request.
-public typealias HealthCheckResponseClosure = (_ response: HealthCheckResponseEnum) -> (Void)
-
 /// Service for checking Horizon server health status.
 ///
 /// The health endpoint provides information about the Horizon server's operational status,
@@ -50,27 +47,6 @@ open class HealthService: @unchecked Sendable {
 
     init(baseURL: String) {
         serviceHelper = ServiceHelper(baseURL: baseURL)
-    }
-
-    /// Checks the health of the Horizon server.
-    /// This endpoint returns information about the health status of Horizon,
-    /// including whether it can connect to its database and Stellar Core,
-    /// and whether Stellar Core is synchronized with the network.
-    ///
-    /// The HTTP status code returned by this endpoint will be:
-    /// - 200 OK: if all health checks pass (database connected, core up, and core synced)
-    /// - 503 Service Unavailable: if any health check fails
-    ///
-    /// See [Stellar developer docs](https://developers.stellar.org)
-    ///
-    /// - Parameter response: The closure to be called upon response.
-    ///
-    @available(*, renamed: "getHealth()")
-    open func getHealth(response: @escaping HealthCheckResponseClosure) {
-        Task {
-            let result = await getHealth()
-            response(result)
-        }
     }
 
     /// Checks the health of the Horizon server.

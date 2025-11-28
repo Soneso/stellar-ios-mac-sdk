@@ -49,39 +49,6 @@ class HealthRemoteTestCase: XCTestCase {
         }
     }
 
-    func testGetHealthCallback() async {
-        let expectation = XCTestExpectation(description: "Get health using callback")
-
-        sdk.health.getHealth { response in
-            switch response {
-            case .success(let healthResponse):
-                XCTAssertNotNil(healthResponse.databaseConnected)
-                XCTAssertNotNil(healthResponse.coreUp)
-                XCTAssertNotNil(healthResponse.coreSynced)
-
-                print("Callback - Database Connected: \(healthResponse.databaseConnected)")
-                print("Callback - Core Up: \(healthResponse.coreUp)")
-                print("Callback - Core Synced: \(healthResponse.coreSynced)")
-                print("Callback - Overall Healthy: \(healthResponse.isHealthy)")
-
-                expectation.fulfill()
-
-            case .failure(let error):
-                switch error {
-                case .staleHistory(let message, _):
-                    print("Callback - Horizon is unhealthy (503): \(message)")
-                    expectation.fulfill()
-                default:
-                    StellarSDKLog.printHorizonRequestErrorMessage(tag: "Load health callback testcase", horizonRequestError: error)
-                    XCTFail("Unexpected error type: \(error)")
-                    expectation.fulfill()
-                }
-            }
-        }
-
-        await fulfillment(of: [expectation], timeout: 15.0)
-    }
-
     func testHealthResponseIsHealthyProperty() async {
         let response = await sdk.health.getHealth()
 

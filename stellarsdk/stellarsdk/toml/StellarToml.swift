@@ -27,7 +27,7 @@ public enum TomlCurrencyLoadError: Error {
     case invalidToml
 }
 
-/// An enum used to diferentiate between successful and failed toml for domain responses.
+/// Result type for stellar.toml loading operations.
 public enum TomlForDomainEnum {
     /// Successfully loaded and parsed stellar.toml file from the domain.
     case success(response: StellarToml)
@@ -35,20 +35,13 @@ public enum TomlForDomainEnum {
     case failure(error: TomlFileError)
 }
 
-/// An enum used to diferentiate between successful and failed toml for domain responses.
+/// Result type for currency TOML loading operations.
 public enum TomlCurrencyFromUrlEnum {
     /// Successfully loaded and parsed currency TOML from the linked URL per SEP-0001.
     case success(response: CurrencyDocumentation)
     /// Failed to load or parse the currency TOML from the linked URL.
     case failure(error: TomlCurrencyLoadError)
 }
-
-/// A closure to be called with the response from a toml for domain request.
-public typealias TomlFileClosure = (_ response:TomlForDomainEnum) -> (Void)
-
-/// A closure to be called with the response from a linked currency in a toml request.
-/// Alternately to specifying a currency in its content, stellar.toml can link out to a separate TOML file for the currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
-public typealias TomlCurrencyFromUrlClosure = (_ response:TomlCurrencyFromUrlEnum) -> (Void)
 
 /// Implements SEP-0001 - stellar.toml Discovery and Configuration.
 ///
@@ -110,13 +103,10 @@ public class StellarToml {
     /// Validator node configuration and history archives from the stellar.toml VALIDATORS section.
     public var validatorsInformation: [ValidatorInformation] = []
     
-    /**
-        Parse the string `fromString`
-
-        - Parameter fromString: A string with TOML document
-
-        - Throws: `TomlFileError.invalidToml` if the string is invalid
-    */
+    /// Creates a StellarToml instance by parsing a TOML string.
+    ///
+    /// - Parameter string: A string containing the stellar.toml content
+    /// - Throws: `TomlFileError.invalidToml` if the string is invalid or cannot be parsed
     public init(fromString string:String) throws {
         var parsedToml:Toml? = nil
         do {
@@ -158,16 +148,14 @@ public class StellarToml {
         
     }
     
-    /// Loads stellar.toml from a domain using callback-based completion (deprecated).
-    @available(*, renamed: "from(domain:secure:)")
-    public static func from(domain: String, secure: Bool = true, completion:@escaping TomlFileClosure) {
-        Task {
-            let result = await from(domain: domain, secure: secure)
-            completion(result)
-        }
-    }
-
     /// Loads and parses stellar.toml file from a domain per SEP-0001.
+    ///
+    /// Fetches the stellar.toml file from `https://{domain}/.well-known/stellar.toml`
+    /// (or `http://` if secure is false) and parses its contents.
+    ///
+    /// - Parameter domain: The domain without scheme (e.g., "example.com")
+    /// - Parameter secure: If true, uses HTTPS to fetch stellar.toml (default: true)
+    /// - Returns: TomlForDomainEnum with the parsed StellarToml or an error
     public static func from(domain: String, secure: Bool = true) async -> TomlForDomainEnum {
         guard let url = URL(string: "\(secure ? "https://" : "http://")\(domain)/.well-known/stellar.toml") else {
             return .failure(error: .invalidDomain)
@@ -182,16 +170,13 @@ public class StellarToml {
         }
     }
     
-    /// Alternately to specifying a currency in its content, stellar.toml can link out to a separate TOML file for the currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
-    @available(*, renamed: "currencyFrom(url:)")
-    public static func currencyFrom(url: String, completion:@escaping TomlCurrencyFromUrlClosure) {
-        Task {
-            let result = await currencyFrom(url: url)
-            completion(result)
-        }
-    }
-    
-    /// Alternately to specifying a currency in its content, stellar.toml can link out to a separate TOML file for the currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
+    /// Loads currency information from a linked TOML file URL.
+    ///
+    /// Per SEP-0001, a stellar.toml can link to separate TOML files for individual currencies
+    /// by specifying `toml="https://DOMAIN/.well-known/CURRENCY.toml"` as the currency's only field.
+    ///
+    /// - Parameter url: The complete URL to the currency TOML file
+    /// - Returns: TomlCurrencyFromUrlEnum with the parsed CurrencyDocumentation or an error
     public static func currencyFrom(url: String) async -> TomlCurrencyFromUrlEnum {
         guard let url1 = URL(string:url) else {
             return .failure(error: .invalidUrl)

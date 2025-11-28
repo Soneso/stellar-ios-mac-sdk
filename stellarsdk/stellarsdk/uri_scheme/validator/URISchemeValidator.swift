@@ -24,9 +24,6 @@ public enum URISchemeIsValidEnum {
     case failure(URISchemeErrors)
 }
 
-/// A closure to be called with the response from a URI scheme validity check.
-public typealias URISchemeIsValidClosure = (_ completion: URISchemeIsValidEnum) -> (Void)
-
 /// Validates and signs SEP-0007 compliant Stellar URIs.
 ///
 /// This class provides functionality for signing URI scheme requests and verifying their
@@ -38,11 +35,13 @@ public class URISchemeValidator: NSObject {
     /// The predefined URIScheme prefix
     private let URISchemePrefix = "stellar.sep.7 - URI Scheme"
 
-    /// Signs the URIScheme compliant URL with the signer's key pair.
+    /// Signs a SEP-0007 compliant URL with the signer's key pair.
     ///
-    /// - Parameter url: The SEP-0007 compliant URI to be signed.
-    /// - Parameter signerKeyPair: The key pair used to generate the signature.
-    /// - Returns: SignURLEnum indicating success with the signed URL or failure with an error.
+    /// Generates a signature for the URI and appends it as the `signature` parameter.
+    ///
+    /// - Parameter url: The SEP-0007 compliant URI to be signed
+    /// - Parameter signerKeyPair: The key pair used to generate the signature
+    /// - Returns: SignURLEnum with the signed URL on success, or an error on failure
     public func signURI(url: String, signerKeyPair: KeyPair) -> SignURLEnum {
         if let signature = sign(url: url, signerKeyPair: signerKeyPair){
             if verify(forURL: url, urlEncodedBase64Signature: signature, signerPublicKey: signerKeyPair.publicKey) {
@@ -55,24 +54,15 @@ public class URISchemeValidator: NSObject {
         return .failure(.invalidSignature)
     }
     
-    /// Checks if the URL is valid; signature and domain must be present and correct for the signer's keypair.
+    /// Validates a SEP-0007 URI by verifying its signature against the origin domain's stellar.toml.
     ///
-    /// - Parameter url: the URL to check.
-    /// - Parameter completion: Closure to be called with the response of the check
+    /// Checks that:
+    /// 1. The `origin_domain` parameter is present and is a valid fully qualified domain name
+    /// 2. The domain's stellar.toml contains a `URI_REQUEST_SIGNING_KEY`
+    /// 3. The `signature` parameter is present and valid for the signing key
     ///
-    @available(*, renamed: "checkURISchemeIsValid(url:)")
-    public func checkURISchemeIsValid(url: String, completion: @escaping URISchemeIsValidClosure) {
-        Task {
-            let result = await checkURISchemeIsValid(url: url)
-            completion(result)
-        }
-    }
-    
-    /// Checks if the URL is valid; signature and domain must be present and correct for the signer's keypair.
-    ///
-    /// - Parameter url: the URL to check.
-    /// - Parameter completion: Closure to be called with the response of the check
-    ///
+    /// - Parameter url: The SEP-0007 compliant URI to validate
+    /// - Returns: URISchemeIsValidEnum indicating success or the specific validation error
     public func checkURISchemeIsValid(url: String) async -> URISchemeIsValidEnum {
         guard let originDomain = getOriginDomain(forURL: url) else {
             return .failure(.missingOriginDomain)
@@ -116,7 +106,10 @@ public class URISchemeValidator: NSObject {
         }
     }
     
-    /// Returns the signature value from the url.
+    /// Extracts the signature parameter value from a SEP-0007 URI.
+    ///
+    /// - Parameter url: The SEP-0007 URI to parse
+    /// - Returns: The signature value if found, nil otherwise
     private func getSignatureField(forURL url: String) -> String? {
         let fields = url.split(separator: "&")
         for field in fields {
@@ -128,7 +121,10 @@ public class URISchemeValidator: NSObject {
         return nil
     }
     
-    /// Returns the origin domain value from the url.
+    /// Extracts the origin_domain parameter value from a SEP-0007 URI.
+    ///
+    /// - Parameter url: The SEP-0007 URI to parse
+    /// - Returns: The origin domain if found, nil otherwise
     private func getOriginDomain(forURL url: String) -> String? {
         let fields = url.split(separator: "&")
         for field in fields {
@@ -140,7 +136,12 @@ public class URISchemeValidator: NSObject {
         return nil
     }
     
-    /// Verifies if the url is valid for the given signature to check if it's an authentic url.
+    /// Verifies the signature of a SEP-0007 URI against the signer's public key.
+    ///
+    /// - Parameter url: The SEP-0007 URI to verify
+    /// - Parameter urlEncodedBase64Signature: The URL-encoded base64 signature to verify
+    /// - Parameter signerPublicKey: The public key to verify the signature against
+    /// - Returns: True if the signature is valid, false otherwise
     private func verify(forURL url: String, urlEncodedBase64Signature: String, signerPublicKey: PublicKey) -> Bool {
         let urlSignatureLess = url.replacingOccurrences(of: "&\(SignTransactionParams.signature)=\(urlEncodedBase64Signature)", with: "")
         let payloadBytes = getPayload(forUriScheme: urlSignatureLess)
@@ -156,7 +157,12 @@ public class URISchemeValidator: NSObject {
         return false
     }
     
-    /// Returns the payload of the url.
+    /// Constructs the payload bytes for signature verification per SEP-0007.
+    ///
+    /// The payload consists of a 36-byte prefix selector followed by the URI scheme prefix and the URI itself.
+    ///
+    /// - Parameter uri: The SEP-0007 URI (without signature parameter)
+    /// - Returns: The payload bytes to be signed or verified
     private func getPayload(forUriScheme uri: String) -> [UInt8] {
         var prefixSelectorBytes = [UInt8](repeating: 0, count: 36)
         prefixSelectorBytes[35] = 4
@@ -169,7 +175,11 @@ public class URISchemeValidator: NSObject {
         return prefixSelectorBytes + uriWithPrefixBytes
     }
     
-    /// Signs the url and returns a url encoded base64 signature for the url.
+    /// Signs the URI and returns a URL-encoded base64 signature.
+    ///
+    /// - Parameter url: The SEP-0007 URI to sign
+    /// - Parameter signerKeyPair: The key pair to sign with
+    /// - Returns: The URL-encoded base64 signature, or nil if signing fails
     private func sign(url: String, signerKeyPair: KeyPair) -> String? {
         let payloadBytes = getPayload(forUriScheme: url)
         let signatureBytes = signerKeyPair.sign(payloadBytes)

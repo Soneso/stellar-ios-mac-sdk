@@ -2404,7 +2404,7 @@ public struct BDouble:
 		return res
 	}
 
-	static private var _precision = 4
+	nonisolated(unsafe) static private var _precision = 4
 	/**
 	 * the global percision for all newly created values
 	 */

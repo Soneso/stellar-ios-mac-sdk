@@ -32,8 +32,6 @@ public enum OperationsChange {
     case operationsForLiquidityPool(liquidityPoolId:String, cursor:String?)
 }
 
-/// Callback closure for retrieving operation details from the Stellar network.
-public typealias OperationDetailsResponseClosure = (_ response:OperationDetailsResponseEnum) -> (Void)
 
 /// Service for querying operation history from the Stellar Horizon API.
 ///
@@ -76,49 +74,44 @@ public class OperationsService: @unchecked Sendable {
         serviceHelper = ServiceHelper(baseURL: baseURL)
     }
     
-    /// Retrieves all operations from Horizon API with pagination support. Deprecated in favor of async/await version.
-    @available(*, renamed: "getOperations(from:order:limit:includeFailed:join:)")
-    open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
-        Task {
-            let result = await getOperations(from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
-            response(result)
-        }
-    }
-
-    /// Retrieves all operations from Horizon API with pagination support using async/await pattern.
-    /// Returns paginated list of operations filtered by cursor, order, limit, and optional join parameter for related resources.
+    /// Retrieves all operations from Horizon API with pagination support.
+    ///
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
+    /// - Parameter includeFailed: Optional. Set to true to include failed operations
+    /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
+    /// - Returns: PageResponse containing operations or error
     open func getOperations(from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
 
-    /// Retrieves operations for a specific account with pagination support. Deprecated in favor of async/await version.
-    @available(*, renamed: "getOperations(forAccount:from:order:limit:includeFailed:join:)")
-    open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
-        Task {
-            let result = await getOperations(forAccount: accountId, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
-            response(result)
-        }
-    }
-
-    /// Retrieves operations for a specific account using async/await pattern.
-    /// Returns paginated operations filtered by account ID, cursor, order, limit, and optional parameters for failed transactions and related resources.
+    /// Retrieves operations for a specific account with pagination support.
+    ///
+    /// - Parameter accountId: The Stellar account ID to get operations for
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
+    /// - Parameter includeFailed: Optional. Set to true to include failed operations
+    /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
+    /// - Returns: PageResponse containing operations for the account or error
     open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/accounts/" + accountId + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
 
-    /// Retrieves operations for a specific claimable balance with pagination support. Deprecated in favor of async/await version.
-    @available(*, renamed: "getOperations(forClaimableBalance:from:order:limit:includeFailed:join:)")
-    open func getOperations(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
-        Task {
-            let result = await getOperations(forClaimableBalance: claimableBalanceId, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
-            response(result)
-        }
-    }
-
-    /// Retrieves operations for a specific claimable balance using async/await pattern. Supports both encoded and hex claimable balance IDs.
-    /// Returns paginated operations filtered by claimable balance ID, cursor, order, limit, and optional parameters for failed transactions and related resources.
+    /// Retrieves operations for a specific claimable balance with pagination support.
+    ///
+    /// Supports both encoded (B-prefixed) and hex claimable balance IDs.
+    ///
+    /// - Parameter claimableBalanceId: The claimable balance ID (B-address or hex format)
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
+    /// - Parameter includeFailed: Optional. Set to true to include failed operations
+    /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
+    /// - Returns: PageResponse containing operations for the claimable balance or error
     open func getOperations(forClaimableBalance claimableBalanceId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         var id = claimableBalanceId
         if claimableBalanceId.hasPrefix("B"),
@@ -129,49 +122,45 @@ public class OperationsService: @unchecked Sendable {
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
 
-    /// Retrieves operations for a specific ledger sequence with pagination support. Deprecated in favor of async/await version.
-    @available(*, renamed: "getOperations(forLedger:from:order:limit:includeFailed:join:)")
-    open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
-        Task {
-            let result = await getOperations(forLedger: ledger, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
-            response(result)
-        }
-    }
-
-    /// Retrieves operations for a specific ledger sequence using async/await pattern.
-    /// Returns paginated operations filtered by ledger sequence number, cursor, order, limit, and optional parameters for failed transactions and related resources.
+    /// Retrieves operations for a specific ledger with pagination support.
+    ///
+    /// - Parameter ledger: The ledger sequence number
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
+    /// - Parameter includeFailed: Optional. Set to true to include failed operations
+    /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
+    /// - Returns: PageResponse containing operations for the ledger or error
     open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/ledgers/" + ledger + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
 
-    /// Retrieves operations for a specific transaction hash with pagination support. Deprecated in favor of async/await version.
-    @available(*, renamed: "getOperations(forTransaction:from:order:limit:includeFailed:join:)")
-    open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
-        Task {
-            let result = await getOperations(forTransaction: hash, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
-            response(result)
-        }
-    }
-
-    /// Retrieves operations for a specific transaction hash using async/await pattern.
-    /// Returns paginated operations filtered by transaction hash, cursor, order, limit, and optional parameters for failed transactions and related resources.
+    /// Retrieves operations for a specific transaction with pagination support.
+    ///
+    /// - Parameter hash: The transaction hash (hex-encoded)
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
+    /// - Parameter includeFailed: Optional. Set to true to include failed operations
+    /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
+    /// - Returns: PageResponse containing operations for the transaction or error
     open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         let path = "/transactions/" + hash + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
 
-    /// Retrieves operations for a specific liquidity pool with pagination support. Deprecated in favor of async/await version.
-    @available(*, renamed: "getOperations(forLiquidityPool:from:order:limit:includeFailed:join:)")
-    open func getOperations(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
-        Task {
-            let result = await getOperations(forLiquidityPool: liquidityPoolId, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
-            response(result)
-        }
-    }
-
-    /// Retrieves operations for a specific liquidity pool using async/await pattern. Supports both encoded and hex liquidity pool IDs.
-    /// Returns paginated operations filtered by liquidity pool ID, cursor, order, limit, and optional parameters for failed transactions and related resources.
+    /// Retrieves operations for a specific liquidity pool with pagination support.
+    ///
+    /// Supports both encoded (L-prefixed) and hex liquidity pool IDs.
+    ///
+    /// - Parameter liquidityPoolId: The liquidity pool ID (L-address or hex format)
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
+    /// - Parameter includeFailed: Optional. Set to true to include failed operations
+    /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
+    /// - Returns: PageResponse containing operations for the liquidity pool or error
     open func getOperations(forLiquidityPool liquidityPoolId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         var lidHex = liquidityPoolId
         if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
@@ -181,17 +170,14 @@ public class OperationsService: @unchecked Sendable {
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
 
-    /// Retrieves detailed information for a specific operation by ID. Deprecated in favor of async/await version.
-    @available(*, renamed: "getOperationDetails(operationId:includeFailed:join:)")
-    open func getOperationDetails(operationId:String, includeFailed:Bool? = nil, join:String? = nil, response:@escaping OperationDetailsResponseClosure) {
-        Task {
-            let result = await getOperationDetails(operationId: operationId, includeFailed: includeFailed, join: join)
-            response(result)
-        }
-    }
-
-    /// Retrieves detailed information for a specific operation by ID using async/await pattern.
-    /// Returns operation details including type-specific data, with optional parameters for failed transactions and related resources.
+    /// Retrieves detailed information for a specific operation by ID.
+    ///
+    /// Returns operation details including type-specific data.
+    ///
+    /// - Parameter operationId: The operation ID
+    /// - Parameter includeFailed: Optional. Set to true to include failed operations
+    /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
+    /// - Returns: OperationDetailsResponseEnum with operation details or error
     open func getOperationDetails(operationId:String, includeFailed:Bool? = nil, join:String? = nil) async -> OperationDetailsResponseEnum {
         var requestPath = "/operations/" + operationId
         
@@ -219,6 +205,9 @@ public class OperationsService: @unchecked Sendable {
     }
 
     /// Streams real-time operation updates via Server-Sent Events from Horizon.
+    ///
+    /// - Parameter transactionsType: The filter specifying which operations to stream (all, by account, ledger, transaction, claimable balance, or liquidity pool)
+    /// - Returns: OperationsStreamItem for receiving streaming operation updates
     open func stream(for transactionsType:OperationsChange) -> OperationsStreamItem {
         var subpath:String!
         switch transactionsType {
@@ -267,17 +256,17 @@ public class OperationsService: @unchecked Sendable {
         return streamItem
     }
 
-    /// Internal helper method to retrieve operations from a specific path with pagination support. Deprecated in favor of async/await version.
-    @available(*, renamed: "getOperations(onPath:from:order:limit:includeFailed:join:)")
-    private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
-        Task {
-            let result = await getOperations(onPath: path, from: cursor, order: order, limit: limit, includeFailed: includeFailed, join: join)
-            response(result)
-        }
-    }
-
-    /// Internal helper method to retrieve operations from a specific Horizon API path using async/await pattern.
+    /// Internal helper method to retrieve operations from a specific Horizon API path.
+    ///
     /// Constructs request URL with pagination and filter parameters, then fetches operations from the specified endpoint.
+    ///
+    /// - Parameter path: The API endpoint path
+    /// - Parameter cursor: Optional paging token
+    /// - Parameter order: Optional sort order
+    /// - Parameter limit: Optional maximum records
+    /// - Parameter includeFailed: Optional include failed flag
+    /// - Parameter join: Optional join parameter
+    /// - Returns: PageResponse containing operations or error
     private func getOperations(onPath path:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
         var requestPath = path
         
@@ -296,17 +285,12 @@ public class OperationsService: @unchecked Sendable {
         return await getOperationsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
 
-    /// Retrieves operations from a complete URL with pagination navigation support. Deprecated in favor of async/await version.
-    @available(*, renamed: "getOperationsFromUrl(url:)")
-    open func getOperationsFromUrl(url:String, response:@escaping PageResponse<OperationResponse>.ResponseClosure) {
-        Task {
-            let result = await getOperationsFromUrl(url: url)
-            response(result)
-        }
-    }
-
-    /// Retrieves operations from a complete URL using async/await pattern. Useful for pagination navigation with next/prev links.
-    /// Fetches and parses operations from the specified Horizon API URL, returning paginated results or error.
+    /// Retrieves operations from a complete URL.
+    ///
+    /// Useful for pagination navigation with next/prev links from PageResponse.
+    ///
+    /// - Parameter url: The complete URL to fetch operations from
+    /// - Returns: PageResponse containing operations or error
     open func getOperationsFromUrl(url:String) async -> PageResponse<OperationResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {

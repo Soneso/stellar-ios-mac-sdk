@@ -65,23 +65,6 @@ public enum GetCustomerFilesResponseEnum {
     case failure(error: KycServiceError)
 }
 
-
-/// Callback closure for discovering KYC service endpoints for a domain.
-public typealias KycServiceClosure = (_ response:KycServiceForDomainEnum) -> (Void)
-
-/// Callback closure for retrieving customer information from KYC service.
-public typealias GetCustomerInfoResponseClosure = (_ response:GetCustomerInfoResponseEnum) -> (Void)
-/// Callback closure for submitting or updating customer information to KYC service.
-public typealias PutCustomerInfoResponseClosure = (_ response:PutCustomerInfoResponseEnum) -> (Void)
-/// Callback closure for deleting customer information from KYC service.
-public typealias DeleteCustomerResponseClosure = (_ response:DeleteCustomerResponseEnum) -> (Void)
-/// Callback closure for setting a callback URL for customer status updates.
-public typealias PutCustomerCallbackResponseClosure = (_ response:PutCustomerCallbackResponseEnum) -> (Void)
-/// Callback closure for uploading customer verification files to KYC service.
-public typealias PostCustomerFileResponseClosure = (_ response:PostCustomerFileResponseEnum) -> (Void)
-/// Callback closure for retrieving customer verification files from KYC service.
-public typealias GetCustomerFilesResponseClosure = (_ response:GetCustomerFilesResponseEnum) -> (Void)
-
 /// Implements SEP-0012 - KYC API.
 ///
 /// This class provides standardized endpoints for transmitting KYC and AML information to anchors
@@ -292,6 +275,8 @@ public class KycService: NSObject {
     private let jsonDecoder = JSONDecoder()
 
     /// Creates a KycService instance with a direct service endpoint URL.
+    ///
+    /// - Parameter kycServiceAddress: The URL of the SEP-12 KYC server (e.g., "https://example.com/kyc")
     public init(kycServiceAddress:String) {
         self.kycServiceAddress = kycServiceAddress
         serviceHelper = ServiceHelper(baseURL: kycServiceAddress)
@@ -299,15 +284,12 @@ public class KycService: NSObject {
     }
     
     /// Creates a KycService instance based on information from the stellar.toml file for a given domain.
-    @available(*, renamed: "forDomain(domain:)")
-    public static func forDomain(domain:String, completion:@escaping KycServiceClosure) {
-        Task {
-            let result = await forDomain(domain: domain)
-            completion(result)
-        }
-    }
-    
-    /// Creates a KycService instance based on information from the stellar.toml file for a given domain.
+    ///
+    /// Fetches the stellar.toml file from `{domain}/.well-known/stellar.toml` and extracts the KYC_SERVER
+    /// or TRANSFER_SERVER URL (KYC_SERVER takes precedence).
+    ///
+    /// - Parameter domain: The anchor's domain including scheme (e.g., "https://testanchor.stellar.org")
+    /// - Returns: KycServiceForDomainEnum with the service instance, or an error
     public static func forDomain(domain:String) async -> KycServiceForDomainEnum {
         let kycServerKey = "KYC_SERVER"
         let transferServerKey = "TRANSFER_SERVER"
@@ -331,26 +313,16 @@ public class KycService: NSObject {
         }
     }
     
-    /**
-     This allows you to:
-     1. Fetch the fields the server requires in order to register a new customer via a PUT /customer request
-     2 .Check the status of a customer that may already be registered
-     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-get
-     */
-    @available(*, renamed: "getCustomerInfo(request:)")
-    public func getCustomerInfo(request: GetCustomerInfoRequest, completion:@escaping GetCustomerInfoResponseClosure) {
-        Task {
-            let result = await getCustomerInfo(request: request)
-            completion(result)
-        }
-    }
-    
-    /**
-     This allows you to:
-     1. Fetch the fields the server requires in order to register a new customer via a PUT /customer request
-     2 .Check the status of a customer that may already be registered
-     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-get
-     */
+    /// Fetches customer information and KYC status.
+    ///
+    /// This allows you to:
+    /// 1. Fetch the fields the server requires in order to register a new customer via a PUT /customer request
+    /// 2. Check the status of a customer that may already be registered
+    ///
+    /// - Parameter request: GetCustomerInfoRequest containing account identifier and JWT token
+    /// - Returns: GetCustomerInfoResponseEnum with customer status and required/provided fields, or an error
+    ///
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-get
     public func getCustomerInfo(request: GetCustomerInfoRequest) async -> GetCustomerInfoResponseEnum {
         var requestPath = "/customer"
         
@@ -395,22 +367,12 @@ public class KycService: NSObject {
         }
     }
     
-    /**
-     Upload customer information to an anchor in an authenticated and idempotent fashion.
-     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put
-     */
-    @available(*, renamed: "putCustomerInfo(request:)")
-    public func putCustomerInfo(request: PutCustomerInfoRequest,  completion:@escaping PutCustomerInfoResponseClosure) {
-        Task {
-            let result = await putCustomerInfo(request: request)
-            completion(result)
-        }
-    }
-    
-    /**
-     Upload customer information to an anchor in an authenticated and idempotent fashion.
-     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put
-     */
+    /// Upload customer information to an anchor in an authenticated and idempotent fashion.
+    ///
+    /// - Parameter request: PutCustomerInfoRequest containing customer data fields and JWT token
+    /// - Returns: PutCustomerInfoResponseEnum with customer ID and status, or an error
+    ///
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put
     public func putCustomerInfo(request: PutCustomerInfoRequest) async -> PutCustomerInfoResponseEnum {
         let requestPath = "/customer"
         
@@ -428,22 +390,15 @@ public class KycService: NSObject {
         }
     }
     
-    /**
-     This endpoint allows servers to accept data values, usually confirmation codes, that verify a previously provided field via PUT /customer, such as mobile_number or email_address.
-     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
-     */
-    @available(*, renamed: "putCustomerVerification(request:)")
-    public func putCustomerVerification(request: PutCustomerVerificationRequest,  completion:@escaping GetCustomerInfoResponseClosure) {
-        Task {
-            let result = await putCustomerVerification(request: request)
-            completion(result)
-        }
-    }
-    
-    /**
-     This endpoint allows servers to accept data values, usually confirmation codes, that verify a previously provided field via PUT /customer, such as mobile_number or email_address.
-     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
-     */
+    /// Submits verification codes for previously provided fields like mobile_number or email_address.
+    ///
+    /// This endpoint allows servers to accept data values, usually confirmation codes, that verify
+    /// a previously provided field via PUT /customer, such as mobile_number or email_address.
+    ///
+    /// - Parameter request: PutCustomerVerificationRequest containing verification codes and JWT token
+    /// - Returns: GetCustomerInfoResponseEnum with updated customer status, or an error
+    ///
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put-verification
     public func putCustomerVerification(request: PutCustomerVerificationRequest) async -> GetCustomerInfoResponseEnum {
         let requestPath = "/customer/verification"
         
@@ -461,20 +416,14 @@ public class KycService: NSObject {
         }
     }
     
-    /**
-     Delete all personal information that the anchor has stored about a given customer. [account] is the Stellar account ID (G...) of the customer to delete. This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted.
-     */
-    @available(*, renamed: "deleteCustomerInfo(account:jwt:)")
-    public func deleteCustomerInfo(account: String, jwt:String, completion:@escaping DeleteCustomerResponseClosure) {
-        Task {
-            let result = await deleteCustomerInfo(account: account, jwt: jwt)
-            completion(result)
-        }
-    }
-    
-    /**
-     Delete all personal information that the anchor has stored about a given customer. [account] is the Stellar account ID (G...) of the customer to delete. This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted.
-     */
+    /// Deletes all personal information that the anchor has stored about a given customer.
+    ///
+    /// This request must be authenticated (via SEP-10) as coming from the owner of the account that will be deleted.
+    /// Useful for GDPR compliance.
+    ///
+    /// - Parameter account: The Stellar account ID (G...) of the customer to delete
+    /// - Parameter jwt: JWT token from SEP-10 authentication
+    /// - Returns: DeleteCustomerResponseEnum indicating success or an error
     public func deleteCustomerInfo(account: String, jwt:String) async -> DeleteCustomerResponseEnum {
         let requestPath = "/customer/\(account)"
         
@@ -487,22 +436,15 @@ public class KycService: NSObject {
         }
     }
     
-    /**
-     Allow the wallet to provide a callback URL to the anchor. The provided callback URL will replace (and supercede) any previously-set callback URL for this account.
-     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-callback-put
-     */
-    @available(*, renamed: "putCustomerCallback(request:)")
-    public func putCustomerCallback(request: PutCustomerCallbackRequest,  completion:@escaping PutCustomerCallbackResponseClosure) {
-        Task {
-            let result = await putCustomerCallback(request: request)
-            completion(result)
-        }
-    }
-    
-    /**
-     Allow the wallet to provide a callback URL to the anchor. The provided callback URL will replace (and supercede) any previously-set callback URL for this account.
-     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-callback-put
-     */
+    /// Registers a callback URL to receive KYC status change notifications.
+    ///
+    /// Allows the wallet to provide a callback URL to the anchor. The provided callback URL will replace
+    /// (and supersede) any previously-set callback URL for this account.
+    ///
+    /// - Parameter request: PutCustomerCallbackRequest containing callback URL and JWT token
+    /// - Returns: PutCustomerCallbackResponseEnum indicating success or an error
+    ///
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-callback-put
     public func putCustomerCallback(request: PutCustomerCallbackRequest) async -> PutCustomerCallbackResponseEnum {
         let requestPath = "/customer/callback"
         
@@ -515,10 +457,22 @@ public class KycService: NSObject {
         }
     }
 
-    /// Passing binary fields such as photo_id_front or organization.photo_proof_address in PUT /customer requests must be done using the multipart/form-data content type. This is acceptable in most cases, but multipart/form-data does not support nested data structures such as arrays or sub-objects.
-    /// This endpoint is intended to decouple requests containing binary fields from requests containing nested data structures, supported by content types such as application/json. This endpoint is optional and only needs to be supported if the use case requires accepting nested data structures in PUT /customer requests.
-    /// Once a file has been uploaded using this endpoint, it's file_id can be used in subsequent PUT /customer requests. The field name for the file_id should be the appropriate SEP-9 field followed by _file_id. For example, if file_abc is returned as a file_id from POST /customer/files, it can be used in a PUT /customer
-    /// See:  https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-files
+    /// Uploads a binary file (e.g., photo ID, proof of address) for use in KYC verification.
+    ///
+    /// Passing binary fields such as photo_id_front or organization.photo_proof_address in PUT /customer
+    /// requests must be done using the multipart/form-data content type. This endpoint is intended to
+    /// decouple requests containing binary fields from requests containing nested data structures.
+    ///
+    /// Once a file has been uploaded using this endpoint, its file_id can be used in subsequent
+    /// PUT /customer requests. The field name for the file_id should be the appropriate SEP-9 field
+    /// followed by _file_id. For example, if "file_abc" is returned as a file_id, it can be used as
+    /// photo_id_front_file_id in PUT /customer.
+    ///
+    /// - Parameter file: The binary file data to upload
+    /// - Parameter jwtToken: JWT token from SEP-10 authentication
+    /// - Returns: PostCustomerFileResponseEnum with file ID, or an error
+    ///
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-files
     public func postCustomerFile(file:Data, jwtToken:String) async -> PostCustomerFileResponseEnum {
         let requestPath = "/customer/files"
         var parameters = [String:Data]()
@@ -537,7 +491,13 @@ public class KycService: NSObject {
         }
     }
     
-    /// Requests info about the uploaded files via postCustomerFile
+    /// Retrieves information about files uploaded via postCustomerFile.
+    ///
+    /// - Parameter fileId: Optional file ID to retrieve a specific file's info
+    /// - Parameter customerId: Optional customer ID to retrieve all files for a customer
+    /// - Parameter jwtToken: JWT token from SEP-10 authentication
+    /// - Returns: GetCustomerFilesResponseEnum with file information, or an error
+    ///
     /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-files
     public func getCustomerFiles(fileId:String? = nil, customerId:String? = nil, jwtToken: String) async -> GetCustomerFilesResponseEnum {
         var requestPath = "/customer/files"
