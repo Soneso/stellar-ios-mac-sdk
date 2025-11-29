@@ -91,6 +91,11 @@ public struct EventInfo: Decodable, Sendable {
         case txIndex
     }
 
+    @available(*, deprecated, message: "Use newer API without inSuccessfulContractCall")
+    private static func decodeInSuccessfulContractCall(from values: KeyedDecodingContainer<CodingKeys>) throws -> Bool? {
+        try values.decodeIfPresent(Bool.self, forKey: .inSuccessfulContractCall)
+    }
+
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         type = try values.decode(String.self, forKey: .type)
@@ -98,7 +103,7 @@ public struct EventInfo: Decodable, Sendable {
         ledgerClosedAt = try values.decode(String.self, forKey: .ledgerClosedAt)
         contractId = try values.decode(String.self, forKey: .contractId)
         id = try values.decode(String.self, forKey: .id)
-        inSuccessfulContractCall = try values.decodeIfPresent(Bool.self, forKey: .inSuccessfulContractCall)
+        inSuccessfulContractCall = try Self.decodeInSuccessfulContractCall(from: values)
         topic = try values.decode([String].self, forKey: .topic)
         value = try values.decode(String.self, forKey: .value)
         valueXdr = try SCValXDR.fromXdr(base64: value)

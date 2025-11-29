@@ -43,8 +43,8 @@ import Foundation
 /// let encoded = base32Encode(data)
 /// ```
 public func base32Encode(_ data: Data) -> String {
-    return data.withUnsafeBytes {
-        base32encode(UnsafeRawPointer($0), data.count, alphabetEncodeTable)
+    return data.withUnsafeBytes { (rawBufferPointer: UnsafeRawBufferPointer) in
+        base32encode(rawBufferPointer.baseAddress!, data.count, alphabetEncodeTable)
     }
 }
 
@@ -55,8 +55,8 @@ public func base32Encode(_ data: Data) -> String {
 /// - Parameter data: Data to encode
 /// - Returns: Base32hex-encoded string
 public func base32HexEncode(_ data: Data) -> String {
-    return data.withUnsafeBytes {
-        base32encode(UnsafeRawPointer($0), data.count, extendedHexAlphabetEncodeTable)
+    return data.withUnsafeBytes { (rawBufferPointer: UnsafeRawBufferPointer) in
+        base32encode(rawBufferPointer.baseAddress!, data.count, extendedHexAlphabetEncodeTable)
     }
 }
 
@@ -72,8 +72,10 @@ public func base32HexEncode(_ data: Data) -> String {
 /// }
 /// ```
 public func base32DecodeToData(_ string: String) -> Data? {
-    return base32decode(string, alphabetDecodeTable).flatMap {
-        Data(bytes: UnsafePointer<UInt8>($0), count: $0.count)
+    return base32decode(string, alphabetDecodeTable).flatMap { bytes in
+        bytes.withUnsafeBufferPointer { buffer in
+            Data(buffer: buffer)
+        }
     }
 }
 
@@ -82,8 +84,10 @@ public func base32DecodeToData(_ string: String) -> Data? {
 /// - Parameter string: Base32hex-encoded string
 /// - Returns: Decoded data, or nil if the string is invalid
 public func base32HexDecodeToData(_ string: String) -> Data? {
-    return base32decode(string, extendedHexAlphabetDecodeTable).flatMap {
-        Data(bytes: UnsafePointer<UInt8>($0), count: $0.count)
+    return base32decode(string, extendedHexAlphabetDecodeTable).flatMap { bytes in
+        bytes.withUnsafeBufferPointer { buffer in
+            Data(buffer: buffer)
+        }
     }
 }
 
@@ -208,7 +212,7 @@ internal func base32encode(_ data: UnsafeRawPointer, _ length: Int, _ table: [In
     }
     
     // return
-    if let base32Encoded = String(validatingUTF8: resultBuffer) {
+    if let base32Encoded = String(validatingCString: resultBuffer) {
 #if swift(>=4.1)
         resultBuffer.deallocate()
 #else
@@ -290,7 +294,7 @@ internal func base32decode(_ string: String, _ table: [UInt8]) -> [UInt8]? {
     
     // validate string
     let leastPaddingLength = getLeastPaddingLength(string)
-    if let index = string.unicodeScalars.index(where: {$0.value > 0xff || table[Int($0.value)] > 31}) {
+    if let index = string.unicodeScalars.firstIndex(where: {$0.value > 0xff || table[Int($0.value)] > 31}) {
         // index points padding "=" or invalid character that table does not contain.
         let pos = string.unicodeScalars.distance(from: string.unicodeScalars.startIndex, to: index)
         // if pos points padding "=", it's valid.
@@ -318,12 +322,13 @@ internal func base32decode(_ string: String, _ table: [UInt8]) -> [UInt8]? {
     let dataSize = remainEncodedLength / 8 * 5 + additionalBytes
     
     // Use UnsafePointer<UInt8>
-    return string.utf8CString.withUnsafeBufferPointer {
-        (data: UnsafeBufferPointer<CChar>) -> [UInt8] in
+    var result = Array<UInt8>(repeating: 0, count: dataSize)
+    string.utf8CString.withUnsafeBufferPointer {
+        (data: UnsafeBufferPointer<CChar>) -> Void in
         var encoded = data.baseAddress!
-        
-        let result = Array<UInt8>(repeating: 0, count: dataSize)
-        var decoded = UnsafeMutablePointer<UInt8>(mutating: result)
+
+        result.withUnsafeMutableBufferPointer { resultBuffer -> Void in
+        var decoded = resultBuffer.baseAddress!
         
         // decode regular blocks
         var value0, value1, value2, value3, value4, value5, value6, value7: UInt8
@@ -382,8 +387,8 @@ internal func base32decode(_ string: String, _ table: [UInt8]) -> [UInt8]? {
             decoded[0] = value0 << 3 | value1 >> 2
         default: break
         }
-
-        return result
+        }
     }
+    return result
 }
 

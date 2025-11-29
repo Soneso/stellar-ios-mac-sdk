@@ -64,7 +64,7 @@ public class SimulateTransactionRequest {
         if let rC = resourceConfig {
             result["resourceConfig"] = rC.buildRequestParams()
         }
-        if let rAuthMode = authMode {
+        if let authMode = authMode {
             result["authMode"] = authMode
         }
         return result;

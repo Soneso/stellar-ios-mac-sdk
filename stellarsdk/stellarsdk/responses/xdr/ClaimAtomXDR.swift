@@ -117,10 +117,10 @@ public struct ClaimOfferAtomV0XDR: XDRCodable, Sendable {
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        
+
         let wrappedData = try container.decode(WrappedData32.self)
-        self.sellerEd25519 = wrappedData.wrapped.withUnsafeBytes {
-            [UInt8](UnsafeBufferPointer(start: $0, count: wrappedData.wrapped.count))
+        self.sellerEd25519 = wrappedData.wrapped.withUnsafeBytes { (rawBufferPointer: UnsafeRawBufferPointer) in
+            [UInt8](UnsafeBufferPointer(start: rawBufferPointer.baseAddress!.assumingMemoryBound(to: UInt8.self), count: wrappedData.wrapped.count))
         }
         offerId = try container.decode(Int64.self)
         assetSold = try container.decode(AssetXDR.self)

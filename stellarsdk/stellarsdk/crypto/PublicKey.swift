@@ -93,8 +93,8 @@ public final class PublicKey: XDRCodable, Sendable {
         _ = try container.decode(Int32.self)
         
         let wrappedData = try container.decode(WrappedData32.self)
-        self.buffer = wrappedData.wrapped.withUnsafeBytes {
-            [UInt8](UnsafeBufferPointer(start: $0, count: wrappedData.wrapped.count))
+        self.buffer = wrappedData.wrapped.withUnsafeBytes { (rawBufferPointer: UnsafeRawBufferPointer) in
+            [UInt8](UnsafeBufferPointer(start: rawBufferPointer.baseAddress!.assumingMemoryBound(to: UInt8.self), count: wrappedData.wrapped.count))
         }
         
     }

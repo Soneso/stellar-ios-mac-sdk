@@ -41,7 +41,7 @@ protocol DataConvertable {
 extension DataConvertable {
     static func +(lhs: Data, rhs: Self) -> Data {
         var value = rhs
-        let data = Data(buffer: UnsafeBufferPointer(start: &value, count: 1))
+        let data = withUnsafeBytes(of: &value) { Data($0) }
         return lhs + data
     }
 

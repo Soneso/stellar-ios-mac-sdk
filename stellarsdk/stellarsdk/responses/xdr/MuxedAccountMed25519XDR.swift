@@ -19,11 +19,11 @@ public struct MuxedAccountMed25519XDR: XDRCodable, Sendable {
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        
+
         id = try container.decode(UInt64.self)
         let wrappedData = try container.decode(WrappedData32.self)
-        self.sourceAccountEd25519 = wrappedData.wrapped.withUnsafeBytes {
-            [UInt8](UnsafeBufferPointer(start: $0, count: wrappedData.wrapped.count))
+        self.sourceAccountEd25519 = wrappedData.wrapped.withUnsafeBytes { (rawBufferPointer: UnsafeRawBufferPointer) in
+            [UInt8](UnsafeBufferPointer(start: rawBufferPointer.baseAddress!.assumingMemoryBound(to: UInt8.self), count: wrappedData.wrapped.count))
         }
     }
     
@@ -64,10 +64,10 @@ public struct MuxedAccountMed25519XDRInverted: XDRCodable, Sendable {
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        
+
         let wrappedData = try container.decode(WrappedData32.self)
-        self.sourceAccountEd25519 = wrappedData.wrapped.withUnsafeBytes {
-            [UInt8](UnsafeBufferPointer(start: $0, count: wrappedData.wrapped.count))
+        self.sourceAccountEd25519 = wrappedData.wrapped.withUnsafeBytes { (rawBufferPointer: UnsafeRawBufferPointer) in
+            [UInt8](UnsafeBufferPointer(start: rawBufferPointer.baseAddress!.assumingMemoryBound(to: UInt8.self), count: wrappedData.wrapped.count))
         }
         id = try container.decode(UInt64.self)
     }

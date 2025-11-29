@@ -31,8 +31,8 @@ public enum MuxedAccountXDR: XDRCodable, Sendable {
             self = .med25519(mm)
         default:
             let wrappedData = try container.decode(WrappedData32.self)
-            let sourceAccountEd25519 = wrappedData.wrapped.withUnsafeBytes {
-                [UInt8](UnsafeBufferPointer(start: $0, count: wrappedData.wrapped.count))
+            let sourceAccountEd25519 = wrappedData.wrapped.withUnsafeBytes { (rawBufferPointer: UnsafeRawBufferPointer) in
+                [UInt8](UnsafeBufferPointer(start: rawBufferPointer.baseAddress!.assumingMemoryBound(to: UInt8.self), count: wrappedData.wrapped.count))
             }
             self = .ed25519(sourceAccountEd25519)
         }
