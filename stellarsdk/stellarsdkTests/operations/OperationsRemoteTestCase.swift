@@ -632,8 +632,8 @@ class OperationsRemoteTestCase: XCTestCase {
         let sourceAccountKeyPair = testKeyPair
         let sourceAccountId = sourceAccountKeyPair.accountId
 
-        var balanceId = "-1"
-        
+        nonisolated(unsafe) var balanceId = "-1"
+
         effectsStreamItem = sdk.effects.stream(for: .effectsForAccount(account:sourceAccountId, cursor: "now"))
         effectsStreamItem?.onReceive { (response) -> (Void) in
             switch response {

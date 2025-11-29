@@ -55,9 +55,12 @@ public struct EventInfo: Decodable, Sendable {
     /// Unique identifier for this event.
     public let id:String
 
+    /// Backing storage for deprecated inSuccessfulContractCall property.
+    private let _inSuccessfulContractCall: Bool?
+
     /// Deprecated for protocol version 23+. Indicates if the event was emitted during a successful contract invocation.
     @available(*, deprecated, message: "Deprecated for protocol version >= 23. If true the event was emitted during a successful contract call.")
-    public let inSuccessfulContractCall:Bool?
+    public var inSuccessfulContractCall: Bool? { _inSuccessfulContractCall }
 
     /// List containing the topic this event was emitted with. [XdrSCVal as base64|]
     public let topic:[String]
@@ -91,11 +94,6 @@ public struct EventInfo: Decodable, Sendable {
         case txIndex
     }
 
-    @available(*, deprecated, message: "Use newer API without inSuccessfulContractCall")
-    private static func decodeInSuccessfulContractCall(from values: KeyedDecodingContainer<CodingKeys>) throws -> Bool? {
-        try values.decodeIfPresent(Bool.self, forKey: .inSuccessfulContractCall)
-    }
-
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         type = try values.decode(String.self, forKey: .type)
@@ -103,7 +101,7 @@ public struct EventInfo: Decodable, Sendable {
         ledgerClosedAt = try values.decode(String.self, forKey: .ledgerClosedAt)
         contractId = try values.decode(String.self, forKey: .contractId)
         id = try values.decode(String.self, forKey: .id)
-        inSuccessfulContractCall = try Self.decodeInSuccessfulContractCall(from: values)
+        _inSuccessfulContractCall = try values.decodeIfPresent(Bool.self, forKey: .inSuccessfulContractCall)
         topic = try values.decode([String].self, forKey: .topic)
         value = try values.decode(String.self, forKey: .value)
         valueXdr = try SCValXDR.fromXdr(base64: value)

@@ -44,8 +44,8 @@ class BigIntTest: XCTestCase {
     func testBIntDataRoundTrip32Bytes() {
         // 32 bytes - typical for crypto keys
         var bytes: [UInt8] = []
-        for i in 0..<32 {
-            bytes.append(UInt8(i))
+        for _ in 0..<32 {
+            bytes.append(UInt8(bytes.count))
         }
         let originalData = Data(bytes)
         let bint = BInt(data: originalData)
@@ -58,8 +58,8 @@ class BigIntTest: XCTestCase {
     func testBIntDataRoundTrip64Bytes() {
         // 64 bytes - large crypto value
         var bytes: [UInt8] = []
-        for i in 0..<64 {
-            bytes.append(UInt8((i * 3 + 7) % 256))
+        for _ in 0..<64 {
+            bytes.append(UInt8((bytes.count * 3 + 7) % 256))
         }
         let originalData = Data(bytes)
         let bint = BInt(data: originalData)
@@ -114,7 +114,7 @@ class BigIntTest: XCTestCase {
     func testBIntLarge256BitNumber() {
         // Create a 256-bit number (32 bytes)
         var bytes: [UInt8] = []
-        for i in 0..<32 {
+        for _ in 0..<32 {
             bytes.append(0xFF)
         }
         let maxData = Data(bytes)

@@ -493,7 +493,7 @@ class OffersRemoteTestCase: XCTestCase {
 
         let streamItem = sdk.offers.streamTrades(forOffer: offerId, cursor: "now", order: .descending, limit: 10)
 
-        var streamEventReceived = false
+        nonisolated(unsafe) var streamEventReceived = false
         streamItem.onReceive { (response) -> (Void) in
             switch response {
             case .open:
