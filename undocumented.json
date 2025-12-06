@@ -16,190 +16,176 @@
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 651,
+      "line": 652,
       "symbol": "BInt.+(_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 1943,
+      "line": 1944,
       "symbol": "BIntMath",
       "symbol_kind": "source.lang.swift.decl.class",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2198,
+      "line": 2199,
       "symbol": "BDouble",
       "symbol_kind": "source.lang.swift.decl.struct",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2263,
+      "line": 2264,
       "symbol": "BDouble.init(_:over:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2272,
+      "line": 2273,
       "symbol": "BDouble.init(_:over:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2281,
+      "line": 2282,
       "symbol": "BDouble.init(_:over:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2292,
+      "line": 2293,
       "symbol": "BDouble.init(_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2352,
+      "line": 2355,
       "symbol": "BDouble.init(_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2357,
+      "line": 2360,
       "symbol": "BDouble.init(_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2541,
+      "line": 2546,
       "symbol": "BDouble.rawData()",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2638,
+      "line": 2643,
       "symbol": "BDouble.+(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2639,
+      "line": 2644,
       "symbol": "BDouble.+(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2646,
+      "line": 2651,
       "symbol": "BDouble.+=(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2689,
+      "line": 2694,
       "symbol": "BDouble.-(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2690,
+      "line": 2695,
       "symbol": "BDouble.-(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2697,
+      "line": 2702,
       "symbol": "BDouble.-=(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2720,
+      "line": 2725,
       "symbol": "BDouble.*(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2721,
+      "line": 2726,
       "symbol": "BDouble.*(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2728,
+      "line": 2733,
       "symbol": "BDouble.*=(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2741,
+      "line": 2746,
       "symbol": "BDouble.**(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2769,
+      "line": 2774,
       "symbol": "BDouble./(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2780,
+      "line": 2785,
       "symbol": "BDouble./(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2781,
+      "line": 2786,
       "symbol": "BDouble./(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2801,
+      "line": 2806,
       "symbol": "BDouble.==(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2802,
+      "line": 2807,
       "symbol": "BDouble.==(_:_:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2804,
-      "symbol": "BDouble.!=(_:_:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2808,
-      "symbol": "BDouble.!=(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
@@ -212,56 +198,70 @@
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2823,
-      "symbol": "BDouble.<(_:_:)",
+      "line": 2813,
+      "symbol": "BDouble.!=(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2824,
-      "symbol": "BDouble.<(_:_:)",
-      "symbol_kind": "source.lang.swift.decl.function.method.static",
-      "warning": "undocumented"
-    },
-    {
-      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2827,
-      "symbol": "BDouble.>(_:_:)",
+      "line": 2814,
+      "symbol": "BDouble.!=(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
       "line": 2828,
-      "symbol": "BDouble.>(_:_:)",
+      "symbol": "BDouble.<(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2831,
-      "symbol": "BDouble.<=(_:_:)",
+      "line": 2829,
+      "symbol": "BDouble.<(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
       "line": 2832,
-      "symbol": "BDouble.<=(_:_:)",
+      "symbol": "BDouble.>(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
-      "line": 2835,
-      "symbol": "BDouble.>=(_:_:)",
+      "line": 2833,
+      "symbol": "BDouble.>(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
       "line": 2836,
+      "symbol": "BDouble.<=(_:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
+      "line": 2837,
+      "symbol": "BDouble.<=(_:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
+      "line": 2840,
+      "symbol": "BDouble.>=(_:_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
+      "line": 2841,
       "symbol": "BDouble.>=(_:_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
