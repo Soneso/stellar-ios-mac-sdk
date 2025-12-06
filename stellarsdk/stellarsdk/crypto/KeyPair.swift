@@ -48,7 +48,7 @@ import ed25519C
 ///
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
-public final class KeyPair {
+public final class KeyPair: @unchecked Sendable {
     /// The Ed25519 public key.
     public let publicKey: PublicKey
 
@@ -72,7 +72,7 @@ public final class KeyPair {
     /// Returns nil if this keypair was created without a seed.
     ///
     /// Warning: Keep secret seeds secure. Never expose them in logs or transmit them insecurely.
-    public var secretSeed: String! {
+    public var secretSeed: String? {
         get {
             return seed?.secret
         }

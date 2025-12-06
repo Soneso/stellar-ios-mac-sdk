@@ -9,29 +9,29 @@
 import Foundation
 
 /// General node health check response.
-public class GetHealthResponse: NSObject, Decodable {
-    
+public struct GetHealthResponse: Decodable, Sendable {
+
     /// Health status e.g. "healthy"
-    public var status:String
-    
+    public let status:String
+
     /// Most recent known ledger sequence
-    public var latestLedger:Int
-    
+    public let latestLedger:Int
+
     /// Oldest ledger sequence kept in history
-    public var oldestLedger:Int
-    
+    public let oldestLedger:Int
+
     /// Maximum retention window configured. A full window state can be determined via: ledgerRetentionWindow = latestLedger - oldestLedger + 1
-    public var ledgerRetentionWindow:Int
-    
+    public let ledgerRetentionWindow:Int
+
     private enum CodingKeys: String, CodingKey {
         case status
         case latestLedger
         case oldestLedger
         case ledgerRetentionWindow
-        
+
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         status = try values.decode(String.self, forKey: .status)
         latestLedger = try values.decode(Int.self, forKey: .latestLedger)
@@ -41,7 +41,7 @@ public class GetHealthResponse: NSObject, Decodable {
 }
 
 /// Constants representing possible health status values for Soroban RPC nodes.
-public struct HealthStatus {
+public struct HealthStatus: Sendable {
     /// Soroban RPC node is operational.
     public static let HEALTHY: String = "healthy"
 }

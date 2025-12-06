@@ -16,10 +16,10 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - AssetResponse for complete asset details
-public class AssetLinksResponse: NSObject, Decodable {
+public struct AssetLinksResponse: Decodable, Sendable {
 
     /// Link to the stellar.toml file hosted by the asset issuer. Contains asset metadata and verification.
-    public var toml:LinkResponse
+    public let toml:LinkResponse
     
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
@@ -31,7 +31,7 @@ public class AssetLinksResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         toml = try values.decode(LinkResponse.self, forKey: .toml)
     }

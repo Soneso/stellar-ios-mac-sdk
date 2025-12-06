@@ -55,7 +55,7 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - PagingLinksResponse for navigation links
-public struct PageResponse<Element:Decodable>: Decodable {
+public struct PageResponse<Element:Decodable & Sendable>: Decodable, Sendable {
 
     /// Result enum for paginated responses.
     public enum ResponseEnum {
@@ -64,9 +64,6 @@ public struct PageResponse<Element:Decodable>: Decodable {
         /// Failed to fetch the page due to an error.
         case failure(error: HorizonRequestError)
     }
-
-    /// Closure called with the result of a paginated request.
-    public typealias ResponseClosure = (_ response:ResponseEnum) -> (Void)
 
     /// Pagination links for next/prev pages.
     public var links:PagingLinksResponse
@@ -90,11 +87,9 @@ public struct PageResponse<Element:Decodable>: Decodable {
         }
     }
     
-    /**
-     Initializer - creates a new instance by decoding from the given decoder.
-     
-     - Parameter decoder: The decoder containing the data
-     */
+    /// Creates a new instance by decoding from the given decoder.
+    ///
+    /// - Parameter decoder: The decoder containing the data
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         self.links = try values.decode(PagingLinksResponse.self, forKey: .links)
@@ -102,50 +97,36 @@ public struct PageResponse<Element:Decodable>: Decodable {
         self.records = self.embeddedRecords.records
     }
     
-    /**
-     Initializer - creates a new instance with parameters
-     
-     - Parameter operations: The payment operations received from the Horizon API
-     - Parameter links: The links received from the Horizon API
-     */
+    /// Creates a new instance with the provided records and pagination links.
+    ///
+    /// - Parameter records: The records for this page
+    /// - Parameter links: The pagination links received from the Horizon API
     public init(records: [Element], links:PagingLinksResponse) {
         self.records = records
         self.embeddedRecords = EmbeddedResponseService(records: records)
         self.links = links
     }
     
-    /**
-     Checks if there is a previous page available.
-     
-     - Returns: true if a previous page is avialable
-     */
+    /// Checks if there is a previous page available.
+    ///
+    /// - Returns: true if a previous page is available
     public func hasPreviousPage() -> Bool {
         return links.prev != nil
     }
     
-    /**
-     Checks if there is a next page available.
-     
-     - Returns: true if a next page is avialable
-     */
+    /// Checks if there is a next page available.
+    ///
+    /// - Returns: true if a next page is available
     public func hasNextPage() -> Bool {
         return links.next != nil
     }
     
-    /**
-     Provides the next page if available. Before calling this, make sure there is a next page available by calling 'hasNextPage'.  If there is no next page available this fuction will respond with a 'HorizonRequestError.notFound" error.
-     
-     - Parameter response:   The closure to be called upon response.
-     */
-    @available(*, renamed: "getNextPage()")
-    public func getNextPage(response:@escaping ResponseClosure) {
-        Task {
-            let result = await getNextPage()
-            response(result)
-        }
-    }
-
     /// Fetches the next page of results if available.
+    ///
+    /// Before calling this, make sure there is a next page available by calling `hasNextPage()`.
+    /// If there is no next page available this function will respond with a `HorizonRequestError.notFound` error.
+    ///
+    /// - Returns: ResponseEnum with the next page of results, or an error
     public func getNextPage() async -> PageResponse<Element>.ResponseEnum {
         if let url = links.next?.href {
             return await getRecordsFrom(url: url)
@@ -154,24 +135,12 @@ public struct PageResponse<Element:Decodable>: Decodable {
         }
     }
     
-    /**
-     Provides the previous page if available. Before calling this, make sure there is a prevoius page available by calling 'hasPreviousPage'. If there is no prevoius page available this fuction will respond with a 'HorizonRequestError.notFound" error.
-     
-     - Parameter response:   The closure to be called upon response.
-     */
-    @available(*, renamed: "getPreviousPage()")
-    public func getPreviousPage(response:@escaping ResponseClosure) {
-        Task {
-            let result = await getPreviousPage()
-            response(result)
-        }
-    }
-    
-    /**
-     Provides the previous page if available. Before calling this, make sure there is a prevoius page available by calling 'hasPreviousPage'. If there is no prevoius page available this fuction will respond with a 'HorizonRequestError.notFound" error.
-     
-     - Parameter response:   The closure to be called upon response.
-     */
+    /// Fetches the previous page of results if available.
+    ///
+    /// Before calling this, make sure there is a previous page available by calling `hasPreviousPage()`.
+    /// If there is no previous page available this function will respond with a `HorizonRequestError.notFound` error.
+    ///
+    /// - Returns: ResponseEnum with the previous page of results, or an error
     public func getPreviousPage() async -> PageResponse<Element>.ResponseEnum {
         if let url = links.prev?.href {
             return await getRecordsFrom(url: url)
@@ -187,7 +156,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res =  await service.getAssetsFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -196,7 +168,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getAccountsFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -205,7 +180,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getTradesFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -214,7 +192,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getOffersFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -223,7 +204,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getLedgersFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -232,7 +216,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getPaymentsFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -241,7 +228,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getTransactionsFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -250,7 +240,10 @@ public struct PageResponse<Element:Decodable>: Decodable {
                 let res = await service.getEffectsFromUrl(url:url)
                 switch res {
                 case .success(let details):
-                    return .success(page: PageResponse(records: details.records as! [Element], links: details.links))
+                    guard let records = details.records as? [Element] else {
+                        return .failure(error: HorizonRequestError.parsingResponseFailed(message: "Type mismatch in records"))
+                    }
+                    return .success(page: PageResponse(records: records, links: details.links))
                 case .failure(let error):
                     return .failure(error: error)
                 }
@@ -259,35 +252,4 @@ public struct PageResponse<Element:Decodable>: Decodable {
         }
     }
     
-    @available(*, renamed: "getRecordsFrom(url:)")
-    private func getRecordsFrom(url:String, response:@escaping ResponseClosure) {
-        switch Element.self {
-            case is AssetResponse.Type:
-                let service = AssetsService(baseURL:"")
-                service.getAssetsFromUrl(url:url, response:response as! PageResponse<AssetResponse>.ResponseClosure)
-            case is AccountResponse.Type:
-                let service = AccountService(baseURL:"")
-                service.getAccountsFromUrl(url:url, response:response as! PageResponse<AccountResponse>.ResponseClosure)
-            case is TradeResponse.Type:
-                let service = TradesService(baseURL:"")
-                service.getTradesFromUrl(url:url, response:response as! PageResponse<TradeResponse>.ResponseClosure)
-            case is OfferResponse.Type:
-                let service = OffersService(baseURL:"")
-                service.getOffersFromUrl(url: url, response:response as! PageResponse<OfferResponse>.ResponseClosure)
-            case is LedgerResponse.Type:
-                let service = LedgersService(baseURL:"")
-                service.getLedgersFromUrl(url: url, response:response as! PageResponse<LedgerResponse>.ResponseClosure)
-            case is OperationResponse.Type:
-                let service = PaymentsService(baseURL:"")
-                service.getPaymentsFromUrl(url: url, response:response as! PageResponse<OperationResponse>.ResponseClosure)
-            case is TransactionResponse.Type:
-                let service = TransactionsService(baseURL:"")
-                service.getTransactionsFromUrl(url: url, response:response as! PageResponse<TransactionResponse>.ResponseClosure)
-            case is EffectResponse.Type:
-                let service = EffectsService(baseURL:"")
-                service.getEffectsFromUrl(url: url, response:response as! PageResponse<EffectResponse>.ResponseClosure)
-            default:
-                assertionFailure("You should implement this case:\(Element.self)")
-        }
-    }
 }

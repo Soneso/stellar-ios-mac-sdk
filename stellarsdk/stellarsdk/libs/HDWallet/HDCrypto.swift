@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CommonCrypto
 
 /// Internal cryptographic utility functions for hierarchical deterministic wallet operations.
 ///
@@ -28,13 +29,16 @@ final class HDCrypto {
     ///
     /// - Returns: 64-byte HMAC-SHA512 digest
     static func HMACSHA512(key: Data, data: Data) -> Data {
-        let output: [UInt8]
-        do {
-            output = try HMAC(key: key.bytes, variant: .sha512).authenticate(data.bytes)
-        } catch let error {
-            fatalError("Error occured. Description: \(error.localizedDescription)")
+        var hmac = [UInt8](repeating: 0, count: Int(CC_SHA512_DIGEST_LENGTH))
+        key.withUnsafeBytes { keyBytes in
+            data.withUnsafeBytes { dataBytes in
+                CCHmac(CCHmacAlgorithm(kCCHmacAlgSHA512),
+                       keyBytes.baseAddress, key.count,
+                       dataBytes.baseAddress, data.count,
+                       &hmac)
+            }
         }
-        return Data(output)
+        return Data(hmac)
     }
 
     /// Derives a cryptographic key from a password using PBKDF2-SHA512.
@@ -48,13 +52,21 @@ final class HDCrypto {
     ///
     /// - Returns: 64-byte derived key suitable for BIP-32 seed
     static func PBKDF2SHA512(password: [UInt8], salt: [UInt8]) -> Data {
-        let output: [UInt8]
-        do {
-            output = try PKCS5.PBKDF2(password: password, salt: salt, iterations: 2048, variant: .sha512).calculate()
-        } catch let error {
-            fatalError("PKCS5.PBKDF2 faild: \(error.localizedDescription)")
+        var derivedKey = [UInt8](repeating: 0, count: 64)
+        let status = CCKeyDerivationPBKDF(
+            CCPBKDFAlgorithm(kCCPBKDF2),
+            password, password.count,
+            salt, salt.count,
+            CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA512),
+            2048,
+            &derivedKey, 64
+        )
+
+        guard status == kCCSuccess else {
+            fatalError("PBKDF2 derivation failed with status: \(status)")
         }
-        return Data(output)
+
+        return Data(derivedKey)
     }
 }
 

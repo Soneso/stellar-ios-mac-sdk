@@ -18,7 +18,7 @@ public enum BeginSponsoringFutureReservesResultCode: Int32 {
     case recursive = -3 // can't sponsor an account that is itself sponsoring an account
 }
 
-public enum BeginSponsoringFutureReservesResultXDR: XDRCodable {
+public enum BeginSponsoringFutureReservesResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

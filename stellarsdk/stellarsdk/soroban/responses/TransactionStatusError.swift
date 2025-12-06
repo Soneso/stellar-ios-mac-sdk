@@ -9,29 +9,27 @@
 import Foundation
 
 /// Internal error used within some of the responses.
-public class TransactionStatusError: NSObject, Decodable {
-    
+public struct TransactionStatusError: Decodable, Sendable {
+
     /// Short unique string representing the type of error
-    public var code:String
-    
+    public let code:String
+
     /// Human friendly summary of the error
-    public var message:String
-    
+    public let message:String
+
     /// (optional) More data related to the error if available
-    public var data:[String:Any]?
-    
+    public let data: String?
+
     private enum CodingKeys: String, CodingKey {
         case code
         case message
         case data
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         code = try values.decode(String.self, forKey: .code)
         message = try values.decode(String.self, forKey: .message)
-        do {
-            data = try values.decodeIfPresent([String:Any].self, forKey: .data)
-        } catch {}
+        data = try values.decodeIfPresent(String.self, forKey: .data)
     }
 }

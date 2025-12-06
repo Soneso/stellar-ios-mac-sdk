@@ -64,27 +64,6 @@ public enum AnchorFeeResponseEnum {
     case failure(error: TransferServerError)
 }
 
-/// A closure to be called with the response from a transfer server for domain request.
-public typealias TransferServerServiceClosure = (_ response:TransferServerServiceForDomainEnum) -> (Void)
-
-/// A closure to be called with the response from a deposit request.
-public typealias DepositResponseClosure = (_ response:DepositResponseEnum) -> (Void)
-
-/// A closure to be called with the response from a withdraw request.
-public typealias WithdrawResponseClosure = (_ response:WithdrawResponseEnum) -> (Void)
-
-/// A closure to be called with the response from a anchor info request.
-public typealias AnchorInfoResponseClosure = (_ response:AnchorInfoResponseEnum) -> (Void)
-
-/// A closure to be called with the response from a transactions request.
-public typealias AnchorTransactionsResponseClosure = (_ response:AnchorTransactionsResponseEnum) -> (Void)
-
-/// A closure to be called with the response from a transaction request.
-public typealias AnchorTransactionResponseClosure = (_ response:AnchorTransactionResponseEnum) -> (Void)
-
-/// A closure to be called with the response from a fee request.
-public typealias AnchorFeeResponseClosure = (_ response:AnchorFeeResponseEnum) -> (Void)
-
 /// Implements SEP-0006 - Deposit and Withdrawal API.
 ///
 /// This class provides programmatic deposit and withdrawal functionality for Stellar assets
@@ -153,7 +132,8 @@ public class TransferServerService: NSObject {
     private let jsonDecoder = JSONDecoder()
 
     /// Initializes a SEP-6 transfer server service with the specified endpoint address.
-    /// - Parameter serviceAddress: The base URL of the transfer server, trailing slashes are automatically removed.
+    ///
+    /// - Parameter serviceAddress: The base URL of the transfer server, trailing slashes are automatically removed
     public init(serviceAddress:String) {
 
         if (serviceAddress.hasSuffix("/")) {
@@ -167,15 +147,11 @@ public class TransferServerService: NSObject {
     }
     
     /// Creates a TransferServerService instance based on information from the stellar.toml file for a given domain.
-    @available(*, renamed: "forDomain(domain:)")
-    public static func forDomain(domain:String, completion:@escaping TransferServerServiceClosure) {
-        Task {
-            let result = await forDomain(domain: domain)
-            completion(result)
-        }
-    }
-    
-    /// Creates a TransferServerService instance based on information from the stellar.toml file for a given domain.
+    ///
+    /// Fetches the stellar.toml file from the domain and extracts the TRANSFER_SERVER URL.
+    ///
+    /// - Parameter domain: The domain to fetch stellar.toml from (e.g., "https://example.com")
+    /// - Returns: TransferServerServiceForDomainEnum with the service instance or an error
     public static func forDomain(domain:String) async -> TransferServerServiceForDomainEnum {
         let transferServerKey = "TRANSFER_SERVER"
         
@@ -197,22 +173,11 @@ public class TransferServerService: NSObject {
             return .failure(error: .invalidToml)
         }
     }
-    
-    /// Initiates a SEP-6 deposit flow to convert external assets into Stellar tokens via an anchor.
-    /// - Parameters:
-    ///   - request: Deposit request containing asset code, destination account, and optional parameters.
-    ///   - completion: Callback with deposit instructions or error response from the anchor.
-    @available(*, renamed: "deposit(request:)")
-    public func deposit(request: DepositRequest, completion:@escaping DepositResponseClosure) {
-        Task {
-            let result = await deposit(request: request)
-            completion(result)
-        }
-    }
 
     /// Initiates a SEP-6 deposit flow to convert external assets into Stellar tokens via an anchor.
-    /// - Parameter request: Deposit request containing asset code, destination account, and optional parameters.
-    /// - Returns: Deposit response with instructions for transferring external assets to the anchor, or an error.
+    ///
+    /// - Parameter request: Deposit request containing asset code, destination account, and optional parameters
+    /// - Returns: DepositResponseEnum with instructions for transferring external assets to the anchor, or an error
     public func deposit(request: DepositRequest) async -> DepositResponseEnum {
         var requestPath = "/deposit?asset_code=\(request.assetCode)&account=\(request.account)"
         if let memoType = request.memoType {
@@ -276,20 +241,9 @@ public class TransferServerService: NSObject {
     }
     
     /// Initiates a SEP-6 deposit with asset conversion using SEP-38 quotes for non-equivalent token exchange.
-    /// - Parameters:
-    ///   - request: Exchange deposit request specifying source asset, destination asset, amount, and account.
-    ///   - completion: Callback with deposit instructions including conversion details or error response.
-    @available(*, renamed: "depositExchange(request:)")
-    public func depositExchange(request: DepositExchangeRequest, completion:@escaping DepositResponseClosure) {
-        Task {
-            let result = await depositExchange(request: request)
-            completion(result)
-        }
-    }
-
-    /// Initiates a SEP-6 deposit with asset conversion using SEP-38 quotes for non-equivalent token exchange.
-    /// - Parameter request: Exchange deposit request specifying source asset, destination asset, amount, and account.
-    /// - Returns: Deposit response with conversion details and instructions, or an error.
+    ///
+    /// - Parameter request: Exchange deposit request specifying source asset, destination asset, amount, and account
+    /// - Returns: DepositResponseEnum with conversion details and instructions, or an error
     public func depositExchange(request: DepositExchangeRequest) async -> DepositResponseEnum {
         var requestPath = "/deposit-exchange?destination_asset=\(request.destinationAsset)&source_asset=\(request.sourceAsset)&amount=\(request.amount)&account=\(request.account)"
         if let quoteId = request.quoteId {
@@ -353,20 +307,9 @@ public class TransferServerService: NSObject {
     }
     
     /// Initiates a SEP-6 withdrawal flow to convert Stellar tokens into off-chain assets via an anchor.
-    /// - Parameters:
-    ///   - request: Withdrawal request with asset code, withdrawal type, destination, and optional account details.
-    ///   - completion: Callback with withdrawal instructions or error response from the anchor.
-    @available(*, renamed: "withdraw(request:)")
-    public func withdraw(request: WithdrawRequest, completion:@escaping WithdrawResponseClosure) {
-        Task {
-            let result = await withdraw(request: request)
-            completion(result)
-        }
-    }
-
-    /// Initiates a SEP-6 withdrawal flow to convert Stellar tokens into off-chain assets via an anchor.
-    /// - Parameter request: Withdrawal request with asset code, withdrawal type, destination, and optional account details.
-    /// - Returns: Withdrawal response with instructions for receiving off-chain assets, or an error.
+    ///
+    /// - Parameter request: Withdrawal request with asset code, withdrawal type, destination, and optional account details
+    /// - Returns: WithdrawResponseEnum with instructions for receiving off-chain assets, or an error
     public func withdraw(request: WithdrawRequest) async -> WithdrawResponseEnum {
         var requestPath = "/withdraw?type=\(request.type)&asset_code=\(request.assetCode)"
         if let dest = request.dest {
@@ -436,20 +379,9 @@ public class TransferServerService: NSObject {
     }
     
     /// Initiates a SEP-6 withdrawal with asset conversion using SEP-38 quotes for non-equivalent token exchange.
-    /// - Parameters:
-    ///   - request: Exchange withdrawal request specifying source asset, destination asset, amount, and withdrawal details.
-    ///   - completion: Callback with withdrawal instructions including conversion details or error response.
-    @available(*, renamed: "withdrawExchange(request:)")
-    public func withdrawExchange(request: WithdrawExchangeRequest, completion:@escaping WithdrawResponseClosure) {
-        Task {
-            let result = await withdrawExchange(request: request)
-            completion(result)
-        }
-    }
-
-    /// Initiates a SEP-6 withdrawal with asset conversion using SEP-38 quotes for non-equivalent token exchange.
-    /// - Parameter request: Exchange withdrawal request specifying source asset, destination asset, amount, and withdrawal details.
-    /// - Returns: Withdrawal response with conversion details and instructions, or an error.
+    ///
+    /// - Parameter request: Exchange withdrawal request specifying source asset, destination asset, amount, and withdrawal details
+    /// - Returns: WithdrawResponseEnum with conversion details and instructions, or an error
     public func withdrawExchange(request: WithdrawExchangeRequest) async -> WithdrawResponseEnum {
         var requestPath = "/withdraw-exchange?type=\(request.type)&source_asset=\(request.sourceAsset)&destination_asset=\(request.destinationAsset)&amount=\(request.amount)"
         if let quoteId = request.quoteId {
@@ -519,23 +451,10 @@ public class TransferServerService: NSObject {
     }
     
     /// Retrieves SEP-6 anchor capabilities including supported assets, operations, and authentication requirements.
-    /// - Parameters:
-    ///   - language: RFC 4646 language code for localized responses, defaults to English.
-    ///   - jwtToken: Optional SEP-10 authentication token if required by the anchor.
-    ///   - completion: Callback with anchor capabilities or error response.
-    @available(*, renamed: "info(language:jwtToken:)")
-    public func info(language: String? = nil, jwtToken:String? = nil, completion:@escaping AnchorInfoResponseClosure) {
-        Task {
-            let result = await info(language: language)
-            completion(result)
-        }
-    }
-
-    /// Retrieves SEP-6 anchor capabilities including supported assets, operations, and authentication requirements.
-    /// - Parameters:
-    ///   - language: RFC 4646 language code for localized responses, defaults to English.
-    ///   - jwtToken: Optional SEP-10 authentication token if required by the anchor.
-    /// - Returns: Anchor capabilities and configuration, or an error.
+    ///
+    /// - Parameter language: RFC 4646 language code for localized responses, defaults to English
+    /// - Parameter jwtToken: Optional SEP-10 authentication token if required by the anchor
+    /// - Returns: AnchorInfoResponseEnum with anchor capabilities and configuration, or an error
     public func info(language: String? = nil, jwtToken:String? = nil) async -> AnchorInfoResponseEnum {
         var requestPath = "/info"
         if let language = language {
@@ -558,20 +477,9 @@ public class TransferServerService: NSObject {
     }
     
     /// Retrieves fee information for SEP-6 deposit or withdrawal operations (deprecated, use SEP-38 /price endpoint).
-    /// - Parameters:
-    ///   - request: Fee request containing operation type, asset code, and transaction amount.
-    ///   - completion: Callback with calculated fee details or error response.
-    @available(*, renamed: "fee(request:)")
-    public func fee(request: FeeRequest,  completion:@escaping AnchorFeeResponseClosure) {
-        Task {
-            let result = await fee(request: request)
-            completion(result)
-        }
-    }
-
-    /// Retrieves fee information for SEP-6 deposit or withdrawal operations (deprecated, use SEP-38 /price endpoint).
-    /// - Parameter request: Fee request containing operation type, asset code, and transaction amount.
-    /// - Returns: Calculated fee details for the specified operation, or an error.
+    ///
+    /// - Parameter request: Fee request containing operation type, asset code, and transaction amount
+    /// - Returns: AnchorFeeResponseEnum with calculated fee details for the specified operation, or an error
     public func fee(request: FeeRequest) async -> AnchorFeeResponseEnum {
         var requestPath = "/fee?operation=\(request.operation)&asset_code=\(request.assetCode)&amount=\(request.amount)"
         
@@ -593,22 +501,11 @@ public class TransferServerService: NSObject {
             return .failure(error: self.errorFor(horizonError: error))
         }
     }
-    
-    /// Retrieves transaction history for SEP-6 deposits and withdrawals filtered by account and asset.
-    /// - Parameters:
-    ///   - request: Transaction query request with account, asset code, optional filters, and SEP-10 JWT token.
-    ///   - completion: Callback with transaction history list or error response.
-    @available(*, renamed: "getTransactions(request:)")
-    public func getTransactions(request: AnchorTransactionsRequest,  completion:@escaping AnchorTransactionsResponseClosure) {
-        Task {
-            let result = await getTransactions(request: request)
-            completion(result)
-        }
-    }
 
     /// Retrieves transaction history for SEP-6 deposits and withdrawals filtered by account and asset.
-    /// - Parameter request: Transaction query request with account, asset code, optional filters, and SEP-10 JWT token.
-    /// - Returns: List of deposit and withdrawal transactions with current status details, or an error.
+    ///
+    /// - Parameter request: Transaction query request with account, asset code, optional filters, and SEP-10 JWT token
+    /// - Returns: AnchorTransactionsResponseEnum with list of deposit and withdrawal transactions, or an error
     public func getTransactions(request: AnchorTransactionsRequest) async -> AnchorTransactionsResponseEnum {
         var requestPath = "/transactions?asset_code=\(request.assetCode)&account=\(request.account)"
         if let noOlderThanDate = request.noOlderThan {
@@ -644,20 +541,9 @@ public class TransferServerService: NSObject {
     }
     
     /// Retrieves detailed status and information for a specific SEP-6 transaction by ID or Stellar transaction hash.
-    /// - Parameters:
-    ///   - request: Transaction lookup request with transaction ID, Stellar hash, or external ID, and SEP-10 JWT token.
-    ///   - completion: Callback with transaction details or error response.
-    @available(*, renamed: "getTransaction(request:)")
-    public func getTransaction(request: AnchorTransactionRequest,  completion:@escaping AnchorTransactionResponseClosure) {
-        Task {
-            let result = await getTransaction(request: request)
-            completion(result)
-        }
-    }
-
-    /// Retrieves detailed status and information for a specific SEP-6 transaction by ID or Stellar transaction hash.
-    /// - Parameter request: Transaction lookup request with transaction ID, Stellar hash, or external ID, and SEP-10 JWT token.
-    /// - Returns: Detailed transaction status, amounts, and processing information, or an error.
+    ///
+    /// - Parameter request: Transaction lookup request with transaction ID, Stellar hash, or external ID, and SEP-10 JWT token
+    /// - Returns: AnchorTransactionResponseEnum with detailed transaction status and processing information, or an error
     public func getTransaction(request: AnchorTransactionRequest) async -> AnchorTransactionResponseEnum {
         var requestPath = "/transaction?"
         
@@ -703,27 +589,12 @@ public class TransferServerService: NSObject {
     }
     
     /// Updates a SEP-6 transaction with additional customer information when requested by the anchor via pending_transaction_info_update status.
-    /// - Parameters:
-    ///   - id: The anchor's transaction ID requiring additional information.
-    ///   - jwt: SEP-10 authentication token for the transaction owner.
-    ///   - contentType: HTTP content type for the request body (e.g., application/json or multipart/form-data).
-    ///   - body: Encoded request data containing the required customer information updates.
-    ///   - completion: Callback with updated transaction details or error response.
-    @available(*, renamed: "patchTransaction(id:jwt:contentType:body:)")
-    public func patchTransaction(id:String, jwt:String?, contentType:String, body:Data, completion:@escaping AnchorTransactionResponseClosure) {
-        Task {
-            let result = await patchTransaction(id: id, jwt: jwt, contentType: contentType, body: body)
-            completion(result)
-        }
-    }
-
-    /// Updates a SEP-6 transaction with additional customer information when requested by the anchor via pending_transaction_info_update status.
-    /// - Parameters:
-    ///   - id: The anchor's transaction ID requiring additional information.
-    ///   - jwt: SEP-10 authentication token for the transaction owner.
-    ///   - contentType: HTTP content type for the request body (e.g., application/json or multipart/form-data).
-    ///   - body: Encoded request data containing the required customer information updates.
-    /// - Returns: Updated transaction details with new status, or an error.
+    ///
+    /// - Parameter id: The anchor's transaction ID requiring additional information
+    /// - Parameter jwt: SEP-10 authentication token for the transaction owner
+    /// - Parameter contentType: HTTP content type for the request body (e.g., application/json or multipart/form-data)
+    /// - Parameter body: Encoded request data containing the required customer information updates
+    /// - Returns: AnchorTransactionResponseEnum with updated transaction details, or an error
     public func patchTransaction(id:String, jwt:String?, contentType:String, body:Data) async -> AnchorTransactionResponseEnum {
         let requestPath = "/transaction/\(id)"
         
@@ -743,8 +614,9 @@ public class TransferServerService: NSObject {
     }
 
     /// Converts Horizon HTTP errors into SEP-6 specific transfer server errors, handling authentication and customer info requirements.
-    /// - Parameter horizonError: The raw HTTP error from the anchor's transfer server endpoint.
-    /// - Returns: A structured TransferServerError with parsed customer information needs or authentication requirements.
+    ///
+    /// - Parameter horizonError: The raw HTTP error from the anchor's transfer server endpoint
+    /// - Returns: A TransferServerError with parsed customer information needs or authentication requirements
     private func errorFor(horizonError:HorizonRequestError) -> TransferServerError {
         switch horizonError {
         case .forbidden(let message, _):

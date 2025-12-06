@@ -18,7 +18,7 @@ import Foundation
 /// - hash: A 32 byte hash.
 /// - returnHash:  A 32 byte hash intended to be interpreted as the hash of the transaction the sender is refunding.
 ///
-public enum Memo {
+public enum Memo: Sendable {
     /// No memo attached to the transaction.
     case none
     /// Text memo containing up to 28 bytes of ASCII or UTF-8 encoded string data.

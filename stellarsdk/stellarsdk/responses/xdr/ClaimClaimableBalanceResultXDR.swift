@@ -20,7 +20,7 @@ public enum ClaimClaimableBalanceResultCode: Int32 {
     case notAUthorized = -5
 }
 
-public enum ClaimClaimableBalanceResultXDR: XDRCodable {
+public enum ClaimClaimableBalanceResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

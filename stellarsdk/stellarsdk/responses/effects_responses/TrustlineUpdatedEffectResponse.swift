@@ -12,4 +12,4 @@ import Foundation
 /// This effect occurs when an existing trustline's limit is modified through a Change Trust operation.
 /// The account can increase or decrease the maximum amount of the asset it is willing to hold.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class TrustlineUpdatedEffectResponse: TrustlineEffectResponse {}
+public class TrustlineUpdatedEffectResponse: TrustlineEffectResponse, @unchecked Sendable {}

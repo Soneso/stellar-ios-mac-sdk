@@ -14,8 +14,7 @@ import Foundation
 /// and are used when parsing or constructing API requests and responses.
 ///
 /// See: [Stellar developer docs](https://developers.stellar.org) for more information.
-public struct AssetTypeAsString
-{
+public struct AssetTypeAsString: Sendable {
     /// Native asset type (XLM).
     public static let NATIVE = "native"
 
@@ -36,8 +35,7 @@ public struct AssetTypeAsString
 /// These constants are used when parsing effect responses from the Horizon server.
 ///
 /// See: [Stellar developer docs](https://developers.stellar.org) for more information.
-public struct EffectTypeAsString
-{
+public struct EffectTypeAsString: Sendable {
     /// Effect when a new account is created on the network.
     public static let ACCOUNT_CREATED = "account_created"
 
@@ -109,8 +107,7 @@ public struct EffectTypeAsString
 /// information or identification.
 ///
 /// See: [Stellar developer docs](https://developers.stellar.org) for more information.
-public struct MemoTypeAsString
-{
+public struct MemoTypeAsString: Sendable {
     /// No memo attached to the transaction.
     public static let NONE = "none"
 

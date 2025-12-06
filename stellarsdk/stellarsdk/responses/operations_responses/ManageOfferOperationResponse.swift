@@ -10,34 +10,34 @@ import Foundation
 
 ///  Represents a manage offer operation response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class ManageOfferOperationResponse: OperationResponse {
+public class ManageOfferOperationResponse: OperationResponse, @unchecked Sendable {
     
     /// ID of the offer. 0 for a new offer, existing ID to update or delete.
-    public var offerId:String
+    public let offerId:String
 
     /// Amount of the selling asset offered.
-    public var amount:String
+    public let amount:String
 
     /// Price of 1 unit of selling asset in terms of buying asset (decimal).
-    public var price:String
+    public let price:String
 
     /// Type of asset to buy (native / alphanum4 / alphanum12).
-    public var buyingAssetType:String
+    public let buyingAssetType:String
 
     /// Code of the asset to buy.
-    public var buyingAssetCode:String?
+    public let buyingAssetCode:String?
 
     /// Issuer of the asset to buy.
-    public var buyingAssetIssuer:String?
+    public let buyingAssetIssuer:String?
 
     /// Type of asset to sell (native / alphanum4 / alphanum12).
-    public var sellingAssetType:String
+    public let sellingAssetType:String
 
     /// Code of the asset to sell.
-    public var sellingAssetCode:String?
+    public let sellingAssetCode:String?
 
     /// Issuer of the asset to sell.
-    public var sellingAssetIssuer:String?
+    public let sellingAssetIssuer:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

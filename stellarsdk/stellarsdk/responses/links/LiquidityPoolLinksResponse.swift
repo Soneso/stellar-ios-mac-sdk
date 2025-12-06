@@ -16,16 +16,16 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - LiquidityPoolResponse for complete details
-public class LiquidityPoolLinksResponse: NSObject, Decodable {
+public struct LiquidityPoolLinksResponse: Decodable, Sendable {
 
     /// Link to this liquidity pool resource (self reference).
-    public var selflink:LinkResponse
+    public let selflink:LinkResponse
 
     /// Templated link to transactions involving this liquidity pool. Supports cursor, order, and limit.
-    public var transactions:LinkResponse
+    public let transactions:LinkResponse
 
     /// Templated link to operations involving this liquidity pool. Supports cursor, order, and limit.
-    public var operations:LinkResponse
+    public let operations:LinkResponse
     
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
@@ -39,7 +39,7 @@ public class LiquidityPoolLinksResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         selflink = try values.decode(LinkResponse.self, forKey: .selflink)
         transactions = try values.decode(LinkResponse.self, forKey: .transactions)

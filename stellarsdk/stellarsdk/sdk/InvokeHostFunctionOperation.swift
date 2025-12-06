@@ -39,11 +39,8 @@ public class InvokeHostFunctionOperation:Operation {
 
     /// Creates an operation to instantiate a contract from uploaded Wasm using contract ID preimage.
     public static func forCreatingContract(wasmId:String, address: SCAddressXDR, salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
-        var saltToSet = salt
-        if saltToSet == nil {
-            saltToSet = try randomSalt()
-        }
-        let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt:saltToSet!)
+        let saltToSet = try salt ?? randomSalt()
+        let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt: saltToSet)
         let contractIDPreimage = ContractIDPreimageXDR.fromAddress(contractIdPreimageFormAddress)
         let executable = ContractExecutableXDR.wasm(wasmId.wrappedData32FromHex())
         let createContractArgs = CreateContractArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable)
@@ -53,11 +50,8 @@ public class InvokeHostFunctionOperation:Operation {
     
     /// Creates an operation to instantiate a contract with constructor arguments (protocol >= 22).
     public static func forCreatingContractWithConstructor(wasmId:String, address: SCAddressXDR, constructorArguments:[SCValXDR] = [], salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
-        var saltToSet = salt
-        if saltToSet == nil {
-            saltToSet = try randomSalt()
-        }
-        let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt:saltToSet!)
+        let saltToSet = try salt ?? randomSalt()
+        let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt: saltToSet)
         let contractIDPreimage = ContractIDPreimageXDR.fromAddress(contractIdPreimageFormAddress)
         let executable = ContractExecutableXDR.wasm(wasmId.wrappedData32FromHex())
         let createContractV2Args = CreateContractV2ArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable, constructorArgs: constructorArguments)
@@ -67,12 +61,8 @@ public class InvokeHostFunctionOperation:Operation {
 
     /// Creates an operation to deploy a Stellar Asset Contract using a source account address.
     public static func forDeploySACWithSourceAccount(address: SCAddressXDR, salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
-        var saltToSet = salt
-        if saltToSet == nil {
-            saltToSet = try randomSalt()
-        }
-        
-        let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt:saltToSet!)
+        let saltToSet = try salt ?? randomSalt()
+        let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt: saltToSet)
         let contractIDPreimage = ContractIDPreimageXDR.fromAddress(contractIdPreimageFormAddress)
         let executable = ContractExecutableXDR.token
         let createContractArgs = CreateContractArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable)
@@ -91,8 +81,11 @@ public class InvokeHostFunctionOperation:Operation {
     
     private static func randomSalt() throws -> WrappedData32 {
         var saltData = Data(count: 32)
-        let result = saltData.withUnsafeMutableBytes {
-            SecRandomCopyBytes(kSecRandomDefault, 32, $0.baseAddress!)
+        let result = saltData.withUnsafeMutableBytes { bufferPointer -> OSStatus in
+            guard let baseAddress = bufferPointer.baseAddress else {
+                return errSecAllocate
+            }
+            return SecRandomCopyBytes(kSecRandomDefault, 32, baseAddress)
         }
         if result != errSecSuccess {
             throw StellarSDKError.encodingError(message: "unable to generate random salt")

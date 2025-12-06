@@ -75,15 +75,21 @@ public class AllowTrustOperation:Operation {
 
         let allowTrustOpAsset: AllowTrustOpAssetXDR
         if assetCode.count <= 4 {
-            let assetCodeXDR = WrappedData4(self.assetCode.data(using: .utf8)!)
+            guard let assetCodeData = self.assetCode.data(using: .utf8) else {
+                throw StellarSDKError.xdrEncodingError(message: "Unable to encode asset code as UTF-8")
+            }
+            let assetCodeXDR = WrappedData4(assetCodeData)
             let ato4XDR = AllowTrustOpAssetXDR.AlphaATO4XDR(assetCode: assetCodeXDR)
             allowTrustOpAsset = AllowTrustOpAssetXDR.alphanum4(ato4XDR)
         } else {
-            let assetCodeXDR = WrappedData12(self.assetCode.data(using: .utf8)!)
+            guard let assetCodeData = self.assetCode.data(using: .utf8) else {
+                throw StellarSDKError.xdrEncodingError(message: "Unable to encode asset code as UTF-8")
+            }
+            let assetCodeXDR = WrappedData12(assetCodeData)
             let ato12XDR = AllowTrustOpAssetXDR.AlphaATO12XDR(assetCode: assetCodeXDR)
             allowTrustOpAsset = AllowTrustOpAssetXDR.alphanum12(ato12XDR)
         }
-        
+
         return OperationBodyXDR.allowTrust(AllowTrustOperationXDR(trustor: trustor.publicKey,
                                                                   asset: allowTrustOpAsset,
                                                                   authorize: authorize))

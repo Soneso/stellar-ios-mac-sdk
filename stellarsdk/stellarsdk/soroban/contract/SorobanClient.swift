@@ -221,11 +221,10 @@ public class SorobanClient {
         if !force && isReadCall {
             let simulationData = try tx.getSimulationData()
             let returnedValue = simulationData.returnedValue
-            if returnedValue.bytes == nil {
+            guard let bytes = returnedValue.bytes else {
                 throw SorobanClientError.installFailed(message: "Could not extract wasm hash from simulation result.")
-            } else {
-                return returnedValue.bytes!.hexEncodedString()
             }
+            return bytes.hexEncodedString()
         }
         let response = try await tx.signAndSend(force: force)
         if let wasmHash = response.wasmId {

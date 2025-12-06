@@ -10,14 +10,14 @@ import Foundation
 
 /// Base Asset class.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class Asset
+public class Asset: @unchecked Sendable
 {
     /// The type of asset (native, alphanum4, alphanum12, or pool share).
     public let type:Int32
     /// The asset code (e.g., "USD", "BTC"). Nil for native assets.
-    public private(set) var code:String?
+    public let code:String?
     /// The issuer keypair for this asset. Nil for native assets.
-    public private(set) var issuer:KeyPair?
+    public let issuer:KeyPair?
     
     /// Creates an Asset object based on the given type, code and issuer. Assets can have the types: native, alphanumeric 4, alphanumeric 12. The asset of type native has no code and no issuer. Assets of type alphanumeric 4, alphanumeric 12 must have a code and an issuer.
     ///
@@ -39,9 +39,11 @@ public class Asset
                 self.code = code
                 self.issuer = issuer
             case AssetType.ASSET_TYPE_NATIVE:
-                break
+                self.code = nil
+                self.issuer = nil
             case AssetType.ASSET_TYPE_POOL_SHARE:
-                break
+                self.code = nil
+                self.issuer = nil
             default:
                 return nil
         }
@@ -50,7 +52,7 @@ public class Asset
     /// Creates an Asset from its canonical string representation (e.g., "native" or "USD:GXXX...").
     public convenience init?(canonicalForm: String) {
         if canonicalForm == StellarProtocolConstants.ASSET_CANONICAL_NATIVE || canonicalForm == "XLM" {
-            self.init(type: AssetType.ASSET_TYPE_NATIVE)!
+            self.init(type: AssetType.ASSET_TYPE_NATIVE)
             return
         }
         let components = canonicalForm.components(separatedBy: ":")
@@ -73,21 +75,28 @@ public class Asset
         switch self.type {
             case AssetType.ASSET_TYPE_NATIVE:
                 return StellarProtocolConstants.ASSET_CANONICAL_NATIVE
+            case AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, AssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+                return code! + ":" + issuer!.accountId
+            case AssetType.ASSET_TYPE_POOL_SHARE:
+                fatalError("Use ChangeTrustAsset.toCanonicalForm() for pool shares")
             default:
-                return self.code! + ":" + self.issuer!.accountId
+                fatalError("Unknown asset type")
         }
     }
 
     /// Generates XDR object from the Asset object.
     /// Throws StellarSDKError.xdrEncodingError if the XDR Object could not be created.
     public func toXDR() throws -> AssetXDR {
-        
+
         do {
             switch self.type {
                 case AssetType.ASSET_TYPE_NATIVE:
                     return AssetXDR.native
                 default:
-                    return try AssetXDR(assetCode:code!, issuer:issuer!)
+                    guard let code = code, let issuer = issuer else {
+                        throw StellarSDKError.xdrEncodingError(message: "Error encoding asset: code or issuer is nil")
+                    }
+                    return try AssetXDR(assetCode:code, issuer:issuer)
             }
         } catch {
             throw StellarSDKError.xdrEncodingError(message: "Error encoding asset: " + error.localizedDescription)
@@ -96,13 +105,16 @@ public class Asset
     
     /// Generates TrustlineAssetXDR object for trustline operations.
     public func toTrustlineAssetXDR() throws -> TrustlineAssetXDR {
-        
+
         do {
             switch self.type {
                 case AssetType.ASSET_TYPE_NATIVE:
                     return TrustlineAssetXDR.native
                 default:
-                    return try TrustlineAssetXDR(assetCode:code!, issuer:issuer!)
+                    guard let code = code, let issuer = issuer else {
+                        throw StellarSDKError.xdrEncodingError(message: "Error encoding asset: code or issuer is nil")
+                    }
+                    return try TrustlineAssetXDR(assetCode:code, issuer:issuer)
             }
         } catch {
             throw StellarSDKError.xdrEncodingError(message: "Error encoding asset: " + error.localizedDescription)
@@ -140,11 +152,11 @@ public class Asset
 }
 
 /// Asset subclass supporting liquidity pool shares for change trust operations.
-public class ChangeTrustAsset : Asset {
+public class ChangeTrustAsset : Asset, @unchecked Sendable {
     /// The first asset in a liquidity pool pair. Nil for non-pool assets.
-    public private(set) var assetA:Asset?
+    public let assetA:Asset?
     /// The second asset in a liquidity pool pair. Nil for non-pool assets.
-    public private(set) var assetB:Asset?
+    public let assetB:Asset?
 
     /// Creates a liquidity pool asset from two underlying assets in correct lexicographic order.
     public init?(assetA:Asset, assetB:Asset) throws {
@@ -163,10 +175,16 @@ public class ChangeTrustAsset : Asset {
         if assetA.type > assetB.type {
             sortError = true
         } else if assetA.type == assetB.type {
-            if assetA.code! > assetB.code! {
+            guard let codeA = assetA.code, let codeB = assetB.code else {
+                throw StellarSDKError.invalidArgument(message: "Non-native assets must have a code")
+            }
+            if codeA > codeB {
                 sortError = true
-            } else if assetA.code! == assetB.code! {
-                if assetA.issuer!.accountId > assetB.issuer!.accountId {
+            } else if codeA == codeB {
+                guard let issuerA = assetA.issuer, let issuerB = assetB.issuer else {
+                    throw StellarSDKError.invalidArgument(message: "Non-native assets must have an issuer")
+                }
+                if issuerA.accountId > issuerB.accountId {
                     sortError = true
                 }
             }
@@ -182,28 +200,65 @@ public class ChangeTrustAsset : Asset {
     }
     
     public override init?(type:Int32, code:String? = nil, issuer:KeyPair? = nil) {
+        self.assetA = nil
+        self.assetB = nil
         super.init(type: type, code: code, issuer: issuer)
+    }
+
+    /// Returns the canonical string representation of this asset.
+    /// For pool share assets, returns the format "poolId:lp" where poolId is the hex-encoded liquidity pool ID.
+    /// For other asset types, delegates to the parent class implementation.
+    public override func toCanonicalForm() -> String {
+        if self.type == AssetType.ASSET_TYPE_POOL_SHARE {
+            let poolId = try! getLiquidityPoolId()
+            return poolId + ":lp"
+        }
+
+        return super.toCanonicalForm()
+    }
+
+    /// Computes the liquidity pool ID for this pool share asset.
+    /// The pool ID is computed as SHA256(LiquidityPoolParameters XDR bytes).
+    private func getLiquidityPoolId() throws -> String {
+        guard let assetA = self.assetA, let assetB = self.assetB else {
+            throw StellarSDKError.invalidArgument(message: "Pool share asset must have assetA and assetB")
+        }
+
+        let assetAXDR = try assetA.toXDR()
+        let assetBXDR = try assetB.toXDR()
+        let params = LiquidityPoolConstantProductParametersXDR(assetA: assetAXDR, assetB: assetBXDR, fee: StellarProtocolConstants.LIQUIDITY_POOL_FEE_V18)
+        let liquidityPoolParams = LiquidityPoolParametersXDR(params: params)
+
+        let xdrBytes = try XDREncoder.encode(liquidityPoolParams)
+        let data = Data(bytes: xdrBytes, count: xdrBytes.count)
+        let hash = data.sha256Hash
+
+        return hash.hexEncodedString()
     }
 
     /// Generates ChangeTrustAssetXDR object for change trust operations.
     public func toChangeTrustAssetXDR() throws -> ChangeTrustAssetXDR {
-        
+
         do {
             switch self.type {
                 case AssetType.ASSET_TYPE_NATIVE:
                     return ChangeTrustAssetXDR.native
-                case AssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
-                    return try ChangeTrustAssetXDR(assetCode:code!, issuer:issuer!)
-                case AssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
-                    return try ChangeTrustAssetXDR(assetCode:code!, issuer:issuer!)
+                case AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, AssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+                    guard let code = code, let issuer = issuer else {
+                        throw StellarSDKError.xdrEncodingError(message: "Error encoding asset: code or issuer is nil")
+                    }
+                    return try ChangeTrustAssetXDR(assetCode:code, issuer:issuer)
                 case AssetType.ASSET_TYPE_POOL_SHARE:
-                    let assetAXDR = try assetA!.toXDR()
-                    let assetBXDR = try assetB!.toXDR()
+                    guard let assetA = assetA, let assetB = assetB else {
+                        throw StellarSDKError.xdrEncodingError(message: "Error encoding pool share asset: assetA or assetB is nil")
+                    }
+                    let assetAXDR = try assetA.toXDR()
+                    let assetBXDR = try assetB.toXDR()
                     let params = LiquidityPoolConstantProductParametersXDR(assetA: assetAXDR, assetB: assetBXDR, fee: StellarProtocolConstants.LIQUIDITY_POOL_FEE_V18)
                     return ChangeTrustAssetXDR(params: params)
                 default:
                     throw StellarSDKError.xdrEncodingError(message: "Unknown asset type")
-                
+
             }
         } catch {
             throw StellarSDKError.xdrEncodingError(message: "Error encoding asset: " + error.localizedDescription)

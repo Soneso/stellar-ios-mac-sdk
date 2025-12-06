@@ -9,23 +9,23 @@
 import Foundation
 
 /// Response containing Soroban RPC server version and commit information.
-public class GetVersionInfoResponse: NSObject, Decodable {
-    
+public struct GetVersionInfoResponse: Decodable, Sendable {
+
     /// The version of the RPC server.s
-    public var version:String
-    
+    public let version:String
+
     /// The commit hash of the RPC server.
-    public var commitHash:String
-    
+    public let commitHash:String
+
     /// The build timestamp of the RPC server.
-    public var buildTimeStamp:String
-    
+    public let buildTimeStamp:String
+
     /// The version of the Captive Core.
-    public var captiveCoreVersion:String
-    
+    public let captiveCoreVersion:String
+
     /// The protocol version.
-    public var protocolVersion:Int
-    
+    public let protocolVersion:Int
+
     private enum CodingKeys: String, CodingKey {
         case version
         case commitHash = "commitHash"
@@ -38,31 +38,31 @@ public class GetVersionInfoResponse: NSObject, Decodable {
         case protocolVersionP21 = "protocol_version"
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         version = try values.decode(String.self, forKey: .version)
-        
+
         let commitHashVal = try values.decodeIfPresent(String.self, forKey: .commitHash)
         if (commitHashVal == nil) {
             commitHash = try values.decode(String.self, forKey: .commitHashP21) // protocol version < 22
         } else {
             commitHash = commitHashVal!
         }
-        
+
         let buildTimeStampVal = try values.decodeIfPresent(String.self, forKey: .buildTimeStamp)
         if (buildTimeStampVal == nil) {
             buildTimeStamp = try values.decode(String.self, forKey: .buildTimeStampP21) // protocol version < 22
         } else {
             buildTimeStamp = buildTimeStampVal!
         }
-        
+
         let captiveCoreVersionVal = try values.decodeIfPresent(String.self, forKey: .captiveCoreVersion)
         if (captiveCoreVersionVal == nil) {
             captiveCoreVersion = try values.decode(String.self, forKey: .captiveCoreVersionP21) // protocol version < 22
         } else {
             captiveCoreVersion = captiveCoreVersionVal!
         }
-        
+
         let protocolVersionVal = try values.decodeIfPresent(Int.self, forKey: .protocolVersion)
         if (protocolVersionVal == nil) {
             protocolVersion = try values.decode(Int.self, forKey: .protocolVersionP21) // protocol version < 22

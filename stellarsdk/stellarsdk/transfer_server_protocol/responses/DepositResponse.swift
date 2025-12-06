@@ -18,35 +18,35 @@ import Foundation
 /// the status of the deposit.
 ///
 /// See [SEP-6 Deposit](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#deposit-2)
-public struct DepositResponse: Decodable {
+public struct DepositResponse: Decodable , Sendable {
 
     /// (Deprecated, use instructions instead) Terse but complete instructions for how to deposit the asset. In the case of most cryptocurrencies it is just an address to which the deposit should be sent.
-    public var how:String
+    public let how:String
     
     /// (optional) JSON object containing the SEP-9 financial account fields that describe how to complete the off-chain deposit.
     /// If the anchor cannot provide this information in the response, the wallet should query the /transaction endpoint to get this asynchonously.
-    public var instructions:[String:DepositInstruction]?
+    public let instructions:[String:DepositInstruction]?
     
     /// (optional) The anchor's ID for this deposit. The wallet will use this ID to query the /transaction endpoint to check status of the request.
-    public var id:String?
+    public let id:String?
     
     /// (optional) Estimate of how long the deposit will take to credit in seconds.
-    public var eta:Int?
+    public let eta:Int?
     
     /// (optional) Minimum amount of an asset that a user can deposit.
-    public var minAmount:Double?
+    public let minAmount:Double?
     
     /// (optional) Maximum amount of asset that a user can deposit.
-    public var maxAmount:Double?
+    public let maxAmount:Double?
     
     /// (optional) Fixed fee (if any). In units of the deposited asset.
-    public var feeFixed:Double?
+    public let feeFixed:Double?
     
     /// (optional) Percentage fee (if any). In units of percentage points.
-    public var feePercent:Double?
+    public let feePercent:Double?
     
     /// (optional) Any additional data needed as an input for this deposit, example: Bank Name
-    public var extraInfo:ExtraInfo?
+    public let extraInfo:ExtraInfo?
         
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -87,15 +87,15 @@ public struct DepositResponse: Decodable {
 /// Each instruction provides a value and description for a specific field.
 ///
 /// See [SEP-6 Deposit Response](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#response)
-public struct DepositInstruction: Decodable {
+public struct DepositInstruction: Decodable , Sendable {
 
     /// The value of the field.
-    public var value:String
+    public let value:String
 
     /// A human-readable description of the field. This can be used by an anchor
     /// to provide any additional information about fields that are not defined
     /// in the SEP-9 standard.
-    public var description:String
+    public let description:String
     
 
     /// Properties to encode and decode
@@ -122,10 +122,10 @@ public struct DepositInstruction: Decodable {
 /// Contains optional messages or details that provide context about the deposit.
 ///
 /// See [SEP-6 Deposit Response](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#response)
-public struct ExtraInfo: Decodable {
+public struct ExtraInfo: Decodable , Sendable {
 
     /// (optional) Additional details about the deposit process.
-    public var message:String?
+    public let message:String?
     
 
     /// Properties to encode and decode

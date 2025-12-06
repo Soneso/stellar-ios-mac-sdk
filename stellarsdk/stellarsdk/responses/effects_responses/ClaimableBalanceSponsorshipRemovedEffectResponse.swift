@@ -13,10 +13,10 @@ import Foundation
 /// The claimable balance creator becomes responsible for paying the base reserve.
 /// Triggered by the Revoke Sponsorship operation.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ClaimableBalanceSponsorshipRemovedEffectResponse: EffectResponse {
+public class ClaimableBalanceSponsorshipRemovedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The account ID of the former sponsor.
-    public var formerSponsor:String
+    public let formerSponsor:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

@@ -32,18 +32,6 @@ public enum Sep30AccountsResponseEnum {
     case failure(error: RecoveryServiceError)
 }
 
-/// Callback closure for account operations (register, update, get, delete).
-/// Receives a result containing either a Sep30AccountResponse or RecoveryServiceError.
-public typealias Sep30AccountResponseClosure = (_ response:Sep30AccountResponseEnum) -> (Void)
-
-/// Callback closure for transaction signing operations.
-/// Receives a result containing either a Sep30SignatureResponse or RecoveryServiceError.
-public typealias Sep30SignatureResponseClosure = (_ response:Sep30SignatureResponseEnum) -> (Void)
-
-/// Callback closure for listing accounts operations.
-/// Receives a result containing either a Sep30AccountsResponse or RecoveryServiceError.
-public typealias Sep30AccountsResponseClosure = (_ response:Sep30AccountsResponseEnum) -> (Void)
-
 /// Implements SEP-0030 - Account Recovery: Multi-Party Recovery of Stellar Accounts.
 ///
 /// This class provides account recovery functionality allowing users to regain access to their
@@ -86,6 +74,8 @@ public class RecoveryService: NSObject {
     private let jsonDecoder = JSONDecoder()
 
     /// Creates a RecoveryService instance with a direct service endpoint URL.
+    ///
+    /// - Parameter serviceAddress: The URL of the SEP-30 recovery server (e.g., "https://recovery.example.com")
     public init(serviceAddress:String) {
         self.serviceAddress = serviceAddress
         serviceHelper = ServiceHelper(baseURL: serviceAddress)
@@ -93,17 +83,13 @@ public class RecoveryService: NSObject {
     }
     
     
-    /// This endpoint registers an account.
-    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#post-accountsaddress
-    @available(*, renamed: "registerAccount(address:request:jwt:)")
-    public func registerAccount(address: String, request: Sep30Request, jwt:String, completion:@escaping Sep30AccountResponseClosure) {
-        Task {
-            let result = await registerAccount(address: address, request: request, jwt: jwt)
-            completion(result)
-        }
-    }
-    
-    /// This endpoint registers an account.
+    /// Registers an account with the recovery service.
+    ///
+    /// - Parameter address: The Stellar account address (G...) to register
+    /// - Parameter request: Sep30Request containing the identities and authentication methods for recovery
+    /// - Parameter jwt: JWT token obtained from SEP-10 authentication
+    /// - Returns: Sep30AccountResponseEnum with account details, or an error
+    ///
     /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#post-accountsaddress
     public func registerAccount(address: String, request: Sep30Request, jwt:String) async -> Sep30AccountResponseEnum {
         
@@ -122,19 +108,16 @@ public class RecoveryService: NSObject {
         }
     }
     
-    /// This endpoint updates the identities for the account.
-    /// The identities should be entirely replaced with the identities provided in the request, and not merged. Either owner or other or both should be set. If one is currently set and the request does not include it, it is removed.
-    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#put-accountsaddress
-    @available(*, renamed: "updateIdentitiesForAccount(address:request:jwt:)")
-    public func updateIdentitiesForAccount(address: String, request: Sep30Request, jwt:String, completion:@escaping Sep30AccountResponseClosure) {
-        Task {
-            let result = await updateIdentitiesForAccount(address: address, request: request, jwt: jwt)
-            completion(result)
-        }
-    }
-    
-    /// This endpoint updates the identities for the account.
-    /// The identities should be entirely replaced with the identities provided in the request, and not merged. Either owner or other or both should be set. If one is currently set and the request does not include it, it is removed.
+    /// Updates the identities for the account.
+    ///
+    /// The identities should be entirely replaced with the identities provided in the request, and not merged.
+    /// Either owner or other or both should be set. If one is currently set and the request does not include it, it is removed.
+    ///
+    /// - Parameter address: The Stellar account address (G...) to update
+    /// - Parameter request: Sep30Request containing the new identities to replace existing ones
+    /// - Parameter jwt: JWT token obtained from SEP-10 authentication
+    /// - Returns: Sep30AccountResponseEnum with updated account details, or an error
+    ///
     /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#put-accountsaddress
     public func updateIdentitiesForAccount(address: String, request: Sep30Request, jwt:String) async -> Sep30AccountResponseEnum {
         
@@ -153,18 +136,15 @@ public class RecoveryService: NSObject {
         }
     }
     
-    /// This endpoint signs a transaction.
-    /// See https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#post-accountsaddresssignsigning-address
-    @available(*, renamed: "signTransaction(address:signingAddress:transaction:jwt:)")
-    public func signTransaction(address: String, signingAddress: String, transaction:String, jwt:String, completion:@escaping Sep30SignatureResponseClosure) {
-        Task {
-            let result = await signTransaction(address: address, signingAddress: signingAddress, transaction: transaction, jwt: jwt)
-            completion(result)
-        }
-    }
-    
-    /// This endpoint signs a transaction.
-    /// See https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#post-accountsaddresssignsigning-address
+    /// Signs a transaction using the recovery service's signer.
+    ///
+    /// - Parameter address: The Stellar account address (G...) that the transaction is for
+    /// - Parameter signingAddress: The address of the signer on the recovery service that should sign
+    /// - Parameter transaction: The transaction envelope XDR (base64 encoded) to sign
+    /// - Parameter jwt: JWT token obtained from SEP-10 authentication
+    /// - Returns: Sep30SignatureResponseEnum with the signature and network passphrase, or an error
+    ///
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#post-accountsaddresssignsigning-address
     public func signTransaction(address: String, signingAddress: String, transaction:String, jwt:String) async -> Sep30SignatureResponseEnum {
         
         let requestData = try! JSONSerialization.data(withJSONObject: ["transaction" : transaction])
@@ -182,17 +162,12 @@ public class RecoveryService: NSObject {
         }
     }
     
-    /// This endpoint returns the registered account’s details.
-    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#get-accountsaddress
-    @available(*, renamed: "accountDetails(address:jwt:)")
-    public func accountDetails(address: String, jwt:String, completion:@escaping Sep30AccountResponseClosure) {
-        Task {
-            let result = await accountDetails(address: address, jwt: jwt)
-            completion(result)
-        }
-    }
-    
-    /// This endpoint returns the registered account’s details.
+    /// Returns the registered account's details.
+    ///
+    /// - Parameter address: The Stellar account address (G...) to retrieve
+    /// - Parameter jwt: JWT token obtained from SEP-10 authentication
+    /// - Returns: Sep30AccountResponseEnum with account details including identities and signers, or an error
+    ///
     /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#get-accountsaddress
     public func accountDetails(address: String, jwt:String) async -> Sep30AccountResponseEnum {
         
@@ -210,17 +185,12 @@ public class RecoveryService: NSObject {
         }
     }
     
-    /// This endpoint will delete the record for an account. This should be irrecoverable.
-    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#delete-accountsaddress
-    @available(*, renamed: "deleteAccount(address:jwt:)")
-    public func deleteAccount(address: String, jwt:String, completion:@escaping Sep30AccountResponseClosure) {
-        Task {
-            let result = await deleteAccount(address: address, jwt: jwt)
-            completion(result)
-        }
-    }
-    
-    /// This endpoint will delete the record for an account. This should be irrecoverable.
+    /// Deletes the record for an account. This should be irrecoverable.
+    ///
+    /// - Parameter address: The Stellar account address (G...) to delete
+    /// - Parameter jwt: JWT token obtained from SEP-10 authentication
+    /// - Returns: Sep30AccountResponseEnum with the deleted account details, or an error
+    ///
     /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#delete-accountsaddress
     public func deleteAccount(address: String, jwt:String) async -> Sep30AccountResponseEnum {
         
@@ -239,17 +209,12 @@ public class RecoveryService: NSObject {
     }
     
     
-    /// This endpoint will return a list of accounts that the JWT allows access to.
-    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#get-accounts
-    @available(*, renamed: "accounts(jwt:after:)")
-    public func accounts(jwt:String, after:String? = nil, completion:@escaping Sep30AccountsResponseClosure) {
-        Task {
-            let result = await accounts(jwt: jwt, after: after)
-            completion(result)
-        }
-    }
-    
-    /// This endpoint will return a list of accounts that the JWT allows access to.
+    /// Returns a list of accounts that the JWT allows access to.
+    ///
+    /// - Parameter jwt: JWT token obtained from SEP-10 authentication
+    /// - Parameter after: Optional account address for pagination (returns accounts after this address)
+    /// - Returns: Sep30AccountsResponseEnum with list of accessible accounts, or an error
+    ///
     /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md#get-accounts
     public func accounts(jwt:String, after:String? = nil) async -> Sep30AccountsResponseEnum {
         

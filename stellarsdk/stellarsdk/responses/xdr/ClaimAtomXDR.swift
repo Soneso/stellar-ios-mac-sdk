@@ -14,7 +14,7 @@ public enum ClaimAtomType: Int32 {
     case liquidityPool = 2
 }
 
-public enum ClaimAtomXDR: XDRCodable {
+public enum ClaimAtomXDR: XDRCodable, Sendable {
     case v0 (ClaimOfferAtomV0XDR)
     case orderBook (ClaimOfferAtomXDR)
     case liquidityPool (ClaimLiquidityAtomXDR)
@@ -64,7 +64,7 @@ public enum ClaimAtomXDR: XDRCodable {
     }
 }
 
-public struct ClaimOfferAtomXDR: XDRCodable {
+public struct ClaimOfferAtomXDR: XDRCodable, Sendable {
     public let sellerId: PublicKey
     public let offerId:Int64
     public let assetSold: AssetXDR
@@ -107,7 +107,7 @@ public struct ClaimOfferAtomXDR: XDRCodable {
 // used for backwards compatibility starting from the protocol 17/18 boundary.
 // If an "old-style" ClaimOfferAtom is parsed with this XDR definition, it will
 // be parsed as a "new-style" ClaimAtom containing a ClaimOfferAtomV0.
-public struct ClaimOfferAtomV0XDR: XDRCodable {
+public struct ClaimOfferAtomV0XDR: XDRCodable, Sendable {
     public let sellerEd25519: [UInt8]
     public let offerId:Int64
     public let assetSold: AssetXDR
@@ -117,10 +117,10 @@ public struct ClaimOfferAtomV0XDR: XDRCodable {
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        
+
         let wrappedData = try container.decode(WrappedData32.self)
-        self.sellerEd25519 = wrappedData.wrapped.withUnsafeBytes {
-            [UInt8](UnsafeBufferPointer(start: $0, count: wrappedData.wrapped.count))
+        self.sellerEd25519 = wrappedData.wrapped.withUnsafeBytes { (rawBufferPointer: UnsafeRawBufferPointer) in
+            [UInt8](UnsafeBufferPointer(start: rawBufferPointer.baseAddress!.assumingMemoryBound(to: UInt8.self), count: wrappedData.wrapped.count))
         }
         offerId = try container.decode(Int64.self)
         assetSold = try container.decode(AssetXDR.self)
@@ -142,7 +142,7 @@ public struct ClaimOfferAtomV0XDR: XDRCodable {
     }
 }
 
-public struct ClaimLiquidityAtomXDR: XDRCodable {
+public struct ClaimLiquidityAtomXDR: XDRCodable, Sendable {
     public let liquidityPoolID: WrappedData32
     public let assetSold: AssetXDR
     public let amountSold:Int64

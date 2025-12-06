@@ -83,7 +83,7 @@ public class AtomicSwapContract {
             try SCValXDR.i128(stringValue: min_a_for_b)
         ]
         
-        let result = try await client.invokeMethod(
+        _ = try await client.invokeMethod(
             name: "swap",
             args: args,
             force: force,

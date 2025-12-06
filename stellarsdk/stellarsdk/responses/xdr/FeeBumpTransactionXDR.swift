@@ -10,7 +10,7 @@ import Foundation
 
 
 
-public struct FeeBumpTransactionXDR: XDRCodable {
+public struct FeeBumpTransactionXDR: XDRCodable, Sendable {
     public let sourceAccount: MuxedAccountXDR
     public let fee: UInt64
     public let innerTx:InnerTransactionXDR
@@ -18,7 +18,7 @@ public struct FeeBumpTransactionXDR: XDRCodable {
     
     private var signatures = [DecoratedSignatureXDR]()
     
-    public enum InnerTransactionXDR: XDRCodable {
+    public enum InnerTransactionXDR: XDRCodable, Sendable {
         case v1 (TransactionV1EnvelopeXDR)
         
         public init(from decoder: Decoder) throws {
@@ -93,7 +93,7 @@ public struct FeeBumpTransactionXDR: XDRCodable {
     }
     
     public func hash(network:Network) throws -> Data {
-        return try signatureBase(network: network).sha256()
+        return try signatureBase(network: network).sha256Hash
     }
     
     public func toEnvelopeXDR() throws -> TransactionEnvelopeXDR {

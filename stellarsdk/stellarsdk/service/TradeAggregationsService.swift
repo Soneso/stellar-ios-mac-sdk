@@ -36,11 +36,11 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - TradesService for individual trade records
-public class TradeAggregationsService: NSObject {
+public class TradeAggregationsService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
     }
     
@@ -49,15 +49,23 @@ public class TradeAggregationsService: NSObject {
     }
     
     /// Retrieves aggregated trade statistics for an asset pair over a time interval.
-    @available(*, renamed: "getTradeAggregations(startTime:endTime:resolution:baseAssetType:baseAssetCode:baseAssetIssuer:counterAssetType:counterAssetCode:counterAssetIssuer:order:limit:)")
-    open func getTradeAggregations(startTime:Int64? = nil, endTime:Int64? = nil, resolution:Int64? = nil, baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeAggregationResponse>.ResponseClosure) {
-        Task {
-            let result = await getTradeAggregations(startTime: startTime, endTime: endTime, resolution: resolution, baseAssetType: baseAssetType, baseAssetCode: baseAssetCode, baseAssetIssuer: baseAssetIssuer, counterAssetType: counterAssetType, counterAssetCode: counterAssetCode, counterAssetIssuer: counterAssetIssuer, order: order, limit: limit)
-            response(result)
-        }
-    }
-
-    /// Retrieves aggregated trade statistics for an asset pair over a time interval.
+    ///
+    /// Returns OHLCV (Open, High, Low, Close, Volume) candlestick data for the specified trading pair.
+    ///
+    /// - Parameter startTime: Lower time boundary for the aggregations, in milliseconds since Unix epoch
+    /// - Parameter endTime: Upper time boundary for the aggregations, in milliseconds since Unix epoch
+    /// - Parameter resolution: The segment duration in milliseconds. Supported values: 1 minute (60000), 5 minutes (300000), 15 minutes (900000), 1 hour (3600000), 1 day (86400000), 1 week (604800000)
+    /// - Parameter baseAssetType: Type of the base asset: "native", "credit_alphanum4", or "credit_alphanum12"
+    /// - Parameter baseAssetCode: Asset code of the base asset (required if not native)
+    /// - Parameter baseAssetIssuer: Account ID of the base asset issuer (required if not native)
+    /// - Parameter counterAssetType: Type of the counter asset: "native", "credit_alphanum4", or "credit_alphanum12"
+    /// - Parameter counterAssetCode: Asset code of the counter asset (required if not native)
+    /// - Parameter counterAssetIssuer: Account ID of the counter asset issuer (required if not native)
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
+    /// - Returns: PageResponse containing trade aggregation records or error
+    ///
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getTradeAggregations(startTime:Int64? = nil, endTime:Int64? = nil, resolution:Int64? = nil, baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeAggregationResponse>.ResponseEnum {
         
         var requestPath = "/trade_aggregations"
@@ -83,15 +91,11 @@ public class TradeAggregationsService: NSObject {
     }
     
     /// Retrieves trade aggregations from a specific Horizon URL.
-    @available(*, renamed: "getTradeAggregationsFromUrl(url:)")
-    open func getTradeAggregationsFromUrl(url:String, response:@escaping PageResponse<TradeAggregationResponse>.ResponseClosure) {
-        Task {
-            let result = await getTradeAggregationsFromUrl(url: url)
-            response(result)
-        }
-    }
-
-    /// Retrieves trade aggregations from a specific Horizon URL.
+    ///
+    /// Useful for pagination with "next" or "prev" links from a PageResponse.
+    ///
+    /// - Parameter url: The complete URL to fetch trade aggregations from
+    /// - Returns: PageResponse containing trade aggregation records or error
     open func getTradeAggregationsFromUrl(url:String) async -> PageResponse<TradeAggregationResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {

@@ -17,16 +17,16 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - TradeResponse for complete trade details
 /// - LinkResponse for individual link structure
-public class TradeLinksResponse: NSObject, Decodable {
+public struct TradeLinksResponse: Decodable, Sendable {
 
     /// Link to the account that provided the base asset in the trade.
-    public var base:LinkResponse
+    public let base:LinkResponse
 
     /// Link to the account that provided the counter asset in the trade.
-    public var counter:LinkResponse
+    public let counter:LinkResponse
 
     /// Link to the operation (Manage Buy Offer, Manage Sell Offer, or Path Payment) that executed this trade.
-    public var operation:LinkResponse
+    public let operation:LinkResponse
     
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
@@ -40,7 +40,7 @@ public class TradeLinksResponse: NSObject, Decodable {
      
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         base = try values.decode(LinkResponse.self, forKey: .base)
         counter = try values.decode(LinkResponse.self, forKey: .counter)

@@ -11,13 +11,13 @@ import Foundation
 /// Represents a reserve asset in a liquidity pool.
 /// Each liquidity pool maintains reserves of two assets that are used for trading.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ReserveResponse: NSObject, Decodable {
+public struct ReserveResponse: Decodable, Sendable {
 
     /// The amount of the asset held in reserve.
-    public var amount:String
+    public let amount:String
 
     /// The asset held in this reserve.
-    public var asset:Asset
+    public let asset:Asset
    
     
     // Properties to encode and decode
@@ -31,7 +31,7 @@ public class ReserveResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         amount = try values.decode(String.self, forKey: .amount)

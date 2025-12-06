@@ -8,27 +8,27 @@
 
 import Foundation
 
-public struct TransactionMetaV4XDR: XDRCodable {
+public struct TransactionMetaV4XDR: XDRCodable, Sendable {
 
     public var ext:ExtensionPoint
     
     // tx level changes before operations are applied if any
-    public var txChangesBefore:LedgerEntryChangesXDR
+    public let txChangesBefore: LedgerEntryChangesXDR
     
     // meta for each operation
     public var operations:[OperationMetaV2XDR]
     
     //  tx level changes after operations are applied if any
-    public var txChangesAfter:LedgerEntryChangesXDR
+    public let txChangesAfter: LedgerEntryChangesXDR
     
     // Soroban-specific meta (only for Soroban transactions).
-    public var sorobanMeta:SorobanTransactionMetaV2XDR?
+    public let sorobanMeta: SorobanTransactionMetaV2XDR?
     
     // Used for transaction-level events (like fee payment)
     public var events:[TransactionEventXDR]
     
     // Used for all diagnostic information
-    public var diagnosticEvents:[DiagnosticEventXDR]
+    public let diagnosticEvents: [DiagnosticEventXDR]
     
     internal init(ext: ExtensionPoint, txChangesBefore: LedgerEntryChangesXDR, operations: [OperationMetaV2XDR], txChangesAfter: LedgerEntryChangesXDR, sorobanMeta: SorobanTransactionMetaV2XDR? = nil, events:[TransactionEventXDR], diagnosticEvents:[DiagnosticEventXDR]) {
         self.ext = ext
@@ -70,7 +70,7 @@ public struct TransactionMetaV4XDR: XDRCodable {
     }
 }
 
-public struct SorobanTransactionMetaV2XDR: XDRCodable {
+public struct SorobanTransactionMetaV2XDR: XDRCodable, Sendable {
     public var ext: SorobanTransactionMetaExt
     public var returnValue: SCValXDR?
 

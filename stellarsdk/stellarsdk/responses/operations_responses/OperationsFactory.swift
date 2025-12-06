@@ -8,50 +8,73 @@
 
 import Foundation
 
-///  This class creates the different types of operation response classes depending on the operation type value from json.
-class OperationsFactory: NSObject {
+/// Factory class for creating operation response instances from Horizon API JSON data.
+///
+/// This factory parses the operation type from the JSON response and instantiates the appropriate operation subclass.
+/// Operations represent the individual actions that can be performed within a transaction.
+///
+/// This class is thread-safe and can be used from multiple threads concurrently.
+///
+/// See [Stellar developer docs](https://developers.stellar.org)
+final class OperationsFactory: Sendable {
     
-    /// The json decoder used to parse the received json response from the Horizon API.
-    let jsonDecoder = JSONDecoder()
-    
-    override init() {
-        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
-    }
-    
-    /**
-        Returns an AllOperationsResponse object conatining all operation responses parsed from the json data.
-     
-        - Parameter data: The json data received from the Horizon API. See
-     */
+    /// Parses a paginated collection of operations from Horizon API JSON data.
+    ///
+    /// - Parameter data: The JSON data received from the Horizon API containing an embedded array of operations.
+    /// - Returns: A PageResponse containing an array of OperationResponse objects and pagination links.
+    /// - Throws: HorizonRequestError.parsingResponseFailed if the JSON cannot be parsed or contains an unknown operation type.
     func operationsFromResponseData(data: Data) throws -> PageResponse<OperationResponse> {
         var operationsList = [OperationResponse]()
         var links: PagingLinksResponse
-        
+        let jsonDecoder = JSONDecoder()
+
         do {
-            let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
-            
-            for record in json["_embedded"]!["records"] as! [[String:AnyObject]] {
+            guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] else {
+                throw HorizonRequestError.parsingResponseFailed(message: "Invalid JSON structure")
+            }
+
+            guard let embedded = json["_embedded"] as? [String:AnyObject],
+                  let records = embedded["records"] as? [[String:AnyObject]] else {
+                throw HorizonRequestError.parsingResponseFailed(message: "Missing or invalid _embedded.records")
+            }
+
+            for record in records {
                 let jsonRecord = try JSONSerialization.data(withJSONObject: record, options: .prettyPrinted)
                 let operation = try operationFromData(data: jsonRecord)
                 operationsList.append(operation)
             }
-            
-            let linksJson = try JSONSerialization.data(withJSONObject: json["_links"]!, options: .prettyPrinted)
+
+            guard let linksObject = json["_links"] else {
+                throw HorizonRequestError.parsingResponseFailed(message: "Missing _links")
+            }
+            let linksJson = try JSONSerialization.data(withJSONObject: linksObject, options: .prettyPrinted)
             links = try jsonDecoder.decode(PagingLinksResponse.self, from: linksJson)
-            
+
         } catch {
             throw HorizonRequestError.parsingResponseFailed(message: error.localizedDescription)
         }
-        
+
         return PageResponse<OperationResponse>(records: operationsList, links: links)
     }
     
+    /// Parses a single operation from JSON data.
+    ///
+    /// - Parameter data: The JSON data representing a single operation.
+    /// - Returns: An OperationResponse subclass instance based on the operation type.
+    /// - Throws: HorizonRequestError.parsingResponseFailed if the JSON cannot be parsed or contains an unknown operation type.
     func operationFromData(data: Data) throws -> OperationResponse {
-        
-        // The class to be used depends on the effect type coded in its json reresentation.
-        //print(String(data: data, encoding: .utf8)!)
-        let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
-        if let type = OperationType(rawValue: Int32(json["type_i"] as! Int)) {
+        // The class to be used depends on the operation type coded in its json representation.
+        guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String:AnyObject] else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid JSON structure")
+        }
+        guard let typeInt = json["type_i"] as? Int else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Missing or invalid type_i field")
+        }
+
+        let jsonDecoder = JSONDecoder()
+        jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+
+        if let type = OperationType(rawValue: Int32(typeInt)) {
             switch type {
             case .accountCreated:
                 return try jsonDecoder.decode(AccountCreatedOperationResponse.self, from: data)

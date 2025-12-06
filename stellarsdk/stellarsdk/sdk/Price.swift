@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents Price. Price in Stellar is represented as a fraction.
-public class Price: Decodable {
+public final class Price: Decodable, Sendable {
     
     /// Numerator.
     public final let n:Int32

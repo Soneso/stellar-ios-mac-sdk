@@ -18,7 +18,7 @@ public enum ExtendFootprintTTLResultCode: Int32 {
     case insufficientRefundableFee = -3
 }
 
-public enum ExtendFootprintTTLResultXDR: XDRCodable {
+public enum ExtendFootprintTTLResultXDR: XDRCodable, Sendable {
     case success
     case malformed
     case resourceLimitExceeded

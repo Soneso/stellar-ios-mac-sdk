@@ -25,5 +25,5 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
-public class RateLimitExceededErrorResponse: ErrorResponse {}
+public class RateLimitExceededErrorResponse: ErrorResponse, @unchecked Sendable {}
 

@@ -28,7 +28,7 @@ public enum PathPaymentResultCode: Int32 {
     case overSendMax = -12 // could not satisfy sendmax
 }
 
-public enum PathPaymentResultXDR: XDRCodable {
+public enum PathPaymentResultXDR: XDRCodable, Sendable {
     case success(Int32, [ClaimAtomXDR], SimplePaymentResultXDR)
     case noIssuer(Int32, AssetXDR)
     case empty (Int32)

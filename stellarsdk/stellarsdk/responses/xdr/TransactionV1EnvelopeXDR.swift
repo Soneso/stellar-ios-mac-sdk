@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class TransactionV1EnvelopeXDR: NSObject, XDRCodable {
+public class TransactionV1EnvelopeXDR: NSObject, XDRCodable, @unchecked Sendable {
     public let tx: TransactionXDR
     public var signatures: [DecoratedSignatureXDR]
     

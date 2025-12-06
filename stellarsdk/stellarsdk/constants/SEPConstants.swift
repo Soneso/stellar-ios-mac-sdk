@@ -13,7 +13,7 @@ import Foundation
 /// specified in various SEP standards.
 ///
 /// Reference: https://github.com/stellar/stellar-protocol/tree/master/ecosystem
-public struct SEPConstants {
+public struct SEPConstants: Sendable {
 
     // MARK: - SEP-10 Web Authentication
 

@@ -12,28 +12,28 @@ import Foundation
 /// This effect occurs when an asset issuer modifies the authorization flags for a trustline through a Set Trust Line Flags operation.
 /// Flags control authorization status, liability maintenance, and clawback capabilities.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class TrustLineFlagsUpdatedEffectResponse: EffectResponse {
+public class TrustLineFlagsUpdatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The account ID of the account holding the trustline.
-    public var trustor:String
+    public let trustor:String
 
     /// The asset type of the trustline.
-    public var assetType:String
+    public let assetType:String
 
     /// The asset code of the trustline.
-    public var assetCode:String
+    public let assetCode:String
 
     /// The issuer account ID of the asset.
-    public var assetIssuer:String
+    public let assetIssuer:String
 
     /// Indicates whether the trustline is fully authorized.
-    public var authorizedFlag:Bool?
+    public let authorizedFlag:Bool?
 
     /// Indicates whether the trustline can maintain liabilities only.
-    public var authorizedToMaintainLiabilitiesFlag:Bool?
+    public let authorizedToMaintainLiabilitiesFlag:Bool?
 
     /// Indicates whether clawback is enabled for the trustline.
-    public var clawbackEnabledFlag:Bool?
+    public let clawbackEnabledFlag:Bool?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

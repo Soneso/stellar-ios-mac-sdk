@@ -12,16 +12,16 @@ import Foundation
 /// This endpoint provides information about the health status of the Horizon server,
 /// including database connectivity and Stellar Core status.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class HealthCheckResponse: NSObject, Decodable {
+public struct HealthCheckResponse: Decodable, Sendable {
 
     /// Indicates whether Horizon can successfully connect to its database
-    public var databaseConnected: Bool
+    public let databaseConnected: Bool
 
     /// Indicates whether Horizon can successfully connect to Stellar Core
-    public var coreUp: Bool
+    public let coreUp: Bool
 
     /// Indicates whether Stellar Core is synchronized with the network
-    public var coreSynced: Bool
+    public let coreSynced: Bool
 
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {
@@ -33,7 +33,7 @@ public class HealthCheckResponse: NSObject, Decodable {
     /// Initializer from decoder
     /// - Parameter decoder: The decoder to read data from
     /// - Throws: DecodingError if the data is corrupted or invalid
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         databaseConnected = try values.decode(Bool.self, forKey: .databaseConnected)
         coreUp = try values.decode(Bool.self, forKey: .coreUp)

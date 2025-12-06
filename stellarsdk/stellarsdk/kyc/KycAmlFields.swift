@@ -50,7 +50,7 @@ public enum KYCNaturalPersonFieldKey {
 /// KYC field values for natural person customer information as defined in SEP-0009.
 /// This enum represents all standard fields that can be submitted in PUT /customer requests for individual customers.
 /// Each case contains the field value and converts it to the appropriate multipart/form-data format.
-public enum KYCNaturalPersonFieldsEnum {
+public enum KYCNaturalPersonFieldsEnum: Sendable {
     /// Family or last name
     case lastName(String)
     /// Given or first name
@@ -219,7 +219,7 @@ public enum KYCFinancialAccountFieldKey {
 /// KYC field values for financial account information as defined in SEP-0009.
 /// This enum represents banking and financial account fields that can be submitted in PUT /customer requests
 /// for receiving deposits or payments. Each case contains the field value and converts it to the appropriate format.
-public enum KYCFinancialAccountFieldsEnum {
+public enum KYCFinancialAccountFieldsEnum: Sendable {
     /// Name of the bank. May be necessary in regions that don't have a unified routing system
     case bankName(String)
     /// Type of bank account (checking or savings)
@@ -311,7 +311,7 @@ public enum KYCOrganizationFieldKey {
 /// KYC field values for organization customer information as defined in SEP-0009.
 /// This enum represents corporate/business entity fields that can be submitted in PUT /customer requests
 /// for organizational customers. Each case contains the field value and converts it to the appropriate format.
-public enum KYCOrganizationFieldsEnum {
+public enum KYCOrganizationFieldsEnum: Sendable {
     /// Full organization name as shown on incorporation papers
     case name(String)
     /// Organization VAT number
@@ -409,7 +409,7 @@ public enum KYCCardFieldKey {
 /// KYC field values for payment card information as defined in SEP-0009.
 /// This enum represents credit/debit card fields that can be submitted in PUT /customer requests
 /// for card-based payment methods. Each case contains the field value and converts it to the appropriate format.
-public enum KYCCardFieldsEnum {
+public enum KYCCardFieldsEnum: Sendable {
     /// Card number
     case number(String)
     /// Expiration month and year in YY-MM format (e.g. 29-11 for November 2029)

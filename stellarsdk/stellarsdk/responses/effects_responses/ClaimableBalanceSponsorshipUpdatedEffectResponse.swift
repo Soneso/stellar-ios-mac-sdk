@@ -13,13 +13,13 @@ import Foundation
 /// The sponsorship is transferred from one sponsor to another.
 /// Triggered by the Revoke Sponsorship operation.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ClaimableBalanceSponsorshipUpdatedEffectResponse: EffectResponse {
+public class ClaimableBalanceSponsorshipUpdatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The account ID of the new sponsor.
-    public var newSponsor:String
+    public let newSponsor:String
 
     /// The account ID of the former sponsor.
-    public var formerSponsor:String
+    public let formerSponsor:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

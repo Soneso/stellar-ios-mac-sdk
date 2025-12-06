@@ -13,19 +13,19 @@ import Foundation
 /// The account becomes responsible for paying the trustline's base reserve.
 /// Triggered by the Revoke Sponsorship operation.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class TrustlineSponsorshipRemovedEffectResponse: EffectResponse {
+public class TrustlineSponsorshipRemovedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The account ID of the former sponsor.
-    public var formerSponsor:String
+    public let formerSponsor:String
 
     /// The asset identifier for the trustline.
-    public var asset:String?
+    public let asset:String?
 
     /// The asset type for the trustline.
-    public var assetType:String?
+    public let assetType:String?
 
     /// The liquidity pool ID if the trustline is for liquidity pool shares.
-    public var liquidityPoolId:String?
+    public let liquidityPoolId:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

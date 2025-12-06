@@ -11,19 +11,19 @@ import Foundation
 /// Represents a claim claimable balance operation response.
 /// This operation claims a claimable balance entry, transferring the asset amount to the claimant's account.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ClaimClaimableBalanceOperationResponse: OperationResponse {
+public class ClaimClaimableBalanceOperationResponse: OperationResponse, @unchecked Sendable {
 
     /// ID of the claimable balance being claimed.
-    public var balanceId:String
+    public let balanceId:String
 
     /// Account ID of the claimant claiming the balance.
-    public var claimantAccountId:String
+    public let claimantAccountId:String
 
     /// Multiplexed account address of the claimant (if used).
-    public var claimantMuxed:String?
+    public let claimantMuxed:String?
 
     /// ID of the multiplexed account (if used).
-    public var claimantMuxedId:String?
+    public let claimantMuxedId:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

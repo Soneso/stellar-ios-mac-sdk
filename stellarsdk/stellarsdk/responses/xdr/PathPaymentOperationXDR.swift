@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct PathPaymentOperationXDR: XDRCodable {
+public struct PathPaymentOperationXDR: XDRCodable, Sendable {
     public let sendAsset: AssetXDR
     public let sendMax: Int64
     public let destination: MuxedAccountXDR

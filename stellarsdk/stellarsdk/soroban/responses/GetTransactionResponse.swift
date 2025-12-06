@@ -60,7 +60,7 @@ import Foundation
 /// See also:
 /// - [SorobanServer.getTransaction] for polling transaction status
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class GetTransactionResponse: NSObject, Decodable {
+public struct GetTransactionResponse: Decodable, Sendable {
 
     /// Transaction was successfully included in a ledger and executed.
     public static let STATUS_SUCCESS = "SUCCESS"
@@ -68,49 +68,49 @@ public class GetTransactionResponse: NSObject, Decodable {
     public static let STATUS_NOT_FOUND = "NOT_FOUND"
     /// Transaction failed during execution.
     public static let STATUS_FAILED = "FAILED"
-    
+
     /// The current status of the transaction by hash, one of: SUCCESS, NOT_FOUND, FAILED
-    public var status:String
-    
+    public let status:String
+
     /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
-    public var latestLedger:Int
-    
+    public let latestLedger:Int
+
     /// The unix timestamp of the close time of the oldest ledger ingested by Soroban RPC at the time it handled the request.
-    public var latestLedgerCloseTime:String
-    
+    public let latestLedgerCloseTime:String
+
     /// The sequence number of the oldest ledger ingested by Soroban RPC at the time it handled the request.
-    public var oldestLedger:Int
-    
+    public let oldestLedger:Int
+
     /// (optional) The sequence number of the ledger which included the transaction. This field is only present if status is SUCCESS or FAILED
-    public var ledger:Int?
-    
+    public let ledger:Int?
+
     /// (optional) The unix timestamp of when the transaction was included in the ledger. This field is only present if status is SUCCESS or FAILED.
-    public var createdAt:String?
-    
+    public let createdAt:String?
+
     /// (optional) The index of the transaction among all transactions included in the ledger. This field is only present if status is SUCCESS or FAILED.
-    public var applicationOrder:Int?
-    
+    public let applicationOrder:Int?
+
     /// (optional) Indicates whether the transaction was fee bumped. This field is only present if status is SUCCESS or FAILED.
-    public var feeBump:Bool?
-    
+    public let feeBump:Bool?
+
     /// (optional) A base64 encoded string of the raw TransactionEnvelope XDR struct for this transaction.
-    public var envelopeXdr:String?
-    
+    public let envelopeXdr:String?
+
     /// (optional) A base64 encoded string of the raw TransactionResult XDR struct for this transaction. This field is only present if status is SUCCESS or FAILED.
-    public var resultXdr:String?
-    
+    public let resultXdr:String?
+
     /// (optional) A base64 encoded string of the raw TransactionMeta XDR struct for this transaction.
-    public var resultMetaXdr:String?
-    
+    public let resultMetaXdr:String?
+
     /// hex-encoded transaction hash string. Only available for protocol version >= 22
-    public var txHash:String?
-    
+    public let txHash:String?
+
     /// (optional) Will be present on failed transactions.
-    public var error:TransactionStatusError?
-    
+    public let error:TransactionStatusError?
+
     /// events for the transaction. Only available for protocol version >= 23
-    public var events:TransactionEvents?
-    
+    public let events:TransactionEvents?
+
     private enum CodingKeys: String, CodingKey {
         case status
         case latestLedger
@@ -127,8 +127,8 @@ public class GetTransactionResponse: NSObject, Decodable {
         case error
         case events
     }
-    
-    public required init(from decoder: Decoder) throws {
+
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         status = try values.decode(String.self, forKey: .status)
         latestLedger = try values.decode(Int.self, forKey: .latestLedger)

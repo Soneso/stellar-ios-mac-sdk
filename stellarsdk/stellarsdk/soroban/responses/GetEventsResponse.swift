@@ -54,28 +54,28 @@ import Foundation
 /// - [SorobanServer.getEvents] for querying events
 /// - [EventInfo] for individual event details
 /// - [EventFilter] for filtering events
-public class GetEventsResponse: NSObject, Decodable {
-    
+public struct GetEventsResponse: Decodable, Sendable {
+
     /// Contract events returned from Soroban RPC matching the query filters.
-    public var events:[EventInfo]
-    
+    public let events:[EventInfo]
+
     /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
-    public var latestLedger:Int
-    
+    public let latestLedger:Int
+
     /// For paging, only avaliable for protocol version >= 22
-    public var cursor:String?
-    
+    public let cursor:String?
+
     /// The unix timestamp of the close time of the latest ledger known to Soroban-RPC at the time it handled the request.
     /// Only available for protocol version >= 23
-    public var latestLedgerCloseTime:String?
-    
+    public let latestLedgerCloseTime:String?
+
     /// The oldest ledger ingested by Soroban-RPC at the time it handled the request.
     /// Only available for protocol version >= 23
-    public var oldestLedger:Int?
-    
+    public let oldestLedger:Int?
+
     /// The unix timestamp of the close time of the oldest ledger ingested by Soroban-RPC at the time it handled the request.
     /// Only available for protocol version >= 23
-    public var oldestLedgerCloseTime:String?
+    public let oldestLedgerCloseTime:String?
 
     private enum CodingKeys: String, CodingKey {
         case events
@@ -86,7 +86,7 @@ public class GetEventsResponse: NSObject, Decodable {
         case oldestLedgerCloseTime
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         if let evs =  try? values.decode([EventInfo].self, forKey: .events) {
             events = evs

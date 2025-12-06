@@ -13,7 +13,7 @@ import Foundation
 /// used throughout the Stellar network.
 ///
 /// Reference: [Stellar developer docs](https://developers.stellar.org)
-public struct StellarProtocolConstants {
+public struct StellarProtocolConstants: Sendable {
 
     // MARK: - Ed25519 Cryptographic Sizes
 

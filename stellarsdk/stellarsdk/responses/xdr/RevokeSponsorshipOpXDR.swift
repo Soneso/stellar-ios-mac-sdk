@@ -13,7 +13,7 @@ public enum RevokeSponsorshipType: Int32 {
     case revokeSponsorshipSignerEntry = 1
 }
 
-public enum RevokeSponsorshipOpXDR: XDRCodable {
+public enum RevokeSponsorshipOpXDR: XDRCodable, Sendable {
     case revokeSponsorshipLedgerEntry(LedgerKeyXDR)
     case revokeSponsorshipSignerEntry(RevokeSponsorshipSignerXDR)
     
@@ -56,7 +56,7 @@ public enum RevokeSponsorshipOpXDR: XDRCodable {
     }
 }
 
-public struct RevokeSponsorshipSignerXDR: XDRCodable {
+public struct RevokeSponsorshipSignerXDR: XDRCodable, Sendable {
     let accountID: PublicKey
     let signerKey: SignerKeyXDR
     

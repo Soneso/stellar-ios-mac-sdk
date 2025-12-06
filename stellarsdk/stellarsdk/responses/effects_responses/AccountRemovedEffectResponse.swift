@@ -12,4 +12,4 @@ import Foundation
 /// This effect occurs when an account is merged into another account through an Account Merge operation.
 /// The account's remaining balance is transferred to the destination account, and the source account is removed from the ledger.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class AccountRemovedEffectResponse: EffectResponse {}
+public class AccountRemovedEffectResponse: EffectResponse, @unchecked Sendable {}

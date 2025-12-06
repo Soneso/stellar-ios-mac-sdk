@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct LedgerEntryChangesXDR: XDRCodable {
+public struct LedgerEntryChangesXDR: XDRCodable, Sendable {
     public let ledgerEntryChanges: [LedgerEntryChangeXDR]
     
     public init(LedgerEntryChanges: [LedgerEntryChangeXDR]) {

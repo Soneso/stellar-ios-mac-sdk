@@ -11,10 +11,10 @@ import Foundation
 /// Represents a path payment strict send operation response.
 /// This operation sends a path payment where the source amount is specified, and the destination amount varies within a minimum limit.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class PathPaymentStrictSendOperationResponse:PathPaymentOperationResponse {
+public class PathPaymentStrictSendOperationResponse:PathPaymentOperationResponse, @unchecked Sendable {
 
     /// Minimum amount expected to be received by the destination.
-    public var destinationMin:String?
+    public let destinationMin:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

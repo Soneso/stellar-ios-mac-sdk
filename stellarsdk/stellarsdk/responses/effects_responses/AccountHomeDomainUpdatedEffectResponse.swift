@@ -12,10 +12,10 @@ import Foundation
 /// This effect occurs when an account's home domain is set or changed through a Set Options operation.
 /// The home domain is used to link the account to a domain name for federation and additional account information.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class AccountHomeDomainUpdatedEffectResponse: EffectResponse {
+public class AccountHomeDomainUpdatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The updated home domain of the account.
-    public var homeDomain:String
+    public let homeDomain:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

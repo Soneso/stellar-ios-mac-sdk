@@ -24,7 +24,7 @@ import ed25519C
 ///
 /// Note: For most use cases, use the Seed class which provides the 32-byte seed
 /// and can be encoded as a human-readable secret seed (S-address).
-public final class PrivateKey {
+public final class PrivateKey: Sendable {
     private let buffer: [UInt8]
     
     /// Creates a new Stellar private key from the given bytes

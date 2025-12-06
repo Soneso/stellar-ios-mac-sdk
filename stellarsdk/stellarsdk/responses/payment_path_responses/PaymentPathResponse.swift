@@ -10,34 +10,34 @@ import Foundation
 
 ///  Represents a Payment Path response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class PaymentPathResponse: NSObject, Decodable {
+public struct PaymentPathResponse: Decodable, Sendable {
     
     /// An array of assets that represents the intermediary assets this path hops through
-    public var path:[OfferAssetResponse]
+    public let path:[OfferAssetResponse]
     
     /// An estimated cost for making a payment of destination_amount on this path. Suitable for use in a path payments sendMax field
-    public var sourceAmount:String
+    public let sourceAmount:String
     
     /// The destination amount specified in the search that found this path
-    public var destinationAmount:String
+    public let destinationAmount:String
     
     /// The type for the destination asset specified in the search that found this path
-    public var destinationAssetType:String
+    public let destinationAssetType:String
     
     /// The code for the destination asset specified in the search that found this path
-    public var destinationAssetCode:String?
+    public let destinationAssetCode:String?
     
     /// The issuer for the destination asset specified in the search that found this path
-    public var destinationAssetIssuer:String?
+    public let destinationAssetIssuer:String?
     
     /// The type for the source asset specified in the search that found this path
-    public var sourceAssetType:String
+    public let sourceAssetType:String
     
     /// The code for the source asset specified in the search that found this path
-    public var sourceAssetCode:String?
+    public let sourceAssetCode:String?
     
     /// The issuer for the source asset specified in the search that found this path
-    public var sourceAssetIssuer:String?
+    public let sourceAssetIssuer:String?
     
     private enum CodingKeys: String, CodingKey {
         
@@ -57,7 +57,7 @@ public class PaymentPathResponse: NSObject, Decodable {
      
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         path = try values.decode(Array.self, forKey: .path)

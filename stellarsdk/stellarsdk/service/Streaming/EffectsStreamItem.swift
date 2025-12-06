@@ -9,9 +9,9 @@
 import Foundation
 
 /// Streams effect data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class EffectsStreamItem: NSObject {
-    private var streamingHelper: StreamingHelper
-    private var requestUrl: String
+public class EffectsStreamItem: @unchecked Sendable {
+    private let streamingHelper: StreamingHelper
+    private let requestUrl: String
     let effectsFactory = EffectsFactory()
 
     /// Creates a new effects stream for the specified Horizon API endpoint.
@@ -28,8 +28,10 @@ public class EffectsStreamItem: NSObject {
                 response(.open)
             case .response(let id, let data):
                 do {
-                    let jsonData = data.data(using: .utf8)!
-                    //print(String(data: jsonData, encoding: .utf8)!)
+                    guard let jsonData = data.data(using: .utf8) else {
+                        response(.error(error: HorizonRequestError.parsingResponseFailed(message: "Failed to convert response data to UTF8")))
+                        return
+                    }
                     guard let effects = try self?.effectsFactory.effectFromData(data: jsonData) else { return }
                     response(.response(id: id, data: effects))
                 } catch {

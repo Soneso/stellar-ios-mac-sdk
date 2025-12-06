@@ -12,7 +12,7 @@ public enum LiquidityPoolType: Int32 {
     case constantProduct = 0
 }
 
-public struct LiquidityPoolEntryXDR: XDRCodable {
+public struct LiquidityPoolEntryXDR: XDRCodable, Sendable {
     public let liquidityPoolID:WrappedData32
     public let body:LiquidityPoolBodyXDR
     
@@ -33,7 +33,7 @@ public struct LiquidityPoolEntryXDR: XDRCodable {
     }
 }
 
-public enum LiquidityPoolBodyXDR: XDRCodable {
+public enum LiquidityPoolBodyXDR: XDRCodable, Sendable {
     case constantProduct (ConstantProductXDR)
     
     public init(from decoder: Decoder) throws {
@@ -68,7 +68,7 @@ public enum LiquidityPoolBodyXDR: XDRCodable {
     }
 }
 
-public struct ConstantProductXDR: XDRCodable {
+public struct ConstantProductXDR: XDRCodable, Sendable {
     public let params:LiquidityPoolConstantProductParametersXDR
     public let reserveA:Int64
     public let reserveB:Int64
@@ -94,7 +94,7 @@ public struct ConstantProductXDR: XDRCodable {
     }
 }
     
-public struct LiquidityPoolConstantProductParametersXDR: XDRCodable {
+public struct LiquidityPoolConstantProductParametersXDR: XDRCodable, Sendable {
     public let assetA: AssetXDR
     public let assetB: AssetXDR
     public let fee: Int32

@@ -17,16 +17,16 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - EffectResponse for complete effect details
 /// - LinkResponse for individual link structure
-public class EffectLinksResponse: NSObject, Decodable {
+public struct EffectLinksResponse: Decodable, Sendable {
 
     /// Link to the operation that produced this effect.
-    public var operation:LinkResponse
+    public let operation:LinkResponse
 
     /// Templated link to effects that occurred chronologically after this one.
-    public var precedes:LinkResponse
+    public let precedes:LinkResponse
 
     /// Templated link to effects that occurred chronologically before this one.
-    public var succeeds:LinkResponse
+    public let succeeds:LinkResponse
     
     
     // Properties to encode and decode.
@@ -41,7 +41,7 @@ public class EffectLinksResponse: NSObject, Decodable {
      
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         operation = try values.decode(LinkResponse.self, forKey: .operation)
         precedes = try values.decode(LinkResponse.self, forKey: .precedes)

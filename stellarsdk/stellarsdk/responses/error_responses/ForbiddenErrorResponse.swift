@@ -21,4 +21,4 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - ErrorResponse for common error properties
-public class ForbiddenErrorResponse: ErrorResponse {}
+public class ForbiddenErrorResponse: ErrorResponse, @unchecked Sendable {}

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum ChangeTrustAssetXDR: XDRCodable {
+public enum ChangeTrustAssetXDR: XDRCodable, Sendable {
     case native
     case alphanum4 (Alpha4XDR)
     case alphanum12 (Alpha12XDR)
@@ -109,7 +109,7 @@ public enum ChangeTrustAssetXDR: XDRCodable {
     }
 }
 
-public enum LiquidityPoolParametersXDR: XDRCodable {
+public enum LiquidityPoolParametersXDR: XDRCodable, Sendable {
     case constantProduct (LiquidityPoolConstantProductParametersXDR)
     
     public init(params:LiquidityPoolConstantProductParametersXDR) {

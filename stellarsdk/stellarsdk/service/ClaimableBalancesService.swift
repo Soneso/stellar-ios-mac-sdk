@@ -16,9 +16,6 @@ public enum ClaimableBalanceDetailsResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
-/// Closure type for claimable balance details response callbacks.
-public typealias ClaimableBalanceDetailsResponseClosure = (_ response:ClaimableBalanceDetailsResponseEnum) -> (Void)
-
 /// Service for querying claimable balances from the Stellar Horizon API.
 ///
 /// Claimable balances allow creating asset transfers that recipients can claim later when
@@ -48,11 +45,11 @@ public typealias ClaimableBalanceDetailsResponseClosure = (_ response:ClaimableB
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - CreateClaimableBalanceOperation for creating claimable balances
-public class ClaimableBalancesService: NSObject {
+public class ClaimableBalancesService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
@@ -62,15 +59,6 @@ public class ClaimableBalancesService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
-    /// Retrieves detailed information about a specific claimable balance (callback-based, deprecated).
-    @available(*, renamed: "getClaimableBalance(balanceId:)")
-    open func getClaimableBalance(balanceId:String, response:@escaping ClaimableBalanceDetailsResponseClosure) {
-        Task {
-            let result = await getClaimableBalance(balanceId: balanceId)
-            response(result)
-        }
-    }
-
     /// Retrieves detailed information about a specific claimable balance.
     /// - Parameter balanceId: The claimable balance ID (hex or B-encoded format)
     /// - Returns: ClaimableBalanceDetailsResponseEnum with balance details or error
@@ -96,15 +84,6 @@ public class ClaimableBalancesService: NSObject {
         }
     }
     
-    /// Retrieves claimable balances filtered by asset (callback-based, deprecated).
-    @available(*, renamed: "getClaimableBalances(asset:cursor:order:limit:)")
-    open func getClaimableBalances(asset:Asset, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<ClaimableBalanceResponse>.ResponseClosure) {
-        Task {
-            let result = await getClaimableBalances(asset: asset, cursor: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-
     /// Retrieves claimable balances filtered by asset with pagination support.
     /// - Parameters:
     ///   - asset: The asset to filter claimable balances by
@@ -129,15 +108,6 @@ public class ClaimableBalancesService: NSObject {
         return await getClaimableBalancesFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
-    /// Retrieves claimable balances for a specific claimant (callback-based, deprecated).
-    @available(*, renamed: "getClaimableBalances(claimantAccountId:cursor:order:limit:)")
-    open func getClaimableBalances(claimantAccountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<ClaimableBalanceResponse>.ResponseClosure) {
-        Task {
-            let result = await getClaimableBalances(claimantAccountId: claimantAccountId, cursor: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-
     /// Retrieves claimable balances that can be claimed by a specific account.
     /// - Parameters:
     ///   - claimantAccountId: The account ID that can claim the balances
@@ -162,15 +132,6 @@ public class ClaimableBalancesService: NSObject {
         return await getClaimableBalancesFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
-    /// Retrieves claimable balances sponsored by a specific account (callback-based, deprecated).
-    @available(*, renamed: "getClaimableBalances(sponsorAccountId:cursor:order:limit:)")
-    open func getClaimableBalances(sponsorAccountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<ClaimableBalanceResponse>.ResponseClosure) {
-        Task {
-            let result = await getClaimableBalances(sponsorAccountId: sponsorAccountId, cursor: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-
     /// Retrieves claimable balances sponsored by a specific account.
     /// - Parameters:
     ///   - sponsorAccountId: The account ID that sponsors the balances
@@ -195,15 +156,6 @@ public class ClaimableBalancesService: NSObject {
         return await getClaimableBalancesFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
-    /// Loads claimable balances from a URL (callback-based, deprecated).
-    @available(*, renamed: "getClaimableBalancesFromUrl(url:)")
-    open func getClaimableBalancesFromUrl(url:String, response:@escaping PageResponse<ClaimableBalanceResponse>.ResponseClosure) {
-        Task {
-            let result = await getClaimableBalancesFromUrl(url: url)
-            response(result)
-        }
-    }
-
     /// Loads claimable balances from a specific URL for pagination.
     /// - Parameter url: The complete URL to fetch balances from (typically from PageResponse links)
     /// - Returns: PageResponse containing claimable balances or error

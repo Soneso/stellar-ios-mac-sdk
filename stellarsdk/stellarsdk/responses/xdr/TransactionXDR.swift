@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct TransactionXDR: XDRCodable {
+public struct TransactionXDR: XDRCodable, Sendable {
     public let sourceAccount: MuxedAccountXDR
     public var fee: UInt32
     public let seqNum: Int64
@@ -76,7 +76,7 @@ public struct TransactionXDR: XDRCodable {
     }
     
     public func hash(network:Network) throws -> Data {
-        return try signatureBase(network: network).sha256()
+        return try signatureBase(network: network).sha256Hash
     }
     
     public func toEnvelopeXDR() throws -> TransactionEnvelopeXDR {
@@ -114,9 +114,9 @@ public enum ContractIDPreimageType: Int32 {
     case fromAsset = 1
 }
 
-public struct ContractIDPreimageFromAddressXDR: XDRCodable {
+public struct ContractIDPreimageFromAddressXDR: XDRCodable, Sendable {
     public var address: SCAddressXDR
-    public var salt: WrappedData32
+    public let salt: WrappedData32
     
     public init(address: SCAddressXDR, salt: WrappedData32) {
         self.address = address
@@ -143,7 +143,7 @@ public struct ContractIDPreimageFromAddressXDR: XDRCodable {
     }
 }
 
-public enum ContractIDPreimageXDR: XDRCodable {
+public enum ContractIDPreimageXDR: XDRCodable, Sendable {
     case fromAddress(ContractIDPreimageFromAddressXDR)
     case fromAsset(AssetXDR)
     
@@ -203,7 +203,7 @@ public enum ContractIDPreimageXDR: XDRCodable {
     }
 }
 
-public struct InvokeContractArgsXDR: XDRCodable {
+public struct InvokeContractArgsXDR: XDRCodable, Sendable {
     public let contractAddress: SCAddressXDR
     public let functionName: String
     public let args: [SCValXDR]
@@ -230,7 +230,7 @@ public struct InvokeContractArgsXDR: XDRCodable {
 }
 
 
-public struct CreateContractArgsXDR: XDRCodable {
+public struct CreateContractArgsXDR: XDRCodable, Sendable {
     public let contractIDPreimage: ContractIDPreimageXDR
     public let executable: ContractExecutableXDR
     
@@ -252,7 +252,7 @@ public struct CreateContractArgsXDR: XDRCodable {
     }
 }
 
-public struct CreateContractV2ArgsXDR: XDRCodable {
+public struct CreateContractV2ArgsXDR: XDRCodable, Sendable {
     public let contractIDPreimage: ContractIDPreimageXDR
     public let executable: ContractExecutableXDR
     public let constructorArgs: [SCValXDR]
@@ -285,7 +285,7 @@ public enum HostFunctionType: Int32 {
     case createContractV2 = 3
 }
 
-public enum HostFunctionXDR: XDRCodable {
+public enum HostFunctionXDR: XDRCodable, Sendable {
     case invokeContract(InvokeContractArgsXDR)
     case createContract(CreateContractArgsXDR)
     case createContractV2(CreateContractV2ArgsXDR)
@@ -385,7 +385,7 @@ public enum SorobanAuthorizedFunctionType: Int32 {
     case createContractV2HostFn = 2
 }
 
-public enum SorobanAuthorizedFunctionXDR: XDRCodable {
+public enum SorobanAuthorizedFunctionXDR: XDRCodable, Sendable {
     case contractFn(InvokeContractArgsXDR)
     case createContractHostFn(CreateContractArgsXDR)
     case createContractV2HostFn(CreateContractV2ArgsXDR)
@@ -462,7 +462,7 @@ public enum SorobanAuthorizedFunctionXDR: XDRCodable {
     }
 }
 
-public struct SorobanAuthorizedInvocationXDR: XDRCodable {
+public struct SorobanAuthorizedInvocationXDR: XDRCodable, Sendable {
     public var function: SorobanAuthorizedFunctionXDR
     public var subInvocations: [SorobanAuthorizedInvocationXDR]
     
@@ -484,7 +484,7 @@ public struct SorobanAuthorizedInvocationXDR: XDRCodable {
     }
 }
 
-public struct SorobanAddressCredentialsXDR: XDRCodable {
+public struct SorobanAddressCredentialsXDR: XDRCodable, Sendable {
     public var address: SCAddressXDR
     public var nonce: Int64
     public var signatureExpirationLedger: UInt32
@@ -528,7 +528,7 @@ public enum SorobanCredentialsType: Int32 {
     case address = 1
 }
 
-public enum SorobanCredentialsXDR: XDRCodable {
+public enum SorobanCredentialsXDR: XDRCodable, Sendable {
     case sourceAccount
     case address(SorobanAddressCredentialsXDR)
     
@@ -577,7 +577,7 @@ public enum SorobanCredentialsXDR: XDRCodable {
     }
 }
 
-public struct SorobanAuthorizationEntryXDR: XDRCodable {
+public struct SorobanAuthorizationEntryXDR: XDRCodable, Sendable {
     public var credentials: SorobanCredentialsXDR
     public var rootInvocation: SorobanAuthorizedInvocationXDR
     
@@ -621,7 +621,7 @@ public struct SorobanAuthorizationEntryXDR: XDRCodable {
         let preimage = HashIDPreimageXDR.sorobanAuthorization(authPreimage)
         
         let encoded = try XDREncoder.encode(preimage)
-        let payload = Data(bytes: encoded, count: encoded.count).sha256()
+        let payload = Data(bytes: encoded, count: encoded.count).sha256Hash
         let signature = signer.sign([UInt8](payload))
         let accountEd25519Signature = AccountEd25519Signature(publicKey: signer.publicKey, signature: signature)
         let sigVal = SCValXDR(accountEd25519Signature: accountEd25519Signature)
@@ -631,7 +631,7 @@ public struct SorobanAuthorizationEntryXDR: XDRCodable {
     }
 }
 
-public class AccountEd25519Signature {
+public class AccountEd25519Signature: @unchecked Sendable {
     
     public let publicKey:PublicKey
     public let signature:[UInt8]
@@ -643,7 +643,7 @@ public class AccountEd25519Signature {
 }
 
 
-public struct LedgerFootprintXDR: XDRCodable {
+public struct LedgerFootprintXDR: XDRCodable, Sendable {
     public var readOnly: [LedgerKeyXDR]
     public var readWrite: [LedgerKeyXDR]
     
@@ -670,7 +670,7 @@ public struct LedgerFootprintXDR: XDRCodable {
     }
 }
 
-public struct InvokeHostFunctionSuccessPreImageXDR: XDRCodable {
+public struct InvokeHostFunctionSuccessPreImageXDR: XDRCodable, Sendable {
     public var returnValue: SCValXDR
     public var events: [ContractEventXDR]
     
@@ -694,7 +694,7 @@ public struct InvokeHostFunctionSuccessPreImageXDR: XDRCodable {
 
 // Resource limits for a Soroban transaction.
 // The transaction will fail if it exceeds any of these limits.
-public struct SorobanResourcesXDR: XDRCodable {
+public struct SorobanResourcesXDR: XDRCodable, Sendable {
     
     // The ledger footprint of the transaction.
     public var footprint: LedgerFootprintXDR;
@@ -734,7 +734,7 @@ public struct SorobanResourcesXDR: XDRCodable {
     }
 }
 
-public struct SorobanResourcesExtV0: XDRCodable {
+public struct SorobanResourcesExtV0: XDRCodable, Sendable {
     
     // Vector of indices representing what Soroban
     // entries in the footprint are archived, based on the
@@ -755,7 +755,7 @@ public struct SorobanResourcesExtV0: XDRCodable {
     }
 }
 
-public enum SorobanResourcesExt : XDRCodable {
+public enum SorobanResourcesExt : XDRCodable, Sendable {
     case void
     case resourceExt(SorobanResourcesExtV0)
     
@@ -795,7 +795,7 @@ public enum SorobanResourcesExt : XDRCodable {
     }
 }
 
-public struct SorobanTransactionDataXDR: XDRCodable {
+public struct SorobanTransactionDataXDR: XDRCodable, Sendable {
     public var ext: SorobanResourcesExt
     public var resources: SorobanResourcesXDR
     
@@ -848,7 +848,7 @@ public struct SorobanTransactionDataXDR: XDRCodable {
     
 }
 
-public enum TransactionExtXDR : XDRCodable {
+public enum TransactionExtXDR : XDRCodable, Sendable {
     case void
     case sorobanTransactionData(SorobanTransactionDataXDR)
     

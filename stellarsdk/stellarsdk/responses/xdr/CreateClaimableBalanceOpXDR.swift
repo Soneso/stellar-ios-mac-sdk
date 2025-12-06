@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct CreateClaimableBalanceOpXDR: XDRCodable {
+public struct CreateClaimableBalanceOpXDR: XDRCodable, Sendable {
     public let asset: AssetXDR
     public let amount: Int64
     public let claimants: [ClaimantXDR]

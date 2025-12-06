@@ -8,13 +8,13 @@
 
 import Foundation
 
-public struct TransactionMetaV3XDR: XDRCodable {
+public struct TransactionMetaV3XDR: XDRCodable, Sendable {
 
     public var ext:ExtensionPoint
-    public var txChangesBefore:LedgerEntryChangesXDR
+    public let txChangesBefore: LedgerEntryChangesXDR
     public var operations:[OperationMetaXDR]
-    public var txChangesAfter:LedgerEntryChangesXDR
-    public var sorobanMeta:SorobanTransactionMetaXDR?
+    public let txChangesAfter: LedgerEntryChangesXDR
+    public let sorobanMeta: SorobanTransactionMetaXDR?
     
     internal init(ext: ExtensionPoint, txChangesBefore: LedgerEntryChangesXDR, operations: [OperationMetaXDR], txChangesAfter: LedgerEntryChangesXDR, sorobanMeta: SorobanTransactionMetaXDR? = nil) {
         self.ext = ext
@@ -49,11 +49,11 @@ public struct TransactionMetaV3XDR: XDRCodable {
     }
 }
 
-public struct SorobanTransactionMetaXDR: XDRCodable {
+public struct SorobanTransactionMetaXDR: XDRCodable, Sendable {
     public var ext: SorobanTransactionMetaExt
     public var events:[ContractEventXDR]
     public var returnValue: SCValXDR
-    public var diagnosticEvents: [DiagnosticEventXDR]
+    public let diagnosticEvents: [DiagnosticEventXDR]
 
     public init(ext: SorobanTransactionMetaExt, events: [ContractEventXDR], returnValue: SCValXDR, diagnosticEvents: [DiagnosticEventXDR]) {
         self.ext = ext
@@ -80,7 +80,7 @@ public struct SorobanTransactionMetaXDR: XDRCodable {
     }
 }
 
-public enum SorobanTransactionMetaExt: XDRCodable {
+public enum SorobanTransactionMetaExt: XDRCodable, Sendable {
     case void
     case v1 (SorobanTransactionMetaExtV1)
     
@@ -119,7 +119,7 @@ public enum SorobanTransactionMetaExt: XDRCodable {
     }
 }
 
-public struct SorobanTransactionMetaExtV1: XDRCodable {
+public struct SorobanTransactionMetaExtV1: XDRCodable, Sendable {
     public var ext:ExtensionPoint
     
     // The following are the components of the overall Soroban resource fee
@@ -138,7 +138,7 @@ public struct SorobanTransactionMetaExtV1: XDRCodable {
     // Non-refundable resources are charged based on the usage declared in
     // the transaction envelope (such as `instructions`, `readBytes` etc.) and
     // is charged regardless of the success of the transaction.
-    public var totalNonRefundableResourceFeeCharged: Int64
+    public let totalNonRefundableResourceFeeCharged: Int64
     
     // Total amount (in stroops) that has been charged for refundable
     // Soroban resource fees.
@@ -147,11 +147,11 @@ public struct SorobanTransactionMetaExtV1: XDRCodable {
     // Refundable resources are charged based on the actual resources usage.
     // Since currently refundable resources are only used for the successful
     // transactions, this will be `0` for failed transactions.
-    public var totalRefundableResourceFeeCharged: Int64
+    public let totalRefundableResourceFeeCharged: Int64
     
     // Amount (in stroops) that has been charged for rent.
     // This is a part of `totalNonRefundableResourceFeeCharged`.
-    public var rentFeeCharged: Int64
+    public let rentFeeCharged: Int64
     
     public init(ext: ExtensionPoint, totalNonRefundableResourceFeeCharged: Int64, totalRefundableResourceFeeCharged: Int64, rentFeeCharged: Int64) {
         self.ext = ext

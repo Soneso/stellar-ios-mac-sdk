@@ -10,43 +10,43 @@ import Foundation
 
 ///  Represents a offer response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class OfferResponse: NSObject, Decodable {
+public struct OfferResponse: Decodable, Sendable {
     
     /// A list of links related to this offer.
-    public var links:OfferLinksResponse
+    public let links:OfferLinksResponse
     
     /// Unique identifier for this offer.
-    public var id:String
+    public let id:String
     
     /// Paging token suitable for use as a cursor parameter.
-    public var pagingToken:String
+    public let pagingToken:String
     
     /// The seller of this offer.
-    public var seller:String
+    public let seller:String
     
     /// The Asset this offer wants to sell.
-    public var selling:OfferAssetResponse
+    public let selling:OfferAssetResponse
     
     /// The Asset this offer wants to buy.
-    public var buying:OfferAssetResponse
+    public let buying:OfferAssetResponse
     
     /// The amount of selling the account making this offer is willing to sell.
-    public var amount:String
+    public let amount:String
     
     /// An object of a number numerator and number denominator that represent the buy and sell price of the currencies on offer.
-    public var priceR:OfferPriceResponse
+    public let priceR:OfferPriceResponse
     
     /// How many units of buying it takes to get 1 unit of selling. A number representing the decimal form of priceR.
-    public var price:String
+    public let price:String
 
     /// The account ID of the sponsor who is paying the reserves for this offer. Optional, only present if the offer is sponsored.
-    public var sponsor:String?
+    public let sponsor:String?
 
     /// The sequence number of the ledger in which this offer was last modified.
-    public var lastModifiedLedger:Int
+    public let lastModifiedLedger:Int
 
     /// An ISO 8601 formatted string of when this offer was last modified.
-    public var lastModifiedTime:String?
+    public let lastModifiedTime:String?
     
     private enum CodingKeys: String, CodingKey {
         
@@ -69,7 +69,7 @@ public class OfferResponse: NSObject, Decodable {
      
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         links = try values.decode(OfferLinksResponse.self, forKey: .links)

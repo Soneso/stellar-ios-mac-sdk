@@ -27,7 +27,7 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - PreconditionsTimeBoundsResponse for time constraints
 /// - PreconditionsLedgerBoundsResponse for ledger constraints
-public class TransactionPreconditionsResponse: NSObject, Decodable {
+public struct TransactionPreconditionsResponse: Decodable, Sendable {
 
     /// Time window (Unix timestamps) during which this transaction is valid. Nil if no time constraints.
     public var timeBounds:PreconditionsTimeBoundsResponse?
@@ -56,7 +56,7 @@ public class TransactionPreconditionsResponse: NSObject, Decodable {
         case extraSigners = "extra_signers"
     }
     
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         timeBounds = try values.decodeIfPresent(PreconditionsTimeBoundsResponse.self, forKey: .timeBounds)
         ledgerBounds = try values.decodeIfPresent(PreconditionsLedgerBoundsResponse.self, forKey: .ledgerBounds)

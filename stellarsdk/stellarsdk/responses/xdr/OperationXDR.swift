@@ -8,8 +8,8 @@
 
 import Foundation
 
-public struct OperationXDR: XDRCodable {
-    public var sourceAccount: MuxedAccountXDR?
+public struct OperationXDR: XDRCodable, Sendable {
+    public let sourceAccount: MuxedAccountXDR?
     public var body: OperationBodyXDR
     
     @available(*, deprecated, message: "use init(sourceAccount: MuxedAccountXDR?, body: OperationBodyXDR) instead")

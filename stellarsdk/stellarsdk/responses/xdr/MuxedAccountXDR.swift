@@ -16,7 +16,7 @@ public struct CryptoKeyType {
     static let KEY_TYPE_MUXED_ED25519: Int32 = 0x100
 }
 
-public enum MuxedAccountXDR: XDRCodable {
+public enum MuxedAccountXDR: XDRCodable, Sendable {
     case ed25519([UInt8])
     case med25519 (MuxedAccountMed25519XDR)
     
@@ -31,8 +31,8 @@ public enum MuxedAccountXDR: XDRCodable {
             self = .med25519(mm)
         default:
             let wrappedData = try container.decode(WrappedData32.self)
-            let sourceAccountEd25519 = wrappedData.wrapped.withUnsafeBytes {
-                [UInt8](UnsafeBufferPointer(start: $0, count: wrappedData.wrapped.count))
+            let sourceAccountEd25519 = wrappedData.wrapped.withUnsafeBytes { (rawBufferPointer: UnsafeRawBufferPointer) in
+                [UInt8](UnsafeBufferPointer(start: rawBufferPointer.baseAddress!.assumingMemoryBound(to: UInt8.self), count: wrappedData.wrapped.count))
             }
             self = .ed25519(sourceAccountEd25519)
         }

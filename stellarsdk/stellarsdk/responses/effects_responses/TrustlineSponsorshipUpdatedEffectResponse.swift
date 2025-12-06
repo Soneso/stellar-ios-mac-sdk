@@ -13,22 +13,22 @@ import Foundation
 /// The sponsorship is transferred from one sponsor to another.
 /// Triggered by the Revoke Sponsorship operation.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class TrustlineSponsorshipUpdatedEffectResponse: EffectResponse {
+public class TrustlineSponsorshipUpdatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The account ID of the new sponsor.
-    public var newSponsor:String
+    public let newSponsor:String
 
     /// The account ID of the former sponsor.
-    public var formerSponsor:String
+    public let formerSponsor:String
 
     /// The asset identifier for the trustline.
-    public var asset:String?
+    public let asset:String?
 
     /// The asset type for the trustline.
-    public var assetType:String?
+    public let assetType:String?
 
     /// The liquidity pool ID if the trustline is for liquidity pool shares.
-    public var liquidityPoolId:String?
+    public let liquidityPoolId:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

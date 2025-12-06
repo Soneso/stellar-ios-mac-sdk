@@ -98,27 +98,27 @@ public enum EventSourceState {
 /// - [W3C Server-Sent Events Specification](https://html.spec.whatwg.org/multipage/server-sent-events.html)
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - [StreamingHelper] for simplified Horizon streaming integration
-open class EventSource: NSObject, URLSessionDataDelegate {
+open class EventSource: NSObject, URLSessionDataDelegate, @unchecked Sendable {
     static let DefaultsKey = "com.soneso.eventSource.lastEventId"
     
     let url: URL
     fileprivate let lastEventIDKey: String
-    fileprivate let receivedString: NSString?
+    fileprivate let receivedString: String?
     fileprivate var onOpenCallback: ((HTTPURLResponse?) -> Void)?
     fileprivate var onErrorCallback: ((NSError?) -> Void)?
-    fileprivate var onMessageCallback: ((_ id: String?, _ event: String?, _ data: String?) -> Void)?
+    fileprivate var onMessageCallback: (@Sendable (_ id: String?, _ event: String?, _ data: String?) -> Void)?
 
     /// Current connection state (connecting, open, or closed) of the Server-Sent Events stream.
     open internal(set) var readyState: EventSourceState
     /// Milliseconds to wait before attempting reconnection after connection failure.
     open fileprivate(set) var retryTime = 3000
-    fileprivate var eventListeners = Dictionary<String, (_ id: String?, _ event: String?, _ data: String?) -> Void>()
+    fileprivate var eventListeners = Dictionary<String, @Sendable (_ id: String?, _ event: String?, _ data: String?) -> Void>()
     fileprivate var headers: Dictionary<String, String>
     internal var urlSession: Foundation.URLSession?
     internal var task: URLSessionDataTask?
     fileprivate var operationQueue: OperationQueue
     fileprivate var errorBeforeSetErrorCallBack: NSError?
-    internal let receivedDataBuffer: NSMutableData
+    internal var receivedDataBuffer: Data
     fileprivate let uniqueIdentifier: String
     fileprivate let validNewlineCharacters = ["\r\n", "\n", "\r"]
     
@@ -144,7 +144,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         self.readyState = EventSourceState.closed
         self.operationQueue = OperationQueue()
         self.receivedString = nil
-        self.receivedDataBuffer = NSMutableData()
+        self.receivedDataBuffer = Data()
         
         let port = String(self.url.port ?? 80)
         let relativePath = self.url.relativePath
@@ -158,7 +158,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         self.connect()
     }
     
-    //Mark: Connect
+    /// Establishes connection to the Server-Sent Events endpoint.
     func connect() {
         var additionalHeaders = self.headers
         if let eventID = self.lastEventID {
@@ -175,13 +175,13 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         
         self.readyState = EventSourceState.connecting
         self.urlSession = newSession(configuration)
-        self.task = urlSession!.dataTask(with: self.url)
-        
+        self.task = urlSession?.dataTask(with: self.url)
+
         self.resumeSession()
     }
-    
+
     internal func resumeSession() {
-        self.task!.resume()
+        self.task?.resume()
     }
     
     internal func newSession(_ configuration: URLSessionConfiguration) -> Foundation.URLSession {
@@ -190,8 +190,6 @@ open class EventSource: NSObject, URLSessionDataDelegate {
                                      delegateQueue: operationQueue)
     }
     
-    //Mark: Close
-
     /// Closes the Server-Sent Events connection and prevents automatic reconnection.
     open func close() {
         self.readyState = EventSourceState.closed
@@ -211,8 +209,6 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         return false
     }
     
-    //Mark: EventListeners
-
     /// Registers a callback to be invoked when the connection opens.
     ///
     /// The callback is called on the main thread when the Server-Sent Events connection
@@ -231,7 +227,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     ///     }
     /// }
     /// ```
-    open func onOpen(_ onOpenCallback: @escaping ((HTTPURLResponse?) -> Void)) {
+    open func onOpen(_ onOpenCallback: @escaping (HTTPURLResponse?) -> Void) {
         self.onOpenCallback = onOpenCallback
     }
 
@@ -257,11 +253,13 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     ///
     /// - Note: The EventSource automatically attempts to reconnect after errors
     ///         unless explicitly closed.
-    open func onError(_ onErrorCallback: @escaping ((NSError?) -> Void)) {
+    open func onError(_ onErrorCallback: @escaping (NSError?) -> Void) {
         self.onErrorCallback = onErrorCallback
 
         if let errorBeforeSet = self.errorBeforeSetErrorCallBack {
-            self.onErrorCallback?(errorBeforeSet)
+            DispatchQueue.main.async {
+                self.onErrorCallback?(errorBeforeSet)
+            }
             self.errorBeforeSetErrorCallBack = nil
         }
     }
@@ -290,7 +288,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     ///     print("Received ledger: \(ledger.sequence)")
     /// }
     /// ```
-    open func onMessage(_ onMessageCallback: @escaping ((_ id: String?, _ event: String?, _ data: String?) -> Void)) {
+    open func onMessage(_ onMessageCallback: @escaping @Sendable (_ id: String?, _ event: String?, _ data: String?) -> Void) {
         self.onMessageCallback = onMessageCallback
     }
 
@@ -323,7 +321,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     ///
     /// - Note: Only one handler can be registered per event type. Registering a new handler
     ///         for an event type will replace any existing handler for that type.
-    open func addEventListener(_ event: String, handler: @escaping ((_ id: String?, _ event: String?, _ data: String?) -> Void)) {
+    open func addEventListener(_ event: String, handler: @escaping @Sendable (_ id: String?, _ event: String?, _ data: String?) -> Void) {
         self.eventListeners[event] = handler
     }
 
@@ -345,7 +343,6 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         return Array(self.eventListeners.keys)
     }
 
-    //MARK: URLSessionDataDelegate
     /// URLSessionDataDelegate method called when data is received from the stream.
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         if self.receivedMessageToClose(dataTask.response as? HTTPURLResponse) {
@@ -382,8 +379,11 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         if self.receivedMessageToClose(task.response as? HTTPURLResponse) {
             return
         }
-        
-        if error == nil || (error! as NSError).code != -999 {
+
+        if let nsError = error as NSError?, nsError.code == -999 {
+            // User cancelled (-999), don't reconnect
+        } else {
+            // For all other errors or nil error, attempt reconnection
             let nanoseconds = Double(self.retryTime) / 1000.0 * Double(NSEC_PER_SEC)
             let delayTime = DispatchTime.now() + Double(Int64(nanoseconds)) / Double(NSEC_PER_SEC)
             DispatchQueue.main.asyncAfter(deadline: delayTime) { [weak self] in
@@ -402,46 +402,37 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         }
     }
     
-    //MARK: Helpers
+    /// Extracts complete events from the received data buffer.
     fileprivate func extractEventsFromBuffer() -> [String] {
         var events = [String]()
-        
-        // Find first occurrence of delimiter
-        var searchRange =  NSRange(location: 0, length: receivedDataBuffer.length)
+
+        var searchRange = receivedDataBuffer.startIndex..<receivedDataBuffer.endIndex
         while let foundRange = searchForEventInRange(searchRange) {
-            // Append event
-            if foundRange.location > searchRange.location {
-                let dataChunk = receivedDataBuffer.subdata(
-                    with: NSRange(location: searchRange.location, length: foundRange.location - searchRange.location)
-                )
-                
+            if foundRange.lowerBound > searchRange.lowerBound {
+                let dataChunk = receivedDataBuffer[searchRange.lowerBound..<foundRange.lowerBound]
+
                 if let text = String(bytes: dataChunk, encoding: .utf8) {
                     events.append(text)
                 }
             }
-            // Search for next occurrence of delimiter
-            searchRange.location = foundRange.location + foundRange.length
-            searchRange.length = receivedDataBuffer.length - searchRange.location
+            let nextStart = foundRange.upperBound
+            searchRange = nextStart..<receivedDataBuffer.endIndex
         }
-        
-        // Remove the found events from the buffer
-        self.receivedDataBuffer.replaceBytes(in: NSRange(location: 0, length: searchRange.location), withBytes: nil, length: 0)
-        
+
+        self.receivedDataBuffer.removeSubrange(receivedDataBuffer.startIndex..<searchRange.lowerBound)
+
         return events
     }
     
-    fileprivate func searchForEventInRange(_ searchRange: NSRange) -> NSRange? {
+    fileprivate func searchForEventInRange(_ searchRange: Range<Data.Index>) -> Range<Data.Index>? {
         let delimiters = validNewlineCharacters.map { "\($0)\($0)".data(using: String.Encoding.utf8)! }
-        
+
         for delimiter in delimiters {
-            let foundRange = receivedDataBuffer.range(of: delimiter,
-                                                      options: NSData.SearchOptions(),
-                                                      in: searchRange)
-            if foundRange.location != NSNotFound {
-                return foundRange
+            if let range = receivedDataBuffer.range(of: delimiter, options: [], in: searchRange) {
+                return range
             }
         }
-        
+
         return nil
     }
     
@@ -457,7 +448,7 @@ open class EventSource: NSObject, URLSessionDataDelegate {
                 continue
             }
             
-            if (event as NSString).contains("retry:") {
+            if event.contains("retry:") {
                 if let reconnectTime = parseRetryTime(event) {
                     self.retryTime = reconnectTime
                 }
@@ -481,8 +472,9 @@ open class EventSource: NSObject, URLSessionDataDelegate {
             }
             
             if let event = parsedEvent.event, let data = parsedEvent.data, let eventHandler = self.eventListeners[event] {
+                let handler = eventHandler
                 DispatchQueue.main.async { [weak self] in
-                    eventHandler(self?.lastEventID, event, data)
+                    handler(self?.lastEventID, event, data)
                 }
             }
         }
@@ -528,18 +520,19 @@ open class EventSource: NSObject, URLSessionDataDelegate {
     }
     
     fileprivate func parseKeyValuePair(_ line: String) -> (String?, String?) {
-        var key: NSString?, value: NSString?
         let scanner = Scanner(string: line)
-        scanner.scanUpTo(":", into: &key)
-        scanner.scanString(":", into: nil)
-        
+        let key = scanner.scanUpToString(":")
+        _ = scanner.scanString(":")
+
+        var value: String?
         for newline in validNewlineCharacters {
-            if scanner.scanUpTo(newline, into: &value) {
+            if let scannedValue = scanner.scanUpToString(newline) {
+                value = scannedValue
                 break
             }
         }
-        
-        return (key as String?, value as String?)
+
+        return (key, value)
     }
     
     fileprivate func parseRetryTime(_ eventString: String) -> Int? {
@@ -559,12 +552,58 @@ open class EventSource: NSObject, URLSessionDataDelegate {
         return string.trimmingCharacters(in: CharacterSet.whitespaces)
     }
 
+    /// Creates an AsyncStream for receiving Server-Sent Events.
+    ///
+    /// This method provides a modern async/await alternative to the callback-based API.
+    /// Use this when you prefer structured concurrency over callbacks.
+    ///
+    /// - Returns: An AsyncStream that yields tuples of (id, event, data) for each message
+    ///
+    /// Example:
+    /// ```swift
+    /// let eventSource = EventSource(url: "https://horizon.stellar.org/ledgers?cursor=now")
+    /// let stream = eventSource.eventStream()
+    ///
+    /// for await (id, event, data) in stream {
+    ///     print("Event: \(event ?? "message")")
+    ///     if let ledgerData = data?.data(using: .utf8) {
+    ///         // Process ledger data
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// - Note: The stream will continue until the EventSource is closed or an error occurs.
+    ///         Only one AsyncStream should be active per EventSource instance.
+    open func eventStream() -> AsyncStream<(id: String?, event: String?, data: String?)> {
+        AsyncStream { continuation in
+            self.onMessage { id, event, data in
+                continuation.yield((id: id, event: event, data: data))
+            }
+
+            self.onError { error in
+                continuation.finish()
+            }
+
+            continuation.onTermination = { @Sendable [weak self] _ in
+                DispatchQueue.main.async {
+                    self?.close()
+                }
+            }
+        }
+    }
+
     /// Generates a Basic Authentication header value from username and password.
+    ///
+    /// - Parameter username: The username for authentication
+    /// - Parameter password: The password for authentication
+    /// - Returns: A properly formatted "Basic {base64}" authentication header value
     class open func basicAuth(_ username: String, password: String) -> String {
         let authString = "\(username):\(password)"
-        let authData = authString.data(using: String.Encoding.utf8)
-        let base64String = authData!.base64EncodedString(options: [])
-        
+        guard let authData = authString.data(using: String.Encoding.utf8) else {
+            return "Basic "
+        }
+        let base64String = authData.base64EncodedString(options: [])
+
         return "Basic \(base64String)"
     }
 }

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct LedgerKeyOfferXDR: XDRCodable {
+public struct LedgerKeyOfferXDR: XDRCodable, Sendable {
     public let sellerId: PublicKey
     public let offerId: UInt64
     

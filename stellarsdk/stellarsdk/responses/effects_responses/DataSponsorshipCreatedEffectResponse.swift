@@ -13,13 +13,13 @@ import Foundation
 /// Sponsorship allows one account to pay the base reserve for another account's data entry.
 /// Triggered by the Begin Sponsoring Future Reserves and End Sponsoring Future Reserves operations.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class DataSponsorshipCreatedEffectResponse: EffectResponse {
+public class DataSponsorshipCreatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The name (key) of the data entry being sponsored.
-    public var dataName:String
+    public let dataName:String
 
     /// The account ID of the sponsor paying the data entry's base reserve.
-    public var sponsor:String
+    public let sponsor:String
     
     
     // Properties to encode and decode

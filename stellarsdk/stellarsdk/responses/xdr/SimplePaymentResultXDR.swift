@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct SimplePaymentResultXDR: XDRCodable {
+public struct SimplePaymentResultXDR: XDRCodable, Sendable {
 
     public let destination: PublicKey
     public let asset:AssetXDR

@@ -10,34 +10,34 @@ import Foundation
 
 ///  Represents an allow trust operation response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class AllowTrustOperationResponse: OperationResponse {
+public class AllowTrustOperationResponse: OperationResponse, @unchecked Sendable {
     
     /// Account ID of the trustor (the account trusting the asset).
-    public var trustor:String
+    public let trustor:String
 
     /// Account ID of the trustee (the asset issuer).
-    public var trustee:String
+    public let trustee:String
 
     /// Multiplexed account address of the trustee (if used).
-    public var trusteeMuxed:String?
+    public let trusteeMuxed:String?
 
     /// ID of the multiplexed trustee account (if used).
-    public var trusteeMuxedId:String?
+    public let trusteeMuxedId:String?
 
     /// Asset type (native / alphanum4 / alphanum12).
-    public var assetType:String
+    public let assetType:String
 
     /// Asset code being authorized.
-    public var assetCode:String?
+    public let assetCode:String?
 
     /// Asset issuer (the trustee).
-    public var assetIssuer:String?
+    public let assetIssuer:String?
 
     /// True when allowing trust, false when revoking trust.
-    public var authorize:Bool
+    public let authorize:Bool
 
     /// True when authorizing the trustline to maintain liabilities.
-    public var authorizeToMaintainLiabilities:Bool?
+    public let authorizeToMaintainLiabilities:Bool?
     
     /// The limit for the asset.
     private enum CodingKeys: String, CodingKey {

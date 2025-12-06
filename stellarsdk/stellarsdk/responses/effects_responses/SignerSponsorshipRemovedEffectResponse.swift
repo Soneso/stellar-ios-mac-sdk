@@ -13,13 +13,13 @@ import Foundation
 /// The account becomes responsible for paying the signer's base reserve.
 /// Triggered by the Revoke Sponsorship operation.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class SignerSponsorshipRemovedEffectResponse: EffectResponse {
+public class SignerSponsorshipRemovedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The public key of the signer whose sponsorship is being removed.
-    public var signer:String
+    public let signer:String
 
     /// The account ID of the former sponsor.
-    public var formerSponsor:String
+    public let formerSponsor:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

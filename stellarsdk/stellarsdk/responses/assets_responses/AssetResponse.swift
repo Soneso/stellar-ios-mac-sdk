@@ -10,7 +10,7 @@ import Foundation
 
 ///  Represents an asset response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class AssetResponse: NSObject, Decodable {
+public struct AssetResponse: Decodable, Sendable {
     
     /// A list of links related to this asset.
     public var links:AssetLinksResponse
@@ -77,7 +77,7 @@ public class AssetResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         links = try values.decode(AssetLinksResponse.self, forKey: .links)
         assetType = try values.decode(String.self, forKey: .assetType)
@@ -87,7 +87,10 @@ public class AssetResponse: NSObject, Decodable {
         numClaimableBalances = try values.decode(Int.self, forKey: .numClaimableBalances)
         balances = try values.decode(AssetBalances.self, forKey: .balances)
         let claimableBalancesAmountString = try values.decode(String.self, forKey: .claimableBalancesAmount) as String
-        claimableBalancesAmount = Decimal(string: claimableBalancesAmountString)!
+        guard let cbAmount = Decimal(string: claimableBalancesAmountString) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid claimable_balances_amount format")
+        }
+        claimableBalancesAmount = cbAmount
         flags = try values.decode(AccountFlagsResponse.self, forKey: .flags)
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         numLiquidityPools = try values.decode(Int.self, forKey: .numLiquidityPools)
@@ -99,7 +102,7 @@ public class AssetResponse: NSObject, Decodable {
 
 /// Statistics about the number of accounts holding an asset, categorized by authorization status.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class AssetAccounts: NSObject, Decodable {
+public struct AssetAccounts: Decodable, Sendable {
 
     /// The number of accounts authorized to hold and transact with this asset.
     public var authorized:Int
@@ -123,7 +126,7 @@ public class AssetAccounts: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         authorized = try values.decode(Int.self, forKey: .authorized)
         authorizedToMaintainLiabilities = try values.decode(Int.self, forKey: .authorizedToMaintainLiabilities)
@@ -133,7 +136,7 @@ public class AssetAccounts: NSObject, Decodable {
 
 /// Statistics about the total amounts of an asset held by accounts, categorized by authorization status.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class AssetBalances: NSObject, Decodable {
+public struct AssetBalances: Decodable, Sendable {
 
     /// The total amount held by accounts that are authorized to hold and transact with this asset.
     public var authorized:Decimal
@@ -157,13 +160,22 @@ public class AssetBalances: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         let authorizedString = try values.decode(String.self, forKey: .authorized) as String
-        authorized = Decimal(string: authorizedString)!
+        guard let auth = Decimal(string: authorizedString) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid authorized format")
+        }
+        authorized = auth
         let authorizedToMaintainLiabilitiesString = try values.decode(String.self, forKey: .authorizedToMaintainLiabilities) as String
-        authorizedToMaintainLiabilities = Decimal(string: authorizedToMaintainLiabilitiesString)!
+        guard let authMaint = Decimal(string: authorizedToMaintainLiabilitiesString) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid authorized_to_maintain_liabilities format")
+        }
+        authorizedToMaintainLiabilities = authMaint
         let unauthorizedString = try values.decode(String.self, forKey: .unauthorized) as String
-        unauthorized = Decimal(string: unauthorizedString)!
+        guard let unauth = Decimal(string: unauthorizedString) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid unauthorized format")
+        }
+        unauthorized = unauth
     }
 }

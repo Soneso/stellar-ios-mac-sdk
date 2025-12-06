@@ -138,7 +138,9 @@ public extension XDRDecoder {
     /// Read the appropriate number of raw bytes directly into the given value. No byte
     /// swapping or other postprocessing is done.
     func read<T>(into: inout T) throws {
-        try read(MemoryLayout<T>.size, into: &into)
+        try withUnsafeMutablePointer(to: &into) { pointer in
+            try read(MemoryLayout<T>.size, into: UnsafeMutableRawPointer(pointer))
+        }
     }
 }
 

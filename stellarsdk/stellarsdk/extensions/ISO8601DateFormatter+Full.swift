@@ -22,7 +22,7 @@ extension ISO8601DateFormatter {
     ///     // Use parsed date with microsecond precision
     /// }
     /// ```
-    public static let full: ISO8601DateFormatter = {
+    public nonisolated(unsafe) static let full: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withFullDate, .withFullTime, .withTimeZone, .withFractionalSeconds]
         return formatter

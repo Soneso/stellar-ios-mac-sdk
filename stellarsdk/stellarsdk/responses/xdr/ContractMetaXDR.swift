@@ -12,7 +12,7 @@ public enum SCMetaKind: Int32 {
     case v0 = 0
 }
 
-public struct SCMetaV0XDR: XDRCodable {
+public struct SCMetaV0XDR: XDRCodable, Sendable {
     public let key: String
     public let value: String
     
@@ -36,7 +36,7 @@ public struct SCMetaV0XDR: XDRCodable {
     }
 }
 
-public enum SCMetaEntryXDR: XDRCodable {
+public enum SCMetaEntryXDR: XDRCodable, Sendable {
     case v0 (SCMetaV0XDR)
     
     

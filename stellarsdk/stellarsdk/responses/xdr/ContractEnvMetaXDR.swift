@@ -12,7 +12,7 @@ public enum SCEnvMetaKind: Int32 {
     case interfaceVersion = 0
 }
 
-public enum SCEnvMetaEntryXDR: XDRCodable {
+public enum SCEnvMetaEntryXDR: XDRCodable, Sendable {
     case interfaceVersion (UInt64)
     
     

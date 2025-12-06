@@ -12,16 +12,16 @@ import Foundation
 /// This effect occurs when an account's signature thresholds are modified through a Set Options operation.
 /// Thresholds determine the minimum signature weight required for different operation categories.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class AccountThresholdsUpdatedEffectResponse: EffectResponse {
+public class AccountThresholdsUpdatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The updated low threshold value (used for Allow Trust and Bump Sequence operations).
-    public var lowThreshold:Int
+    public let lowThreshold:Int
 
     /// The updated medium threshold value (used for most operations).
-    public var medThreshold:Int
+    public let medThreshold:Int
 
     /// The updated high threshold value (used for Set Options and Account Merge operations).
-    public var highThreshold:Int
+    public let highThreshold:Int
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

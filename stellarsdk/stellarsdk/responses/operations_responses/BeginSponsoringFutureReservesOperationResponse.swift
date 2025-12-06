@@ -11,10 +11,10 @@ import Foundation
 /// Represents a begin sponsoring future reserves operation response.
 /// This operation initiates sponsorship of reserves for another account, allowing the sponsor to pay for the reserve requirements of ledger entries created by the sponsored account.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class BeginSponsoringFutureReservesOperationResponse: OperationResponse {
+public class BeginSponsoringFutureReservesOperationResponse: OperationResponse, @unchecked Sendable {
 
     /// Account ID being sponsored.
-    public var sponsoredId:String
+    public let sponsoredId:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

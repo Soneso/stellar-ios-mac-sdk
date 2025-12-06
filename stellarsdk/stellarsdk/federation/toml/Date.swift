@@ -25,10 +25,10 @@ private func buildDateFormatter(format: String) -> DateFormatter {
     return formatter
 }
 
-private var rfc3339fractionalformatter =
+nonisolated(unsafe) private var rfc3339fractionalformatter =
     buildDateFormatter(format: "yyyy'-'MM'-'dd'T'HH':'mm':'ss.SSSSSSZZZZZ")
 
-private var rfc3339formatter: DateFormatter =
+nonisolated(unsafe) private var rfc3339formatter: DateFormatter =
     buildDateFormatter(format: "yyyy'-'MM'-'dd'T'HH':'mm':'ssZZZZZ")
 
 private func localTimeOffset() -> String {

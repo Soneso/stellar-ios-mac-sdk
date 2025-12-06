@@ -13,10 +13,10 @@ import Foundation
 /// Account data entries allow accounts to store arbitrary data on the ledger.
 /// Triggered by the Manage Data operation with a null value.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class DataRemovedEffectResponse: EffectResponse {
+public class DataRemovedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The name (key) of the data entry removed.
-    public var name:String
+    public let name:String
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

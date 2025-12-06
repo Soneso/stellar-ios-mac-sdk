@@ -20,7 +20,7 @@ public enum CreateClaimableBalanceResultCode: Int32 {
     case underfunded = -5
 }
 
-public enum CreateClaimableBalanceResultXDR: XDRCodable {
+public enum CreateClaimableBalanceResultXDR: XDRCodable, Sendable {
     case success (Int32, ClaimableBalanceIDXDR)
     case empty (Int32)
     

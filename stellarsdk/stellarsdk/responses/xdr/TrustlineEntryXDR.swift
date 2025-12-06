@@ -20,7 +20,7 @@ public struct TrustLineFlags {
 }
 
 
-public struct TrustlineEntryXDR: XDRCodable {
+public struct TrustlineEntryXDR: XDRCodable, Sendable {
     public let accountID: PublicKey
     public let asset: TrustlineAssetXDR
     public let balance: Int64
@@ -50,7 +50,7 @@ public struct TrustlineEntryXDR: XDRCodable {
     }
 }
 
-public enum TrustlineEntryExtXDR: XDRCodable {
+public enum TrustlineEntryExtXDR: XDRCodable, Sendable {
     case void
     case trustlineEntryExtensionV1 (TrustlineEntryExtensionV1)
     
@@ -89,7 +89,7 @@ public enum TrustlineEntryExtXDR: XDRCodable {
     
 }
 
-public struct TrustlineEntryExtensionV1: XDRCodable {
+public struct TrustlineEntryExtensionV1: XDRCodable, Sendable {
     public let liabilities: LiabilitiesXDR
     public let reserved: TrustlineEntryExtV1XDR
     
@@ -106,7 +106,7 @@ public struct TrustlineEntryExtensionV1: XDRCodable {
     }
 }
 
-public enum TrustlineEntryExtV1XDR: XDRCodable {
+public enum TrustlineEntryExtV1XDR: XDRCodable, Sendable {
     case void
     case trustlineEntryExtensionV2 (TrustlineEntryExtensionV2)
     
@@ -145,14 +145,14 @@ public enum TrustlineEntryExtV1XDR: XDRCodable {
     
 }
 
-public struct TrustlineEntryExtensionV2: XDRCodable {
-    public var liquidityPoolUseCount: Int32 = 0
-    public var reserved: Int32 = 0
+public struct TrustlineEntryExtensionV2: XDRCodable, Sendable {
+    public let liquidityPoolUseCount: Int32 = 0
+    public let reserved: Int32 = 0
     
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        liquidityPoolUseCount = try container.decode(Int32.self)
-        reserved = try container.decode(Int32.self)
+        _ = try container.decode(Int32.self)
+        _ = try container.decode(Int32.self)
     }
     
     public func encode(to encoder: Encoder) throws {

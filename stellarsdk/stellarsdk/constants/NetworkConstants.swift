@@ -10,7 +10,7 @@ import Foundation
 
 /// Network and HTTP-related constants used throughout the SDK.
 /// These values define thresholds for HTTP response handling and network operations.
-public struct NetworkConstants {
+public struct NetworkConstants: Sendable {
 
     // MARK: - HTTP Status Codes
 

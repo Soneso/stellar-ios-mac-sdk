@@ -21,7 +21,7 @@ public enum LedgerEntryType: Int32 {
     case ttl = 9
 }
 
-public struct TTLEntryXDR: XDRCodable {
+public struct TTLEntryXDR: XDRCodable, Sendable {
     public let keyHash: WrappedData32;
     public let liveUntilLedgerSeq: UInt32;
     
@@ -44,7 +44,7 @@ public struct TTLEntryXDR: XDRCodable {
     }
 }
 
-public struct LedgerEntryXDR: XDRCodable {
+public struct LedgerEntryXDR: XDRCodable, Sendable {
     public let lastModifiedLedgerSeq: UInt32;
     public let data: LedgerEntryDataXDR
     public let reserved: LedgerEntryExtXDR
@@ -76,7 +76,7 @@ public struct LedgerEntryXDR: XDRCodable {
     }
 }
 
-public enum LedgerEntryExtXDR: XDRCodable {
+public enum LedgerEntryExtXDR: XDRCodable, Sendable {
     case void
     case ledgerEntryExtensionV1 (LedgerEntryExtensionV1)
     
@@ -120,9 +120,9 @@ public enum LedgerEntryExtXDR: XDRCodable {
     }
 }
 
-public struct LedgerEntryExtensionV1: XDRCodable {
+public struct LedgerEntryExtensionV1: XDRCodable, Sendable {
     public let signerSponsoringID:PublicKey?
-    public var reserved: Int32 = 0
+    public let reserved: Int32 = 0
     
     public init(signerSponsoringID: PublicKey) {
         self.signerSponsoringID = signerSponsoringID
@@ -131,7 +131,7 @@ public struct LedgerEntryExtensionV1: XDRCodable {
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         signerSponsoringID = try decodeArray(type: PublicKey.self, dec: decoder).first
-        reserved = try container.decode(Int32.self)
+        _ = try container.decode(Int32.self)
     }
     
     public func encode(to encoder: Encoder) throws {

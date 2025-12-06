@@ -12,7 +12,7 @@ import Foundation
 ///
 /// Used when registering a new account or updating identities for an existing account
 /// with a SEP-30 recovery service. Contains the list of identities that can recover the account.
-public struct Sep30Request {
+public struct Sep30Request: Sendable {
 
     /// List of identities that can authenticate to gain control of the account.
     /// Each identity can have multiple authentication methods.
@@ -37,7 +37,7 @@ public struct Sep30Request {
 ///
 /// Represents a person or entity that can recover the account by authenticating
 /// through one of the configured authentication methods.
-public struct Sep30RequestIdentity {
+public struct Sep30RequestIdentity: Sendable {
 
     /// Role of this identity in relation to the account.
     /// Not used by the server but stored and returned to help clients identify each identity.
@@ -69,7 +69,7 @@ public struct Sep30RequestIdentity {
 ///
 /// Specifies how an identity can be authenticated to recover account access.
 /// Multiple methods can be configured per identity for flexibility.
-public struct Sep30AuthMethod {
+public struct Sep30AuthMethod: Sendable {
 
     /// Type of authentication method.
     /// Common values: "stellar_address" (proven via SEP-10), "phone_number" (E.164 format with leading +), "email".

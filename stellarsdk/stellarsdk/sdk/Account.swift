@@ -12,8 +12,8 @@ import Foundation
 public class Account: TransactionAccount
 {
     /// The keypair associated with this account.
-    public private (set) var keyPair: KeyPair
-    public private (set) var sequenceNumber: Int64
+    public private(set) var keyPair: KeyPair
+    public private(set) var sequenceNumber: Int64
     
     /// Creates a new Account object.
     ///

@@ -22,7 +22,7 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountSignerResponse for signer weights
-public class AccountThresholdsResponse: NSObject, Decodable {
+public struct AccountThresholdsResponse: Decodable, Sendable {
 
     /// Minimum total signature weight required for low security operations. Range: 0-255.
     public var lowThreshold:Int
@@ -45,7 +45,7 @@ public class AccountThresholdsResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         lowThreshold = try values.decode(Int.self, forKey: .lowThreshold)
         medThreshold = try values.decode(Int.self, forKey: .medThreshold)

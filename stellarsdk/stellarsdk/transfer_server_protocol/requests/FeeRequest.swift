@@ -14,7 +14,7 @@ import Foundation
 ///
 /// See also:
 /// - [SEP-0006](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
-public struct FeeRequest {
+public struct FeeRequest: Sendable {
 
     /// Kind of operation: deposit or withdraw.
     public var operation:String

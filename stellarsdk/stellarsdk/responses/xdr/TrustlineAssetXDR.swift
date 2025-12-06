@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum TrustlineAssetXDR: XDRCodable {
+public enum TrustlineAssetXDR: XDRCodable, Sendable {
     case native
     case alphanum4 (Alpha4XDR)
     case alphanum12 (Alpha12XDR)

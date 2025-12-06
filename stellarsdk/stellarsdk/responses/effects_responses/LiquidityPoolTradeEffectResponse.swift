@@ -13,16 +13,16 @@ import Foundation
 /// The pool automatically provides liquidity for the trade based on its constant product formula.
 /// Triggered by Path Payment operations or trades that match against the pool.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class LiquidityPoolTradeEffectResponse: EffectResponse {
+public class LiquidityPoolTradeEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The liquidity pool details.
-    public var liquidityPool:LiquidityPoolEffectResponse
+    public let liquidityPool:LiquidityPoolEffectResponse
 
     /// The asset reserve sold from the pool.
-    public var sold:ReserveResponse
+    public let sold:ReserveResponse
 
     /// The asset reserve bought from the pool.
-    public var bought:ReserveResponse
+    public let bought:ReserveResponse
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

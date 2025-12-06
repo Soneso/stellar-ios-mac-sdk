@@ -20,19 +20,19 @@ import Foundation
 /// - denied: Customer has been denied
 ///
 /// See [SEP-6 Customer Information Status](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#response-3)
-public struct CustomerInformationStatus: Decodable {
+public struct CustomerInformationStatus: Decodable , Sendable {
 
     /// Always set to customer_info_status
-    public var type:String
+    public let type:String
 
     /// Status of customer information processing. One of: pending, denied
-    public var status:String
+    public let status:String
 
     /// (optional) A URL the user can visit if they want more information about their account / status. If lang was passed in the request, a lang query parameter should be added to the URL with the same value.
-    public var moreInfoUrl:String?
+    public let moreInfoUrl:String?
 
     /// (optional) Estimated number of seconds until the customer information status will update.
-    public var eta:Int?
+    public let eta:Int?
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

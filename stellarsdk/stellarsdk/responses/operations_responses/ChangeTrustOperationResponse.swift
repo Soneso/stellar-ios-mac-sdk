@@ -10,34 +10,34 @@ import Foundation
 
 ///  Represents a change trust operation response.
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public class ChangeTrustOperationResponse: OperationResponse {
+public class ChangeTrustOperationResponse: OperationResponse, @unchecked Sendable {
     
     /// Account ID of the trustor (the account creating or modifying the trustline).
-    public var trustor:String
+    public let trustor:String
 
     /// Multiplexed account address of the trustor (if used).
-    public var trustorMuxed:String?
+    public let trustorMuxed:String?
 
     /// ID of the multiplexed trustor account (if used).
-    public var trustorMuxedId:String?
+    public let trustorMuxedId:String?
 
     /// Account ID of the trustee (the asset issuer).
-    public var trustee:String?
+    public let trustee:String?
 
     /// Asset type (native / alphanum4 / alphanum12 / liquidity_pool_shares).
-    public var assetType:String
+    public let assetType:String
 
     /// Asset code (if not native or liquidity pool shares).
-    public var assetCode:String?
+    public let assetCode:String?
 
     /// Asset issuer (if not native or liquidity pool shares).
-    public var assetIssuer:String?
+    public let assetIssuer:String?
 
     /// Trust limit for the asset (if 0, removes the trustline).
-    public var limit:String?
+    public let limit:String?
 
     /// Liquidity pool ID (if asset type is liquidity_pool_shares).
-    public var liquidityPoolId:String?
+    public let liquidityPoolId:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

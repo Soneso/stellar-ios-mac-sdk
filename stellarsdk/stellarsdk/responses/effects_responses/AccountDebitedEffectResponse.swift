@@ -12,19 +12,19 @@ import Foundation
 /// This effect occurs when an account sends a payment or other debit operation.
 /// Triggered by Payment, Path Payment, Create Claimable Balance, and other operations that reduce an account balance.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class AccountDebitedEffectResponse: EffectResponse {
+public class AccountDebitedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The amount debited from this account.
-    public var amount:String
+    public let amount:String
 
     /// The asset type debited from the account (e.g., native, credit_alphanum4, credit_alphanum12).
-    public var assetType:String
+    public let assetType:String
 
     /// The asset code debited from the account. Nil for native assets.
-    public var assetCode:String?
+    public let assetCode:String?
 
     /// The issuer account ID of the asset debited from the account. Nil for native assets.
-    public var assetIssuer:String?
+    public let assetIssuer:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

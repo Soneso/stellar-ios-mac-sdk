@@ -9,16 +9,16 @@ import Foundation
 /// - [Sep24DepositRequest] for initiating deposits
 /// - [Sep24WithdrawRequest] for initiating withdrawals
 /// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
-public struct Sep24InteractiveResponse: Decodable {
+public struct Sep24InteractiveResponse: Decodable , Sendable {
 
     /// Always set to interactive_customer_info_needed.
-    public var type:String
+    public let type:String
 
     /// URL hosted by the anchor. The wallet should show this URL to the user as a popup.
-    public var url:String
+    public let url:String
 
     /// The anchor's internal ID for this deposit / withdrawal request. The wallet will use this ID to query the /transaction endpoint to check status of the request.
-    public var id:String
+    public let id:String
 
     /// Properties to encode and decode.
     private enum CodingKeys: String, CodingKey {

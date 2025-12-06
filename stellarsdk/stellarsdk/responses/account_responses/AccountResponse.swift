@@ -54,68 +54,68 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountService for querying accounts
-public class AccountResponse: NSObject, Decodable, TransactionAccount {
+public class AccountResponse: Decodable, TransactionAccount, @unchecked Sendable {
 
     /// Navigation links related to this account including transactions, operations, and payments.
-    public var links:AccountLinksResponse
+    public let links:AccountLinksResponse
 
     /// The account ID (public key), always starts with 'G'.
-    public var accountId:String
+    public let accountId:String
 
     /// KeyPair instance for this account containing the public key.
-    public var keyPair: KeyPair
+    public let keyPair: KeyPair
 
     /// Current sequence number. Must be incremented for each transaction from this account.
-    public private (set) var sequenceNumber: Int64
+    public private(set) var sequenceNumber: Int64
 
     /// Number of subentries (trustlines, offers, data entries, etc.) owned by this account.
     /// Affects the minimum balance requirement.
-    public var subentryCount:UInt
+    public let subentryCount:UInt
 
     /// Paging token for cursor-based pagination.
-    public var pagingToken:String
+    public let pagingToken:String
 
     /// Account designated to receive inflation (deprecated feature).
-    public var inflationDestination:String?
+    public let inflationDestination:String?
 
     /// Home domain for this account. Used for federation and stellar.toml lookup.
-    public var homeDomain:String?
+    public let homeDomain:String?
 
     /// Signature thresholds for low, medium, and high security operations.
-    public var thresholds:AccountThresholdsResponse
+    public let thresholds:AccountThresholdsResponse
 
     /// Account flags (auth required, auth revocable, auth immutable, auth clawback enabled).
-    public var flags:AccountFlagsResponse
+    public let flags:AccountFlagsResponse
 
     /// Array of all asset balances including native XLM and issued assets.
-    public var balances:[AccountBalanceResponse]
+    public let balances:[AccountBalanceResponse]
 
     /// Array of account signers with their public keys and signing weights.
-    public var signers:[AccountSignerResponse]
+    public let signers:[AccountSignerResponse]
 
     /// Key-value data entries attached to this account. Values are base64 encoded.
-    public var data:[String:String]
+    public let data:[String:String]
 
     /// Account ID of the sponsor for this account's base reserve (if sponsored).
-    public var sponsor:String?
+    public let sponsor:String?
 
     /// Number of reserves this account is currently sponsoring for other accounts.
-    public var numSponsoring:Int
+    public let numSponsoring:Int
 
     /// Number of reserves being sponsored for this account by others.
-    public var numSponsored:Int
+    public let numSponsored:Int
 
     /// Ledger sequence number when the sequence number was last updated.
-    public var sequenceLedger:Int?
+    public let sequenceLedger:Int?
 
     /// Timestamp when the sequence number was last updated (ISO 8601).
-    public var sequenceTime:String?
+    public let sequenceTime:String?
 
     /// Ledger sequence number when this account was last modified.
-    public var lastModifiedLedger:Int
+    public let lastModifiedLedger:Int
 
     /// Timestamp when this account was last modified (ISO 8601).
-    public var lastModifiedTime:String?
+    public let lastModifiedTime:String?
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
@@ -151,7 +151,10 @@ public class AccountResponse: NSObject, Decodable, TransactionAccount {
         accountId = try values.decode(String.self, forKey: .accountId)
         self.keyPair = try KeyPair(accountId: accountId)
         let sequenceNumberString = try values.decode(String.self, forKey: .sequenceNumber)
-        sequenceNumber = Int64(sequenceNumberString)!
+        guard let seqNum = Int64(sequenceNumberString) else {
+            throw HorizonRequestError.parsingResponseFailed(message: "Invalid sequence number format")
+        }
+        sequenceNumber = seqNum
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         subentryCount = try values.decode(UInt.self, forKey: .subentryCount)
         thresholds = try values.decode(AccountThresholdsResponse.self, forKey: .thresholds)

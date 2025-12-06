@@ -16,7 +16,7 @@
 
 import Foundation
 
-var expressions = [String: NSRegularExpression]()
+nonisolated(unsafe) var expressions = [String: NSRegularExpression]()
 
 extension String {
     func match(_ regex: String, options: NSRegularExpression.Options = []) -> String? {

@@ -34,9 +34,6 @@ public enum OfferResponseEnum {
     case failure(error: HorizonRequestError)
 }
 
-/// Callback closure for retrieving offer details from the Stellar decentralized exchange.
-public typealias OfferResponseClosure = (_ response:OfferResponseEnum) -> (Void)
-
 /// Service for querying offer information from the Stellar Horizon API.
 ///
 /// Offers represent open orders on the Stellar decentralized exchange (DEX). Each offer specifies
@@ -63,11 +60,11 @@ public typealias OfferResponseClosure = (_ response:OfferResponseEnum) -> (Void)
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - OrderbookService for orderbook snapshots
-public class OffersService: NSObject {
+public class OffersService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
     }
     
@@ -76,15 +73,12 @@ public class OffersService: NSObject {
     }
     
     /// Retrieves all offers created by a specific account with optional pagination parameters.
-    @available(*, renamed: "getOffers(forAccount:cursor:order:limit:)")
-    open func getOffers(forAccount accountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {
-        Task {
-            let result = await getOffers(forAccount: accountId, cursor: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-
-    /// Retrieves all offers created by a specific account with optional pagination parameters.
+    ///
+    /// - Parameter accountId: The Stellar account ID of the offer creator
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
+    /// - Returns: PageResponse containing offers for the account or error
     open func getOffers(forAccount accountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<OfferResponse>.ResponseEnum {
         var requestPath = "/accounts/" + accountId + "/offers"
         
@@ -101,50 +95,26 @@ public class OffersService: NSObject {
         return await getOffersFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
-    /// People on the Stellar network can make offers to buy or sell assets. This endpoint represents all the current offers, allowing filtering by seller, selling_asset or buying_asset.
+    /// Retrieves all current offers, allowing filtering by seller, selling_asset or buying_asset.
     ///
-    /// See [Stellar developer docs](https://developers.stellar.org)
-    ///
-    /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
+    /// People on the Stellar network can make offers to buy or sell assets. This endpoint represents all the
+    /// current offers. This function responds with a page of offers. Pages represent a subset of a larger
+    /// collection of objects to avoid returning millions of records in a single request.
     ///
     /// - Parameter seller: Optional. Account ID of the offer creator.
-    /// - Parameter sellingAssetType: Required. Type of the Asset being sold e.g."native" or "credit_alphanum4" or "credit_alphanum12"
+    /// - Parameter sellingAssetType: Required. Type of the Asset being sold: "native", "credit_alphanum4", or "credit_alphanum12"
     /// - Parameter sellingAssetCode: Required if selling_asset_type is not "native".
     /// - Parameter sellingAssetIssuer: Required if selling_asset_type is not "native".
-    /// - Parameter buyingAssetType: Required. Type of the Asset being bought e.g."native" or "credit_alphanum4" or "credit_alphanum12"
+    /// - Parameter buyingAssetType: Required. Type of the Asset being bought: "native", "credit_alphanum4", or "credit_alphanum12"
     /// - Parameter buyingAssetCode: Required if buying_asset_type is not "native".
     /// - Parameter buyingAssetIssuer: Required if buying_asset_type is not "native".
     /// - Parameter sponsor: Optional. Account ID of the sponsor.
     /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
-    /// - Parameter order: Optional. The order in which to return rows, “asc” or “desc”, ordered by assetCode then by assetIssuer.
+    /// - Parameter order: Optional. The order in which to return rows, "asc" or "desc", ordered by assetCode then by assetIssuer.
     /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
+    /// - Returns: PageResponse containing offers matching the filters or error
     ///
-    @available(*, renamed: "getOffers(seller:sellingAssetType:sellingAssetCode:sellingAssetIssuer:buyingAssetType:buyingAssetCode:buyingAssetIssuer:sponsor:cursor:order:limit:)")
-    open func getOffers(seller:String?, sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, sponsor:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {
-        Task {
-            let result = await getOffers(seller: seller, sellingAssetType: sellingAssetType, sellingAssetCode: sellingAssetCode, sellingAssetIssuer: sellingAssetIssuer, buyingAssetType: buyingAssetType, buyingAssetCode: buyingAssetCode, buyingAssetIssuer: buyingAssetIssuer, sponsor: sponsor, cursor: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-    
-    /// People on the Stellar network can make offers to buy or sell assets. This endpoint represents all the current offers, allowing filtering by seller, selling_asset or buying_asset.
-    ///
-    /// See [Stellar developer docs](https://developers.stellar.org)
-    ///
-    /// This fuction responds with a page of accounts. Pages represent a subset of a larger collection of objects. As an example, it would be unfeasible to provide the All Transactions endpoint without paging. Over time there will be millions of transactions in the Stellar network’s ledger and returning them all over a single request would be unfeasible.
-    ///
-    /// - Parameter seller: Optional. Account ID of the offer creator.
-    /// - Parameter sellingAssetType: Required. Type of the Asset being sold e.g."native" or "credit_alphanum4" or "credit_alphanum12"
-    /// - Parameter sellingAssetCode: Required if selling_asset_type is not "native".
-    /// - Parameter sellingAssetIssuer: Required if selling_asset_type is not "native".
-    /// - Parameter buyingAssetType: Required. Type of the Asset being bought e.g."native" or "credit_alphanum4" or "credit_alphanum12"
-    /// - Parameter buyingAssetCode: Required if buying_asset_type is not "native".
-    /// - Parameter buyingAssetIssuer: Required if buying_asset_type is not "native".
-    /// - Parameter sponsor: Optional. Account ID of the sponsor.
-    /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
-    /// - Parameter order: Optional. The order in which to return rows, “asc” or “desc”, ordered by assetCode then by assetIssuer.
-    /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
-    ///
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getOffers(seller:String?, sellingAssetType:String, sellingAssetCode:String? = nil, sellingAssetIssuer:String? = nil, buyingAssetType:String, buyingAssetCode:String? = nil, buyingAssetIssuer:String? = nil, sponsor:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<OfferResponse>.ResponseEnum {
         var requestPath = "/offers"
         
@@ -170,15 +140,11 @@ public class OffersService: NSObject {
     }
     
     /// Retrieves offers from a specific Horizon URL.
-    @available(*, renamed: "getOffersFromUrl(url:)")
-    func getOffersFromUrl(url:String, response:@escaping PageResponse<OfferResponse>.ResponseClosure) {
-        Task {
-            let result = await getOffersFromUrl(url: url)
-            response(result)
-        }
-    }
-
-    /// Retrieves offers from a specific Horizon URL.
+    ///
+    /// Used for pagination. Pass URLs from PageResponse links (e.g., next, prev).
+    ///
+    /// - Parameter url: The complete URL to fetch offers from
+    /// - Returns: PageResponse containing offers or error
     func getOffersFromUrl(url:String) async -> PageResponse<OfferResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {
@@ -195,6 +161,9 @@ public class OffersService: NSObject {
     }
 
     /// Streams real-time offer updates via Server-Sent Events from Horizon.
+    ///
+    /// - Parameter offersType: The filter specifying which offers to stream (all offers with filters, or by account)
+    /// - Returns: OffersStreamItem for receiving streaming offer updates
     open func stream(for offersType:OffersChange) -> OffersStreamItem {
         var subpath:String!
         switch offersType {
@@ -241,6 +210,12 @@ public class OffersService: NSObject {
     }
 
     /// Streams real-time trade updates for a specific offer via Server-Sent Events.
+    ///
+    /// - Parameter offerId: The ID of the Offer to stream trades for
+    /// - Parameter cursor: Optional paging token, specifying where to start streaming from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return
+    /// - Returns: TradesStreamItem for receiving streaming trade updates
     open func streamTrades(forOffer offerId: String, cursor: String? = nil, order: Order? = nil, limit: Int? = nil) -> TradesStreamItem {
         var requestPath = "/offers/" + offerId + "/trades"
 
@@ -262,21 +237,8 @@ public class OffersService: NSObject {
     /// See [Stellar developer docs](https://developers.stellar.org)
     ///
     /// - Parameter offerId: The ID of the Offer
-    /// - Parameter response: The closure to be called upon response.
     ///
-    @available(*, renamed: "getOfferDetails(offerId:)")
-    open func getOfferDetails(offerId: String, response: @escaping OfferResponseClosure) {
-        Task {
-            let result = await getOfferDetails(offerId: offerId)
-            response(result)
-        }
-    }
-    
-    /// Provides information and links relating to a single offer.
-    /// See [Stellar developer docs](https://developers.stellar.org)
-    ///
-    /// - Parameter offerId: The ID of the Offer
-    /// - Parameter response: The closure to be called upon response.
+    /// - Returns: OfferResponseEnum with offer details on success or error on failure
     ///
     open func getOfferDetails(offerId: String) async -> OfferResponseEnum {
         let result = await serviceHelper.GETRequestWithPath(path: "/offers/\(offerId)")
@@ -305,27 +267,8 @@ public class OffersService: NSObject {
     /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
     /// - Parameter order: Optional. The order in which to return rows, "asc" or "desc", ordered by ledger sequence number.
     /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
-    /// - Parameter response: The closure to be called upon response.
     ///
-    @available(*, renamed: "getTrades(forOffer:cursor:order:limit:)")
-    open func getTrades(forOffer offerId: String, cursor: String? = nil, order: Order? = nil, limit: Int? = nil, response: @escaping PageResponse<TradeResponse>.ResponseClosure) {
-        Task {
-            let result = await getTrades(forOffer: offerId, cursor: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-
-    /// This endpoint represents all trades for a given offer and can be used in streaming mode.
-    /// Streaming mode allows you to listen for new trades for this offer as they are added to the Stellar ledger.
-    /// If called in streaming mode, Horizon will start at the earliest known trade unless a cursor is set, in which case it will start from that cursor.
-    /// By setting the cursor value to now, you can stream trades created since your request time.
-    ///
-    /// See [Stellar developer docs](https://developers.stellar.org)
-    ///
-    /// - Parameter offerId: The ID of the Offer
-    /// - Parameter cursor: Optional. A paging token, specifying where to start returning records from.
-    /// - Parameter order: Optional. The order in which to return rows, "asc" or "desc", ordered by ledger sequence number.
-    /// - Parameter limit: Optional. Maximum number of records to return. Default: 10
+    /// - Returns: PageResponse containing trades for the offer or error
     ///
     open func getTrades(forOffer offerId: String, cursor: String? = nil, order: Order? = nil, limit: Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
         var requestPath = "/offers/" + offerId + "/trades"
@@ -344,15 +287,11 @@ public class OffersService: NSObject {
     }
 
     /// Retrieves trades from a specific Horizon URL.
-    @available(*, renamed: "getTradesFromUrl(url:)")
-    func getTradesFromUrl(url: String, response: @escaping PageResponse<TradeResponse>.ResponseClosure) {
-        Task {
-            let result = await getTradesFromUrl(url: url)
-            response(result)
-        }
-    }
-
-    /// Retrieves trades from a specific Horizon URL.
+    ///
+    /// Used for pagination. Pass URLs from PageResponse links (e.g., next, prev).
+    ///
+    /// - Parameter url: The complete URL to fetch trades from
+    /// - Returns: PageResponse containing trades or error
     func getTradesFromUrl(url: String) async -> PageResponse<TradeResponse>.ResponseEnum {
         let jsonDecoder = JSONDecoder()
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)

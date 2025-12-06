@@ -17,22 +17,22 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - OperationResponse for complete operation details
 /// - LinkResponse for individual link structure
-public class OperationLinksResponse: NSObject, Decodable {
+public struct OperationLinksResponse: Decodable, Sendable {
 
     /// Templated link to effects produced by this operation. Supports cursor, order, and limit.
-    public var effects:LinkResponse
+    public let effects:LinkResponse
 
     /// Link to this operation resource (self reference).
-    public var selfLink:LinkResponse
+    public let selfLink:LinkResponse
 
     /// Link to the transaction containing this operation.
-    public var transaction:LinkResponse
+    public let transaction:LinkResponse
 
     /// Templated link to operations that occurred chronologically after this one.
-    public var precedes:LinkResponse
+    public let precedes:LinkResponse
 
     /// Templated link to operations that occurred chronologically before this one.
-    public var succeeds:LinkResponse
+    public let succeeds:LinkResponse
     
     
     // Properties to encode and decode.
@@ -49,7 +49,7 @@ public class OperationLinksResponse: NSObject, Decodable {
      
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         effects = try values.decode(LinkResponse.self, forKey: .effects)
         selfLink = try values.decode(LinkResponse.self, forKey: .selfLink)

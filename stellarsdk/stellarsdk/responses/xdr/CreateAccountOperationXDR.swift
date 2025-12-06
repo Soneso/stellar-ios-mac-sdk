@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct CreateAccountOperationXDR: XDRCodable {
+public struct CreateAccountOperationXDR: XDRCodable, Sendable {
     public let destination: PublicKey
     public let startingBalance: Int64
     

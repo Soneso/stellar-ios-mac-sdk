@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct PriceXDR: XDRCodable {
+public struct PriceXDR: XDRCodable, Sendable {
     public let n: Int32
     public let d: Int32
     

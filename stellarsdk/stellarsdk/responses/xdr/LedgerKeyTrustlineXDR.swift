@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct LedgerKeyTrustLineXDR: XDRCodable {
+public struct LedgerKeyTrustLineXDR: XDRCodable, Sendable {
 
     public let accountID: PublicKey
     public let asset: TrustlineAssetXDR

@@ -27,7 +27,7 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - TransactionPreconditionsResponse for all precondition types
-public class PreconditionsTimeBoundsResponse: NSObject, Decodable {
+public struct PreconditionsTimeBoundsResponse: Decodable, Sendable {
 
     /// Minimum Unix timestamp (seconds since epoch). Transaction invalid before this time. Nil or "0" for no minimum.
     public var minTime:String?
@@ -40,7 +40,7 @@ public class PreconditionsTimeBoundsResponse: NSObject, Decodable {
         case maxTime = "max_time"
     }
     
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         minTime = try values.decodeIfPresent(String.self, forKey: .minTime)
         maxTime = try values.decodeIfPresent(String.self, forKey: .maxTime)

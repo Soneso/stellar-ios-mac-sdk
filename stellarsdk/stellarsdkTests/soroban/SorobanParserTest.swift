@@ -537,12 +537,6 @@ final class SorobanParserTest: XCTestCase {
         XCTAssertEqual(functions.count, 13,
                        "ContractSpec funcs() should return exactly 13 functions")
 
-        // Validate that all returned items are SCSpecFunctionV0XDR instances
-        for function in functions {
-            XCTAssertTrue(function is SCSpecFunctionV0XDR,
-                          "Each function should be an instance of SCSpecFunctionV0XDR")
-        }
-
         // Validate specific function names exist
         let functionNames = functions.map { $0.name }
         XCTAssertTrue(functionNames.contains("__constructor"),
@@ -577,12 +571,6 @@ final class SorobanParserTest: XCTestCase {
         XCTAssertEqual(structs.count, 3,
                        "ContractSpec udtStructs() should return exactly 3 structs")
 
-        // Validate that all returned items are SCSpecUDTStructV0XDR instances
-        for structItem in structs {
-            XCTAssertTrue(structItem is SCSpecUDTStructV0XDR,
-                          "Each struct should be an instance of SCSpecUDTStructV0XDR")
-        }
-
         // Validate specific struct names exist
         let structNames = structs.map { $0.name }
         XCTAssertTrue(structNames.contains("AllowanceDataKey"),
@@ -608,12 +596,6 @@ final class SorobanParserTest: XCTestCase {
         XCTAssertEqual(unions.count, 1,
                        "ContractSpec udtUnions() should return exactly 1 union")
 
-        // Validate that all returned items are SCSpecUDTUnionV0XDR instances
-        for union in unions {
-            XCTAssertTrue(union is SCSpecUDTUnionV0XDR,
-                          "Each union should be an instance of SCSpecUDTUnionV0XDR")
-        }
-
         // Validate specific union names exist
         let unionNames = unions.map { $0.name }
         XCTAssertTrue(unionNames.contains("DataKey"),
@@ -631,33 +613,15 @@ final class SorobanParserTest: XCTestCase {
         XCTAssertEqual(enums.count, 0,
                        "ContractSpec udtEnums() should return 0 enums for this contract")
 
-        // Validate that all returned items are SCSpecUDTEnumV0XDR instances (even if empty)
-        for enumItem in enums {
-            XCTAssertTrue(enumItem is SCSpecUDTEnumV0XDR,
-                          "Each enum should be an instance of SCSpecUDTEnumV0XDR")
-        }
-
         // Test udtErrorEnums() method - should return 0 error enums
         let errorEnums = contractSpec.udtErrorEnums()
         XCTAssertEqual(errorEnums.count, 0,
                        "ContractSpec udtErrorEnums() should return 0 error enums for this contract")
 
-        // Validate that all returned items are SCSpecUDTErrorEnumV0XDR instances (even if empty)
-        for errorEnum in errorEnums {
-            XCTAssertTrue(errorEnum is SCSpecUDTErrorEnumV0XDR,
-                          "Each error enum should be an instance of SCSpecUDTErrorEnumV0XDR")
-        }
-
         // Test events() method - should return 8 events
         let events = contractSpec.events()
         XCTAssertEqual(events.count, 8,
                        "ContractSpec events() should return exactly 8 events")
-
-        // Validate that all returned items are SCSpecEventV0XDR instances
-        for event in events {
-            XCTAssertTrue(event is SCSpecEventV0XDR,
-                          "Each event should be an instance of SCSpecEventV0XDR")
-        }
 
         // Validate specific event names exist
         let eventNames = events.map { $0.name }
@@ -693,8 +657,6 @@ final class SorobanParserTest: XCTestCase {
         let balanceFunc = contractSpec.getFunc(name: "balance")
         XCTAssertNotNil(balanceFunc,
                         "ContractSpec getFunc() should find balance function")
-        XCTAssertTrue(balanceFunc is SCSpecFunctionV0XDR,
-                      "getFunc() should return SCSpecFunctionV0XDR instance")
         XCTAssertEqual(balanceFunc!.name, "balance",
                        "Found function should have correct name")
         XCTAssertEqual(balanceFunc!.inputs.count, 1,

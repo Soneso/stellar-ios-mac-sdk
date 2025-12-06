@@ -13,19 +13,19 @@ import Foundation
 /// Sponsorship allows one account to pay the base reserve for another account's trustline.
 /// Triggered by the Begin Sponsoring Future Reserves and End Sponsoring Future Reserves operations.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class TrustlineSponsorshipCreatedEffectResponse: EffectResponse {
+public class TrustlineSponsorshipCreatedEffectResponse: EffectResponse, @unchecked Sendable {
 
     /// The account ID of the sponsor paying the trustline's base reserve.
-    public var sponsor:String
+    public let sponsor:String
 
     /// The asset identifier for the trustline.
-    public var asset:String?
+    public let asset:String?
 
     /// The asset type for the trustline.
-    public var assetType:String?
+    public let assetType:String?
 
     /// The liquidity pool ID if the trustline is for liquidity pool shares.
-    public var liquidityPoolId:String?
+    public let liquidityPoolId:String?
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

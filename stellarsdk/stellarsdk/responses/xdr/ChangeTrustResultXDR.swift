@@ -23,7 +23,7 @@ public enum ChangeTrustResultCode: Int32 {
     case notAuthMaintainLiabilities = -8 // Asset trustline is deauthorized
 }
 
-public enum ChangeTrustResultXDR: XDRCodable {
+public enum ChangeTrustResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

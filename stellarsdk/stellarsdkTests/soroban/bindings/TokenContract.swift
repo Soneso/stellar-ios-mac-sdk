@@ -311,7 +311,7 @@ public class TokenContract {
             try SCValXDR.i128(stringValue: amount)
         ]
         
-        let result = try await client.invokeMethod(
+        _ = try await client.invokeMethod(
             name: "mint",
             args: args,
             force: force,
@@ -358,7 +358,7 @@ public class TokenContract {
             SCValXDR.address(new_admin)
         ]
         
-        let result = try await client.invokeMethod(
+        _ = try await client.invokeMethod(
             name: "set_admin",
             args: args,
             force: force,
@@ -462,7 +462,7 @@ public class TokenContract {
             SCValXDR.u32(expiration_ledger)
         ]
         
-        let result = try await client.invokeMethod(
+        _ = try await client.invokeMethod(
             name: "approve",
             args: args,
             force: force,
@@ -566,7 +566,7 @@ public class TokenContract {
             try SCValXDR.i128(stringValue: amount)
         ]
         
-        let result = try await client.invokeMethod(
+        _ = try await client.invokeMethod(
             name: "transfer",
             args: args,
             force: force,
@@ -625,7 +625,7 @@ public class TokenContract {
             try SCValXDR.i128(stringValue: amount)
         ]
         
-        let result = try await client.invokeMethod(
+        _ = try await client.invokeMethod(
             name: "transfer_from",
             args: args,
             force: force,
@@ -681,7 +681,7 @@ public class TokenContract {
             try SCValXDR.i128(stringValue: amount)
         ]
         
-        let result = try await client.invokeMethod(
+        _ = try await client.invokeMethod(
             name: "burn",
             args: args,
             force: force,
@@ -734,7 +734,7 @@ public class TokenContract {
             try SCValXDR.i128(stringValue: amount)
         ]
         
-        let result = try await client.invokeMethod(
+        _ = try await client.invokeMethod(
             name: "burn_from",
             args: args,
             force: force,

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct OperationMetaXDR: XDRCodable {
+public struct OperationMetaXDR: XDRCodable, Sendable {
     public let changes: LedgerEntryChangesXDR
     
     public init(changes: LedgerEntryChangesXDR) {

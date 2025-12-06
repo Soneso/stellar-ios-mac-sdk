@@ -28,7 +28,7 @@ import ed25519C
 /// - Public keys can be safely shared and are meant to be public
 /// - They do not grant access to accounts on their own
 /// - Used to verify that operations were signed by the corresponding private key
-public class PublicKey: XDRCodable {
+public final class PublicKey: XDRCodable, Sendable {
     private let buffer: [UInt8]
     
     /// Human readable Stellar account ID.
@@ -36,10 +36,10 @@ public class PublicKey: XDRCodable {
         get {
             var versionByte = VersionByte.ed25519PublicKey.rawValue
             let versionByteData = Data(bytes: &versionByte, count: MemoryLayout.size(ofValue: versionByte))
-            let payload = NSMutableData(data: versionByteData)
+            var payload = Data(versionByteData)
             payload.append(Data(self.bytes))
-            let checksumedData = (payload as Data).crc16Data()
-            
+            let checksumedData = payload.crc16Data()
+
             return checksumedData.base32EncodedString
         }
     }
@@ -93,8 +93,8 @@ public class PublicKey: XDRCodable {
         _ = try container.decode(Int32.self)
         
         let wrappedData = try container.decode(WrappedData32.self)
-        self.buffer = wrappedData.wrapped.withUnsafeBytes {
-            [UInt8](UnsafeBufferPointer(start: $0, count: wrappedData.wrapped.count))
+        self.buffer = wrappedData.wrapped.withUnsafeBytes { (rawBufferPointer: UnsafeRawBufferPointer) in
+            [UInt8](UnsafeBufferPointer(start: rawBufferPointer.baseAddress!.assumingMemoryBound(to: UInt8.self), count: wrappedData.wrapped.count))
         }
         
     }

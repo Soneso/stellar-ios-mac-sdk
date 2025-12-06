@@ -21,7 +21,7 @@ public enum RevokeSponsorshipResultCode: Int32 {
     case malformed = -5
 }
 
-public enum RevokeSponsorshipResultXDR: XDRCodable {
+public enum RevokeSponsorshipResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

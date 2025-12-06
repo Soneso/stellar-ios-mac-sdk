@@ -8,10 +8,10 @@
 
 import Foundation
 
-public struct AllowTrustOperationXDR: XDRCodable {
-    public var trustor: PublicKey
-    public var asset: AllowTrustOpAssetXDR
-    public var authorize:UInt32
+public struct AllowTrustOperationXDR: XDRCodable, Sendable {
+    public let trustor: PublicKey
+    public let asset: AllowTrustOpAssetXDR
+    public let authorize: UInt32
     
     public init(trustor: PublicKey, asset:AllowTrustOpAssetXDR, authorize:UInt32) {
         self.trustor = trustor

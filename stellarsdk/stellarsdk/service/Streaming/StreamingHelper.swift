@@ -47,12 +47,47 @@ import Foundation
 /// - `.response(id, data)`: Message received with event ID and JSON data
 /// - `.error(error)`: Error occurred during streaming
 ///
+/// ## Thread Safety
+///
+/// This class is thread-safe. The EventSource callbacks may arrive on background threads
+/// while `close()` may be called from any thread. All access to mutable state is
+/// protected by an internal lock.
+///
 /// See also:
 /// - [EventSource] for the underlying SSE implementation
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class StreamingHelper: NSObject {
-    var eventSource: EventSource!
-    private var closed = false
+public class StreamingHelper: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _eventSource: EventSource?
+    private var _closed = false
+
+    /// Thread-safe access to the closed flag.
+    private var closed: Bool {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return _closed
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            _closed = newValue
+        }
+    }
+
+    /// Thread-safe access to the event source.
+    private var eventSource: EventSource? {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return _eventSource
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            _eventSource = newValue
+        }
+    }
 
     /// Initiates streaming from a Horizon endpoint URL.
     ///
@@ -101,8 +136,10 @@ public class StreamingHelper: NSObject {
     ///         unrecoverable error occurs. The EventSource will automatically attempt to
     ///         reconnect on transient network failures.
     func streamFrom(requestUrl:String, responseClosure:@escaping StreamResponseEnum<String>.ResponseClosure) {
-        eventSource = EventSource(url: requestUrl, headers: ["Accept" : "text/event-stream"])
-        eventSource.onOpen { [weak self] httpResponse in
+        let source = EventSource(url: requestUrl, headers: ["Accept" : "text/event-stream"])
+        eventSource = source
+
+        source.onOpen { [weak self] httpResponse in
             if httpResponse?.statusCode == 404 {
                 let error = HorizonRequestError.notFound(message: "Horizon object missing", horizonErrorResponse: nil)
                 responseClosure(.error(error: error))
@@ -110,14 +147,14 @@ public class StreamingHelper: NSObject {
                 responseClosure(.open)
             }
         }
-        
-        eventSource.onError { [weak self] error in
+
+        source.onError { [weak self] error in
             if let self = self, !self.closed {
                 responseClosure(.error(error: error))
             }
         }
-        
-        eventSource.onMessage { [weak self] (id, event, data) in
+
+        source.onMessage { [weak self] (id, event, data) in
             if let self = self, !self.closed {
                 responseClosure(.response(id: id ?? "", data: data ?? ""))
             }

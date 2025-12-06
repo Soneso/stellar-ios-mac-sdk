@@ -26,7 +26,7 @@ import Foundation
 /// - [BIP-32 Specification](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
 /// - [BIP-44 Specification](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
 /// - [SEP-0005 Key Derivation](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)
-public struct Ed25519Derivation {
+public struct Ed25519Derivation: Sendable {
 
     /// The derived private key material (32 bytes).
     public let raw: Data

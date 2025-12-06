@@ -22,9 +22,6 @@ public enum LedgersChange {
     case allLedgers(cursor:String?)
 }
 
-/// Closure type for ledger details response callbacks.
-public typealias LedgerDetailsResponseClosure = (_ response:LedgerDetailsResponseEnum) -> (Void)
-
 /// Service for querying ledger information from the Stellar Horizon API.
 ///
 /// Ledgers represent the state of the Stellar network at a specific point in time. Each ledger
@@ -48,11 +45,11 @@ public typealias LedgerDetailsResponseClosure = (_ response:LedgerDetailsRespons
 ///
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class LedgersService: NSObject {
+public class LedgersService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
@@ -62,15 +59,6 @@ public class LedgersService: NSObject {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
-    /// Retrieves detailed information about a specific ledger (callback-based, deprecated).
-    @available(*, renamed: "getLedger(sequenceNumber:)")
-    open func getLedger(sequenceNumber:String, response:@escaping LedgerDetailsResponseClosure) {
-        Task {
-            let result = await getLedger(sequenceNumber: sequenceNumber)
-            response(result)
-        }
-    }
-
     /// Retrieves detailed information about a specific ledger by sequence number.
     /// - Parameter sequenceNumber: The ledger sequence number as a string
     /// - Returns: LedgerDetailsResponseEnum with ledger details or error
@@ -91,15 +79,6 @@ public class LedgersService: NSObject {
         }
     }
     
-    /// Retrieves all ledgers with pagination (callback-based, deprecated).
-    @available(*, renamed: "getLedgers(cursor:order:limit:)")
-    open func getLedgers(cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<LedgerResponse>.ResponseClosure) {
-        Task {
-            let result = await getLedgers(cursor: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-
     /// Retrieves all ledgers with pagination support.
     /// - Parameters:
     ///   - cursor: Pagination cursor for next page
@@ -122,15 +101,6 @@ public class LedgersService: NSObject {
         return await getLedgersFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
-    /// Loads ledgers from a specific URL (callback-based, deprecated).
-    @available(*, renamed: "getLedgersFromUrl(url:)")
-    open func getLedgersFromUrl(url:String, response:@escaping PageResponse<LedgerResponse>.ResponseClosure) {
-        Task {
-            let result = await getLedgersFromUrl(url: url)
-            response(result)
-        }
-    }
-
     /// Loads ledgers from a specific URL for pagination.
     /// - Parameter url: The complete URL to fetch ledgers from (typically from PageResponse links)
     /// - Returns: PageResponse containing ledgers or error
@@ -151,6 +121,9 @@ public class LedgersService: NSObject {
     }
 
     /// Streams real-time ledger updates via Server-Sent Events from Horizon.
+    ///
+    /// - Parameter transactionsType: The filter specifying which ledgers to stream (currently only allLedgers)
+    /// - Returns: LedgersStreamItem for receiving streaming ledger updates
     open func stream(for transactionsType:LedgersChange) -> LedgersStreamItem {
         var subpath:String!
         switch transactionsType {

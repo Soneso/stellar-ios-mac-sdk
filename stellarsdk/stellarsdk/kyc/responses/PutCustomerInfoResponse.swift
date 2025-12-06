@@ -17,10 +17,10 @@ import Foundation
 /// The anchor responds with HTTP 202 Accepted or 200 Success along with this response body.
 ///
 /// See [SEP-12 Customer PUT](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-put)
-public struct PutCustomerInfoResponse: Decodable {
+public struct PutCustomerInfoResponse: Decodable , Sendable {
 
     /// An identifier for the updated or created customer
-    public var id:String
+    public let id:String
     
     /// Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

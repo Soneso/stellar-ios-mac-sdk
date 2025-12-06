@@ -11,7 +11,7 @@ import Foundation
 /// Cryptographic constants used throughout the SDK.
 /// These values define parameters for checksum algorithms, bit operations,
 /// and other low-level cryptographic functions.
-public struct CryptographicConstants {
+public struct CryptographicConstants: Sendable {
 
     // MARK: - CRC-16-CCITT-XModem Algorithm
 

@@ -85,6 +85,7 @@ class PaymentsTestCase: XCTestCase {
         await sendAndReceiveNativePaymentWithPreconditions()
         await sendAndReceiveNonNativePayment()
         await destinationRequiresMemo()
+        await testEventStream()
     }
     
     func getPayments() async {
@@ -367,11 +368,11 @@ class PaymentsTestCase: XCTestCase {
     
     
     func destinationRequiresMemo() async {
-        
+
         let sourceAccountKeyPair = testKeyPair
         let sourceAccountId = sourceAccountKeyPair.accountId
         let destinationAccountId = IOMIssuingAccountKeyPair.accountId
-        
+
         let accountDetailsResponseEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId);
         switch accountDetailsResponseEnum {
         case .success(let accountResponse):
@@ -401,5 +402,76 @@ class PaymentsTestCase: XCTestCase {
             StellarSDKLog.printHorizonRequestErrorMessage(tag:"destinationRequiresMemo()", horizonRequestError: error)
             XCTFail("could not load deatils for account: \(sourceAccountKeyPair.accountId)")
         }
+    }
+
+    func testEventStream() async {
+        let sourceAccountKeyPair = testKeyPair
+        let destinationAccountId = IOMIssuingAccountKeyPair.accountId
+
+        let url = "\(sdk.horizonURL)/payments?cursor=now"
+        let eventSource = EventSource(url: url)
+        let stream = eventSource.eventStream()
+
+        var eventReceived = false
+
+        let streamTask = Task {
+            for await (_, _, data) in stream {
+                if let paymentData = data?.data(using: .utf8) {
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: paymentData, options: [])
+                        if let dict = json as? [String: Any], let _ = dict["id"] as? String {
+                            eventReceived = true
+                            eventSource.close()
+                            break
+                        }
+                    } catch {
+                        continue
+                    }
+                }
+            }
+        }
+
+        let accountDetailsResponseEnum = await sdk.accounts.getAccountDetails(accountId: sourceAccountKeyPair.accountId)
+        switch accountDetailsResponseEnum {
+        case .success(let accountResponse):
+            let paymentOperation = try! PaymentOperation(sourceAccountId: sourceAccountKeyPair.accountId,
+                                                    destinationAccountId: destinationAccountId,
+                                                    asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+                                                    amount: 1.5)
+
+            let transaction = try! Transaction(sourceAccount: accountResponse,
+                                              operations: [paymentOperation],
+                                              memo: Memo.init(text: "test stream"))
+            try! transaction.sign(keyPair: sourceAccountKeyPair, network: self.network)
+
+            let submitTxResultEnum = await sdk.transactions.submitTransaction(transaction: transaction)
+            switch submitTxResultEnum {
+            case .success(let details):
+                XCTAssertTrue(details.operationCount > 0)
+            case .destinationRequiresMemo(destinationAccountId: let destinationAccountId):
+                streamTask.cancel()
+                eventSource.close()
+                XCTFail("destination account \(destinationAccountId) requires memo")
+                return
+            case .failure(error: let error):
+                streamTask.cancel()
+                eventSource.close()
+                StellarSDKLog.printHorizonRequestErrorMessage(tag:"testEventStream()", horizonRequestError: error)
+                XCTFail("submit transaction error")
+                return
+            }
+        case .failure(let error):
+            streamTask.cancel()
+            eventSource.close()
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testEventStream()", horizonRequestError: error)
+            XCTFail("could not load account details for: \(sourceAccountKeyPair.accountId)")
+            return
+        }
+
+        try? await Task.sleep(nanoseconds: 10_000_000_000)
+        streamTask.cancel()
+        eventSource.close()
+
+        XCTAssertTrue(eventReceived, "Event stream should have received at least one event")
     }
 }

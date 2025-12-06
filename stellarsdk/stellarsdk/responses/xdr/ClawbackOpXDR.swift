@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct ClawbackOpXDR: XDRCodable {
+public struct ClawbackOpXDR: XDRCodable, Sendable {
     public let asset: AssetXDR
     public let from: MuxedAccountXDR
     public let amount: Int64

@@ -53,11 +53,11 @@ public enum TradesChange {
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - TradeAggregationsService for aggregated trade statistics
-public class TradesService: NSObject {
+public class TradesService: @unchecked Sendable {
     let serviceHelper: ServiceHelper
     let jsonDecoder = JSONDecoder()
     
-    private override init() {
+    private init() {
         serviceHelper = ServiceHelper(baseURL: "")
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
@@ -68,15 +68,21 @@ public class TradesService: NSObject {
     }
     
     /// Retrieves trades filtered by asset pair, offer ID, or trade type with optional pagination parameters.
-    @available(*, renamed: "getTrades(baseAssetType:baseAssetCode:baseAssetIssuer:counterAssetType:counterAssetCode:counterAssetIssuer:offerId:tradeType:cursor:order:limit:)")
-    open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, tradeType:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
-        Task {
-            let result = await getTrades(baseAssetType: baseAssetType, baseAssetCode: baseAssetCode, baseAssetIssuer: baseAssetIssuer, counterAssetType: counterAssetType, counterAssetCode: counterAssetCode, counterAssetIssuer: counterAssetIssuer, offerId: offerId, tradeType: tradeType, cursor: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-
-    /// Retrieves trades filtered by asset pair, offer ID, or trade type with optional pagination parameters.
+    ///
+    /// - Parameter baseAssetType: Optional. Type of the base asset: "native", "credit_alphanum4", or "credit_alphanum12"
+    /// - Parameter baseAssetCode: Optional. Asset code of the base asset (required if base_asset_type is not "native")
+    /// - Parameter baseAssetIssuer: Optional. Account ID of the base asset issuer (required if base_asset_type is not "native")
+    /// - Parameter counterAssetType: Optional. Type of the counter asset: "native", "credit_alphanum4", or "credit_alphanum12"
+    /// - Parameter counterAssetCode: Optional. Asset code of the counter asset (required if counter_asset_type is not "native")
+    /// - Parameter counterAssetIssuer: Optional. Account ID of the counter asset issuer (required if counter_asset_type is not "native")
+    /// - Parameter offerId: Optional. Filter for trades involving a specific offer ID
+    /// - Parameter tradeType: Optional. Filter by trade type: "all", "orderbook", or "liquidity_pool". Default: "all"
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
+    /// - Returns: PageResponse containing trade records or error
+    ///
+    /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, tradeType:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
         
         var requestPath = "/trades"
@@ -102,15 +108,12 @@ public class TradesService: NSObject {
     }
     
     /// Retrieves all trades for a specific account with optional pagination parameters.
-    @available(*, renamed: "getTrades(forAccount:from:order:limit:)")
-    open func getTrades(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
-        Task {
-            let result = await getTrades(forAccount: accountId, from: cursor, order: order, limit: limit)
-            response(result)
-        }
-    }
-
-    /// Retrieves all trades for a specific account with optional pagination parameters.
+    ///
+    /// - Parameter accountId: The Stellar account ID to get trades for
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
+    /// - Returns: PageResponse containing trade records for the account or error
     open func getTrades(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
         var requestPath = "/accounts/" + accountId + "/trades"
         
@@ -128,15 +131,11 @@ public class TradesService: NSObject {
     }
     
     /// Retrieves trades from a specific Horizon URL.
-    @available(*, renamed: "getTradesFromUrl(url:)")
-    func getTradesFromUrl(url:String, response:@escaping PageResponse<TradeResponse>.ResponseClosure) {
-        Task {
-            let result = await getTradesFromUrl(url: url)
-            response(result)
-        }
-    }
-
-    /// Retrieves trades from a specific Horizon URL.
+    ///
+    /// Useful for pagination with "next" or "prev" links from a PageResponse.
+    ///
+    /// - Parameter url: The complete URL to fetch trades from
+    /// - Returns: PageResponse containing trade records or error
     func getTradesFromUrl(url:String) async -> PageResponse<TradeResponse>.ResponseEnum {
         let result = await serviceHelper.GETRequestFromUrl(url: url)
         switch result {
@@ -153,8 +152,11 @@ public class TradesService: NSObject {
     }
 
     /// Streams real-time trade updates via Server-Sent Events from Horizon.
+    ///
+    /// - Parameter tradesType: The filter specifying which trades to stream (all trades with asset filters, or trades for a specific account)
+    /// - Returns: TradesStreamItem for receiving streaming trade updates
     open func stream(for tradesType:TradesChange) -> TradesStreamItem {
-        var subpath:String!
+        var subpath: String
         switch tradesType {
         case .allTrades(let baseAssetType,
                         let baseAssetCode,

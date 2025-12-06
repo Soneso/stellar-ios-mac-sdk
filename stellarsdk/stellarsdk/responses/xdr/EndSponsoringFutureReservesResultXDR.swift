@@ -16,7 +16,7 @@ public enum EndSponsoringFutureReservesResultCode: Int32 {
     case notSponsored = -1 // must be sponsored to end
 }
 
-public enum EndSponsoringFutureReservesResultXDR: XDRCodable {
+public enum EndSponsoringFutureReservesResultXDR: XDRCodable, Sendable {
     case success (Int32)
     case empty (Int32)
     

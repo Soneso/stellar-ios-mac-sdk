@@ -64,7 +64,7 @@ extension Data {
     ///
     /// - Returns: True if the checksum is valid, false otherwise
     func crcValid() -> Bool {
-        return CRCCCITTXModem(subdata(in: 0..<count-CryptographicConstants.CRC16_SIZE)) == self.subdata(in: count-CryptographicConstants.CRC16_SIZE..<count).withUnsafeBytes { $0.pointee }
+        return CRCCCITTXModem(subdata(in: 0..<count-CryptographicConstants.CRC16_SIZE)) == self.subdata(in: count-CryptographicConstants.CRC16_SIZE..<count).withUnsafeBytes { $0.load(as: UInt16.self) }
     }
 
     /// Appends CRC16 checksum to the data.
@@ -77,10 +77,10 @@ extension Data {
         var crc = crc16()
         let crcData = Data(bytes: &crc, count: MemoryLayout.size(ofValue: crc))
 
-        let checksumedData = NSMutableData(data: self)
+        var checksumedData = Data(self)
         checksumedData.append(crcData)
 
-        return checksumedData as Data
+        return checksumedData
     }
 
 }

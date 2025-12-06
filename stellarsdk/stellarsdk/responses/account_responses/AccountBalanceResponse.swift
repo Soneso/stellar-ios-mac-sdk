@@ -17,7 +17,7 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountResponse for complete account information
-public class AccountBalanceResponse: NSObject, Decodable {
+public struct AccountBalanceResponse: Decodable, Sendable {
 
     /// Current balance amount for this asset as a decimal string.
     public var balance:String
@@ -30,7 +30,7 @@ public class AccountBalanceResponse: NSObject, Decodable {
 
     /// Maximum amount of this asset the account can hold (from trustline limit).
     /// Nil for native XLM which has no limit.
-    public var limit:String!
+    public var limit:String?
 
     /// Asset type: "native" for XLM, "credit_alphanum4" for 4-char assets, "credit_alphanum12" for 12-char assets, or "liquidity_pool_shares".
     public var assetType:String
@@ -86,7 +86,7 @@ public class AccountBalanceResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         balance = try values.decode(String.self, forKey: .balance) as String
         buyingLiabilities = try values.decodeIfPresent(String.self, forKey: .buyingLiabilities) as String?

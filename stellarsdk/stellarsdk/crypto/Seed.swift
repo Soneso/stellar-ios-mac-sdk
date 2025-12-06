@@ -23,7 +23,7 @@ import ed25519C
 /// - Seeds must be stored securely (use iOS Keychain or equivalent)
 /// - Never expose seeds in logs, network requests, or version control
 /// - Seeds encoded as secret seeds start with 'S' and are base32-encoded
-public class Seed {
+public final class Seed: Sendable {
     private let buffer: [UInt8]
 
     /// Internal initializer that skips validation.
@@ -120,10 +120,10 @@ public class Seed {
         get {
             var versionByte = VersionByte.ed25519SecretSeed.rawValue
             let versionByteData = Data(bytes: &versionByte, count: MemoryLayout.size(ofValue: versionByte))
-            let payload = NSMutableData(data: versionByteData)
+            var payload = Data(versionByteData)
             payload.append(Data(bytes))
-            let checksumedData = (payload as Data).crc16Data()
-            
+            let checksumedData = payload.crc16Data()
+
             return checksumedData.base32EncodedString
         }
     }

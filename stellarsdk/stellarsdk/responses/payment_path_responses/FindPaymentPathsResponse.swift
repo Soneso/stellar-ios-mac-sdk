@@ -9,10 +9,10 @@
 import Foundation
 
 ///  See [Stellar developer docs](https://developers.stellar.org)
-public struct FindPaymentPathsResponse: Decodable {
+public struct FindPaymentPathsResponse: Decodable , Sendable {
     
     /// records found in the response.
-    public var records:[PaymentPathResponse]
+    public let records:[PaymentPathResponse]
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct ChangeTrustOperationXDR: XDRCodable {
+public struct ChangeTrustOperationXDR: XDRCodable, Sendable {
     public let asset: ChangeTrustAssetXDR
     public private(set) var limit: Int64 = Int64.max
     

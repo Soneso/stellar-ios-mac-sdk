@@ -25,7 +25,7 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - SubmitTransactionResponse for synchronous submission
-public class SubmitTransactionAsyncResponse: NSObject, Decodable {
+public struct SubmitTransactionAsyncResponse: Decodable, Sendable {
 
     /// Status of the async transaction submission: "ERROR", "PENDING", "DUPLICATE", or "TRY_AGAIN_LATER".
     public var txStatus:String
@@ -38,7 +38,7 @@ public class SubmitTransactionAsyncResponse: NSObject, Decodable {
         case txHash = "hash"
     }
     
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         txStatus = try values.decode(String.self, forKey: .txStatus)
         txHash = try values.decode(String.self, forKey: .txHash)

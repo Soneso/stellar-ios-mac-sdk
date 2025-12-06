@@ -20,31 +20,31 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountResponse for complete account details
 /// - LinkResponse for individual link structure
-public class AccountLinksResponse: NSObject, Decodable {
+public struct AccountLinksResponse: Decodable, Sendable {
 
     /// Link to this account resource (self reference).
-    public var selflink:LinkResponse!
+    public let selflink:LinkResponse
 
     /// Templated link to transactions for this account. Supports cursor, order, and limit parameters.
-    public var transactions:LinkResponse!
+    public let transactions:LinkResponse
 
     /// Templated link to operations involving this account. Supports cursor, order, and limit parameters.
-    public var operations:LinkResponse!
+    public let operations:LinkResponse
 
     /// Templated link to payment operations for this account. Supports cursor, order, and limit parameters.
-    public var payments:LinkResponse!
+    public let payments:LinkResponse
 
     /// Templated link to effects on this account. Supports cursor, order, and limit parameters.
-    public var effects:LinkResponse!
+    public let effects:LinkResponse
 
     /// Templated link to open offers by this account. Supports cursor, order, and limit parameters.
-    public var offers:LinkResponse!
+    public let offers:LinkResponse
 
     /// Templated link to trades executed by this account. Supports cursor, order, and limit parameters.
-    public var trades:LinkResponse!
+    public let trades:LinkResponse
 
     /// Link to the data entries (key-value store) for this account.
-    public var data:LinkResponse!
+    public let data:LinkResponse
     
     // Properties to encode and decode
     enum CodingKeys: String, CodingKey {
@@ -63,15 +63,15 @@ public class AccountLinksResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        selflink = try values.decodeIfPresent(LinkResponse.self, forKey: .selflink)
-        transactions = try values.decodeIfPresent(LinkResponse.self, forKey: .transactions)
-        operations = try values.decodeIfPresent(LinkResponse.self, forKey: .operations)
-        payments = try values.decodeIfPresent(LinkResponse.self, forKey: .payments)
-        effects = try values.decodeIfPresent(LinkResponse.self, forKey: .effects)
-        offers = try values.decodeIfPresent(LinkResponse.self, forKey: .offers)
-        trades = try values.decodeIfPresent(LinkResponse.self, forKey: .trades)
-        data = try values.decodeIfPresent(LinkResponse.self, forKey: .data)
+        selflink = try values.decode(LinkResponse.self, forKey: .selflink)
+        transactions = try values.decode(LinkResponse.self, forKey: .transactions)
+        operations = try values.decode(LinkResponse.self, forKey: .operations)
+        payments = try values.decode(LinkResponse.self, forKey: .payments)
+        effects = try values.decode(LinkResponse.self, forKey: .effects)
+        offers = try values.decode(LinkResponse.self, forKey: .offers)
+        trades = try values.decode(LinkResponse.self, forKey: .trades)
+        data = try values.decode(LinkResponse.self, forKey: .data)
     }
 }

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct SetTrustLineFlagsOpXDR: XDRCodable {
+public struct SetTrustLineFlagsOpXDR: XDRCodable, Sendable {
     public let accountID: PublicKey
     public let asset: AssetXDR
     public let clearFlags:UInt32 // which flags to clear

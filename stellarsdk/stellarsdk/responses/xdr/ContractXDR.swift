@@ -180,7 +180,7 @@ public enum ContractCostType: Int32 {
 
 }
 
-public enum SCErrorXDR: XDRCodable {
+public enum SCErrorXDR: XDRCodable, Sendable {
 
     case contract(UInt32)
     case wasmVm
@@ -279,7 +279,7 @@ public enum SCAddressType: Int32 {
     case liquidityPool = 4
 }
 
-public enum SCAddressXDR: XDRCodable {
+public enum SCAddressXDR: XDRCodable, Sendable {
     case account(PublicKey)
     case contract(WrappedData32)
     case muxedAccount(MuxedAccountMed25519XDR)
@@ -441,7 +441,7 @@ public enum SCAddressXDR: XDRCodable {
     }
 }
 
-public struct SCNonceKeyXDR: XDRCodable {
+public struct SCNonceKeyXDR: XDRCodable, Sendable {
     public let nonce: Int64
     
     public init(nonce:Int64) {
@@ -459,7 +459,7 @@ public struct SCNonceKeyXDR: XDRCodable {
     }
 }
 
-public enum SCValXDR: XDRCodable {
+public enum SCValXDR: XDRCodable, Sendable {
 
     case bool(Bool)
     case void
@@ -952,7 +952,7 @@ public enum SCValXDR: XDRCodable {
 }
 
 
-public struct SCMapEntryXDR: XDRCodable {
+public struct SCMapEntryXDR: XDRCodable, Sendable {
     public let key: SCValXDR
     public let val: SCValXDR
     
@@ -979,7 +979,7 @@ public enum ContractExecutableType: Int32 {
     case stellarAsset = 1
 }
 
-public enum ContractExecutableXDR: XDRCodable {
+public enum ContractExecutableXDR: XDRCodable, Sendable {
     case wasm(WrappedData32)
     case token
     
@@ -1036,7 +1036,7 @@ public enum ContractExecutableXDR: XDRCodable {
     }
 }
 
-public struct Int128PartsXDR: XDRCodable {
+public struct Int128PartsXDR: XDRCodable, Sendable {
     public let hi: Int64
     public let lo: UInt64
     
@@ -1058,7 +1058,7 @@ public struct Int128PartsXDR: XDRCodable {
     }
 }
 
-public struct UInt128PartsXDR: XDRCodable {
+public struct UInt128PartsXDR: XDRCodable, Sendable {
     public let hi: UInt64
     public let lo: UInt64
     
@@ -1080,7 +1080,7 @@ public struct UInt128PartsXDR: XDRCodable {
     }
 }
 
-public struct Int256PartsXDR: XDRCodable {
+public struct Int256PartsXDR: XDRCodable, Sendable {
 
     public let hiHi: Int64
     public let hiLo: UInt64
@@ -1111,7 +1111,7 @@ public struct Int256PartsXDR: XDRCodable {
     }
 }
 
-public struct UInt256PartsXDR: XDRCodable {
+public struct UInt256PartsXDR: XDRCodable, Sendable {
 
     public let hiHi: UInt64
     public let hiLo: UInt64
@@ -1142,7 +1142,7 @@ public struct UInt256PartsXDR: XDRCodable {
     }
 }
 
-public struct SCContractInstanceXDR: XDRCodable {
+public struct SCContractInstanceXDR: XDRCodable, Sendable {
     public let executable: ContractExecutableXDR
     public let storage: [SCMapEntryXDR]?
     

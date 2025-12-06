@@ -11,22 +11,22 @@ import Foundation
 /// Response for the getLatestLedger request
 /// See: [Stellar developer docs](https://developers.stellar.org)
 ///
-public class GetLatestLedgerResponse: NSObject, Decodable {
-    
+public struct GetLatestLedgerResponse: Decodable, Sendable {
+
     /// hash of the latest ledger as a hex-encoded string
-    public var id:String
+    public let id:String
     /// Stellar Core protocol version associated with the latest ledger
-    public var protocolVersion:Int
+    public let protocolVersion:Int
     /// sequence number of the latest ledger
-    public var sequence:UInt32
-    
+    public let sequence:UInt32
+
     private enum CodingKeys: String, CodingKey {
         case id
         case protocolVersion
         case sequence
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decode(String.self, forKey: .id)
         protocolVersion = try values.decode(Int.self, forKey: .protocolVersion)

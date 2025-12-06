@@ -40,16 +40,6 @@ public enum Sep38QuoteResponseEnum {
     case failure(error: QuoteServiceError)
 }
 
-/// Callback closure for retrieving SEP-38 anchor service information and supported assets.
-public typealias Sep38InfoResponseClosure = (_ response:Sep38InfoResponseEnum) -> (Void)
-/// Callback closure for retrieving SEP-38 indicative prices for multiple delivery methods.
-public typealias Sep38PricesResponseClosure = (_ response:Sep38PricesResponseEnum) -> (Void)
-/// Callback closure for retrieving SEP-38 indicative price for a specific asset pair.
-public typealias Sep38PriceResponseClosure = (_ response:Sep38PriceResponseEnum) -> (Void)
-/// Callback closure for requesting and retrieving SEP-38 firm quotes for asset exchanges.
-public typealias Sep38QuoteResponseClosure = (_ response:Sep38QuoteResponseEnum) -> (Void)
-
-
 /// Implements SEP-0038 - Anchor RFQ (Request for Quote) API.
 ///
 /// This class provides price discovery and firm quotes for asset exchanges. Anchors use this
@@ -105,30 +95,20 @@ public class QuoteService: NSObject {
     private let jsonDecoder = JSONDecoder()
 
     /// Creates a QuoteService instance with a direct service endpoint URL.
+    ///
+    /// - Parameter serviceAddress: The URL of the SEP-38 quote server (e.g., "https://anchor.example.com/sep38")
     public init(serviceAddress:String) {
         self.serviceAddress = serviceAddress
         serviceHelper = ServiceHelper(baseURL: serviceAddress)
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
-    /**
-     This endpoint returns the supported Stellar assets and off-chain assets available for trading.
-     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-info
-     - Parameter jwt: optional jwt token obtained before with SEP-0010.
-     */
-    @available(*, renamed: "info(jwt:)")
-    public func info(jwt:String? = nil, completion:@escaping Sep38InfoResponseClosure) {
-        Task {
-            let result = await info(jwt: jwt)
-            completion(result)
-        }
-    }
-    
-    /**
-     This endpoint returns the supported Stellar assets and off-chain assets available for trading.
-     See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-info
-     - Parameter jwt: optional jwt token obtained before with SEP-0010.
-     */
+    /// Returns the supported Stellar assets and off-chain assets available for trading.
+    ///
+    /// - Parameter jwt: Optional JWT token obtained from SEP-10 authentication
+    /// - Returns: Sep38InfoResponseEnum with supported assets and delivery methods, or an error
+    ///
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-info
     public func info(jwt:String? = nil) async -> Sep38InfoResponseEnum {
         
         let result = await serviceHelper.GETRequestWithPath(path: "/info", jwtToken: jwt)
@@ -145,42 +125,17 @@ public class QuoteService: NSObject {
         }
     }
     
-    /**
-     This endpoint can be used to fetch the indicative prices of available off-chain assets in exchange for a Stellar asset and vice versa.
-     See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-prices" target="_blank">GET prices</a>
-     
-     - Parameter sellAsset: The asset you want to sell, using the Asset Identification Format.
-     - Parameter sellAmount: The amount of sell_asset the client would exchange for each of the buy_assets.
-     - Parameter sellDeliveryMethod: Optional, one of the name values specified by the sell_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user is delivering an off-chain asset to the anchor but is not strictly required.
-     - Parameter buyDeliveryMethod: Optional, one of the name values specified by the buy_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user intends to receive an off-chain asset from the anchor but is not strictly required.
-     - Parameter countryCode: Optional, The ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
-     - Parameter jwt: optional jwt token obtained before with SEP-0010.
-     */
-    @available(*, renamed: "prices(sellAsset:sellAmount:sellDeliveryMethod:buyDeliveryMethod:countryCode:jwt:)")
-    public func prices(sellAsset:String,
-                       sellAmount:String,
-                       sellDeliveryMethod:String? = nil,
-                       buyDeliveryMethod:String? = nil,
-                       countryCode:String? = nil,
-                       jwt:String? = nil,
-                       completion:@escaping Sep38PricesResponseClosure) {
-        Task {
-            let result = await prices(sellAsset: sellAsset, sellAmount: sellAmount, sellDeliveryMethod: sellDeliveryMethod, buyDeliveryMethod: buyDeliveryMethod, countryCode: countryCode, jwt: jwt)
-            completion(result)
-        }
-    }
-    
-    /**
-     This endpoint can be used to fetch the indicative prices of available off-chain assets in exchange for a Stellar asset and vice versa.
-     See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-prices" target="_blank">GET prices</a>
-     
-     - Parameter sellAsset: The asset you want to sell, using the Asset Identification Format.
-     - Parameter sellAmount: The amount of sell_asset the client would exchange for each of the buy_assets.
-     - Parameter sellDeliveryMethod: Optional, one of the name values specified by the sell_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user is delivering an off-chain asset to the anchor but is not strictly required.
-     - Parameter buyDeliveryMethod: Optional, one of the name values specified by the buy_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user intends to receive an off-chain asset from the anchor but is not strictly required.
-     - Parameter countryCode: Optional, The ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
-     - Parameter jwt: optional jwt token obtained before with SEP-0010.
-     */
+    /// Fetches indicative prices of available off-chain assets in exchange for a Stellar asset and vice versa.
+    ///
+    /// - Parameter sellAsset: The asset you want to sell, using the Asset Identification Format (e.g., "stellar:USDC:G...", "iso4217:USD")
+    /// - Parameter sellAmount: The amount of sell_asset the client would exchange for each of the buy_assets
+    /// - Parameter sellDeliveryMethod: Optional, one of the name values specified by the sell_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user is delivering an off-chain asset to the anchor but is not strictly required.
+    /// - Parameter buyDeliveryMethod: Optional, one of the name values specified by the buy_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user intends to receive an off-chain asset from the anchor but is not strictly required.
+    /// - Parameter countryCode: Optional, the ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
+    /// - Parameter jwt: Optional JWT token obtained from SEP-10 authentication
+    /// - Returns: Sep38PricesResponseEnum with indicative prices for available assets, or an error
+    ///
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-prices
     public func prices(sellAsset:String,
                        sellAmount:String,
                        sellDeliveryMethod:String? = nil,
@@ -213,51 +168,22 @@ public class QuoteService: NSObject {
         }
     }
     
-    /**
-     This endpoint can be used to fetch the indicative price for a given asset pair.
-     See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-price" target="_blank">GET price</a>
-     
-     - Parameter context: The context for what this quote will be used for. Must be one of 'sep6' or 'sep31'.
-     - Parameter sellAsset: The asset the client would like to sell. Ex. stellar:USDC:G..., iso4217:ARS
-     - Parameter buyAsset: The asset the client would like to exchange for sellAsset.
-     - Parameter sellAmount: optional, the amount of sellAsset the client would like to exchange for buyAsset.
-     - Parameter buyAmount: optional, the amount of buyAsset the client would like to exchange for sellAsset.
-     - Parameter sellDeliveryMethod: optional, one of the name values specified by the sell_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user is delivering an off-chain asset to the anchor but is not strictly required.
-     - Parameter buyDeliveryMethod: optional, one of the name values specified by the buy_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user intends to receive an off-chain asset from the anchor but is not strictly required.
-     - Parameter countryCode: optional, The ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
-     - Parameter jwt: optional jwt token obtained before with SEP-0010.
-     */
-    @available(*, renamed: "price(context:sellAsset:buyAsset:sellAmount:buyAmount:sellDeliveryMethod:buyDeliveryMethod:countryCode:jwt:)")
-    public func price(context:String, 
-                      sellAsset:String,
-                      buyAsset:String,
-                      sellAmount:String? = nil,
-                      buyAmount:String? = nil, 
-                      sellDeliveryMethod:String? = nil,
-                      buyDeliveryMethod:String? = nil,
-                      countryCode:String? = nil,
-                      jwt:String? = nil,
-                      completion:@escaping Sep38PriceResponseClosure) {
-        Task {
-            let result = await price(context: context, sellAsset: sellAsset, buyAsset: buyAsset, sellAmount: sellAmount, buyAmount: buyAmount, sellDeliveryMethod: sellDeliveryMethod, buyDeliveryMethod: buyDeliveryMethod, countryCode: countryCode, jwt: jwt)
-            completion(result)
-        }
-    }
-    
-    /**
-     This endpoint can be used to fetch the indicative price for a given asset pair.
-     See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-price" target="_blank">GET price</a>
-     
-     - Parameter context: The context for what this quote will be used for. Must be one of 'sep6' or 'sep31'.
-     - Parameter sellAsset: The asset the client would like to sell. Ex. stellar:USDC:G..., iso4217:ARS
-     - Parameter buyAsset: The asset the client would like to exchange for sellAsset.
-     - Parameter sellAmount: optional, the amount of sellAsset the client would like to exchange for buyAsset.
-     - Parameter buyAmount: optional, the amount of buyAsset the client would like to exchange for sellAsset.
-     - Parameter sellDeliveryMethod: optional, one of the name values specified by the sell_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user is delivering an off-chain asset to the anchor but is not strictly required.
-     - Parameter buyDeliveryMethod: optional, one of the name values specified by the buy_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user intends to receive an off-chain asset from the anchor but is not strictly required.
-     - Parameter countryCode: optional, The ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
-     - Parameter jwt: optional jwt token obtained before with SEP-0010.
-     */
+    /// Fetches the indicative price for a given asset pair.
+    ///
+    /// The caller must provide either sellAmount or buyAmount, but not both.
+    ///
+    /// - Parameter context: The context for what this quote will be used for. Must be one of "sep6" or "sep31".
+    /// - Parameter sellAsset: The asset the client would like to sell (e.g., "stellar:USDC:G...", "iso4217:ARS")
+    /// - Parameter buyAsset: The asset the client would like to exchange for sellAsset
+    /// - Parameter sellAmount: Optional, the amount of sellAsset the client would like to exchange for buyAsset
+    /// - Parameter buyAmount: Optional, the amount of buyAsset the client would like to exchange for sellAsset
+    /// - Parameter sellDeliveryMethod: Optional, one of the name values specified by the sell_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user is delivering an off-chain asset to the anchor but is not strictly required.
+    /// - Parameter buyDeliveryMethod: Optional, one of the name values specified by the buy_delivery_methods array for the associated asset returned from GET /info. Can be provided if the user intends to receive an off-chain asset from the anchor but is not strictly required.
+    /// - Parameter countryCode: Optional, the ISO 3166-2 or ISO-3166-1 alpha-2 code of the user's current address. Should be provided if there are two or more country codes available for the desired asset in GET /info.
+    /// - Parameter jwt: Optional JWT token obtained from SEP-10 authentication
+    /// - Returns: Sep38PriceResponseEnum with indicative exchange rate, or an error
+    ///
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-price
     public func price(context:String,
                       sellAsset:String,
                       buyAsset:String,
@@ -304,28 +230,16 @@ public class QuoteService: NSObject {
         }
     }
     
-    /**
-     This endpoint can be used to request a firm quote for a Stellar asset and off-chain asset pair.
-     See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#post-quote" target="_blank">POST quote</a>
-     
-     - Parameter request: the request data.
-     - Parameter jwt: jwt token obtained before with SEP-0010.
-     */
-    @available(*, renamed: "postQuote(request:jwt:)")
-    public func postQuote(request: Sep38PostQuoteRequest, jwt:String, completion:@escaping Sep38QuoteResponseClosure) {
-        Task {
-            let result = await postQuote(request: request, jwt: jwt)
-            completion(result)
-        }
-    }
-    
-    /**
-     This endpoint can be used to request a firm quote for a Stellar asset and off-chain asset pair.
-     See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#post-quote" target="_blank">POST quote</a>
-     
-     - Parameter request: the request data.
-     - Parameter jwt: jwt token obtained before with SEP-0010.
-     */
+    /// Requests a firm quote for a Stellar asset and off-chain asset pair.
+    ///
+    /// Unlike indicative prices, firm quotes are guaranteed by the anchor for a limited time.
+    /// The returned quote ID can be used in SEP-6 or SEP-31 transactions.
+    ///
+    /// - Parameter request: Sep38PostQuoteRequest containing asset pair and amount details
+    /// - Parameter jwt: JWT token obtained from SEP-10 authentication (required)
+    /// - Returns: Sep38QuoteResponseEnum with firm quote details including expiration, or an error
+    ///
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#post-quote
     public func postQuote(request: Sep38PostQuoteRequest, jwt:String) async -> Sep38QuoteResponseEnum {
         
         // The caller must provide either sellAmount or buyAmount, but not both.
@@ -349,28 +263,15 @@ public class QuoteService: NSObject {
         }
     }
     
-    /**
-     This endpoint can be used to fetch a previously-provided firm quote by id.
-     See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-quote" target="_blank">GET quote</a>
-     
-     - Parameter id: the id of the quote.
-     - Parameter jwt: jwt token obtained before with SEP-0010.
-     */
-    @available(*, renamed: "getQuote(id:jwt:)")
-    public func getQuote(id:String, jwt:String? = nil, completion:@escaping Sep38QuoteResponseClosure) {
-        Task {
-            let result = await getQuote(id: id, jwt: jwt)
-            completion(result)
-        }
-    }
-    
-    /**
-     This endpoint can be used to fetch a previously-provided firm quote by id.
-     See <https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-quote" target="_blank">GET quote</a>
-     
-     - Parameter id: the id of the quote.
-     - Parameter jwt: jwt token obtained before with SEP-0010.
-     */
+    /// Fetches a previously-provided firm quote by ID.
+    ///
+    /// Use this to retrieve quote details or check if a quote is still valid before using it.
+    ///
+    /// - Parameter id: The quote ID returned from postQuote
+    /// - Parameter jwt: Optional JWT token obtained from SEP-10 authentication
+    /// - Returns: Sep38QuoteResponseEnum with quote details, or an error
+    ///
+    /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-quote
     public func getQuote(id:String, jwt:String? = nil) async -> Sep38QuoteResponseEnum {
         
         let requestPath = "/quote/\(id)"

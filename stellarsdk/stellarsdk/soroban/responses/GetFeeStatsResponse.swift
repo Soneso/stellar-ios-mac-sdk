@@ -9,26 +9,26 @@
 import Foundation
 
 /// Response containing Soroban transaction fee statistics including inclusion fees.
-public class GetFeeStatsResponse: NSObject, Decodable {
-    
+public struct GetFeeStatsResponse: Decodable, Sendable {
+
     /// Inclusion fee distribution statistics for Soroban transactions
-    public var sorobanInclusionFee:InclusionFee
-    
+    public let sorobanInclusionFee:InclusionFee
+
     /// Fee distribution statistics for Stellar (i.e. non-Soroban) transactions.
     /// Statistics are normalized per operation.
-    public var inclusionFee:InclusionFee
-    
+    public let inclusionFee:InclusionFee
+
     /// The sequence number of the latest ledger known to Soroban RPC at the time it handled the request.
-    public var latestLedger:Int
-    
+    public let latestLedger:Int
+
     private enum CodingKeys: String, CodingKey {
         case sorobanInclusionFee
         case inclusionFee
         case latestLedger
-        
+
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         sorobanInclusionFee = try values.decode(InclusionFee.self, forKey: .sorobanInclusionFee)
         inclusionFee = try values.decode(InclusionFee.self, forKey: .inclusionFee)
@@ -37,52 +37,52 @@ public class GetFeeStatsResponse: NSObject, Decodable {
 }
 
 /// Fee statistics showing distribution of inclusion fees across network transactions.
-public class InclusionFee: NSObject, Decodable {
-    
+public struct InclusionFee: Decodable, Sendable {
+
     /// Maximum fee
-    public var max:String
-    
+    public let max:String
+
     /// Minimum fee
-    public var min:String
-    
+    public let min:String
+
     /// Fee value which occurs the most often
-    public var mode:String
-    
+    public let mode:String
+
     /// 10th nearest-rank fee percentile
-    public var p10:String
-    
+    public let p10:String
+
     /// 20th nearest-rank fee percentile
-    public var p20:String
-    
+    public let p20:String
+
     /// 30th nearest-rank fee percentile
-    public var p30:String
-    
+    public let p30:String
+
     /// 40th nearest-rank fee percentile
-    public var p40:String
-    
+    public let p40:String
+
     /// 50th nearest-rank fee percentile
-    public var p50:String
-    
+    public let p50:String
+
     /// 60th nearest-rank fee percentile
-    public var p60:String
-    
+    public let p60:String
+
     /// 70th nearest-rank fee percentile
-    public var p70:String
-    
+    public let p70:String
+
     /// 80th nearest-rank fee percentile
-    public var p80:String
-    
+    public let p80:String
+
     /// 90th nearest-rank fee percentile
-    public var p90:String
-    
+    public let p90:String
+
     /// 99th nearest-rank fee percentile
-    public var p99:String
-    
+    public let p99:String
+
     /// How many transactions are part of the distribution
-    public var transactionCount:String
-    
+    public let transactionCount:String
+
     /// How many consecutive ledgers form the distribution
-    public var ledgerCount:Int
+    public let ledgerCount:Int
     
     private enum CodingKeys: String, CodingKey {
         case max
@@ -103,7 +103,7 @@ public class InclusionFee: NSObject, Decodable {
         
     }
 
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         max = try values.decode(String.self, forKey: .max)
         min = try values.decode(String.self, forKey: .min)

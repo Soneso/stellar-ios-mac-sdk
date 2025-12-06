@@ -17,13 +17,13 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - OfferResponse for complete offer details
 /// - LinkResponse for individual link structure
-public class OfferLinksResponse: NSObject, Decodable {
+public struct OfferLinksResponse: Decodable, Sendable {
 
     /// Link to this offer resource (self reference).
-    public var selflink:LinkResponse
+    public let selflink:LinkResponse
 
     /// Link to the account that created this offer (offer maker).
-    public var seller:LinkResponse
+    public let seller:LinkResponse
     
     // Properties to encode and decode.
     enum CodingKeys: String, CodingKey {
@@ -36,7 +36,7 @@ public class OfferLinksResponse: NSObject, Decodable {
      
      - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         selflink = try values.decode(LinkResponse.self, forKey: .selflink)
         seller = try values.decode(LinkResponse.self, forKey: .seller)

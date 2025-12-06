@@ -17,7 +17,7 @@ public enum ClaimPredicateType: Int32 {
     case claimPredicateBeforeRelTime = 5
 }
 
-public indirect enum ClaimPredicateXDR: XDRCodable {
+public indirect enum ClaimPredicateXDR: XDRCodable, Sendable {
     case claimPredicateUnconditional
     case claimPredicateAnd ([ClaimPredicateXDR])
     case claimPredicateOr ([ClaimPredicateXDR])

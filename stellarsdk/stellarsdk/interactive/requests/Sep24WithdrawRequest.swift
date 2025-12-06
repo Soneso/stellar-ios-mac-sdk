@@ -9,7 +9,7 @@ import Foundation
 /// See also:
 /// - [InteractiveService.withdraw] for the method that uses this request
 /// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
-public struct Sep24WithdrawRequest {
+public struct Sep24WithdrawRequest: Sendable {
 
     /// JWT previously received from the anchor via the SEP-10 authentication flow.
     public var jwt:String

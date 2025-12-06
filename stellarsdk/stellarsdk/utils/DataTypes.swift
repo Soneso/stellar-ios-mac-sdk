@@ -83,7 +83,7 @@ extension WrappedData {
 ///
 /// Used for 256-bit hashes, public keys, and other 32-byte values in Stellar protocol.
 /// Examples: SHA-256 hashes, Ed25519 public keys, transaction hashes.
-public struct WrappedData32: WrappedData, Equatable {
+public struct WrappedData32: WrappedData, Equatable , Sendable {
     public static let capacity: Int = 32
 
     public var wrapped: Data
@@ -96,7 +96,7 @@ public struct WrappedData32: WrappedData, Equatable {
 /// Fixed-size 4-byte data wrapper.
 ///
 /// Used for short binary identifiers and fixed-size fields in Stellar protocol.
-public struct WrappedData4: WrappedData {
+public struct WrappedData4: WrappedData , Sendable {
     public static let capacity: Int = 4
 
     public var wrapped: Data
@@ -109,7 +109,7 @@ public struct WrappedData4: WrappedData {
 /// Fixed-size 12-byte data wrapper.
 ///
 /// Used for 12-character asset codes and other 12-byte values in Stellar protocol.
-public struct WrappedData12: WrappedData {
+public struct WrappedData12: WrappedData , Sendable {
     public static let capacity: Int = 12
 
     public var wrapped: Data

@@ -12,4 +12,4 @@ import Foundation
 /// This effect occurs when an asset issuer authorizes another account to hold its asset through an Allow Trust or Set Trust Line Flags operation.
 /// Required when the issuer has the AUTH_REQUIRED flag set.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class TrustlineAuthorizedEffectResponse: TrustlineEffectResponse {}
+public class TrustlineAuthorizedEffectResponse: TrustlineEffectResponse, @unchecked Sendable {}

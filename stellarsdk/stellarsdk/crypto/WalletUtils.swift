@@ -37,7 +37,7 @@ import Foundation
 ///
 /// See also:
 /// - [SEP-0005 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md)
-public final class WalletUtils {
+public final class WalletUtils: Sendable {
     
     /// Generates a 12 word Mnemonic.
     public static func generate12WordMnemonic(language: WordList = .english) -> String {
@@ -56,21 +56,21 @@ public final class WalletUtils {
     /// - Parameter index: The index of the wallet to generate.
     ///
     public static func createKeyPair(mnemonic: String, passphrase: String?, index: Int) throws -> KeyPair {
-        var bip39Seed: Data!
-        
+        let bip39Seed: Data
+
         if let passphraseValue = passphrase, !passphraseValue.isEmpty {
             bip39Seed = Mnemonic.createSeed(mnemonic: mnemonic, withPassphrase: passphraseValue)
         } else {
             bip39Seed = Mnemonic.createSeed(mnemonic: mnemonic)
         }
-        
+
         let masterPrivateKey = Ed25519Derivation(seed: bip39Seed)
         let purpose = masterPrivateKey.derived(at: 44)
         let coinType = purpose.derived(at: 148)
         let account = coinType.derived(at: UInt32(index))
-        let stellarSeed = try! Seed(bytes: account.raw.bytes)
+        let stellarSeed = try Seed(bytes: account.raw.bytes)
         let keyPair = KeyPair.init(seed: stellarSeed)
-        
+
         return keyPair
     }
 }

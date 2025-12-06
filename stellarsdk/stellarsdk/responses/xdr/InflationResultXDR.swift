@@ -15,7 +15,7 @@ public enum InflationResultCode: Int32 {
     case notTime = -1
 }
 
-public enum InflationResultXDR: XDRCodable {
+public enum InflationResultXDR: XDRCodable, Sendable {
     case success(Int32, [InflationPayoutXDR])
     case empty (Int32)
     

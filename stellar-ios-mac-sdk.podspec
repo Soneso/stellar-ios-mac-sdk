@@ -19,7 +19,7 @@ Pod::Spec.new do |s|
   s.version      = "3.2.8"
   s.summary      = "Fully featured iOS and macOS SDK that provides APIs to build transactions and connect to Horizon server for the Stellar ecosystem."
   s.module_name  = 'stellarsdk'
-  s.swift_version = '5.0'
+  s.swift_version = '6.0'
 
   # This description is used to generate tags and improve search results.
   #   * Think: What does it do? Why did you write it? What is the focus?
@@ -70,8 +70,8 @@ Pod::Spec.new do |s|
   # s.platform     = :ios, "5.0"
 
   #  When using multiple platforms
-   s.ios.deployment_target = "13.0"
-   s.osx.deployment_target = "10.15"
+   s.ios.deployment_target = "15.0"
+   s.osx.deployment_target = "12.0"
   # s.watchos.deployment_target = "2.0"
   # s.tvos.deployment_target = "9.0"
 
@@ -138,7 +138,7 @@ Pod::Spec.new do |s|
   # s.xcconfig = { "HEADER_SEARCH_PATHS" => "$(SDKROOT)/usr/include/libxml2" }
   # s.dependency "JSONKit", "~> 1.4"
 
-  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '5.0' }
+  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '6.0' }
   s.pod_target_xcconfig = {
       'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]'           => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/iphone', 
       'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]'    => '$(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellar-ios-mac-sdk/stellarsdk/stellarsdk/simulator',

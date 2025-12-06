@@ -289,4 +289,65 @@ class AssetsLocalTestCase: XCTestCase {
             XCTFail()
         }
     }
+
+    func testToCanonicalFormNative() {
+        let asset = Asset(type: AssetType.ASSET_TYPE_NATIVE)
+        XCTAssertNotNil(asset)
+
+        let canonical = asset!.toCanonicalForm()
+        XCTAssertEqual(canonical, "native")
+    }
+
+    func testToCanonicalFormAlphaNum4() {
+        do {
+            let issuer = try KeyPair(accountId: "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO")
+            let asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuer)
+            XCTAssertNotNil(asset)
+
+            let canonical = asset!.toCanonicalForm()
+            XCTAssertEqual(canonical, "USD:GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO")
+        } catch {
+            XCTFail("Failed to create issuer: \(error)")
+        }
+    }
+
+    func testToCanonicalFormAlphaNum12() {
+        do {
+            let issuer = try KeyPair(accountId: "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ")
+            let asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM12, code: "TESTASSET", issuer: issuer)
+            XCTAssertNotNil(asset)
+
+            let canonical = asset!.toCanonicalForm()
+            XCTAssertEqual(canonical, "TESTASSET:GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ")
+        } catch {
+            XCTFail("Failed to create issuer: \(error)")
+        }
+    }
+
+    func testToCanonicalFormPoolShare() {
+        do {
+            let issuerA = try KeyPair(accountId: "GB7TAYRUZGE6TVT7NHP5SMIZRNQA6PLM423EYISAOAP3MKYIQMVYP2JO")
+            let issuerB = try KeyPair(accountId: "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ")
+            let assetA = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "ARST", issuer: issuerA)!
+            let assetB = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuerB)!
+
+            let poolAsset = try ChangeTrustAsset(assetA: assetA, assetB: assetB)
+            XCTAssertNotNil(poolAsset)
+
+            let canonical = poolAsset!.toCanonicalForm()
+            XCTAssertTrue(canonical.hasSuffix(":lp"), "Pool share canonical form should end with :lp")
+            XCTAssertTrue(canonical.count > 3, "Pool share canonical form should contain pool ID")
+
+            let expectedPoolId = "dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7"
+            XCTAssertEqual(canonical, "\(expectedPoolId):lp")
+        } catch {
+            XCTFail("Failed to create pool asset: \(error)")
+        }
+    }
+
+    func testAssetInitRejectsInvalidAlphanum() {
+        // Asset.init() should return nil for ALPHANUM4 without code/issuer
+        let invalidAsset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
+        XCTAssertNil(invalidAsset, "Asset.init() should return nil for ALPHANUM4 without code/issuer")
+    }
 }

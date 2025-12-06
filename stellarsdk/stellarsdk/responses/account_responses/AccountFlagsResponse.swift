@@ -16,7 +16,7 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountResponse for complete account information
-public class AccountFlagsResponse: NSObject, Decodable {
+public struct AccountFlagsResponse: Decodable, Sendable {
 
     /// If true, requires the issuer to explicitly authorize accounts before they can hold this asset.
     /// Used for regulated assets requiring KYC/AML compliance.
@@ -48,7 +48,7 @@ public class AccountFlagsResponse: NSObject, Decodable {
      
         - Parameter decoder: The decoder containing the data
      */
-    public required init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         
         let values = try decoder.container(keyedBy: CodingKeys.self)
         
