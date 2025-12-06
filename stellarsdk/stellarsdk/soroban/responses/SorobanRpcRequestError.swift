@@ -21,6 +21,11 @@ public struct SorobanRpcError: Error, Sendable {
     /// Additional information about the error (optional).
     public let data: String?
 
+    /// Creates a new SorobanRpcError.
+    /// - Parameters:
+    ///   - code: The error code.
+    ///   - message: A short description of the error.
+    ///   - data: Additional information about the error.
     public init(code: Int, message: String? = nil, data: String? = nil) {
         self.code = code
         self.message = message

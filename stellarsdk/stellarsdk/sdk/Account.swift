@@ -13,6 +13,7 @@ public class Account: TransactionAccount
 {
     /// The keypair associated with this account.
     public private(set) var keyPair: KeyPair
+    /// The current sequence number of the account.
     public private(set) var sequenceNumber: Int64
     
     /// Creates a new Account object.
@@ -41,6 +42,7 @@ public class Account: TransactionAccount
         sequenceNumber += 1
     }
     
+    /// Decrements sequence number in this object by one.
     public func decrementSequenceNumber() {
         sequenceNumber -= 1
     }
