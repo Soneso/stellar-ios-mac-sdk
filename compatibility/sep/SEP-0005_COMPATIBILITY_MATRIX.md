@@ -1,6 +1,6 @@
 # SEP-0005 (Key Derivation Methods for Stellar Keys) Compatibility Matrix
 
-**Generated:** 2025-11-14
+**Generated:** 2025-12-08
 
 **SEP Version:** Unknown
 **SEP Status:** Final
@@ -125,6 +125,6 @@ This should improve key storage and moving keys between wallets and apps.
 
 ---
 
-**Report Generated:** 2025-11-14
-**SDK Version:** 3.2.7
+**Report Generated:** 2025-12-08
+**SDK Version:** 3.4.0
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0

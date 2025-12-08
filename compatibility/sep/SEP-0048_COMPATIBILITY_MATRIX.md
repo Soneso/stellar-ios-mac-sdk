@@ -1,6 +1,6 @@
 # SEP-0048 (Contract Interface Specification) Compatibility Matrix
 
-**Generated:** 2025-10-16
+**Generated:** 2025-12-08
 
 **SEP Version:** 1.1.0
 **SEP Status:** Active
@@ -506,6 +506,6 @@ The following features were added to enhance the SEP-48 implementation:
 
 ---
 
-**Report Generated:** 2025-10-16
-**SDK Version:** 3.2.7
+**Report Generated:** 2025-12-08
+**SDK Version:** 3.4.0
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0

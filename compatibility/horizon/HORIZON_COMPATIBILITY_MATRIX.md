@@ -8,11 +8,11 @@
 - N/A - Not Applicable (internal/admin endpoints not part of public API)
 
 ## SDK Version Information
-- **iOS & macOS SDK Version:** 3.2.8
-- **Compatible Horizon Version:** 23.0.0
-- **Protocol Version:** 23
-- **Last Updated:** 2025-11-14
-- **Platforms:** iOS 13.0+, macOS 10.15+
+- **iOS & macOS SDK Version:** 3.4.0
+- **Compatible Horizon Version:** 24.0.0
+- **Protocol Version:** 24
+- **Last Updated:** 2025-12-08
+- **Platforms:** iOS 15.0+, macOS 12.0+
 - **Language:** Swift
 
 ## Overall Statistics
@@ -377,7 +377,7 @@ The SDK is recommended for production use and provides a robust, type-safe, and 
 
 ---
 
-**Report Generated:** 2025-11-14
-**SDK Version Analyzed:** 3.2.8
-**Horizon Version:** 23.0.0
+**Report Generated:** 2025-12-08
+**SDK Version Analyzed:** 3.4.0
+**Horizon Version:** 24.0.0
 **Analysis Methodology:** Comprehensive comparison of Horizon router endpoints against SDK service implementations

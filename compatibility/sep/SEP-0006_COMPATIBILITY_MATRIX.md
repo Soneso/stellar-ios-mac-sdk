@@ -1,6 +1,6 @@
 # SEP-0006 (Deposit and Withdrawal API) Compatibility Matrix
 
-**Generated:** 2025-11-14
+**Generated:** 2025-12-08
 
 **SEP Version:** 4.3.0
 **SEP Status:** Active (Interactive components are deprecated in favor of SEP-24)
@@ -255,6 +255,6 @@ This proposal defines a standard protocol enabling the following features direct
 
 ---
 
-**Report Generated:** 2025-11-14
-**SDK Version:** 3.2.7
+**Report Generated:** 2025-12-08
+**SDK Version:** 3.4.0
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0

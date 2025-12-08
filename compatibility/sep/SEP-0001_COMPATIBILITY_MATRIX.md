@@ -1,6 +1,6 @@
 # SEP-0001 (Stellar Info File) Compatibility Matrix
 
-**Generated:** 2025-11-14
+**Generated:** 2025-12-08
 
 **SEP Version:** 2.7.0
 **SEP Status:** Active
@@ -181,6 +181,6 @@ Fully and truthfully disclosing contact and business inf.
 
 ---
 
-**Report Generated:** 2025-11-14
-**SDK Version:** 3.2.7
+**Report Generated:** 2025-12-08
+**SDK Version:** 3.4.0
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0

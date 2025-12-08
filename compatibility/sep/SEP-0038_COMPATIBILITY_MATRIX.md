@@ -1,6 +1,6 @@
 # SEP-0038 (Anchor RFQ API) Compatibility Matrix
 
-**Generated:** 2025-11-14
+**Generated:** 2025-12-08
 
 **SEP Version:** 2.5.0
 **SEP Status:** Draft
@@ -234,6 +234,6 @@ How the exchange of assets is facilitated is outside the scope of this document.
 
 ---
 
-**Report Generated:** 2025-11-14
-**SDK Version:** 3.2.7
+**Report Generated:** 2025-12-08
+**SDK Version:** 3.4.0
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0
