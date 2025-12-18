@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1EDB0E1FD6D44A68AC426109 /* BigIntTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ED2834A9114D0399AB9FDC /* BigIntTest.swift */; };
 		4300C17F2032F5C500DC5E49 /* OffersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C17E2032F5C500DC5E49 /* OffersService.swift */; };
 		4300C1832032FBE500DC5E49 /* OffersRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C1822032FBE500DC5E49 /* OffersRemoteTestCase.swift */; };
 		4300C1852033026D00DC5E49 /* OrderbookService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C1842033026D00DC5E49 /* OrderbookService.swift */; };
@@ -45,6 +46,7 @@
 		43E34B672031DCFB003104A9 /* OfferAssetResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B662031DCFB003104A9 /* OfferAssetResponse.swift */; };
 		43E34B692031E243003104A9 /* OrderbookOfferResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B682031E243003104A9 /* OrderbookOfferResponse.swift */; };
 		43E34B6D2031E99D003104A9 /* PageResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B6C2031E99D003104A9 /* PageResponse.swift */; };
+		5543AE94191B4DE0AA2B7797 /* BigIntTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ED2834A9114D0399AB9FDC /* BigIntTest.swift */; };
 		741B8B4A203DE47A0098464A /* String+Encoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741B8B49203DE47A0098464A /* String+Encoding.swift */; };
 		743060C721380D7A00E2E9F2 /* SequenceBumpedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743060C621380D7A00E2E9F2 /* SequenceBumpedEffectResponse.swift */; };
 		743060C821380D7A00E2E9F2 /* SequenceBumpedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743060C621380D7A00E2E9F2 /* SequenceBumpedEffectResponse.swift */; };
@@ -394,7 +396,6 @@
 		745DF5662052FFF6000D3660 /* verify.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5572020530A00713DE7 /* verify.c */; };
 		745DF567205304AC000D3660 /* MnemonicGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15B205043AB000FB042 /* MnemonicGeneration.swift */; };
 		745DF568205304AC000D3660 /* MnemonicKeyPairGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15D20504F92000FB042 /* MnemonicKeyPairGeneration.swift */; };
-		5543AE94191B4DE0AA2B7797 /* BigIntTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ED2834A9114D0399AB9FDC /* BigIntTest.swift */; };
 		745DF569205304AC000D3660 /* MemoRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437CEBD720457E5E00CAAF93 /* MemoRemoteTestCase.swift */; };
 		745DF56A205304AC000D3660 /* AccountLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF502201F3B0800713DE7 /* AccountLocalTestCase.swift */; };
 		745DF56B205304AC000D3660 /* AccountResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369723D202A708300398A98 /* AccountResponsesMock.swift */; };
@@ -1205,6 +1206,18 @@
 		83EEE6272E1810EC008B7B3C /* TransactionEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EEE6252E1810EC008B7B3C /* TransactionEvents.swift */; };
 		83EFF59C2EDA409C00359A37 /* SorobanRpcErrorTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF59B2EDA409C00359A37 /* SorobanRpcErrorTest.swift */; };
 		83EFF59D2EDA409C00359A37 /* SorobanRpcErrorTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF59B2EDA409C00359A37 /* SorobanRpcErrorTest.swift */; };
+		83EFF5A42EEE066500359A37 /* WebAuthForContractsMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A12EEE066500359A37 /* WebAuthForContractsMocks.swift */; };
+		83EFF5A52EEE066500359A37 /* WebAuthForContractsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A22EEE066500359A37 /* WebAuthForContractsTestCase.swift */; };
+		83EFF5A62EEE066500359A37 /* WebAuthForContractsMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A12EEE066500359A37 /* WebAuthForContractsMocks.swift */; };
+		83EFF5A72EEE066500359A37 /* WebAuthForContractsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A22EEE066500359A37 /* WebAuthForContractsTestCase.swift */; };
+		83EFF5AC2EEE068F00359A37 /* WebAuthForContracts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A82EEE068F00359A37 /* WebAuthForContracts.swift */; };
+		83EFF5AD2EEE068F00359A37 /* WebAuthForContractsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A92EEE068F00359A37 /* WebAuthForContractsError.swift */; };
+		83EFF5AE2EEE068F00359A37 /* WebAuthForContractsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5AA2EEE068F00359A37 /* WebAuthForContractsResponse.swift */; };
+		83EFF5AF2EEE068F00359A37 /* WebAuthForContracts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A82EEE068F00359A37 /* WebAuthForContracts.swift */; };
+		83EFF5B02EEE068F00359A37 /* WebAuthForContractsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A92EEE068F00359A37 /* WebAuthForContractsError.swift */; };
+		83EFF5B12EEE068F00359A37 /* WebAuthForContractsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5AA2EEE068F00359A37 /* WebAuthForContractsResponse.swift */; };
+		83EFF5B42EEE082C00359A37 /* sep_45_account.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83EFF5B22EEE082C00359A37 /* sep_45_account.wasm */; };
+		83EFF5B52EEE082C00359A37 /* sep_45_account.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83EFF5B22EEE082C00359A37 /* sep_45_account.wasm */; };
 		83F32D552E43E9E400A8355A /* SCValXDRBigIntTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D542E43E9E400A8355A /* SCValXDRBigIntTest.swift */; };
 		83F32D562E43E9E400A8355A /* SCValXDRBigIntTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D542E43E9E400A8355A /* SCValXDRBigIntTest.swift */; };
 		83F32D922E44A1AC00A8355A /* AuthContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D8E2E44A1AC00A8355A /* AuthContract.swift */; };
@@ -1285,7 +1298,6 @@
 		EC34A15920503CF6000FB042 /* Ed25519Derivation.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15820503CF6000FB042 /* Ed25519Derivation.swift */; };
 		EC34A15C205043AB000FB042 /* MnemonicGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15B205043AB000FB042 /* MnemonicGeneration.swift */; };
 		EC34A15E20504F92000FB042 /* MnemonicKeyPairGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15D20504F92000FB042 /* MnemonicKeyPairGeneration.swift */; };
-		1EDB0E1FD6D44A68AC426109 /* BigIntTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ED2834A9114D0399AB9FDC /* BigIntTest.swift */; };
 		EC34A1602050D24C000FB042 /* Data+Hash.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15F2050D24C000FB042 /* Data+Hash.swift */; };
 		EC4F660220C8DA8A0036293D /* AccountInflationDestinationUpdatedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4F660120C8DA8A0036293D /* AccountInflationDestinationUpdatedEffectResponse.swift */; };
 		F80CE5452084EFC400AB5FF0 /* UtilBase32.swift in Sources */ = {isa = PBXBuildFile; fileRef = F80CE5422084EFC400AB5FF0 /* UtilBase32.swift */; };
@@ -1371,6 +1383,7 @@
 		43E34B662031DCFB003104A9 /* OfferAssetResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferAssetResponse.swift; sourceTree = "<group>"; };
 		43E34B682031E243003104A9 /* OrderbookOfferResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderbookOfferResponse.swift; sourceTree = "<group>"; };
 		43E34B6C2031E99D003104A9 /* PageResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageResponse.swift; sourceTree = "<group>"; };
+		65ED2834A9114D0399AB9FDC /* BigIntTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BigIntTest.swift; sourceTree = "<group>"; };
 		741B8B49203DE47A0098464A /* String+Encoding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Encoding.swift"; sourceTree = "<group>"; };
 		743060C621380D7A00E2E9F2 /* SequenceBumpedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SequenceBumpedEffectResponse.swift; sourceTree = "<group>"; };
 		743060C92138228200E2E9F2 /* DataCreatedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCreatedEffectResponse.swift; sourceTree = "<group>"; };
@@ -1937,6 +1950,12 @@
 		83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgersResponsesMock.swift; sourceTree = "<group>"; };
 		83EEE6252E1810EC008B7B3C /* TransactionEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionEvents.swift; sourceTree = "<group>"; };
 		83EFF59B2EDA409C00359A37 /* SorobanRpcErrorTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SorobanRpcErrorTest.swift; sourceTree = "<group>"; };
+		83EFF5A12EEE066500359A37 /* WebAuthForContractsMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthForContractsMocks.swift; sourceTree = "<group>"; };
+		83EFF5A22EEE066500359A37 /* WebAuthForContractsTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthForContractsTestCase.swift; sourceTree = "<group>"; };
+		83EFF5A82EEE068F00359A37 /* WebAuthForContracts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthForContracts.swift; sourceTree = "<group>"; };
+		83EFF5A92EEE068F00359A37 /* WebAuthForContractsError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthForContractsError.swift; sourceTree = "<group>"; };
+		83EFF5AA2EEE068F00359A37 /* WebAuthForContractsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebAuthForContractsResponse.swift; sourceTree = "<group>"; };
+		83EFF5B22EEE082C00359A37 /* sep_45_account.wasm */ = {isa = PBXFileReference; lastKnownFileType = file; path = sep_45_account.wasm; sourceTree = "<group>"; };
 		83F32D542E43E9E400A8355A /* SCValXDRBigIntTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SCValXDRBigIntTest.swift; sourceTree = "<group>"; };
 		83F32D8E2E44A1AC00A8355A /* AuthContract.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthContract.swift; sourceTree = "<group>"; };
 		83F32D8F2E44A1AC00A8355A /* AtomicSwapContract.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AtomicSwapContract.swift; sourceTree = "<group>"; };
@@ -1984,7 +2003,6 @@
 		EC34A15820503CF6000FB042 /* Ed25519Derivation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ed25519Derivation.swift; sourceTree = "<group>"; };
 		EC34A15B205043AB000FB042 /* MnemonicGeneration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MnemonicGeneration.swift; sourceTree = "<group>"; };
 		EC34A15D20504F92000FB042 /* MnemonicKeyPairGeneration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MnemonicKeyPairGeneration.swift; sourceTree = "<group>"; };
-		65ED2834A9114D0399AB9FDC /* BigIntTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BigIntTest.swift; sourceTree = "<group>"; };
 		EC34A15F2050D24C000FB042 /* Data+Hash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hash.swift"; sourceTree = "<group>"; };
 		EC4F660120C8DA8A0036293D /* AccountInflationDestinationUpdatedEffectResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountInflationDestinationUpdatedEffectResponse.swift; sourceTree = "<group>"; };
 		F80CE5422084EFC400AB5FF0 /* UtilBase32.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilBase32.swift; sourceTree = "<group>"; };
@@ -2391,6 +2409,7 @@
 				835F0CDD2976016000793708 /* soroban */,
 				8398C40724D8CA6500D6916C /* txrep */,
 				74723334219D97EC00343E25 /* web_authentication */,
+				83EFF5AB2EEE068F00359A37 /* web_authentication_contracts */,
 				7464B723219441B40029FDC8 /* toml */,
 				C6744C1A214670F9005DE204 /* uri_scheme */,
 				7467C3EF21424D0B00412FE1 /* transfer_server_protocol */,
@@ -2420,6 +2439,7 @@
 				83C54D042945F1DD00CC1E8A /* docs */,
 				8310BDCC26EB6183004D3EF2 /* amm */,
 				74723338219EE3D500343E25 /* web_authenticator */,
+				83EFF5A32EEE066500359A37 /* web_authenticator_contracts */,
 				746D78FD21959FD90008AA79 /* toml */,
 				C6C8AAA52147D8F000B06E8A /* uri_scheme */,
 				7467C40221426FAB00412FE1 /* transfer_server_protocol */,
@@ -3417,6 +3437,34 @@
 			path = links;
 			sourceTree = "<group>";
 		};
+		83EFF5A32EEE066500359A37 /* web_authenticator_contracts */ = {
+			isa = PBXGroup;
+			children = (
+				83EFF5B32EEE082C00359A37 /* wasm */,
+				83EFF5A12EEE066500359A37 /* WebAuthForContractsMocks.swift */,
+				83EFF5A22EEE066500359A37 /* WebAuthForContractsTestCase.swift */,
+			);
+			path = web_authenticator_contracts;
+			sourceTree = "<group>";
+		};
+		83EFF5AB2EEE068F00359A37 /* web_authentication_contracts */ = {
+			isa = PBXGroup;
+			children = (
+				83EFF5A82EEE068F00359A37 /* WebAuthForContracts.swift */,
+				83EFF5A92EEE068F00359A37 /* WebAuthForContractsError.swift */,
+				83EFF5AA2EEE068F00359A37 /* WebAuthForContractsResponse.swift */,
+			);
+			path = web_authentication_contracts;
+			sourceTree = "<group>";
+		};
+		83EFF5B32EEE082C00359A37 /* wasm */ = {
+			isa = PBXGroup;
+			children = (
+				83EFF5B22EEE082C00359A37 /* sep_45_account.wasm */,
+			);
+			path = wasm;
+			sourceTree = "<group>";
+		};
 		83F32D572E448A4C00A8355A /* bindings */ = {
 			isa = PBXGroup;
 			children = (
@@ -3837,6 +3885,7 @@
 				83B8277A2B28E3930064D7CB /* soroban_auth_contract.wasm in Resources */,
 				83B827782B28E3930064D7CB /* soroban_hello_world_contract.wasm in Resources */,
 				8372287C2DD21A7C0050BBC9 /* soroban_atomic_swap_contract.wasm in Resources */,
+				83EFF5B52EEE082C00359A37 /* sep_45_account.wasm in Resources */,
 				83ACC00F2C885D9100A71CF1 /* soroban_token_contract.wasm in Resources */,
 				83B8277C2B28E3930064D7CB /* soroban_events_contract.wasm in Resources */,
 			);
@@ -3881,6 +3930,7 @@
 				83B827792B28E3930064D7CB /* soroban_auth_contract.wasm in Resources */,
 				83B827772B28E3930064D7CB /* soroban_hello_world_contract.wasm in Resources */,
 				8372287B2DD21A7C0050BBC9 /* soroban_atomic_swap_contract.wasm in Resources */,
+				83EFF5B42EEE082C00359A37 /* sep_45_account.wasm in Resources */,
 				83ACC00E2C885D9100A71CF1 /* soroban_token_contract.wasm in Resources */,
 				83B8277B2B28E3930064D7CB /* soroban_events_contract.wasm in Resources */,
 			);
@@ -4102,6 +4152,9 @@
 				836659012A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift in Sources */,
 				745DF4502052FF9B000D3660 /* SignerCreatedEffectResponse.swift in Sources */,
 				7468CDD12136D8AC002A538D /* BumpSequenceOperationXDR.swift in Sources */,
+				83EFF5AC2EEE068F00359A37 /* WebAuthForContracts.swift in Sources */,
+				83EFF5AD2EEE068F00359A37 /* WebAuthForContractsError.swift in Sources */,
+				83EFF5AE2EEE068F00359A37 /* WebAuthForContractsResponse.swift in Sources */,
 				83D408DF26EB798E003A9C0F /* LiquidityPoolWithdrawOperation.swift in Sources */,
 				83DD713F281ACA3B00530C64 /* TransactionPreconditionsResponse.swift in Sources */,
 				745DF4512052FF9B000D3660 /* SignerRemovedEffectResponse.swift in Sources */,
@@ -4466,6 +4519,8 @@
 				833C67422B84F2FF00E034C6 /* Sep38PriceResponseMock.swift in Sources */,
 				7472333B219EE40200343E25 /* WebAuthenticatorTestCase.swift in Sources */,
 				744A84BE214403480086B8FC /* AnchorInfoResponseMock.swift in Sources */,
+				83EFF5A62EEE066500359A37 /* WebAuthForContractsMocks.swift in Sources */,
+				83EFF5A72EEE066500359A37 /* WebAuthForContractsTestCase.swift in Sources */,
 				745DF575205304AC000D3660 /* EffectsRemoteTestCase.swift in Sources */,
 				745DF576205304AC000D3660 /* LedgersLocalTestCase.swift in Sources */,
 				745DF577205304AC000D3660 /* LedgersResponsesMock.swift in Sources */,
@@ -4764,6 +4819,9 @@
 				8369720120255AB800398A98 /* LedgersService.swift in Sources */,
 				833CBFAC2033542D00C23CFE /* LedgerEntryChangesXDR.swift in Sources */,
 				836658EE2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift in Sources */,
+				83EFF5AF2EEE068F00359A37 /* WebAuthForContracts.swift in Sources */,
+				83EFF5B02EEE068F00359A37 /* WebAuthForContractsError.swift in Sources */,
+				83EFF5B12EEE068F00359A37 /* WebAuthForContractsResponse.swift in Sources */,
 				437D8A8F202F14A00024D031 /* TradeAggregationsService.swift in Sources */,
 				833CBFB4203354BE00C23CFE /* LedgerKeyTrustlineXDR.swift in Sources */,
 				430BE2EB2035B4D400E6AB97 /* TimeBounds.swift in Sources */,
@@ -5198,6 +5256,8 @@
 				8357A91B203B6F6100A144A9 /* DataForAccountLocalTestCase.swift in Sources */,
 				743DF503201F3B0800713DE7 /* AccountLocalTestCase.swift in Sources */,
 				83D6D2ED2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift in Sources */,
+				83EFF5A42EEE066500359A37 /* WebAuthForContractsMocks.swift in Sources */,
+				83EFF5A52EEE066500359A37 /* WebAuthForContractsTestCase.swift in Sources */,
 				EC34A15E20504F92000FB042 /* MnemonicKeyPairGeneration.swift in Sources */,
 				744A84D4214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,
 				8365138D2BDEDE6500A99085 /* Sep08PostRevisedMock.swift in Sources */,
