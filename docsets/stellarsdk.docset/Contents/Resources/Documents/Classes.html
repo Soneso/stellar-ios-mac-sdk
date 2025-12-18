@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.4.0 Docs
+          stellarsdk 3.4.1 Docs
         </a>
          (98% documented)
       </p>
@@ -720,6 +720,9 @@
                 <a class="nav-group-task-link" href="Classes/WalletUtils.html">WalletUtils</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/WebAuthForContracts.html">WebAuthForContracts</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/WebAuthenticator.html">WebAuthenticator</a>
               </li>
               <li class="nav-group-task">
@@ -802,6 +805,9 @@
                 <a class="nav-group-task-link" href="Enums/ClaimableBalanceDetailsResponseEnum.html">ClaimableBalanceDetailsResponseEnum</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/ContractChallengeValidationError.html">ContractChallengeValidationError</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/ContractSpecError.html">ContractSpecError</a>
               </li>
               <li class="nav-group-task">
@@ -844,6 +850,9 @@
                 <a class="nav-group-task-link" href="Enums/GetAccountResponseEnum.html">GetAccountResponseEnum</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/GetContractChallengeResponseEnum.html">GetContractChallengeResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/GetContractCodeResponseEnum.html">GetContractCodeResponseEnum</a>
               </li>
               <li class="nav-group-task">
@@ -851,6 +860,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/GetContractInfoEnum.html">GetContractInfoEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/GetContractJWTTokenError.html">GetContractJWTTokenError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/GetContractJWTTokenResponseEnum.html">GetContractJWTTokenResponseEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/GetCustomerFilesResponseEnum.html">GetCustomerFilesResponseEnum</a>
@@ -1096,6 +1111,9 @@
                 <a class="nav-group-task-link" href="Enums/StreamResponseEnum.html">StreamResponseEnum</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/SubmitContractChallengeResponseEnum.html">SubmitContractChallengeResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/SubmitTransactionEnum.html">SubmitTransactionEnum</a>
               </li>
               <li class="nav-group-task">
@@ -1142,6 +1160,12 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/URISchemeIsValidEnum.html">URISchemeIsValidEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/WebAuthForContractsError.html">WebAuthForContractsError</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/WebAuthForContractsForDomainEnum.html">WebAuthForContractsForDomainEnum</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/WebAuthenticatorError.html">WebAuthenticatorError</a>
@@ -1354,6 +1378,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/ClaimantResponse.html">ClaimantResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/ContractChallengeResponse.html">ContractChallengeResponse</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/CryptographicConstants.html">CryptographicConstants</a>
@@ -11835,6 +11862,121 @@ proving ownership without revealing the secret key itself.</p>
                       </div>
                       <div class="slightly-smaller">
                         <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication/WebAuthenticator.swift#L237-L601">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk19WebAuthForContractsC"></a>
+                    <a name="//apple_ref/swift/Class/WebAuthForContracts" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk19WebAuthForContractsC">WebAuthForContracts</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Implements SEP-45 - Stellar Web Authentication for Contract Accounts.</p>
+
+<p>This class provides functionality for authenticating Soroban smart contract accounts (C&hellip; addresses)
+through the Stellar Web Authentication protocol. The authentication flow returns a JWT token that can
+be used for subsequent requests to SEP-compliant services (SEP-6, SEP-12, SEP-24, SEP-31).</p>
+
+<p>SEP-45 extends the SEP-10 authentication protocol to support contract accounts, which have different
+authentication requirements than traditional Stellar accounts. Contract accounts can implement custom
+authentication logic in their __check_auth function.</p>
+<h2 id='typical-workflow' class='heading'>Typical Workflow</h2>
+
+<ol>
+<li><strong>Initialize from Domain</strong>: Create a WebAuthForContracts instance using the anchor&rsquo;s stellar.toml</li>
+<li><strong>Get JWT Token</strong>: Request and obtain a JWT token for authentication</li>
+<li><strong>Use Token</strong>: Include the JWT token in subsequent SEP service requests</li>
+</ol>
+<h2 id='example-usage' class='heading'>Example Usage</h2>
+<pre class="highlight swift"><code><span class="c1">// Step 1: Create WebAuthForContracts from anchor domain</span>
+<span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="k">await</span> <span class="kt">WebAuthForContracts</span><span class="o">.</span><span class="nf">from</span><span class="p">(</span>
+    <span class="nv">domain</span><span class="p">:</span> <span class="s">"testanchor.stellar.org"</span><span class="p">,</span>
+    <span class="nv">network</span><span class="p">:</span> <span class="o">.</span><span class="n">testnet</span>
+<span class="p">)</span>
+
+<span class="k">switch</span> <span class="n">result</span> <span class="p">{</span>
+<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">webAuth</span><span class="p">):</span>
+    <span class="c1">// Step 2: Get JWT token for contract account</span>
+    <span class="k">let</span> <span class="nv">contractId</span> <span class="o">=</span> <span class="s">"CABC..."</span>
+    <span class="k">let</span> <span class="nv">signerKeyPair</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">KeyPair</span><span class="p">(</span><span class="nv">secretSeed</span><span class="p">:</span> <span class="s">"S..."</span><span class="p">)</span>
+    <span class="k">let</span> <span class="nv">jwtResult</span> <span class="o">=</span> <span class="k">await</span> <span class="n">webAuth</span><span class="o">.</span><span class="nf">jwtToken</span><span class="p">(</span>
+        <span class="nv">forContractAccount</span><span class="p">:</span> <span class="n">contractId</span><span class="p">,</span>
+        <span class="nv">signers</span><span class="p">:</span> <span class="p">[</span><span class="n">signerKeyPair</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">switch</span> <span class="n">jwtResult</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">jwtToken</span><span class="p">):</span>
+        <span class="c1">// Step 3: Use JWT token for SEP-24, SEP-6, SEP-12, etc.</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"JWT Token: </span><span class="se">\(</span><span class="n">jwtToken</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"JWT token error: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"WebAuth initialization error: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+<h2 id='advanced-features' class='heading'>Advanced Features</h2>
+
+<p><strong>Multi-Signature Contracts:</strong></p>
+<pre class="highlight swift"><code><span class="c1">// Provide multiple signers for contracts requiring multiple signatures</span>
+<span class="k">let</span> <span class="nv">signers</span> <span class="o">=</span> <span class="p">[</span><span class="n">keyPair1</span><span class="p">,</span> <span class="n">keyPair2</span><span class="p">]</span>
+<span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">webAuth</span><span class="o">.</span><span class="nf">jwtToken</span><span class="p">(</span>
+    <span class="nv">forContractAccount</span><span class="p">:</span> <span class="n">contractId</span><span class="p">,</span>
+    <span class="nv">signers</span><span class="p">:</span> <span class="n">signers</span>
+<span class="p">)</span>
+</code></pre>
+
+<p><strong>Contracts Without Signature Requirements:</strong></p>
+<pre class="highlight swift"><code><span class="c1">// For contracts whose __check_auth doesn't require signatures</span>
+<span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">webAuth</span><span class="o">.</span><span class="nf">jwtToken</span><span class="p">(</span>
+    <span class="nv">forContractAccount</span><span class="p">:</span> <span class="n">contractId</span><span class="p">,</span>
+    <span class="nv">signers</span><span class="p">:</span> <span class="p">[]</span>  <span class="c1">// Empty signers array</span>
+<span class="p">)</span>
+</code></pre>
+
+<p><strong>Client Domain Signing:</strong></p>
+<pre class="highlight swift"><code><span class="c1">// For client domain verification (mutual authentication)</span>
+<span class="k">let</span> <span class="nv">clientDomainKeyPair</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">KeyPair</span><span class="p">(</span><span class="nv">accountId</span><span class="p">:</span> <span class="s">"G..."</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">webAuth</span><span class="o">.</span><span class="nf">jwtToken</span><span class="p">(</span>
+    <span class="nv">forContractAccount</span><span class="p">:</span> <span class="n">contractId</span><span class="p">,</span>
+    <span class="nv">signers</span><span class="p">:</span> <span class="p">[</span><span class="n">contractSignerKeyPair</span><span class="p">],</span>
+    <span class="nv">clientDomain</span><span class="p">:</span> <span class="s">"wallet.example.com"</span><span class="p">,</span>
+    <span class="nv">clientDomainAccountKeyPair</span><span class="p">:</span> <span class="n">clientDomainKeyPair</span><span class="p">,</span>
+    <span class="nv">clientDomainSigningCallback</span><span class="p">:</span> <span class="p">{</span> <span class="n">entry</span> <span class="k">in</span>
+        <span class="c1">// Sign on server and return signed entry</span>
+        <span class="k">return</span> <span class="k">try</span> <span class="k">await</span> <span class="nf">signOnServer</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</code></pre>
+
+<p>See also:</p>
+
+<ul>
+<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md">SEP-0045 Specification</a></li>
+<li>[StellarToml] for discovering authentication endpoints</li>
+<li>[WebAuthenticator] for traditional account (G&hellip; and M&hellip;) authentication</li>
+</ul>
+
+                        <a href="Classes/WebAuthForContracts.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">WebAuthForContracts</span> <span class="p">:</span> <span class="kd">@unchecked</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/web_authentication_contracts/WebAuthForContracts.swift#L99-L947">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
