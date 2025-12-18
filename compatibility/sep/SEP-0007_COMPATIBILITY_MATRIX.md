@@ -1,9 +1,11 @@
 # SEP-0007 (URI Scheme to facilitate delegated signing) Compatibility Matrix
 
-**Generated:** 2025-12-08
+**Generated:** 2025-12-18
 
 **SEP Version:** 2.1.0
+
 **SEP Status:** Active
+
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
 
 ## SEP Summary
@@ -165,6 +167,8 @@ The signing applications (wallets) should follow the [recommended security best 
 
 ---
 
-**Report Generated:** 2025-12-08
-**SDK Version:** 3.4.0
+**Report Generated:** 2025-12-18
+
+**SDK Version:** 3.4.1
+
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0

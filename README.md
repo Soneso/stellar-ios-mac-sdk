@@ -9,7 +9,7 @@ The Soneso open source Stellar SDK for iOS &amp; Mac provides APIs to query Hori
 #### Latest stable release:
 
 ```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.4.0"),
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.4.1"),
 ```
 
 If not loading (err: `cannot use bare repository`), then remove:
@@ -37,7 +37,7 @@ To integrate stellar SDK into your Xcode project using CocoaPods, specify it in 
 use_frameworks!
 
 target '<Your Target Name>' do
-    pod 'stellar-ios-mac-sdk', '~> 3.4.0'
+    pod 'stellar-ios-mac-sdk', '~> 3.4.1'
 end
 ```
 
@@ -64,7 +64,7 @@ To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify
 #### Last stable release:
 
 ```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 3.4.0
+github "soneso/stellar-ios-mac-sdk" ~> 3.4.1
 ```
 
 Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.
@@ -542,6 +542,39 @@ case .failure(let error):
 ```
 The Web Authenticator can now be used to get the JWT token (see: 8.1)
 
+### 8.3 Web Authentication for Contract Accounts (SEP-45)
+
+SEP-45 extends SEP-10 to support authentication for Soroban smart contract accounts (C... addresses).
+
+```swift
+// Create WebAuthForContracts from domain
+let result = await WebAuthForContracts.from(
+    domain: "testanchor.stellar.org",
+    network: .testnet
+)
+
+switch result {
+case .success(let webAuth):
+    // Get JWT token for contract account
+    let contractId = "CABC..."
+    let signerKeyPair = try KeyPair(secretSeed: "S...")
+    let jwtResult = await webAuth.jwtToken(
+        forContractAccount: contractId,
+        signers: [signerKeyPair]
+    )
+
+    switch jwtResult {
+    case .success(let jwtToken):
+        print("JWT Token: \(jwtToken)")
+    case .failure(let error):
+        print("Error: \(error)")
+    }
+case .failure(let error):
+    print("Error: \(error)")
+}
+```
+
+See [SEP-0045 SDK documentation](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0045.md) for details.
 
 ### 9.  Txrep: human-readable low-level representation of Stellar transactions
 Txrep: human-readable low-level representation of Stellar transactions is described in [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md).
@@ -597,6 +630,7 @@ Our SDK is also used by the [LOBSTR Wallet](https://lobstr.co).
 - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md) - Hosted Deposit and Withdrawal
 - [SEP-0030](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md) - Account Recovery
 - [SEP-0038](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md) - Anchor RFQ API
+- [SEP-0045](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md) - Web Authentication for Contract Accounts
 
 ## Soroban support
 

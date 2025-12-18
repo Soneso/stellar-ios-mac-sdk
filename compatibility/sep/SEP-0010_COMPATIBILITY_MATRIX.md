@@ -1,9 +1,11 @@
 # SEP-0010 (Stellar Web Authentication) Compatibility Matrix
 
-**Generated:** 2025-12-08
+**Generated:** 2025-12-18
 
 **SEP Version:** 3.4.1
+
 **SEP Status:** Active
+
 **SEP URL:** https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md
 
 ## SEP Summary
@@ -138,6 +140,8 @@ _Note: Excludes 2 server-side-only feature(s) not applicable to client SDKs_
 
 ---
 
-**Report Generated:** 2025-12-08
-**SDK Version:** 3.4.0
+**Report Generated:** 2025-12-18
+
+**SDK Version:** 3.4.1
+
 **Analysis Tool:** SEP Compatibility Matrix Generator v2.0
