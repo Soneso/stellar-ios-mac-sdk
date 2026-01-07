@@ -197,6 +197,13 @@ class SorobanTest: XCTestCase {
         switch latestLedgerResponseEnum {
         case .success(let latestLedgerResponse):
             latestLedger = Int(latestLedgerResponse.sequence)
+            // New fields added in RPC v25.0.0
+            XCTAssertNotNil(latestLedgerResponse.closeTime)
+            XCTAssertFalse(latestLedgerResponse.closeTime!.isEmpty)
+            XCTAssertNotNil(latestLedgerResponse.headerXdr)
+            XCTAssertFalse(latestLedgerResponse.headerXdr!.isEmpty)
+            XCTAssertNotNil(latestLedgerResponse.metadataXdr)
+            XCTAssertFalse(latestLedgerResponse.metadataXdr!.isEmpty)
         case .failure(let error):
             self.printError(error: error)
             XCTFail()

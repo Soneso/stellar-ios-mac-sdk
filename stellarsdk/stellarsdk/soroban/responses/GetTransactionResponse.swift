@@ -81,6 +81,9 @@ public struct GetTransactionResponse: Decodable, Sendable {
     /// The sequence number of the oldest ledger ingested by Soroban RPC at the time it handled the request.
     public let oldestLedger:Int
 
+    /// The unix timestamp of the close time of the oldest ledger ingested by Soroban RPC at the time it handled the request.
+    public let oldestLedgerCloseTime:String?
+
     /// (optional) The sequence number of the ledger which included the transaction. This field is only present if status is SUCCESS or FAILED
     public let ledger:Int?
 
@@ -116,6 +119,7 @@ public struct GetTransactionResponse: Decodable, Sendable {
         case latestLedger
         case latestLedgerCloseTime
         case oldestLedger
+        case oldestLedgerCloseTime
         case ledger
         case createdAt
         case applicationOrder
@@ -134,6 +138,7 @@ public struct GetTransactionResponse: Decodable, Sendable {
         latestLedger = try values.decode(Int.self, forKey: .latestLedger)
         latestLedgerCloseTime = try values.decode(String.self, forKey: .latestLedgerCloseTime)
         oldestLedger = try values.decode(Int.self, forKey: .oldestLedger)
+        oldestLedgerCloseTime = try values.decodeIfPresent(String.self, forKey: .oldestLedgerCloseTime)
         ledger = try values.decodeIfPresent(Int.self, forKey: .ledger)
         createdAt = try values.decodeIfPresent(String.self, forKey: .createdAt)
         applicationOrder = try values.decodeIfPresent(Int.self, forKey: .applicationOrder)
