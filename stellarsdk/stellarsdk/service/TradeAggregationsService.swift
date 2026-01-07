@@ -61,13 +61,14 @@ public class TradeAggregationsService: @unchecked Sendable {
     /// - Parameter counterAssetType: Type of the counter asset: "native", "credit_alphanum4", or "credit_alphanum12"
     /// - Parameter counterAssetCode: Asset code of the counter asset (required if not native)
     /// - Parameter counterAssetIssuer: Account ID of the counter asset issuer (required if not native)
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
     /// - Parameter order: Optional sort order - .ascending or .descending
     /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
     /// - Returns: PageResponse containing trade aggregation records or error
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
-    open func getTradeAggregations(startTime:Int64? = nil, endTime:Int64? = nil, resolution:Int64? = nil, baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeAggregationResponse>.ResponseEnum {
-        
+    open func getTradeAggregations(startTime:Int64? = nil, endTime:Int64? = nil, resolution:Int64? = nil, baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeAggregationResponse>.ResponseEnum {
+
         var requestPath = "/trade_aggregations"
         var params = Dictionary<String,String>()
         if let start = startTime { params["start_time"] = String(start) }
@@ -79,14 +80,15 @@ public class TradeAggregationsService: @unchecked Sendable {
         params["counter_asset_type"] = counterAssetType
         params["counter_asset_code"] = counterAssetCode
         params["counter_asset_issuer"] = counterAssetIssuer
+        params["cursor"] = cursor
         params["order"] = order?.rawValue
         if let limit = limit { params["limit"] = String(limit) }
-        
+
         if let pathParams = params.stringFromHttpParameters(),
            pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
-        
+
         return await getTradeAggregationsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     

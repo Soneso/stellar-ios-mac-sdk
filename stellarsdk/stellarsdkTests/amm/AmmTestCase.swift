@@ -103,6 +103,7 @@ class AmmTestCase: XCTestCase {
         await getLiquidityPool()
         await getLiquidityPoolsByReserves()
         await getAccountDetails()
+        await getTradesWithLiquidityPoolFilter()
     }
 
     func createPoolShareTrustlineNotNative() async {
@@ -643,7 +644,25 @@ class AmmTestCase: XCTestCase {
             XCTFail()
         }
     }
-    
+
+    func getTradesWithLiquidityPoolFilter() async {
+        guard let poolId = self.nativeLiquidityPoolId else {
+            print("one must run all tests")
+            XCTFail()
+            return
+        }
+
+        let response = await sdk.trades.getTrades(forLiquidityPool: poolId, limit: 10)
+        switch response {
+        case .success(let tradesResponse):
+            print("Found \(tradesResponse.records.count) trades for liquidity pool")
+            XCTAssert(true)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"getTradesWithLiquidityPoolFilter", horizonRequestError: error)
+            XCTFail()
+        }
+    }
+
     /*func getLiquidityPoolTrades() {
         XCTContext.runActivity(named: "getLiquidityPoolTrades") { activity in
             let expectation = XCTestExpectation(description: "Get liquidity pool trades and parse details successfuly")

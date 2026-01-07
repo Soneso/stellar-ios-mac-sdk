@@ -67,7 +67,7 @@ public class TradesService: @unchecked Sendable {
         jsonDecoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
     }
     
-    /// Retrieves trades filtered by asset pair, offer ID, or trade type with optional pagination parameters.
+    /// Retrieves trades filtered by asset pair, offer ID, account, liquidity pool, or trade type with optional pagination parameters.
     ///
     /// - Parameter baseAssetType: Optional. Type of the base asset: "native", "credit_alphanum4", or "credit_alphanum12"
     /// - Parameter baseAssetCode: Optional. Asset code of the base asset (required if base_asset_type is not "native")
@@ -76,6 +76,8 @@ public class TradesService: @unchecked Sendable {
     /// - Parameter counterAssetCode: Optional. Asset code of the counter asset (required if counter_asset_type is not "native")
     /// - Parameter counterAssetIssuer: Optional. Account ID of the counter asset issuer (required if counter_asset_type is not "native")
     /// - Parameter offerId: Optional. Filter for trades involving a specific offer ID
+    /// - Parameter forAccount: Optional. Filter for trades where the specified account participated
+    /// - Parameter forLiquidityPool: Optional. Filter for trades from a specific liquidity pool (L-address or hex format)
     /// - Parameter tradeType: Optional. Filter by trade type: "all", "orderbook", or "liquidity_pool". Default: "all"
     /// - Parameter cursor: Optional paging token, specifying where to start returning records from
     /// - Parameter order: Optional sort order - .ascending or .descending
@@ -83,8 +85,8 @@ public class TradesService: @unchecked Sendable {
     /// - Returns: PageResponse containing trade records or error
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
-    open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, tradeType:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
-        
+    open func getTrades(baseAssetType:String? = nil, baseAssetCode:String? = nil, baseAssetIssuer:String? = nil, counterAssetType:String? = nil, counterAssetCode:String? = nil, counterAssetIssuer:String? = nil, offerId:String? = nil, forAccount:String? = nil, forLiquidityPool:String? = nil, tradeType:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
+
         var requestPath = "/trades"
         var params = Dictionary<String,String>()
         params["base_asset_type"] = baseAssetType
@@ -94,16 +96,25 @@ public class TradesService: @unchecked Sendable {
         params["counter_asset_code"] = counterAssetCode
         params["counter_asset_issuer"] = counterAssetIssuer
         params["offer_id"] = offerId
+        params["account_id"] = forAccount
+
+        var lidHex = forLiquidityPool
+        if forLiquidityPool != nil && forLiquidityPool!.hasPrefix("L"),
+            let id = try? forLiquidityPool!.decodeLiquidityPoolIdToHex() {
+            lidHex = id
+        }
+        params["liquidity_pool_id"] = lidHex
+
         params["trade_type"] = tradeType
         params["cursor"] = cursor
         params["order"] = order?.rawValue
         if let limit = limit { params["limit"] = String(limit) }
-        
+
         if let pathParams = params.stringFromHttpParameters(),
            pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
-        
+
         return await getTradesFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
