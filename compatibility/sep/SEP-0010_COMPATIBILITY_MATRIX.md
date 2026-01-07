@@ -1,6 +1,8 @@
 # SEP-0010 (Stellar Web Authentication) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
+
+**SDK Version:** 3.4.1
 
 **SEP Version:** 3.4.1
 
@@ -43,11 +45,13 @@ _Note: Excludes 2 server-side-only feature(s) not applicable to client SDKs_
 
 - `stellarsdk/stellarsdk/web_authentication/WebAuthenticator.swift`
 - `stellarsdk/stellarsdk/toml/AccountInformation.swift`
+- `stellarsdk/stellarsdk/constants/SEPConstants.swift`
 
 ### Key Classes
 
 - **`WebAuthenticator`**: Main class implementing SEP-10 authentication flow
 - **`AccountInformation`**: Contains WEB_AUTH_ENDPOINT and SIGNING_KEY from stellar.toml
+- **`SEPConstants`**: Contains WEBAUTH_GRACE_PERIOD_SECONDS for time bounds validation
 - **`ChallengeValidationError`**: Error enum for challenge validation failures
 - **`GetJWTTokenError`**: Error enum for JWT token retrieval failures
 
@@ -118,16 +122,6 @@ _Note: Excludes 2 server-side-only feature(s) not applicable to client SDKs_
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-✅ The SDK has full compatibility with SEP-10!
-- Always use secure (HTTPS) endpoints in production
-- Implement proper JWT token storage and refresh logic
-- Use client_domain parameter for enhanced security when available
-- Handle ChallengeValidationError cases appropriately
-- Consider using grace period for time bounds validation
-- Validate JWT tokens before use in subsequent requests
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -137,11 +131,3 @@ _Note: Excludes 2 server-side-only feature(s) not applicable to client SDKs_
 - (blank) **Optional**: Field is optional
 
 **Note:** Excludes 2 server-side-only feature(s) not applicable to client SDKs
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0

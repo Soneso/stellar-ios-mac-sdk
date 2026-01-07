@@ -1,6 +1,8 @@
 # SEP-0006 (Deposit and Withdrawal API) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
+
+**SDK Version:** 3.4.1
 
 **SEP Version:** 4.3.0
 
@@ -38,6 +40,17 @@ This proposal defines a standard protocol enabling the following features direct
 ### Implementation Files
 
 - `stellarsdk/stellarsdk/transfer_server_protocol/TransferServerService.swift`
+- `stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositRequest.swift`
+- `stellarsdk/stellarsdk/transfer_server_protocol/responses/DepositResponse.swift`
+- `stellarsdk/stellarsdk/transfer_server_protocol/requests/DepositExchangeRequest.swift`
+- `stellarsdk/stellarsdk/transfer_server_protocol/requests/WithdrawRequest.swift`
+- `stellarsdk/stellarsdk/transfer_server_protocol/responses/WithdrawResponse.swift`
+- `stellarsdk/stellarsdk/transfer_server_protocol/requests/WithdrawExchangeRequest.swift`
+- `stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorInfoResponse.swift`
+- `stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorTransactionsResponse.swift`
+- `stellarsdk/stellarsdk/transfer_server_protocol/requests/FeeRequest.swift`
+- `stellarsdk/stellarsdk/transfer_server_protocol/responses/AnchorFeeResponse.swift`
+- `stellarsdk/stellarsdk/transfer_server_protocol/errors/TransferServerError.swift`
 
 ### Key Classes
 
@@ -53,7 +66,7 @@ This proposal defines a standard protocol enabling the following features direct
 - **`AnchorTransactionStatus`**: Enum for all transaction status values
 - **`AnchorTransactionsResponse`**: Response model for GET /transactions endpoint
 - **`FeeRequest`**: Request model for GET /fee endpoint (deprecated)
-- **`FeeResponse`**: Response model with fee calculations
+- **`AnchorFeeResponse`**: Response model with fee calculations
 - **`DepositAsset`**: Asset information for deposits from /info endpoint
 - **`WithdrawAsset`**: Asset information for withdrawals from /info endpoint
 - **`AnchorFeatureFlags`**: Feature flags (account_creation, claimable_balances)
@@ -237,16 +250,6 @@ This proposal defines a standard protocol enabling the following features direct
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-✅ The SDK has full compatibility with SEP-06!
-- Always use SEP-10 authentication for production deployments
-- Handle all transaction statuses appropriately in client applications
-- Implement proper error handling for all TransferServerError cases
-- Use SEP-38 quote endpoints for cross-asset transfers
-- Monitor transaction status changes via on_change_callback
-- Validate all input parameters before making requests
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -254,11 +257,3 @@ This proposal defines a standard protocol enabling the following features direct
 - ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0

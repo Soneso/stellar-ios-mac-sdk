@@ -1,6 +1,8 @@
 # SEP-0024 (Hosted Deposit and Withdrawal) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
+
+**SDK Version:** 3.4.1
 
 **SEP Version:** 3.8.0
 
@@ -43,6 +45,7 @@ This proposal defines a standard protocol enabling the following features direct
 - `stellarsdk/stellarsdk/interactive/requests/Sep24FeeRequest.swift`
 - `stellarsdk/stellarsdk/interactive/requests/Sep24TransactionRequest.swift`
 - `stellarsdk/stellarsdk/interactive/requests/Sep24TransactionsRequest.swift`
+- `stellarsdk/stellarsdk/interactive/errors/InteractiveServiceError.swift`
 - `stellarsdk/stellarsdk/interactive/responses/Sep24InfoResponse.swift`
 - `stellarsdk/stellarsdk/interactive/responses/Sep24InteractiveResponse.swift`
 - `stellarsdk/stellarsdk/interactive/responses/Sep24TransactionResponse.swift`
@@ -51,6 +54,7 @@ This proposal defines a standard protocol enabling the following features direct
 ### Key Classes
 
 - **`InteractiveService`**: Main service class implementing all SEP-24 endpoints
+- **`InteractiveServiceError`**: Error enum for SEP-24 error cases (invalid domain, auth required, anchor errors)
 - **`Sep24DepositRequest`**: Request model for POST /transactions/deposit/interactive
 - **`Sep24WithdrawRequest`**: Request model for POST /transactions/withdraw/interactive
 - **`Sep24FeeRequest`**: Request model for GET /fee endpoint
@@ -66,6 +70,8 @@ This proposal defines a standard protocol enabling the following features direct
 - **`Sep24WithdrawAsset`**: Withdrawal asset information with fees and limits
 - **`Sep24FeatureFlags`**: Feature flags (account_creation, claimable_balances)
 - **`Sep24FeeEndpointInfo`**: Fee endpoint availability and auth requirements
+- **`Sep24Refund`**: Refund information with total amount and fee
+- **`Sep24RefundPayment`**: Individual refund payment details (id, type, amount, fee)
 
 ## Coverage by Section
 
@@ -262,21 +268,6 @@ This proposal defines a standard protocol enabling the following features direct
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-✅ The SDK has full compatibility with SEP-24!
-- Always use SEP-10 authentication for deposit/withdraw endpoints
-- Display the interactive URL in a popup or iframe for user KYC
-- Poll transaction status endpoint to track deposit/withdrawal progress
-- Handle all transaction status values appropriately in client applications
-- Use /info endpoint to discover supported assets and capabilities
-- Provide quote_id from SEP-38 when asset exchange is needed
-- Include wallet_name and wallet_url for better user communication
-- Support claimable balances for users without trustlines
-- Implement proper memo handling for transaction identification
-- Use lang parameter for localized user experience
-- Monitor user_action_required_by timestamps for time-sensitive actions
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -284,11 +275,3 @@ This proposal defines a standard protocol enabling the following features direct
 - ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0

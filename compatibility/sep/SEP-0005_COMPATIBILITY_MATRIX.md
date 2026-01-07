@@ -1,6 +1,8 @@
 # SEP-0005 (Key Derivation Methods for Stellar Keys) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
+
+**SDK Version:** 3.4.1
 
 **SEP Version:** Unknown
 
@@ -107,16 +109,6 @@ This should improve key storage and moving keys between wallets and apps.
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-✅ The SDK has full compatibility with SEP-05!
-- Always validate mnemonics before use
-- Store mnemonics securely (never in plain text)
-- Consider using 24-word mnemonics for higher entropy
-- Use the optional passphrase for additional security
-- Test key derivation with known test vectors
-- Implement proper backup and recovery flows for users
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -124,11 +116,3 @@ This should improve key storage and moving keys between wallets and apps.
 - ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0

@@ -1,6 +1,8 @@
 # SEP-0012 (KYC API) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
+
+**SDK Version:** 3.4.1
 
 **SEP Version:** 1.15.0
 
@@ -42,6 +44,8 @@ This SEP was made with these goals in mind: - interoperability - Allow a custome
 - `stellarsdk/stellarsdk/kyc/requests/PutCustomerInfoRequest.swift`
 - `stellarsdk/stellarsdk/kyc/requests/PutCustomerVerificationRequest.swift`
 - `stellarsdk/stellarsdk/kyc/requests/PutCustomerCallbackRequest.swift`
+- `stellarsdk/stellarsdk/kyc/KycAmlFields.swift`
+- `stellarsdk/stellarsdk/kyc/errors/KycServiceError.swift`
 
 ### Key Classes
 
@@ -60,6 +64,7 @@ This SEP was made with these goals in mind: - interoperability - Allow a custome
 - **`KYCOrganizationFieldsEnum`**: SEP-9 organization KYC fields
 - **`KYCFinancialAccountFieldsEnum`**: SEP-9 financial account fields
 - **`KYCCardFieldsEnum`**: SEP-9 card payment fields
+- **`KycServiceError`**: Error enum for SEP-12 error cases (badRequest, notFound, unauthorized, payloadTooLarge)
 
 ## Coverage by Section
 
@@ -142,17 +147,6 @@ This SEP was made with these goals in mind: - interoperability - Allow a custome
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-✅ The SDK has full compatibility with SEP-12!
-- Always use SEP-10 JWT authentication for all requests
-- Handle customer status values appropriately (ACCEPTED, NEEDS_INFO, PROCESSING, REJECTED)
-- Use multipart/form-data for uploading documents (photo_id, proof_of_address, etc.)
-- Implement proper error handling for KycServiceError cases
-- Consider using the callback endpoint for status updates
-- Follow SEP-9 standard field naming conventions
-- Validate file sizes before upload to avoid PAYLOAD_TOO_LARGE errors
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -160,11 +154,3 @@ This SEP was made with these goals in mind: - interoperability - Allow a custome
 - ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0

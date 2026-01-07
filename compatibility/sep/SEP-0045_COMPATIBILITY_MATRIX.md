@@ -1,8 +1,10 @@
 # SEP-0045 (Stellar Web Authentication for Contract Accounts) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
 
-**SEP Version:** 0.1.0
+**SDK Version:** 3.4.1
+
+**SEP Version:** 0.1.1
 
 **SEP Status:** Draft
 
@@ -18,7 +20,7 @@ This SEP is based on [SEP-10](sep-0010.md), but does not replace it.
 
 This SEP only supports `C` (contract) accounts.
 
-SEP-10 only support `G` and `M` accounts.
+SEP-10 only supports `G` and `M` accounts.
 
 Services wishing to support all accounts should implement both SEPs.
 
@@ -48,8 +50,8 @@ Services wishing to support all accounts should implement both SEPs.
 - **`WebAuthForContracts`**: Main class implementing SEP-45 authentication flow for contract accounts (C... addresses)
 - **`ContractChallengeResponse`**: Response model for challenge authorization entries from server
 - **`ContractChallengeValidationError`**: Error enum for challenge validation failures (13 cases)
-- **`WebAuthForContractsError`**: Error enum for initialization errors (9 cases)
-- **`GetContractJWTTokenError`**: Error enum for runtime authentication errors (7 cases)
+- **`WebAuthForContractsError`**: Error enum for initialization errors (11 cases)
+- **`GetContractJWTTokenError`**: Error enum for runtime authentication errors (8 cases)
 - **`WebAuthForContractsForDomainEnum`**: Result enum for creating instance from stellar.toml
 - **`GetContractJWTTokenResponseEnum`**: Result enum for complete authentication flow
 - **`GetContractChallengeResponseEnum`**: Result enum for challenge request
@@ -133,16 +135,6 @@ Services wishing to support all accounts should implement both SEPs.
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-- The SDK has full compatibility with SEP-45!
-- Always use secure (HTTPS) endpoints in production
-- Implement proper JWT token storage and refresh logic
-- Use client_domain parameter for enhanced security when available
-- Handle ContractChallengeValidationError cases appropriately
-- Ensure contract accounts implement __check_auth correctly
-- Validate JWT tokens before use in subsequent requests
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -150,11 +142,3 @@ Services wishing to support all accounts should implement both SEPs.
 - ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0

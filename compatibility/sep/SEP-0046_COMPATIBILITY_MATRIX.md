@@ -1,6 +1,8 @@
 # SEP-0046 (Contract Meta) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
+
+**SDK Version:** 3.4.1
 
 **SEP Version:** 1.0.0
 
@@ -30,12 +32,15 @@ A standard for the storage of metadata in contract Wasm files.
 ### Implementation Files
 
 - `stellarsdk/stellarsdk/soroban/SorobanContractParser.swift`
+- `stellarsdk/stellarsdk/responses/xdr/ContractMetaXDR.swift`
 
 ### Key Classes
 
 - **`SorobanContractParser`**: Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta
 - **`SorobanContractInfo`**: Stores information parsed from a soroban contract byte code such as Environment Meta, Contract Spec Entries and Contract Meta Entries
 - **`SorobanContractParserError`**: Error enum for contract parsing failures
+- **`SCMetaEntryXDR`**: XDR enum for contract metadata entries, supports SCMetaKind.v0
+- **`SCMetaV0XDR`**: XDR struct for key-value metadata pairs (key: String, value: String)
 
 ## Coverage by Section
 
@@ -75,10 +80,6 @@ A standard for the storage of metadata in contract Wasm files.
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-✅ The SDK has full compatibility with SEP-46!
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -86,11 +87,3 @@ A standard for the storage of metadata in contract Wasm files.
 - ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0

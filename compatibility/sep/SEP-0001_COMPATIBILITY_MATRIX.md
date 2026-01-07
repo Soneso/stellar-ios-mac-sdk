@@ -1,6 +1,8 @@
 # SEP-0001 (Stellar Info File) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
+
+**SDK Version:** 3.4.1
 
 **SEP Version:** 2.7.0
 
@@ -39,6 +41,7 @@ Fully and truthfully disclosing contact and business inf.
 
 ### Implementation Files
 
+- `stellarsdk/stellarsdk/toml/StellarToml.swift`
 - `stellarsdk/stellarsdk/toml/AccountInformation.swift`
 - `stellarsdk/stellarsdk/toml/IssuerDocumentation.swift`
 - `stellarsdk/stellarsdk/toml/PointOfContactDocumentation.swift`
@@ -47,12 +50,12 @@ Fully and truthfully disclosing contact and business inf.
 
 ### Key Classes
 
+- **`StellarToml`**: Main parser class for stellar.toml files
 - **`AccountInformation`**: General Information fields from stellar.toml
 - **`IssuerDocumentation`**: Organization Documentation fields ([DOCUMENTATION] section)
 - **`PointOfContactDocumentation`**: Point of Contact fields ([[PRINCIPALS]] section)
 - **`CurrencyDocumentation`**: Currency Documentation fields ([[CURRENCIES]] section)
 - **`ValidatorInformation`**: Validator Information fields ([[VALIDATORS]] section)
-- **`StellarToml`**: Main parser class for stellar.toml files
 
 ## Coverage by Section
 
@@ -165,14 +168,6 @@ Fully and truthfully disclosing contact and business inf.
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-✅ The SDK has full compatibility with SEP-01!
-- Consider caching stellar.toml responses to reduce network requests
-- Always use the secure (HTTPS) mode in production
-- Handle TomlFileError cases appropriately in client applications
-- For linked currency files, implement retry logic for network failures
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -180,11 +175,3 @@ Fully and truthfully disclosing contact and business inf.
 - ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0

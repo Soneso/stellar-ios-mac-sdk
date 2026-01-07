@@ -1,6 +1,8 @@
 # SEP-0002 (Federation protocol) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
+
+**SDK Version:** 3.4.1
 
 **SEP Version:** 1.1.0
 
@@ -35,12 +37,13 @@ Stellar addresses provide an easy way for users to share payment details by usin
 
 - `stellarsdk/stellarsdk/federation/Federation.swift`
 - `stellarsdk/stellarsdk/federation/responses/ResolveAddressResponse.swift`
+- `stellarsdk/stellarsdk/federation/errors/FederationError.swift`
 
 ### Key Classes
 
-- **`Federation`**: Implements Federation protocol.
-- **`ResolveAddressResponse`**: Implements Federation protocol.
-- **`_FederationRequestBuilder`**: Implements Federation protocol.
+- **`Federation`**: Main class for resolving Stellar federation addresses
+- **`ResolveAddressResponse`**: Response model for federation address resolution
+- **`FederationError`**: Error types for federation operations
 
 ## Coverage by Section
 
@@ -81,15 +84,6 @@ Stellar addresses provide an easy way for users to share payment details by usin
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-✅ The SDK has full compatibility with SEP-02!
-- Always use secure mode (HTTPS) in production
-- Handle FederationError cases appropriately in client applications
-- Consider caching federation server URLs from stellar.toml
-- Use the forDomain method to automatically discover federation servers
-- Validate stellar addresses before resolving (format: username*domain)
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -97,11 +91,3 @@ Stellar addresses provide an easy way for users to share payment details by usin
 - ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0

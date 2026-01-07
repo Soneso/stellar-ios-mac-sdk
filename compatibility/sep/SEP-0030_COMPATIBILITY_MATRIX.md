@@ -1,6 +1,8 @@
 # SEP-0030 (Account Recovery: multi-party recovery of Stellar accounts) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
+
+**SDK Version:** 3.4.1
 
 **SEP Version:** 0.8.1
 
@@ -133,24 +135,6 @@ The protocol also enables individuals to pass control of a Stellar account to an
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-✅ The SDK has excellent compatibility with SEP-30!
-- Always use SEP-10 authentication to obtain JWT tokens for all recovery endpoints
-- Register accounts with multiple identities (owner role required)
-- Use at least 2 recovery servers with appropriate signer configuration for secure multi-party recovery
-- Support multiple authentication methods (phone, email, Stellar address) for better recovery options
-- Implement proper identity verification before calling recovery endpoints
-- Use the sign transaction endpoint to obtain server signatures during recovery
-- Poll the get account endpoint to verify account registration status
-- Handle 409 Conflict errors when attempting to register already-existing accounts
-- Store JWT tokens securely and refresh them when expired
-- Use pagination (after parameter) when listing accounts with many registrations
-- Verify network passphrase in signature responses matches expected network
-- Delete account records when user no longer needs recovery service
-- Support both owner and other identity roles for flexible account sharing
-- Consider completing the 409 Conflict error handling implementation
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -158,11 +142,3 @@ The protocol also enables individuals to pass control of a Stellar account to an
 - ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0

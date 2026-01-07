@@ -1,6 +1,8 @@
 # SEP-0009 (Standard KYC Fields) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
+
+**SDK Version:** 3.4.1
 
 **SEP Version:** 1.17.0
 
@@ -161,17 +163,6 @@ The best fields to use in a particular case is determined by the needs of the ap
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-✅ The SDK has full compatibility with SEP-09!
-- Use the strongly-typed enums (KYCNaturalPersonFieldsEnum, etc.) for type safety
-- Field keys are available as static constants for direct access
-- Binary files (photo_id, proof_of_income) use Data type for automatic encoding
-- Date fields are automatically formatted to ISO 8601 strings
-- Combine field enums with SEP-12 KycService for complete KYC workflows
-- Organization fields use 'organization.' prefix per SEP-09 spec
-- Card fields use 'card.' prefix per SEP-09 spec
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -179,11 +170,3 @@ The best fields to use in a particular case is determined by the needs of the ap
 - ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0

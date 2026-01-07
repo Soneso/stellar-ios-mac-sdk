@@ -1,6 +1,8 @@
 # SEP-0007 (URI Scheme to facilitate delegated signing) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
+
+**SDK Version:** 3.4.1
 
 **SEP Version:** 2.1.0
 
@@ -134,29 +136,6 @@ The signing applications (wallets) should follow the [recommended security best 
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-✅ The SDK has excellent compatibility with SEP-07!
-- Use getSignTransactionURI() to create transaction signing requests
-- Use getPayOperationURI() to create payment requests
-- Always validate URIs before processing using URISchemeValidator
-- Sign URIs with signURI() when you are the request originator
-- Verify signed URIs with checkURISchemeIsValid() when you are the receiver
-- Include origin_domain and signature for trusted URI requests
-- Keep messages under 300 characters (enforced by MessageMaximumLength)
-- Use callback parameter to receive signed transaction envelopes
-- Specify network_passphrase for non-public networks
-- Use pubkey parameter to specify which key should sign
-- Chain multiple operations using the chain parameter
-- Implement replace parameter for dynamic transaction field replacement (SEP-11)
-- For payments, specify amount, asset_code, and asset_issuer for non-XLM assets
-- Use appropriate memo_type (MEMO_TEXT, MEMO_ID, MEMO_HASH, MEMO_RETURN)
-- Validate destination addresses before creating payment URIs
-- Test URIs with both web+stellar: scheme and proper URL encoding
-- Verify origin domain TOML files contain URI_REQUEST_SIGNING_KEY
-- Handle URISchemeErrors enum for proper error messages
-- Use signAndSubmitTransaction() for complete signing and submission workflow
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -164,11 +143,3 @@ The signing applications (wallets) should follow the [recommended security best 
 - ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0

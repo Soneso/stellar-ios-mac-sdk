@@ -114,7 +114,12 @@ public class SorobanContractParser {
                 if let entry = try? SCMetaEntryXDR(from: xdrDecoder) {
                     switch entry {
                     case .v0(let sCMetaV0XDR):
-                        result[sCMetaV0XDR.key] = sCMetaV0XDR.value
+                        // According to SEP-47, multiple entries with the same key should be concatenated with comma separator
+                        if let existingValue = result[sCMetaV0XDR.key] {
+                            result[sCMetaV0XDR.key] = existingValue + "," + sCMetaV0XDR.value
+                        } else {
+                            result[sCMetaV0XDR.key] = sCMetaV0XDR.value
+                        }
                         if let enc = try? XDREncoder.encode(entry),
                            let entryBytesString = String(data: Data(enc), encoding: .isoLatin1),
                            let remaining = end(input: meta, from: entryBytesString) {

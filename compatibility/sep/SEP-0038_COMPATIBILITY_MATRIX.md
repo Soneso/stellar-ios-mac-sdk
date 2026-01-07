@@ -1,6 +1,8 @@
 # SEP-0038 (Anchor RFQ API) Compatibility Matrix
 
-**Generated:** 2025-12-18
+**Generated:** 2026-01-07
+
+**SDK Version:** 3.4.1
 
 **SEP Version:** 2.5.0
 
@@ -36,10 +38,23 @@ How the exchange of assets is facilitated is outside the scope of this document.
 - `stellarsdk/stellarsdk/quote/QuoteService.swift`
 - `stellarsdk/stellarsdk/quote/request/Sep38PostQuoteRequest.swift`
 - `stellarsdk/stellarsdk/quote/responses/Sep38Responses.swift`
+- `stellarsdk/stellarsdk/quote/errors/QuoteServiceError.swift`
 
 ### Key Classes
 
-- No key classes documented
+- **`QuoteService`**: Main service class implementing SEP-38 RFQ API endpoints (info, prices, price, quote)
+- **`Sep38InfoResponse`**: Response model for GET /info with supported assets and delivery methods
+- **`Sep38PricesResponse`**: Response model for GET /prices with indicative prices for multiple assets
+- **`Sep38PriceResponse`**: Response model for GET /price with indicative price for asset pair
+- **`Sep38QuoteResponse`**: Response model for POST /quote and GET /quote/:id with firm quote details
+- **`Sep38PostQuoteRequest`**: Request model for POST /quote with context, assets, and amounts
+- **`Sep38Asset`**: Asset information with delivery methods and country codes from /info endpoint
+- **`Sep38BuyAsset`**: Buy asset with indicative price and decimals from /prices endpoint
+- **`Sep38Fee`**: Fee structure with total, asset, and optional breakdown details
+- **`Sep38FeeDetails`**: Individual fee component with name, amount, and description
+- **`Sep38SellDeliveryMethod`**: Delivery method for selling assets to the anchor
+- **`Sep38BuyDeliveryMethod`**: Delivery method for receiving assets from the anchor
+- **`QuoteServiceError`**: Error enum for SEP-38 operations (invalidArgument, badRequest, permissionDenied, notFound, parsingResponseFailed, horizonError)
 
 ## Coverage by Section
 
@@ -212,20 +227,6 @@ How the exchange of assets is facilitated is outside the scope of this document.
 
 🎉 **No gaps found!** All fields are implemented.
 
-## Recommendations
-
-✅ The SDK has full compatibility with SEP-38!
-- Always use SEP-10 authentication for protected endpoints
-- Handle quote expiration appropriately in client applications
-- Use /prices for multi-asset price discovery
-- Use /price for single asset pair indicative pricing
-- Use POST /quote for firm quotes before initiating transfers
-- Provide either sell_amount or buy_amount, never both
-- Specify context (sep6 or sep31) based on the transfer type
-- Include delivery methods and country codes for off-chain assets
-- Monitor quote expiration via expires_at timestamp
-- Store quote IDs for transaction reconciliation
-
 ## Legend
 
 - ✅ **Implemented**: Field is implemented in SDK
@@ -233,11 +234,3 @@ How the exchange of assets is facilitated is outside the scope of this document.
 - ⚙️ **Server**: Server-side only feature (not applicable to client SDKs)
 - ✓ **Required**: Field is required by SEP specification
 - (blank) **Optional**: Field is optional
-
----
-
-**Report Generated:** 2025-12-18
-
-**SDK Version:** 3.4.1
-
-**Analysis Tool:** SEP Compatibility Matrix Generator v2.0
