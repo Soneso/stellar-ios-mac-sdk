@@ -1098,6 +1098,10 @@
 		83B8361B2F0E91D100063825 /* AccountStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836192F0E91D100063825 /* AccountStreamItem.swift */; };
 		83B8361C2F0E91D100063825 /* AccountDataStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836182F0E91D100063825 /* AccountDataStreamItem.swift */; };
 		83B8361D2F0E91D100063825 /* AccountStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836192F0E91D100063825 /* AccountStreamItem.swift */; };
+		83B8361F2F0E952700063825 /* LiquidityPoolTradesStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B8361E2F0E952700063825 /* LiquidityPoolTradesStreamItem.swift */; };
+		83B836202F0E952700063825 /* LiquidityPoolTradesStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B8361E2F0E952700063825 /* LiquidityPoolTradesStreamItem.swift */; };
+		83B836222F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836212F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift */; };
+		83B836232F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836212F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift */; };
 		83BD1EE82949F67D00F6C041 /* IssueAssetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BD1EE72949F67D00F6C041 /* IssueAssetTest.swift */; };
 		83BD1EE92949F67D00F6C041 /* IssueAssetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BD1EE72949F67D00F6C041 /* IssueAssetTest.swift */; };
 		83C54D062945F23700CC1E8A /* QuickStartTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C54D052945F23700CC1E8A /* QuickStartTest.swift */; };
@@ -1893,6 +1897,8 @@
 		83B836152F0E917B00063825 /* AccountStreamingTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStreamingTestCase.swift; sourceTree = "<group>"; };
 		83B836182F0E91D100063825 /* AccountDataStreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDataStreamItem.swift; sourceTree = "<group>"; };
 		83B836192F0E91D100063825 /* AccountStreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStreamItem.swift; sourceTree = "<group>"; };
+		83B8361E2F0E952700063825 /* LiquidityPoolTradesStreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolTradesStreamItem.swift; sourceTree = "<group>"; };
+		83B836212F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidityPoolTradesStreamingTestCase.swift; sourceTree = "<group>"; };
 		83BD1EE72949F67D00F6C041 /* IssueAssetTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueAssetTest.swift; sourceTree = "<group>"; };
 		83C54D052945F23700CC1E8A /* QuickStartTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickStartTest.swift; sourceTree = "<group>"; };
 		83CFD7A626F1375A001043B5 /* TradePrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradePrice.swift; sourceTree = "<group>"; };
@@ -2544,6 +2550,7 @@
 				DDE2DCD32664EA5E00F238F4 /* TradesStreamItem.swift */,
 				DDE2DCD626662C9700F238F4 /* OrderbookStreamItem.swift */,
 				DDE2DCD9266674BB00F238F4 /* OffersStreamItem.swift */,
+				83B8361E2F0E952700063825 /* LiquidityPoolTradesStreamItem.swift */,
 			);
 			path = Streaming;
 			sourceTree = "<group>";
@@ -2962,6 +2969,7 @@
 			isa = PBXGroup;
 			children = (
 				8310BDCD26EB61B0004D3EF2 /* AmmTestCase.swift */,
+				83B836212F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift */,
 			);
 			path = amm;
 			sourceTree = "<group>";
@@ -4291,6 +4299,7 @@
 				745DF48C2052FF9C000D3660 /* LedgerKeyAccountXDR.swift in Sources */,
 				837228672DCA34A50050BBC9 /* InstallRequest.swift in Sources */,
 				83DF81A326EF822000AF72CD /* LiquidityPoolPriceResponse.swift in Sources */,
+				83B8361F2F0E952700063825 /* LiquidityPoolTradesStreamItem.swift in Sources */,
 				745DF48D2052FF9C000D3660 /* LedgerKeyTrustlineXDR.swift in Sources */,
 				832C2B202AE95926005BB7B8 /* LedgerEntry.swift in Sources */,
 				83AFD63F234FC60700A574D2 /* PathPaymentStrictSendOperation.swift in Sources */,
@@ -4493,6 +4502,7 @@
 				833C67392B84E38F00E034C6 /* QuoteServiceTestCase.swift in Sources */,
 				744FC701212E978500ADFC88 /* FederationTestCase.swift in Sources */,
 				832C2B492AEC2AC7005BB7B8 /* Sep30ListAccountsResponseMock.swift in Sources */,
+				83B836222F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift in Sources */,
 				83D6D2EB2A27BAD700555110 /* PutVerificationResponseMock.swift in Sources */,
 				745DF567205304AC000D3660 /* MnemonicGeneration.swift in Sources */,
 				744A84D221453AA70086B8FC /* PutCustomerInfoResponseMock.swift in Sources */,
@@ -4961,6 +4971,7 @@
 				83D4090E26EBB049003A9C0F /* ReserveResponse.swift in Sources */,
 				836972242028F62A00398A98 /* TrustlineRemovedEffectResponse.swift in Sources */,
 				830E7CC2252912C70059A4B4 /* BeginSponsoringFutureReservesResultXDR.swift in Sources */,
+				83B836202F0E952700063825 /* LiquidityPoolTradesStreamItem.swift in Sources */,
 				743DF5682020530A00713DE7 /* seed.c in Sources */,
 				43AEB4CE203ADEC10078637D /* Data+Base16.swift in Sources */,
 				835F0CCC297482FE00793708 /* ContractSpecXDR.swift in Sources */,
@@ -5179,6 +5190,7 @@
 				83AFD64E234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift in Sources */,
 				83EFF59C2EDA409C00359A37 /* SorobanRpcErrorTest.swift in Sources */,
 				833C67532B8F688000E034C6 /* WithdrawExchangeResponseMock.swift in Sources */,
+				83B836232F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift in Sources */,
 				83F32D982E44A1AC00A8355A /* TokenContract.swift in Sources */,
 				83DB2B012ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */,
 				83DB2AF22ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */,

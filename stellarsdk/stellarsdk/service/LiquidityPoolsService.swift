@@ -89,25 +89,28 @@ public class LiquidityPoolsService: @unchecked Sendable {
         }
     }
     
-    /// Retrieves all liquidity pools with optional pagination parameters.
+    /// Retrieves all liquidity pools with optional filtering and pagination parameters.
     ///
+    /// - Parameter account: Optional account ID (G... address) to filter pools by participation.
+    ///                      When provided, returns only liquidity pools the account participates in.
     /// - Parameter cursor: Optional paging token, specifying where to start returning records from
     /// - Parameter order: Optional sort order - .ascending or .descending
     /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
     /// - Returns: PageResponse containing liquidity pools or error
-    open func getLiquidityPools(cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<LiquidityPoolResponse>.ResponseEnum {
+    open func getLiquidityPools(account:String? = nil, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<LiquidityPoolResponse>.ResponseEnum {
         var requestPath = "/liquidity_pools"
-        
+
         var params = Dictionary<String,String>()
+        params["account"] = account
         params["cursor"] = cursor
         params["order"] = order?.rawValue
         if let limit = limit { params["limit"] = String(limit) }
-        
+
         if let pathParams = params.stringFromHttpParameters(),
            pathParams.count > 0 {
             requestPath += "?\(pathParams)"
         }
-        
+
         return await getLiquidityPoolsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
@@ -136,12 +139,26 @@ public class LiquidityPoolsService: @unchecked Sendable {
         return await getLiquidityPoolsFromUrl(url: serviceHelper.requestUrlWithPath(path: requestPath))
     }
     
-    /// Retrieves trade history for a specific liquidity pool.
+    /// Retrieves trade history for a specific liquidity pool with optional pagination parameters.
     ///
     /// - Parameter poolId: The liquidity pool ID (L-address or hex format)
+    /// - Parameter cursor: Optional paging token, specifying where to start returning records from
+    /// - Parameter order: Optional sort order - .ascending or .descending
+    /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
     /// - Returns: LiquidityPoolTradesResponseEnum with trade history or error
-    open func getLiquidityPoolTrades(poolId:String) async -> LiquidityPoolTradesResponseEnum {
-        let requestPath = "/liquidity_pools/" + poolId + "/trades"
+    open func getLiquidityPoolTrades(poolId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> LiquidityPoolTradesResponseEnum {
+        var requestPath = "/liquidity_pools/" + poolId + "/trades"
+
+        var params = Dictionary<String,String>()
+        params["cursor"] = cursor
+        params["order"] = order?.rawValue
+        if let limit = limit { params["limit"] = String(limit) }
+
+        if let pathParams = params.stringFromHttpParameters(),
+           pathParams.count > 0 {
+            requestPath += "?\(pathParams)"
+        }
+
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
         switch result {
         case .success(let data):
@@ -154,6 +171,45 @@ public class LiquidityPoolsService: @unchecked Sendable {
         case .failure(let error):
             return .failure(error:error)
         }
+    }
+
+    /// Streams real-time trade updates for a specific liquidity pool.
+    ///
+    /// Creates a Server-Sent Events (SSE) stream that delivers live trade updates as they occur
+    /// on the Stellar network for the specified liquidity pool. The stream provides continuous
+    /// updates until explicitly closed.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// let sdk = StellarSDK()
+    /// let poolId = "L..." // Liquidity pool ID (L-address or hex format)
+    /// let tradesStream = sdk.liquidityPools.streamTrades(forPoolId: poolId)
+    ///
+    /// tradesStream.onReceive { response in
+    ///     switch response {
+    ///     case .open:
+    ///         print("Stream opened")
+    ///     case .response(id: let id, data: let trade):
+    ///         print("New trade: \(trade.baseAmount) for \(trade.counterAmount)")
+    ///     case .error(let error):
+    ///         print("Error: \(error)")
+    ///     }
+    /// }
+    ///
+    /// // Close when done
+    /// tradesStream.closeStream()
+    /// ```
+    ///
+    /// - Parameter poolId: The liquidity pool ID (L-address or hex format)
+    /// - Returns: LiquidityPoolTradesStreamItem for receiving live trade updates
+    open func streamTrades(forPoolId poolId: String) -> LiquidityPoolTradesStreamItem {
+        var lidHex = poolId
+        if poolId.hasPrefix("L"), let idHex = try? poolId.decodeLiquidityPoolIdToHex() {
+            lidHex = idHex
+        }
+        let requestPath = "/liquidity_pools/" + lidHex + "/trades"
+        let streamUrl = serviceHelper.requestUrlWithPath(path: requestPath)
+        return LiquidityPoolTradesStreamItem(requestUrl: streamUrl)
     }
     
     /// Retrieves liquidity pools from a specific Horizon URL.
