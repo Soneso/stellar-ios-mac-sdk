@@ -1092,6 +1092,12 @@
 		83B8277F2B306D280064D7CB /* ResourceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B8277D2B306D280064D7CB /* ResourceConfig.swift */; };
 		83B827812B306E1F0064D7CB /* SimulateTransactionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B827802B306E1F0064D7CB /* SimulateTransactionRequest.swift */; };
 		83B827822B306E1F0064D7CB /* SimulateTransactionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B827802B306E1F0064D7CB /* SimulateTransactionRequest.swift */; };
+		83B836162F0E917B00063825 /* AccountStreamingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836152F0E917B00063825 /* AccountStreamingTestCase.swift */; };
+		83B836172F0E917B00063825 /* AccountStreamingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836152F0E917B00063825 /* AccountStreamingTestCase.swift */; };
+		83B8361A2F0E91D100063825 /* AccountDataStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836182F0E91D100063825 /* AccountDataStreamItem.swift */; };
+		83B8361B2F0E91D100063825 /* AccountStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836192F0E91D100063825 /* AccountStreamItem.swift */; };
+		83B8361C2F0E91D100063825 /* AccountDataStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836182F0E91D100063825 /* AccountDataStreamItem.swift */; };
+		83B8361D2F0E91D100063825 /* AccountStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836192F0E91D100063825 /* AccountStreamItem.swift */; };
 		83BD1EE82949F67D00F6C041 /* IssueAssetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BD1EE72949F67D00F6C041 /* IssueAssetTest.swift */; };
 		83BD1EE92949F67D00F6C041 /* IssueAssetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BD1EE72949F67D00F6C041 /* IssueAssetTest.swift */; };
 		83C54D062945F23700CC1E8A /* QuickStartTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C54D052945F23700CC1E8A /* QuickStartTest.swift */; };
@@ -1884,6 +1890,9 @@
 		83B827762B28E3930064D7CB /* soroban_events_contract.wasm */ = {isa = PBXFileReference; lastKnownFileType = file; path = soroban_events_contract.wasm; sourceTree = "<group>"; };
 		83B8277D2B306D280064D7CB /* ResourceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceConfig.swift; sourceTree = "<group>"; };
 		83B827802B306E1F0064D7CB /* SimulateTransactionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulateTransactionRequest.swift; sourceTree = "<group>"; };
+		83B836152F0E917B00063825 /* AccountStreamingTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStreamingTestCase.swift; sourceTree = "<group>"; };
+		83B836182F0E91D100063825 /* AccountDataStreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDataStreamItem.swift; sourceTree = "<group>"; };
+		83B836192F0E91D100063825 /* AccountStreamItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountStreamItem.swift; sourceTree = "<group>"; };
 		83BD1EE72949F67D00F6C041 /* IssueAssetTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IssueAssetTest.swift; sourceTree = "<group>"; };
 		83C54D052945F23700CC1E8A /* QuickStartTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickStartTest.swift; sourceTree = "<group>"; };
 		83CFD7A626F1375A001043B5 /* TradePrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TradePrice.swift; sourceTree = "<group>"; };
@@ -2215,6 +2224,7 @@
 		743DF501201F3AE100713DE7 /* account */ = {
 			isa = PBXGroup;
 			children = (
+				83B836152F0E917B00063825 /* AccountStreamingTestCase.swift */,
 				743DF502201F3B0800713DE7 /* AccountLocalTestCase.swift */,
 				8369723D202A708300398A98 /* AccountResponsesMock.swift */,
 				8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */,
@@ -2524,6 +2534,8 @@
 		744D458D2038288700178D04 /* Streaming */ = {
 			isa = PBXGroup;
 			children = (
+				83B836182F0E91D100063825 /* AccountDataStreamItem.swift */,
+				83B836192F0E91D100063825 /* AccountStreamItem.swift */,
 				744D458E2038292800178D04 /* TransactionsStreamItem.swift */,
 				744D459020382EF800178D04 /* StreamingHelper.swift */,
 				745C41522040388900E33006 /* OperationsStreamItem.swift */,
@@ -4307,6 +4319,8 @@
 				745DF4972052FF9C000D3660 /* PathPaymentResultXDR.swift in Sources */,
 				745DF4982052FF9C000D3660 /* ManageOfferResultXDR.swift in Sources */,
 				745DF4992052FF9C000D3660 /* ManageOfferSuccessResult.swift in Sources */,
+				83B8361A2F0E91D100063825 /* AccountDataStreamItem.swift in Sources */,
+				83B8361B2F0E91D100063825 /* AccountStreamItem.swift in Sources */,
 				745DF49A2052FF9C000D3660 /* SetOptionsResultXDR.swift in Sources */,
 				832ADF50262CE58700571D46 /* SetTrustlineFlagsOperation.swift in Sources */,
 				834389E826E8C93B009116D0 /* LiquidityPoolDepositResultXDR.swift in Sources */,
@@ -4596,6 +4610,7 @@
 				836836072E1709D20032D97C /* StrKeyTest.swift in Sources */,
 				83DB2AFC2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */,
 				83DB2B022ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */,
+				83B836172F0E917B00063825 /* AccountStreamingTestCase.swift in Sources */,
 				83DB2AF32ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */,
 				83ACC0122C885DC500A71CF1 /* SorobanParserTest.swift in Sources */,
 				83F32D562E43E9E400A8355A /* SCValXDRBigIntTest.swift in Sources */,
@@ -4974,6 +4989,8 @@
 				746AD2C220342CA700A9CF21 /* PathPaymentResultXDR.swift in Sources */,
 				833CBFE92036F84F00C23CFE /* ManageDataOperation.swift in Sources */,
 				437D8A7D202EEDCC0024D031 /* Dictionary+HttpParams.swift in Sources */,
+				83B8361C2F0E91D100063825 /* AccountDataStreamItem.swift in Sources */,
+				83B8361D2F0E91D100063825 /* AccountStreamItem.swift in Sources */,
 				4300C17F2032F5C500DC5E49 /* OffersService.swift in Sources */,
 				83A421402C8777ED00737C9A /* SorobanContractParser.swift in Sources */,
 				EC34A15920503CF6000FB042 /* Ed25519Derivation.swift in Sources */,
@@ -5199,6 +5216,7 @@
 				4367E604203EE7A800C0AB4F /* TradesResponsesMock.swift in Sources */,
 				74723340219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift in Sources */,
 				744A84C821441CC50086B8FC /* Date.swift in Sources */,
+				83B836162F0E917B00063825 /* AccountStreamingTestCase.swift in Sources */,
 				832C2B332AEC10C0005BB7B8 /* RecoveryServiceTestCase.swift in Sources */,
 				833C67502B8F66F000E034C6 /* DepositExchangeResponseMock.swift in Sources */,
 				836513902BDEE00400A99085 /* Sep08PostRejectedMock.swift in Sources */,

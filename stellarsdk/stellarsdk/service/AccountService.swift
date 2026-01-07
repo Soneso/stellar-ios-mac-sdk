@@ -369,4 +369,108 @@ open class AccountService: @unchecked Sendable {
             return .failure(error:error)
         }
     }
+
+    /// Streams real-time updates for a single Stellar account using Server-Sent Events (SSE).
+    ///
+    /// Creates a persistent connection to Horizon that delivers account state changes as they occur
+    /// on the Stellar network. Each update contains the complete current state of the account including
+    /// balances, signers, thresholds, sequence number, and other properties.
+    ///
+    /// The stream automatically reconnects if the connection is lost. Use the returned AccountStreamItem
+    /// to receive updates via the onReceive callback and close the stream when finished.
+    ///
+    /// - Parameter accountId: The Stellar account ID (public key). Accepts G-addresses for regular
+    ///                        accounts or M-addresses for muxed accounts. For muxed accounts, the
+    ///                        underlying ed25519 account is streamed automatically.
+    ///
+    /// - Returns: AccountStreamItem for receiving account updates and controlling the stream
+    ///
+    /// Example:
+    /// ```swift
+    /// let accountStream = sdk.accounts.streamAccount(accountId: "GACCOUNT...")
+    ///
+    /// accountStream.onReceive { response in
+    ///     switch response {
+    ///     case .open:
+    ///         print("Stream connected")
+    ///     case .response(id: let id, data: let account):
+    ///         print("Account update - Sequence: \(account.sequenceNumber)")
+    ///         for balance in account.balances {
+    ///             print("\(balance.assetCode ?? "XLM"): \(balance.balance)")
+    ///         }
+    ///     case .error(let error):
+    ///         print("Stream error: \(error)")
+    ///     }
+    /// }
+    ///
+    /// // Close when done
+    /// accountStream.closeStream()
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
+    /// - AccountStreamItem for stream control methods
+    /// - AccountResponse for the account data structure
+    open func streamAccount(accountId: String) -> AccountStreamItem {
+        var requestPath = "/accounts/\(accountId)"
+        if accountId.hasPrefix("M"), let mux = try? accountId.decodeMuxedAccount() {
+            requestPath = "/accounts/\(mux.ed25519AccountId)"
+        }
+        let streamUrl = serviceHelper.requestUrlWithPath(path: requestPath)
+        return AccountStreamItem(requestUrl: streamUrl)
+    }
+
+    /// Streams real-time updates for a specific data entry on a Stellar account using Server-Sent Events (SSE).
+    ///
+    /// Creates a persistent connection to Horizon that delivers updates whenever the specified data entry
+    /// changes on the Stellar network. Each update contains the current base64-encoded value for the key.
+    ///
+    /// Accounts can store arbitrary key-value pairs (up to 64 bytes per value) using the ManageDataOperation.
+    /// This stream allows you to monitor changes to a specific key in real-time.
+    ///
+    /// The stream automatically reconnects if the connection is lost. Use the returned AccountDataStreamItem
+    /// to receive updates via the onReceive callback and close the stream when finished.
+    ///
+    /// - Parameters:
+    ///   - accountId: The Stellar account ID containing the data entry
+    ///   - key: The name of the data field to stream
+    ///
+    /// - Returns: AccountDataStreamItem for receiving data updates and controlling the stream
+    ///
+    /// Example:
+    /// ```swift
+    /// let dataStream = sdk.accounts.streamAccountData(
+    ///     accountId: "GACCOUNT...",
+    ///     key: "user_settings"
+    /// )
+    ///
+    /// dataStream.onReceive { response in
+    ///     switch response {
+    ///     case .open:
+    ///         print("Stream connected")
+    ///     case .response(id: let id, data: let dataEntry):
+    ///         // Decode base64 value
+    ///         if let decoded = Data(base64Encoded: dataEntry.value) {
+    ///             let value = String(data: decoded, encoding: .utf8) ?? ""
+    ///             print("Data updated - Value: \(value)")
+    ///         }
+    ///     case .error(let error):
+    ///         print("Stream error: \(error)")
+    ///     }
+    /// }
+    ///
+    /// // Close when done
+    /// dataStream.closeStream()
+    /// ```
+    ///
+    /// See also:
+    /// - [Stellar developer docs](https://developers.stellar.org)
+    /// - AccountDataStreamItem for stream control methods
+    /// - DataForAccountResponse for the data entry structure
+    /// - ManageDataOperation for setting account data
+    open func streamAccountData(accountId: String, key: String) -> AccountDataStreamItem {
+        let requestPath = "/accounts/\(accountId)/data/\(key)"
+        let streamUrl = serviceHelper.requestUrlWithPath(path: requestPath)
+        return AccountDataStreamItem(requestUrl: streamUrl)
+    }
 }
