@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.1 Docs
+          stellarsdk 3.4.2 Docs
         </a>
          (98% documented)
       </p>
@@ -74,6 +74,9 @@
                 <a class="nav-group-task-link" href="../Classes/AccountCreditedEffectResponse.html">AccountCreditedEffectResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountDataStreamItem.html">AccountDataStreamItem</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountDebitedEffectResponse.html">AccountDebitedEffectResponse</a>
               </li>
               <li class="nav-group-task">
@@ -111,6 +114,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountSponsorshipUpdatedEffectResponse.html">AccountSponsorshipUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountStreamItem.html">AccountStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountThresholdsUpdatedEffectResponse.html">AccountThresholdsUpdatedEffectResponse</a>
@@ -384,6 +390,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradeEffectResponse.html">LiquidityPoolTradeEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradesStreamItem.html">LiquidityPoolTradesStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/LiquidityPoolWithdrawOperation.html">LiquidityPoolWithdrawOperation</a>
@@ -1910,7 +1919,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L54-L180">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L54-L236">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -1978,9 +1987,9 @@ reserves of two assets and allows swapping between them at algorithmically deter
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk21LiquidityPoolsServiceC03getbC06cursor5order5limitAA12PageResponseV0J4EnumOyAA0b4PoolJ0V_GSSSg_AA5OrderOSgSiSgtYaF"></a>
-                    <a name="//apple_ref/swift/Method/getLiquidityPools(cursor:order:limit:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk21LiquidityPoolsServiceC03getbC06cursor5order5limitAA12PageResponseV0J4EnumOyAA0b4PoolJ0V_GSSSg_AA5OrderOSgSiSgtYaF">getLiquidityPools(cursor:<wbr>order:<wbr>limit:<wbr>)</a>
+                    <a name="/s:10stellarsdk21LiquidityPoolsServiceC03getbC07account6cursor5order5limitAA12PageResponseV0K4EnumOyAA0b4PoolK0V_GSSSg_ApA5OrderOSgSiSgtYaF"></a>
+                    <a name="//apple_ref/swift/Method/getLiquidityPools(account:cursor:order:limit:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk21LiquidityPoolsServiceC03getbC07account6cursor5order5limitAA12PageResponseV0K4EnumOyAA0b4PoolK0V_GSSSg_ApA5OrderOSgSiSgtYaF">getLiquidityPools(account:<wbr>cursor:<wbr>order:<wbr>limit:<wbr>)</a>
                     </code>
                       <span class="declaration-note">
                         Asynchronous
@@ -1991,14 +2000,14 @@ reserves of two assets and allows swapping between them at algorithmically deter
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Retrieves all liquidity pools with optional pagination parameters.</p>
+                        <p>Retrieves all liquidity pools with optional filtering and pagination parameters.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPools</span><span class="p">(</span><span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">async</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Structs/LiquidityPoolResponse.html">LiquidityPoolResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPools</span><span class="p">(</span><span class="nv">account</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">async</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Structs/LiquidityPoolResponse.html">LiquidityPoolResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseEnum</span></code></pre>
 
                         </div>
                       </div>
@@ -2006,6 +2015,19 @@ reserves of two assets and allows swapping between them at algorithmically deter
                         <h4>Parameters</h4>
                         <table class="graybox">
                           <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>account</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional account ID (G&hellip; address) to filter pools by participation.
+                 When provided, returns only liquidity pools the account participates in.</p>
+                                </div>
+                              </td>
+                            </tr>
                             <tr>
                               <td>
                                 <code>
@@ -2050,7 +2072,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                         <p>PageResponse containing liquidity pools or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L98-L112">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L100-L115">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2154,7 +2176,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                         <p>PageResponse containing liquidity pools matching the reserve assets or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L122-L137">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L125-L140">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2162,9 +2184,9 @@ reserves of two assets and allows swapping between them at algorithmically deter
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk21LiquidityPoolsServiceC03getB10PoolTrades6poolIdAA0bfG12ResponseEnumOSS_tYaF"></a>
-                    <a name="//apple_ref/swift/Method/getLiquidityPoolTrades(poolId:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk21LiquidityPoolsServiceC03getB10PoolTrades6poolIdAA0bfG12ResponseEnumOSS_tYaF">getLiquidityPoolTrades(poolId:<wbr>)</a>
+                    <a name="/s:10stellarsdk21LiquidityPoolsServiceC03getB10PoolTrades6poolId6cursor5order5limitAA0bfG12ResponseEnumOSS_SSSgAA5OrderOSgSiSgtYaF"></a>
+                    <a name="//apple_ref/swift/Method/getLiquidityPoolTrades(poolId:cursor:order:limit:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk21LiquidityPoolsServiceC03getB10PoolTrades6poolId6cursor5order5limitAA0bfG12ResponseEnumOSS_SSSgAA5OrderOSgSiSgtYaF">getLiquidityPoolTrades(poolId:<wbr>cursor:<wbr>order:<wbr>limit:<wbr>)</a>
                     </code>
                       <span class="declaration-note">
                         Asynchronous
@@ -2175,14 +2197,127 @@ reserves of two assets and allows swapping between them at algorithmically deter
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Retrieves trade history for a specific liquidity pool.</p>
+                        <p>Retrieves trade history for a specific liquidity pool with optional pagination parameters.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPoolTrades</span><span class="p">(</span><span class="nv">poolId</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/LiquidityPoolTradesResponseEnum.html">LiquidityPoolTradesResponseEnum</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getLiquidityPoolTrades</span><span class="p">(</span><span class="nv">poolId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">async</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/LiquidityPoolTradesResponseEnum.html">LiquidityPoolTradesResponseEnum</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>poolId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The liquidity pool ID (L-address or hex format)</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>cursor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional paging token, specifying where to start returning records from</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>order</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional sort order - .ascending or .descending</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>limit</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional maximum number of records to return. Default: 10, max: 200</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>LiquidityPoolTradesResponseEnum with trade history or error</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L149-L174">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk21LiquidityPoolsServiceC12streamTrades9forPoolIdAA0bhF10StreamItemCSS_tF"></a>
+                    <a name="//apple_ref/swift/Method/streamTrades(forPoolId:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk21LiquidityPoolsServiceC12streamTrades9forPoolIdAA0bhF10StreamItemCSS_tF">streamTrades(forPoolId:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Streams real-time trade updates for a specific liquidity pool.</p>
+
+<p>Creates a Server-Sent Events (SSE) stream that delivers live trade updates as they occur
+on the Stellar network for the specified liquidity pool. The stream provides continuous
+updates until explicitly closed.</p>
+
+<p>Example usage:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">sdk</span> <span class="o">=</span> <span class="kt">StellarSDK</span><span class="p">()</span>
+<span class="k">let</span> <span class="nv">poolId</span> <span class="o">=</span> <span class="s">"L..."</span> <span class="c1">// Liquidity pool ID (L-address or hex format)</span>
+<span class="k">let</span> <span class="nv">tradesStream</span> <span class="o">=</span> <span class="n">sdk</span><span class="o">.</span><span class="n">liquidityPools</span><span class="o">.</span><span class="nf">streamTrades</span><span class="p">(</span><span class="nv">forPoolId</span><span class="p">:</span> <span class="n">poolId</span><span class="p">)</span>
+
+<span class="n">tradesStream</span><span class="o">.</span><span class="n">onReceive</span> <span class="p">{</span> <span class="n">response</span> <span class="k">in</span>
+    <span class="k">switch</span> <span class="n">response</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nv">open</span><span class="p">:</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Stream opened"</span><span class="p">)</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">response</span><span class="p">(</span><span class="nv">id</span><span class="p">:</span> <span class="k">let</span> <span class="nv">id</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="k">let</span> <span class="nv">trade</span><span class="p">):</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"New trade: </span><span class="se">\(</span><span class="n">trade</span><span class="o">.</span><span class="n">baseAmount</span><span class="se">)</span><span class="s"> for </span><span class="se">\(</span><span class="n">trade</span><span class="o">.</span><span class="n">counterAmount</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">error</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Error: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Close when done</span>
+<span class="n">tradesStream</span><span class="o">.</span><span class="nf">closeStream</span><span class="p">()</span>
+</code></pre>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">streamTrades</span><span class="p">(</span><span class="n">forPoolId</span> <span class="nv">poolId</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/LiquidityPoolTradesStreamItem.html">LiquidityPoolTradesStreamItem</a></span></code></pre>
 
                         </div>
                       </div>
@@ -2207,10 +2342,10 @@ reserves of two assets and allows swapping between them at algorithmically deter
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>LiquidityPoolTradesResponseEnum with trade history or error</p>
+                        <p>LiquidityPoolTradesStreamItem for receiving live trade updates</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L143-L157">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L205-L213">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2268,7 +2403,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                         <p>PageResponse containing liquidity pools or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L165-L179">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L221-L235">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

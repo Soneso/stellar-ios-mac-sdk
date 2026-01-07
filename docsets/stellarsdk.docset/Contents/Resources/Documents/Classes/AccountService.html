@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.1 Docs
+          stellarsdk 3.4.2 Docs
         </a>
          (98% documented)
       </p>
@@ -74,6 +74,9 @@
                 <a class="nav-group-task-link" href="../Classes/AccountCreditedEffectResponse.html">AccountCreditedEffectResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountDataStreamItem.html">AccountDataStreamItem</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountDebitedEffectResponse.html">AccountDebitedEffectResponse</a>
               </li>
               <li class="nav-group-task">
@@ -111,6 +114,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountSponsorshipUpdatedEffectResponse.html">AccountSponsorshipUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountStreamItem.html">AccountStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountThresholdsUpdatedEffectResponse.html">AccountThresholdsUpdatedEffectResponse</a>
@@ -384,6 +390,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradeEffectResponse.html">LiquidityPoolTradeEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradesStreamItem.html">LiquidityPoolTradesStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/LiquidityPoolWithdrawOperation.html">LiquidityPoolWithdrawOperation</a>
@@ -1912,7 +1921,7 @@ filter accounts by various criteria, and create test accounts on testnet and fut
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L64-L372">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L64-L476">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2491,6 +2500,205 @@ links (e.g., next, prev) to navigate paginated results.</p>
                       </div>
                       <div class="slightly-smaller">
                         <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L358-L371">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk14AccountServiceC06streamB09accountIdAA0B10StreamItemCSS_tF"></a>
+                    <a name="//apple_ref/swift/Method/streamAccount(accountId:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk14AccountServiceC06streamB09accountIdAA0B10StreamItemCSS_tF">streamAccount(accountId:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Streams real-time updates for a single Stellar account using Server-Sent Events (SSE).</p>
+
+<p>Creates a persistent connection to Horizon that delivers account state changes as they occur
+on the Stellar network. Each update contains the complete current state of the account including
+balances, signers, thresholds, sequence number, and other properties.</p>
+
+<p>The stream automatically reconnects if the connection is lost. Use the returned AccountStreamItem
+to receive updates via the onReceive callback and close the stream when finished.</p>
+
+<p>Example:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">accountStream</span> <span class="o">=</span> <span class="n">sdk</span><span class="o">.</span><span class="n">accounts</span><span class="o">.</span><span class="nf">streamAccount</span><span class="p">(</span><span class="nv">accountId</span><span class="p">:</span> <span class="s">"GACCOUNT..."</span><span class="p">)</span>
+
+<span class="n">accountStream</span><span class="o">.</span><span class="n">onReceive</span> <span class="p">{</span> <span class="n">response</span> <span class="k">in</span>
+    <span class="k">switch</span> <span class="n">response</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nv">open</span><span class="p">:</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Stream connected"</span><span class="p">)</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">response</span><span class="p">(</span><span class="nv">id</span><span class="p">:</span> <span class="k">let</span> <span class="nv">id</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="k">let</span> <span class="nv">account</span><span class="p">):</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Account update - Sequence: </span><span class="se">\(</span><span class="n">account</span><span class="o">.</span><span class="n">sequenceNumber</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">balance</span> <span class="k">in</span> <span class="n">account</span><span class="o">.</span><span class="n">balances</span> <span class="p">{</span>
+            <span class="nf">print</span><span class="p">(</span><span class="s">"</span><span class="se">\(</span><span class="n">balance</span><span class="o">.</span><span class="n">assetCode</span> <span class="p">??</span> <span class="s">"XLM"</span><span class="se">)</span><span class="s">: </span><span class="se">\(</span><span class="n">balance</span><span class="o">.</span><span class="n">balance</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">error</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Stream error: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Close when done</span>
+<span class="n">accountStream</span><span class="o">.</span><span class="nf">closeStream</span><span class="p">()</span>
+</code></pre>
+
+<p>See also:</p>
+
+<ul>
+<li><a href="https://developers.stellar.org">Stellar developer docs</a></li>
+<li>AccountStreamItem for stream control methods</li>
+<li>AccountResponse for the account data structure</li>
+</ul>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">streamAccount</span><span class="p">(</span><span class="nv">accountId</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/AccountStreamItem.html">AccountStreamItem</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>accountId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Stellar account ID (public key). Accepts G-addresses for regular
+                   accounts or M-addresses for muxed accounts. For muxed accounts, the
+                   underlying ed25519 account is streamed automatically.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>AccountStreamItem for receiving account updates and controlling the stream</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L414-L421">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk14AccountServiceC06streamB4Data9accountId3keyAA0bE10StreamItemCSS_SStF"></a>
+                    <a name="//apple_ref/swift/Method/streamAccountData(accountId:key:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk14AccountServiceC06streamB4Data9accountId3keyAA0bE10StreamItemCSS_SStF">streamAccountData(accountId:<wbr>key:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Streams real-time updates for a specific data entry on a Stellar account using Server-Sent Events (SSE).</p>
+
+<p>Creates a persistent connection to Horizon that delivers updates whenever the specified data entry
+changes on the Stellar network. Each update contains the current base64-encoded value for the key.</p>
+
+<p>Accounts can store arbitrary key-value pairs (up to 64 bytes per value) using the ManageDataOperation.
+This stream allows you to monitor changes to a specific key in real-time.</p>
+
+<p>The stream automatically reconnects if the connection is lost. Use the returned AccountDataStreamItem
+to receive updates via the onReceive callback and close the stream when finished.</p>
+
+<p>Example:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">dataStream</span> <span class="o">=</span> <span class="n">sdk</span><span class="o">.</span><span class="n">accounts</span><span class="o">.</span><span class="nf">streamAccountData</span><span class="p">(</span>
+    <span class="nv">accountId</span><span class="p">:</span> <span class="s">"GACCOUNT..."</span><span class="p">,</span>
+    <span class="nv">key</span><span class="p">:</span> <span class="s">"user_settings"</span>
+<span class="p">)</span>
+
+<span class="n">dataStream</span><span class="o">.</span><span class="n">onReceive</span> <span class="p">{</span> <span class="n">response</span> <span class="k">in</span>
+    <span class="k">switch</span> <span class="n">response</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nv">open</span><span class="p">:</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Stream connected"</span><span class="p">)</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">response</span><span class="p">(</span><span class="nv">id</span><span class="p">:</span> <span class="k">let</span> <span class="nv">id</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="k">let</span> <span class="nv">dataEntry</span><span class="p">):</span>
+        <span class="c1">// Decode base64 value</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nv">decoded</span> <span class="o">=</span> <span class="kt">Data</span><span class="p">(</span><span class="nv">base64Encoded</span><span class="p">:</span> <span class="n">dataEntry</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="nv">value</span> <span class="o">=</span> <span class="kt">String</span><span class="p">(</span><span class="nv">data</span><span class="p">:</span> <span class="n">decoded</span><span class="p">,</span> <span class="nv">encoding</span><span class="p">:</span> <span class="o">.</span><span class="n">utf8</span><span class="p">)</span> <span class="p">??</span> <span class="s">""</span>
+            <span class="nf">print</span><span class="p">(</span><span class="s">"Data updated - Value: </span><span class="se">\(</span><span class="n">value</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">error</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Stream error: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Close when done</span>
+<span class="n">dataStream</span><span class="o">.</span><span class="nf">closeStream</span><span class="p">()</span>
+</code></pre>
+
+<p>See also:</p>
+
+<ul>
+<li><a href="https://developers.stellar.org">Stellar developer docs</a></li>
+<li>AccountDataStreamItem for stream control methods</li>
+<li>DataForAccountResponse for the data entry structure</li>
+<li>ManageDataOperation for setting account data</li>
+</ul>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">streamAccountData</span><span class="p">(</span><span class="nv">accountId</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">key</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Classes/AccountDataStreamItem.html">AccountDataStreamItem</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>accountId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Stellar account ID containing the data entry</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>key</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The name of the data field to stream</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>AccountDataStreamItem for receiving data updates and controlling the stream</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L471-L475">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.1 Docs
+          stellarsdk 3.4.2 Docs
         </a>
          (98% documented)
       </p>
@@ -74,6 +74,9 @@
                 <a class="nav-group-task-link" href="../Classes/AccountCreditedEffectResponse.html">AccountCreditedEffectResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountDataStreamItem.html">AccountDataStreamItem</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountDebitedEffectResponse.html">AccountDebitedEffectResponse</a>
               </li>
               <li class="nav-group-task">
@@ -111,6 +114,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountSponsorshipUpdatedEffectResponse.html">AccountSponsorshipUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountStreamItem.html">AccountStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountThresholdsUpdatedEffectResponse.html">AccountThresholdsUpdatedEffectResponse</a>
@@ -384,6 +390,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradeEffectResponse.html">LiquidityPoolTradeEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradesStreamItem.html">LiquidityPoolTradesStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/LiquidityPoolWithdrawOperation.html">LiquidityPoolWithdrawOperation</a>
@@ -1911,7 +1920,7 @@ asset pairs over specified time intervals. Useful for charts and market analysis
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradeAggregationsService.swift#L39-L113">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradeAggregationsService.swift#L39-L115">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -1923,9 +1932,9 @@ asset pairs over specified time intervals. Useful for charts and market analysis
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk24TradeAggregationsServiceC03getbC09startTime03endG010resolution13baseAssetType0jK4Code0jK6Issuer07counterkL00okM00okN05order5limitAA12PageResponseV0S4EnumOyAA0b11AggregationS0V_Gs5Int64VSg_A2YSSSgA5zA5OrderOSgSiSgtYaF"></a>
-                    <a name="//apple_ref/swift/Method/getTradeAggregations(startTime:endTime:resolution:baseAssetType:baseAssetCode:baseAssetIssuer:counterAssetType:counterAssetCode:counterAssetIssuer:order:limit:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk24TradeAggregationsServiceC03getbC09startTime03endG010resolution13baseAssetType0jK4Code0jK6Issuer07counterkL00okM00okN05order5limitAA12PageResponseV0S4EnumOyAA0b11AggregationS0V_Gs5Int64VSg_A2YSSSgA5zA5OrderOSgSiSgtYaF">getTradeAggregations(startTime:<wbr>endTime:<wbr>resolution:<wbr>baseAssetType:<wbr>baseAssetCode:<wbr>baseAssetIssuer:<wbr>counterAssetType:<wbr>counterAssetCode:<wbr>counterAssetIssuer:<wbr>order:<wbr>limit:<wbr>)</a>
+                    <a name="/s:10stellarsdk24TradeAggregationsServiceC03getbC09startTime03endG010resolution13baseAssetType0jK4Code0jK6Issuer07counterkL00okM00okN06cursor5order5limitAA12PageResponseV0T4EnumOyAA0b11AggregationT0V_Gs5Int64VSg_A2ZSSSgA_A_A_A_A_A_AA5OrderOSgSiSgtYaF"></a>
+                    <a name="//apple_ref/swift/Method/getTradeAggregations(startTime:endTime:resolution:baseAssetType:baseAssetCode:baseAssetIssuer:counterAssetType:counterAssetCode:counterAssetIssuer:cursor:order:limit:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk24TradeAggregationsServiceC03getbC09startTime03endG010resolution13baseAssetType0jK4Code0jK6Issuer07counterkL00okM00okN06cursor5order5limitAA12PageResponseV0T4EnumOyAA0b11AggregationT0V_Gs5Int64VSg_A2ZSSSgA_A_A_A_A_A_AA5OrderOSgSiSgtYaF">getTradeAggregations(startTime:<wbr>endTime:<wbr>resolution:<wbr>baseAssetType:<wbr>baseAssetCode:<wbr>baseAssetIssuer:<wbr>counterAssetType:<wbr>counterAssetCode:<wbr>counterAssetIssuer:<wbr>cursor:<wbr>order:<wbr>limit:<wbr>)</a>
                     </code>
                       <span class="declaration-note">
                         Asynchronous
@@ -1947,7 +1956,7 @@ asset pairs over specified time intervals. Useful for charts and market analysis
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTradeAggregations</span><span class="p">(</span><span class="nv">startTime</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">endTime</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">resolution</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">baseAssetType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">baseAssetCode</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">baseAssetIssuer</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">counterAssetType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">counterAssetCode</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">counterAssetIssuer</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">async</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Structs/TradeAggregationResponse.html">TradeAggregationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTradeAggregations</span><span class="p">(</span><span class="nv">startTime</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">endTime</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">resolution</span><span class="p">:</span> <span class="kt">Int64</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">baseAssetType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">baseAssetCode</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">baseAssetIssuer</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">counterAssetType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">counterAssetCode</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">counterAssetIssuer</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">async</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Structs/TradeAggregationResponse.html">TradeAggregationResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseEnum</span></code></pre>
 
                         </div>
                       </div>
@@ -2066,6 +2075,18 @@ asset pairs over specified time intervals. Useful for charts and market analysis
                             <tr>
                               <td>
                                 <code>
+                                <em>cursor</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional paging token, specifying where to start returning records from</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
                                 <em>order</em>
                                 </code>
                               </td>
@@ -2095,7 +2116,7 @@ asset pairs over specified time intervals. Useful for charts and market analysis
                         <p>PageResponse containing trade aggregation records or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradeAggregationsService.swift#L69-L91">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradeAggregationsService.swift#L70-L93">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2153,7 +2174,7 @@ asset pairs over specified time intervals. Useful for charts and market analysis
                         <p>PageResponse containing trade aggregation records or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradeAggregationsService.swift#L99-L112">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradeAggregationsService.swift#L101-L114">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.1 Docs
+          stellarsdk 3.4.2 Docs
         </a>
          (98% documented)
       </p>
@@ -74,6 +74,9 @@
                 <a class="nav-group-task-link" href="../Classes/AccountCreditedEffectResponse.html">AccountCreditedEffectResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountDataStreamItem.html">AccountDataStreamItem</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountDebitedEffectResponse.html">AccountDebitedEffectResponse</a>
               </li>
               <li class="nav-group-task">
@@ -111,6 +114,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountSponsorshipUpdatedEffectResponse.html">AccountSponsorshipUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountStreamItem.html">AccountStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountThresholdsUpdatedEffectResponse.html">AccountThresholdsUpdatedEffectResponse</a>
@@ -384,6 +390,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradeEffectResponse.html">LiquidityPoolTradeEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradesStreamItem.html">LiquidityPoolTradesStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/LiquidityPoolWithdrawOperation.html">LiquidityPoolWithdrawOperation</a>
@@ -1883,7 +1892,7 @@
 See: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetLatestLedgerResponse.swift#L14-L35">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetLatestLedgerResponse.swift#L14-L47">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -1985,6 +1994,96 @@ See: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk23GetLatestLedgerResponseV9closeTimeSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/closeTime" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk23GetLatestLedgerResponseV9closeTimeSSSgvp">closeTime</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The unix timestamp of when the latest ledger was closed. Available since RPC v25.0.0.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">closeTime</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetLatestLedgerResponse.swift#L23">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk23GetLatestLedgerResponseV9headerXdrSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/headerXdr" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk23GetLatestLedgerResponseV9headerXdrSSSgvp">headerXdr</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Base64-encoded LedgerHeader XDR. Available since RPC v25.0.0.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">headerXdr</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetLatestLedgerResponse.swift#L25">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk23GetLatestLedgerResponseV11metadataXdrSSSgvp"></a>
+                    <a name="//apple_ref/swift/Property/metadataXdr" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk23GetLatestLedgerResponseV11metadataXdrSSSgvp">metadataXdr</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Base64-encoded LedgerCloseMeta XDR containing ledger close metadata. Available since RPC v25.0.0.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">metadataXdr</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetLatestLedgerResponse.swift#L27">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:Se4fromxs7Decoder_p_tKcfc"></a>
                     <a name="//apple_ref/swift/Method/init(from:)" class="dashAnchor"></a>
                     <a class="token" href="#/s:Se4fromxs7Decoder_p_tKcfc">init(from:<wbr>)</a>
@@ -2006,7 +2105,7 @@ See: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetLatestLedgerResponse.swift#L29-L34">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/responses/GetLatestLedgerResponse.swift#L38-L46">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

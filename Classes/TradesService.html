@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.1 Docs
+          stellarsdk 3.4.2 Docs
         </a>
          (98% documented)
       </p>
@@ -74,6 +74,9 @@
                 <a class="nav-group-task-link" href="../Classes/AccountCreditedEffectResponse.html">AccountCreditedEffectResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountDataStreamItem.html">AccountDataStreamItem</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountDebitedEffectResponse.html">AccountDebitedEffectResponse</a>
               </li>
               <li class="nav-group-task">
@@ -111,6 +114,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountSponsorshipUpdatedEffectResponse.html">AccountSponsorshipUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/AccountStreamItem.html">AccountStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/AccountThresholdsUpdatedEffectResponse.html">AccountThresholdsUpdatedEffectResponse</a>
@@ -384,6 +390,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradeEffectResponse.html">LiquidityPoolTradeEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/LiquidityPoolTradesStreamItem.html">LiquidityPoolTradesStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/LiquidityPoolWithdrawOperation.html">LiquidityPoolWithdrawOperation</a>
@@ -1912,7 +1921,7 @@ Can filter trades by asset pair, account, offer, or liquidity pool.</p>
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradesService.swift#L56-L199">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradesService.swift#L56-L210">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -1924,9 +1933,9 @@ Can filter trades by asset pair, account, offer, or liquidity pool.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk13TradesServiceC03getB013baseAssetType0eF4Code0eF6Issuer07counterfG00jfH00jfI07offerId05tradeG06cursor5order5limitAA12PageResponseV0R4EnumOyAA05TradeR0V_GSSSg_A8wA5OrderOSgSiSgtYaF"></a>
-                    <a name="//apple_ref/swift/Method/getTrades(baseAssetType:baseAssetCode:baseAssetIssuer:counterAssetType:counterAssetCode:counterAssetIssuer:offerId:tradeType:cursor:order:limit:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13TradesServiceC03getB013baseAssetType0eF4Code0eF6Issuer07counterfG00jfH00jfI07offerId05tradeG06cursor5order5limitAA12PageResponseV0R4EnumOyAA05TradeR0V_GSSSg_A8wA5OrderOSgSiSgtYaF">getTrades(baseAssetType:<wbr>baseAssetCode:<wbr>baseAssetIssuer:<wbr>counterAssetType:<wbr>counterAssetCode:<wbr>counterAssetIssuer:<wbr>offerId:<wbr>tradeType:<wbr>cursor:<wbr>order:<wbr>limit:<wbr>)</a>
+                    <a name="/s:10stellarsdk13TradesServiceC03getB013baseAssetType0eF4Code0eF6Issuer07counterfG00jfH00jfI07offerId10forAccount0M13LiquidityPool05tradeG06cursor5order5limitAA12PageResponseV0V4EnumOyAA05TradeV0V_GSSSg_A10yA5OrderOSgSiSgtYaF"></a>
+                    <a name="//apple_ref/swift/Method/getTrades(baseAssetType:baseAssetCode:baseAssetIssuer:counterAssetType:counterAssetCode:counterAssetIssuer:offerId:forAccount:forLiquidityPool:tradeType:cursor:order:limit:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk13TradesServiceC03getB013baseAssetType0eF4Code0eF6Issuer07counterfG00jfH00jfI07offerId10forAccount0M13LiquidityPool05tradeG06cursor5order5limitAA12PageResponseV0V4EnumOyAA05TradeV0V_GSSSg_A10yA5OrderOSgSiSgtYaF">getTrades(baseAssetType:<wbr>baseAssetCode:<wbr>baseAssetIssuer:<wbr>counterAssetType:<wbr>counterAssetCode:<wbr>counterAssetIssuer:<wbr>offerId:<wbr>forAccount:<wbr>forLiquidityPool:<wbr>tradeType:<wbr>cursor:<wbr>order:<wbr>limit:<wbr>)</a>
                     </code>
                       <span class="declaration-note">
                         Asynchronous
@@ -1937,7 +1946,7 @@ Can filter trades by asset pair, account, offer, or liquidity pool.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Retrieves trades filtered by asset pair, offer ID, or trade type with optional pagination parameters.</p>
+                        <p>Retrieves trades filtered by asset pair, offer ID, account, liquidity pool, or trade type with optional pagination parameters.</p>
 
 <p>See: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
 
@@ -1946,7 +1955,7 @@ Can filter trades by asset pair, account, offer, or liquidity pool.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTrades</span><span class="p">(</span><span class="nv">baseAssetType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">baseAssetCode</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">baseAssetIssuer</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">counterAssetType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">counterAssetCode</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">counterAssetIssuer</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">offerId</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">tradeType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">async</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Structs/TradeResponse.html">TradeResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">func</span> <span class="nf">getTrades</span><span class="p">(</span><span class="nv">baseAssetType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">baseAssetCode</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">baseAssetIssuer</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">counterAssetType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">counterAssetCode</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">counterAssetIssuer</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">offerId</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">forAccount</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">forLiquidityPool</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">tradeType</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span> <span class="kt"><a href="../Enums/Order.html">Order</a></span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span> <span class="k">async</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Structs/PageResponse.html">PageResponse</a></span><span class="o">&lt;</span><span class="kt"><a href="../Structs/TradeResponse.html">TradeResponse</a></span><span class="o">&gt;.</span><span class="kt">ResponseEnum</span></code></pre>
 
                         </div>
                       </div>
@@ -2041,6 +2050,30 @@ Can filter trades by asset pair, account, offer, or liquidity pool.</p>
                             <tr>
                               <td>
                                 <code>
+                                <em>forAccount</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional. Filter for trades where the specified account participated</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>forLiquidityPool</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Optional. Filter for trades from a specific liquidity pool (L-address or hex format)</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
                                 <em>tradeType</em>
                                 </code>
                               </td>
@@ -2094,7 +2127,7 @@ Can filter trades by asset pair, account, offer, or liquidity pool.</p>
                         <p>PageResponse containing trade records or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradesService.swift#L86-L108">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradesService.swift#L88-L119">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2186,7 +2219,7 @@ Can filter trades by asset pair, account, offer, or liquidity pool.</p>
                         <p>PageResponse containing trade records for the account or error</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradesService.swift#L117-L131">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradesService.swift#L128-L142">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2239,7 +2272,7 @@ Can filter trades by asset pair, account, offer, or liquidity pool.</p>
                         <p>TradesStreamItem for receiving streaming trade updates</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradesService.swift#L158-L198">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradesService.swift#L169-L209">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

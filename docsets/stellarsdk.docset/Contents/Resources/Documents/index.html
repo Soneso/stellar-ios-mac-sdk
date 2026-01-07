@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.4.1 Docs
+          stellarsdk 3.4.2 Docs
         </a>
          (98% documented)
       </p>
@@ -69,6 +69,9 @@
                 <a class="nav-group-task-link" href="Classes/AccountCreditedEffectResponse.html">AccountCreditedEffectResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/AccountDataStreamItem.html">AccountDataStreamItem</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/AccountDebitedEffectResponse.html">AccountDebitedEffectResponse</a>
               </li>
               <li class="nav-group-task">
@@ -106,6 +109,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/AccountSponsorshipUpdatedEffectResponse.html">AccountSponsorshipUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/AccountStreamItem.html">AccountStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/AccountThresholdsUpdatedEffectResponse.html">AccountThresholdsUpdatedEffectResponse</a>
@@ -379,6 +385,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/LiquidityPoolTradeEffectResponse.html">LiquidityPoolTradeEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/LiquidityPoolTradesStreamItem.html">LiquidityPoolTradesStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/LiquidityPoolWithdrawOperation.html">LiquidityPoolWithdrawOperation</a>
@@ -1873,7 +1882,7 @@
 <h2 id='installation' class='heading'>Installation</h2>
 <h3 id='swift-package-manager' class='heading'>Swift Package Manager</h3>
 <h4 id='latest-stable-release' class='heading'>Latest stable release:</h4>
-<pre class="highlight swift"><code><span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"stellarsdk"</span><span class="p">,</span> <span class="nv">url</span><span class="p">:</span> <span class="s">"git@github.com:Soneso/stellar-ios-mac-sdk.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"3.4.1"</span><span class="p">),</span>
+<pre class="highlight swift"><code><span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"stellarsdk"</span><span class="p">,</span> <span class="nv">url</span><span class="p">:</span> <span class="s">"git@github.com:Soneso/stellar-ios-mac-sdk.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"3.4.2"</span><span class="p">),</span>
 </code></pre>
 
 <p>If not loading (err: <code>cannot use bare repository</code>), then remove:</p>
@@ -1893,7 +1902,7 @@
 <pre class="highlight ruby"><code><span class="n">use_frameworks!</span>
 
 <span class="n">target</span> <span class="s1">'&lt;Your Target Name&gt;'</span> <span class="k">do</span>
-    <span class="n">pod</span> <span class="s1">'stellar-ios-mac-sdk'</span><span class="p">,</span> <span class="s1">'~&gt; 3.4.1'</span>
+    <span class="n">pod</span> <span class="s1">'stellar-ios-mac-sdk'</span><span class="p">,</span> <span class="s1">'~&gt; 3.4.2'</span>
 <span class="k">end</span>
 </code></pre>
 
@@ -1912,7 +1921,7 @@
 
 <p>To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify it in your <code>Cartfile</code>:</p>
 <h4 id='last-stable-release' class='heading'>Last stable release:</h4>
-<pre class="highlight plaintext"><code>github "soneso/stellar-ios-mac-sdk" ~&gt; 3.4.1
+<pre class="highlight plaintext"><code>github "soneso/stellar-ios-mac-sdk" ~&gt; 3.4.2
 </code></pre>
 
 <p>Run <code>carthage update</code> to build the framework and drag the build <code>stellar-ios-mac-sdk.framework</code> into your Xcode project.</p>

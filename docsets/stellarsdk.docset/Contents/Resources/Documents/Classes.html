@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.4.1 Docs
+          stellarsdk 3.4.2 Docs
         </a>
          (98% documented)
       </p>
@@ -72,6 +72,9 @@
                 <a class="nav-group-task-link" href="Classes/AccountCreditedEffectResponse.html">AccountCreditedEffectResponse</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/AccountDataStreamItem.html">AccountDataStreamItem</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/AccountDebitedEffectResponse.html">AccountDebitedEffectResponse</a>
               </li>
               <li class="nav-group-task">
@@ -109,6 +112,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/AccountSponsorshipUpdatedEffectResponse.html">AccountSponsorshipUpdatedEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/AccountStreamItem.html">AccountStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/AccountThresholdsUpdatedEffectResponse.html">AccountThresholdsUpdatedEffectResponse</a>
@@ -382,6 +388,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/LiquidityPoolTradeEffectResponse.html">LiquidityPoolTradeEffectResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/LiquidityPoolTradesStreamItem.html">LiquidityPoolTradesStreamItem</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/LiquidityPoolWithdrawOperation.html">LiquidityPoolWithdrawOperation</a>
@@ -8444,7 +8453,7 @@ filter accounts by various criteria, and create test accounts on testnet and fut
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L64-L372">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/AccountService.swift#L64-L476">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -8851,7 +8860,7 @@ reserves of two assets and allows swapping between them at algorithmically deter
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L54-L180">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/LiquidityPoolsService.swift#L54-L236">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -9165,6 +9174,142 @@ operations that transfer value between accounts.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk21AccountDataStreamItemC"></a>
+                    <a name="//apple_ref/swift/Class/AccountDataStreamItem" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk21AccountDataStreamItemC">AccountDataStreamItem</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Streams account data entry updates from the Horizon API using Server-Sent Events (SSE) for real-time updates.</p>
+
+<p>This stream provides live updates for a specific data entry (key-value pair) on an account.
+Each update contains the current base64-encoded value for the specified key as it changes on the
+Stellar network.</p>
+
+<p>Accounts can store arbitrary key-value pairs (up to 64 bytes per value) using the ManageDataOperation.
+This stream allows you to monitor changes to a specific key in real-time.</p>
+
+<p>Example usage:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">sdk</span> <span class="o">=</span> <span class="kt">StellarSDK</span><span class="p">()</span>
+<span class="k">let</span> <span class="nv">dataStream</span> <span class="o">=</span> <span class="n">sdk</span><span class="o">.</span><span class="n">accounts</span><span class="o">.</span><span class="nf">streamAccountData</span><span class="p">(</span>
+    <span class="nv">accountId</span><span class="p">:</span> <span class="s">"GACCOUNT..."</span><span class="p">,</span>
+    <span class="nv">key</span><span class="p">:</span> <span class="s">"user_settings"</span>
+<span class="p">)</span>
+
+<span class="n">dataStream</span><span class="o">.</span><span class="n">onReceive</span> <span class="p">{</span> <span class="n">response</span> <span class="k">in</span>
+    <span class="k">switch</span> <span class="n">response</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nv">open</span><span class="p">:</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Stream connection established"</span><span class="p">)</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">response</span><span class="p">(</span><span class="nv">id</span><span class="p">:</span> <span class="k">let</span> <span class="nv">id</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="k">let</span> <span class="nv">dataEntry</span><span class="p">):</span>
+        <span class="c1">// Decode base64 value</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nv">decoded</span> <span class="o">=</span> <span class="kt">Data</span><span class="p">(</span><span class="nv">base64Encoded</span><span class="p">:</span> <span class="n">dataEntry</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="nv">value</span> <span class="o">=</span> <span class="kt">String</span><span class="p">(</span><span class="nv">data</span><span class="p">:</span> <span class="n">decoded</span><span class="p">,</span> <span class="nv">encoding</span><span class="p">:</span> <span class="o">.</span><span class="n">utf8</span><span class="p">)</span> <span class="p">??</span> <span class="s">""</span>
+            <span class="nf">print</span><span class="p">(</span><span class="s">"Data updated - Value: </span><span class="se">\(</span><span class="n">value</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">error</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Stream error: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Close stream when done</span>
+<span class="n">dataStream</span><span class="o">.</span><span class="nf">closeStream</span><span class="p">()</span>
+</code></pre>
+
+<p>See also:</p>
+
+<ul>
+<li><a href="https://developers.stellar.org">Stellar developer docs</a></li>
+<li>DataForAccountResponse for the data entry structure</li>
+<li>ManageDataOperation for setting account data</li>
+</ul>
+
+                        <a href="Classes/AccountDataStreamItem.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">AccountDataStreamItem</span> <span class="p">:</span> <span class="kd">@unchecked</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/Streaming/AccountDataStreamItem.swift#L51-L104">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk17AccountStreamItemC"></a>
+                    <a name="//apple_ref/swift/Class/AccountStreamItem" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk17AccountStreamItemC">AccountStreamItem</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Streams account data from the Horizon API using Server-Sent Events (SSE) for real-time updates.</p>
+
+<p>This stream provides live updates for a single account, delivering changes as they occur on the
+Stellar network. Each update contains the complete current state of the account including balances,
+signers, thresholds, and other account properties.</p>
+
+<p>Example usage:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">sdk</span> <span class="o">=</span> <span class="kt">StellarSDK</span><span class="p">()</span>
+<span class="k">let</span> <span class="nv">accountStream</span> <span class="o">=</span> <span class="n">sdk</span><span class="o">.</span><span class="n">accounts</span><span class="o">.</span><span class="nf">streamAccount</span><span class="p">(</span><span class="nv">accountId</span><span class="p">:</span> <span class="s">"GACCOUNT..."</span><span class="p">)</span>
+
+<span class="n">accountStream</span><span class="o">.</span><span class="n">onReceive</span> <span class="p">{</span> <span class="n">response</span> <span class="k">in</span>
+    <span class="k">switch</span> <span class="n">response</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nv">open</span><span class="p">:</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Stream connection established"</span><span class="p">)</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">response</span><span class="p">(</span><span class="nv">id</span><span class="p">:</span> <span class="k">let</span> <span class="nv">id</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="k">let</span> <span class="nv">account</span><span class="p">):</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Account update received - Sequence: </span><span class="se">\(</span><span class="n">account</span><span class="o">.</span><span class="n">sequenceNumber</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">balance</span> <span class="k">in</span> <span class="n">account</span><span class="o">.</span><span class="n">balances</span> <span class="p">{</span>
+            <span class="nf">print</span><span class="p">(</span><span class="s">"</span><span class="se">\(</span><span class="n">balance</span><span class="o">.</span><span class="n">assetCode</span> <span class="p">??</span> <span class="s">"XLM"</span><span class="se">)</span><span class="s">: </span><span class="se">\(</span><span class="n">balance</span><span class="o">.</span><span class="n">balance</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">error</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Stream error: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Close stream when done</span>
+<span class="n">accountStream</span><span class="o">.</span><span class="nf">closeStream</span><span class="p">()</span>
+</code></pre>
+
+<p>See also:</p>
+
+<ul>
+<li><a href="https://developers.stellar.org">Stellar developer docs</a></li>
+<li>AccountResponse for the account data structure</li>
+</ul>
+
+                        <a href="Classes/AccountStreamItem.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">AccountStreamItem</span> <span class="p">:</span> <span class="kd">@unchecked</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/Streaming/AccountStreamItem.swift#L43-L96">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk17EffectsStreamItemC"></a>
                     <a name="//apple_ref/swift/Class/EffectsStreamItem" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk17EffectsStreamItemC">EffectsStreamItem</a>
@@ -9220,6 +9365,72 @@ operations that transfer value between accounts.</p>
                       </div>
                       <div class="slightly-smaller">
                         <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/Streaming/LedgersStreamItem.swift#L12-L53">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk29LiquidityPoolTradesStreamItemC"></a>
+                    <a name="//apple_ref/swift/Class/LiquidityPoolTradesStreamItem" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk29LiquidityPoolTradesStreamItemC">LiquidityPoolTradesStreamItem</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Streams liquidity pool trade data from the Horizon API using Server-Sent Events (SSE) for real-time updates.</p>
+
+<p>This stream provides live updates for trades involving a specific liquidity pool, delivering new trade
+events as they occur on the Stellar network. Each update contains complete trade details including
+traded assets, amounts, prices, and participating accounts or liquidity pools.</p>
+
+<p>Example usage:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">sdk</span> <span class="o">=</span> <span class="kt">StellarSDK</span><span class="p">()</span>
+<span class="k">let</span> <span class="nv">poolId</span> <span class="o">=</span> <span class="s">"L..."</span> <span class="c1">// Liquidity pool ID (L-address or hex format)</span>
+<span class="k">let</span> <span class="nv">tradesStream</span> <span class="o">=</span> <span class="n">sdk</span><span class="o">.</span><span class="n">liquidityPools</span><span class="o">.</span><span class="nf">streamTrades</span><span class="p">(</span><span class="nv">forPoolId</span><span class="p">:</span> <span class="n">poolId</span><span class="p">)</span>
+
+<span class="n">tradesStream</span><span class="o">.</span><span class="n">onReceive</span> <span class="p">{</span> <span class="n">response</span> <span class="k">in</span>
+    <span class="k">switch</span> <span class="n">response</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nv">open</span><span class="p">:</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Stream connection established"</span><span class="p">)</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">response</span><span class="p">(</span><span class="nv">id</span><span class="p">:</span> <span class="k">let</span> <span class="nv">id</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="k">let</span> <span class="nv">trade</span><span class="p">):</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Trade received - Type: </span><span class="se">\(</span><span class="n">trade</span><span class="o">.</span><span class="n">tradeType</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Base: </span><span class="se">\(</span><span class="n">trade</span><span class="o">.</span><span class="n">baseAmount</span><span class="se">)</span><span class="s"> </span><span class="se">\(</span><span class="n">trade</span><span class="o">.</span><span class="n">baseAssetCode</span> <span class="p">??</span> <span class="s">"XLM"</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Counter: </span><span class="se">\(</span><span class="n">trade</span><span class="o">.</span><span class="n">counterAmount</span><span class="se">)</span><span class="s"> </span><span class="se">\(</span><span class="n">trade</span><span class="o">.</span><span class="n">counterAssetCode</span> <span class="p">??</span> <span class="s">"XLM"</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Price: </span><span class="se">\(</span><span class="n">trade</span><span class="o">.</span><span class="n">price</span><span class="o">.</span><span class="n">n</span><span class="se">)</span><span class="s">/</span><span class="se">\(</span><span class="n">trade</span><span class="o">.</span><span class="n">price</span><span class="o">.</span><span class="n">d</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="k">case</span> <span class="o">.</span><span class="nf">error</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Stream error: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Close stream when done</span>
+<span class="n">tradesStream</span><span class="o">.</span><span class="nf">closeStream</span><span class="p">()</span>
+</code></pre>
+
+<p>See also:</p>
+
+<ul>
+<li><a href="https://developers.stellar.org">Stellar developer docs</a></li>
+<li>TradeResponse for the trade data structure</li>
+<li>LiquidityPoolsService for related liquidity pool operations</li>
+</ul>
+
+                        <a href="Classes/LiquidityPoolTradesStreamItem.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">LiquidityPoolTradesStreamItem</span> <span class="p">:</span> <span class="kd">@unchecked</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/Streaming/LiquidityPoolTradesStreamItem.swift#L45-L98">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -9511,7 +9722,7 @@ asset pairs over specified time intervals. Useful for charts and market analysis
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradeAggregationsService.swift#L39-L113">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradeAggregationsService.swift#L39-L115">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -9572,7 +9783,7 @@ Can filter trades by asset pair, account, offer, or liquidity pool.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradesService.swift#L56-L199">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/service/TradesService.swift#L56-L210">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10028,7 +10239,7 @@ see: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L13-L143">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L13-L148">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10061,7 +10272,7 @@ See also: <a href="https://developers.stellar.org">Stellar developer docs</a></p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L148-L277">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L153-L282">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
