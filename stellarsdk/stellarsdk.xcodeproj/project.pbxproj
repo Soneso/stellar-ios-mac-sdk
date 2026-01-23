@@ -1258,6 +1258,46 @@
 		83F4E61F2A2792C600DD42A9 /* KycServerTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E61D2A2792C600DD42A9 /* KycServerTestCase.swift */; };
 		83F4E6212A27ABC300DD42A9 /* GetCustomerResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6202A27ABC300DD42A9 /* GetCustomerResponseMock.swift */; };
 		83F4E6222A27ABC300DD42A9 /* GetCustomerResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6202A27ABC300DD42A9 /* GetCustomerResponseMock.swift */; };
+		83F674AB2F23C0F7000E1F3F /* SmartAccountErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674A62F23C0F7000E1F3F /* SmartAccountErrors.swift */; };
+		83F674AC2F23C0F7000E1F3F /* SmartAccountSignatures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674A72F23C0F7000E1F3F /* SmartAccountSignatures.swift */; };
+		83F674AD2F23C0F7000E1F3F /* SmartAccountTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674A82F23C0F7000E1F3F /* SmartAccountTypes.swift */; };
+		83F674AE2F23C0F7000E1F3F /* SmartAccountUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674A92F23C0F7000E1F3F /* SmartAccountUtils.swift */; };
+		83F674AF2F23C0F7000E1F3F /* SmartAccountErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674A62F23C0F7000E1F3F /* SmartAccountErrors.swift */; };
+		83F674B02F23C0F7000E1F3F /* SmartAccountSignatures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674A72F23C0F7000E1F3F /* SmartAccountSignatures.swift */; };
+		83F674B12F23C0F7000E1F3F /* SmartAccountTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674A82F23C0F7000E1F3F /* SmartAccountTypes.swift */; };
+		83F674B22F23C0F7000E1F3F /* SmartAccountUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674A92F23C0F7000E1F3F /* SmartAccountUtils.swift */; };
+		83F674B52F23C69E000E1F3F /* SmartAccountAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674B42F23C69E000E1F3F /* SmartAccountAuth.swift */; };
+		83F674B62F23C69E000E1F3F /* SmartAccountAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674B42F23C69E000E1F3F /* SmartAccountAuth.swift */; };
+		83F674B82F23C6B6000E1F3F /* SmartAccountTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674B72F23C6B6000E1F3F /* SmartAccountTest.swift */; };
+		83F674B92F23C6B6000E1F3F /* SmartAccountTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674B72F23C6B6000E1F3F /* SmartAccountTest.swift */; };
+		83F674BC2F23CABB000E1F3F /* OZStorageAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674BB2F23CABB000E1F3F /* OZStorageAdapter.swift */; };
+		83F674BD2F23CABB000E1F3F /* OZSmartAccountConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674BA2F23CABB000E1F3F /* OZSmartAccountConfig.swift */; };
+		83F674BE2F23CABB000E1F3F /* OZStorageAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674BB2F23CABB000E1F3F /* OZStorageAdapter.swift */; };
+		83F674BF2F23CABB000E1F3F /* OZSmartAccountConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674BA2F23CABB000E1F3F /* OZSmartAccountConfig.swift */; };
+		83F674C52F23CD97000E1F3F /* OZCredentialManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674C02F23CD97000E1F3F /* OZCredentialManager.swift */; };
+		83F674C62F23CD97000E1F3F /* OZRelayerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674C22F23CD97000E1F3F /* OZRelayerClient.swift */; };
+		83F674C72F23CD97000E1F3F /* OZSmartAccountKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674C32F23CD97000E1F3F /* OZSmartAccountKit.swift */; };
+		83F674C82F23CD97000E1F3F /* OZTransactionOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674C42F23CD97000E1F3F /* OZTransactionOperations.swift */; };
+		83F674C92F23CD97000E1F3F /* OZIndexerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674C12F23CD97000E1F3F /* OZIndexerClient.swift */; };
+		83F674CA2F23CD97000E1F3F /* OZCredentialManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674C02F23CD97000E1F3F /* OZCredentialManager.swift */; };
+		83F674CB2F23CD97000E1F3F /* OZRelayerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674C22F23CD97000E1F3F /* OZRelayerClient.swift */; };
+		83F674CC2F23CD97000E1F3F /* OZSmartAccountKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674C32F23CD97000E1F3F /* OZSmartAccountKit.swift */; };
+		83F674CD2F23CD97000E1F3F /* OZTransactionOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674C42F23CD97000E1F3F /* OZTransactionOperations.swift */; };
+		83F674CE2F23CD97000E1F3F /* OZIndexerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674C12F23CD97000E1F3F /* OZIndexerClient.swift */; };
+		83F674D02F23D0DA000E1F3F /* SmartAccountKitTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674CF2F23D0DA000E1F3F /* SmartAccountKitTest.swift */; };
+		83F674D12F23D0DA000E1F3F /* SmartAccountKitTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674CF2F23D0DA000E1F3F /* SmartAccountKitTest.swift */; };
+		83F674D72F23D164000E1F3F /* OZPolicyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674D42F23D164000E1F3F /* OZPolicyManager.swift */; };
+		83F674D82F23D164000E1F3F /* OZSignerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674D52F23D164000E1F3F /* OZSignerManager.swift */; };
+		83F674D92F23D164000E1F3F /* OZWalletOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674D62F23D164000E1F3F /* OZWalletOperations.swift */; };
+		83F674DA2F23D164000E1F3F /* OZContextRuleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674D22F23D164000E1F3F /* OZContextRuleManager.swift */; };
+		83F674DB2F23D164000E1F3F /* OZMultiSignerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674D32F23D164000E1F3F /* OZMultiSignerManager.swift */; };
+		83F674DC2F23D164000E1F3F /* OZPolicyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674D42F23D164000E1F3F /* OZPolicyManager.swift */; };
+		83F674DD2F23D164000E1F3F /* OZSignerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674D52F23D164000E1F3F /* OZSignerManager.swift */; };
+		83F674DE2F23D164000E1F3F /* OZWalletOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674D62F23D164000E1F3F /* OZWalletOperations.swift */; };
+		83F674DF2F23D164000E1F3F /* OZContextRuleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674D22F23D164000E1F3F /* OZContextRuleManager.swift */; };
+		83F674E02F23D164000E1F3F /* OZMultiSignerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674D32F23D164000E1F3F /* OZMultiSignerManager.swift */; };
+		83F674E12F23E001000E1F3F /* SmartAccountSharedUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674E42F23E001000E1F3F /* SmartAccountSharedUtils.swift */; };
+		83F674E52F23E001000E1F3F /* SmartAccountSharedUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F674E42F23E001000E1F3F /* SmartAccountSharedUtils.swift */; };
 		83F863372CFF15FC005D363D /* CustomerFileResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F863362CFF15FC005D363D /* CustomerFileResponse.swift */; };
 		83F863382CFF15FC005D363D /* CustomerFileResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F863362CFF15FC005D363D /* CustomerFileResponse.swift */; };
 		83F8633A2CFF18A4005D363D /* GetCustomerFilesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F863392CFF18A4005D363D /* GetCustomerFilesResponse.swift */; };
@@ -1986,6 +2026,26 @@
 		83F4E6192A278B3200DD42A9 /* PutCustomerCallbackRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PutCustomerCallbackRequest.swift; sourceTree = "<group>"; };
 		83F4E61D2A2792C600DD42A9 /* KycServerTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KycServerTestCase.swift; sourceTree = "<group>"; };
 		83F4E6202A27ABC300DD42A9 /* GetCustomerResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetCustomerResponseMock.swift; sourceTree = "<group>"; };
+		83F674A62F23C0F7000E1F3F /* SmartAccountErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartAccountErrors.swift; sourceTree = "<group>"; };
+		83F674A72F23C0F7000E1F3F /* SmartAccountSignatures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartAccountSignatures.swift; sourceTree = "<group>"; };
+		83F674A82F23C0F7000E1F3F /* SmartAccountTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartAccountTypes.swift; sourceTree = "<group>"; };
+		83F674A92F23C0F7000E1F3F /* SmartAccountUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartAccountUtils.swift; sourceTree = "<group>"; };
+		83F674B42F23C69E000E1F3F /* SmartAccountAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartAccountAuth.swift; sourceTree = "<group>"; };
+		83F674B72F23C6B6000E1F3F /* SmartAccountTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartAccountTest.swift; sourceTree = "<group>"; };
+		83F674BA2F23CABB000E1F3F /* OZSmartAccountConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OZSmartAccountConfig.swift; sourceTree = "<group>"; };
+		83F674BB2F23CABB000E1F3F /* OZStorageAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OZStorageAdapter.swift; sourceTree = "<group>"; };
+		83F674C02F23CD97000E1F3F /* OZCredentialManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OZCredentialManager.swift; sourceTree = "<group>"; };
+		83F674C12F23CD97000E1F3F /* OZIndexerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OZIndexerClient.swift; sourceTree = "<group>"; };
+		83F674C22F23CD97000E1F3F /* OZRelayerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OZRelayerClient.swift; sourceTree = "<group>"; };
+		83F674C32F23CD97000E1F3F /* OZSmartAccountKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OZSmartAccountKit.swift; sourceTree = "<group>"; };
+		83F674C42F23CD97000E1F3F /* OZTransactionOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OZTransactionOperations.swift; sourceTree = "<group>"; };
+		83F674CF2F23D0DA000E1F3F /* SmartAccountKitTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartAccountKitTest.swift; sourceTree = "<group>"; };
+		83F674D22F23D164000E1F3F /* OZContextRuleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OZContextRuleManager.swift; sourceTree = "<group>"; };
+		83F674D32F23D164000E1F3F /* OZMultiSignerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OZMultiSignerManager.swift; sourceTree = "<group>"; };
+		83F674D42F23D164000E1F3F /* OZPolicyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OZPolicyManager.swift; sourceTree = "<group>"; };
+		83F674D52F23D164000E1F3F /* OZSignerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OZSignerManager.swift; sourceTree = "<group>"; };
+		83F674D62F23D164000E1F3F /* OZWalletOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OZWalletOperations.swift; sourceTree = "<group>"; };
+		83F674E42F23E001000E1F3F /* SmartAccountSharedUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartAccountSharedUtils.swift; sourceTree = "<group>"; };
 		83F863362CFF15FC005D363D /* CustomerFileResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerFileResponse.swift; sourceTree = "<group>"; };
 		83F863392CFF18A4005D363D /* GetCustomerFilesResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetCustomerFilesResponse.swift; sourceTree = "<group>"; };
 		83F8633F2CFF2850005D363D /* PostCustomerFileResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostCustomerFileResponseMock.swift; sourceTree = "<group>"; };
@@ -3138,6 +3198,7 @@
 		835F0CDD2976016000793708 /* soroban */ = {
 			isa = PBXGroup;
 			children = (
+				83F674AA2F23C0F7000E1F3F /* smartaccount */,
 				837228582DCA34230050BBC9 /* contract */,
 				830DAB3729AD2F1E00ED4E66 /* responses */,
 				835F0CDE2976017A00793708 /* SorobanServer.swift */,
@@ -3155,6 +3216,7 @@
 		835F0CE1297613C900793708 /* soroban */ = {
 			isa = PBXGroup;
 			children = (
+				83F674B32F23C10B000E1F3F /* smartaccount */,
 				83F32D572E448A4C00A8355A /* bindings */,
 				8372287A2DD21A7C0050BBC9 /* soroban_atomic_swap_contract.wasm */,
 				83ACC00D2C885D9100A71CF1 /* soroban_token_contract.wasm */,
@@ -3551,6 +3613,56 @@
 				83F863422CFF293F005D363D /* GetCustomerFilesResponseMock.swift */,
 			);
 			path = kyc;
+			sourceTree = "<group>";
+		};
+		83F674AA2F23C0F7000E1F3F /* smartaccount */ = {
+			isa = PBXGroup;
+			children = (
+				83F674E42F240A18000E1F3F /* core */,
+				83F674E52F240A21000E1F3F /* oz */,
+			);
+			path = smartaccount;
+			sourceTree = "<group>";
+		};
+		83F674B32F23C10B000E1F3F /* smartaccount */ = {
+			isa = PBXGroup;
+			children = (
+				83F674CF2F23D0DA000E1F3F /* SmartAccountKitTest.swift */,
+				83F674B72F23C6B6000E1F3F /* SmartAccountTest.swift */,
+			);
+			path = smartaccount;
+			sourceTree = "<group>";
+		};
+		83F674E42F240A18000E1F3F /* core */ = {
+			isa = PBXGroup;
+			children = (
+				83F674B42F23C69E000E1F3F /* SmartAccountAuth.swift */,
+				83F674A62F23C0F7000E1F3F /* SmartAccountErrors.swift */,
+				83F674A72F23C0F7000E1F3F /* SmartAccountSignatures.swift */,
+				83F674A82F23C0F7000E1F3F /* SmartAccountTypes.swift */,
+				83F674A92F23C0F7000E1F3F /* SmartAccountUtils.swift */,
+				83F674E42F23E001000E1F3F /* SmartAccountSharedUtils.swift */,
+			);
+			path = core;
+			sourceTree = "<group>";
+		};
+		83F674E52F240A21000E1F3F /* oz */ = {
+			isa = PBXGroup;
+			children = (
+				83F674D22F23D164000E1F3F /* OZContextRuleManager.swift */,
+				83F674D32F23D164000E1F3F /* OZMultiSignerManager.swift */,
+				83F674D42F23D164000E1F3F /* OZPolicyManager.swift */,
+				83F674D52F23D164000E1F3F /* OZSignerManager.swift */,
+				83F674D62F23D164000E1F3F /* OZWalletOperations.swift */,
+				83F674C02F23CD97000E1F3F /* OZCredentialManager.swift */,
+				83F674C12F23CD97000E1F3F /* OZIndexerClient.swift */,
+				83F674C22F23CD97000E1F3F /* OZRelayerClient.swift */,
+				83F674C32F23CD97000E1F3F /* OZSmartAccountKit.swift */,
+				83F674C42F23CD97000E1F3F /* OZTransactionOperations.swift */,
+				83F674BA2F23CABB000E1F3F /* OZSmartAccountConfig.swift */,
+				83F674BB2F23CABB000E1F3F /* OZStorageAdapter.swift */,
+			);
+			path = oz;
 			sourceTree = "<group>";
 		};
 		83FE810623F0719A00F4A13D /* fee_stats_responses */ = {
@@ -4145,6 +4257,7 @@
 				745DF43F2052FF9B000D3660 /* AccountResponse.swift in Sources */,
 				745DF4402052FF9B000D3660 /* DataForAccountResponse.swift in Sources */,
 				832AF8FB263C5B0800B7EB49 /* TrustLineFlagsUpdatedEffectResponse.swift in Sources */,
+				83F674B52F23C69E000E1F3F /* SmartAccountAuth.swift in Sources */,
 				745DF4412052FF9B000D3660 /* AccountThresholdsResponse.swift in Sources */,
 				C67811B42148E30A001525D8 /* URISchemeErrors.swift in Sources */,
 				745DF4422052FF9B000D3660 /* AccountBalanceResponse.swift in Sources */,
@@ -4200,6 +4313,11 @@
 				745DF4582052FF9B000D3660 /* TrustlineDeauthorizedEffectResponse.swift in Sources */,
 				745DF4592052FF9B000D3660 /* OfferCreatedEffectResponse.swift in Sources */,
 				836658EF2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift in Sources */,
+				83F674AF2F23C0F7000E1F3F /* SmartAccountErrors.swift in Sources */,
+				83F674B02F23C0F7000E1F3F /* SmartAccountSignatures.swift in Sources */,
+				83F674B12F23C0F7000E1F3F /* SmartAccountTypes.swift in Sources */,
+				83F674B22F23C0F7000E1F3F /* SmartAccountUtils.swift in Sources */,
+				83F674E52F23E001000E1F3F /* SmartAccountSharedUtils.swift in Sources */,
 				74BC3960211DA69C00EAF8A4 /* AccountInflationDestinationUpdatedEffectResponse.swift in Sources */,
 				745DF45A2052FF9B000D3660 /* OfferRemovedEffectResponse.swift in Sources */,
 				7467C3F221424D9E00412FE1 /* TransferServerService.swift in Sources */,
@@ -4352,6 +4470,11 @@
 				745DF4A22052FF9C000D3660 /* SimplePaymentResultXDR.swift in Sources */,
 				830DAB3B29AD4FA800ED4E66 /* EventFilter.swift in Sources */,
 				83B4CB702527CDCA00EEE55E /* ClaimableBalanceClaimantCreatedEffectResponse.swift in Sources */,
+				83F674D72F23D164000E1F3F /* OZPolicyManager.swift in Sources */,
+				83F674D82F23D164000E1F3F /* OZSignerManager.swift in Sources */,
+				83F674D92F23D164000E1F3F /* OZWalletOperations.swift in Sources */,
+				83F674DA2F23D164000E1F3F /* OZContextRuleManager.swift in Sources */,
+				83F674DB2F23D164000E1F3F /* OZMultiSignerManager.swift in Sources */,
 				7464B7322194435F0029FDC8 /* ValidatorInformation.swift in Sources */,
 				835F0D1129782A9500793708 /* ContractEventXDR.swift in Sources */,
 				745DF4A32052FF9C000D3660 /* TransactionSignaturePayload.swift in Sources */,
@@ -4455,6 +4578,8 @@
 				83F8633B2CFF18A4005D363D /* GetCustomerFilesResponse.swift in Sources */,
 				744FC6E1212D3CCC00ADFC88 /* Lexer.swift in Sources */,
 				830E7D742529C1B00059A4B4 /* RevokeSponsorshipOperation.swift in Sources */,
+				83F674BE2F23CABB000E1F3F /* OZStorageAdapter.swift in Sources */,
+				83F674BF2F23CABB000E1F3F /* OZSmartAccountConfig.swift in Sources */,
 				8345BA8124706E4B00B07A34 /* MuxedAccount.swift in Sources */,
 				8339DA5C2D36A55300232C8B /* ISO8601DateFormatter+Full.swift in Sources */,
 				830E7DBC2529E24B0059A4B4 /* TrustlineSponsorshipUpdatedEffectResponse.swift in Sources */,
@@ -4466,6 +4591,11 @@
 				836E66322E40ECB100D68F6A /* NativeUnionVal.swift in Sources */,
 				7468CDCB2136C2EF002A538D /* BumpSequenceOperation.swift in Sources */,
 				8345D40B251DECA600E3F6DA /* ClaimPredicateXDR.swift in Sources */,
+				83F674C52F23CD97000E1F3F /* OZCredentialManager.swift in Sources */,
+				83F674C62F23CD97000E1F3F /* OZRelayerClient.swift in Sources */,
+				83F674C72F23CD97000E1F3F /* OZSmartAccountKit.swift in Sources */,
+				83F674C82F23CD97000E1F3F /* OZTransactionOperations.swift in Sources */,
+				83F674C92F23CD97000E1F3F /* OZIndexerClient.swift in Sources */,
 				83438A0A26E8CF03009116D0 /* LiquidityPoolDepostOperationResponse.swift in Sources */,
 				83EEE6272E1810EC008B7B3C /* TransactionEvents.swift in Sources */,
 				744A84CF214523910086B8FC /* PutCustomerInfoRequest.swift in Sources */,
@@ -4567,10 +4697,12 @@
 				830A8F1229AEC3F800B30483 /* SorobanEventsTest.swift in Sources */,
 				832C2B372AEC117C005BB7B8 /* Sep30RegisterAccountResponseMock.swift in Sources */,
 				745DF57E205304AC000D3660 /* OffersRemoteTestCase.swift in Sources */,
+				83F674B92F23C6B6000E1F3F /* SmartAccountTest.swift in Sources */,
 				83F4E61F2A2792C600DD42A9 /* KycServerTestCase.swift in Sources */,
 				745DF57F205304AC000D3660 /* ServerMock.swift in Sources */,
 				832C2B432AEC2806005BB7B8 /* Sep30AccountDetailsResponseMock.swift in Sources */,
 				745DF580205304AC000D3660 /* ResponseMock.swift in Sources */,
+				83F674D12F23D0DA000E1F3F /* SmartAccountKitTest.swift in Sources */,
 				83F32D992E44A1AC00A8355A /* TokenContract.swift in Sources */,
 				745DF581205304AC000D3660 /* TransactionsLocalTestCase.swift in Sources */,
 				832C2B342AEC10C0005BB7B8 /* RecoveryServiceTestCase.swift in Sources */,
@@ -4817,6 +4949,7 @@
 				7481B5422024B037000A783E /* EffectResponse.swift in Sources */,
 				744D459120382EF800178D04 /* StreamingHelper.swift in Sources */,
 				83B4CB8A2528754F00EEE55E /* ClaimableBalancesService.swift in Sources */,
+				83F674B62F23C69E000E1F3F /* SmartAccountAuth.swift in Sources */,
 				836659002A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift in Sources */,
 				83697250202A809D00398A98 /* InflationOperationResponse.swift in Sources */,
 				83FE810B23F0750600F4A13D /* FeeChargedResponse.swift in Sources */,
@@ -4872,6 +5005,11 @@
 				830DAB3D29AD501D00ED4E66 /* TopicFilter.swift in Sources */,
 				83852ABC266790580013EA2A /* AnchorFeeResponse.swift in Sources */,
 				83DB2ADF2ACD87CD008B04D6 /* Sep24DepositRequest.swift in Sources */,
+				83F674AB2F23C0F7000E1F3F /* SmartAccountErrors.swift in Sources */,
+				83F674AC2F23C0F7000E1F3F /* SmartAccountSignatures.swift in Sources */,
+				83F674AD2F23C0F7000E1F3F /* SmartAccountTypes.swift in Sources */,
+				83F674AE2F23C0F7000E1F3F /* SmartAccountUtils.swift in Sources */,
+				83F674E12F23E001000E1F3F /* SmartAccountSharedUtils.swift in Sources */,
 				833CBF8E203351B200C23CFE /* TimeBoundsXDR.swift in Sources */,
 				7481B53E20248441000A783E /* EffectsService.swift in Sources */,
 				83379C2E2280CF9C00BD5F8E /* CreatePassiveSellOfferOperation.swift in Sources */,
@@ -5024,6 +5162,11 @@
 				836658F12A6E773A00E8B8D9 /* RestoreFootprintOpXDR.swift in Sources */,
 				744148F8202E05AD006590BE /* DataTypes.swift in Sources */,
 				832ADF15262BA2C000571D46 /* SetTrustLineFlagsResultXDR.swift in Sources */,
+				83F674DC2F23D164000E1F3F /* OZPolicyManager.swift in Sources */,
+				83F674DD2F23D164000E1F3F /* OZSignerManager.swift in Sources */,
+				83F674DE2F23D164000E1F3F /* OZWalletOperations.swift in Sources */,
+				83F674DF2F23D164000E1F3F /* OZContextRuleManager.swift in Sources */,
+				83F674E02F23D164000E1F3F /* OZMultiSignerManager.swift in Sources */,
 				744A84C321440E560086B8FC /* AnchorTransactionsResponse.swift in Sources */,
 				833C674D2B8E782100E034C6 /* WithdrawExchangeRequest.swift in Sources */,
 				83DD7147281B28E300530C64 /* PreconditionsXDR.swift in Sources */,
@@ -5127,6 +5270,8 @@
 				7468CDCD2136C4F5002A538D /* BumpSequenceOperationResponse.swift in Sources */,
 				7468CDD62136F72C002A538D /* TransactionMetaV1XDR.swift in Sources */,
 				743DF5692020530A00713DE7 /* sha512.c in Sources */,
+				83F674BC2F23CABB000E1F3F /* OZStorageAdapter.swift in Sources */,
+				83F674BD2F23CABB000E1F3F /* OZSmartAccountConfig.swift in Sources */,
 				7467C3F521424F0700412FE1 /* TransferServerError.swift in Sources */,
 				8345D40A251DECA600E3F6DA /* ClaimPredicateXDR.swift in Sources */,
 				4390830720372AF600254042 /* MemoProtocol.swift in Sources */,
@@ -5138,6 +5283,11 @@
 				744C4DC4202A364300B46CDE /* DateFormatter+ISOParsing.swift in Sources */,
 				8369721A2028F40E00398A98 /* SignerRemovedEffectResponse.swift in Sources */,
 				83F4E6142A1EA1BF00DD42A9 /* KycAmlFields.swift in Sources */,
+				83F674CA2F23CD97000E1F3F /* OZCredentialManager.swift in Sources */,
+				83F674CB2F23CD97000E1F3F /* OZRelayerClient.swift in Sources */,
+				83F674CC2F23CD97000E1F3F /* OZSmartAccountKit.swift in Sources */,
+				83F674CD2F23CD97000E1F3F /* OZTransactionOperations.swift in Sources */,
+				83F674CE2F23CD97000E1F3F /* OZIndexerClient.swift in Sources */,
 				8369721C2028F45400398A98 /* SignerUpdatedEffectResponse.swift in Sources */,
 				836972322028F86500398A98 /* TradeEffectResponse.swift in Sources */,
 				8395F946246B38CD00B04E11 /* TransactionV0XDR.swift in Sources */,
@@ -5229,6 +5379,7 @@
 				74723340219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift in Sources */,
 				744A84C821441CC50086B8FC /* Date.swift in Sources */,
 				83B836162F0E917B00063825 /* AccountStreamingTestCase.swift in Sources */,
+				83F674B82F23C6B6000E1F3F /* SmartAccountTest.swift in Sources */,
 				832C2B332AEC10C0005BB7B8 /* RecoveryServiceTestCase.swift in Sources */,
 				833C67502B8F66F000E034C6 /* DepositExchangeResponseMock.swift in Sources */,
 				836513902BDEE00400A99085 /* Sep08PostRejectedMock.swift in Sources */,
@@ -5263,6 +5414,7 @@
 				4367E5FA203EA65300C0AB4F /* PaymentsResponsesMock.swift in Sources */,
 				8365138A2BDEDD4E00A99085 /* Sep08PostPendingMock.swift in Sources */,
 				8310BDCE26EB61B0004D3EF2 /* AmmTestCase.swift in Sources */,
+				83F674D02F23D0DA000E1F3F /* SmartAccountKitTest.swift in Sources */,
 				7467C4072142740C00412FE1 /* DepositResponseMock.swift in Sources */,
 				8365E4EB2E96C6CE00341284 /* HealthRemoteTestCase.swift in Sources */,
 				8357A91D203B6F8500A144A9 /* DataForAccountResponsesMock.swift in Sources */,
