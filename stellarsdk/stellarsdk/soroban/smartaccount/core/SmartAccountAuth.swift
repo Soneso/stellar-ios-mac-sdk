@@ -297,4 +297,53 @@ public struct SmartAccountAuth: Sendable {
 
         return signedEntry
     }
+
+    // MARK: - Source Account Auth
+
+    /// Builds the authorization payload hash for source_account credentials.
+    ///
+    /// Similar to buildAuthPayloadHash but for converting source_account credentials to
+    /// Address credentials. Used during fundWallet to enable relayer fee sponsoring.
+    ///
+    /// - Parameters:
+    ///   - entry: The authorization entry with source_account credentials
+    ///   - nonce: The nonce to use for the new Address credential
+    ///   - expirationLedger: The ledger number at which the signature expires
+    ///   - networkPassphrase: The network passphrase
+    /// - Returns: The 32-byte SHA-256 hash of the authorization payload
+    /// - Throws: SmartAccountError.transactionSigningFailed if XDR encoding fails
+    public static func buildSourceAccountAuthPayloadHash(
+        entry: SorobanAuthorizationEntryXDR,
+        nonce: Int64,
+        expirationLedger: UInt32,
+        networkPassphrase: String
+    ) throws -> Data {
+        // Step 1: Compute network ID (SHA-256 of network passphrase)
+        let networkId = networkPassphrase.sha256Hash
+
+        // Step 2: Build HashIDPreimage::SorobanAuthorization
+        let authPreimage = HashIDPreimageSorobanAuthorizationXDR(
+            networkID: WrappedData32(networkId),
+            nonce: nonce,
+            signatureExpirationLedger: expirationLedger,
+            invocation: entry.rootInvocation
+        )
+
+        let preimage = HashIDPreimageXDR.sorobanAuthorization(authPreimage)
+
+        // Step 3: XDR encode the preimage
+        let encodedPreimage: [UInt8]
+        do {
+            encodedPreimage = try XDREncoder.encode(preimage)
+        } catch {
+            throw SmartAccountError.transactionSigningFailed(
+                "Failed to XDR encode source account auth payload preimage",
+                cause: error
+            )
+        }
+
+        // Step 4: Hash the encoded preimage
+        let encodedPreimageData = Data(encodedPreimage)
+        return encodedPreimageData.sha256Hash
+    }
 }

@@ -69,6 +69,21 @@ public struct TransactionResult: Sendable {
 /// - Transaction polling and confirmation
 /// - Testnet wallet funding via Friendbot
 ///
+/// ## Fee Sponsoring
+///
+/// When `kit.relayerClient` is configured, transactions can be fee-sponsored by the relayer,
+/// enabling gasless operation for users with empty wallets. The SDK automatically selects
+/// the appropriate submission mode:
+///
+/// - **Mode 1**: Used when auth entries contain only Address credentials. Sends host function
+///   and signed auth entries to the relayer, which wraps them in a transaction and adds a
+///   fee bump from its channel accounts.
+/// - **Mode 2**: Used when auth entries contain source_account credentials. Sends a fully
+///   signed transaction XDR to the relayer, which wraps it with a fee bump transaction.
+///
+/// When no relayer is configured, transactions are submitted directly to the Stellar RPC
+/// endpoint and the user's wallet pays all fees.
+///
 /// This class works in tandem with OZSmartAccountKit and should be accessed via
 /// the kit instance rather than instantiated directly.
 ///
@@ -230,7 +245,7 @@ public final class OZTransactionOperations: @unchecked Sendable {
     /// ```
     public func signAuthEntries(
         authEntries: [SorobanAuthorizationEntryXDR],
-        signer: SmartAccountSigner,
+        signer: any SmartAccountSigner,
         signatureScVal: SCValXDR,
         expirationLedger: UInt32? = nil
     ) async throws -> [SorobanAuthorizationEntryXDR] {
@@ -308,9 +323,27 @@ public final class OZTransactionOperations: @unchecked Sendable {
     /// 7. Update transaction with signed auth entries
     /// 8. Re-simulate to get correct resource fees
     /// 9. Assemble transaction from re-simulation
-    /// 10. Sign envelope with deployer keypair
+    /// 10. Conditionally sign envelope with deployer keypair:
+    ///     - Always sign when NO relayer configured (normal RPC submission)
+    ///     - When relayer configured: only sign for Mode 2 (source_account auth exists)
+    ///     - When relayer configured: skip signing for Mode 1 (only Address credentials)
     /// 11. Determine submission mode (relayer vs RPC)
     /// 12. Submit and poll for confirmation
+    ///
+    /// ## Fee Sponsoring
+    ///
+    /// When `kit.relayerClient` is configured, this method automatically selects the
+    /// appropriate relayer submission mode:
+    ///
+    /// - **Mode 1**: Used when all auth entries have Address credentials. The transaction
+    ///   is not signed by the deployer. Instead, the host function and signed auth entries
+    ///   are sent to the relayer, which builds the transaction envelope and adds a fee bump.
+    /// - **Mode 2**: Used when any auth entry has source_account credentials. The transaction
+    ///   is fully signed by the deployer and sent as XDR to the relayer, which wraps it
+    ///   with a fee bump transaction.
+    ///
+    /// When no relayer is configured, the transaction is always signed by the deployer
+    /// and submitted directly to RPC.
     ///
     /// IMPORTANT: This method requires WebAuthn interaction to sign auth entries.
     /// The user will be prompted for biometric authentication for each auth entry
@@ -508,8 +541,14 @@ public final class OZTransactionOperations: @unchecked Sendable {
         transaction.setSorobanTransactionData(data: transactionData)
         transaction.addResourceFee(resourceFee: minResourceFee)
 
-        // STEP 12: Sign envelope with deployer keypair
-        try transaction.sign(keyPair: deployer, network: Network.custom(passphrase: kit.config.networkPassphrase))
+        // STEP 12: Conditionally sign with deployer keypair
+        // Only sign when NOT using fee sponsoring OR when has source_account auth
+        let shouldUseFeeSponsoring = kit.relayerClient != nil
+        let hasSourceAuth = shouldUseRelayerMode2(authEntries: signedAuthEntries)
+
+        if !shouldUseFeeSponsoring || hasSourceAuth {
+            try transaction.sign(keyPair: deployer, network: Network.custom(passphrase: kit.config.networkPassphrase))
+        }
 
         // STEP 13: Determine submission method using SIGNED auth entries (not original input)
         if let relayer = kit.relayerClient {
@@ -640,8 +679,8 @@ public final class OZTransactionOperations: @unchecked Sendable {
     /// Funds the smart account wallet using Friendbot (testnet only).
     ///
     /// Creates a temporary keypair, funds it via Friendbot, then transfers the balance
-    /// (minus reserve) to the smart account contract. This enables testing without
-    /// requiring pre-funded wallets.
+    /// (minus reserve) to the smart account contract. Supports relayer fee sponsoring
+    /// by converting source_account auth entries to Address credentials.
     ///
     /// Flow:
     /// 1. Generate random temporary keypair
@@ -650,8 +689,30 @@ public final class OZTransactionOperations: @unchecked Sendable {
     /// 4. Query temp account balance via native token contract simulation
     /// 5. Calculate transfer amount (balance - reserve)
     /// 6. Build transfer from temp to smart account
-    /// 7. Simulate, sign with temp keypair, submit via RPC
-    /// 8. Return funded amount in XLM
+    /// 7. Simulate to get auth entries
+    /// 8. Convert source_account auth entries to Address credentials (for relayer)
+    /// 9. Sign auth entries with temp keypair
+    /// 10. Re-simulate with signed auth entries
+    /// 11. Conditionally sign with temp keypair:
+    ///     - Always sign when NO relayer configured (normal RPC submission)
+    ///     - When relayer configured: only sign for Mode 2 (has source_account auth)
+    ///     - When relayer configured: skip signing for Mode 1 (only Address credentials)
+    /// 12. Determine submission mode and submit:
+    ///     - When relayer configured and Mode 1: Send host function + auth entries
+    ///     - When relayer configured and Mode 2: Send signed transaction XDR
+    ///     - When no relayer: Submit directly via RPC
+    /// 13. Return funded amount in XLM
+    ///
+    /// ## Fee Sponsoring
+    ///
+    /// When `kit.relayerClient` is configured, the transaction can be fee-sponsored:
+    ///
+    /// - **Mode 1**: Used when no source_account auth exists (after conversion to Address
+    ///   credentials). Sends host function and signed auth entries to the relayer.
+    /// - **Mode 2**: Used when source_account auth exists. Sends fully signed transaction XDR
+    ///   to the relayer, which wraps it with a fee bump.
+    ///
+    /// When no relayer is configured, submits directly to RPC and the temp account pays fees.
     ///
     /// IMPORTANT: Only works on testnet. Do not use on mainnet.
     ///
@@ -661,10 +722,25 @@ public final class OZTransactionOperations: @unchecked Sendable {
     ///
     /// Example:
     /// ```swift
+    /// // Fund wallet (uses relayer if configured)
     /// let fundedAmount = try await txOps.fundWallet(
     ///     nativeTokenContract: "CBCD1234..."
     /// )
     /// print("Funded smart account with \(fundedAmount) XLM")
+    ///
+    /// // With relayer configured in kit, fees are sponsored
+    /// let config = try OZSmartAccountKitConfig(
+    ///     rpcUrl: "https://soroban-testnet.stellar.org",
+    ///     networkPassphrase: "Test SDF Network ; September 2015",
+    ///     accountWasmHash: accountWasmHash,
+    ///     webauthnVerifierAddress: webauthnVerifierAddress,
+    ///     relayerUrl: "https://relayer.example.com"
+    /// )
+    /// let kit = try OZSmartAccountKit(config: config)
+    /// let fundedAmount = try await kit.transactionOperations.fundWallet(
+    ///     nativeTokenContract: nativeTokenAddress
+    /// )
+    /// print("Funded \(fundedAmount) XLM with sponsored fees")
     /// ```
     public func fundWallet(nativeTokenContract: String) async throws -> Decimal {
         let (_, contractId) = try kit.requireConnected()
@@ -747,7 +823,7 @@ public final class OZTransactionOperations: @unchecked Sendable {
         let hostFunction = HostFunctionXDR.invokeContract(invokeArgs)
         let operation = InvokeHostFunctionOperation(hostFunction: hostFunction, auth: [])
 
-        // STEP 7: Simulate
+        // STEP 7: Simulate to get auth entries
         let transaction = try Transaction(
             sourceAccount: tempAccount,
             operations: [operation],
@@ -762,33 +838,111 @@ public final class OZTransactionOperations: @unchecked Sendable {
             throw SmartAccountError.transactionSimulationFailed("Failed to simulate funding transfer")
         }
 
-        // Extract auth entries from simulation and set on transaction
-        let decodedAuth = simulation.sorobanAuth ?? []
-        if !decodedAuth.isEmpty {
-            transaction.setSorobanAuth(auth: decodedAuth)
+        // Extract auth entries from simulation
+        let simulatedAuthEntries = simulation.sorobanAuth ?? []
+
+        // STEP 8: Convert source_account auth entries to Address credentials
+        // This allows the Relayer to use its own channel accounts for fee sponsoring
+        let latestLedgerResponse = await kit.sorobanServer.getLatestLedger()
+        guard case .success(let latestLedger) = latestLedgerResponse else {
+            throw SmartAccountError.transactionSimulationFailed("Failed to fetch latest ledger for auth entry expiration")
+        }
+        let expirationLedger = latestLedger.sequence + UInt32(SmartAccountConstants.AUTH_ENTRY_EXPIRATION_BUFFER)
+
+        let signedAuthEntries = try convertAndSignAuthEntries(
+            authEntries: simulatedAuthEntries,
+            tempKeypair: tempKeypair,
+            expirationLedger: expirationLedger
+        )
+
+        // STEP 9: Refresh temp account for re-simulation
+        let tempAccountRefreshResponse = await kit.sorobanServer.getAccount(accountId: tempKeypair.accountId)
+        guard case .success(let tempAccountRefresh) = tempAccountRefreshResponse else {
+            throw SmartAccountError.transactionSubmissionFailed("Failed to refresh temp account")
         }
 
-        // Assemble transaction from simulation
-        guard let transactionData = simulation.transactionData,
-              let minResourceFee = simulation.minResourceFee else {
-            throw SmartAccountError.transactionSubmissionFailed("Failed to get transaction data from simulation")
+        // Build transaction with signed auth entries
+        let signedTransaction = try Transaction(
+            sourceAccount: tempAccountRefresh,
+            operations: [InvokeHostFunctionOperation(hostFunction: hostFunction, auth: signedAuthEntries)],
+            memo: Memo.none,
+            preconditions: nil
+        )
+
+        // STEP 10: Re-simulate with signed auth entries to get correct resource estimates
+        let reSimulateRequest = SimulateTransactionRequest(transaction: signedTransaction)
+        let reSimulateResponse = await kit.sorobanServer.simulateTransaction(simulateTxRequest: reSimulateRequest)
+
+        guard case .success(let reSimulation) = reSimulateResponse else {
+            throw SmartAccountError.transactionSimulationFailed("Re-simulation with signed auth failed")
         }
 
-        transaction.setSorobanTransactionData(data: transactionData)
-        transaction.addResourceFee(resourceFee: minResourceFee)
-
-        // Sign with temp keypair
-        try transaction.sign(keyPair: tempKeypair, network: Network.custom(passphrase: kit.config.networkPassphrase))
-
-        // Submit via RPC
-        let sendResponse = await kit.sorobanServer.sendTransaction(transaction: transaction)
-
-        guard case .success(let sendResult) = sendResponse else {
-            throw SmartAccountError.transactionSubmissionFailed("Failed to send funding transaction")
+        if let error = reSimulation.error {
+            throw SmartAccountError.transactionSimulationFailed("Re-simulation error: \(error)")
         }
 
-        // Poll for confirmation
-        let result = try await pollForConfirmation(hash: sendResult.transactionId)
+        // Assemble transaction from re-simulation
+        guard let transactionData = reSimulation.transactionData,
+              let minResourceFee = reSimulation.minResourceFee else {
+            throw SmartAccountError.transactionSubmissionFailed("Failed to get transaction data from re-simulation")
+        }
+
+        signedTransaction.setSorobanTransactionData(data: transactionData)
+        signedTransaction.addResourceFee(resourceFee: minResourceFee)
+
+        // STEP 11: Determine submission method
+        let shouldUseFeeSponsoring = kit.relayerClient != nil
+        let hasSourceAuth = shouldUseRelayerMode2(authEntries: signedAuthEntries)
+
+        // Sign with temp keypair only if NOT using fee sponsoring OR has source auth (Mode 2)
+        if !shouldUseFeeSponsoring || hasSourceAuth {
+            try signedTransaction.sign(keyPair: tempKeypair, network: Network.custom(passphrase: kit.config.networkPassphrase))
+        }
+
+        // STEP 12: Submit transaction
+        let result: TransactionResult
+        if shouldUseFeeSponsoring {
+            // Use relayer submission
+            if hasSourceAuth {
+                // Mode 2: Submit signed transaction XDR
+                let txXdr = try signedTransaction.encodedEnvelope()
+                let relayerResponse = try await kit.relayerClient!.sendXdr(txXdr)
+
+                if relayerResponse.success, let hash = relayerResponse.hash {
+                    result = try await pollForConfirmation(hash: hash)
+                } else {
+                    result = TransactionResult(
+                        success: false,
+                        error: relayerResponse.error ?? "Relayer submission failed"
+                    )
+                }
+            } else {
+                // Mode 1: Submit host function and signed auth entries
+                let relayerResponse = try await kit.relayerClient!.send(func: hostFunction, auth: signedAuthEntries)
+
+                if relayerResponse.success, let hash = relayerResponse.hash {
+                    result = try await pollForConfirmation(hash: hash)
+                } else {
+                    result = TransactionResult(
+                        success: false,
+                        error: relayerResponse.error ?? "Relayer submission failed"
+                    )
+                }
+            }
+        } else {
+            // Submit via RPC
+            let sendResponse = await kit.sorobanServer.sendTransaction(transaction: signedTransaction)
+
+            guard case .success(let sendResult) = sendResponse else {
+                throw SmartAccountError.transactionSubmissionFailed("Failed to send funding transaction")
+            }
+
+            if let error = sendResult.errorResultXdr {
+                throw SmartAccountError.transactionSubmissionFailed("Transaction submission error: \(error)")
+            }
+
+            result = try await pollForConfirmation(hash: sendResult.transactionId)
+        }
 
         if !result.success {
             throw SmartAccountError.transactionSubmissionFailed(
@@ -796,12 +950,114 @@ public final class OZTransactionOperations: @unchecked Sendable {
             )
         }
 
-        // STEP 8: Return funded amount in XLM
+        // STEP 13: Return funded amount in XLM
         let fundedXLM = Decimal(transferStroops) / Decimal(SmartAccountConstants.STROOPS_PER_XLM)
         return fundedXLM
     }
 
     // MARK: - Private Helpers
+
+    /// Converts source_account auth entries to Address credentials and signs them.
+    ///
+    /// For source_account credentials (Void type), this creates new Address credentials
+    /// with a nonce and signature. This allows the Relayer to use its own channel accounts
+    /// for fee sponsoring. For Address credentials, signs them with the provided keypair.
+    ///
+    /// - Parameters:
+    ///   - authEntries: The authorization entries to convert and sign
+    ///   - tempKeypair: The keypair to use for signing
+    ///   - expirationLedger: The ledger number at which signatures expire
+    /// - Returns: List of signed authorization entries with Address credentials
+    /// - Throws: SmartAccountError if conversion or signing fails
+    private func convertAndSignAuthEntries(
+        authEntries: [SorobanAuthorizationEntryXDR],
+        tempKeypair: KeyPair,
+        expirationLedger: UInt32
+    ) throws -> [SorobanAuthorizationEntryXDR] {
+        var convertedEntries: [SorobanAuthorizationEntryXDR] = []
+
+        for var entry in authEntries {
+            switch entry.credentials {
+            case .sourceAccount:
+                // For source_account credentials, convert to Address credentials
+                // Generate a nonce for the new Address credential
+                let nonce = Int64(Date().timeIntervalSince1970 * 1000)
+
+                // Build auth payload hash
+                let payloadHash = try SmartAccountAuth.buildSourceAccountAuthPayloadHash(
+                    entry: entry,
+                    nonce: nonce,
+                    expirationLedger: expirationLedger,
+                    networkPassphrase: kit.config.networkPassphrase
+                )
+
+                // Sign with temp keypair
+                let signature = tempKeypair.sign([UInt8](payloadHash))
+
+                // Build signature map (public_key -> signature)
+                let publicKeyEntry = SCMapEntryXDR(
+                    key: .symbol("public_key"),
+                    val: .bytes(Data(tempKeypair.publicKey.bytes))
+                )
+                let signatureEntry = SCMapEntryXDR(
+                    key: .symbol("signature"),
+                    val: .bytes(Data(signature))
+                )
+
+                // Create signature map and vec
+                let signatureMap = [publicKeyEntry, signatureEntry]
+                let signatureVec: [SCValXDR] = [.map(signatureMap)]
+
+                // Create new Address credentials entry to replace source_account
+                let addressCredentials = SorobanAddressCredentialsXDR(
+                    address: try SCAddressXDR(accountId: tempKeypair.accountId),
+                    nonce: nonce,
+                    signatureExpirationLedger: expirationLedger,
+                    signature: .vec(signatureVec)
+                )
+
+                var convertedEntry = entry
+                convertedEntry.credentials = .address(addressCredentials)
+                convertedEntries.append(convertedEntry)
+
+            case .address(var addressCreds):
+                // For Address credentials, sign them
+                // Build auth payload hash
+                let payloadHash = try SmartAccountAuth.buildAuthPayloadHash(
+                    entry: entry,
+                    expirationLedger: expirationLedger,
+                    networkPassphrase: kit.config.networkPassphrase
+                )
+
+                // Sign with temp keypair
+                let signature = tempKeypair.sign([UInt8](payloadHash))
+
+                // Build signature map
+                let publicKeyEntry = SCMapEntryXDR(
+                    key: .symbol("public_key"),
+                    val: .bytes(Data(tempKeypair.publicKey.bytes))
+                )
+                let signatureEntry = SCMapEntryXDR(
+                    key: .symbol("signature"),
+                    val: .bytes(Data(signature))
+                )
+
+                // Create signature map and vec
+                let signatureMap = [publicKeyEntry, signatureEntry]
+                let signatureVec: [SCValXDR] = [.map(signatureMap)]
+
+                // Update credentials with new signature
+                addressCreds.signatureExpirationLedger = expirationLedger
+                addressCreds.signature = .vec(signatureVec)
+
+                var signedEntry = entry
+                signedEntry.credentials = .address(addressCreds)
+                convertedEntries.append(signedEntry)
+            }
+        }
+
+        return convertedEntries
+    }
 
     /// Determines if relayer Mode 2 should be used based on auth entries.
     ///

@@ -244,16 +244,24 @@ public final class OZWalletOperations: @unchecked Sendable {
     /// 4. Derive deterministic contract address from credential ID
     /// 5. Save credential as pending in storage
     /// 6. Build deploy transaction (if autoSubmit, submit and delete credential on success)
-    /// 7. Return result
+    /// 7. Fund wallet if autoFund is enabled (requires autoSubmit)
+    /// 8. Return result
     ///
     /// IMPORTANT: Requires a WebAuthnProvider to be set on the kit. Throws
     /// WEBAUTHN_NOT_SUPPORTED if no provider is configured.
     ///
     /// - Parameters:
     ///   - userName: Display name for the user (default: "Smart Account User")
-    ///   - autoSubmit: Whether to automatically submit the deploy transaction (default: false)
+    ///   - autoSubmit: Whether to automatically submit the deploy transaction (default: false).
+    ///     When true, deploys the contract immediately and waits for confirmation.
+    ///   - autoFund: Whether to automatically fund the wallet after deployment (default: false).
+    ///     Requires autoSubmit to be true. Calls `fundWallet()` to transfer XLM from a Friendbot-funded
+    ///     temporary account to the new smart account. Only works on testnet.
+    ///   - nativeTokenContract: Contract address for the native token (required if autoFund is true).
+    ///     Used to transfer XLM to the newly deployed smart account.
     /// - Returns: CreateWalletResult containing credential ID, contract address, and transaction hash
-    /// - Throws: SmartAccountError if WebAuthn registration fails, extraction fails, or submission fails
+    /// - Throws: SmartAccountError if WebAuthn registration fails, extraction fails, submission fails,
+    ///   or nativeTokenContract is missing when autoFund is true
     ///
     /// Example:
     /// ```swift
@@ -265,15 +273,33 @@ public final class OZWalletOperations: @unchecked Sendable {
     /// // Create and deploy immediately
     /// let deployedWallet = try await walletOps.createWallet(userName: "Bob", autoSubmit: true)
     /// print("Deployed at: \(deployedWallet.transactionHash ?? "unknown")")
+    ///
+    /// // Create, deploy, and fund with native token (testnet only)
+    /// let fundedWallet = try await walletOps.createWallet(
+    ///     userName: "Charlie",
+    ///     autoSubmit: true,
+    ///     autoFund: true,
+    ///     nativeTokenContract: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
+    /// )
+    /// print("Funded wallet at: \(fundedWallet.contractId)")
     /// ```
     public func createWallet(
         userName: String = "Smart Account User",
-        autoSubmit: Bool = false
+        autoSubmit: Bool = false,
+        autoFund: Bool = false,
+        nativeTokenContract: String? = nil
     ) async throws -> CreateWalletResult {
         // STEP 1: Check for WebAuthn provider
         guard let webauthnProvider = kit.webauthnProvider else {
             throw SmartAccountError.webAuthnNotSupported(
                 "No WebAuthnProvider configured. Set kit.webauthnProvider before calling createWallet()."
+            )
+        }
+
+        // STEP 1b: Validate autoFund requirements early (before WebAuthn/network)
+        if autoFund && nativeTokenContract == nil {
+            throw SmartAccountError.invalidInput(
+                "nativeTokenContract is required when autoFund is true"
             )
         }
 
@@ -522,6 +548,18 @@ public final class OZWalletOperations: @unchecked Sendable {
                 // Set connected state after successful deployment
                 kit.setConnected(credentialId: credentialIdBase64url, contractId: contractId)
 
+                // Note: autoFund not yet implemented - requires transactionOperations to be exposed on kit
+                // Fund wallet if requested
+                if autoFund {
+                    guard let tokenContract = nativeTokenContract else {
+                        throw SmartAccountError.invalidInput(
+                            "nativeTokenContract is required when autoFund is true"
+                        )
+                    }
+                    let transactionOps = OZTransactionOperations(kit: kit)
+                    _ = try await transactionOps.fundWallet(nativeTokenContract: tokenContract)
+                }
+
                 // Delete credential on successful deployment
                 try? credentialManager.deleteCredential(credentialId: credentialIdBase64url)
             } catch let error as SmartAccountError {
@@ -550,6 +588,85 @@ public final class OZWalletOperations: @unchecked Sendable {
 
     // MARK: - Connect Wallet
 
+    /// Options for connecting to a wallet.
+    ///
+    /// ConnectWalletOptions allows customization of the wallet connection flow,
+    /// supporting three main use cases:
+    ///
+    /// 1. **Session restoration** (default): Silently reconnects using a saved session
+    ///    if one exists and hasn't expired. No user interaction required.
+    ///
+    /// 2. **Direct connection**: Connect to a specific credential or contract address
+    ///    without WebAuthn authentication. Useful when you already know the credential ID.
+    ///
+    /// 3. **Fresh authentication**: Force WebAuthn re-authentication even if a valid
+    ///    session exists. Useful for sensitive operations requiring explicit user confirmation.
+    public struct ConnectWalletOptions {
+        /// Connect directly using this credential ID (Base64URL-encoded).
+        ///
+        /// When provided, skips WebAuthn authentication and session restoration.
+        /// The contract address will be looked up from storage, indexer, or derived
+        /// from the credential ID.
+        ///
+        /// Example use case: Reconnecting to a wallet after the user selected it from
+        /// a list of saved credentials.
+        ///
+        /// ```swift
+        /// let options = ConnectWalletOptions(credentialId: "abc123...")
+        /// let result = try await walletOps.connectWallet(options: options)
+        /// ```
+        public let credentialId: String?
+
+        /// Connect directly to this contract address (C-address).
+        ///
+        /// Must be used together with `credentialId`. When both are provided,
+        /// skips contract address lookup and uses the provided address directly.
+        ///
+        /// Example use case: Connecting to a wallet when you already know both
+        /// the credential ID and contract address (e.g., from a deep link or QR code).
+        ///
+        /// ```swift
+        /// let options = ConnectWalletOptions(
+        ///     credentialId: "abc123...",
+        ///     contractId: "CABC..."
+        /// )
+        /// let result = try await walletOps.connectWallet(options: options)
+        /// ```
+        public let contractId: String?
+
+        /// Force fresh WebAuthn authentication, skipping session restore.
+        ///
+        /// When true, requires the user to authenticate with Touch ID or Face ID
+        /// even if a valid saved session exists. This creates a new session after
+        /// successful authentication.
+        ///
+        /// Example use case: Sensitive operations where you want to explicitly
+        /// confirm the user's identity before proceeding, similar to how banking
+        /// apps require re-authentication for transfers.
+        ///
+        /// ```swift
+        /// let options = ConnectWalletOptions(fresh: true)
+        /// let result = try await walletOps.connectWallet(options: options)
+        /// ```
+        public let fresh: Bool
+
+        /// Creates new ConnectWalletOptions.
+        ///
+        /// - Parameters:
+        ///   - credentialId: Optional credential ID for direct connection
+        ///   - contractId: Optional contract address (requires credentialId)
+        ///   - fresh: Whether to force fresh authentication (default: false)
+        public init(
+            credentialId: String? = nil,
+            contractId: String? = nil,
+            fresh: Bool = false
+        ) {
+            self.credentialId = credentialId
+            self.contractId = contractId
+            self.fresh = fresh
+        }
+    }
+
     /// Connects to an existing smart account wallet.
     ///
     /// Attempts to connect to a wallet by:
@@ -560,65 +677,93 @@ public final class OZWalletOperations: @unchecked Sendable {
     /// 5. Saving a new session
     ///
     /// Flow:
-    /// 1. Check storage for valid (non-expired) session
-    /// 2. If valid session: set kit connected state, return restoredFromSession: true
-    /// 3. If expired session: delete silently, continue
-    /// 4. If no valid session: trigger WebAuthn authentication (no allowCredentials filter)
-    /// 5. Extract credentialId from authentication result (base64url encode)
-    /// 6. Look up contractId:
+    /// 1. If credentialId or contractId provided, connect directly via connectWithCredentials
+    /// 2. Check storage for valid (non-expired) session (unless fresh = true)
+    /// 3. If valid session: set kit connected state, return restoredFromSession: true
+    /// 4. If expired session: delete silently, continue
+    /// 5. If no valid session or fresh = true: trigger WebAuthn authentication
+    /// 6. Extract credentialId from authentication result (base64url encode)
+    /// 7. Look up contractId:
     ///    a. Check local storage
     ///    b. If not found and indexer configured: call indexer
     ///    c. If not found: derive contract address and verify on-chain via RPC
     ///    d. If contract doesn't exist: throw WALLET_NOT_FOUND
-    /// 7. Save session
-    /// 8. Set kit connected state
-    /// 9. Return result
+    /// 8. Save session
+    /// 9. Set kit connected state
+    /// 10. Return result
     ///
     /// IMPORTANT: Requires a WebAuthnProvider to be set on the kit for non-session reconnection.
     ///
+    /// - Parameter options: Options for connection. Use default for session restoration,
+    ///   `credentialId` for direct connection to a known credential,
+    ///   `contractId` with `credentialId` for direct connection to a known contract,
+    ///   or `fresh: true` to force WebAuthn re-authentication.
     /// - Returns: ConnectWalletResult containing credential ID, contract ID, and session flag
     /// - Throws: SmartAccountError if authentication fails, wallet not found, or RPC fails
     ///
     /// Example:
     /// ```swift
-    /// do {
-    ///     let result = try await walletOps.connectWallet()
-    ///     if result.restoredFromSession {
-    ///         print("Silently reconnected to: \(result.contractId)")
-    ///     } else {
-    ///         print("Authenticated and connected to: \(result.contractId)")
-    ///     }
-    /// } catch let error as SmartAccountError {
-    ///     switch error.code {
-    ///     case .walletNotFound:
-    ///         print("No wallet found for this credential")
-    ///     case .webAuthnCancelled:
-    ///         print("User cancelled authentication")
-    ///     default:
-    ///         print("Connection failed: \(error.message)")
-    ///     }
+    /// // Connect with session restore or WebAuthn (default behavior)
+    /// let result = try await walletOps.connectWallet()
+    /// if result.restoredFromSession {
+    ///     print("Silently reconnected from saved session")
+    /// } else {
+    ///     print("Authenticated with WebAuthn")
     /// }
+    ///
+    /// // Force fresh authentication (useful for sensitive operations)
+    /// let freshResult = try await walletOps.connectWallet(
+    ///     options: ConnectWalletOptions(fresh: true)
+    /// )
+    /// print("User confirmed identity via Touch ID/Face ID")
+    ///
+    /// // Connect to specific credential (skip WebAuthn authentication)
+    /// let specificResult = try await walletOps.connectWallet(
+    ///     options: ConnectWalletOptions(credentialId: "abc123...")
+    /// )
+    /// print("Connected to credential: \(specificResult.credentialId)")
+    ///
+    /// // Connect to specific contract with credential (fastest path, no lookups)
+    /// let contractResult = try await walletOps.connectWallet(
+    ///     options: ConnectWalletOptions(
+    ///         credentialId: "abc123...",
+    ///         contractId: "CABC..."
+    ///     )
+    /// )
+    /// print("Connected to contract: \(contractResult.contractId)")
     /// ```
-    public func connectWallet() async throws -> ConnectWalletResult {
-        // STEP 1: Check for valid session
-        let session = try? kit.storageAdapter.getSession()
-
-        if let session = session, !session.isExpired {
-            // Valid session exists - silently reconnect
-            kit.setConnected(credentialId: session.credentialId, contractId: session.contractId)
-            return ConnectWalletResult(
-                credentialId: session.credentialId,
-                contractId: session.contractId,
-                restoredFromSession: true
+    public func connectWallet(
+        options: ConnectWalletOptions = ConnectWalletOptions()
+    ) async throws -> ConnectWalletResult {
+        // STEP 1: If credentialId or contractId provided, connect directly
+        if options.credentialId != nil || options.contractId != nil {
+            return try await connectWithCredentials(
+                credentialId: options.credentialId,
+                contractId: options.contractId
             )
         }
 
-        // STEP 2: If expired session, delete silently
-        if let session = session, session.isExpired {
-            try? kit.storageAdapter.clearSession()
+        // STEP 2: If fresh = false, check for valid session
+        if !options.fresh {
+            let session = try? kit.storageAdapter.getSession()
+
+            if let session = session, !session.isExpired {
+                // Valid session exists - silently reconnect
+                kit.setConnected(credentialId: session.credentialId, contractId: session.contractId)
+                return ConnectWalletResult(
+                    credentialId: session.credentialId,
+                    contractId: session.contractId,
+                    restoredFromSession: true
+                )
+            }
+
+            // If expired session, delete silently
+            if let session = session, session.isExpired {
+                try? kit.storageAdapter.clearSession()
+            }
         }
 
-        // STEP 3: No valid session - require WebAuthn authentication
+        // STEP 3: No valid session or fresh = true - require WebAuthn authentication
         guard let webauthnProvider = kit.webauthnProvider else {
             throw SmartAccountError.webAuthnNotSupported(
                 "No WebAuthnProvider configured. Set kit.webauthnProvider before calling connectWallet()."
@@ -730,6 +875,140 @@ public final class OZWalletOperations: @unchecked Sendable {
         return ConnectWalletResult(
             credentialId: credentialIdBase64url,
             contractId: finalContractId,
+            restoredFromSession: false
+        )
+    }
+
+    // MARK: - Private Helpers
+
+    /// Connects to a wallet using explicit credential ID and contract ID.
+    ///
+    /// This is a helper function used by connectWallet when credentialId
+    /// or contractId options are provided. It skips session restoration
+    /// and WebAuthn authentication, directly connecting to the specified
+    /// credential/contract.
+    ///
+    /// Flow:
+    /// 1. Validate that contractId requires credentialId
+    /// 2. If credentialId provided, look up contract ID from storage, indexer, or derive it
+    /// 3. Verify contract exists on-chain
+    /// 4. Save new session
+    /// 5. Set kit connected state
+    /// 6. Return result
+    ///
+    /// - Parameters:
+    ///   - credentialId: The credential ID (Base64URL-encoded), optional
+    ///   - contractId: The contract ID (C-address), optional
+    /// - Returns: ConnectWalletResult with restoredFromSession = false
+    /// - Throws: SmartAccountError if validation fails, wallet not found, or contract doesn't exist
+    private func connectWithCredentials(
+        credentialId: String?,
+        contractId: String?
+    ) async throws -> ConnectWalletResult {
+        // Validate: contractId requires credentialId
+        if contractId != nil && credentialId == nil {
+            throw SmartAccountError.invalidInput(
+                "contractId option requires credentialId to be provided"
+            )
+        }
+
+        let finalCredentialId = credentialId
+        var finalContractId = contractId
+
+        // If credentialId provided, look up contract ID if not provided
+        if let credId = finalCredentialId {
+            // Look up in storage first
+            if finalContractId == nil {
+                if let storedCredential = try? credentialManager.getCredential(credentialId: credId) {
+                    finalContractId = storedCredential.contractId
+                }
+            }
+
+            // If not found, try indexer
+            if finalContractId == nil, let indexer = kit.indexerClient {
+                do {
+                    let lookupResponse = try await indexer.lookupByCredentialId(credId)
+                    if let firstContract = lookupResponse.contracts.first {
+                        finalContractId = firstContract.contractId
+                    }
+                } catch {
+                    // Indexer lookup failed - continue to derivation
+                }
+            }
+
+            // If still not found, derive contract address
+            if finalContractId == nil {
+                let deployer = try kit.getDeployer()
+
+                // Decode Base64URL credential ID to raw bytes
+                guard let credentialIdBytes = SmartAccountSharedUtils.base64urlDecode(credId) else {
+                    throw SmartAccountError.invalidInput(
+                        "Invalid Base64URL-encoded credential ID"
+                    )
+                }
+
+                do {
+                    finalContractId = try SmartAccountUtils.deriveContractAddress(
+                        credentialId: credentialIdBytes,
+                        deployerPublicKey: deployer.accountId,
+                        networkPassphrase: kit.config.networkPassphrase
+                    )
+                } catch {
+                    throw SmartAccountError.walletNotFound(
+                        "Failed to derive contract address: \(error.localizedDescription)"
+                    )
+                }
+            }
+        }
+
+        // At this point, we must have both credentialId and contractId
+        guard let finalCredId = finalCredentialId, let finalContId = finalContractId else {
+            throw SmartAccountError.walletNotFound(
+                "Could not determine credential ID or contract ID"
+            )
+        }
+
+        // Verify contract exists on-chain
+        let verifyArgs = InvokeContractArgsXDR(
+            contractAddress: try SCAddressXDR(contractId: finalContId),
+            functionName: "get_context_rules_count",
+            args: []
+        )
+        let verifyFunction = HostFunctionXDR.invokeContract(verifyArgs)
+
+        do {
+            _ = try await SmartAccountSharedUtils.simulateAndExtractResult(
+                hostFunction: verifyFunction,
+                kit: kit
+            )
+        } catch {
+            throw SmartAccountError.walletNotFound(
+                "Contract not found at address: \(finalContId). The wallet may not be deployed yet."
+            )
+        }
+
+        // Save new session
+        let expiresAt = Date(timeIntervalSinceNow: TimeInterval(kit.config.sessionExpiryMs) / 1000.0)
+        let newSession = StoredSession(
+            credentialId: finalCredId,
+            contractId: finalContId,
+            connectedAt: Date(),
+            expiresAt: expiresAt
+        )
+
+        do {
+            try kit.storageAdapter.saveSession(session: newSession)
+        } catch {
+            // Session save failed - not critical, continue
+        }
+
+        // Set kit connected state
+        kit.setConnected(credentialId: finalCredId, contractId: finalContId)
+
+        // Return result
+        return ConnectWalletResult(
+            credentialId: finalCredId,
+            contractId: finalContId,
             restoredFromSession: false
         )
     }
