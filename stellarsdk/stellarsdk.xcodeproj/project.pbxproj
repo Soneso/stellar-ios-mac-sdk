@@ -7,22 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1EDB0E1FD6D44A68AC426109 /* BigIntTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ED2834A9114D0399AB9FDC /* BigIntTest.swift */; };
 		4300C17F2032F5C500DC5E49 /* OffersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C17E2032F5C500DC5E49 /* OffersService.swift */; };
-		4300C1832032FBE500DC5E49 /* OffersRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C1822032FBE500DC5E49 /* OffersRemoteTestCase.swift */; };
 		4300C1852033026D00DC5E49 /* OrderbookService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C1842033026D00DC5E49 /* OrderbookService.swift */; };
 		430BE2E6203577F200E6AB97 /* Price.swift in Sources */ = {isa = PBXBuildFile; fileRef = 430BE2E5203577F200E6AB97 /* Price.swift */; };
-		430BE2E92035A33D00E6AB97 /* PriceTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 430BE2E82035A33D00E6AB97 /* PriceTestCase.swift */; };
 		430BE2EB2035B4D400E6AB97 /* TimeBounds.swift in Sources */ = {isa = PBXBuildFile; fileRef = 430BE2EA2035B4D400E6AB97 /* TimeBounds.swift */; };
-		43464795203D553B0082B96A /* OperationsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43464794203D553B0082B96A /* OperationsLocalTestCase.swift */; };
-		43464797203D56AF0082B96A /* OperationsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43464796203D56AF0082B96A /* OperationsResponsesMock.swift */; };
-		4367E5FA203EA65300C0AB4F /* PaymentsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E5F9203EA65300C0AB4F /* PaymentsResponsesMock.swift */; };
-		4367E5FC203EA6ED00C0AB4F /* PaymentsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E5FB203EA6ED00C0AB4F /* PaymentsLocalTestCase.swift */; };
-		4367E5FE203ED15500C0AB4F /* OffersResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E5FD203ED15500C0AB4F /* OffersResponsesMock.swift */; };
-		4367E600203ED42D00C0AB4F /* OffersLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E5FF203ED42D00C0AB4F /* OffersLocalTestCase.swift */; };
-		4367E602203EE79700C0AB4F /* TradesLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E601203EE79700C0AB4F /* TradesLocalTestCase.swift */; };
-		4367E604203EE7A800C0AB4F /* TradesResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E603203EE7A800C0AB4F /* TradesResponsesMock.swift */; };
-		437CEBD820457E5E00CAAF93 /* MemoRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437CEBD720457E5E00CAAF93 /* MemoRemoteTestCase.swift */; };
 		437D8A7D202EEDCC0024D031 /* Dictionary+HttpParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A7C202EEDCC0024D031 /* Dictionary+HttpParams.swift */; };
 		437D8A83202EF0770024D031 /* TradeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A7F202EF0760024D031 /* TradeResponse.swift */; };
 		437D8A86202EF0770024D031 /* TradeAggregationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A82202EF0770024D031 /* TradeAggregationResponse.swift */; };
@@ -30,15 +18,12 @@
 		437D8A8B202F09630024D031 /* PagingLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A8A202F09630024D031 /* PagingLinksResponse.swift */; };
 		437D8A8D202F0B980024D031 /* TradesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A8C202F0B980024D031 /* TradesService.swift */; };
 		437D8A8F202F14A00024D031 /* TradeAggregationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A8E202F14A00024D031 /* TradeAggregationsService.swift */; };
-		437D8A92202F15DC0024D031 /* TradesTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A91202F15DC0024D031 /* TradesTestCase.swift */; };
 		4390830720372AF600254042 /* MemoProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4390830620372AF600254042 /* MemoProtocol.swift */; };
 		4390830920372BAF00254042 /* Memo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4390830820372BAF00254042 /* Memo.swift */; };
 		43AAA55120456B8C0039920E /* Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AAA55020456B8C0039920E /* Signer.swift */; };
 		43AEB4CE203ADEC10078637D /* Data+Base16.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AEB4CD203ADEC10078637D /* Data+Base16.swift */; };
 		43D35B0B2034845E00C8BDBC /* PaymentPathResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0A2034845E00C8BDBC /* PaymentPathResponse.swift */; };
 		43D35B0D20348AEA00C8BDBC /* PaymentPathsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0C20348AEA00C8BDBC /* PaymentPathsService.swift */; };
-		43D35B1020348EF800C8BDBC /* PaymentPathsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0F20348EF800C8BDBC /* PaymentPathsTestCase.swift */; };
-		43E24867204056FD00C83458 /* OperationXDRTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E24866204056FD00C83458 /* OperationXDRTestCase.swift */; };
 		43E34B5E2031BE33003104A9 /* OrderbookResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B5D2031BE33003104A9 /* OrderbookResponse.swift */; };
 		43E34B612031CF09003104A9 /* OfferResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B602031CF09003104A9 /* OfferResponse.swift */; };
 		43E34B632031D7AF003104A9 /* OfferLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B622031D7AF003104A9 /* OfferLinksResponse.swift */; };
@@ -46,7 +31,6 @@
 		43E34B672031DCFB003104A9 /* OfferAssetResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B662031DCFB003104A9 /* OfferAssetResponse.swift */; };
 		43E34B692031E243003104A9 /* OrderbookOfferResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B682031E243003104A9 /* OrderbookOfferResponse.swift */; };
 		43E34B6D2031E99D003104A9 /* PageResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E34B6C2031E99D003104A9 /* PageResponse.swift */; };
-		5543AE94191B4DE0AA2B7797 /* BigIntTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65ED2834A9114D0399AB9FDC /* BigIntTest.swift */; };
 		741B8B4A203DE47A0098464A /* String+Encoding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 741B8B49203DE47A0098464A /* String+Encoding.swift */; };
 		743060C721380D7A00E2E9F2 /* SequenceBumpedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743060C621380D7A00E2E9F2 /* SequenceBumpedEffectResponse.swift */; };
 		743060C821380D7A00E2E9F2 /* SequenceBumpedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743060C621380D7A00E2E9F2 /* SequenceBumpedEffectResponse.swift */; };
@@ -58,20 +42,8 @@
 		743060D12138231200E2E9F2 /* DataUpdatedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743060CF2138231200E2E9F2 /* DataUpdatedEffectResponse.swift */; };
 		743060D321384AF600E2E9F2 /* LiabilitiesXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743060D221384AF600E2E9F2 /* LiabilitiesXDR.swift */; };
 		743060D421384AF600E2E9F2 /* LiabilitiesXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743060D221384AF600E2E9F2 /* LiabilitiesXDR.swift */; };
-		743D9C1921B57246004C56BD /* PostCallbackMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743D9C1821B57246004C56BD /* PostCallbackMock.swift */; };
-		743D9C1A21B57246004C56BD /* PostCallbackMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743D9C1821B57246004C56BD /* PostCallbackMock.swift */; };
 		743DF4DC201F0BBD00713DE7 /* StellarSDK.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */; };
-		743DF4EE201F130200713DE7 /* stellarsdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 743DF4E5201F130100713DE7 /* stellarsdk.framework */; };
-		743DF4F3201F130200713DE7 /* stellarsdk_macOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF4F2201F130200713DE7 /* stellarsdk_macOSTests.swift */; };
 		743DF4F5201F130200713DE7 /* stellarsdk_macOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 743DF4E7201F130100713DE7 /* stellarsdk_macOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		743DF503201F3B0800713DE7 /* AccountLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF502201F3B0800713DE7 /* AccountLocalTestCase.swift */; };
-		743DF50D201F458400713DE7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF50C201F458400713DE7 /* AppDelegate.swift */; };
-		743DF50F201F458400713DE7 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF50E201F458400713DE7 /* ViewController.swift */; };
-		743DF512201F458400713DE7 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 743DF510201F458400713DE7 /* Main.storyboard */; };
-		743DF514201F458400713DE7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 743DF513201F458400713DE7 /* Assets.xcassets */; };
-		743DF517201F458400713DE7 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 743DF515201F458400713DE7 /* LaunchScreen.storyboard */; };
-		743DF522201F458400713DE7 /* stellarsdkTests_HostTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF521201F458400713DE7 /* stellarsdkTests_HostTests.swift */; };
-		743DF52D201F458400713DE7 /* stellarsdkTests_HostUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF52C201F458400713DE7 /* stellarsdkTests_HostUITests.swift */; };
 		743DF546201F706B00713DE7 /* Data+CRC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF545201F706B00713DE7 /* Data+CRC.swift */; };
 		743DF54C201F73FC00713DE7 /* VersionByte.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF54B201F73FC00713DE7 /* VersionByte.swift */; };
 		743DF550201FBD2B00713DE7 /* AccountService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF54F201FBD2B00713DE7 /* AccountService.swift */; };
@@ -106,41 +78,25 @@
 		744148F6202E0519006590BE /* TransactionEnvelopeXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744148F5202E0519006590BE /* TransactionEnvelopeXDR.swift */; };
 		744148F8202E05AD006590BE /* DataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744148F7202E05AD006590BE /* DataTypes.swift */; };
 		744148FA202E0635006590BE /* TransactionXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744148F9202E0635006590BE /* TransactionXDR.swift */; };
-		7445EA06201B106500470E0A /* stellarsdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7445E9FC201B106500470E0A /* stellarsdk.framework */; };
-		7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7445EA0A201B106500470E0A /* stellarsdkTests.swift */; };
 		744602E4203B22CC00D807C1 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744602E3203B22CC00D807C1 /* Network.swift */; };
-		744A84B72143F02F0086B8FC /* WithdrawResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84B62143F02F0086B8FC /* WithdrawResponseMock.swift */; };
-		744A84B82143F02F0086B8FC /* WithdrawResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84B62143F02F0086B8FC /* WithdrawResponseMock.swift */; };
 		744A84BA2143F6DA0086B8FC /* AnchorInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84B92143F6DA0086B8FC /* AnchorInfoResponse.swift */; };
 		744A84BB2143F6DA0086B8FC /* AnchorInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84B92143F6DA0086B8FC /* AnchorInfoResponse.swift */; };
-		744A84BD214403480086B8FC /* AnchorInfoResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84BC214403480086B8FC /* AnchorInfoResponseMock.swift */; };
-		744A84BE214403480086B8FC /* AnchorInfoResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84BC214403480086B8FC /* AnchorInfoResponseMock.swift */; };
 		744A84C021440CD40086B8FC /* AnchorTransactionsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84BF21440CD40086B8FC /* AnchorTransactionsRequest.swift */; };
 		744A84C121440CD40086B8FC /* AnchorTransactionsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84BF21440CD40086B8FC /* AnchorTransactionsRequest.swift */; };
 		744A84C321440E560086B8FC /* AnchorTransactionsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84C221440E560086B8FC /* AnchorTransactionsResponse.swift */; };
 		744A84C421440E560086B8FC /* AnchorTransactionsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84C221440E560086B8FC /* AnchorTransactionsResponse.swift */; };
-		744A84C621441A100086B8FC /* AnchorTransactionsResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84C521441A100086B8FC /* AnchorTransactionsResponseMock.swift */; };
-		744A84C721441A100086B8FC /* AnchorTransactionsResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84C521441A100086B8FC /* AnchorTransactionsResponseMock.swift */; };
-		744A84C821441CC50086B8FC /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744FC6D3212D3CCC00ADFC88 /* Date.swift */; };
-		744A84C921441CC60086B8FC /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744FC6D3212D3CCC00ADFC88 /* Date.swift */; };
 		744A84CB21451F560086B8FC /* URLRequest+MultipartFormData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84CA21451F560086B8FC /* URLRequest+MultipartFormData.swift */; };
 		744A84CC21451F560086B8FC /* URLRequest+MultipartFormData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84CA21451F560086B8FC /* URLRequest+MultipartFormData.swift */; };
 		744A84CE214523910086B8FC /* PutCustomerInfoRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84CD214523910086B8FC /* PutCustomerInfoRequest.swift */; };
 		744A84CF214523910086B8FC /* PutCustomerInfoRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84CD214523910086B8FC /* PutCustomerInfoRequest.swift */; };
-		744A84D121453AA70086B8FC /* PutCustomerInfoResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84D021453AA70086B8FC /* PutCustomerInfoResponseMock.swift */; };
-		744A84D221453AA70086B8FC /* PutCustomerInfoResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84D021453AA70086B8FC /* PutCustomerInfoResponseMock.swift */; };
-		744A84D4214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84D3214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift */; };
-		744A84D5214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744A84D3214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift */; };
 		744C4DB5202A24F200B46CDE /* OperationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DB4202A24F200B46CDE /* OperationsService.swift */; };
 		744C4DB7202A257400B46CDE /* OperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DB6202A257400B46CDE /* OperationResponse.swift */; };
 		744C4DB9202A27D000B46CDE /* OperationsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DB8202A27D000B46CDE /* OperationsFactory.swift */; };
 		744C4DBF202A29E400B46CDE /* AccountCreatedOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DBE202A29E400B46CDE /* AccountCreatedOperationResponse.swift */; };
-		744C4DC2202A328100B46CDE /* OperationsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DC1202A328100B46CDE /* OperationsRemoteTestCase.swift */; };
 		744C4DC4202A364300B46CDE /* DateFormatter+ISOParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DC3202A364300B46CDE /* DateFormatter+ISOParsing.swift */; };
 		744D458C2038194300178D04 /* EventSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744D458B2038194300178D04 /* EventSource.swift */; };
 		744D458F2038292800178D04 /* TransactionsStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744D458E2038292800178D04 /* TransactionsStreamItem.swift */; };
 		744D459120382EF800178D04 /* StreamingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744D459020382EF800178D04 /* StreamingHelper.swift */; };
-		744E75E42028DBD500170D57 /* EffectsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744E75E32028DBD500170D57 /* EffectsRemoteTestCase.swift */; };
 		744FC6DA212D3CCC00ADFC88 /* Grammar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744FC6CE212D3CCB00ADFC88 /* Grammar.swift */; };
 		744FC6DB212D3CCC00ADFC88 /* Grammar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744FC6CE212D3CCB00ADFC88 /* Grammar.swift */; };
 		744FC6DC212D3CCC00ADFC88 /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744FC6CF212D3CCB00ADFC88 /* Tokens.swift */; };
@@ -171,8 +127,6 @@
 		744FC6F8212D52D300ADFC88 /* FederationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744FC6F6212D52D300ADFC88 /* FederationError.swift */; };
 		744FC6FC212D545C00ADFC88 /* ResolveAddressResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744FC6FB212D545C00ADFC88 /* ResolveAddressResponse.swift */; };
 		744FC6FD212D545C00ADFC88 /* ResolveAddressResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744FC6FB212D545C00ADFC88 /* ResolveAddressResponse.swift */; };
-		744FC700212E944500ADFC88 /* FederationTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744FC6FF212E944500ADFC88 /* FederationTestCase.swift */; };
-		744FC701212E978500ADFC88 /* FederationTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744FC6FF212E944500ADFC88 /* FederationTestCase.swift */; };
 		745C41532040388900E33006 /* OperationsStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745C41522040388900E33006 /* OperationsStreamItem.swift */; };
 		745C415520403B4600E33006 /* EffectsStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745C415420403B4600E33006 /* EffectsStreamItem.swift */; };
 		745C415720403CDF00E33006 /* LedgersStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745C415620403CDF00E33006 /* LedgersStreamItem.swift */; };
@@ -394,51 +348,12 @@
 		745DF5642052FFF6000D3660 /* sha512.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5562020530900713DE7 /* sha512.c */; };
 		745DF5652052FFF6000D3660 /* sign.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF55B2020530A00713DE7 /* sign.c */; };
 		745DF5662052FFF6000D3660 /* verify.c in Sources */ = {isa = PBXBuildFile; fileRef = 743DF5572020530A00713DE7 /* verify.c */; };
-		745DF567205304AC000D3660 /* MnemonicGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15B205043AB000FB042 /* MnemonicGeneration.swift */; };
-		745DF568205304AC000D3660 /* MnemonicKeyPairGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15D20504F92000FB042 /* MnemonicKeyPairGeneration.swift */; };
-		745DF569205304AC000D3660 /* MemoRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437CEBD720457E5E00CAAF93 /* MemoRemoteTestCase.swift */; };
-		745DF56A205304AC000D3660 /* AccountLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743DF502201F3B0800713DE7 /* AccountLocalTestCase.swift */; };
-		745DF56B205304AC000D3660 /* AccountResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369723D202A708300398A98 /* AccountResponsesMock.swift */; };
-		745DF56C205304AC000D3660 /* AccountRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */; };
-		745DF56D205304AC000D3660 /* DataForAccountLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A91A203B6F6100A144A9 /* DataForAccountLocalTestCase.swift */; };
-		745DF56E205304AC000D3660 /* DataForAccountResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A91C203B6F8500A144A9 /* DataForAccountResponsesMock.swift */; };
-		745DF56F205304AC000D3660 /* DataForAccountRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A91E203B768A00A144A9 /* DataForAccountRemoteTestCase.swift */; };
-		745DF570205304AC000D3660 /* AssetsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A914203B097D00A144A9 /* AssetsLocalTestCase.swift */; };
-		745DF571205304AC000D3660 /* AssetsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A918203B0EEE00A144A9 /* AssetsResponsesMock.swift */; };
-		745DF572205304AC000D3660 /* AssetsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971F9202548E100398A98 /* AssetsRemoteTestCase.swift */; };
-		745DF573205304AC000D3660 /* EffectsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A920203B7B1F00A144A9 /* EffectsLocalTestCase.swift */; };
-		745DF574205304AC000D3660 /* EffectsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A922203B7B5100A144A9 /* EffectsResponsesMock.swift */; };
-		745DF575205304AC000D3660 /* EffectsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744E75E32028DBD500170D57 /* EffectsRemoteTestCase.swift */; };
-		745DF576205304AC000D3660 /* LedgersLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */; };
-		745DF577205304AC000D3660 /* LedgersResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */; };
-		745DF578205304AC000D3660 /* LedgersRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697205202631D600398A98 /* LedgersRemoteTestCase.swift */; };
-		745DF579205304AC000D3660 /* PriceTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 430BE2E82035A33D00E6AB97 /* PriceTestCase.swift */; };
-		745DF57A205304AC000D3660 /* PaymentPathsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43D35B0F20348EF800C8BDBC /* PaymentPathsTestCase.swift */; };
-		745DF57C205304AC000D3660 /* OffersLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E5FF203ED42D00C0AB4F /* OffersLocalTestCase.swift */; };
-		745DF57D205304AC000D3660 /* OffersResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E5FD203ED15500C0AB4F /* OffersResponsesMock.swift */; };
-		745DF57E205304AC000D3660 /* OffersRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4300C1822032FBE500DC5E49 /* OffersRemoteTestCase.swift */; };
-		745DF57F205304AC000D3660 /* ServerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369723B202A707600398A98 /* ServerMock.swift */; };
-		745DF580205304AC000D3660 /* ResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A916203B0AD300A144A9 /* ResponseMock.swift */; };
-		745DF581205304AC000D3660 /* TransactionsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83315209203E2634007F8F84 /* TransactionsLocalTestCase.swift */; };
-		745DF582205304AC000D3660 /* TransactionsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8331520A203E2635007F8F84 /* TransactionsResponsesMock.swift */; };
-		745DF583205304AC000D3660 /* TransactionsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BC0202C4D24008763F1 /* TransactionsRemoteTestCase.swift */; };
-		745DF584205304AC000D3660 /* OperationXDRTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E24866204056FD00C83458 /* OperationXDRTestCase.swift */; };
-		745DF585205304AC000D3660 /* OperationsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43464794203D553B0082B96A /* OperationsLocalTestCase.swift */; };
-		745DF586205304AC000D3660 /* OperationsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744C4DC1202A328100B46CDE /* OperationsRemoteTestCase.swift */; };
-		745DF587205304AC000D3660 /* OperationsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43464796203D56AF0082B96A /* OperationsResponsesMock.swift */; };
-		745DF588205304AC000D3660 /* PaymentsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C9C202F24CD00713FEE /* PaymentsTestCase.swift */; };
-		745DF589205304AC000D3660 /* PaymentsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E5F9203EA65300C0AB4F /* PaymentsResponsesMock.swift */; };
-		745DF58A205304AC000D3660 /* PaymentsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E5FB203EA6ED00C0AB4F /* PaymentsLocalTestCase.swift */; };
-		745DF58B205304AC000D3660 /* TradesTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437D8A91202F15DC0024D031 /* TradesTestCase.swift */; };
-		745DF58C205304AC000D3660 /* TradesLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E601203EE79700C0AB4F /* TradesLocalTestCase.swift */; };
-		745DF58D205304AC000D3660 /* TradesResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4367E603203EE7A800C0AB4F /* TradesResponsesMock.swift */; };
 		745F2BAD202C27FF008763F1 /* XDRCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BAC202C27FF008763F1 /* XDRCodable.swift */; };
 		745F2BAF202C281F008763F1 /* XDRCodableExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BAE202C281F008763F1 /* XDRCodableExtensions.swift */; };
 		745F2BB1202C2852008763F1 /* XDRDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BB0202C2852008763F1 /* XDRDecoder.swift */; };
 		745F2BB3202C287A008763F1 /* XDREncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BB2202C287A008763F1 /* XDREncoder.swift */; };
 		745F2BB6202C2E88008763F1 /* TransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BB5202C2E88008763F1 /* TransactionResponse.swift */; };
 		745F2BB8202C36AA008763F1 /* TransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BB7202C36AA008763F1 /* TransactionsService.swift */; };
-		745F2BC1202C4D24008763F1 /* TransactionsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 745F2BC0202C4D24008763F1 /* TransactionsRemoteTestCase.swift */; };
 		7464B7212194415F0029FDC8 /* StellarToml.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B7202194415F0029FDC8 /* StellarToml.swift */; };
 		7464B7222194415F0029FDC8 /* StellarToml.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B7202194415F0029FDC8 /* StellarToml.swift */; };
 		7464B725219442900029FDC8 /* AccountInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7464B724219442900029FDC8 /* AccountInformation.swift */; };
@@ -461,10 +376,6 @@
 		7467C3FE2142546C00412FE1 /* DepositResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C3FC2142546C00412FE1 /* DepositResponse.swift */; };
 		7467C40021426F0C00412FE1 /* KeyedCoding+Collections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C3FF21426F0C00412FE1 /* KeyedCoding+Collections.swift */; };
 		7467C40121426F0C00412FE1 /* KeyedCoding+Collections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C3FF21426F0C00412FE1 /* KeyedCoding+Collections.swift */; };
-		7467C40421426FF700412FE1 /* TransferServerTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C40321426FF700412FE1 /* TransferServerTestCase.swift */; };
-		7467C4052142700000412FE1 /* TransferServerTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C40321426FF700412FE1 /* TransferServerTestCase.swift */; };
-		7467C4072142740C00412FE1 /* DepositResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C4062142740C00412FE1 /* DepositResponseMock.swift */; };
-		7467C4082142740C00412FE1 /* DepositResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C4062142740C00412FE1 /* DepositResponseMock.swift */; };
 		7467C40A2142A81D00412FE1 /* WithdrawRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C4092142A81D00412FE1 /* WithdrawRequest.swift */; };
 		7467C40B2142A81D00412FE1 /* WithdrawRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C4092142A81D00412FE1 /* WithdrawRequest.swift */; };
 		7467C40D2142AA3C00412FE1 /* WithdrawResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7467C40C2142AA3C00412FE1 /* WithdrawResponse.swift */; };
@@ -495,24 +406,8 @@
 		746AD2CE20342D2500A9CF21 /* AccountMergeResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746AD2CD20342D2500A9CF21 /* AccountMergeResultXDR.swift */; };
 		746AD2D020342D3500A9CF21 /* InflationResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746AD2CF20342D3500A9CF21 /* InflationResultXDR.swift */; };
 		746AD2D220342D4600A9CF21 /* ManageDataResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746AD2D120342D4600A9CF21 /* ManageDataResultXDR.swift */; };
-		746D78FF2195A02C0008AA79 /* TomlTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746D78FE2195A02C0008AA79 /* TomlTestCase.swift */; };
-		746D79002195A02C0008AA79 /* TomlTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746D78FE2195A02C0008AA79 /* TomlTestCase.swift */; };
-		746D7903219AE2AD0008AA79 /* URISchemeTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C8AAA62147D91000B06E8A /* URISchemeTestCase.swift */; };
-		746D7904219AE2BB0008AA79 /* TomlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62F97DB2199BB54000A835A /* TomlResponseMock.swift */; };
-		746D7905219AE2BE0008AA79 /* TomlResponseSignatureMismatchMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAA219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift */; };
-		746D7906219AE2C10008AA79 /* TomlResponseSignatureMissingMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAC219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift */; };
 		74723336219D983500343E25 /* WebAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723335219D983500343E25 /* WebAuthenticator.swift */; };
 		74723337219D983500343E25 /* WebAuthenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723335219D983500343E25 /* WebAuthenticator.swift */; };
-		7472333A219EE40200343E25 /* WebAuthenticatorTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723339219EE40200343E25 /* WebAuthenticatorTestCase.swift */; };
-		7472333B219EE40200343E25 /* WebAuthenticatorTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723339219EE40200343E25 /* WebAuthenticatorTestCase.swift */; };
-		7472333D219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7472333C219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift */; };
-		7472333E219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7472333C219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift */; };
-		74723340219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7472333F219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift */; };
-		74723341219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7472333F219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift */; };
-		74723343219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723342219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift */; };
-		74723344219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723342219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift */; };
-		74723346219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723345219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift */; };
-		74723347219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74723345219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift */; };
 		7478C3CF20343FD5001B6441 /* ClaimAtomXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7478C3CE20343FD5001B6441 /* ClaimAtomXDR.swift */; };
 		7478C3D120343FEC001B6441 /* SimplePaymentResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7478C3D020343FEC001B6441 /* SimplePaymentResultXDR.swift */; };
 		7481B53B2023056F000A783E /* HorizonRequestError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7481B53A2023056F000A783E /* HorizonRequestError.swift */; };
@@ -527,18 +422,12 @@
 		74A504EF2192CC0000A608A0 /* String+KeyUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A504ED2192CC0000A608A0 /* String+KeyUtils.swift */; };
 		74A504F12192D5D600A608A0 /* Data+KeyUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A504F02192D5D600A608A0 /* Data+KeyUtils.swift */; };
 		74A504F22192D5D600A608A0 /* Data+KeyUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A504F02192D5D600A608A0 /* Data+KeyUtils.swift */; };
-		74A504F42192D85B00A608A0 /* KeyUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A504F32192D85B00A608A0 /* KeyUtils.swift */; };
-		74A504F52192D85B00A608A0 /* KeyUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A504F32192D85B00A608A0 /* KeyUtils.swift */; };
 		74BC3960211DA69C00EAF8A4 /* AccountInflationDestinationUpdatedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4F660120C8DA8A0036293D /* AccountInflationDestinationUpdatedEffectResponse.swift */; };
 		74D07EAF203C1BAE006DEF06 /* TransactionSignaturePayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74D07EAE203C1BAE006DEF06 /* TransactionSignaturePayload.swift */; };
 		74DD3E13208662160057775C /* Data+Base32.swift in Sources */ = {isa = PBXBuildFile; fileRef = F80CE5492084F04D00AB5FF0 /* Data+Base32.swift */; };
 		74DD3E14208662190057775C /* String+Base32.swift in Sources */ = {isa = PBXBuildFile; fileRef = F80CE5472084F03700AB5FF0 /* String+Base32.swift */; };
 		74DD3E152086621C0057775C /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F80CE5432084EFC400AB5FF0 /* StringExtension.swift */; };
 		74DD3E162086621F0057775C /* UtilBase32.swift in Sources */ = {isa = PBXBuildFile; fileRef = F80CE5422084EFC400AB5FF0 /* UtilBase32.swift */; };
-		830A8F0B29AE916300B30483 /* SorobanAtomicSwapTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830A8F0A29AE916300B30483 /* SorobanAtomicSwapTest.swift */; };
-		830A8F0C29AE916300B30483 /* SorobanAtomicSwapTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830A8F0A29AE916300B30483 /* SorobanAtomicSwapTest.swift */; };
-		830A8F1129AEC3F800B30483 /* SorobanEventsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830A8F1029AEC3F800B30483 /* SorobanEventsTest.swift */; };
-		830A8F1229AEC3F800B30483 /* SorobanEventsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830A8F1029AEC3F800B30483 /* SorobanEventsTest.swift */; };
 		830DAB3A29AD4FA800ED4E66 /* EventFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830DAB3929AD4FA800ED4E66 /* EventFilter.swift */; };
 		830DAB3B29AD4FA800ED4E66 /* EventFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830DAB3929AD4FA800ED4E66 /* EventFilter.swift */; };
 		830DAB3D29AD501D00ED4E66 /* TopicFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830DAB3C29AD501D00ED4E66 /* TopicFilter.swift */; };
@@ -553,8 +442,6 @@
 		830DAB4D29AD59DE00ED4E66 /* SimulateTransactionResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830DAB4B29AD59DE00ED4E66 /* SimulateTransactionResult.swift */; };
 		830DAB4F29AD60E100ED4E66 /* GetNetworkResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830DAB4E29AD60E100ED4E66 /* GetNetworkResponse.swift */; };
 		830DAB5029AD60E100ED4E66 /* GetNetworkResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830DAB4E29AD60E100ED4E66 /* GetNetworkResponse.swift */; };
-		830DAB5E29AE5AD400ED4E66 /* SorobanAuthTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830DAB5D29AE5AD400ED4E66 /* SorobanAuthTest.swift */; };
-		830DAB5F29AE5AD400ED4E66 /* SorobanAuthTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830DAB5D29AE5AD400ED4E66 /* SorobanAuthTest.swift */; };
 		830E7CC2252912C70059A4B4 /* BeginSponsoringFutureReservesResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830E7CC1252912C70059A4B4 /* BeginSponsoringFutureReservesResultXDR.swift */; };
 		830E7CC3252912C70059A4B4 /* BeginSponsoringFutureReservesResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830E7CC1252912C70059A4B4 /* BeginSponsoringFutureReservesResultXDR.swift */; };
 		830E7CCC252912FB0059A4B4 /* BeginSponsoringFutureReservesOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830E7CCB252912FB0059A4B4 /* BeginSponsoringFutureReservesOpXDR.swift */; };
@@ -617,8 +504,6 @@
 		830EFC7B203252B100607C35 /* TrustlineEntryXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830EFC7A203252B100607C35 /* TrustlineEntryXDR.swift */; };
 		8310BDC326EB5023004D3EF2 /* LiquidityPoolDepositOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8310BDC226EB5023004D3EF2 /* LiquidityPoolDepositOperation.swift */; };
 		8310BDC426EB5023004D3EF2 /* LiquidityPoolDepositOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8310BDC226EB5023004D3EF2 /* LiquidityPoolDepositOperation.swift */; };
-		8310BDCE26EB61B0004D3EF2 /* AmmTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8310BDCD26EB61B0004D3EF2 /* AmmTestCase.swift */; };
-		8310BDDD26EB6E75004D3EF2 /* AmmTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8310BDCD26EB61B0004D3EF2 /* AmmTestCase.swift */; };
 		831BAE272E04181F00D6E519 /* TransactionMetaV4XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 831BAE262E04181F00D6E519 /* TransactionMetaV4XDR.swift */; };
 		831BAE282E04181F00D6E519 /* TransactionMetaV4XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 831BAE262E04181F00D6E519 /* TransactionMetaV4XDR.swift */; };
 		831BAE2A2E0418C600D6E519 /* OperationMetaV2XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 831BAE292E0418C600D6E519 /* OperationMetaV2XDR.swift */; };
@@ -661,8 +546,6 @@
 		832ADF64262D92C500571D46 /* ClawbackClaimableBalanceOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832ADF62262D92C500571D46 /* ClawbackClaimableBalanceOperationResponse.swift */; };
 		832ADF6D262D97FF00571D46 /* SetTrustLineFlagsOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832ADF6C262D97FF00571D46 /* SetTrustLineFlagsOperationResponse.swift */; };
 		832ADF6E262D97FF00571D46 /* SetTrustLineFlagsOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832ADF6C262D97FF00571D46 /* SetTrustLineFlagsOperationResponse.swift */; };
-		832AF8E6263BE8E500B7EB49 /* ClawbackTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832AF8E5263BE8E500B7EB49 /* ClawbackTestCase.swift */; };
-		832AF8E7263BE8E500B7EB49 /* ClawbackTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832AF8E5263BE8E500B7EB49 /* ClawbackTestCase.swift */; };
 		832AF8F0263C5AE800B7EB49 /* ClaimableBalanceClawedBackEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832AF8EF263C5AE800B7EB49 /* ClaimableBalanceClawedBackEffectResponse.swift */; };
 		832AF8F1263C5AE800B7EB49 /* ClaimableBalanceClawedBackEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832AF8EF263C5AE800B7EB49 /* ClaimableBalanceClawedBackEffectResponse.swift */; };
 		832AF8FA263C5B0800B7EB49 /* TrustLineFlagsUpdatedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832AF8F9263C5B0800B7EB49 /* TrustLineFlagsUpdatedEffectResponse.swift */; };
@@ -679,24 +562,6 @@
 		832C2B2D2AEBFFB6005BB7B8 /* SEP30Responses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B2B2AEBFFB6005BB7B8 /* SEP30Responses.swift */; };
 		832C2B2F2AEC07EE005BB7B8 /* RecoveryServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B2E2AEC07EE005BB7B8 /* RecoveryServiceError.swift */; };
 		832C2B302AEC07EE005BB7B8 /* RecoveryServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B2E2AEC07EE005BB7B8 /* RecoveryServiceError.swift */; };
-		832C2B332AEC10C0005BB7B8 /* RecoveryServiceTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B322AEC10C0005BB7B8 /* RecoveryServiceTestCase.swift */; };
-		832C2B342AEC10C0005BB7B8 /* RecoveryServiceTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B322AEC10C0005BB7B8 /* RecoveryServiceTestCase.swift */; };
-		832C2B362AEC117C005BB7B8 /* Sep30RegisterAccountResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B352AEC117C005BB7B8 /* Sep30RegisterAccountResponseMock.swift */; };
-		832C2B372AEC117C005BB7B8 /* Sep30RegisterAccountResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B352AEC117C005BB7B8 /* Sep30RegisterAccountResponseMock.swift */; };
-		832C2B392AEC1CA8005BB7B8 /* Sep30ErrResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B382AEC1CA8005BB7B8 /* Sep30ErrResponseMock.swift */; };
-		832C2B3A2AEC1CA8005BB7B8 /* Sep30ErrResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B382AEC1CA8005BB7B8 /* Sep30ErrResponseMock.swift */; };
-		832C2B3C2AEC21CE005BB7B8 /* Sep30UpdateIdentitiesResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B3B2AEC21CE005BB7B8 /* Sep30UpdateIdentitiesResponseMock.swift */; };
-		832C2B3D2AEC21CE005BB7B8 /* Sep30UpdateIdentitiesResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B3B2AEC21CE005BB7B8 /* Sep30UpdateIdentitiesResponseMock.swift */; };
-		832C2B3F2AEC2334005BB7B8 /* Sep30SignTransactionResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B3E2AEC2334005BB7B8 /* Sep30SignTransactionResponseMock.swift */; };
-		832C2B402AEC2334005BB7B8 /* Sep30SignTransactionResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B3E2AEC2334005BB7B8 /* Sep30SignTransactionResponseMock.swift */; };
-		832C2B422AEC2806005BB7B8 /* Sep30AccountDetailsResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B412AEC2806005BB7B8 /* Sep30AccountDetailsResponseMock.swift */; };
-		832C2B432AEC2806005BB7B8 /* Sep30AccountDetailsResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B412AEC2806005BB7B8 /* Sep30AccountDetailsResponseMock.swift */; };
-		832C2B452AEC28C7005BB7B8 /* Sep30DeleteAccountResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B442AEC28C7005BB7B8 /* Sep30DeleteAccountResponseMock.swift */; };
-		832C2B462AEC28C7005BB7B8 /* Sep30DeleteAccountResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B442AEC28C7005BB7B8 /* Sep30DeleteAccountResponseMock.swift */; };
-		832C2B482AEC2AC7005BB7B8 /* Sep30ListAccountsResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B472AEC2AC7005BB7B8 /* Sep30ListAccountsResponseMock.swift */; };
-		832C2B492AEC2AC7005BB7B8 /* Sep30ListAccountsResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832C2B472AEC2AC7005BB7B8 /* Sep30ListAccountsResponseMock.swift */; };
-		8331520B203E2635007F8F84 /* TransactionsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83315209203E2634007F8F84 /* TransactionsLocalTestCase.swift */; };
-		8331520C203E2635007F8F84 /* TransactionsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8331520A203E2635007F8F84 /* TransactionsResponsesMock.swift */; };
 		833152132040CAAF007F8F84 /* StellarSDKLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833152122040CAAF007F8F84 /* StellarSDKLog.swift */; };
 		83379C1F2280AAF500BD5F8E /* ManageSellOfferOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83379C1E2280AAF500BD5F8E /* ManageSellOfferOperation.swift */; };
 		83379C212280ABA600BD5F8E /* ManageBuyOfferOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83379C202280ABA600BD5F8E /* ManageBuyOfferOperation.swift */; };
@@ -720,30 +585,10 @@
 		833C67312B84CF2F00E034C6 /* Sep38PostQuoteRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C672F2B84CF2F00E034C6 /* Sep38PostQuoteRequest.swift */; };
 		833C67342B84D57800E034C6 /* QuoteServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67332B84D57800E034C6 /* QuoteServiceError.swift */; };
 		833C67352B84D57800E034C6 /* QuoteServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67332B84D57800E034C6 /* QuoteServiceError.swift */; };
-		833C67382B84E38F00E034C6 /* QuoteServiceTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67372B84E38F00E034C6 /* QuoteServiceTestCase.swift */; };
-		833C67392B84E38F00E034C6 /* QuoteServiceTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67372B84E38F00E034C6 /* QuoteServiceTestCase.swift */; };
-		833C673B2B84E54E00E034C6 /* Sep38InfoResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C673A2B84E54E00E034C6 /* Sep38InfoResponseMock.swift */; };
-		833C673C2B84E54E00E034C6 /* Sep38InfoResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C673A2B84E54E00E034C6 /* Sep38InfoResponseMock.swift */; };
-		833C673E2B84EE0200E034C6 /* Sep38PricesResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C673D2B84EE0200E034C6 /* Sep38PricesResponseMock.swift */; };
-		833C673F2B84EE0200E034C6 /* Sep38PricesResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C673D2B84EE0200E034C6 /* Sep38PricesResponseMock.swift */; };
-		833C67412B84F2FF00E034C6 /* Sep38PriceResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67402B84F2FF00E034C6 /* Sep38PriceResponseMock.swift */; };
-		833C67422B84F2FF00E034C6 /* Sep38PriceResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67402B84F2FF00E034C6 /* Sep38PriceResponseMock.swift */; };
-		833C67442B85152C00E034C6 /* Sep38PostQuoteResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67432B85152C00E034C6 /* Sep38PostQuoteResponseMock.swift */; };
-		833C67452B85152C00E034C6 /* Sep38PostQuoteResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67432B85152C00E034C6 /* Sep38PostQuoteResponseMock.swift */; };
-		833C67472B8517E200E034C6 /* Sep38GetQuoteResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67462B8517E200E034C6 /* Sep38GetQuoteResponseMock.swift */; };
-		833C67482B8517E200E034C6 /* Sep38GetQuoteResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67462B8517E200E034C6 /* Sep38GetQuoteResponseMock.swift */; };
 		833C674A2B8E726000E034C6 /* DepositExchangeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67492B8E726000E034C6 /* DepositExchangeRequest.swift */; };
 		833C674B2B8E726000E034C6 /* DepositExchangeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67492B8E726000E034C6 /* DepositExchangeRequest.swift */; };
 		833C674D2B8E782100E034C6 /* WithdrawExchangeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C674C2B8E782100E034C6 /* WithdrawExchangeRequest.swift */; };
 		833C674E2B8E782100E034C6 /* WithdrawExchangeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C674C2B8E782100E034C6 /* WithdrawExchangeRequest.swift */; };
-		833C67502B8F66F000E034C6 /* DepositExchangeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C674F2B8F66F000E034C6 /* DepositExchangeResponseMock.swift */; };
-		833C67512B8F66F000E034C6 /* DepositExchangeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C674F2B8F66F000E034C6 /* DepositExchangeResponseMock.swift */; };
-		833C67532B8F688000E034C6 /* WithdrawExchangeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67522B8F688000E034C6 /* WithdrawExchangeResponseMock.swift */; };
-		833C67542B8F688000E034C6 /* WithdrawExchangeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67522B8F688000E034C6 /* WithdrawExchangeResponseMock.swift */; };
-		833C67562B8F76DF00E034C6 /* FeeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67552B8F76DF00E034C6 /* FeeResponseMock.swift */; };
-		833C67572B8F76DF00E034C6 /* FeeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67552B8F76DF00E034C6 /* FeeResponseMock.swift */; };
-		833C67592B8F77F200E034C6 /* TransactionResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67582B8F77F200E034C6 /* TransactionResponseMock.swift */; };
-		833C675A2B8F77F200E034C6 /* TransactionResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833C67582B8F77F200E034C6 /* TransactionResponseMock.swift */; };
 		833CBC7B2EB3ABE90061D6E4 /* SEPConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBC792EB3ABE90061D6E4 /* SEPConstants.swift */; };
 		833CBC7C2EB3ABE90061D6E4 /* NetworkConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBC782EB3ABE90061D6E4 /* NetworkConstants.swift */; };
 		833CBC7D2EB3ABE90061D6E4 /* CryptographicConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833CBC772EB3ABE90061D6E4 /* CryptographicConstants.swift */; };
@@ -840,8 +685,6 @@
 		8346DDA926E8AC63002D609B /* ChangeTrustAssetXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8346DDA726E8AC63002D609B /* ChangeTrustAssetXDR.swift */; };
 		834D513D2C5162D1007CA0AD /* SubmitTransactionAsyncResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D513C2C5162D1007CA0AD /* SubmitTransactionAsyncResponse.swift */; };
 		834D513E2C5162D1007CA0AD /* SubmitTransactionAsyncResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D513C2C5162D1007CA0AD /* SubmitTransactionAsyncResponse.swift */; };
-		834D51402C5163AC007CA0AD /* SubmitTransactionAsyncTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D513F2C5163AC007CA0AD /* SubmitTransactionAsyncTestCase.swift */; };
-		834D51412C5163AC007CA0AD /* SubmitTransactionAsyncTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D513F2C5163AC007CA0AD /* SubmitTransactionAsyncTestCase.swift */; };
 		834D51432C516F94007CA0AD /* DuplicateErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D51422C516F94007CA0AD /* DuplicateErrorResponse.swift */; };
 		834D51442C516F94007CA0AD /* DuplicateErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D51422C516F94007CA0AD /* DuplicateErrorResponse.swift */; };
 		834D51462C5196AC007CA0AD /* GetFeeStatsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D51452C5196AC007CA0AD /* GetFeeStatsResponse.swift */; };
@@ -850,16 +693,7 @@
 		834D514A2C519D4D007CA0AD /* GetVersionInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D51482C519D4D007CA0AD /* GetVersionInfoResponse.swift */; };
 		834D514C2C519FF7007CA0AD /* GetTransactionsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D514B2C519FF7007CA0AD /* GetTransactionsResponse.swift */; };
 		834D514D2C519FF7007CA0AD /* GetTransactionsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 834D514B2C519FF7007CA0AD /* GetTransactionsResponse.swift */; };
-		8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A910203AE7DF00A144A9 /* AccountRemoteTestCase.swift */; };
 		8357A913203B004700A144A9 /* String+Base64.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A912203B004700A144A9 /* String+Base64.swift */; };
-		8357A915203B097D00A144A9 /* AssetsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A914203B097D00A144A9 /* AssetsLocalTestCase.swift */; };
-		8357A917203B0AD300A144A9 /* ResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A916203B0AD300A144A9 /* ResponseMock.swift */; };
-		8357A919203B0EEE00A144A9 /* AssetsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A918203B0EEE00A144A9 /* AssetsResponsesMock.swift */; };
-		8357A91B203B6F6100A144A9 /* DataForAccountLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A91A203B6F6100A144A9 /* DataForAccountLocalTestCase.swift */; };
-		8357A91D203B6F8500A144A9 /* DataForAccountResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A91C203B6F8500A144A9 /* DataForAccountResponsesMock.swift */; };
-		8357A91F203B768A00A144A9 /* DataForAccountRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A91E203B768A00A144A9 /* DataForAccountRemoteTestCase.swift */; };
-		8357A921203B7B1F00A144A9 /* EffectsLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A920203B7B1F00A144A9 /* EffectsLocalTestCase.swift */; };
-		8357A923203B7B5100A144A9 /* EffectsResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8357A922203B7B5100A144A9 /* EffectsResponsesMock.swift */; };
 		835F0CC92974807D00793708 /* ContractEnvMetaXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CC82974807D00793708 /* ContractEnvMetaXDR.swift */; };
 		835F0CCA2974807D00793708 /* ContractEnvMetaXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CC82974807D00793708 /* ContractEnvMetaXDR.swift */; };
 		835F0CCC297482FE00793708 /* ContractSpecXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CCB297482FE00793708 /* ContractSpecXDR.swift */; };
@@ -876,8 +710,6 @@
 		835F0CDC2975FCB400793708 /* InvokeHostFunctionOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CDA2975FCB400793708 /* InvokeHostFunctionOperationResponse.swift */; };
 		835F0CDF2976017A00793708 /* SorobanServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CDE2976017A00793708 /* SorobanServer.swift */; };
 		835F0CE02976017A00793708 /* SorobanServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CDE2976017A00793708 /* SorobanServer.swift */; };
-		835F0CE3297613EF00793708 /* SorobanTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CE2297613EF00793708 /* SorobanTest.swift */; };
-		835F0CE4297613EF00793708 /* SorobanTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CE2297613EF00793708 /* SorobanTest.swift */; };
 		835F0CE629770B8B00793708 /* SorobanRpcRequestError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CE529770B8B00793708 /* SorobanRpcRequestError.swift */; };
 		835F0CE729770B8B00793708 /* SorobanRpcRequestError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CE529770B8B00793708 /* SorobanRpcRequestError.swift */; };
 		835F0CE929770BB100793708 /* GetHealthResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0CE829770BB100793708 /* GetHealthResponse.swift */; };
@@ -898,36 +730,14 @@
 		835F0D1129782A9500793708 /* ContractEventXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835F0D0F29782A9500793708 /* ContractEventXDR.swift */; };
 		8365137D2BDBCD4600A99085 /* RegulatedAssetsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365137C2BDBCD4600A99085 /* RegulatedAssetsService.swift */; };
 		8365137E2BDBCD4600A99085 /* RegulatedAssetsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365137C2BDBCD4600A99085 /* RegulatedAssetsService.swift */; };
-		836513812BDEAD8900A99085 /* RegulatedAssetsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513802BDEAD8900A99085 /* RegulatedAssetsTestCase.swift */; };
-		836513822BDEAD8900A99085 /* RegulatedAssetsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513802BDEAD8900A99085 /* RegulatedAssetsTestCase.swift */; };
-		836513842BDED35B00A99085 /* Sep08PostSuccessMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513832BDED35B00A99085 /* Sep08PostSuccessMock.swift */; };
-		836513852BDED35B00A99085 /* Sep08PostSuccessMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513832BDED35B00A99085 /* Sep08PostSuccessMock.swift */; };
-		836513872BDED41800A99085 /* Sep08PostTestRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513862BDED41800A99085 /* Sep08PostTestRequest.swift */; };
-		836513882BDED41800A99085 /* Sep08PostTestRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513862BDED41800A99085 /* Sep08PostTestRequest.swift */; };
-		8365138A2BDEDD4E00A99085 /* Sep08PostPendingMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513892BDEDD4E00A99085 /* Sep08PostPendingMock.swift */; };
-		8365138B2BDEDD4E00A99085 /* Sep08PostPendingMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513892BDEDD4E00A99085 /* Sep08PostPendingMock.swift */; };
-		8365138D2BDEDE6500A99085 /* Sep08PostRevisedMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365138C2BDEDE6500A99085 /* Sep08PostRevisedMock.swift */; };
-		8365138E2BDEDE6500A99085 /* Sep08PostRevisedMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365138C2BDEDE6500A99085 /* Sep08PostRevisedMock.swift */; };
-		836513902BDEE00400A99085 /* Sep08PostRejectedMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365138F2BDEE00400A99085 /* Sep08PostRejectedMock.swift */; };
-		836513912BDEE00400A99085 /* Sep08PostRejectedMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365138F2BDEE00400A99085 /* Sep08PostRejectedMock.swift */; };
-		836513932BDEE81800A99085 /* Sep08PostActionRequiredMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513922BDEE81800A99085 /* Sep08PostActionRequiredMock.swift */; };
-		836513942BDEE81800A99085 /* Sep08PostActionRequiredMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513922BDEE81800A99085 /* Sep08PostActionRequiredMock.swift */; };
-		836513962BDEEA0E00A99085 /* Sep08FollowNextMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513952BDEEA0E00A99085 /* Sep08FollowNextMock.swift */; };
-		836513972BDEEA0E00A99085 /* Sep08FollowNextMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513952BDEEA0E00A99085 /* Sep08FollowNextMock.swift */; };
-		836513992BDEEBFA00A99085 /* Sep08ActionDoneMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513982BDEEBFA00A99085 /* Sep08ActionDoneMock.swift */; };
-		8365139A2BDEEBFA00A99085 /* Sep08ActionDoneMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836513982BDEEBFA00A99085 /* Sep08ActionDoneMock.swift */; };
 		8365E4E32E96C63600341284 /* HealthCheckResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4E12E96C63600341284 /* HealthCheckResponse.swift */; };
 		8365E4E42E96C63600341284 /* HealthCheckResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4E12E96C63600341284 /* HealthCheckResponse.swift */; };
 		8365E4E62E96C68800341284 /* HealthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4E52E96C68800341284 /* HealthService.swift */; };
 		8365E4E72E96C68800341284 /* HealthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4E52E96C68800341284 /* HealthService.swift */; };
-		8365E4EA2E96C6CE00341284 /* HealthRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4E82E96C6CE00341284 /* HealthRemoteTestCase.swift */; };
-		8365E4EB2E96C6CE00341284 /* HealthRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4E82E96C6CE00341284 /* HealthRemoteTestCase.swift */; };
 		8365E4EE2E96CFF900341284 /* LedgerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4ED2E96CFF900341284 /* LedgerInfo.swift */; };
 		8365E4EF2E96CFF900341284 /* GetLedgersResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4EC2E96CFF900341284 /* GetLedgersResponse.swift */; };
 		8365E4F02E96CFF900341284 /* LedgerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4ED2E96CFF900341284 /* LedgerInfo.swift */; };
 		8365E4F12E96CFF900341284 /* GetLedgersResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4EC2E96CFF900341284 /* GetLedgersResponse.swift */; };
-		8365E4F32E96D33500341284 /* GetLedgersTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4F22E96D33500341284 /* GetLedgersTestCase.swift */; };
-		8365E4F42E96D33500341284 /* GetLedgersTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8365E4F22E96D33500341284 /* GetLedgersTestCase.swift */; };
 		836658EB2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658EA2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift */; };
 		836658EC2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658EA2A6E72DA00E8B8D9 /* ExtendFootprintTTLOpXDR.swift */; };
 		836658EE2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658ED2A6E73D700E8B8D9 /* ExtendFootprintTTLResultXDR.swift */; };
@@ -944,17 +754,13 @@
 		836658FE2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FC2A6ECFE900E8B8D9 /* ExtendFootprintTTLOperationResponse.swift */; };
 		836659002A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FF2A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift */; };
 		836659012A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836658FF2A6ED0D700E8B8D9 /* RestoreFootprintOperationResponse.swift */; };
-		836836062E1709D20032D97C /* StrKeyTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836836052E1709D20032D97C /* StrKeyTest.swift */; };
-		836836072E1709D20032D97C /* StrKeyTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836836052E1709D20032D97C /* StrKeyTest.swift */; };
 		836971DF2024A71B00398A98 /* AccountFlagsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971DE2024A71B00398A98 /* AccountFlagsResponse.swift */; };
 		836971E42024C47300398A98 /* LinkResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E32024C47300398A98 /* LinkResponse.swift */; };
 		836971E62024F58E00398A98 /* DataForAccountResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E52024F58E00398A98 /* DataForAccountResponse.swift */; };
 		836971E82025048D00398A98 /* AssetsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971E72025048D00398A98 /* AssetsService.swift */; };
 		836971ED202508C900398A98 /* AssetResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971EC202508C900398A98 /* AssetResponse.swift */; };
-		836971FA202548E100398A98 /* AssetsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971F9202548E100398A98 /* AssetsRemoteTestCase.swift */; };
 		836971FF2025532900398A98 /* LedgerResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836971FE2025532900398A98 /* LedgerResponse.swift */; };
 		8369720120255AB800398A98 /* LedgersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720020255AB800398A98 /* LedgersService.swift */; };
-		83697206202631D600398A98 /* LedgersRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697205202631D600398A98 /* LedgersRemoteTestCase.swift */; };
 		8369720A2028BA3E00398A98 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972092028BA3E00398A98 /* Constants.swift */; };
 		8369720C2028ED6400398A98 /* AccountRemovedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720B2028ED6400398A98 /* AccountRemovedEffectResponse.swift */; };
 		8369720E2028EDB100398A98 /* AccountCreditedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369720D2028EDB100398A98 /* AccountCreditedEffectResponse.swift */; };
@@ -976,8 +782,6 @@
 		8369722E2028F7A000398A98 /* OfferRemovedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369722D2028F7A000398A98 /* OfferRemovedEffectResponse.swift */; };
 		836972302028F7AD00398A98 /* OfferUpdatedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369722F2028F7AD00398A98 /* OfferUpdatedEffectResponse.swift */; };
 		836972322028F86500398A98 /* TradeEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836972312028F86500398A98 /* TradeEffectResponse.swift */; };
-		8369723C202A707600398A98 /* ServerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369723B202A707600398A98 /* ServerMock.swift */; };
-		8369723E202A708300398A98 /* AccountResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369723D202A708300398A98 /* AccountResponsesMock.swift */; };
 		83697240202A784200398A98 /* PaymentOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8369723F202A784200398A98 /* PaymentOperationResponse.swift */; };
 		83697242202A79DC00398A98 /* PathPaymentOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697241202A79DC00398A98 /* PathPaymentOperationResponse.swift */; };
 		83697244202A7AF500398A98 /* ManageOfferOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83697243202A7AF500398A98 /* ManageOfferOperationResponse.swift */; };
@@ -994,10 +798,6 @@
 		836E66302E40ECB100D68F6A /* ContractSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836E662D2E40ECB100D68F6A /* ContractSpec.swift */; };
 		836E66312E40ECB100D68F6A /* NativeUnionVal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836E662E2E40ECB100D68F6A /* NativeUnionVal.swift */; };
 		836E66322E40ECB100D68F6A /* NativeUnionVal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836E662E2E40ECB100D68F6A /* NativeUnionVal.swift */; };
-		836E66342E40ECDD00D68F6A /* ContractSpecTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836E66332E40ECDD00D68F6A /* ContractSpecTest.swift */; };
-		836E66352E40EE7100D68F6A /* ContractSpecTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836E66332E40ECDD00D68F6A /* ContractSpecTest.swift */; };
-		83707A9C2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83707A9B2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift */; };
-		83707A9D2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83707A9B2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift */; };
 		83707A9F2AB34CD8001790B0 /* ContractMetaXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83707A9E2AB34CD8001790B0 /* ContractMetaXDR.swift */; };
 		83707AA02AB34CD8001790B0 /* ContractMetaXDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83707A9E2AB34CD8001790B0 /* ContractMetaXDR.swift */; };
 		8372285A2DCA34480050BBC9 /* AssembledTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 837228592DCA34480050BBC9 /* AssembledTransaction.swift */; };
@@ -1020,10 +820,6 @@
 		837228732DCB673E0050BBC9 /* AssembledTransactionError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 837228712DCB673E0050BBC9 /* AssembledTransactionError.swift */; };
 		837228752DCCB3D50050BBC9 /* SorobanClientError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 837228742DCCB3D50050BBC9 /* SorobanClientError.swift */; };
 		837228762DCCB3D50050BBC9 /* SorobanClientError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 837228742DCCB3D50050BBC9 /* SorobanClientError.swift */; };
-		837228782DD1F0CD0050BBC9 /* SorobanClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 837228772DD1F0CD0050BBC9 /* SorobanClientTest.swift */; };
-		837228792DD1F0CD0050BBC9 /* SorobanClientTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 837228772DD1F0CD0050BBC9 /* SorobanClientTest.swift */; };
-		8372287B2DD21A7C0050BBC9 /* soroban_atomic_swap_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 8372287A2DD21A7C0050BBC9 /* soroban_atomic_swap_contract.wasm */; };
-		8372287C2DD21A7C0050BBC9 /* soroban_atomic_swap_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 8372287A2DD21A7C0050BBC9 /* soroban_atomic_swap_contract.wasm */; };
 		83852AB226678E020013EA2A /* FeeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83852AB126678E020013EA2A /* FeeRequest.swift */; };
 		83852AB326678E020013EA2A /* FeeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83852AB126678E020013EA2A /* FeeRequest.swift */; };
 		83852ABC266790580013EA2A /* AnchorFeeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83852ABB266790580013EA2A /* AnchorFeeResponse.swift */; };
@@ -1044,21 +840,13 @@
 		8398C40A24D8CAA100D6916C /* TxRep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8398C40824D8CAA100D6916C /* TxRep.swift */; };
 		83A421402C8777ED00737C9A /* SorobanContractParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A4213F2C8777ED00737C9A /* SorobanContractParser.swift */; };
 		83A421412C8777ED00737C9A /* SorobanContractParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83A4213F2C8777ED00737C9A /* SorobanContractParser.swift */; };
-		83ACC00E2C885D9100A71CF1 /* soroban_token_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83ACC00D2C885D9100A71CF1 /* soroban_token_contract.wasm */; };
-		83ACC00F2C885D9100A71CF1 /* soroban_token_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83ACC00D2C885D9100A71CF1 /* soroban_token_contract.wasm */; };
-		83ACC0112C885DC500A71CF1 /* SorobanParserTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83ACC0102C885DC500A71CF1 /* SorobanParserTest.swift */; };
-		83ACC0122C885DC500A71CF1 /* SorobanParserTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83ACC0102C885DC500A71CF1 /* SorobanParserTest.swift */; };
 		83AFD635234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD634234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift */; };
-		83AFD636234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD634234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift */; };
 		83AFD637234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD634234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift */; };
 		83AFD63D234FC60700A574D2 /* PathPaymentStrictSendOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD63C234FC60700A574D2 /* PathPaymentStrictSendOperation.swift */; };
-		83AFD63E234FC60700A574D2 /* PathPaymentStrictSendOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD63C234FC60700A574D2 /* PathPaymentStrictSendOperation.swift */; };
 		83AFD63F234FC60700A574D2 /* PathPaymentStrictSendOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD63C234FC60700A574D2 /* PathPaymentStrictSendOperation.swift */; };
 		83AFD64D234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD64C234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift */; };
-		83AFD64E234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD64C234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift */; };
 		83AFD64F234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD64C234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift */; };
 		83AFD655234FD49000A574D2 /* PathPaymentStrictSendOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD654234FD49000A574D2 /* PathPaymentStrictSendOperationResponse.swift */; };
-		83AFD656234FD49000A574D2 /* PathPaymentStrictSendOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD654234FD49000A574D2 /* PathPaymentStrictSendOperationResponse.swift */; };
 		83AFD657234FD49000A574D2 /* PathPaymentStrictSendOperationResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83AFD654234FD49000A574D2 /* PathPaymentStrictSendOperationResponse.swift */; };
 		83B4CB2825271BE400EEE55E /* Claimant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CB2725271BE400EEE55E /* Claimant.swift */; };
 		83B4CB2925271BE400EEE55E /* Claimant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CB2725271BE400EEE55E /* Claimant.swift */; };
@@ -1082,30 +870,16 @@
 		83B4CBB8252883D000EEE55E /* ClaimantPredicateResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CBB6252883D000EEE55E /* ClaimantPredicateResponse.swift */; };
 		83B4CBC8252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */; };
 		83B4CBC9252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B4CBC7252886DD00EEE55E /* ClaimableBalanceLinksResponse.swift */; };
-		83B827772B28E3930064D7CB /* soroban_hello_world_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83B827742B28E3930064D7CB /* soroban_hello_world_contract.wasm */; };
-		83B827782B28E3930064D7CB /* soroban_hello_world_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83B827742B28E3930064D7CB /* soroban_hello_world_contract.wasm */; };
-		83B827792B28E3930064D7CB /* soroban_auth_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83B827752B28E3930064D7CB /* soroban_auth_contract.wasm */; };
-		83B8277A2B28E3930064D7CB /* soroban_auth_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83B827752B28E3930064D7CB /* soroban_auth_contract.wasm */; };
-		83B8277B2B28E3930064D7CB /* soroban_events_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83B827762B28E3930064D7CB /* soroban_events_contract.wasm */; };
-		83B8277C2B28E3930064D7CB /* soroban_events_contract.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83B827762B28E3930064D7CB /* soroban_events_contract.wasm */; };
 		83B8277E2B306D280064D7CB /* ResourceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B8277D2B306D280064D7CB /* ResourceConfig.swift */; };
 		83B8277F2B306D280064D7CB /* ResourceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B8277D2B306D280064D7CB /* ResourceConfig.swift */; };
 		83B827812B306E1F0064D7CB /* SimulateTransactionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B827802B306E1F0064D7CB /* SimulateTransactionRequest.swift */; };
 		83B827822B306E1F0064D7CB /* SimulateTransactionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B827802B306E1F0064D7CB /* SimulateTransactionRequest.swift */; };
-		83B836162F0E917B00063825 /* AccountStreamingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836152F0E917B00063825 /* AccountStreamingTestCase.swift */; };
-		83B836172F0E917B00063825 /* AccountStreamingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836152F0E917B00063825 /* AccountStreamingTestCase.swift */; };
 		83B8361A2F0E91D100063825 /* AccountDataStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836182F0E91D100063825 /* AccountDataStreamItem.swift */; };
 		83B8361B2F0E91D100063825 /* AccountStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836192F0E91D100063825 /* AccountStreamItem.swift */; };
 		83B8361C2F0E91D100063825 /* AccountDataStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836182F0E91D100063825 /* AccountDataStreamItem.swift */; };
 		83B8361D2F0E91D100063825 /* AccountStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836192F0E91D100063825 /* AccountStreamItem.swift */; };
 		83B8361F2F0E952700063825 /* LiquidityPoolTradesStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B8361E2F0E952700063825 /* LiquidityPoolTradesStreamItem.swift */; };
 		83B836202F0E952700063825 /* LiquidityPoolTradesStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B8361E2F0E952700063825 /* LiquidityPoolTradesStreamItem.swift */; };
-		83B836222F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836212F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift */; };
-		83B836232F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B836212F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift */; };
-		83BD1EE82949F67D00F6C041 /* IssueAssetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BD1EE72949F67D00F6C041 /* IssueAssetTest.swift */; };
-		83BD1EE92949F67D00F6C041 /* IssueAssetTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BD1EE72949F67D00F6C041 /* IssueAssetTest.swift */; };
-		83C54D062945F23700CC1E8A /* QuickStartTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C54D052945F23700CC1E8A /* QuickStartTest.swift */; };
-		83C54D072945F23700CC1E8A /* QuickStartTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C54D052945F23700CC1E8A /* QuickStartTest.swift */; };
 		83CFD7A726F1375A001043B5 /* TradePrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CFD7A626F1375A001043B5 /* TradePrice.swift */; };
 		83CFD7A826F1375A001043B5 /* TradePrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CFD7A626F1375A001043B5 /* TradePrice.swift */; };
 		83D408DE26EB798E003A9C0F /* LiquidityPoolWithdrawOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D408DD26EB798E003A9C0F /* LiquidityPoolWithdrawOperation.swift */; };
@@ -1116,10 +890,6 @@
 		83D408F426EBAC78003A9C0F /* LiquidityPoolResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D408F226EBAC78003A9C0F /* LiquidityPoolResponse.swift */; };
 		83D4090E26EBB049003A9C0F /* ReserveResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D4090D26EBB049003A9C0F /* ReserveResponse.swift */; };
 		83D4090F26EBB049003A9C0F /* ReserveResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D4090D26EBB049003A9C0F /* ReserveResponse.swift */; };
-		83D6D2EA2A27BAD700555110 /* PutVerificationResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D6D2E92A27BAD700555110 /* PutVerificationResponseMock.swift */; };
-		83D6D2EB2A27BAD700555110 /* PutVerificationResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D6D2E92A27BAD700555110 /* PutVerificationResponseMock.swift */; };
-		83D6D2ED2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D6D2EC2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift */; };
-		83D6D2EE2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83D6D2EC2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift */; };
 		83DB2ACD2ACD6265008B04D6 /* InteractiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2ACC2ACD6265008B04D6 /* InteractiveService.swift */; };
 		83DB2ACE2ACD6265008B04D6 /* InteractiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2ACC2ACD6265008B04D6 /* InteractiveService.swift */; };
 		83DB2AD12ACD661F008B04D6 /* InteractiveServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AD02ACD661F008B04D6 /* InteractiveServiceError.swift */; };
@@ -1142,20 +912,6 @@
 		83DB2AEC2ACD9946008B04D6 /* Sep24TransactionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AEA2ACD9946008B04D6 /* Sep24TransactionRequest.swift */; };
 		83DB2AEE2ACD9FD8008B04D6 /* Sep24TransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AED2ACD9FD8008B04D6 /* Sep24TransactionResponse.swift */; };
 		83DB2AEF2ACD9FD8008B04D6 /* Sep24TransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AED2ACD9FD8008B04D6 /* Sep24TransactionResponse.swift */; };
-		83DB2AF22ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AF12ACEA98A008B04D6 /* InteractiveServiceTestCase.swift */; };
-		83DB2AF32ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AF12ACEA98A008B04D6 /* InteractiveServiceTestCase.swift */; };
-		83DB2AF52ACEACF2008B04D6 /* Sep24InfoResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AF42ACEACF2008B04D6 /* Sep24InfoResponseMock.swift */; };
-		83DB2AF62ACEACF2008B04D6 /* Sep24InfoResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AF42ACEACF2008B04D6 /* Sep24InfoResponseMock.swift */; };
-		83DB2AF82ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AF72ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift */; };
-		83DB2AF92ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AF72ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift */; };
-		83DB2AFB2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AFA2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift */; };
-		83DB2AFC2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AFA2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift */; };
-		83DB2AFE2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AFD2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift */; };
-		83DB2AFF2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2AFD2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift */; };
-		83DB2B012ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2B002ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift */; };
-		83DB2B022ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2B002ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift */; };
-		83DB2B042ACED370008B04D6 /* Sep24TransactionResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2B032ACED370008B04D6 /* Sep24TransactionResponseMock.swift */; };
-		83DB2B052ACED370008B04D6 /* Sep24TransactionResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DB2B032ACED370008B04D6 /* Sep24TransactionResponseMock.swift */; };
 		83DD2C55202CE39C00713FEE /* AssetLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C54202CE39C00713FEE /* AssetLinksResponse.swift */; };
 		83DD2C5B202CEB0700713FEE /* LedgerLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C5A202CEB0700713FEE /* LedgerLinksResponse.swift */; };
 		83DD2C60202D0CDE00713FEE /* OperationLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C5F202D0CDE00713FEE /* OperationLinksResponse.swift */; };
@@ -1171,7 +927,6 @@
 		83DD2C79202DF41F00713FEE /* NotAcceptableErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C78202DF41F00713FEE /* NotAcceptableErrorResponse.swift */; };
 		83DD2C7B202DF4B000713FEE /* StaleHistoryErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C7A202DF4B000713FEE /* StaleHistoryErrorResponse.swift */; };
 		83DD2C98202F249800713FEE /* PaymentsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C97202F249800713FEE /* PaymentsService.swift */; };
-		83DD2C9D202F24CD00713FEE /* PaymentsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD2C9C202F24CD00713FEE /* PaymentsTestCase.swift */; };
 		83DD713E281ACA3B00530C64 /* TransactionPreconditionsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD713D281ACA3B00530C64 /* TransactionPreconditionsResponse.swift */; };
 		83DD713F281ACA3B00530C64 /* TransactionPreconditionsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD713D281ACA3B00530C64 /* TransactionPreconditionsResponse.swift */; };
 		83DD7141281ACAD800530C64 /* PreconditionsTimeBoundsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DD7140281ACAD800530C64 /* PreconditionsTimeBoundsResponse.swift */; };
@@ -1210,34 +965,14 @@
 		83DF81AC26EFC36000AF72CD /* LiquidityPoolTradesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81AA26EFC36000AF72CD /* LiquidityPoolTradesResponse.swift */; };
 		83DF81AE26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81AD26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift */; };
 		83DF81AF26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DF81AD26EFDD0F00AF72CD /* LiquidityPoolTradesLinksResponse.swift */; };
-		83EA4763203C7F650031F13E /* LedgersLocalTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4762203C7F650031F13E /* LedgersLocalTestCase.swift */; };
-		83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA4764203C7F7D0031F13E /* LedgersResponsesMock.swift */; };
 		83EEE6262E1810EC008B7B3C /* TransactionEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EEE6252E1810EC008B7B3C /* TransactionEvents.swift */; };
 		83EEE6272E1810EC008B7B3C /* TransactionEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EEE6252E1810EC008B7B3C /* TransactionEvents.swift */; };
-		83EFF59C2EDA409C00359A37 /* SorobanRpcErrorTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF59B2EDA409C00359A37 /* SorobanRpcErrorTest.swift */; };
-		83EFF59D2EDA409C00359A37 /* SorobanRpcErrorTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF59B2EDA409C00359A37 /* SorobanRpcErrorTest.swift */; };
-		83EFF5A42EEE066500359A37 /* WebAuthForContractsMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A12EEE066500359A37 /* WebAuthForContractsMocks.swift */; };
-		83EFF5A52EEE066500359A37 /* WebAuthForContractsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A22EEE066500359A37 /* WebAuthForContractsTestCase.swift */; };
-		83EFF5A62EEE066500359A37 /* WebAuthForContractsMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A12EEE066500359A37 /* WebAuthForContractsMocks.swift */; };
-		83EFF5A72EEE066500359A37 /* WebAuthForContractsTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A22EEE066500359A37 /* WebAuthForContractsTestCase.swift */; };
 		83EFF5AC2EEE068F00359A37 /* WebAuthForContracts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A82EEE068F00359A37 /* WebAuthForContracts.swift */; };
 		83EFF5AD2EEE068F00359A37 /* WebAuthForContractsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A92EEE068F00359A37 /* WebAuthForContractsError.swift */; };
 		83EFF5AE2EEE068F00359A37 /* WebAuthForContractsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5AA2EEE068F00359A37 /* WebAuthForContractsResponse.swift */; };
 		83EFF5AF2EEE068F00359A37 /* WebAuthForContracts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A82EEE068F00359A37 /* WebAuthForContracts.swift */; };
 		83EFF5B02EEE068F00359A37 /* WebAuthForContractsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5A92EEE068F00359A37 /* WebAuthForContractsError.swift */; };
 		83EFF5B12EEE068F00359A37 /* WebAuthForContractsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EFF5AA2EEE068F00359A37 /* WebAuthForContractsResponse.swift */; };
-		83EFF5B42EEE082C00359A37 /* sep_45_account.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83EFF5B22EEE082C00359A37 /* sep_45_account.wasm */; };
-		83EFF5B52EEE082C00359A37 /* sep_45_account.wasm in Resources */ = {isa = PBXBuildFile; fileRef = 83EFF5B22EEE082C00359A37 /* sep_45_account.wasm */; };
-		83F32D552E43E9E400A8355A /* SCValXDRBigIntTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D542E43E9E400A8355A /* SCValXDRBigIntTest.swift */; };
-		83F32D562E43E9E400A8355A /* SCValXDRBigIntTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D542E43E9E400A8355A /* SCValXDRBigIntTest.swift */; };
-		83F32D922E44A1AC00A8355A /* AuthContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D8E2E44A1AC00A8355A /* AuthContract.swift */; };
-		83F32D932E44A1AC00A8355A /* AuthContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D8E2E44A1AC00A8355A /* AuthContract.swift */; };
-		83F32D942E44A1AC00A8355A /* AtomicSwapContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D8F2E44A1AC00A8355A /* AtomicSwapContract.swift */; };
-		83F32D952E44A1AC00A8355A /* AtomicSwapContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D8F2E44A1AC00A8355A /* AtomicSwapContract.swift */; };
-		83F32D962E44A1AC00A8355A /* HelloContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D902E44A1AC00A8355A /* HelloContract.swift */; };
-		83F32D972E44A1AC00A8355A /* HelloContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D902E44A1AC00A8355A /* HelloContract.swift */; };
-		83F32D982E44A1AC00A8355A /* TokenContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D912E44A1AC00A8355A /* TokenContract.swift */; };
-		83F32D992E44A1AC00A8355A /* TokenContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F32D912E44A1AC00A8355A /* TokenContract.swift */; };
 		83F4E6042A1E597600DD42A9 /* KycService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6032A1E597600DD42A9 /* KycService.swift */; };
 		83F4E6052A1E597600DD42A9 /* KycService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6032A1E597600DD42A9 /* KycService.swift */; };
 		83F4E6082A1E5A1000DD42A9 /* KycServiceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6072A1E5A1000DD42A9 /* KycServiceError.swift */; };
@@ -1254,18 +989,10 @@
 		83F4E6182A1EAAE700DD42A9 /* PutCustomerVerificationRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6162A1EAAE700DD42A9 /* PutCustomerVerificationRequest.swift */; };
 		83F4E61A2A278B3200DD42A9 /* PutCustomerCallbackRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6192A278B3200DD42A9 /* PutCustomerCallbackRequest.swift */; };
 		83F4E61B2A278B3200DD42A9 /* PutCustomerCallbackRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6192A278B3200DD42A9 /* PutCustomerCallbackRequest.swift */; };
-		83F4E61E2A2792C600DD42A9 /* KycServerTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E61D2A2792C600DD42A9 /* KycServerTestCase.swift */; };
-		83F4E61F2A2792C600DD42A9 /* KycServerTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E61D2A2792C600DD42A9 /* KycServerTestCase.swift */; };
-		83F4E6212A27ABC300DD42A9 /* GetCustomerResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6202A27ABC300DD42A9 /* GetCustomerResponseMock.swift */; };
-		83F4E6222A27ABC300DD42A9 /* GetCustomerResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F4E6202A27ABC300DD42A9 /* GetCustomerResponseMock.swift */; };
 		83F863372CFF15FC005D363D /* CustomerFileResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F863362CFF15FC005D363D /* CustomerFileResponse.swift */; };
 		83F863382CFF15FC005D363D /* CustomerFileResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F863362CFF15FC005D363D /* CustomerFileResponse.swift */; };
 		83F8633A2CFF18A4005D363D /* GetCustomerFilesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F863392CFF18A4005D363D /* GetCustomerFilesResponse.swift */; };
 		83F8633B2CFF18A4005D363D /* GetCustomerFilesResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F863392CFF18A4005D363D /* GetCustomerFilesResponse.swift */; };
-		83F863402CFF2850005D363D /* PostCustomerFileResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F8633F2CFF2850005D363D /* PostCustomerFileResponseMock.swift */; };
-		83F863412CFF2850005D363D /* PostCustomerFileResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F8633F2CFF2850005D363D /* PostCustomerFileResponseMock.swift */; };
-		83F863432CFF293F005D363D /* GetCustomerFilesResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F863422CFF293F005D363D /* GetCustomerFilesResponseMock.swift */; };
-		83F863442CFF293F005D363D /* GetCustomerFilesResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F863422CFF293F005D363D /* GetCustomerFilesResponseMock.swift */; };
 		83F863462CFF3401005D363D /* PayloadTooLargeErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F863452CFF3401005D363D /* PayloadTooLargeErrorResponse.swift */; };
 		83F863472CFF3401005D363D /* PayloadTooLargeErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F863452CFF3401005D363D /* PayloadTooLargeErrorResponse.swift */; };
 		83FE810423F0713E00F4A13D /* FeeStatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE810323F0713E00F4A13D /* FeeStatsService.swift */; };
@@ -1276,12 +1003,8 @@
 		83FE810C23F0750600F4A13D /* FeeChargedResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE810A23F0750600F4A13D /* FeeChargedResponse.swift */; };
 		83FE810E23F0752700F4A13D /* MaxFeeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE810D23F0752700F4A13D /* MaxFeeResponse.swift */; };
 		83FE810F23F0752700F4A13D /* MaxFeeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE810D23F0752700F4A13D /* MaxFeeResponse.swift */; };
-		83FE811223F0856600F4A13D /* FeeStatsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE811123F0856600F4A13D /* FeeStatsRemoteTestCase.swift */; };
-		83FE811323F0856600F4A13D /* FeeStatsRemoteTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE811123F0856600F4A13D /* FeeStatsRemoteTestCase.swift */; };
 		83FE811823F1C5FC00F4A13D /* TransactionMetaV2XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE811723F1C5FC00F4A13D /* TransactionMetaV2XDR.swift */; };
 		83FE811923F1C5FC00F4A13D /* TransactionMetaV2XDR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83FE811723F1C5FC00F4A13D /* TransactionMetaV2XDR.swift */; };
-		C62F97DC2199BB54000A835A /* TomlResponseMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62F97DB2199BB54000A835A /* TomlResponseMock.swift */; };
-		C62F97E52199BE5B000A835A /* URISchemeTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C8AAA62147D91000B06E8A /* URISchemeTestCase.swift */; };
 		C6744C1C21467195005DE204 /* URIScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6744C1B21467195005DE204 /* URIScheme.swift */; };
 		C6744C1F2146A165005DE204 /* URISchemeErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6744C1E2146A165005DE204 /* URISchemeErrors.swift */; };
 		C67811B42148E30A001525D8 /* URISchemeErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6744C1E2146A165005DE204 /* URISchemeErrors.swift */; };
@@ -1290,8 +1013,6 @@
 		C67811B72148E311001525D8 /* URISchemeValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C694DAC02147946F00D6D63F /* URISchemeValidator.swift */; };
 		C694DABE21478E8100D6D63F /* URISchemeEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = C694DABD21478E8100D6D63F /* URISchemeEnums.swift */; };
 		C694DAC12147946F00D6D63F /* URISchemeValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C694DAC02147946F00D6D63F /* URISchemeValidator.swift */; };
-		C69B1CAB219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAA219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift */; };
-		C69B1CAD219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69B1CAC219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift */; };
 		DDE2DCD42664EA5E00F238F4 /* TradesStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE2DCD32664EA5E00F238F4 /* TradesStreamItem.swift */; };
 		DDE2DCD52664EAD700F238F4 /* TradesStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE2DCD32664EA5E00F238F4 /* TradesStreamItem.swift */; };
 		DDE2DCD726662C9700F238F4 /* OrderbookStreamItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE2DCD626662C9700F238F4 /* OrderbookStreamItem.swift */; };
@@ -1306,8 +1027,6 @@
 		EC34A0D120503CAB000FB042 /* Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A0C920503CAB000FB042 /* Mnemonic.swift */; };
 		EC34A15720503CE7000FB042 /* WalletUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15620503CE6000FB042 /* WalletUtils.swift */; };
 		EC34A15920503CF6000FB042 /* Ed25519Derivation.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15820503CF6000FB042 /* Ed25519Derivation.swift */; };
-		EC34A15C205043AB000FB042 /* MnemonicGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15B205043AB000FB042 /* MnemonicGeneration.swift */; };
-		EC34A15E20504F92000FB042 /* MnemonicKeyPairGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15D20504F92000FB042 /* MnemonicKeyPairGeneration.swift */; };
 		EC34A1602050D24C000FB042 /* Data+Hash.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC34A15F2050D24C000FB042 /* Data+Hash.swift */; };
 		EC4F660220C8DA8A0036293D /* AccountInflationDestinationUpdatedEffectResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC4F660120C8DA8A0036293D /* AccountInflationDestinationUpdatedEffectResponse.swift */; };
 		F80CE5452084EFC400AB5FF0 /* UtilBase32.swift in Sources */ = {isa = PBXBuildFile; fileRef = F80CE5422084EFC400AB5FF0 /* UtilBase32.swift */; };
@@ -1317,41 +1036,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		743DF4EF201F130200713DE7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 7445E9F3201B106500470E0A /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 743DF4E4201F130100713DE7;
-			remoteInfo = "stellarsdk-macOS";
-		};
-		743DF51E201F458400713DE7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 7445E9F3201B106500470E0A /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 743DF509201F458400713DE7;
-			remoteInfo = "stellarsdkTests-Host";
-		};
-		743DF529201F458400713DE7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 7445E9F3201B106500470E0A /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 743DF509201F458400713DE7;
-			remoteInfo = "stellarsdkTests-Host";
-		};
-		743DF538201F459000713DE7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 7445E9F3201B106500470E0A /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 743DF509201F458400713DE7;
-			remoteInfo = "stellarsdkTests-Host";
-		};
-		7445EA07201B106500470E0A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 7445E9F3201B106500470E0A /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7445E9FB201B106500470E0A;
-			remoteInfo = stellarsdk;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -1405,23 +1089,7 @@
 		743DF4E5201F130100713DE7 /* stellarsdk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = stellarsdk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		743DF4E7201F130100713DE7 /* stellarsdk_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stellarsdk_macOS.h; sourceTree = "<group>"; };
 		743DF4E8201F130100713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		743DF4ED201F130200713DE7 /* stellarsdk-macOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "stellarsdk-macOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		743DF4F2201F130200713DE7 /* stellarsdk_macOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdk_macOSTests.swift; sourceTree = "<group>"; };
-		743DF4F4201F130200713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		743DF502201F3B0800713DE7 /* AccountLocalTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountLocalTestCase.swift; sourceTree = "<group>"; };
-		743DF50A201F458400713DE7 /* stellarsdkTests-Host.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "stellarsdkTests-Host.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		743DF50C201F458400713DE7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		743DF50E201F458400713DE7 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		743DF511201F458400713DE7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		743DF513201F458400713DE7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		743DF516201F458400713DE7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		743DF518201F458400713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		743DF51D201F458400713DE7 /* stellarsdkTests-HostTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "stellarsdkTests-HostTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		743DF521201F458400713DE7 /* stellarsdkTests_HostTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdkTests_HostTests.swift; sourceTree = "<group>"; };
-		743DF523201F458400713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		743DF528201F458400713DE7 /* stellarsdkTests-HostUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "stellarsdkTests-HostUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		743DF52C201F458400713DE7 /* stellarsdkTests_HostUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdkTests_HostUITests.swift; sourceTree = "<group>"; };
-		743DF52E201F458400713DE7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		743DF545201F706B00713DE7 /* Data+CRC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+CRC.swift"; sourceTree = "<group>"; };
 		743DF54B201F73FC00713DE7 /* VersionByte.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionByte.swift; sourceTree = "<group>"; };
 		743DF54F201FBD2B00713DE7 /* AccountService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountService.swift; sourceTree = "<group>"; };
@@ -1458,9 +1126,6 @@
 		744148F9202E0635006590BE /* TransactionXDR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionXDR.swift; sourceTree = "<group>"; };
 		7445E9FC201B106500470E0A /* stellarsdk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = stellarsdk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7445EA00201B106500470E0A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		7445EA05201B106500470E0A /* stellarsdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = stellarsdkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		7445EA0A201B106500470E0A /* stellarsdkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = stellarsdkTests.swift; sourceTree = "<group>"; };
-		7445EA0C201B106500470E0A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		744602E3203B22CC00D807C1 /* Network.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
 		744A84B62143F02F0086B8FC /* WithdrawResponseMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WithdrawResponseMock.swift; sourceTree = "<group>"; };
 		744A84B92143F6DA0086B8FC /* AnchorInfoResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorInfoResponse.swift; sourceTree = "<group>"; };
@@ -2034,47 +1699,10 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		743DF4EA201F130200713DE7 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				743DF4EE201F130200713DE7 /* stellarsdk.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		743DF507201F458400713DE7 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		743DF51A201F458400713DE7 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		743DF525201F458400713DE7 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		7445E9F8201B106500470E0A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7445EA02201B106500470E0A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7445EA06201B106500470E0A /* stellarsdk.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2209,15 +1837,6 @@
 			path = "stellarsdk-macOS";
 			sourceTree = "<group>";
 		};
-		743DF4F1201F130200713DE7 /* stellarsdk-macOSTests */ = {
-			isa = PBXGroup;
-			children = (
-				743DF4F2201F130200713DE7 /* stellarsdk_macOSTests.swift */,
-				743DF4F4201F130200713DE7 /* Info.plist */,
-			);
-			path = "stellarsdk-macOSTests";
-			sourceTree = "<group>";
-		};
 		743DF4FE201F389500713DE7 /* errors */ = {
 			isa = PBXGroup;
 			children = (
@@ -2239,37 +1858,6 @@
 				8357A91E203B768A00A144A9 /* DataForAccountRemoteTestCase.swift */,
 			);
 			path = account;
-			sourceTree = "<group>";
-		};
-		743DF50B201F458400713DE7 /* stellarsdkTests-Host */ = {
-			isa = PBXGroup;
-			children = (
-				743DF50C201F458400713DE7 /* AppDelegate.swift */,
-				743DF50E201F458400713DE7 /* ViewController.swift */,
-				743DF510201F458400713DE7 /* Main.storyboard */,
-				743DF513201F458400713DE7 /* Assets.xcassets */,
-				743DF515201F458400713DE7 /* LaunchScreen.storyboard */,
-				743DF518201F458400713DE7 /* Info.plist */,
-			);
-			path = "stellarsdkTests-Host";
-			sourceTree = "<group>";
-		};
-		743DF520201F458400713DE7 /* stellarsdkTests-HostTests */ = {
-			isa = PBXGroup;
-			children = (
-				743DF521201F458400713DE7 /* stellarsdkTests_HostTests.swift */,
-				743DF523201F458400713DE7 /* Info.plist */,
-			);
-			path = "stellarsdkTests-HostTests";
-			sourceTree = "<group>";
-		};
-		743DF52B201F458400713DE7 /* stellarsdkTests-HostUITests */ = {
-			isa = PBXGroup;
-			children = (
-				743DF52C201F458400713DE7 /* stellarsdkTests_HostUITests.swift */,
-				743DF52E201F458400713DE7 /* Info.plist */,
-			);
-			path = "stellarsdkTests-HostUITests";
 			sourceTree = "<group>";
 		};
 		743DF53C201F495A00713DE7 /* service */ = {
@@ -2392,12 +1980,7 @@
 			isa = PBXGroup;
 			children = (
 				7445E9FE201B106500470E0A /* stellarsdk */,
-				7445EA09201B106500470E0A /* stellarsdkTests */,
 				743DF4E6201F130100713DE7 /* stellarsdk-macOS */,
-				743DF4F1201F130200713DE7 /* stellarsdk-macOSTests */,
-				743DF50B201F458400713DE7 /* stellarsdkTests-Host */,
-				743DF520201F458400713DE7 /* stellarsdkTests-HostTests */,
-				743DF52B201F458400713DE7 /* stellarsdkTests-HostUITests */,
 				7445E9FD201B106500470E0A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -2406,12 +1989,7 @@
 			isa = PBXGroup;
 			children = (
 				7445E9FC201B106500470E0A /* stellarsdk.framework */,
-				7445EA05201B106500470E0A /* stellarsdkTests.xctest */,
 				743DF4E5201F130100713DE7 /* stellarsdk.framework */,
-				743DF4ED201F130200713DE7 /* stellarsdk-macOSTests.xctest */,
-				743DF50A201F458400713DE7 /* stellarsdkTests-Host.app */,
-				743DF51D201F458400713DE7 /* stellarsdkTests-HostTests.xctest */,
-				743DF528201F458400713DE7 /* stellarsdkTests-HostUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2445,46 +2023,6 @@
 				743DF4DB201F0BBD00713DE7 /* StellarSDK.swift */,
 			);
 			path = stellarsdk;
-			sourceTree = "<group>";
-		};
-		7445EA09201B106500470E0A /* stellarsdkTests */ = {
-			isa = PBXGroup;
-			children = (
-				8365E4E92E96C6CE00341284 /* health */,
-				835F0CE1297613C900793708 /* soroban */,
-				83C54D042945F1DD00CC1E8A /* docs */,
-				8310BDCC26EB6183004D3EF2 /* amm */,
-				74723338219EE3D500343E25 /* web_authenticator */,
-				83EFF5A32EEE066500359A37 /* web_authenticator_contracts */,
-				746D78FD21959FD90008AA79 /* toml */,
-				C6C8AAA52147D8F000B06E8A /* uri_scheme */,
-				7467C40221426FAB00412FE1 /* transfer_server_protocol */,
-				83DB2AF02ACEA948008B04D6 /* interactive */,
-				832C2B312AEC1097005BB7B8 /* recovery */,
-				833C67362B84E34400E034C6 /* quote */,
-				8365137F2BDEAD4600A99085 /* regulated_assets */,
-				83F4E61C2A27912900DD42A9 /* kyc */,
-				744FC6FE212E941F00ADFC88 /* federation */,
-				EC34A15A20504353000FB042 /* wallet */,
-				437CEBD620457E3D00CAAF93 /* memo */,
-				743DF501201F3AE100713DE7 /* account */,
-				836971F8202548C900398A98 /* assets */,
-				83FE811023F084F500F4A13D /* fee_stats */,
-				744E75E22028DB9800170D57 /* effects */,
-				83697204202631B800398A98 /* ledgers */,
-				430BE2E72035A32600E6AB97 /* price */,
-				43D35B0E20348EBF00C8BDBC /* payment_paths */,
-				4300C1812032FB7A00DC5E49 /* offers */,
-				8369723A202A703600398A98 /* utils */,
-				836836042E1709AB0032D97C /* strkey */,
-				745F2BBF202C4CED008763F1 /* transactions */,
-				744C4DC0202A326600B46CDE /* operations */,
-				83DD2C9B202F24B900713FEE /* payments */,
-				437D8A90202F15AA0024D031 /* trades */,
-				7445EA0A201B106500470E0A /* stellarsdkTests.swift */,
-				7445EA0C201B106500470E0A /* Info.plist */,
-			);
-			path = stellarsdkTests;
 			sourceTree = "<group>";
 		};
 		744C4DB3202A242B00B46CDE /* operations_responses */ = {
@@ -3713,77 +3251,6 @@
 			productReference = 743DF4E5201F130100713DE7 /* stellarsdk.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		743DF4EC201F130200713DE7 /* stellarsdk-macOSTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 743DF4F9201F130200713DE7 /* Build configuration list for PBXNativeTarget "stellarsdk-macOSTests" */;
-			buildPhases = (
-				743DF4E9201F130200713DE7 /* Sources */,
-				743DF4EA201F130200713DE7 /* Frameworks */,
-				743DF4EB201F130200713DE7 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				743DF4F0201F130200713DE7 /* PBXTargetDependency */,
-			);
-			name = "stellarsdk-macOSTests";
-			productName = "stellarsdk-macOSTests";
-			productReference = 743DF4ED201F130200713DE7 /* stellarsdk-macOSTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		743DF509201F458400713DE7 /* stellarsdkTests-Host */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 743DF52F201F458400713DE7 /* Build configuration list for PBXNativeTarget "stellarsdkTests-Host" */;
-			buildPhases = (
-				743DF506201F458400713DE7 /* Sources */,
-				743DF507201F458400713DE7 /* Frameworks */,
-				743DF508201F458400713DE7 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "stellarsdkTests-Host";
-			productName = "stellarsdkTests-Host";
-			productReference = 743DF50A201F458400713DE7 /* stellarsdkTests-Host.app */;
-			productType = "com.apple.product-type.application";
-		};
-		743DF51C201F458400713DE7 /* stellarsdkTests-HostTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 743DF532201F458400713DE7 /* Build configuration list for PBXNativeTarget "stellarsdkTests-HostTests" */;
-			buildPhases = (
-				743DF519201F458400713DE7 /* Sources */,
-				743DF51A201F458400713DE7 /* Frameworks */,
-				743DF51B201F458400713DE7 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				743DF51F201F458400713DE7 /* PBXTargetDependency */,
-			);
-			name = "stellarsdkTests-HostTests";
-			productName = "stellarsdkTests-HostTests";
-			productReference = 743DF51D201F458400713DE7 /* stellarsdkTests-HostTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		743DF527201F458400713DE7 /* stellarsdkTests-HostUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 743DF535201F458400713DE7 /* Build configuration list for PBXNativeTarget "stellarsdkTests-HostUITests" */;
-			buildPhases = (
-				743DF524201F458400713DE7 /* Sources */,
-				743DF525201F458400713DE7 /* Frameworks */,
-				743DF526201F458400713DE7 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				743DF52A201F458400713DE7 /* PBXTargetDependency */,
-			);
-			name = "stellarsdkTests-HostUITests";
-			productName = "stellarsdkTests-HostUITests";
-			productReference = 743DF528201F458400713DE7 /* stellarsdkTests-HostUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 		7445E9FB201B106500470E0A /* stellarsdk */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7445EA10201B106500470E0A /* Build configuration list for PBXNativeTarget "stellarsdk" */;
@@ -3803,25 +3270,6 @@
 			productReference = 7445E9FC201B106500470E0A /* stellarsdk.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		7445EA04201B106500470E0A /* stellarsdkTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7445EA13201B106500470E0A /* Build configuration list for PBXNativeTarget "stellarsdkTests" */;
-			buildPhases = (
-				7445EA01201B106500470E0A /* Sources */,
-				7445EA02201B106500470E0A /* Frameworks */,
-				7445EA03201B106500470E0A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				7445EA08201B106500470E0A /* PBXTargetDependency */,
-				743DF539201F459000713DE7 /* PBXTargetDependency */,
-			);
-			name = stellarsdkTests;
-			productName = stellarsdkTests;
-			productReference = 7445EA05201B106500470E0A /* stellarsdkTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -3836,33 +3284,10 @@
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
 					};
-					743DF4EC201F130200713DE7 = {
-						CreatedOnToolsVersion = 9.2;
-						ProvisioningStyle = Automatic;
-					};
-					743DF509201F458400713DE7 = {
-						CreatedOnToolsVersion = 9.2;
-						ProvisioningStyle = Automatic;
-					};
-					743DF51C201F458400713DE7 = {
-						CreatedOnToolsVersion = 9.2;
-						ProvisioningStyle = Automatic;
-						TestTargetID = 743DF509201F458400713DE7;
-					};
-					743DF527201F458400713DE7 = {
-						CreatedOnToolsVersion = 9.2;
-						ProvisioningStyle = Automatic;
-						TestTargetID = 743DF509201F458400713DE7;
-					};
 					7445E9FB201B106500470E0A = {
 						CreatedOnToolsVersion = 9.2;
 						LastSwiftMigration = 0920;
 						ProvisioningStyle = Automatic;
-					};
-					7445EA04201B106500470E0A = {
-						CreatedOnToolsVersion = 9.2;
-						ProvisioningStyle = Automatic;
-						TestTargetID = 743DF509201F458400713DE7;
 					};
 				};
 			};
@@ -3880,12 +3305,7 @@
 			projectRoot = "";
 			targets = (
 				7445E9FB201B106500470E0A /* stellarsdk */,
-				7445EA04201B106500470E0A /* stellarsdkTests */,
 				743DF4E4201F130100713DE7 /* stellarsdk-macOS */,
-				743DF4EC201F130200713DE7 /* stellarsdk-macOSTests */,
-				743DF509201F458400713DE7 /* stellarsdkTests-Host */,
-				743DF51C201F458400713DE7 /* stellarsdkTests-HostTests */,
-				743DF527201F458400713DE7 /* stellarsdkTests-HostUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -3898,61 +3318,11 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		743DF4EB201F130200713DE7 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				83B8277A2B28E3930064D7CB /* soroban_auth_contract.wasm in Resources */,
-				83B827782B28E3930064D7CB /* soroban_hello_world_contract.wasm in Resources */,
-				8372287C2DD21A7C0050BBC9 /* soroban_atomic_swap_contract.wasm in Resources */,
-				83EFF5B52EEE082C00359A37 /* sep_45_account.wasm in Resources */,
-				83ACC00F2C885D9100A71CF1 /* soroban_token_contract.wasm in Resources */,
-				83B8277C2B28E3930064D7CB /* soroban_events_contract.wasm in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		743DF508201F458400713DE7 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				743DF517201F458400713DE7 /* LaunchScreen.storyboard in Resources */,
-				743DF514201F458400713DE7 /* Assets.xcassets in Resources */,
-				743DF512201F458400713DE7 /* Main.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		743DF51B201F458400713DE7 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		743DF526201F458400713DE7 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		7445E9FA201B106500470E0A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				743DF56B2020530A00713DE7 /* license.txt in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7445EA03201B106500470E0A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				83B827792B28E3930064D7CB /* soroban_auth_contract.wasm in Resources */,
-				83B827772B28E3930064D7CB /* soroban_hello_world_contract.wasm in Resources */,
-				8372287B2DD21A7C0050BBC9 /* soroban_atomic_swap_contract.wasm in Resources */,
-				83EFF5B42EEE082C00359A37 /* sep_45_account.wasm in Resources */,
-				83ACC00E2C885D9100A71CF1 /* soroban_token_contract.wasm in Resources */,
-				83B8277B2B28E3930064D7CB /* soroban_events_contract.wasm in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4492,166 +3862,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		743DF4E9201F130200713DE7 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				836E66352E40EE7100D68F6A /* ContractSpecTest.swift in Sources */,
-				8310BDDD26EB6E75004D3EF2 /* AmmTestCase.swift in Sources */,
-				743D9C1A21B57246004C56BD /* PostCallbackMock.swift in Sources */,
-				833C67392B84E38F00E034C6 /* QuoteServiceTestCase.swift in Sources */,
-				744FC701212E978500ADFC88 /* FederationTestCase.swift in Sources */,
-				832C2B492AEC2AC7005BB7B8 /* Sep30ListAccountsResponseMock.swift in Sources */,
-				83B836222F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift in Sources */,
-				83D6D2EB2A27BAD700555110 /* PutVerificationResponseMock.swift in Sources */,
-				745DF567205304AC000D3660 /* MnemonicGeneration.swift in Sources */,
-				744A84D221453AA70086B8FC /* PutCustomerInfoResponseMock.swift in Sources */,
-				745DF568205304AC000D3660 /* MnemonicKeyPairGeneration.swift in Sources */,
-				5543AE94191B4DE0AA2B7797 /* BigIntTest.swift in Sources */,
-				836513912BDEE00400A99085 /* Sep08PostRejectedMock.swift in Sources */,
-				745DF569205304AC000D3660 /* MemoRemoteTestCase.swift in Sources */,
-				832C2B402AEC2334005BB7B8 /* Sep30SignTransactionResponseMock.swift in Sources */,
-				7472333E219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift in Sources */,
-				745DF56A205304AC000D3660 /* AccountLocalTestCase.swift in Sources */,
-				837228792DD1F0CD0050BBC9 /* SorobanClientTest.swift in Sources */,
-				745DF56B205304AC000D3660 /* AccountResponsesMock.swift in Sources */,
-				830A8F0C29AE916300B30483 /* SorobanAtomicSwapTest.swift in Sources */,
-				83DB2AFF2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift in Sources */,
-				745DF56C205304AC000D3660 /* AccountRemoteTestCase.swift in Sources */,
-				8365139A2BDEEBFA00A99085 /* Sep08ActionDoneMock.swift in Sources */,
-				83F32D932E44A1AC00A8355A /* AuthContract.swift in Sources */,
-				833C675A2B8F77F200E034C6 /* TransactionResponseMock.swift in Sources */,
-				745DF56D205304AC000D3660 /* DataForAccountLocalTestCase.swift in Sources */,
-				833C673C2B84E54E00E034C6 /* Sep38InfoResponseMock.swift in Sources */,
-				83C54D072945F23700CC1E8A /* QuickStartTest.swift in Sources */,
-				83FE811323F0856600F4A13D /* FeeStatsRemoteTestCase.swift in Sources */,
-				746D7905219AE2BE0008AA79 /* TomlResponseSignatureMismatchMock.swift in Sources */,
-				83DB2AF62ACEACF2008B04D6 /* Sep24InfoResponseMock.swift in Sources */,
-				836513822BDEAD8900A99085 /* RegulatedAssetsTestCase.swift in Sources */,
-				745DF56E205304AC000D3660 /* DataForAccountResponsesMock.swift in Sources */,
-				836513972BDEEA0E00A99085 /* Sep08FollowNextMock.swift in Sources */,
-				745DF56F205304AC000D3660 /* DataForAccountRemoteTestCase.swift in Sources */,
-				83D6D2EE2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift in Sources */,
-				745DF570205304AC000D3660 /* AssetsLocalTestCase.swift in Sources */,
-				745DF571205304AC000D3660 /* AssetsResponsesMock.swift in Sources */,
-				836513942BDEE81800A99085 /* Sep08PostActionRequiredMock.swift in Sources */,
-				74723347219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift in Sources */,
-				745DF572205304AC000D3660 /* AssetsRemoteTestCase.swift in Sources */,
-				745DF573205304AC000D3660 /* EffectsLocalTestCase.swift in Sources */,
-				745DF574205304AC000D3660 /* EffectsResponsesMock.swift in Sources */,
-				833C67452B85152C00E034C6 /* Sep38PostQuoteResponseMock.swift in Sources */,
-				833C67422B84F2FF00E034C6 /* Sep38PriceResponseMock.swift in Sources */,
-				7472333B219EE40200343E25 /* WebAuthenticatorTestCase.swift in Sources */,
-				744A84BE214403480086B8FC /* AnchorInfoResponseMock.swift in Sources */,
-				83EFF5A62EEE066500359A37 /* WebAuthForContractsMocks.swift in Sources */,
-				83EFF5A72EEE066500359A37 /* WebAuthForContractsTestCase.swift in Sources */,
-				745DF575205304AC000D3660 /* EffectsRemoteTestCase.swift in Sources */,
-				745DF576205304AC000D3660 /* LedgersLocalTestCase.swift in Sources */,
-				745DF577205304AC000D3660 /* LedgersResponsesMock.swift in Sources */,
-				74723344219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift in Sources */,
-				744A84C921441CC60086B8FC /* Date.swift in Sources */,
-				74723341219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift in Sources */,
-				8365E4EA2E96C6CE00341284 /* HealthRemoteTestCase.swift in Sources */,
-				7467C4052142700000412FE1 /* TransferServerTestCase.swift in Sources */,
-				745DF578205304AC000D3660 /* LedgersRemoteTestCase.swift in Sources */,
-				833C67542B8F688000E034C6 /* WithdrawExchangeResponseMock.swift in Sources */,
-				745DF579205304AC000D3660 /* PriceTestCase.swift in Sources */,
-				83EFF59D2EDA409C00359A37 /* SorobanRpcErrorTest.swift in Sources */,
-				83F4E6222A27ABC300DD42A9 /* GetCustomerResponseMock.swift in Sources */,
-				745DF57A205304AC000D3660 /* PaymentPathsTestCase.swift in Sources */,
-				745DF57C205304AC000D3660 /* OffersLocalTestCase.swift in Sources */,
-				745DF57D205304AC000D3660 /* OffersResponsesMock.swift in Sources */,
-				8365138B2BDEDD4E00A99085 /* Sep08PostPendingMock.swift in Sources */,
-				744A84C721441A100086B8FC /* AnchorTransactionsResponseMock.swift in Sources */,
-				832AF8E7263BE8E500B7EB49 /* ClawbackTestCase.swift in Sources */,
-				830A8F1229AEC3F800B30483 /* SorobanEventsTest.swift in Sources */,
-				832C2B372AEC117C005BB7B8 /* Sep30RegisterAccountResponseMock.swift in Sources */,
-				745DF57E205304AC000D3660 /* OffersRemoteTestCase.swift in Sources */,
-				83F4E61F2A2792C600DD42A9 /* KycServerTestCase.swift in Sources */,
-				745DF57F205304AC000D3660 /* ServerMock.swift in Sources */,
-				832C2B432AEC2806005BB7B8 /* Sep30AccountDetailsResponseMock.swift in Sources */,
-				745DF580205304AC000D3660 /* ResponseMock.swift in Sources */,
-				83F32D992E44A1AC00A8355A /* TokenContract.swift in Sources */,
-				745DF581205304AC000D3660 /* TransactionsLocalTestCase.swift in Sources */,
-				832C2B342AEC10C0005BB7B8 /* RecoveryServiceTestCase.swift in Sources */,
-				83F32D952E44A1AC00A8355A /* AtomicSwapContract.swift in Sources */,
-				746D7906219AE2C10008AA79 /* TomlResponseSignatureMissingMock.swift in Sources */,
-				7467C4082142740C00412FE1 /* DepositResponseMock.swift in Sources */,
-				833C67572B8F76DF00E034C6 /* FeeResponseMock.swift in Sources */,
-				746D7903219AE2AD0008AA79 /* URISchemeTestCase.swift in Sources */,
-				745DF582205304AC000D3660 /* TransactionsResponsesMock.swift in Sources */,
-				832C2B462AEC28C7005BB7B8 /* Sep30DeleteAccountResponseMock.swift in Sources */,
-				830DAB5F29AE5AD400ED4E66 /* SorobanAuthTest.swift in Sources */,
-				745DF583205304AC000D3660 /* TransactionsRemoteTestCase.swift in Sources */,
-				745DF584205304AC000D3660 /* OperationXDRTestCase.swift in Sources */,
-				745DF585205304AC000D3660 /* OperationsLocalTestCase.swift in Sources */,
-				83F32D972E44A1AC00A8355A /* HelloContract.swift in Sources */,
-				745DF586205304AC000D3660 /* OperationsRemoteTestCase.swift in Sources */,
-				83F863412CFF2850005D363D /* PostCustomerFileResponseMock.swift in Sources */,
-				745DF587205304AC000D3660 /* OperationsResponsesMock.swift in Sources */,
-				745DF588205304AC000D3660 /* PaymentsTestCase.swift in Sources */,
-				8365E4F42E96D33500341284 /* GetLedgersTestCase.swift in Sources */,
-				746D7904219AE2BB0008AA79 /* TomlResponseMock.swift in Sources */,
-				83DB2AF92ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift in Sources */,
-				83DB2B052ACED370008B04D6 /* Sep24TransactionResponseMock.swift in Sources */,
-				835F0CE4297613EF00793708 /* SorobanTest.swift in Sources */,
-				744A84B82143F02F0086B8FC /* WithdrawResponseMock.swift in Sources */,
-				83F863442CFF293F005D363D /* GetCustomerFilesResponseMock.swift in Sources */,
-				746D79002195A02C0008AA79 /* TomlTestCase.swift in Sources */,
-				834D51412C5163AC007CA0AD /* SubmitTransactionAsyncTestCase.swift in Sources */,
-				832C2B3A2AEC1CA8005BB7B8 /* Sep30ErrResponseMock.swift in Sources */,
-				836513852BDED35B00A99085 /* Sep08PostSuccessMock.swift in Sources */,
-				832C2B3D2AEC21CE005BB7B8 /* Sep30UpdateIdentitiesResponseMock.swift in Sources */,
-				833C67512B8F66F000E034C6 /* DepositExchangeResponseMock.swift in Sources */,
-				745DF589205304AC000D3660 /* PaymentsResponsesMock.swift in Sources */,
-				745DF58A205304AC000D3660 /* PaymentsLocalTestCase.swift in Sources */,
-				836513882BDED41800A99085 /* Sep08PostTestRequest.swift in Sources */,
-				833C67482B8517E200E034C6 /* Sep38GetQuoteResponseMock.swift in Sources */,
-				745DF58B205304AC000D3660 /* TradesTestCase.swift in Sources */,
-				745DF58C205304AC000D3660 /* TradesLocalTestCase.swift in Sources */,
-				833C673F2B84EE0200E034C6 /* Sep38PricesResponseMock.swift in Sources */,
-				83707A9D2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift in Sources */,
-				8365138E2BDEDE6500A99085 /* Sep08PostRevisedMock.swift in Sources */,
-				83BD1EE92949F67D00F6C041 /* IssueAssetTest.swift in Sources */,
-				745DF58D205304AC000D3660 /* TradesResponsesMock.swift in Sources */,
-				744A84D5214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,
-				743DF4F3201F130200713DE7 /* stellarsdk_macOSTests.swift in Sources */,
-				74A504F52192D85B00A608A0 /* KeyUtils.swift in Sources */,
-				836836072E1709D20032D97C /* StrKeyTest.swift in Sources */,
-				83DB2AFC2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */,
-				83DB2B022ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */,
-				83B836172F0E917B00063825 /* AccountStreamingTestCase.swift in Sources */,
-				83DB2AF32ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */,
-				83ACC0122C885DC500A71CF1 /* SorobanParserTest.swift in Sources */,
-				83F32D562E43E9E400A8355A /* SCValXDRBigIntTest.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		743DF506201F458400713DE7 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				743DF50F201F458400713DE7 /* ViewController.swift in Sources */,
-				743DF50D201F458400713DE7 /* AppDelegate.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		743DF519201F458400713DE7 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				743DF522201F458400713DE7 /* stellarsdkTests_HostTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		743DF524201F458400713DE7 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				743DF52D201F458400713DE7 /* stellarsdkTests_HostUITests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		7445E9F7201B106500470E0A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -5164,192 +4374,12 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		7445EA01201B106500470E0A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				832C2B3F2AEC2334005BB7B8 /* Sep30SignTransactionResponseMock.swift in Sources */,
-				743D9C1921B57246004C56BD /* PostCallbackMock.swift in Sources */,
-				836513992BDEEBFA00A99085 /* Sep08ActionDoneMock.swift in Sources */,
-				744FC700212E944500ADFC88 /* FederationTestCase.swift in Sources */,
-				83DB2AFE2ACEC6C8008B04D6 /* Sep24WithdrawResponseMock.swift in Sources */,
-				836971FA202548E100398A98 /* AssetsRemoteTestCase.swift in Sources */,
-				744A84D121453AA70086B8FC /* PutCustomerInfoResponseMock.swift in Sources */,
-				8369723C202A707600398A98 /* ServerMock.swift in Sources */,
-				8331520B203E2635007F8F84 /* TransactionsLocalTestCase.swift in Sources */,
-				83F32D942E44A1AC00A8355A /* AtomicSwapContract.swift in Sources */,
-				7472333D219EE4F700343E25 /* WebAuthenticatorTomlResponseMock.swift in Sources */,
-				833C67412B84F2FF00E034C6 /* Sep38PriceResponseMock.swift in Sources */,
-				744C4DC2202A328100B46CDE /* OperationsRemoteTestCase.swift in Sources */,
-				744E75E42028DBD500170D57 /* EffectsRemoteTestCase.swift in Sources */,
-				437D8A92202F15DC0024D031 /* TradesTestCase.swift in Sources */,
-				C69B1CAB219AC374009393B9 /* TomlResponseSignatureMismatchMock.swift in Sources */,
-				83F32D552E43E9E400A8355A /* SCValXDRBigIntTest.swift in Sources */,
-				83ACC0112C885DC500A71CF1 /* SorobanParserTest.swift in Sources */,
-				4367E5FE203ED15500C0AB4F /* OffersResponsesMock.swift in Sources */,
-				83AFD64E234FD3F800A574D2 /* PathPaymentStrictReceiveOperationResponse.swift in Sources */,
-				83EFF59C2EDA409C00359A37 /* SorobanRpcErrorTest.swift in Sources */,
-				833C67532B8F688000E034C6 /* WithdrawExchangeResponseMock.swift in Sources */,
-				83B836232F0E954D00063825 /* LiquidityPoolTradesStreamingTestCase.swift in Sources */,
-				83F32D982E44A1AC00A8355A /* TokenContract.swift in Sources */,
-				83DB2B012ACEC86A008B04D6 /* Sep24TransactionsResponseMock.swift in Sources */,
-				83DB2AF22ACEA98A008B04D6 /* InteractiveServiceTestCase.swift in Sources */,
-				7445EA0B201B106500470E0A /* stellarsdkTests.swift in Sources */,
-				8357A919203B0EEE00A144A9 /* AssetsResponsesMock.swift in Sources */,
-				83F863432CFF293F005D363D /* GetCustomerFilesResponseMock.swift in Sources */,
-				4367E602203EE79700C0AB4F /* TradesLocalTestCase.swift in Sources */,
-				830DAB5E29AE5AD400ED4E66 /* SorobanAuthTest.swift in Sources */,
-				74723346219EFBA300343E25 /* WebAuthenticatorSendChallengeResponseMock.swift in Sources */,
-				83F4E61E2A2792C600DD42A9 /* KycServerTestCase.swift in Sources */,
-				83DD2C9D202F24CD00713FEE /* PaymentsTestCase.swift in Sources */,
-				43464797203D56AF0082B96A /* OperationsResponsesMock.swift in Sources */,
-				833C67442B85152C00E034C6 /* Sep38PostQuoteResponseMock.swift in Sources */,
-				83AFD636234FC59400A574D2 /* PathPaymentStrictReceiveOperation.swift in Sources */,
-				836E66342E40ECDD00D68F6A /* ContractSpecTest.swift in Sources */,
-				C62F97E52199BE5B000A835A /* URISchemeTestCase.swift in Sources */,
-				83BD1EE82949F67D00F6C041 /* IssueAssetTest.swift in Sources */,
-				836513962BDEEA0E00A99085 /* Sep08FollowNextMock.swift in Sources */,
-				833C673B2B84E54E00E034C6 /* Sep38InfoResponseMock.swift in Sources */,
-				7472333A219EE40200343E25 /* WebAuthenticatorTestCase.swift in Sources */,
-				83F4E6212A27ABC300DD42A9 /* GetCustomerResponseMock.swift in Sources */,
-				EC34A15C205043AB000FB042 /* MnemonicGeneration.swift in Sources */,
-				1EDB0E1FD6D44A68AC426109 /* BigIntTest.swift in Sources */,
-				833C67472B8517E200E034C6 /* Sep38GetQuoteResponseMock.swift in Sources */,
-				836513812BDEAD8900A99085 /* RegulatedAssetsTestCase.swift in Sources */,
-				833C67592B8F77F200E034C6 /* TransactionResponseMock.swift in Sources */,
-				744A84BD214403480086B8FC /* AnchorInfoResponseMock.swift in Sources */,
-				836513842BDED35B00A99085 /* Sep08PostSuccessMock.swift in Sources */,
-				83DB2B042ACED370008B04D6 /* Sep24TransactionResponseMock.swift in Sources */,
-				83F863402CFF2850005D363D /* PostCustomerFileResponseMock.swift in Sources */,
-				8357A911203AE7DF00A144A9 /* AccountRemoteTestCase.swift in Sources */,
-				74723343219EEC7D00343E25 /* WebAuthenticatorTomlFailResponseMock.swift in Sources */,
-				837228782DD1F0CD0050BBC9 /* SorobanClientTest.swift in Sources */,
-				832C2B392AEC1CA8005BB7B8 /* Sep30ErrResponseMock.swift in Sources */,
-				4367E604203EE7A800C0AB4F /* TradesResponsesMock.swift in Sources */,
-				74723340219EE6D300343E25 /* WebAuthenticatorChallengeResponseMock.swift in Sources */,
-				744A84C821441CC50086B8FC /* Date.swift in Sources */,
-				83B836162F0E917B00063825 /* AccountStreamingTestCase.swift in Sources */,
-				832C2B332AEC10C0005BB7B8 /* RecoveryServiceTestCase.swift in Sources */,
-				833C67502B8F66F000E034C6 /* DepositExchangeResponseMock.swift in Sources */,
-				836513902BDEE00400A99085 /* Sep08PostRejectedMock.swift in Sources */,
-				7467C40421426FF700412FE1 /* TransferServerTestCase.swift in Sources */,
-				834D51402C5163AC007CA0AD /* SubmitTransactionAsyncTestCase.swift in Sources */,
-				833C673E2B84EE0200E034C6 /* Sep38PricesResponseMock.swift in Sources */,
-				4367E600203ED42D00C0AB4F /* OffersLocalTestCase.swift in Sources */,
-				83697206202631D600398A98 /* LedgersRemoteTestCase.swift in Sources */,
-				830A8F0B29AE916300B30483 /* SorobanAtomicSwapTest.swift in Sources */,
-				43E24867204056FD00C83458 /* OperationXDRTestCase.swift in Sources */,
-				8357A923203B7B5100A144A9 /* EffectsResponsesMock.swift in Sources */,
-				8357A921203B7B1F00A144A9 /* EffectsLocalTestCase.swift in Sources */,
-				83DB2AF52ACEACF2008B04D6 /* Sep24InfoResponseMock.swift in Sources */,
-				745F2BC1202C4D24008763F1 /* TransactionsRemoteTestCase.swift in Sources */,
-				832C2B422AEC2806005BB7B8 /* Sep30AccountDetailsResponseMock.swift in Sources */,
-				83FE811223F0856600F4A13D /* FeeStatsRemoteTestCase.swift in Sources */,
-				83AFD63E234FC60700A574D2 /* PathPaymentStrictSendOperation.swift in Sources */,
-				744A84C621441A100086B8FC /* AnchorTransactionsResponseMock.swift in Sources */,
-				835F0CE3297613EF00793708 /* SorobanTest.swift in Sources */,
-				833C67562B8F76DF00E034C6 /* FeeResponseMock.swift in Sources */,
-				4367E5FC203EA6ED00C0AB4F /* PaymentsLocalTestCase.swift in Sources */,
-				43464795203D553B0082B96A /* OperationsLocalTestCase.swift in Sources */,
-				833C67382B84E38F00E034C6 /* QuoteServiceTestCase.swift in Sources */,
-				8357A915203B097D00A144A9 /* AssetsLocalTestCase.swift in Sources */,
-				8365E4F32E96D33500341284 /* GetLedgersTestCase.swift in Sources */,
-				832C2B362AEC117C005BB7B8 /* Sep30RegisterAccountResponseMock.swift in Sources */,
-				830A8F1129AEC3F800B30483 /* SorobanEventsTest.swift in Sources */,
-				83F32D922E44A1AC00A8355A /* AuthContract.swift in Sources */,
-				C69B1CAD219AC39B009393B9 /* TomlResponseSignatureMissingMock.swift in Sources */,
-				832C2B3C2AEC21CE005BB7B8 /* Sep30UpdateIdentitiesResponseMock.swift in Sources */,
-				83DB2AF82ACEBC6B008B04D6 /* Sep24FeeResponseMock.swift in Sources */,
-				4367E5FA203EA65300C0AB4F /* PaymentsResponsesMock.swift in Sources */,
-				8365138A2BDEDD4E00A99085 /* Sep08PostPendingMock.swift in Sources */,
-				8310BDCE26EB61B0004D3EF2 /* AmmTestCase.swift in Sources */,
-				7467C4072142740C00412FE1 /* DepositResponseMock.swift in Sources */,
-				8365E4EB2E96C6CE00341284 /* HealthRemoteTestCase.swift in Sources */,
-				8357A91D203B6F8500A144A9 /* DataForAccountResponsesMock.swift in Sources */,
-				437CEBD820457E5E00CAAF93 /* MemoRemoteTestCase.swift in Sources */,
-				832AF8E6263BE8E500B7EB49 /* ClawbackTestCase.swift in Sources */,
-				8357A91F203B768A00A144A9 /* DataForAccountRemoteTestCase.swift in Sources */,
-				83EA4763203C7F650031F13E /* LedgersLocalTestCase.swift in Sources */,
-				43D35B1020348EF800C8BDBC /* PaymentPathsTestCase.swift in Sources */,
-				83C54D062945F23700CC1E8A /* QuickStartTest.swift in Sources */,
-				83F32D962E44A1AC00A8355A /* HelloContract.swift in Sources */,
-				8369723E202A708300398A98 /* AccountResponsesMock.swift in Sources */,
-				430BE2E92035A33D00E6AB97 /* PriceTestCase.swift in Sources */,
-				744A84B72143F02F0086B8FC /* WithdrawResponseMock.swift in Sources */,
-				C62F97DC2199BB54000A835A /* TomlResponseMock.swift in Sources */,
-				832C2B482AEC2AC7005BB7B8 /* Sep30ListAccountsResponseMock.swift in Sources */,
-				83AFD656234FD49000A574D2 /* PathPaymentStrictSendOperationResponse.swift in Sources */,
-				746D78FF2195A02C0008AA79 /* TomlTestCase.swift in Sources */,
-				836513932BDEE81800A99085 /* Sep08PostActionRequiredMock.swift in Sources */,
-				4300C1832032FBE500DC5E49 /* OffersRemoteTestCase.swift in Sources */,
-				8331520C203E2635007F8F84 /* TransactionsResponsesMock.swift in Sources */,
-				8357A91B203B6F6100A144A9 /* DataForAccountLocalTestCase.swift in Sources */,
-				743DF503201F3B0800713DE7 /* AccountLocalTestCase.swift in Sources */,
-				83D6D2ED2A27C1FD00555110 /* PutCallbackUrlResponseMock.swift in Sources */,
-				83EFF5A42EEE066500359A37 /* WebAuthForContractsMocks.swift in Sources */,
-				83EFF5A52EEE066500359A37 /* WebAuthForContractsTestCase.swift in Sources */,
-				EC34A15E20504F92000FB042 /* MnemonicKeyPairGeneration.swift in Sources */,
-				744A84D4214543C60086B8FC /* DeleteCustomerInfoResponseMock.swift in Sources */,
-				8365138D2BDEDE6500A99085 /* Sep08PostRevisedMock.swift in Sources */,
-				836836062E1709D20032D97C /* StrKeyTest.swift in Sources */,
-				83DB2AFB2ACEC0D2008B04D6 /* Sep24DepositResponseMock.swift in Sources */,
-				83EA4765203C7F7D0031F13E /* LedgersResponsesMock.swift in Sources */,
-				832C2B452AEC28C7005BB7B8 /* Sep30DeleteAccountResponseMock.swift in Sources */,
-				8357A917203B0AD300A144A9 /* ResponseMock.swift in Sources */,
-				74A504F42192D85B00A608A0 /* KeyUtils.swift in Sources */,
-				83707A9C2AB33DEB001790B0 /* WebAuthRemoteTestCase.swift in Sources */,
-				836513872BDED41800A99085 /* Sep08PostTestRequest.swift in Sources */,
-				83D6D2EA2A27BAD700555110 /* PutVerificationResponseMock.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		743DF4F0201F130200713DE7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 743DF4E4201F130100713DE7 /* stellarsdk-macOS */;
-			targetProxy = 743DF4EF201F130200713DE7 /* PBXContainerItemProxy */;
-		};
-		743DF51F201F458400713DE7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 743DF509201F458400713DE7 /* stellarsdkTests-Host */;
-			targetProxy = 743DF51E201F458400713DE7 /* PBXContainerItemProxy */;
-		};
-		743DF52A201F458400713DE7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 743DF509201F458400713DE7 /* stellarsdkTests-Host */;
-			targetProxy = 743DF529201F458400713DE7 /* PBXContainerItemProxy */;
-		};
-		743DF539201F459000713DE7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 743DF509201F458400713DE7 /* stellarsdkTests-Host */;
-			targetProxy = 743DF538201F459000713DE7 /* PBXContainerItemProxy */;
-		};
-		7445EA08201B106500470E0A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 7445E9FB201B106500470E0A /* stellarsdk */;
-			targetProxy = 7445EA07201B106500470E0A /* PBXContainerItemProxy */;
-		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		743DF510201F458400713DE7 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				743DF511201F458400713DE7 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		743DF515201F458400713DE7 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				743DF516201F458400713DE7 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
@@ -5398,136 +4428,6 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/libs/ed25519-C/** $(SRCROOT)/stellarsdk/osx";
-			};
-			name = Release;
-		};
-		743DF4FA201F130200713DE7 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = LB6PL7WFX2;
-				INFOPLIST_FILE = "stellarsdk-macOSTests/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = Debug;
-		};
-		743DF4FB201F130200713DE7 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = LB6PL7WFX2;
-				INFOPLIST_FILE = "stellarsdk-macOSTests/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = Release;
-		};
-		743DF530201F458400713DE7 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = "stellarsdkTests-Host/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		743DF531201F458400713DE7 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = "stellarsdkTests-Host/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		743DF533201F458400713DE7 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = "stellarsdkTests-HostTests/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
-			};
-			name = Debug;
-		};
-		743DF534201F458400713DE7 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = "stellarsdkTests-HostTests/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
-			};
-			name = Release;
-		};
-		743DF536201F458400713DE7 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = "stellarsdkTests-HostUITests/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "stellarsdkTests-Host";
-			};
-			name = Debug;
-		};
-		743DF537201F458400713DE7 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = "stellarsdkTests-HostUITests/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "stellarsdkTests-Host";
 			};
 			name = Release;
 		};
@@ -5697,40 +4597,6 @@
 			};
 			name = Release;
 		};
-		7445EA14201B106500470E0A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = stellarsdkTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdkTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
-			};
-			name = Debug;
-		};
-		7445EA15201B106500470E0A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = stellarsdkTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdkTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
-			};
-			name = Release;
-		};
 		C51D1B0D2159348C00D061C6 /* Debug - Xcode 9 */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5818,23 +4684,6 @@
 			};
 			name = "Debug - Xcode 9";
 		};
-		C51D1B0F2159348C00D061C6 /* Debug - Xcode 9 */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = stellarsdkTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdkTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
-			};
-			name = "Debug - Xcode 9";
-		};
 		C51D1B102159348C00D061C6 /* Debug - Xcode 9 */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5856,71 +4705,6 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/stellarsdk/osx $(SRCROOT)/stellarsdk/libs/ed25519-C/**";
-			};
-			name = "Debug - Xcode 9";
-		};
-		C51D1B112159348C00D061C6 /* Debug - Xcode 9 */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = LB6PL7WFX2;
-				INFOPLIST_FILE = "stellarsdk-macOSTests/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = "Debug - Xcode 9";
-		};
-		C51D1B122159348C00D061C6 /* Debug - Xcode 9 */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = "stellarsdkTests-Host/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = "Debug - Xcode 9";
-		};
-		C51D1B132159348C00D061C6 /* Debug - Xcode 9 */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = "stellarsdkTests-HostTests/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
-			};
-			name = "Debug - Xcode 9";
-		};
-		C51D1B142159348C00D061C6 /* Debug - Xcode 9 */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = "stellarsdkTests-HostUITests/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "stellarsdkTests-Host";
 			};
 			name = "Debug - Xcode 9";
 		};
@@ -6004,23 +4788,6 @@
 			};
 			name = "Release - Xcode 9";
 		};
-		C51D1B172159349E00D061C6 /* Release - Xcode 9 */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = stellarsdkTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.soneso.stellarsdkTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
-			};
-			name = "Release - Xcode 9";
-		};
 		C51D1B182159349E00D061C6 /* Release - Xcode 9 */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -6045,71 +4812,6 @@
 			};
 			name = "Release - Xcode 9";
 		};
-		C51D1B192159349E00D061C6 /* Release - Xcode 9 */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = LB6PL7WFX2;
-				INFOPLIST_FILE = "stellarsdk-macOSTests/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdk-macOSTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = "Release - Xcode 9";
-		};
-		C51D1B1A2159349E00D061C6 /* Release - Xcode 9 */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = "stellarsdkTests-Host/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-Host";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = "Release - Xcode 9";
-		};
-		C51D1B1B2159349E00D061C6 /* Release - Xcode 9 */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = "stellarsdkTests-HostTests/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/stellarsdkTests-Host.app/stellarsdkTests-Host";
-			};
-			name = "Release - Xcode 9";
-		};
-		C51D1B1C2159349E00D061C6 /* Release - Xcode 9 */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = QN6AY4TH84;
-				INFOPLIST_FILE = "stellarsdkTests-HostUITests/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.soneso.stellarsdkTests-HostUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "stellarsdkTests-Host";
-			};
-			name = "Release - Xcode 9";
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -6120,50 +4822,6 @@
 				C51D1B102159348C00D061C6 /* Debug - Xcode 9 */,
 				743DF4F8201F130200713DE7 /* Release */,
 				C51D1B182159349E00D061C6 /* Release - Xcode 9 */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		743DF4F9201F130200713DE7 /* Build configuration list for PBXNativeTarget "stellarsdk-macOSTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				743DF4FA201F130200713DE7 /* Debug */,
-				C51D1B112159348C00D061C6 /* Debug - Xcode 9 */,
-				743DF4FB201F130200713DE7 /* Release */,
-				C51D1B192159349E00D061C6 /* Release - Xcode 9 */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		743DF52F201F458400713DE7 /* Build configuration list for PBXNativeTarget "stellarsdkTests-Host" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				743DF530201F458400713DE7 /* Debug */,
-				C51D1B122159348C00D061C6 /* Debug - Xcode 9 */,
-				743DF531201F458400713DE7 /* Release */,
-				C51D1B1A2159349E00D061C6 /* Release - Xcode 9 */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		743DF532201F458400713DE7 /* Build configuration list for PBXNativeTarget "stellarsdkTests-HostTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				743DF533201F458400713DE7 /* Debug */,
-				C51D1B132159348C00D061C6 /* Debug - Xcode 9 */,
-				743DF534201F458400713DE7 /* Release */,
-				C51D1B1B2159349E00D061C6 /* Release - Xcode 9 */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		743DF535201F458400713DE7 /* Build configuration list for PBXNativeTarget "stellarsdkTests-HostUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				743DF536201F458400713DE7 /* Debug */,
-				C51D1B142159348C00D061C6 /* Debug - Xcode 9 */,
-				743DF537201F458400713DE7 /* Release */,
-				C51D1B1C2159349E00D061C6 /* Release - Xcode 9 */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -6186,17 +4844,6 @@
 				C51D1B0E2159348C00D061C6 /* Debug - Xcode 9 */,
 				7445EA12201B106500470E0A /* Release */,
 				C51D1B162159349E00D061C6 /* Release - Xcode 9 */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		7445EA13201B106500470E0A /* Build configuration list for PBXNativeTarget "stellarsdkTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				7445EA14201B106500470E0A /* Debug */,
-				C51D1B0F2159348C00D061C6 /* Debug - Xcode 9 */,
-				7445EA15201B106500470E0A /* Release */,
-				C51D1B172159349E00D061C6 /* Release - Xcode 9 */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
