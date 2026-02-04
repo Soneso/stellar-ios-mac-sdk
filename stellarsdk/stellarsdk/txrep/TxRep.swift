@@ -2895,7 +2895,7 @@ public class TxRep: NSObject {
             break
         case .i32(let int32):
             addLine(key: prefix + "type" , value: "SCV_I32", lines: &lines)
-            addLine(key: prefix + "u32" , value: String(int32), lines: &lines)
+            addLine(key: prefix + "i32" , value: String(int32), lines: &lines)
             break
         case .u64(let uInt64):
             addLine(key: prefix + "type" , value: "SCV_U64", lines: &lines)

@@ -24,7 +24,7 @@ class EffectsLocalTestCase: XCTestCase {
         
         effectsResponsesMock = EffectsResponsesMock()
         let allEffectTypesResponse = successResponse()
-        effectsResponsesMock?.addEffectsResponse(key: "19", response: allEffectTypesResponse)
+        effectsResponsesMock?.addEffectsResponse(key: "53", response: allEffectTypesResponse)
         
     }
     
@@ -34,7 +34,7 @@ class EffectsLocalTestCase: XCTestCase {
     }
     
     func testGetEffects() async {
-        let response = await sdk.effects.getEffects(limit: 19)
+        let response = await sdk.effects.getEffects(limit: 53)
         switch response {
         case .success(let page):
             validateResult(effectsResponse:page)
@@ -47,18 +47,18 @@ class EffectsLocalTestCase: XCTestCase {
             
             XCTAssertNotNil(effectsResponse.links)
             XCTAssertNotNil(effectsResponse.links.selflink)
-            XCTAssertEqual(effectsResponse.links.selflink.href, "https://horizon-testnet.stellar.org/effects?order=desc&limit=19&cursor=")
+            XCTAssertEqual(effectsResponse.links.selflink.href, "https://horizon-testnet.stellar.org/effects?order=desc&limit=53&cursor=")
             XCTAssertNil(effectsResponse.links.selflink.templated)
-            
+
             XCTAssertNotNil(effectsResponse.links.next)
-            XCTAssertEqual(effectsResponse.links.next?.href, "https://horizon-testnet.stellar.org/effects?order=desc&limit=19&cursor=32069348273168385-1")
+            XCTAssertEqual(effectsResponse.links.next?.href, "https://horizon-testnet.stellar.org/effects?order=desc&limit=53&cursor=32069348273168385-1")
             XCTAssertNil(effectsResponse.links.next?.templated)
-            
+
             XCTAssertNotNil(effectsResponse.links.prev)
-            XCTAssertEqual(effectsResponse.links.prev?.href, "https://horizon-testnet.stellar.org/effects?order=asc&limit=19&cursor=32069369748004865-2")
+            XCTAssertEqual(effectsResponse.links.prev?.href, "https://horizon-testnet.stellar.org/effects?order=asc&limit=53&cursor=32069369748004865-2")
             XCTAssertNil(effectsResponse.links.prev?.templated)
             
-            XCTAssertEqual(effectsResponse.records.count, 19)
+            XCTAssertEqual(effectsResponse.records.count, 53)
 
             for record in effectsResponse.records {
                 switch record.effectType {
@@ -213,61 +213,173 @@ class EffectsLocalTestCase: XCTestCase {
                             XCTFail()
                         }
                     case .claimableBalanceCreatedEffect:
-                        XCTFail()
+                        if record is ClaimableBalanceCreatedEffectResponse {
+                            validateClaimableBalanceCreatedEffectResponse(effectResponse: record as! ClaimableBalanceCreatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .claimableBalanceClaimantCreatedEffect:
-                        XCTFail()
+                        if record is ClaimableBalanceClaimantCreatedEffectResponse {
+                            validateClaimableBalanceClaimantCreatedEffectResponse(effectResponse: record as! ClaimableBalanceClaimantCreatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .claimableBalanceClaimedEffect:
-                        XCTFail()
+                        if record is ClaimableBalanceClaimedEffectResponse {
+                            validateClaimableBalanceClaimedEffectResponse(effectResponse: record as! ClaimableBalanceClaimedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .accountSponsorshipCreated:
-                        XCTFail()
+                        if record is AccountSponsorshipCreatedEffectResponse {
+                            validateAccountSponsorshipCreatedEffectResponse(effectResponse: record as! AccountSponsorshipCreatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .accountSponsorshipUpdated:
-                        XCTFail()
+                        if record is AccountSponsorshipUpdatedEffectResponse {
+                            validateAccountSponsorshipUpdatedEffectResponse(effectResponse: record as! AccountSponsorshipUpdatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .accountSponsorshipRemoved:
-                        XCTFail()
+                        if record is AccountSponsorshipRemovedEffectResponse {
+                            validateAccountSponsorshipRemovedEffectResponse(effectResponse: record as! AccountSponsorshipRemovedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .trustlineSponsorshipCreated:
-                        XCTFail()
+                        if record is TrustlineSponsorshipCreatedEffectResponse {
+                            validateTrustlineSponsorshipCreatedEffectResponse(effectResponse: record as! TrustlineSponsorshipCreatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .trustlineSponsorshipUpdated:
-                        XCTFail()
+                        if record is TrustlineSponsorshipUpdatedEffectResponse {
+                            validateTrustlineSponsorshipUpdatedEffectResponse(effectResponse: record as! TrustlineSponsorshipUpdatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .trustlineSponsorshipRemoved:
-                        XCTFail()
+                        if record is TrustlineSponsorshipRemovedEffectResponse {
+                            validateTrustlineSponsorshipRemovedEffectResponse(effectResponse: record as! TrustlineSponsorshipRemovedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .dataSponsorshipCreated:
-                        XCTFail()
+                        if record is DataSponsorshipCreatedEffectResponse {
+                            validateDataSponsorshipCreatedEffectResponse(effectResponse: record as! DataSponsorshipCreatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .dataSponsorshipUpdated:
-                        XCTFail()
+                        if record is DataSponsorshipUpdatedEffectResponse {
+                            validateDataSponsorshipUpdatedEffectResponse(effectResponse: record as! DataSponsorshipUpdatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .dataSponsorshipRemoved:
-                        XCTFail()
+                        if record is DataSponsorshipRemovedEffectResponse {
+                            validateDataSponsorshipRemovedEffectResponse(effectResponse: record as! DataSponsorshipRemovedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .claimableBalanceSponsorshipCreated:
-                        XCTFail()
+                        if record is ClaimableBalanceSponsorshipCreatedEffectResponse {
+                            validateClaimableBalanceSponsorshipCreatedEffectResponse(effectResponse: record as! ClaimableBalanceSponsorshipCreatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .claimableBalanceSponsorshipUpdated:
-                        XCTFail()
+                        if record is ClaimableBalanceSponsorshipUpdatedEffectResponse {
+                            validateClaimableBalanceSponsorshipUpdatedEffectResponse(effectResponse: record as! ClaimableBalanceSponsorshipUpdatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .claimableBalanceSponsorshipRemoved:
-                        XCTFail()
+                        if record is ClaimableBalanceSponsorshipRemovedEffectResponse {
+                            validateClaimableBalanceSponsorshipRemovedEffectResponse(effectResponse: record as! ClaimableBalanceSponsorshipRemovedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .signerBalanceSponsorshipCreated:
-                        XCTFail()
+                        if record is SignerSponsorshipCreatedEffectResponse {
+                            validateSignerSponsorshipCreatedEffectResponse(effectResponse: record as! SignerSponsorshipCreatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .signerBalanceSponsorshipUpdated:
-                        XCTFail()
+                        if record is SignerSponsorshipUpdatedEffectResponse {
+                            validateSignerSponsorshipUpdatedEffectResponse(effectResponse: record as! SignerSponsorshipUpdatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .signerBalanceSponsorshipRemoved:
-                        XCTFail()
+                        if record is SignerSponsorshipRemovedEffectResponse {
+                            validateSignerSponsorshipRemovedEffectResponse(effectResponse: record as! SignerSponsorshipRemovedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .claimablaBalanceClawedBack:
-                        XCTFail()
+                        if record is ClaimableBalanceClawedBackEffectResponse {
+                            validateClaimableBalanceClawedBackEffectResponse(effectResponse: record as! ClaimableBalanceClawedBackEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .trustlineFlagsUpdated:
-                        XCTFail()
+                        if record is TrustLineFlagsUpdatedEffectResponse {
+                            XCTAssert(true)
+                        } else {
+                            XCTFail()
+                        }
                     case .liquidityPoolDeposited:
-                        XCTFail()
+                        if record is LiquidityPoolDepositedEffectResponse {
+                            validateLiquidityPoolDepositedEffectResponse(effectResponse: record as! LiquidityPoolDepositedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .liquidityPoolWithdrew:
-                        XCTFail()
+                        if record is LiquidityPoolWithdrewEffectResponse {
+                            validateLiquidityPoolWithdrewEffectResponse(effectResponse: record as! LiquidityPoolWithdrewEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .liquidityPoolTrade:
-                        XCTFail()
+                        if record is LiquidityPoolTradeEffectResponse {
+                            validateLiquidityPoolTradeEffectResponse(effectResponse: record as! LiquidityPoolTradeEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .liquidityPoolCreated:
-                        XCTFail()
+                        if record is LiquidityPoolCreatedEffectResponse {
+                            validateLiquidityPoolCreatedEffectResponse(effectResponse: record as! LiquidityPoolCreatedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .liquidityPoolRemoved:
-                        XCTFail()
+                        if record is LiquidityPoolRemovedEffectResponse {
+                            validateLiquidityPoolRemovedEffectResponse(effectResponse: record as! LiquidityPoolRemovedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .liquidityPoolRevoked:
-                        XCTFail()
+                        if record is LiquidityPoolRevokedEffectResponse {
+                            validateLiquidityPoolRevokedEffectResponse(effectResponse: record as! LiquidityPoolRevokedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .contractCredited:
-                        XCTFail()
+                        if record is ContractCreditedEffectResponse {
+                            validateContractCreditedEffectResponse(effectResponse: record as! ContractCreditedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                     case .contractDebited:
-                        XCTFail()
+                        if record is ContractDebitedEffectResponse {
+                            validateContractDebitedEffectResponse(effectResponse: record as! ContractDebitedEffectResponse)
+                        } else {
+                            XCTFail()
+                        }
                 }
             }
         }
@@ -844,6 +956,203 @@ class EffectsLocalTestCase: XCTestCase {
             XCTAssertEqual(effectResponse.effectTypeString, EffectTypeAsString.BUMP_SEQUENCE)
             XCTAssertEqual(effectResponse.effectType, EffectType.sequenceBumpedEffect)
         }
+
+        // validate claimable balance effects
+        func validateClaimableBalanceCreatedEffectResponse(effectResponse: ClaimableBalanceCreatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150684654087864322-0000000001")
+            XCTAssertEqual(effectResponse.pagingToken, "150684654087864322-1")
+            XCTAssertEqual(effectResponse.account, "GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5")
+            XCTAssertEqual(effectResponse.effectType, EffectType.claimableBalanceCreatedEffect)
+            XCTAssertEqual(effectResponse.balanceId, "0000000048a70acdec712be9547d19f7e58adc22e35e0f5bcf3897a0353ab5dd4c5d61f4")
+            XCTAssertEqual(effectResponse.amount, "900.0000000")
+        }
+
+        func validateClaimableBalanceClaimantCreatedEffectResponse(effectResponse: ClaimableBalanceClaimantCreatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150684654087864322-0000000003")
+            XCTAssertEqual(effectResponse.pagingToken, "150684654087864322-3")
+            XCTAssertEqual(effectResponse.account, "GCBMP2WKIAX7KVDRCSFXJWFM5P7HDCGTCC76U5XR52OYII6AOWS7G3DT")
+            XCTAssertEqual(effectResponse.effectType, EffectType.claimableBalanceClaimantCreatedEffect)
+            XCTAssertEqual(effectResponse.balanceId, "0000000048a70acdec712be9547d19f7e58adc22e35e0f5bcf3897a0353ab5dd4c5d61f4")
+            XCTAssertEqual(effectResponse.amount, "900.0000000")
+            XCTAssertTrue(effectResponse.predicate.unconditional ?? false)
+        }
+
+        func validateClaimableBalanceClaimedEffectResponse(effectResponse: ClaimableBalanceClaimedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150803053451329538-0000000001")
+            XCTAssertEqual(effectResponse.pagingToken, "150803053451329538-1")
+            XCTAssertEqual(effectResponse.account, "GANVXZ2DQ2FFLVCBSVMBBNVWSXS6YVEDP247EN4C3CM3I32XR4U3OU2I")
+            XCTAssertEqual(effectResponse.effectType, EffectType.claimableBalanceClaimedEffect)
+            XCTAssertEqual(effectResponse.balanceId, "0000000016cbeff27945d389e9123231ec916f7bb848c0579ceca12e2bfab5c34ce0da24")
+            XCTAssertEqual(effectResponse.amount, "1.0000000")
+        }
+
+        func validateClaimableBalanceClawedBackEffectResponse(effectResponse: ClaimableBalanceClawedBackEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0003513936083165185-0000000001")
+            XCTAssertEqual(effectResponse.pagingToken, "3513936083165185-1")
+            XCTAssertEqual(effectResponse.account, "GD5YHBKE7FSUUZIOSL4ED6UKMM2HZAYBYGZI7KRCTMFDTOO6SGZCQB4Z")
+            XCTAssertEqual(effectResponse.effectType, EffectType.claimablaBalanceClawedBack)
+            XCTAssertEqual(effectResponse.balanceId, "000000001fe36f3ce6ab6a6423b18b5947ce8890157ae77bb17faeb765814ad040b74ce1")
+        }
+
+        // validate sponsorship effects
+        func validateAccountSponsorshipCreatedEffectResponse(effectResponse: AccountSponsorshipCreatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150661134846902274-0000000004")
+            XCTAssertEqual(effectResponse.effectType, EffectType.accountSponsorshipCreated)
+            XCTAssertEqual(effectResponse.sponsor, "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV")
+        }
+
+        func validateAccountSponsorshipUpdatedEffectResponse(effectResponse: AccountSponsorshipUpdatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0151324471070908417-0000000004")
+            XCTAssertEqual(effectResponse.effectType, EffectType.accountSponsorshipUpdated)
+            XCTAssertEqual(effectResponse.newSponsor, "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV")
+            XCTAssertEqual(effectResponse.formerSponsor, "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F")
+        }
+
+        func validateAccountSponsorshipRemovedEffectResponse(effectResponse: AccountSponsorshipRemovedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0151324471070908417-0000000004")
+            XCTAssertEqual(effectResponse.effectType, EffectType.accountSponsorshipRemoved)
+            XCTAssertEqual(effectResponse.formerSponsor, "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F")
+        }
+
+        func validateTrustlineSponsorshipCreatedEffectResponse(effectResponse: TrustlineSponsorshipCreatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150661134846902276-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.trustlineSponsorshipCreated)
+            XCTAssertEqual(effectResponse.sponsor, "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV")
+            XCTAssertEqual(effectResponse.asset, "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN")
+        }
+
+        func validateTrustlineSponsorshipUpdatedEffectResponse(effectResponse: TrustlineSponsorshipUpdatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150661134846902277-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.trustlineSponsorshipUpdated)
+            XCTAssertEqual(effectResponse.newSponsor, "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV")
+            XCTAssertEqual(effectResponse.formerSponsor, "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F")
+        }
+
+        func validateTrustlineSponsorshipRemovedEffectResponse(effectResponse: TrustlineSponsorshipRemovedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150661134846902278-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.trustlineSponsorshipRemoved)
+            XCTAssertEqual(effectResponse.formerSponsor, "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F")
+        }
+
+        func validateDataSponsorshipCreatedEffectResponse(effectResponse: DataSponsorshipCreatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0003520460138483714-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.dataSponsorshipCreated)
+            XCTAssertEqual(effectResponse.sponsor, "GDDQTK5V3E3JFGLZZTJTKURTVY7QJPNQLTR5QS5HIWZWY5XPYIO5YELN")
+            XCTAssertEqual(effectResponse.dataName, "test_data")
+        }
+
+        func validateDataSponsorshipUpdatedEffectResponse(effectResponse: DataSponsorshipUpdatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0003520460138483715-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.dataSponsorshipUpdated)
+            XCTAssertEqual(effectResponse.newSponsor, "GDDQTK5V3E3JFGLZZTJTKURTVY7QJPNQLTR5QS5HIWZWY5XPYIO5YELN")
+            XCTAssertEqual(effectResponse.formerSponsor, "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F")
+        }
+
+        func validateDataSponsorshipRemovedEffectResponse(effectResponse: DataSponsorshipRemovedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0003520460138483716-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.dataSponsorshipRemoved)
+            XCTAssertEqual(effectResponse.formerSponsor, "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F")
+        }
+
+        func validateClaimableBalanceSponsorshipCreatedEffectResponse(effectResponse: ClaimableBalanceSponsorshipCreatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150661134846902279-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.claimableBalanceSponsorshipCreated)
+            XCTAssertEqual(effectResponse.sponsor, "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV")
+        }
+
+        func validateClaimableBalanceSponsorshipUpdatedEffectResponse(effectResponse: ClaimableBalanceSponsorshipUpdatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150661134846902280-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.claimableBalanceSponsorshipUpdated)
+            XCTAssertEqual(effectResponse.newSponsor, "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV")
+            XCTAssertEqual(effectResponse.formerSponsor, "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F")
+        }
+
+        func validateClaimableBalanceSponsorshipRemovedEffectResponse(effectResponse: ClaimableBalanceSponsorshipRemovedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150661134846902281-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.claimableBalanceSponsorshipRemoved)
+            XCTAssertEqual(effectResponse.formerSponsor, "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F")
+        }
+
+        func validateSignerSponsorshipCreatedEffectResponse(effectResponse: SignerSponsorshipCreatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150661134846902275-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.signerBalanceSponsorshipCreated)
+            XCTAssertEqual(effectResponse.sponsor, "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV")
+            XCTAssertEqual(effectResponse.signer, "GD6632TYLXUKGVFNQYSC2AC752YZWR7VFNJZ5X7HYPKBLZKK5YVWQ54S")
+        }
+
+        func validateSignerSponsorshipUpdatedEffectResponse(effectResponse: SignerSponsorshipUpdatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150661134846902282-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.signerBalanceSponsorshipUpdated)
+            XCTAssertEqual(effectResponse.newSponsor, "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV")
+            XCTAssertEqual(effectResponse.formerSponsor, "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F")
+        }
+
+        func validateSignerSponsorshipRemovedEffectResponse(effectResponse: SignerSponsorshipRemovedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0150661134846902283-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.signerBalanceSponsorshipRemoved)
+            XCTAssertEqual(effectResponse.formerSponsor, "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F")
+        }
+
+        // validate liquidity pool effects
+        func validateLiquidityPoolDepositedEffectResponse(effectResponse: LiquidityPoolDepositedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0001579044726386689-0000000001")
+            XCTAssertEqual(effectResponse.effectType, EffectType.liquidityPoolDeposited)
+            XCTAssertEqual(effectResponse.liquidityPool.poolId, "2c0bfa623845dd101cbf074a1ca1ae4b2458cc8d0104ad65939ebe2cd9054355")
+            XCTAssertEqual(effectResponse.sharesReceived, "250.0000000")
+            XCTAssertEqual(effectResponse.reservesDeposited.count, 2)
+        }
+
+        func validateLiquidityPoolWithdrewEffectResponse(effectResponse: LiquidityPoolWithdrewEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0001579096265998337-0000000001")
+            XCTAssertEqual(effectResponse.effectType, EffectType.liquidityPoolWithdrew)
+            XCTAssertEqual(effectResponse.liquidityPool.poolId, "2c0bfa623845dd101cbf074a1ca1ae4b2458cc8d0104ad65939ebe2cd9054355")
+            XCTAssertEqual(effectResponse.sharesRedeemed, "100.0000000")
+            XCTAssertEqual(effectResponse.reservesReceived.count, 2)
+        }
+
+        func validateLiquidityPoolTradeEffectResponse(effectResponse: LiquidityPoolTradeEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0001579418388553729-0000000003")
+            XCTAssertEqual(effectResponse.effectType, EffectType.liquidityPoolTrade)
+            XCTAssertEqual(effectResponse.liquidityPool.poolId, "2c0bfa623845dd101cbf074a1ca1ae4b2458cc8d0104ad65939ebe2cd9054355")
+            XCTAssertEqual(effectResponse.sold.amount, "18.9931895")
+            XCTAssertEqual(effectResponse.bought.amount, "20.0000000")
+        }
+
+        func validateLiquidityPoolCreatedEffectResponse(effectResponse: LiquidityPoolCreatedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0001578868632723457-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.liquidityPoolCreated)
+            XCTAssertEqual(effectResponse.liquidityPool.poolId, "2c0bfa623845dd101cbf074a1ca1ae4b2458cc8d0104ad65939ebe2cd9054355")
+        }
+
+        func validateLiquidityPoolRemovedEffectResponse(effectResponse: LiquidityPoolRemovedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0179972298072752130-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.liquidityPoolRemoved)
+            XCTAssertEqual(effectResponse.liquidityPoolId, "89c11017d16552c152536092d7440a2cd4cf4bf7df2c7e7552b56e6bcac98d95")
+        }
+
+        func validateLiquidityPoolRevokedEffectResponse(effectResponse: LiquidityPoolRevokedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0223514693699710977-0000000007")
+            XCTAssertEqual(effectResponse.effectType, EffectType.liquidityPoolRevoked)
+            XCTAssertEqual(effectResponse.liquidityPool.poolId, "a6cad36777565bf0d52f89319416fb5e73149d07b9814c5baaddea0d53ef2baa")
+            XCTAssertEqual(effectResponse.sharesRevoked, "0.5000000")
+            XCTAssertEqual(effectResponse.reservesRevoked.count, 2)
+        }
+
+        func validateContractCreditedEffectResponse(effectResponse: ContractCreditedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0000021517786157057-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.contractCredited)
+            XCTAssertEqual(effectResponse.contract, "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK")
+            XCTAssertEqual(effectResponse.amount, "100.0000000")
+            XCTAssertEqual(effectResponse.assetType, AssetTypeAsString.NATIVE)
+        }
+
+        func validateContractDebitedEffectResponse(effectResponse: ContractDebitedEffectResponse) {
+            XCTAssertEqual(effectResponse.id, "0000021517786157058-0000000002")
+            XCTAssertEqual(effectResponse.effectType, EffectType.contractDebited)
+            XCTAssertEqual(effectResponse.contract, "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK")
+            XCTAssertEqual(effectResponse.amount, "100.0000000")
+            XCTAssertEqual(effectResponse.assetType, AssetTypeAsString.NATIVE)
+        }
     }
     
     private func successResponse() -> String {
@@ -853,13 +1162,13 @@ class EffectsLocalTestCase: XCTestCase {
         {
             "_links": {
                 "self": {
-                    "href": "https://horizon-testnet.stellar.org/effects?order=desc&limit=19&cursor="
+                    "href": "https://horizon-testnet.stellar.org/effects?order=desc&limit=53&cursor="
                 },
                 "next": {
-                    "href": "https://horizon-testnet.stellar.org/effects?order=desc&limit=19&cursor=32069348273168385-1"
+                    "href": "https://horizon-testnet.stellar.org/effects?order=desc&limit=53&cursor=32069348273168385-1"
                 },
                 "prev": {
-                    "href": "https://horizon-testnet.stellar.org/effects?order=asc&limit=19&cursor=32069369748004865-2"
+                    "href": "https://horizon-testnet.stellar.org/effects?order=asc&limit=53&cursor=32069369748004865-2"
                 }
             },
             "_embedded": {
@@ -885,14 +1194,48 @@ class EffectsLocalTestCase: XCTestCase {
         effectsResponseString.append("," + offerRemovedEffect)
         effectsResponseString.append("," + offerUpdatedEffect)
         effectsResponseString.append("," + tradeEffect)
-        
-    
+        effectsResponseString.append("," + accountInflationDestinationUpdatedEffect)
+        effectsResponseString.append("," + dataCreatedEffect)
+        effectsResponseString.append("," + dataRemovedEffect)
+        effectsResponseString.append("," + dataUpdatedEffect)
+        effectsResponseString.append("," + bumpSequenceEffect)
+        effectsResponseString.append("," + trustlineAuthorizedToMaintainLiabilitiesEffect)
+        effectsResponseString.append("," + trustlineFlagsUpdatedEffect)
+        effectsResponseString.append("," + claimableBalanceCreatedEffect)
+        effectsResponseString.append("," + claimableBalanceClaimantCreatedEffect)
+        effectsResponseString.append("," + claimableBalanceClaimedEffect)
+        effectsResponseString.append("," + claimableBalanceClawedBackEffect)
+        effectsResponseString.append("," + accountSponsorshipCreatedEffect)
+        effectsResponseString.append("," + accountSponsorshipUpdatedEffect)
+        effectsResponseString.append("," + accountSponsorshipRemovedEffect)
+        effectsResponseString.append("," + trustlineSponsorshipCreatedEffect)
+        effectsResponseString.append("," + trustlineSponsorshipUpdatedEffect)
+        effectsResponseString.append("," + trustlineSponsorshipRemovedEffect)
+        effectsResponseString.append("," + dataSponsorshipCreatedEffect)
+        effectsResponseString.append("," + dataSponsorshipUpdatedEffect)
+        effectsResponseString.append("," + dataSponsorshipRemovedEffect)
+        effectsResponseString.append("," + claimableBalanceSponsorshipCreatedEffect)
+        effectsResponseString.append("," + claimableBalanceSponsorshipUpdatedEffect)
+        effectsResponseString.append("," + claimableBalanceSponsorshipRemovedEffect)
+        effectsResponseString.append("," + signerSponsorshipCreatedEffect)
+        effectsResponseString.append("," + signerSponsorshipUpdatedEffect)
+        effectsResponseString.append("," + signerSponsorshipRemovedEffect)
+        effectsResponseString.append("," + liquidityPoolDepositedEffect)
+        effectsResponseString.append("," + liquidityPoolWithdrewEffect)
+        effectsResponseString.append("," + liquidityPoolTradeEffect)
+        effectsResponseString.append("," + liquidityPoolCreatedEffect)
+        effectsResponseString.append("," + liquidityPoolRemovedEffect)
+        effectsResponseString.append("," + liquidityPoolRevokedEffect)
+        effectsResponseString.append("," + contractCreditedEffect)
+        effectsResponseString.append("," + contractDebitedEffect)
+
+
         let end = """
                     ]
                 }
             }
         """
-        
+
         effectsResponseString.append(end)
         return effectsResponseString
     }
@@ -1363,7 +1706,8 @@ class EffectsLocalTestCase: XCTestCase {
                 "account": "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ",
                 "type": "bump_sequence",
                 "created_at": "2017-03-20T19:50:52Z",
-                "type_i": 43
+                "type_i": 43,
+                "new_seq": "79473726952833048"
             }
     """
     private let dataCreatedEffect = """
@@ -1384,7 +1728,9 @@ class EffectsLocalTestCase: XCTestCase {
                 "account": "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ",
                 "type": "manage_data",
                 "created_at": "2017-03-20T19:50:52Z",
-                "type_i": 40
+                "type_i": 40,
+                "name": "test_data",
+                "value": "dGVzdF92YWx1ZQ=="
             }
     """
     private let dataRemovedEffect = """
@@ -1405,7 +1751,8 @@ class EffectsLocalTestCase: XCTestCase {
                 "account": "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ",
                 "type": "manage_data",
                 "created_at": "2017-03-20T19:50:52Z",
-                "type_i": 41
+                "type_i": 41,
+                "name": "test_data"
             }
     """
     private let dataUpdatedEffect = """
@@ -1426,7 +1773,868 @@ class EffectsLocalTestCase: XCTestCase {
                 "account": "GCBQ6JRBPF3SXQBQ6SO5MRBE7WVV4UCHYOSHQGXSZNPZLFRYVYOWBZRQ",
                 "type": "manage_data",
                 "created_at": "2017-03-20T19:50:52Z",
-                "type_i": 42
+                "type_i": 42,
+                "name": "test_data",
+                "value": "dGVzdF92YWx1ZQ=="
             }
     """
+
+    private let trustlineAuthorizedToMaintainLiabilitiesEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/33788507721730"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2"
+                    }
+                },
+                "id": "0000033788507721730-0000000002",
+                "paging_token": "33788507721730-2",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "trustline_authorized_to_maintain_liabilities",
+                "created_at": "2017-03-20T19:50:52Z",
+                "type_i": 25,
+                "asset_type": "credit_alphanum4",
+                "asset_code": "EUR",
+                "asset_issuer": "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA",
+                "limit": "100.0"
+            }
+    """
+
+    private let trustlineFlagsUpdatedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/33788507721731"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721731-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721731-2"
+                    }
+                },
+                "id": "0000033788507721731-0000000002",
+                "paging_token": "33788507721731-2",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "trustline_flags_updated",
+                "created_at": "2017-03-20T19:50:52Z",
+                "type_i": 26,
+                "trustor": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "asset_type": "credit_alphanum4",
+                "asset_code": "EUR",
+                "asset_issuer": "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA",
+                "authorized_flag": true,
+                "authorized_to_maintain_liabilites_flag": false,
+                "clawback_enabled_flag": false
+            }
+    """
+
+    private let accountInflationDestinationUpdatedEffect = """
+            {
+                "_links": {
+                   "operation": {
+                        "href": "http://horizon-testnet.stellar.org/operations/33788507721730"
+                    },
+                   "succeeds": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=desc&cursor=33788507721730-2"
+                    },
+                    "precedes": {
+                        "href": "http://horizon-testnet.stellar.org/effects?order=asc&cursor=33788507721730-2"
+                    }
+                },
+                "id": "0000033788507721730-0000000002",
+                "paging_token": "33788507721730-2",
+                "account": "GA6U5X6WOPNKKDKQULBR7IDHDBAQKOWPHYEC7WSXHZBFEYFD3XVZAKOO",
+                "type": "account_inflation_destination_updated",
+                "created_at": "2017-03-20T19:50:52Z",
+                "type_i": 7
+            }
+    """
+
+    // Claimable Balance Effects
+    private let claimableBalanceCreatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150684654087864322"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150684654087864322-1"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150684654087864322-1"
+                    }
+                },
+                "id": "0150684654087864322-0000000001",
+                "paging_token": "150684654087864322-1",
+                "account": "GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5",
+                "type": "claimable_balance_created",
+                "type_i": 50,
+                "created_at": "2021-04-24T14:16:59Z",
+                "asset": "native",
+                "balance_id": "0000000048a70acdec712be9547d19f7e58adc22e35e0f5bcf3897a0353ab5dd4c5d61f4",
+                "amount": "900.0000000"
+            }
+    """
+
+    private let claimableBalanceClaimantCreatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150684654087864322"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150684654087864322-3"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150684654087864322-3"
+                    }
+                },
+                "id": "0150684654087864322-0000000003",
+                "paging_token": "150684654087864322-3",
+                "account": "GCBMP2WKIAX7KVDRCSFXJWFM5P7HDCGTCC76U5XR52OYII6AOWS7G3DT",
+                "type": "claimable_balance_claimant_created",
+                "type_i": 51,
+                "created_at": "2021-04-24T14:16:59Z",
+                "asset": "native",
+                "balance_id": "0000000048a70acdec712be9547d19f7e58adc22e35e0f5bcf3897a0353ab5dd4c5d61f4",
+                "amount": "900.0000000",
+                "predicate": {
+                    "unconditional": true
+                }
+            }
+    """
+
+    private let claimableBalanceClaimedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150803053451329538"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150803053451329538-1"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150803053451329538-1"
+                    }
+                },
+                "id": "0150803053451329538-0000000001",
+                "paging_token": "150803053451329538-1",
+                "account": "GANVXZ2DQ2FFLVCBSVMBBNVWSXS6YVEDP247EN4C3CM3I32XR4U3OU2I",
+                "type": "claimable_balance_claimed",
+                "type_i": 52,
+                "created_at": "2021-04-26T07:35:19Z",
+                "asset": "native",
+                "balance_id": "0000000016cbeff27945d389e9123231ec916f7bb848c0579ceca12e2bfab5c34ce0da24",
+                "amount": "1.0000000"
+            }
+    """
+
+    private let claimableBalanceClawedBackEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon-testnet.stellar.org/operations/3513936083165185"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=desc&cursor=3513936083165185-1"
+                    },
+                    "precedes": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=asc&cursor=3513936083165185-1"
+                    }
+                },
+                "id": "0003513936083165185-0000000001",
+                "paging_token": "3513936083165185-1",
+                "account": "GD5YHBKE7FSUUZIOSL4ED6UKMM2HZAYBYGZI7KRCTMFDTOO6SGZCQB4Z",
+                "type": "claimable_balance_clawed_back",
+                "type_i": 80,
+                "created_at": "2021-05-06T03:48:05Z",
+                "balance_id": "000000001fe36f3ce6ab6a6423b18b5947ce8890157ae77bb17faeb765814ad040b74ce1"
+            }
+    """
+
+    // Sponsorship Effects
+    private let accountSponsorshipCreatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150661134846902274"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150661134846902274-4"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150661134846902274-4"
+                    }
+                },
+                "id": "0150661134846902274-0000000004",
+                "paging_token": "150661134846902274-4",
+                "account": "GDUQFAHWHQ6AUP6Q5MDAHILRG222CRF35HPUVRI66L7HXKHFJAQGHICR",
+                "type": "account_sponsorship_created",
+                "type_i": 60,
+                "created_at": "2021-04-24T06:02:51Z",
+                "sponsor": "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV"
+            }
+    """
+
+    private let accountSponsorshipUpdatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon-testnet.stellar.org/operations/151324471070908417"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=desc&cursor=151324471070908417-4"
+                    },
+                    "precedes": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=asc&cursor=151324471070908417-4"
+                    }
+                },
+                "id": "0151324471070908417-0000000004",
+                "paging_token": "151324471070908417-4",
+                "account": "GAHM22VLSTZHTY7RP64UYKG4VR7DDFGDGKJ4GVRRS77D7M6EMXG5XTNS",
+                "type": "account_sponsorship_updated",
+                "type_i": 61,
+                "created_at": "2021-05-03T20:29:17Z",
+                "former_sponsor": "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F",
+                "new_sponsor": "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV"
+            }
+    """
+
+    private let accountSponsorshipRemovedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/151324471070908417"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=151324471070908417-4"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=151324471070908417-4"
+                    }
+                },
+                "id": "0151324471070908417-0000000004",
+                "paging_token": "151324471070908417-4",
+                "account": "GAHM22VLSTZHTY7RP64UYKG4VR7DDFGDGKJ4GVRRS77D7M6EMXG5XTNS",
+                "type": "account_sponsorship_removed",
+                "type_i": 62,
+                "created_at": "2021-05-03T20:29:17Z",
+                "former_sponsor": "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F"
+            }
+    """
+
+    private let trustlineSponsorshipCreatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150661134846902276"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150661134846902276-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150661134846902276-2"
+                    }
+                },
+                "id": "0150661134846902276-0000000002",
+                "paging_token": "150661134846902276-2",
+                "account": "GDUQFAHWHQ6AUP6Q5MDAHILRG222CRF35HPUVRI66L7HXKHFJAQGHICR",
+                "type": "trustline_sponsorship_created",
+                "type_i": 63,
+                "created_at": "2021-04-24T06:02:51Z",
+                "asset_type": "credit_alphanum4",
+                "asset": "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+                "sponsor": "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV"
+            }
+    """
+
+    private let trustlineSponsorshipUpdatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150661134846902277"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150661134846902277-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150661134846902277-2"
+                    }
+                },
+                "id": "0150661134846902277-0000000002",
+                "paging_token": "150661134846902277-2",
+                "account": "GDUQFAHWHQ6AUP6Q5MDAHILRG222CRF35HPUVRI66L7HXKHFJAQGHICR",
+                "type": "trustline_sponsorship_updated",
+                "type_i": 64,
+                "created_at": "2021-04-24T06:02:51Z",
+                "asset_type": "credit_alphanum4",
+                "asset": "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+                "former_sponsor": "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F",
+                "new_sponsor": "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV"
+            }
+    """
+
+    private let trustlineSponsorshipRemovedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150661134846902278"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150661134846902278-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150661134846902278-2"
+                    }
+                },
+                "id": "0150661134846902278-0000000002",
+                "paging_token": "150661134846902278-2",
+                "account": "GDUQFAHWHQ6AUP6Q5MDAHILRG222CRF35HPUVRI66L7HXKHFJAQGHICR",
+                "type": "trustline_sponsorship_removed",
+                "type_i": 65,
+                "created_at": "2021-04-24T06:02:51Z",
+                "asset_type": "credit_alphanum4",
+                "asset": "USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+                "former_sponsor": "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F"
+            }
+    """
+
+    private let dataSponsorshipCreatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon-testnet.stellar.org/operations/3520460138483714"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=desc&cursor=3520460138483714-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=asc&cursor=3520460138483714-2"
+                    }
+                },
+                "id": "0003520460138483714-0000000002",
+                "paging_token": "3520460138483714-2",
+                "account": "GAJADTBH23KY25XZPBZDS5NKV5ZXTIMDGORKSQCHE4DVVLEHSXSV2EQK",
+                "type": "data_sponsorship_created",
+                "type_i": 66,
+                "created_at": "2021-05-06T06:01:13Z",
+                "data_name": "test_data",
+                "sponsor": "GDDQTK5V3E3JFGLZZTJTKURTVY7QJPNQLTR5QS5HIWZWY5XPYIO5YELN"
+            }
+    """
+
+    private let dataSponsorshipUpdatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon-testnet.stellar.org/operations/3520460138483715"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=desc&cursor=3520460138483715-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=asc&cursor=3520460138483715-2"
+                    }
+                },
+                "id": "0003520460138483715-0000000002",
+                "paging_token": "3520460138483715-2",
+                "account": "GAJADTBH23KY25XZPBZDS5NKV5ZXTIMDGORKSQCHE4DVVLEHSXSV2EQK",
+                "type": "data_sponsorship_updated",
+                "type_i": 67,
+                "created_at": "2021-05-06T06:01:13Z",
+                "data_name": "test_data",
+                "former_sponsor": "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F",
+                "new_sponsor": "GDDQTK5V3E3JFGLZZTJTKURTVY7QJPNQLTR5QS5HIWZWY5XPYIO5YELN"
+            }
+    """
+
+    private let dataSponsorshipRemovedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon-testnet.stellar.org/operations/3520460138483716"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=desc&cursor=3520460138483716-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=asc&cursor=3520460138483716-2"
+                    }
+                },
+                "id": "0003520460138483716-0000000002",
+                "paging_token": "3520460138483716-2",
+                "account": "GAJADTBH23KY25XZPBZDS5NKV5ZXTIMDGORKSQCHE4DVVLEHSXSV2EQK",
+                "type": "data_sponsorship_removed",
+                "type_i": 68,
+                "created_at": "2021-05-06T06:01:13Z",
+                "data_name": "test_data",
+                "former_sponsor": "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F"
+            }
+    """
+
+    private let claimableBalanceSponsorshipCreatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150661134846902279"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150661134846902279-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150661134846902279-2"
+                    }
+                },
+                "id": "0150661134846902279-0000000002",
+                "paging_token": "150661134846902279-2",
+                "account": "GDUQFAHWHQ6AUP6Q5MDAHILRG222CRF35HPUVRI66L7HXKHFJAQGHICR",
+                "type": "claimable_balance_sponsorship_created",
+                "type_i": 69,
+                "created_at": "2021-04-24T06:02:51Z",
+                "balance_id": "0000000048a70acdec712be9547d19f7e58adc22e35e0f5bcf3897a0353ab5dd4c5d61f4",
+                "sponsor": "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV"
+            }
+    """
+
+    private let claimableBalanceSponsorshipUpdatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150661134846902280"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150661134846902280-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150661134846902280-2"
+                    }
+                },
+                "id": "0150661134846902280-0000000002",
+                "paging_token": "150661134846902280-2",
+                "account": "GDUQFAHWHQ6AUP6Q5MDAHILRG222CRF35HPUVRI66L7HXKHFJAQGHICR",
+                "type": "claimable_balance_sponsorship_updated",
+                "type_i": 70,
+                "created_at": "2021-04-24T06:02:51Z",
+                "balance_id": "0000000048a70acdec712be9547d19f7e58adc22e35e0f5bcf3897a0353ab5dd4c5d61f4",
+                "former_sponsor": "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F",
+                "new_sponsor": "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV"
+            }
+    """
+
+    private let claimableBalanceSponsorshipRemovedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150661134846902281"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150661134846902281-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150661134846902281-2"
+                    }
+                },
+                "id": "0150661134846902281-0000000002",
+                "paging_token": "150661134846902281-2",
+                "account": "GDUQFAHWHQ6AUP6Q5MDAHILRG222CRF35HPUVRI66L7HXKHFJAQGHICR",
+                "type": "claimable_balance_sponsorship_removed",
+                "type_i": 71,
+                "created_at": "2021-04-24T06:02:51Z",
+                "balance_id": "0000000048a70acdec712be9547d19f7e58adc22e35e0f5bcf3897a0353ab5dd4c5d61f4",
+                "former_sponsor": "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F"
+            }
+    """
+
+    private let signerSponsorshipCreatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150661134846902275"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150661134846902275-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150661134846902275-2"
+                    }
+                },
+                "id": "0150661134846902275-0000000002",
+                "paging_token": "150661134846902275-2",
+                "account": "GDUQFAHWHQ6AUP6Q5MDAHILRG222CRF35HPUVRI66L7HXKHFJAQGHICR",
+                "type": "signer_sponsorship_created",
+                "type_i": 72,
+                "created_at": "2021-04-24T06:02:51Z",
+                "signer": "GD6632TYLXUKGVFNQYSC2AC752YZWR7VFNJZ5X7HYPKBLZKK5YVWQ54S",
+                "sponsor": "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV"
+            }
+    """
+
+    private let signerSponsorshipUpdatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150661134846902282"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150661134846902282-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150661134846902282-2"
+                    }
+                },
+                "id": "0150661134846902282-0000000002",
+                "paging_token": "150661134846902282-2",
+                "account": "GDUQFAHWHQ6AUP6Q5MDAHILRG222CRF35HPUVRI66L7HXKHFJAQGHICR",
+                "type": "signer_sponsorship_updated",
+                "type_i": 73,
+                "created_at": "2021-04-24T06:02:51Z",
+                "signer": "GD6632TYLXUKGVFNQYSC2AC752YZWR7VFNJZ5X7HYPKBLZKK5YVWQ54S",
+                "former_sponsor": "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F",
+                "new_sponsor": "GCZGSFPITKVJPJERJIVLCQK5YIHYTDXCY45ZHU3IRCUC53SXSCAL44JV"
+            }
+    """
+
+    private let signerSponsorshipRemovedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/150661134846902283"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=150661134846902283-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=150661134846902283-2"
+                    }
+                },
+                "id": "0150661134846902283-0000000002",
+                "paging_token": "150661134846902283-2",
+                "account": "GDUQFAHWHQ6AUP6Q5MDAHILRG222CRF35HPUVRI66L7HXKHFJAQGHICR",
+                "type": "signer_sponsorship_removed",
+                "type_i": 74,
+                "created_at": "2021-04-24T06:02:51Z",
+                "signer": "GD6632TYLXUKGVFNQYSC2AC752YZWR7VFNJZ5X7HYPKBLZKK5YVWQ54S",
+                "former_sponsor": "GA7PT6IPFVC4FGG273ZHGCNGG2O52F3B6CLVSI4SNIYOXLUNIOSFCK4F"
+            }
+    """
+
+    // Liquidity Pool Effects
+    private let liquidityPoolDepositedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon-testnet.stellar.org/operations/1579044726386689"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=desc&cursor=1579044726386689-1"
+                    },
+                    "precedes": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=asc&cursor=1579044726386689-1"
+                    }
+                },
+                "id": "0001579044726386689-0000000001",
+                "paging_token": "1579044726386689-1",
+                "account": "GAQXAWHCM4A7SQCT3BOSVEGRI2OOB7LO2CMFOYFF6YRXU4VQSB5V2V2K",
+                "type": "liquidity_pool_deposited",
+                "type_i": 90,
+                "created_at": "2021-10-07T18:06:32Z",
+                "liquidity_pool": {
+                    "id": "2c0bfa623845dd101cbf074a1ca1ae4b2458cc8d0104ad65939ebe2cd9054355",
+                    "fee_bp": 30,
+                    "type": "constant_product",
+                    "total_trustlines": "1",
+                    "total_shares": "200.0000000",
+                    "reserves": [
+                        {
+                            "asset": "COOL:GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL",
+                            "amount": "250.0000000"
+                        },
+                        {
+                            "asset": "native",
+                            "amount": "250.0000000"
+                        }
+                    ]
+                },
+                "reserves_deposited": [
+                    {
+                        "asset": "COOL:GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL",
+                        "amount": "250.0000000"
+                    },
+                    {
+                        "asset": "native",
+                        "amount": "250.0000000"
+                    }
+                ],
+                "shares_received": "250.0000000"
+            }
+    """
+
+    private let liquidityPoolWithdrewEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon-testnet.stellar.org/operations/1579096265998337"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=desc&cursor=1579096265998337-1"
+                    },
+                    "precedes": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=asc&cursor=1579096265998337-1"
+                    }
+                },
+                "id": "0001579096265998337-0000000001",
+                "paging_token": "1579096265998337-1",
+                "account": "GAQXAWHCM4A7SQCT3BOSVEGRI2OOB7LO2CMFOYFF6YRXU4VQSB5V2V2K",
+                "type": "liquidity_pool_withdrew",
+                "type_i": 91,
+                "created_at": "2021-10-07T18:07:37Z",
+                "liquidity_pool": {
+                    "id": "2c0bfa623845dd101cbf074a1ca1ae4b2458cc8d0104ad65939ebe2cd9054355",
+                    "fee_bp": 30,
+                    "type": "constant_product",
+                    "total_trustlines": "1",
+                    "total_shares": "400.0000000",
+                    "reserves": [
+                        {
+                            "asset": "COOL:GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL",
+                            "amount": "400.0000000"
+                        },
+                        {
+                            "asset": "native",
+                            "amount": "400.0000000"
+                        }
+                    ]
+                },
+                "reserves_received": [
+                    {
+                        "asset": "COOL:GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL",
+                        "amount": "100.0000000"
+                    },
+                    {
+                        "asset": "native",
+                        "amount": "100.0000000"
+                    }
+                ],
+                "shares_redeemed": "100.0000000"
+            }
+    """
+
+    private let liquidityPoolTradeEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon-testnet.stellar.org/operations/1579418388553729"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=desc&cursor=1579418388553729-3"
+                    },
+                    "precedes": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=asc&cursor=1579418388553729-3"
+                    }
+                },
+                "id": "0001579418388553729-0000000003",
+                "paging_token": "1579418388553729-3",
+                "account": "GARIJI33DZEOA2HT7H5Q3E7W6KY2KBOYA6ZSUHKNNWNQR75JSQMU3SRJ",
+                "type": "liquidity_pool_trade",
+                "type_i": 92,
+                "created_at": "2021-10-07T18:14:06Z",
+                "liquidity_pool": {
+                    "id": "2c0bfa623845dd101cbf074a1ca1ae4b2458cc8d0104ad65939ebe2cd9054355",
+                    "fee_bp": 30,
+                    "type": "constant_product",
+                    "total_trustlines": "1",
+                    "total_shares": "400.0000000",
+                    "reserves": [
+                        {
+                            "asset": "COOL:GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL",
+                            "amount": "381.0068105"
+                        },
+                        {
+                            "asset": "native",
+                            "amount": "420.0000000"
+                        }
+                    ]
+                },
+                "sold": {
+                    "asset": "COOL:GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL",
+                    "amount": "18.9931895"
+                },
+                "bought": {
+                    "asset": "native",
+                    "amount": "20.0000000"
+                }
+            }
+    """
+
+    private let liquidityPoolCreatedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon-testnet.stellar.org/operations/1578868632723457"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=desc&cursor=1578868632723457-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon-testnet.stellar.org/effects?order=asc&cursor=1578868632723457-2"
+                    }
+                },
+                "id": "0001578868632723457-0000000002",
+                "paging_token": "1578868632723457-2",
+                "account": "GAQXAWHCM4A7SQCT3BOSVEGRI2OOB7LO2CMFOYFF6YRXU4VQSB5V2V2K",
+                "type": "liquidity_pool_created",
+                "type_i": 93,
+                "created_at": "2021-10-07T18:02:57Z",
+                "liquidity_pool": {
+                    "id": "2c0bfa623845dd101cbf074a1ca1ae4b2458cc8d0104ad65939ebe2cd9054355",
+                    "fee_bp": 30,
+                    "type": "constant_product",
+                    "total_trustlines": "1",
+                    "total_shares": "0.0000000",
+                    "reserves": [
+                        {
+                            "asset": "COOL:GAZKB7OEYRUVL6TSBXI74D2IZS4JRCPBXJZ37MDDYAEYBOMHXUYIX5YL",
+                            "amount": "0.0000000"
+                        },
+                        {
+                            "asset": "native",
+                            "amount": "0.0000000"
+                        }
+                    ]
+                }
+            }
+    """
+
+    private let liquidityPoolRemovedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/179972298072752130"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=179972298072752130-2"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=179972298072752130-2"
+                    }
+                },
+                "id": "0179972298072752130-0000000002",
+                "paging_token": "179972298072752130-2",
+                "account": "GBKM2YMDONW2XPZH5PJXVDFKC4U4AXRV4TZXP53YSAJPA6ZWGCJ7YGVZ",
+                "type": "liquidity_pool_removed",
+                "type_i": 94,
+                "created_at": "2022-07-24T12:40:09Z",
+                "liquidity_pool_id": "89c11017d16552c152536092d7440a2cd4cf4bf7df2c7e7552b56e6bcac98d95"
+            }
+    """
+
+    private let liquidityPoolRevokedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "https://horizon.stellar.org/operations/223514693699710977"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon.stellar.org/effects?order=desc&cursor=223514693699710977-7"
+                    },
+                    "precedes": {
+                        "href": "https://horizon.stellar.org/effects?order=asc&cursor=223514693699710977-7"
+                    }
+                },
+                "id": "0223514693699710977-0000000007",
+                "paging_token": "223514693699710977-7",
+                "account": "GAMQXNIL2IV7YV3GIBQG56RCJAGTCW3WU64XDOM2M5N7A3OJWQZT5BNB",
+                "type": "liquidity_pool_revoked",
+                "type_i": 95,
+                "created_at": "2024-06-09T06:26:06Z",
+                "liquidity_pool": {
+                    "id": "a6cad36777565bf0d52f89319416fb5e73149d07b9814c5baaddea0d53ef2baa",
+                    "fee_bp": 30,
+                    "type": "constant_product",
+                    "total_trustlines": "1",
+                    "total_shares": "1.0000000",
+                    "reserves": [
+                        {
+                            "asset": "native",
+                            "amount": "0.0000011"
+                        },
+                        {
+                            "asset": "BTC:GAMQXNIL2IV7YV3GIBQG56RCJAGTCW3WU64XDOM2M5N7A3OJWQZT5BNB",
+                            "amount": "1000502.0030091"
+                        }
+                    ]
+                },
+                "reserves_revoked": [
+                    {
+                        "asset": "native",
+                        "amount": "0.0000011",
+                        "claimable_balance_id": "00000000b69563dc3491932aa21baf799f7f1831831c7fc4b21ea8eac97578b48ddc884c"
+                    },
+                    {
+                        "asset": "BTC:GAMQXNIL2IV7YV3GIBQG56RCJAGTCW3WU64XDOM2M5N7A3OJWQZT5BNB",
+                        "amount": "1000502.0030091",
+                        "claimable_balance_id": "000000006708d006dc9d6b8601249383b25ac17198596493ff80c8dd8e6218b0c44ef472"
+                    }
+                ],
+                "shares_revoked": "0.5000000"
+            }
+    """
+
+    // Contract Effects
+    private let contractCreditedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "http://100.83.15.43:8000/operations/21517786157057"
+                    },
+                    "succeeds": {
+                        "href": "http://100.83.15.43:8000/effects?order=desc&cursor=21517786157057-2"
+                    },
+                    "precedes": {
+                        "href": "http://100.83.15.43:8000/effects?order=asc&cursor=21517786157057-2"
+                    }
+                },
+                "id": "0000021517786157057-0000000002",
+                "paging_token": "21517786157057-2",
+                "account": "GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54",
+                "type": "contract_credited",
+                "type_i": 96,
+                "created_at": "2023-09-19T05:43:12Z",
+                "asset_type": "native",
+                "contract": "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK",
+                "amount": "100.0000000"
+            }
+    """
+
+    private let contractDebitedEffect = """
+            {
+                "_links": {
+                    "operation": {
+                        "href": "http://100.83.15.43:8000/operations/21517786157058"
+                    },
+                    "succeeds": {
+                        "href": "http://100.83.15.43:8000/effects?order=desc&cursor=21517786157058-2"
+                    },
+                    "precedes": {
+                        "href": "http://100.83.15.43:8000/effects?order=asc&cursor=21517786157058-2"
+                    }
+                },
+                "id": "0000021517786157058-0000000002",
+                "paging_token": "21517786157058-2",
+                "account": "GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54",
+                "type": "contract_debited",
+                "type_i": 97,
+                "created_at": "2023-09-19T05:43:12Z",
+                "asset_type": "native",
+                "contract": "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK",
+                "amount": "100.0000000"
+            }
+    """
+
 }

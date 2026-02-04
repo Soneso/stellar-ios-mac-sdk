@@ -560,16 +560,422 @@ class OperationXDRTestCase: XCTestCase {
             // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
             let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
             let bumpTo:Int64 = 9999999
-            
+
             let operation = BumpSequenceOperation(bumpTo: bumpTo, sourceAccountId: source.accountId)
             let operationXdr = try operation.toXDR()
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! BumpSequenceOperation
-            
+
             XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
             XCTAssertEqual(bumpTo, parsedOperation.bumpTo)
-            
+
             let base64 = try operation.toXDRBase64()
             XCTAssertEqual("AAAAAQAAAAC7JAuE3XvquOnbsgv2SRztjuk4RoBVefQ0rlrFMMQvfAAAAAsAAAAAAJiWfw==", base64)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testCreateClaimableBalanceOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            // GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR
+            let destination = try KeyPair(secretSeed: "SDHZGHURAYXKU2KMVHPOXI6JG2Q4BSQUQCEOY72O3QQTCLR2T455PMII")
+            // GBCP5W2VS7AEWV2HFRN7YYC623LTSV7VSTGIHFXDEJU7S5BAGVCSETRR
+            let issuer = try KeyPair(secretSeed: "SA64U7C5C7BS5IHWEPA7YWFN3Z6FE5L6KAMYUIT4AQ7KVTVLD23C6HEZ")
+
+            let asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuer)!
+            let amount = Decimal(100.50)
+            let claimant = Claimant(destination: destination.accountId)
+
+            let operation = CreateClaimableBalanceOperation(asset: asset, amount: amount, claimants: [claimant], sourceAccountId: source.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! CreateClaimableBalanceOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(amount, parsedOperation.amount)
+            XCTAssertTrue(parsedOperation.asset.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
+            XCTAssertEqual(asset.code, parsedOperation.asset.code)
+            XCTAssertEqual(1, parsedOperation.claimants.count)
+            XCTAssertEqual(destination.accountId, parsedOperation.claimants[0].destination)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testClaimClaimableBalanceOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            let balanceId = "da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be"
+
+            let operation = ClaimClaimableBalanceOperation(balanceId: balanceId, sourceAccountId: source.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ClaimClaimableBalanceOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(balanceId, parsedOperation.balanceId)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testBeginSponsoringFutureReservesOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let sponsor = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            // GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR
+            let sponsored = try KeyPair(secretSeed: "SDHZGHURAYXKU2KMVHPOXI6JG2Q4BSQUQCEOY72O3QQTCLR2T455PMII")
+
+            let operation = BeginSponsoringFutureReservesOperation(sponsoredAccountId: sponsored.accountId, sponsoringAccountId: sponsor.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! BeginSponsoringFutureReservesOperation
+
+            XCTAssertEqual(sponsor.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(sponsored.accountId, parsedOperation.sponsoredId)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testEndSponsoringFutureReservesOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let sponsored = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+
+            let operation = EndSponsoringFutureReservesOperation(sponsoredAccountId: sponsored.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! EndSponsoringFutureReservesOperation
+
+            XCTAssertEqual(sponsored.accountId, parsedOperation.sourceAccountId)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testRevokeSponsorshipAccountOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            // GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR
+            let accountId = try KeyPair(secretSeed: "SDHZGHURAYXKU2KMVHPOXI6JG2Q4BSQUQCEOY72O3QQTCLR2T455PMII").accountId
+
+            let ledgerKey = try RevokeSponsorshipOperation.revokeAccountSponsorshipLedgerKey(accountId: accountId)
+            let operation = RevokeSponsorshipOperation(ledgerKey: ledgerKey, sourceAccountId: source.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! RevokeSponsorshipOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertNotNil(parsedOperation.ledgerKey)
+            XCTAssertNil(parsedOperation.signerAccountId)
+            XCTAssertNil(parsedOperation.signerKey)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testRevokeSponsorshipTrustlineOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            // GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR
+            let accountId = try KeyPair(secretSeed: "SDHZGHURAYXKU2KMVHPOXI6JG2Q4BSQUQCEOY72O3QQTCLR2T455PMII").accountId
+            // GBCP5W2VS7AEWV2HFRN7YYC623LTSV7VSTGIHFXDEJU7S5BAGVCSETRR
+            let issuer = try KeyPair(secretSeed: "SA64U7C5C7BS5IHWEPA7YWFN3Z6FE5L6KAMYUIT4AQ7KVTVLD23C6HEZ")
+            let asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuer)!
+
+            let ledgerKey = try RevokeSponsorshipOperation.revokeTrustlineSponsorshipLedgerKey(accountId: accountId, asset: asset)
+            let operation = RevokeSponsorshipOperation(ledgerKey: ledgerKey, sourceAccountId: source.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! RevokeSponsorshipOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertNotNil(parsedOperation.ledgerKey)
+            XCTAssertNil(parsedOperation.signerAccountId)
+            XCTAssertNil(parsedOperation.signerKey)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testRevokeSponsorshipOfferOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            // GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR
+            let sellerId = try KeyPair(secretSeed: "SDHZGHURAYXKU2KMVHPOXI6JG2Q4BSQUQCEOY72O3QQTCLR2T455PMII").accountId
+            let offerId: UInt64 = 12345
+
+            let ledgerKey = try RevokeSponsorshipOperation.revokeOfferSponsorshipLedgerKey(sellerAccountId: sellerId, offerId: offerId)
+            let operation = RevokeSponsorshipOperation(ledgerKey: ledgerKey, sourceAccountId: source.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! RevokeSponsorshipOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertNotNil(parsedOperation.ledgerKey)
+            XCTAssertNil(parsedOperation.signerAccountId)
+            XCTAssertNil(parsedOperation.signerKey)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testRevokeSponsorshipDataOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            // GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR
+            let accountId = try KeyPair(secretSeed: "SDHZGHURAYXKU2KMVHPOXI6JG2Q4BSQUQCEOY72O3QQTCLR2T455PMII").accountId
+            let dataName = "testdata"
+
+            let ledgerKey = try RevokeSponsorshipOperation.revokeDataSponsorshipLedgerKey(accountId: accountId, dataName: dataName)
+            let operation = RevokeSponsorshipOperation(ledgerKey: ledgerKey, sourceAccountId: source.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! RevokeSponsorshipOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertNotNil(parsedOperation.ledgerKey)
+            XCTAssertNil(parsedOperation.signerAccountId)
+            XCTAssertNil(parsedOperation.signerKey)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testRevokeSponsorshipClaimableBalanceOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            let balanceId = "da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be"
+
+            let ledgerKey = try RevokeSponsorshipOperation.revokeClaimableBalanceSponsorshipLedgerKey(balanceId: balanceId)
+            let operation = RevokeSponsorshipOperation(ledgerKey: ledgerKey, sourceAccountId: source.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! RevokeSponsorshipOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertNotNil(parsedOperation.ledgerKey)
+            XCTAssertNil(parsedOperation.signerAccountId)
+            XCTAssertNil(parsedOperation.signerKey)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testRevokeSponsorshipSignerOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            // GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR
+            let accountId = try KeyPair(secretSeed: "SDHZGHURAYXKU2KMVHPOXI6JG2Q4BSQUQCEOY72O3QQTCLR2T455PMII").accountId
+            // GBCP5W2VS7AEWV2HFRN7YYC623LTSV7VSTGIHFXDEJU7S5BAGVCSETRR
+            let signerKeyPair = try KeyPair(secretSeed: "SA64U7C5C7BS5IHWEPA7YWFN3Z6FE5L6KAMYUIT4AQ7KVTVLD23C6HEZ")
+            let signerKey = try Signer.ed25519PublicKey(accountId: signerKeyPair.accountId)
+
+            let operation = RevokeSponsorshipOperation(signerAccountId: accountId, signerKey: signerKey, sourceAccountId: source.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! RevokeSponsorshipOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertNil(parsedOperation.ledgerKey)
+            XCTAssertEqual(accountId, parsedOperation.signerAccountId)
+            XCTAssertNotNil(parsedOperation.signerKey)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testClawbackOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            // GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR
+            let fromAccount = try KeyPair(secretSeed: "SDHZGHURAYXKU2KMVHPOXI6JG2Q4BSQUQCEOY72O3QQTCLR2T455PMII")
+            // GBCP5W2VS7AEWV2HFRN7YYC623LTSV7VSTGIHFXDEJU7S5BAGVCSETRR
+            let issuer = try KeyPair(secretSeed: "SA64U7C5C7BS5IHWEPA7YWFN3Z6FE5L6KAMYUIT4AQ7KVTVLD23C6HEZ")
+
+            let asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuer)!
+            let amount = Decimal(50.25)
+
+            let operation = ClawbackOperation(sourceAccountId: source.accountId, asset: asset, fromAccountId: fromAccount.accountId, amount: amount)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ClawbackOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(amount, parsedOperation.amount)
+            XCTAssertEqual(fromAccount.accountId, parsedOperation.fromAccountId)
+            XCTAssertTrue(parsedOperation.asset.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
+            XCTAssertEqual(asset.code, parsedOperation.asset.code)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testClawbackClaimableBalanceOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            let balanceId = "da0d57da7d4850e7fc10d2a9d0ebc731f7afb40574c03395b17d49149b91f5be"
+
+            let operation = ClawbackClaimableBalanceOperation(claimableBalanceID: balanceId, sourceAccountId: source.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ClawbackClaimableBalanceOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(balanceId, parsedOperation.claimableBalanceID)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testSetTrustLineFlagsOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            // GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR
+            let trustor = try KeyPair(secretSeed: "SDHZGHURAYXKU2KMVHPOXI6JG2Q4BSQUQCEOY72O3QQTCLR2T455PMII")
+            // GBCP5W2VS7AEWV2HFRN7YYC623LTSV7VSTGIHFXDEJU7S5BAGVCSETRR
+            let issuer = try KeyPair(secretSeed: "SA64U7C5C7BS5IHWEPA7YWFN3Z6FE5L6KAMYUIT4AQ7KVTVLD23C6HEZ")
+
+            let asset = Asset(type: AssetType.ASSET_TYPE_CREDIT_ALPHANUM4, code: "USD", issuer: issuer)!
+            let setFlags: UInt32 = 1
+            let clearFlags: UInt32 = 2
+
+            let operation = SetTrustlineFlagsOperation(sourceAccountId: source.accountId, asset: asset, trustorAccountId: trustor.accountId, setFlags: setFlags, clearFlags: clearFlags)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! SetTrustlineFlagsOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(trustor.accountId, parsedOperation.trustorAccountId)
+            XCTAssertTrue(parsedOperation.asset.type == AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
+            XCTAssertEqual(asset.code, parsedOperation.asset.code)
+            XCTAssertEqual(setFlags, parsedOperation.setFlags)
+            XCTAssertEqual(clearFlags, parsedOperation.clearFlags)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testLiquidityPoolDepositOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            let liquidityPoolId = "dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7"
+            let maxAmountA = Decimal(100.00)
+            let maxAmountB = Decimal(200.00)
+            let minPrice = Price(numerator: 1, denominator: 2)
+            let maxPrice = Price(numerator: 2, denominator: 1)
+
+            let operation = LiquidityPoolDepositOperation(sourceAccountId: source.accountId, liquidityPoolId: liquidityPoolId, maxAmountA: maxAmountA, maxAmountB: maxAmountB, minPrice: minPrice, maxPrice: maxPrice)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! LiquidityPoolDepositOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(liquidityPoolId, parsedOperation.liquidityPoolId)
+            XCTAssertEqual(maxAmountA, parsedOperation.maxAmountA)
+            XCTAssertEqual(maxAmountB, parsedOperation.maxAmountB)
+            XCTAssertEqual(minPrice.n, parsedOperation.minPrice.n)
+            XCTAssertEqual(minPrice.d, parsedOperation.minPrice.d)
+            XCTAssertEqual(maxPrice.n, parsedOperation.maxPrice.n)
+            XCTAssertEqual(maxPrice.d, parsedOperation.maxPrice.d)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testLiquidityPoolWithdrawOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            let liquidityPoolId = "dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7"
+            let amount = Decimal(50.00)
+            let minAmountA = Decimal(10.00)
+            let minAmountB = Decimal(20.00)
+
+            let operation = LiquidityPoolWithdrawOperation(sourceAccountId: source.accountId, liquidityPoolId: liquidityPoolId, amount: amount, minAmountA: minAmountA, minAmountB: minAmountB)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! LiquidityPoolWithdrawOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(liquidityPoolId, parsedOperation.liquidityPoolId)
+            XCTAssertEqual(amount, parsedOperation.amount)
+            XCTAssertEqual(minAmountA, parsedOperation.minAmountA)
+            XCTAssertEqual(minAmountB, parsedOperation.minAmountB)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testInvokeHostFunctionOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            let contractId = "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK"
+            let functionName = "test_function"
+            let arg1 = SCValXDR.u32(100)
+            let arg2 = SCValXDR.string("test")
+
+            let operation = try InvokeHostFunctionOperation.forInvokingContract(
+                contractId: contractId,
+                functionName: functionName,
+                functionArguments: [arg1, arg2],
+                sourceAccountId: source.accountId
+            )
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! InvokeHostFunctionOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertTrue(parsedOperation.auth.isEmpty)
+
+            switch parsedOperation.hostFunction {
+            case .invokeContract(let invokeArgs):
+                XCTAssertEqual(functionName, invokeArgs.functionName)
+                XCTAssertEqual(2, invokeArgs.args.count)
+                if case .u32(let value) = invokeArgs.args[0] {
+                    XCTAssertEqual(100, value)
+                } else {
+                    XCTFail("Expected u32 argument")
+                }
+                if case .string(let value) = invokeArgs.args[1] {
+                    XCTAssertEqual("test", value)
+                } else {
+                    XCTFail("Expected string argument")
+                }
+            default:
+                XCTFail("Expected invokeContract host function")
+            }
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testExtendFootprintTTLOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+            let extendTo: UInt32 = 100000
+
+            let operation = ExtendFootprintTTLOperation(ledgersToExpire: extendTo, sourceAccountId: source.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ExtendFootprintTTLOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
+            XCTAssertEqual(extendTo, parsedOperation.extendTo)
+        } catch {
+            XCTFail()
+        }
+    }
+
+    func testRestoreFootprintOperationXDR() {
+        do {
+            // GC5SIC4E3V56VOHJ3OZAX5SJDTWY52JYI2AFK6PUGSXFVRJQYQXXZBZF
+            let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+
+            let operation = RestoreFootprintOperation(sourceAccountId: source.accountId)
+            let operationXdr = try operation.toXDR()
+            let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! RestoreFootprintOperation
+
+            XCTAssertEqual(source.accountId, parsedOperation.sourceAccountId)
         } catch {
             XCTFail()
         }
