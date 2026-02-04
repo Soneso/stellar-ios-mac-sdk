@@ -2637,4 +2637,136 @@ class EffectsLocalTestCase: XCTestCase {
             }
     """
 
+    func testUnknownEffectType() async {
+        let jsonData = """
+        {
+            "_links": {
+                "operation": {
+                    "href": "https://horizon.stellar.org/operations/123"
+                },
+                "succeeds": {
+                    "href": "https://horizon.stellar.org/effects?order=desc&cursor=123-1"
+                },
+                "precedes": {
+                    "href": "https://horizon.stellar.org/effects?order=asc&cursor=123-1"
+                }
+            },
+            "id": "0000000123-0000000001",
+            "paging_token": "123-1",
+            "account": "GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54",
+            "type": "unknown_effect_type",
+            "type_i": 9999,
+            "created_at": "2023-09-19T05:43:12Z"
+        }
+        """.data(using: .utf8)!
+
+        let decoder = JSONDecoder()
+        do {
+            _ = try decoder.decode(EffectResponse.self, from: jsonData)
+            XCTFail("Expected decoding to fail with unknown effect type")
+        } catch {
+            if let horizonError = error as? HorizonRequestError {
+                switch horizonError {
+                case .parsingResponseFailed(let message):
+                    XCTAssertTrue(message.contains("Unknown effect type"))
+                default:
+                    XCTFail("Expected parsingResponseFailed error")
+                }
+            } else {
+                XCTFail("Expected HorizonRequestError")
+            }
+        }
+    }
+
+    func testClaimableBalanceClaimantCreatedInvalidAsset() async {
+        let jsonData = """
+        {
+            "_links": {
+                "operation": {
+                    "href": "https://horizon.stellar.org/operations/150684654087864322"
+                },
+                "succeeds": {
+                    "href": "https://horizon.stellar.org/effects?order=desc&cursor=150684654087864322-3"
+                },
+                "precedes": {
+                    "href": "https://horizon.stellar.org/effects?order=asc&cursor=150684654087864322-3"
+                }
+            },
+            "id": "0150684654087864322-0000000003",
+            "paging_token": "150684654087864322-3",
+            "account": "GCBMP2WKIAX7KVDRCSFXJWFM5P7HDCGTCC76U5XR52OYII6AOWS7G3DT",
+            "type": "claimable_balance_claimant_created",
+            "type_i": 51,
+            "created_at": "2021-04-24T14:16:59Z",
+            "asset": "invalid_asset_format",
+            "balance_id": "0000000048a70acdec712be9547d19f7e58adc22e35e0f5bcf3897a0353ab5dd4c5d61f4",
+            "amount": "900.0000000",
+            "predicate": {
+                "unconditional": true
+            }
+        }
+        """.data(using: .utf8)!
+
+        let decoder = JSONDecoder()
+        do {
+            _ = try decoder.decode(ClaimableBalanceClaimantCreatedEffectResponse.self, from: jsonData)
+            XCTFail("Expected decoding to fail with invalid asset")
+        } catch {
+            if let sdkError = error as? StellarSDKError {
+                switch sdkError {
+                case .decodingError(let message):
+                    XCTAssertTrue(message.contains("not a valid asset"))
+                default:
+                    XCTFail("Expected decodingError")
+                }
+            } else {
+                XCTFail("Expected StellarSDKError")
+            }
+        }
+    }
+
+    func testClaimableBalanceClaimedInvalidAsset() async {
+        let jsonData = """
+        {
+            "_links": {
+                "operation": {
+                    "href": "https://horizon.stellar.org/operations/150803053451329538"
+                },
+                "succeeds": {
+                    "href": "https://horizon.stellar.org/effects?order=desc&cursor=150803053451329538-1"
+                },
+                "precedes": {
+                    "href": "https://horizon.stellar.org/effects?order=asc&cursor=150803053451329538-1"
+                }
+            },
+            "id": "0150803053451329538-0000000001",
+            "paging_token": "150803053451329538-1",
+            "account": "GANVXZ2DQ2FFLVCBSVMBBNVWSXS6YVEDP247EN4C3CM3I32XR4U3OU2I",
+            "type": "claimable_balance_claimed",
+            "type_i": 52,
+            "created_at": "2021-04-26T07:35:19Z",
+            "asset": "invalid_asset_format",
+            "balance_id": "0000000016cbeff27945d389e9123231ec916f7bb848c0579ceca12e2bfab5c34ce0da24",
+            "amount": "1.0000000"
+        }
+        """.data(using: .utf8)!
+
+        let decoder = JSONDecoder()
+        do {
+            _ = try decoder.decode(ClaimableBalanceClaimedEffectResponse.self, from: jsonData)
+            XCTFail("Expected decoding to fail with invalid asset")
+        } catch {
+            if let sdkError = error as? StellarSDKError {
+                switch sdkError {
+                case .decodingError(let message):
+                    XCTAssertTrue(message.contains("not a valid asset"))
+                default:
+                    XCTFail("Expected decodingError")
+                }
+            } else {
+                XCTFail("Expected StellarSDKError")
+            }
+        }
+    }
+
 }

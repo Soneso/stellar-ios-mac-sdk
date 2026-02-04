@@ -1087,7 +1087,7 @@ class TransactionsLocalTestCase: XCTestCase {
     }
     
     func testXdrChangeTrustAssetSorting() {
-    
+
         let xdrEnvelope = "AAAAAgAAAABn/gGugyO02pFFGaHeLzNEHF4xG6LdYuDPD98S59AjuwADDUABL9thAAAHOQAAAAEAAAAAAAAAAAAAAABnflzGAAAAAAAAAAIAAAAAAAAAF17U/Ee2yWNcLItkCC67OfbsTUVaBlLoBV+SBdMv/ujIAAAAAAAAoHQAAAAAAACgCwAAAAAAAKDeAAAAAAAAAAYAAAADAAAAAAAAAAFVU0RDAAAAADuZETgO/piLoKiQDrHP5E82b32+lGvtB3JA9/Yk3xXFAAAAAXNVU0QAAAAAj2+KyPmYjEMFuwqWpv33O3NZCGoASCtyAGDvCBhfZ/QAAAAeAAAAAAAAAAAAAAAAAAAAAA=="
         do {
             let transaction = try Transaction(envelopeXdr: xdrEnvelope)
@@ -1096,6 +1096,219 @@ class TransactionsLocalTestCase: XCTestCase {
 
         } catch {
             XCTFail()
+        }
+    }
+
+    func testTransactionResponseIntegerFees() {
+        let jsonString = """
+        {
+            "_links": {
+                "self": {"href": "https://horizon.stellar.org/transactions/test"},
+                "account": {"href": "https://horizon.stellar.org/accounts/GABC"},
+                "ledger": {"href": "https://horizon.stellar.org/ledgers/123"},
+                "operations": {"href": "https://horizon.stellar.org/transactions/test/operations{?cursor,limit,order}", "templated": true},
+                "effects": {"href": "https://horizon.stellar.org/transactions/test/effects{?cursor,limit,order}", "templated": true},
+                "precedes": {"href": "https://horizon.stellar.org/transactions?order=asc&cursor=123"},
+                "succeeds": {"href": "https://horizon.stellar.org/transactions?order=desc&cursor=123"}
+            },
+            "id": "test123",
+            "paging_token": "123456",
+            "hash": "abc123def456",
+            "ledger": 100,
+            "created_at": "2018-02-21T15:16:05Z",
+            "source_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
+            "source_account_sequence": "123456789",
+            "fee_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
+            "max_fee": 100,
+            "fee_charged": 100,
+            "operation_count": 1,
+            "memo_type": "none",
+            "signatures": [],
+            "envelope_xdr": "AAAAAgAAAABn/gGugyO02pFFGaHeLzNEHF4xG6LdYuDPD98S59AjuwADDUABL9thAAAHOQAAAAEAAAAAAAAAAAAAAABnflzGAAAAAAAAAAIAAAAAAAAAF17U/Ee2yWNcLItkCC67OfbsTUVaBlLoBV+SBdMv/ujIAAAAAAAAoHQAAAAAAACgCwAAAAAAAKDeAAAAAAAAAAYAAAADAAAAAAAAAAFVU0RDAAAAADuZETgO/piLoKiQDrHP5E82b32+lGvtB3JA9/Yk3xXFAAAAAXNVU0QAAAAAj2+KyPmYjEMFuwqWpv33O3NZCGoASCtyAGDvCBhfZ/QAAAAeAAAAAAAAAAAAAAAAAAAAAA==",
+            "result_xdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAGAAAAAAAAAAA="
+        }
+        """
+
+        do {
+            let jsonData = jsonString.data(using: .utf8)!
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+            let response = try decoder.decode(TransactionResponse.self, from: jsonData)
+
+            XCTAssertEqual(response.maxFee, "100")
+            XCTAssertEqual(response.feeCharged, "100")
+        } catch {
+            XCTFail("Failed to decode: \(error)")
+        }
+    }
+
+    func testTransactionResponseMemoIdInvalid() {
+        let jsonString = """
+        {
+            "_links": {
+                "self": {"href": "https://horizon.stellar.org/transactions/test"},
+                "account": {"href": "https://horizon.stellar.org/accounts/GABC"},
+                "ledger": {"href": "https://horizon.stellar.org/ledgers/123"},
+                "operations": {"href": "https://horizon.stellar.org/transactions/test/operations{?cursor,limit,order}", "templated": true},
+                "effects": {"href": "https://horizon.stellar.org/transactions/test/effects{?cursor,limit,order}", "templated": true},
+                "precedes": {"href": "https://horizon.stellar.org/transactions?order=asc&cursor=123"},
+                "succeeds": {"href": "https://horizon.stellar.org/transactions?order=desc&cursor=123"}
+            },
+            "id": "test123",
+            "paging_token": "123456",
+            "hash": "abc123def456",
+            "ledger": 100,
+            "created_at": "2018-02-21T15:16:05Z",
+            "source_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
+            "source_account_sequence": "123456789",
+            "fee_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
+            "operation_count": 1,
+            "memo_type": "id",
+            "memo": "invalid",
+            "signatures": [],
+            "envelope_xdr": "AAAAAgAAAABn/gGugyO02pFFGaHeLzNEHF4xG6LdYuDPD98S59AjuwADDUABL9thAAAHOQAAAAEAAAAAAAAAAAAAAABnflzGAAAAAAAAAAIAAAAAAAAAF17U/Ee2yWNcLItkCC67OfbsTUVaBlLoBV+SBdMv/ujIAAAAAAAAoHQAAAAAAACgCwAAAAAAAKDeAAAAAAAAAAYAAAADAAAAAAAAAAFVU0RDAAAAADuZETgO/piLoKiQDrHP5E82b32+lGvtB3JA9/Yk3xXFAAAAAXNVU0QAAAAAj2+KyPmYjEMFuwqWpv33O3NZCGoASCtyAGDvCBhfZ/QAAAAeAAAAAAAAAAAAAAAAAAAAAA==",
+            "result_xdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAGAAAAAAAAAAA="
+        }
+        """
+
+        do {
+            let jsonData = jsonString.data(using: .utf8)!
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+            let response = try decoder.decode(TransactionResponse.self, from: jsonData)
+
+            XCTAssertNil(response.memo)
+        } catch {
+            XCTFail("Failed to decode: \(error)")
+        }
+    }
+
+    func testTransactionResponseMemoHashInvalid() {
+        let jsonString = """
+        {
+            "_links": {
+                "self": {"href": "https://horizon.stellar.org/transactions/test"},
+                "account": {"href": "https://horizon.stellar.org/accounts/GABC"},
+                "ledger": {"href": "https://horizon.stellar.org/ledgers/123"},
+                "operations": {"href": "https://horizon.stellar.org/transactions/test/operations{?cursor,limit,order}", "templated": true},
+                "effects": {"href": "https://horizon.stellar.org/transactions/test/effects{?cursor,limit,order}", "templated": true},
+                "precedes": {"href": "https://horizon.stellar.org/transactions?order=asc&cursor=123"},
+                "succeeds": {"href": "https://horizon.stellar.org/transactions?order=desc&cursor=123"}
+            },
+            "id": "test123",
+            "paging_token": "123456",
+            "hash": "abc123def456",
+            "ledger": 100,
+            "created_at": "2018-02-21T15:16:05Z",
+            "source_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
+            "source_account_sequence": "123456789",
+            "fee_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
+            "operation_count": 1,
+            "memo_type": "hash",
+            "memo": "invalid!!!",
+            "signatures": [],
+            "envelope_xdr": "AAAAAgAAAABn/gGugyO02pFFGaHeLzNEHF4xG6LdYuDPD98S59AjuwADDUABL9thAAAHOQAAAAEAAAAAAAAAAAAAAABnflzGAAAAAAAAAAIAAAAAAAAAF17U/Ee2yWNcLItkCC67OfbsTUVaBlLoBV+SBdMv/ujIAAAAAAAAoHQAAAAAAACgCwAAAAAAAKDeAAAAAAAAAAYAAAADAAAAAAAAAAFVU0RDAAAAADuZETgO/piLoKiQDrHP5E82b32+lGvtB3JA9/Yk3xXFAAAAAXNVU0QAAAAAj2+KyPmYjEMFuwqWpv33O3NZCGoASCtyAGDvCBhfZ/QAAAAeAAAAAAAAAAAAAAAAAAAAAA==",
+            "result_xdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAGAAAAAAAAAAA="
+        }
+        """
+
+        do {
+            let jsonData = jsonString.data(using: .utf8)!
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+            let response = try decoder.decode(TransactionResponse.self, from: jsonData)
+
+            XCTAssertNil(response.memo)
+        } catch {
+            XCTFail("Failed to decode: \(error)")
+        }
+    }
+
+    func testTransactionResponseMemoReturnInvalid() {
+        let jsonString = """
+        {
+            "_links": {
+                "self": {"href": "https://horizon.stellar.org/transactions/test"},
+                "account": {"href": "https://horizon.stellar.org/accounts/GABC"},
+                "ledger": {"href": "https://horizon.stellar.org/ledgers/123"},
+                "operations": {"href": "https://horizon.stellar.org/transactions/test/operations{?cursor,limit,order}", "templated": true},
+                "effects": {"href": "https://horizon.stellar.org/transactions/test/effects{?cursor,limit,order}", "templated": true},
+                "precedes": {"href": "https://horizon.stellar.org/transactions?order=asc&cursor=123"},
+                "succeeds": {"href": "https://horizon.stellar.org/transactions?order=desc&cursor=123"}
+            },
+            "id": "test123",
+            "paging_token": "123456",
+            "hash": "abc123def456",
+            "ledger": 100,
+            "created_at": "2018-02-21T15:16:05Z",
+            "source_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
+            "source_account_sequence": "123456789",
+            "fee_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
+            "operation_count": 1,
+            "memo_type": "return",
+            "memo": "invalid!!!",
+            "signatures": [],
+            "envelope_xdr": "AAAAAgAAAABn/gGugyO02pFFGaHeLzNEHF4xG6LdYuDPD98S59AjuwADDUABL9thAAAHOQAAAAEAAAAAAAAAAAAAAABnflzGAAAAAAAAAAIAAAAAAAAAF17U/Ee2yWNcLItkCC67OfbsTUVaBlLoBV+SBdMv/ujIAAAAAAAAoHQAAAAAAACgCwAAAAAAAKDeAAAAAAAAAAYAAAADAAAAAAAAAAFVU0RDAAAAADuZETgO/piLoKiQDrHP5E82b32+lGvtB3JA9/Yk3xXFAAAAAXNVU0QAAAAAj2+KyPmYjEMFuwqWpv33O3NZCGoASCtyAGDvCBhfZ/QAAAAeAAAAAAAAAAAAAAAAAAAAAA==",
+            "result_xdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAGAAAAAAAAAAA="
+        }
+        """
+
+        do {
+            let jsonData = jsonString.data(using: .utf8)!
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+            let response = try decoder.decode(TransactionResponse.self, from: jsonData)
+
+            XCTAssertNil(response.memo)
+        } catch {
+            XCTFail("Failed to decode: \(error)")
+        }
+    }
+
+    func testTransactionResponseSourceAccountMuxed() {
+        let jsonString = """
+        {
+            "_links": {
+                "self": {"href": "https://horizon.stellar.org/transactions/test"},
+                "account": {"href": "https://horizon.stellar.org/accounts/GABC"},
+                "ledger": {"href": "https://horizon.stellar.org/ledgers/123"},
+                "operations": {"href": "https://horizon.stellar.org/transactions/test/operations{?cursor,limit,order}", "templated": true},
+                "effects": {"href": "https://horizon.stellar.org/transactions/test/effects{?cursor,limit,order}", "templated": true},
+                "precedes": {"href": "https://horizon.stellar.org/transactions?order=asc&cursor=123"},
+                "succeeds": {"href": "https://horizon.stellar.org/transactions?order=desc&cursor=123"}
+            },
+            "id": "test123",
+            "paging_token": "123456",
+            "hash": "abc123def456",
+            "ledger": 100,
+            "created_at": "2018-02-21T15:16:05Z",
+            "source_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
+            "source_account_muxed": "MAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQAAAAAAAAAAAACJUQ",
+            "source_account_muxed_id": "123",
+            "source_account_sequence": "123456789",
+            "fee_account": "GAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQUFMN",
+            "fee_account_muxed": "MAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQAAAAAAAAAAAACJUQ",
+            "fee_account_muxed_id": "456",
+            "operation_count": 1,
+            "memo_type": "none",
+            "signatures": [],
+            "envelope_xdr": "AAAAAgAAAABn/gGugyO02pFFGaHeLzNEHF4xG6LdYuDPD98S59AjuwADDUABL9thAAAHOQAAAAEAAAAAAAAAAAAAAABnflzGAAAAAAAAAAIAAAAAAAAAF17U/Ee2yWNcLItkCC67OfbsTUVaBlLoBV+SBdMv/ujIAAAAAAAAoHQAAAAAAACgCwAAAAAAAKDeAAAAAAAAAAYAAAADAAAAAAAAAAFVU0RDAAAAADuZETgO/piLoKiQDrHP5E82b32+lGvtB3JA9/Yk3xXFAAAAAXNVU0QAAAAAj2+KyPmYjEMFuwqWpv33O3NZCGoASCtyAGDvCBhfZ/QAAAAeAAAAAAAAAAAAAAAAAAAAAA==",
+            "result_xdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAGAAAAAAAAAAA="
+        }
+        """
+
+        do {
+            let jsonData = jsonString.data(using: .utf8)!
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .formatted(DateFormatter.iso8601)
+            let response = try decoder.decode(TransactionResponse.self, from: jsonData)
+
+            XCTAssertEqual(response.sourceAccountMuxed, "MAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQAAAAAAAAAAAACJUQ")
+            XCTAssertEqual(response.sourceAccountMuxedId, "123")
+            XCTAssertEqual(response.feeAccountMuxed, "MAJNSTFWKUKRXAHMPWG6BM4ACWNIS57S47KQZZQGQCM6H4WTM7VQAAAAAAAAAAAACJUQ")
+            XCTAssertEqual(response.feeAccountMuxedId, "456")
+        } catch {
+            XCTFail("Failed to decode: \(error)")
         }
     }
 }

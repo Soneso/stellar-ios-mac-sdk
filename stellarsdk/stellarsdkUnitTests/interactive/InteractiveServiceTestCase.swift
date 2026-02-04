@@ -270,4 +270,83 @@ class InteractiveServiceTestCase: XCTestCase {
             }
         }
     }
+
+    func testInfoWithoutLanguage() async {
+        let responseEnum = await interactiveService.info()
+        switch responseEnum {
+        case .success(let info):
+            XCTAssertNotNil(info.depositAssets)
+            XCTAssertNotNil(info.withdrawAssets)
+            XCTAssertNotNil(info.feeEndpointInfo)
+            XCTAssertNotNil(info.featureFlags)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
+        }
+    }
+
+    func testDepositWithMinimalParameters() async {
+        let req = Sep24DepositRequest(jwt: "test", assetCode: "USD")
+        let responseEnum = await interactiveService.deposit(request: req)
+        switch responseEnum {
+        case .success(let result):
+            XCTAssertNotNil(result.id)
+            XCTAssertNotNil(result.url)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
+        }
+    }
+
+    func testWithdrawWithMinimalParameters() async {
+        let req = Sep24WithdrawRequest(jwt: "test", assetCode: "USD")
+        let responseEnum = await interactiveService.withdraw(request: req)
+        switch responseEnum {
+        case .success(let result):
+            XCTAssertNotNil(result.id)
+            XCTAssertNotNil(result.url)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
+        }
+    }
+
+    func testTransactionsWithPagination() async {
+        var req = Sep24TransactionsRequest(jwt: "test", assetCode: "ETH")
+        req.limit = 2
+        req.pagingId = "82fhs729f63dh0v4"
+
+        let responseEnum = await interactiveService.getTransactions(request: req)
+        switch responseEnum {
+        case .success(let result):
+            XCTAssertNotNil(result.transactions)
+            XCTAssertGreaterThan(result.transactions.count, 0)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
+        }
+    }
+
+    func testTransactionByExternalId() async {
+        var req = Sep24TransactionRequest(jwt: "test")
+        req.externalTransactionId = "1941491"
+
+        let responseEnum = await interactiveService.getTransaction(request: req)
+        switch responseEnum {
+        case .success(let result):
+            XCTAssertNotNil(result.transaction)
+            XCTAssertEqual("1941491", result.transaction.externalTransactionId)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
+        }
+    }
+
+    func testTransactionByStellarTxId() async {
+        var req = Sep24TransactionRequest(jwt: "test")
+        req.stellarTransactionId = "17a670bc424ff5ce3b386dbfaae9990b66a2a37b4fbe51547e8794962a3f9e6a"
+
+        let responseEnum = await interactiveService.getTransaction(request: req)
+        switch responseEnum {
+        case .success(let result):
+            XCTAssertNotNil(result.transaction)
+        case .failure(let error):
+            XCTFail(error.localizedDescription)
+        }
+    }
 }

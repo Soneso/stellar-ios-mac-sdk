@@ -32,6 +32,53 @@ class OperationsLocalTestCase: XCTestCase {
         super.tearDown()
     }
     
+    func testCreateClaimableBalanceWithInvalidAsset() async {
+        let jsonResponse = """
+        {
+            "_links": {
+                "effects": {
+                    "href": "https://horizon-testnet.stellar.org/operations/77309415424/effects/{?cursor,limit,order}",
+                    "templated": true
+                },
+                "precedes": {
+                    "href": "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=asc"
+                },
+                "self": {
+                    "href": "https://horizon-testnet.stellar.org/operations/77309415424"
+                },
+                "succeeds": {
+                    "href": "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=desc"
+                },
+                "transaction": {
+                    "href": "https://horizon-testnet.stellar.org/transactions/77309415424"
+                }
+            },
+            "id": "77309415424",
+            "paging_token": "77309415424",
+            "transaction_successful": true,
+            "type_i": 14,
+            "type": "create_claimable_balance",
+            "source_account": "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY",
+            "created_at": "2018-02-21T09:56:26Z",
+            "transaction_hash": "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d",
+            "asset": "invalid_asset_format",
+            "amount": "100.0",
+            "claimants": []
+        }
+        """
+
+        let jsonData = jsonResponse.data(using: .utf8)!
+        let decoder = JSONDecoder()
+
+        do {
+            _ = try decoder.decode(CreateClaimableBalanceOperationResponse.self, from: jsonData)
+            XCTFail("Should have thrown decoding error")
+        } catch {
+            // Expected to throw
+            XCTAssertTrue(true)
+        }
+    }
+
     func testGetOperations() async {
 
         let responseEnum = await sdk.operations.getOperations(limit: 19)
@@ -58,7 +105,7 @@ class OperationsLocalTestCase: XCTestCase {
             XCTAssertEqual(operationsResponse.links.prev?.href, "https://horizon-testnet.stellar.org/operations?order=asc&limit=19&cursor=32069369748004865-2")
             XCTAssertNil(operationsResponse.links.prev?.templated)
             
-            XCTAssertEqual(operationsResponse.records.count, 13)
+            XCTAssertEqual(operationsResponse.records.count, 15)
             
             for record in operationsResponse.records {
                 switch record.operationType {
@@ -147,7 +194,11 @@ class OperationsLocalTestCase: XCTestCase {
                         XCTFail()
                     }
                 case .createClaimableBalance:
-                    XCTFail()
+                    if record is CreateClaimableBalanceOperationResponse {
+                        validateCreateClaimableBalanceOperationResponse(operationResponse: record as! CreateClaimableBalanceOperationResponse)
+                    } else {
+                        XCTFail()
+                    }
                 case .claimClaimableBalance:
                     XCTFail()
                 case .beginSponsoringFutureReserves:
@@ -169,7 +220,11 @@ class OperationsLocalTestCase: XCTestCase {
                 case .invokeHostFunction:
                     XCTFail()
                 case .extendFootprintTTL:
-                    XCTFail()
+                    if record is ExtendFootprintTTLOperationResponse {
+                        validateExtendFootprintTTLOperationResponse(operationResponse: record as! ExtendFootprintTTLOperationResponse)
+                    } else {
+                        XCTFail()
+                    }
                 case .restoreFootprint:
                     XCTFail()
                 }
@@ -690,33 +745,107 @@ class OperationsLocalTestCase: XCTestCase {
             XCTAssertNotNil(operationResponse.links.effects)
             XCTAssertEqual(operationResponse.links.effects.href, "/operations/1743756726273/effects")
             XCTAssertEqual(operationResponse.links.effects.templated, true)
-            
+
             XCTAssertNotNil(operationResponse.links.succeeds)
             XCTAssertEqual(operationResponse.links.succeeds.href, "/effects?order=desc&cursor=1743756726273")
             XCTAssertNil(operationResponse.links.succeeds.templated)
-            
+
             XCTAssertNotNil(operationResponse.links.precedes)
             XCTAssertEqual(operationResponse.links.precedes.href, "/effects?order=asc&cursor=1743756726273")
             XCTAssertNil(operationResponse.links.precedes.templated)
-            
+
             XCTAssertNotNil(operationResponse.links.transaction)
             XCTAssertEqual(operationResponse.links.transaction.href, "/transactions/328436a8dffaf6ca33c08a93279234c7d3eaf1c028804152614187dc76b7168d")
             XCTAssertNil(operationResponse.links.transaction.templated)
-            
+
             XCTAssertNotNil(operationResponse.links.selfLink)
             XCTAssertEqual(operationResponse.links.selfLink.href, "/operations/1743756726273")
             XCTAssertNil(operationResponse.links.selfLink.templated)
-            
+
             XCTAssertEqual(operationResponse.id, "1743756726273")
             XCTAssertEqual(operationResponse.pagingToken, "1743756726273")
             XCTAssertEqual(operationResponse.sourceAccount, "GBHPJ3VMVT3X7Y6HIIAPK7YPTZCF3CWO4557BKGX2GVO4O7EZHIBELLH")
             let createdAt = DateFormatter.iso8601.date(from:"2018-02-21T09:56:26Z")
             XCTAssertEqual(operationResponse.createdAt, createdAt)
             XCTAssertEqual(operationResponse.transactionHash, "328436a8dffaf6ca33c08a93279234c7d3eaf1c028804152614187dc76b7168d")
-            
+
             XCTAssertEqual(operationResponse.operationTypeString, "bump_sequence")
             XCTAssertEqual(operationResponse.operationType, OperationType.bumpSequence)
             XCTAssertEqual(operationResponse.bumpTo, "1273737228")
+        }
+
+        func validateExtendFootprintTTLOperationResponse(operationResponse: ExtendFootprintTTLOperationResponse) {
+            XCTAssertNotNil(operationResponse.links)
+            XCTAssertNotNil(operationResponse.links.effects)
+            XCTAssertEqual(operationResponse.links.effects.href, "https://horizon-testnet.stellar.org/operations/77309415424/effects/{?cursor,limit,order}")
+            XCTAssertEqual(operationResponse.links.effects.templated, true)
+
+            XCTAssertNotNil(operationResponse.links.succeeds)
+            XCTAssertEqual(operationResponse.links.succeeds.href, "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=desc")
+            XCTAssertNil(operationResponse.links.succeeds.templated)
+
+            XCTAssertNotNil(operationResponse.links.precedes)
+            XCTAssertEqual(operationResponse.links.precedes.href, "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=asc")
+            XCTAssertNil(operationResponse.links.precedes.templated)
+
+            XCTAssertNotNil(operationResponse.links.transaction)
+            XCTAssertEqual(operationResponse.links.transaction.href, "https://horizon-testnet.stellar.org/transactions/77309415424")
+            XCTAssertNil(operationResponse.links.transaction.templated)
+
+            XCTAssertNotNil(operationResponse.links.selfLink)
+            XCTAssertEqual(operationResponse.links.selfLink.href, "https://horizon-testnet.stellar.org/operations/77309415424")
+            XCTAssertNil(operationResponse.links.selfLink.templated)
+
+            XCTAssertEqual(operationResponse.id, "77309415424")
+            XCTAssertEqual(operationResponse.pagingToken, "77309415424")
+            XCTAssertEqual(operationResponse.sourceAccount, "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY")
+            let createdAt = DateFormatter.iso8601.date(from:"2018-02-21T09:56:26Z")
+            XCTAssertEqual(operationResponse.createdAt, createdAt)
+            XCTAssertEqual(operationResponse.transactionHash, "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d")
+
+            XCTAssertEqual(operationResponse.operationTypeString, "extend_footprint_ttl")
+            XCTAssertEqual(operationResponse.operationType, OperationType.extendFootprintTTL)
+            XCTAssertEqual(operationResponse.extendTo, 1000050)
+        }
+
+        func validateCreateClaimableBalanceOperationResponse(operationResponse: CreateClaimableBalanceOperationResponse) {
+            XCTAssertNotNil(operationResponse.links)
+            XCTAssertNotNil(operationResponse.links.effects)
+            XCTAssertEqual(operationResponse.links.effects.href, "https://horizon-testnet.stellar.org/operations/77309415424/effects/{?cursor,limit,order}")
+            XCTAssertEqual(operationResponse.links.effects.templated, true)
+
+            XCTAssertNotNil(operationResponse.links.succeeds)
+            XCTAssertEqual(operationResponse.links.succeeds.href, "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=desc")
+            XCTAssertNil(operationResponse.links.succeeds.templated)
+
+            XCTAssertNotNil(operationResponse.links.precedes)
+            XCTAssertEqual(operationResponse.links.precedes.href, "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=asc")
+            XCTAssertNil(operationResponse.links.precedes.templated)
+
+            XCTAssertNotNil(operationResponse.links.transaction)
+            XCTAssertEqual(operationResponse.links.transaction.href, "https://horizon-testnet.stellar.org/transactions/77309415424")
+            XCTAssertNil(operationResponse.links.transaction.templated)
+
+            XCTAssertNotNil(operationResponse.links.selfLink)
+            XCTAssertEqual(operationResponse.links.selfLink.href, "https://horizon-testnet.stellar.org/operations/77309415424")
+            XCTAssertNil(operationResponse.links.selfLink.templated)
+
+            XCTAssertEqual(operationResponse.id, "77309415424")
+            XCTAssertEqual(operationResponse.pagingToken, "77309415424")
+            XCTAssertEqual(operationResponse.sourceAccount, "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY")
+            let createdAt = DateFormatter.iso8601.date(from:"2018-02-21T09:56:26Z")
+            XCTAssertEqual(operationResponse.createdAt, createdAt)
+            XCTAssertEqual(operationResponse.transactionHash, "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d")
+
+            XCTAssertEqual(operationResponse.operationTypeString, "create_claimable_balance")
+            XCTAssertEqual(operationResponse.operationType, OperationType.createClaimableBalance)
+            XCTAssertEqual(operationResponse.sponsor, "GBHPJ3VMVT3X7Y6HIIAPK7YPTZCF3CWO4557BKGX2GVO4O7EZHIBELLH")
+            XCTAssertEqual(operationResponse.amount, "100.0")
+            XCTAssertEqual(operationResponse.asset.type, AssetType.ASSET_TYPE_CREDIT_ALPHANUM4)
+            XCTAssertEqual(operationResponse.asset.code, "EUR")
+            XCTAssertEqual(operationResponse.asset.issuer?.accountId, "GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA")
+            XCTAssertEqual(operationResponse.claimants.count, 1)
+            XCTAssertEqual(operationResponse.claimants[0].destination, "GBIA4FH6TV64KSPDAJCNUQSM7PFL4ILGUVJDPCLUOPJ7ONMKBBVUQHRO")
         }
     }
     
@@ -753,6 +882,8 @@ class OperationsLocalTestCase: XCTestCase {
         operationsResponseString.append("," + accountMergeOperation)
         operationsResponseString.append("," + inflationOperation)
         operationsResponseString.append("," + manageDataOperation)
+        operationsResponseString.append("," + extendFootprintTTLOperation)
+        operationsResponseString.append("," + createClaimableBalanceOperation)
         
         
         let end = """
@@ -1264,6 +1395,80 @@ class OperationsLocalTestCase: XCTestCase {
                     "type_i": 11,
                     "transaction_hash": "328436a8dffaf6ca33c08a93279234c7d3eaf1c028804152614187dc76b7168d",
                     "bump_to": "1273737228"
+            }
+    """
+
+    let extendFootprintTTLOperation = """
+            {
+                "_links": {
+                    "effects": {
+                        "href": "https://horizon-testnet.stellar.org/operations/77309415424/effects/{?cursor,limit,order}",
+                        "templated": true
+                    },
+                    "precedes": {
+                        "href": "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=asc"
+                    },
+                    "self": {
+                        "href": "https://horizon-testnet.stellar.org/operations/77309415424"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=desc"
+                    },
+                    "transaction": {
+                        "href": "https://horizon-testnet.stellar.org/transactions/77309415424"
+                    }
+                },
+                "id": "77309415424",
+                "paging_token": "77309415424",
+                "transaction_successful": true,
+                "type_i": 25,
+                "type": "extend_footprint_ttl",
+                "source_account": "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY",
+                "created_at": "2018-02-21T09:56:26Z",
+                "transaction_hash": "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d",
+                "extend_to": 1000050
+            }
+    """
+
+    let createClaimableBalanceOperation = """
+            {
+                "_links": {
+                    "effects": {
+                        "href": "https://horizon-testnet.stellar.org/operations/77309415424/effects/{?cursor,limit,order}",
+                        "templated": true
+                    },
+                    "precedes": {
+                        "href": "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=asc"
+                    },
+                    "self": {
+                        "href": "https://horizon-testnet.stellar.org/operations/77309415424"
+                    },
+                    "succeeds": {
+                        "href": "https://horizon-testnet.stellar.org/operations?cursor=77309415424&order=desc"
+                    },
+                    "transaction": {
+                        "href": "https://horizon-testnet.stellar.org/transactions/77309415424"
+                    }
+                },
+                "id": "77309415424",
+                "paging_token": "77309415424",
+                "transaction_successful": true,
+                "type_i": 14,
+                "type": "create_claimable_balance",
+                "source_account": "GDWGJSTUVRNFTR7STPUUHFWQYAN6KBVWCZT2YN7MY276GCSSXSWPS6JY",
+                "created_at": "2018-02-21T09:56:26Z",
+                "transaction_hash": "5b422945c99ec8bd8b29b0086aeb89027a774be54e8663d3fa538775cde8b51d",
+                "sponsor": "GBHPJ3VMVT3X7Y6HIIAPK7YPTZCF3CWO4557BKGX2GVO4O7EZHIBELLH",
+                "asset": "EUR:GAZN3PPIDQCSP5JD4ETQQQ2IU2RMFYQTAL4NNQZUGLLO2XJJJ3RDSDGA",
+                "amount": "100.0",
+                "claimants": [
+                    {
+                        "destination": "GBIA4FH6TV64KSPDAJCNUQSM7PFL4ILGUVJDPCLUOPJ7ONMKBBVUQHRO",
+                        "predicate": {
+                            "unconditional": true
+                        }
+                    }
+                ]
             }
     """
 }

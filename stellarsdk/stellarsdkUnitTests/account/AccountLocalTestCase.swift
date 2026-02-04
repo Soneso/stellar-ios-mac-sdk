@@ -231,7 +231,29 @@ class AccountLocalTestCase: XCTestCase {
             XCTFail()
         }
     }
-    
+
+    func testAccountSequenceNumberMethods() async {
+        let accDetailsResEnum = await sdk.accounts.getAccountDetails(accountId: testSuccessAccountId)
+        switch accDetailsResEnum {
+        case .success(let accountDetails):
+            let initialSequence = accountDetails.sequenceNumber
+            XCTAssertEqual(initialSequence, 30232549674450945)
+
+            let incrementedSeq = accountDetails.incrementedSequenceNumber()
+            XCTAssertEqual(incrementedSeq, initialSequence + 1)
+            XCTAssertEqual(accountDetails.sequenceNumber, initialSequence)
+
+            accountDetails.incrementSequenceNumber()
+            XCTAssertEqual(accountDetails.sequenceNumber, initialSequence + 1)
+
+            accountDetails.decrementSequenceNumber()
+            XCTAssertEqual(accountDetails.sequenceNumber, initialSequence)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag:"testAccountSequenceNumberMethods()", horizonRequestError: error)
+            XCTFail()
+        }
+    }
+
     public func successResponse(accountId:String) -> String {
         
         let accountResponseString = """

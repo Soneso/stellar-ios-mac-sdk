@@ -12,27 +12,33 @@ import stellarsdk
 class LedgersLocalTestCase: XCTestCase {
     let sdk = StellarSDK()
     var ledgersResponsesMock: LedgersResponsesMock? = nil
+    var singleLedgerResponseMock: SingleLedgerResponseMock? = nil
     var mockRegistered = false
-    
+
     override func setUp() {
         super.setUp()
-        
+
         if !mockRegistered {
             URLProtocol.registerClass(ServerMock.self)
             mockRegistered = true
         }
-        
+
         ledgersResponsesMock = LedgersResponsesMock()
         let oneLedgerResponse = successResponse(limit: 1)
         let twoLedgersResponse = successResponse(limit: 2)
-        
+
         ledgersResponsesMock?.addLedgersResponse(key: "1", response: oneLedgerResponse)
         ledgersResponsesMock?.addLedgersResponse(key: "2", response: twoLedgersResponse)
-        
+
+        singleLedgerResponseMock = SingleLedgerResponseMock()
+        singleLedgerResponseMock?.addLedgerResponse(sequence: "12345", response: singleLedgerSuccessResponse())
+        singleLedgerResponseMock?.addLedgerResponse(sequence: "1", response: singleLedgerFirstResponse())
+
     }
     
     override func tearDown() {
         ledgersResponsesMock = nil
+        singleLedgerResponseMock = nil
         super.tearDown()
     }
     
@@ -284,5 +290,175 @@ class LedgersLocalTestCase: XCTestCase {
         ledgersResponseString.append(end)
         
         return ledgersResponseString
+    }
+
+    func testGetSingleLedger() async {
+        let responseEnum = await sdk.ledgers.getLedger(sequenceNumber: "12345")
+        switch responseEnum {
+        case .success(let ledger):
+            XCTAssertEqual(ledger.id, "8f09eb95d56aad07deb15e8b1c65cc7b7e2b8c733e4fcbfa1896f1be5b5ba230")
+            XCTAssertEqual(ledger.pagingToken, "53084860162048")
+            XCTAssertEqual(ledger.hashXdr, "8f09eb95d56aad07deb15e8b1c65cc7b7e2b8c733e4fcbfa1896f1be5b5ba230")
+            XCTAssertEqual(ledger.previousHashXdr, "15c2ec964db6ac0e4c5c5e0a5f8d5e2a8bf9b2a5f4a7c6e9b0d1f2c3d4e5f6a7")
+            XCTAssertEqual(ledger.sequenceNumber, 12345)
+            XCTAssertEqual(ledger.successfulTransactionCount, 5)
+            XCTAssertEqual(ledger.failedTransactionCount, 0)
+            XCTAssertEqual(ledger.operationCount, 15)
+            XCTAssertEqual(ledger.txSetOperationCount, 15)
+            let closedAt = DateFormatter.iso8601.date(from: "2024-01-15T12:30:45Z")
+            XCTAssertEqual(ledger.closedAt, closedAt)
+            XCTAssertEqual(ledger.feePool, "100.0000000")
+            XCTAssertEqual(ledger.baseFeeInStroops, 100)
+            XCTAssertEqual(ledger.baseReserveInStroops, 5000000)
+            XCTAssertEqual(ledger.maxTxSetSize, 1000)
+            XCTAssertEqual(ledger.protocolVersion, 20)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag: "testGetSingleLedger()", horizonRequestError: error)
+            XCTFail("failed to load single ledger")
+        }
+    }
+
+    func testGetSingleLedgerFirst() async {
+        let responseEnum = await sdk.ledgers.getLedger(sequenceNumber: "1")
+        switch responseEnum {
+        case .success(let ledger):
+            XCTAssertEqual(ledger.id, "63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99")
+            XCTAssertEqual(ledger.pagingToken, "4294967296")
+            XCTAssertEqual(ledger.sequenceNumber, 1)
+            XCTAssertEqual(ledger.successfulTransactionCount, 2)
+            XCTAssertEqual(ledger.failedTransactionCount, 1)
+            XCTAssertEqual(ledger.operationCount, 0)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag: "testGetSingleLedgerFirst()", horizonRequestError: error)
+            XCTFail("failed to load first ledger")
+        }
+    }
+
+    func testGetLedgerNotFound() async {
+        let responseEnum = await sdk.ledgers.getLedger(sequenceNumber: "999999999")
+        switch responseEnum {
+        case .success:
+            XCTFail("should have failed with not found")
+        case .failure(let error):
+            if case .notFound = error {
+                XCTAssertTrue(true)
+            } else {
+                XCTFail("expected notFound error, got \(error)")
+            }
+        }
+    }
+
+    func testGetLedgersWithCursor() async {
+        let responseEnum = await sdk.ledgers.getLedgers(cursor: "8589934592", order: .ascending, limit: 2)
+        switch responseEnum {
+        case .success(let page):
+            XCTAssertNotNil(page.records)
+            XCTAssertEqual(page.records.count, 2)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag: "testGetLedgersWithCursor()", horizonRequestError: error)
+            XCTFail("failed to load ledgers with cursor")
+        }
+    }
+
+    func testGetLedgersDescendingOrder() async {
+        let responseEnum = await sdk.ledgers.getLedgers(order: .descending, limit: 1)
+        switch responseEnum {
+        case .success(let page):
+            XCTAssertNotNil(page.records)
+            XCTAssertGreaterThanOrEqual(page.records.count, 1)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag: "testGetLedgersDescendingOrder()", horizonRequestError: error)
+            XCTFail("failed to load ledgers in descending order")
+        }
+    }
+
+    public func singleLedgerSuccessResponse() -> String {
+        return """
+        {
+          "_links": {
+            "self": {
+              "href": "https://horizon-testnet.stellar.org/ledgers/12345"
+            },
+            "transactions": {
+              "href": "https://horizon-testnet.stellar.org/ledgers/12345/transactions{?cursor,limit,order}",
+              "templated": true
+            },
+            "operations": {
+              "href": "https://horizon-testnet.stellar.org/ledgers/12345/operations{?cursor,limit,order}",
+              "templated": true
+            },
+            "payments": {
+              "href": "https://horizon-testnet.stellar.org/ledgers/12345/payments{?cursor,limit,order}",
+              "templated": true
+            },
+            "effects": {
+              "href": "https://horizon-testnet.stellar.org/ledgers/12345/effects{?cursor,limit,order}",
+              "templated": true
+            }
+          },
+          "id": "8f09eb95d56aad07deb15e8b1c65cc7b7e2b8c733e4fcbfa1896f1be5b5ba230",
+          "paging_token": "53084860162048",
+          "hash": "8f09eb95d56aad07deb15e8b1c65cc7b7e2b8c733e4fcbfa1896f1be5b5ba230",
+          "prev_hash": "15c2ec964db6ac0e4c5c5e0a5f8d5e2a8bf9b2a5f4a7c6e9b0d1f2c3d4e5f6a7",
+          "sequence": 12345,
+          "successful_transaction_count": 5,
+          "failed_transaction_count": 0,
+          "operation_count": 15,
+          "tx_set_operation_count": 15,
+          "closed_at": "2024-01-15T12:30:45Z",
+          "total_coins": "100000000000.0000000",
+          "fee_pool": "100.0000000",
+          "base_fee_in_stroops": 100,
+          "base_reserve_in_stroops": 5000000,
+          "max_tx_set_size": 1000,
+          "protocol_version": 20,
+          "header_xdr": "AAAAAdy3Lr5Tev4ZYxKMei6LWkNgcQaWhEQWlPvuxqAYEUSST/2WLmbNl35twoFs78799llnNyPHs8u5xPtPvzoq9KEAAAAAVg4WeQAAAAAAAAAA3z9hmASpL9tAVxktxD3XSOp3itxSvEmM6AUkwBS4ERkHVi1wPY+0ie6g6YCletq0h1OSHiaWAqDQKJxtKEtlSAAAWsAN4r8dMwM+/wAAABDxA9f6AAAAAwAAAAAAAAAAAAAAZAX14QAAAAH0B1YtcD2PtInuoOmApXratIdTkh4mlgKg0CicbShLZUibK4xTjWYpfADpjyadb48ZEs52+TAOiCYDUIxrs+NjEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        }
+        """
+    }
+
+    public func singleLedgerFirstResponse() -> String {
+        return """
+        {
+          "_links": {
+            "self": {
+              "href": "https://horizon-testnet.stellar.org/ledgers/1"
+            },
+            "transactions": {
+              "href": "https://horizon-testnet.stellar.org/ledgers/1/transactions{?cursor,limit,order}",
+              "templated": true
+            },
+            "operations": {
+              "href": "https://horizon-testnet.stellar.org/ledgers/1/operations{?cursor,limit,order}",
+              "templated": true
+            },
+            "payments": {
+              "href": "https://horizon-testnet.stellar.org/ledgers/1/payments{?cursor,limit,order}",
+              "templated": true
+            },
+            "effects": {
+              "href": "https://horizon-testnet.stellar.org/ledgers/1/effects{?cursor,limit,order}",
+              "templated": true
+            }
+          },
+          "id": "63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99",
+          "paging_token": "4294967296",
+          "hash": "63d98f536ee68d1b27b5b89f23af5311b7569a24faf1403ad0b52b633b07be99",
+          "prev_hash": "5c809de2f203e578a5941a25946f9ed8760f437277cd3972d0db0ac320a6ba46",
+          "sequence": 1,
+          "successful_transaction_count": 2,
+          "failed_transaction_count": 1,
+          "operation_count": 0,
+          "tx_set_operation_count": 4,
+          "closed_at": "1970-01-01T00:00:00Z",
+          "total_coins": "100000000000.0000000",
+          "fee_pool": "0.0000000",
+          "base_fee_in_stroops": 100,
+          "base_reserve_in_stroops": 100000000,
+          "max_tx_set_size": 100,
+          "protocol_version": 0,
+          "header_xdr": "AAAAAdy3Lr5Tev4ZYxKMei6LWkNgcQaWhEQWlPvuxqAYEUSST/2WLmbNl35twoFs78799llnNyPHs8u5xPtPvzoq9KEAAAAAVg4WeQAAAAAAAAAA3z9hmASpL9tAVxktxD3XSOp3itxSvEmM6AUkwBS4ERkHVi1wPY+0ie6g6YCletq0h1OSHiaWAqDQKJxtKEtlSAAAWsAN4r8dMwM+/wAAABDxA9f6AAAAAwAAAAAAAAAAAAAAZAX14QAAAAH0B1YtcD2PtInuoOmApXratIdTkh4mlgKg0CicbShLZUibK4xTjWYpfADpjyadb48ZEs52+TAOiCYDUIxrs+NjEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        }
+        """
     }
 }

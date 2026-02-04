@@ -12,25 +12,31 @@ import stellarsdk
 class TradesLocalTestCase: XCTestCase {
     let sdk = StellarSDK()
     var tradesResponsesMock: TradesResponsesMock? = nil
+    var tradesForAccountMock: TradesForAccountResponseMock? = nil
     var mockRegistered = false
     let limit = 2
-    
+    let testAccountId = "GDZYXBXG4PIQYLHY7BXDMMP3CM3QP2MC65W44M2TP2OLIR6XHGHG3OHG"
+
     override func setUp() {
         super.setUp()
-        
+
         if !mockRegistered {
             URLProtocol.registerClass(ServerMock.self)
             mockRegistered = true
         }
-        
+
         tradesResponsesMock = TradesResponsesMock()
-        
+
         let firstResponse = successResponse(limit:limit)
         tradesResponsesMock?.addTradesResponse(key: String(limit), response: firstResponse)
+
+        tradesForAccountMock = TradesForAccountResponseMock()
+        tradesForAccountMock?.addTradesResponse(key: testAccountId, response: accountTradesResponse())
     }
-    
+
     override func tearDown() {
         tradesResponsesMock = nil
+        tradesForAccountMock = nil
         super.tearDown()
     }
     
@@ -157,5 +163,135 @@ class TradesLocalTestCase: XCTestCase {
         responseString.append(end)
         
         return responseString
+    }
+
+    func testGetTradesForAccount() async {
+        let responseEnum = await sdk.trades.getTrades(forAccount: testAccountId, limit: 10)
+        switch responseEnum {
+        case .success(let page):
+            XCTAssertNotNil(page.records)
+            XCTAssertGreaterThanOrEqual(page.records.count, 1)
+            let trade = page.records.first!
+            XCTAssertEqual(trade.baseAccount, testAccountId)
+            XCTAssertEqual(trade.id, "64283226490810369-0")
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag: "testGetTradesForAccount()", horizonRequestError: error)
+            XCTFail("failed to load trades for account")
+        }
+    }
+
+    func testGetTradesWithAssetFilter() async {
+        let responseEnum = await sdk.trades.getTrades(
+            baseAssetType: AssetTypeAsString.NATIVE,
+            counterAssetType: AssetTypeAsString.CREDIT_ALPHANUM4,
+            counterAssetCode: "BTC",
+            counterAssetIssuer: "GATEMHCCKCY67ZUCKTROYN24ZYT5GK4EQZ65JJLDHKHRUZI3EUEKMTCH",
+            limit: limit
+        )
+        switch responseEnum {
+        case .success(let page):
+            XCTAssertNotNil(page.records)
+            for trade in page.records {
+                XCTAssertEqual(trade.baseAssetType, AssetTypeAsString.NATIVE)
+                XCTAssertEqual(trade.counterAssetType, AssetTypeAsString.CREDIT_ALPHANUM4)
+                XCTAssertEqual(trade.counterAssetCode, "BTC")
+            }
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag: "testGetTradesWithAssetFilter()", horizonRequestError: error)
+            XCTFail("failed to load trades with asset filter")
+        }
+    }
+
+    func testGetTradesWithCursor() async {
+        let responseEnum = await sdk.trades.getTrades(cursor: "64255919088738305-0", order: .descending, limit: limit)
+        switch responseEnum {
+        case .success(let page):
+            XCTAssertNotNil(page.records)
+            XCTAssertEqual(page.records.count, limit)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag: "testGetTradesWithCursor()", horizonRequestError: error)
+            XCTFail("failed to load trades with cursor")
+        }
+    }
+
+    func testGetTradesForAccountWithOrder() async {
+        let responseEnum = await sdk.trades.getTrades(forAccount: testAccountId, order: .ascending, limit: 5)
+        switch responseEnum {
+        case .success(let page):
+            XCTAssertNotNil(page.records)
+            XCTAssertGreaterThanOrEqual(page.records.count, 1)
+        case .failure(let error):
+            StellarSDKLog.printHorizonRequestErrorMessage(tag: "testGetTradesForAccountWithOrder()", horizonRequestError: error)
+            XCTFail("failed to load trades for account with order")
+        }
+    }
+
+    func testGetTradesNotFound() async {
+        let responseEnum = await sdk.trades.getTrades(
+            forAccount: "GINVALIDACCOUNTIDTHATDOESNOTEXISTATLEAST",
+            limit: 10
+        )
+        switch responseEnum {
+        case .success:
+            XCTAssertTrue(true)
+        case .failure(let error):
+            if case .notFound = error {
+                XCTAssertTrue(true)
+            } else {
+                StellarSDKLog.printHorizonRequestErrorMessage(tag: "testGetTradesNotFound()", horizonRequestError: error)
+            }
+        }
+    }
+
+    public func accountTradesResponse() -> String {
+        return """
+        {
+          "_links": {
+            "self": {
+              "href": "https://horizon-testnet.stellar.org/accounts/GDZYXBXG4PIQYLHY7BXDMMP3CM3QP2MC65W44M2TP2OLIR6XHGHG3OHG/trades?order=desc&limit=10&cursor="
+            },
+            "next": {
+              "href": "https://horizon-testnet.stellar.org/accounts/GDZYXBXG4PIQYLHY7BXDMMP3CM3QP2MC65W44M2TP2OLIR6XHGHG3OHG/trades?order=desc&limit=10&cursor=64255919088738305-0"
+            },
+            "prev": {
+              "href": "https://horizon-testnet.stellar.org/accounts/GDZYXBXG4PIQYLHY7BXDMMP3CM3QP2MC65W44M2TP2OLIR6XHGHG3OHG/trades?order=asc&limit=10&cursor=64283226490810369-0"
+            }
+          },
+          "_embedded": {
+            "records": [
+              {
+                "_links": {
+                  "base": {
+                    "href": "https://horizon.stellar.org/accounts/GDZYXBXG4PIQYLHY7BXDMMP3CM3QP2MC65W44M2TP2OLIR6XHGHG3OHG"
+                  },
+                  "counter": {
+                    "href": "https://horizon.stellar.org/accounts/GDAGT3NCVD4VCLN4TBRPHPJURX2KKCCZPA3WCROTJDUQI73XXJ4LCIMF"
+                  },
+                  "operation": {
+                    "href": "https://horizon.stellar.org/operations/64283226490810369"
+                  }
+                },
+                "id": "64283226490810369-0",
+                "paging_token": "64283226490810369-0",
+                "ledger_close_time": "2017-12-08T20:27:12Z",
+                "offer_id": "286304",
+                "base_account": "GDZYXBXG4PIQYLHY7BXDMMP3CM3QP2MC65W44M2TP2OLIR6XHGHG3OHG",
+                "base_amount": "451.0000000",
+                "base_asset_type": "native",
+                "counter_account": "GDAGT3NCVD4VCLN4TBRPHPJURX2KKCCZPA3WCROTJDUQI73XXJ4LCIMF",
+                "counter_amount": "0.0027962",
+                "counter_asset_type": "credit_alphanum4",
+                "counter_asset_code": "BTC",
+                "counter_asset_issuer": "GATEMHCCKCY67ZUCKTROYN24ZYT5GK4EQZ65JJLDHKHRUZI3EUEKMTCH",
+                "base_is_seller": false,
+                "price": {
+                  "n": "10000000",
+                  "d": "108837"
+                }
+              }
+            ]
+          }
+        }
+        """
     }
 }
