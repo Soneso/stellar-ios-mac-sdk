@@ -321,13 +321,19 @@ public class URIScheme: NSObject {
     /// - Parameter url: The SEP-0007 URI to parse
     /// - Returns: The parameter value if found, nil otherwise
     public func getValue(forParam param: SignTransactionParams, fromURL url: String) -> String? {
-        let fields = url.split(separator: "&")
+        // Extract query string (everything after ?)
+        guard let queryStart = url.range(of: "?") else {
+            return nil
+        }
+
+        let queryString = String(url[queryStart.upperBound...])
+        let fields = queryString.split(separator: "&")
+
         for field in fields {
-            if field.hasPrefix("\(param)") {
+            if field.hasPrefix("\(param)=") {
                 return field.replacingOccurrences(of: "\(param)=", with: "")
             }
         }
-        
         return nil
     }
     

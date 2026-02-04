@@ -41,7 +41,7 @@ public extension String {
     ///
     /// - Returns: True if the string matches FQDN format, false otherwise
     var isFullyQualifiedDomainName: Bool {
-        let sRegex = "(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-).)+[a-zA-Z]{2,63}.?$)"
+        let sRegex = "(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\\.)+[a-zA-Z]{2,63}\\.?$)"
         return NSPredicate(format: "SELF MATCHES[c] %@", sRegex).evaluate(with: self)
     }
     

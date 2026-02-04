@@ -139,11 +139,23 @@ extension UnkeyedDecodingContainer {
                 array.append(value)
             } else if let nestedDictionary = try? decode(Dictionary<String, Any>.self) {
                 array.append(nestedDictionary)
-            } else if let nestedArray = try? decode(Array<Any>.self) {
+            } else if let nestedArray = try? decodeNestedArray() {
                 array.append(nestedArray)
             }
         }
         return array
+    }
+
+    /// Decodes a nested array from an unkeyed container.
+    ///
+    /// This helper method creates a nested unkeyed container to properly decode
+    /// nested arrays without causing infinite recursion.
+    ///
+    /// - Returns: Decoded array with Any values
+    /// - Throws: DecodingError if decoding fails
+    private mutating func decodeNestedArray() throws -> [Any] {
+        var nestedContainer = try self.nestedUnkeyedContainer()
+        return try nestedContainer.decode([Any].self)
     }
     
     /// Decodes a nested dictionary from an unkeyed container.

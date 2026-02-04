@@ -301,8 +301,8 @@ final class ExtensionsTestCase: XCTestCase {
             XCTAssertTrue(fqdn.isFullyQualifiedDomainName, "'\(fqdn)' should be valid FQDN")
         }
 
-        // Test invalid FQDNs (Note: "example" appears to pass the regex, so testing other invalid cases)
-        let invalidFQDNs = ["", "a", "ab", "abc", "-example.com", "example-.com"]
+        // Test invalid FQDNs - single-word domains without dots are now correctly rejected
+        let invalidFQDNs = ["", "a", "ab", "abc", "localhost", "test", "-example.com", "example-.com"]
         for invalid in invalidFQDNs {
             XCTAssertFalse(invalid.isFullyQualifiedDomainName, "'\(invalid)' should not be valid FQDN")
         }
@@ -571,5 +571,1128 @@ final class ExtensionsTestCase: XCTestCase {
         let empty = Data()
         let resultEmpty = Data.xor(left: data1, right: empty)
         XCTAssertEqual(resultEmpty, data1, "XOR with empty should return original")
+    }
+
+    // MARK: - KeyedCoding+Collections Extension Tests
+    // These tests EXPLICITLY call the extension methods in KeyedCoding+Collections.swift
+    // by using custom Decodable implementations that invoke the extension.
+
+    func testDecodeAnyDictionary() throws {
+        // Test decoding [String: Any] using the extension method
+        let json = """
+        {
+            "data": {
+                "stringValue": "hello",
+                "intValue": 42,
+                "doubleValue": 3.14,
+                "boolValue": true
+            }
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyDictionaryWrapper.self, from: jsonData)
+
+        XCTAssertEqual(decoded.data["stringValue"] as? String, "hello")
+        XCTAssertEqual(decoded.data["intValue"] as? Int, 42)
+        XCTAssertEqual(decoded.data["doubleValue"] as? Double, 3.14)
+        XCTAssertEqual(decoded.data["boolValue"] as? Bool, true)
+    }
+
+    func testDecodeAnyDictionaryWithNestedObjects() throws {
+        // Test decoding nested dictionaries
+        let json = """
+        {
+            "data": {
+                "name": "parent",
+                "nested": {
+                    "name": "child",
+                    "value": 123
+                }
+            }
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyDictionaryWrapper.self, from: jsonData)
+
+        XCTAssertEqual(decoded.data["name"] as? String, "parent")
+
+        let nested = decoded.data["nested"] as? [String: Any]
+        XCTAssertNotNil(nested)
+        XCTAssertEqual(nested?["name"] as? String, "child")
+        XCTAssertEqual(nested?["value"] as? Int, 123)
+    }
+
+    func testDecodeAnyDictionaryWithArrays() throws {
+        // Test decoding dictionaries containing arrays
+        let json = """
+        {
+            "data": {
+                "items": [1, 2, 3],
+                "names": ["Alice", "Bob"]
+            }
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyDictionaryWrapper.self, from: jsonData)
+
+        let items = decoded.data["items"] as? [Any]
+        XCTAssertNotNil(items)
+        XCTAssertEqual(items?.count, 3)
+        XCTAssertEqual(items?[0] as? Double, 1.0) // JSON numbers decode as Double in [Any]
+        XCTAssertEqual(items?[1] as? Double, 2.0)
+        XCTAssertEqual(items?[2] as? Double, 3.0)
+
+        let names = decoded.data["names"] as? [Any]
+        XCTAssertNotNil(names)
+        XCTAssertEqual(names?[0] as? String, "Alice")
+        XCTAssertEqual(names?[1] as? String, "Bob")
+    }
+
+    func testDecodeAnyDictionaryEmpty() throws {
+        // Test decoding empty dictionary
+        let json = """
+        {
+            "data": {}
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyDictionaryWrapper.self, from: jsonData)
+
+        XCTAssertTrue(decoded.data.isEmpty)
+    }
+
+    func testDecodeAnyDictionaryIfPresent() throws {
+        // Test decodeIfPresent when key is present
+        let jsonWithKey = """
+        {
+            "required": "value",
+            "optional": {
+                "key": "value"
+            }
+        }
+        """
+        let dataWithKey = jsonWithKey.data(using: .utf8)!
+        let decodedWithKey = try JSONDecoder().decode(OptionalAnyDictionaryWrapper.self, from: dataWithKey)
+
+        XCTAssertEqual(decodedWithKey.required, "value")
+        XCTAssertNotNil(decodedWithKey.optional)
+        XCTAssertEqual(decodedWithKey.optional?["key"] as? String, "value")
+
+        // Test decodeIfPresent when key is missing
+        let jsonWithoutKey = """
+        {
+            "required": "value"
+        }
+        """
+        let dataWithoutKey = jsonWithoutKey.data(using: .utf8)!
+        let decodedWithoutKey = try JSONDecoder().decode(OptionalAnyDictionaryWrapper.self, from: dataWithoutKey)
+
+        XCTAssertEqual(decodedWithoutKey.required, "value")
+        XCTAssertNil(decodedWithoutKey.optional)
+
+        // Test decodeIfPresent when key is null
+        let jsonWithNull = """
+        {
+            "required": "value",
+            "optional": null
+        }
+        """
+        let dataWithNull = jsonWithNull.data(using: .utf8)!
+        let decodedWithNull = try JSONDecoder().decode(OptionalAnyDictionaryWrapper.self, from: dataWithNull)
+
+        XCTAssertNil(decodedWithNull.optional)
+    }
+
+    func testDecodeAnyArray() throws {
+        // Test decoding [Any] using the extension method
+        let json = """
+        {
+            "items": ["hello", 42, 3.14, true]
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyArrayWrapper.self, from: jsonData)
+
+        XCTAssertEqual(decoded.items.count, 4)
+        XCTAssertEqual(decoded.items[0] as? String, "hello")
+        // Note: JSON numbers in [Any] context may decode as Double
+        XCTAssertEqual(decoded.items[1] as? Double, 42.0)
+        XCTAssertEqual(decoded.items[2] as? Double, 3.14)
+        XCTAssertEqual(decoded.items[3] as? Bool, true)
+    }
+
+    func testDecodeAnyArrayWithNestedObjects() throws {
+        // Test decoding arrays containing dictionaries
+        let json = """
+        {
+            "items": [
+                {"name": "item1", "value": 1},
+                {"name": "item2", "value": 2}
+            ]
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyArrayWrapper.self, from: jsonData)
+
+        XCTAssertEqual(decoded.items.count, 2)
+
+        let item1 = decoded.items[0] as? [String: Any]
+        XCTAssertNotNil(item1)
+        XCTAssertEqual(item1?["name"] as? String, "item1")
+
+        let item2 = decoded.items[1] as? [String: Any]
+        XCTAssertNotNil(item2)
+        XCTAssertEqual(item2?["name"] as? String, "item2")
+    }
+
+    func testDecodeAnyArrayWithNestedArrays() throws {
+        // Test directly nested arrays [[1,2], [3,4], [5,6]]
+        let json = """
+        {
+            "items": [[1, 2], [3, 4], [5, 6]]
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyArrayWrapper.self, from: jsonData)
+
+        XCTAssertEqual(decoded.items.count, 3)
+
+        let firstArray = decoded.items[0] as? [Any]
+        XCTAssertNotNil(firstArray)
+        XCTAssertEqual(firstArray?.count, 2)
+        XCTAssertEqual(firstArray?[0] as? Double, 1.0)
+        XCTAssertEqual(firstArray?[1] as? Double, 2.0)
+
+        let secondArray = decoded.items[1] as? [Any]
+        XCTAssertNotNil(secondArray)
+        XCTAssertEqual(secondArray?[0] as? Double, 3.0)
+        XCTAssertEqual(secondArray?[1] as? Double, 4.0)
+
+        let thirdArray = decoded.items[2] as? [Any]
+        XCTAssertNotNil(thirdArray)
+        XCTAssertEqual(thirdArray?[0] as? Double, 5.0)
+        XCTAssertEqual(thirdArray?[1] as? Double, 6.0)
+    }
+
+    func testDecodeDirectlyNestedArrays() throws {
+        // Test that directly nested arrays work without crashing
+        let json = """
+        {
+            "items": [[1, 2], [3, 4], [5, 6]]
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        // This should work without causing a segfault
+        let decoded = try JSONDecoder().decode(AnyArrayWrapper.self, from: jsonData)
+
+        XCTAssertEqual(decoded.items.count, 3)
+
+        // Verify each nested array is decoded correctly
+        for (index, item) in decoded.items.enumerated() {
+            let nestedArray = item as? [Any]
+            XCTAssertNotNil(nestedArray, "Item at index \(index) should be an array")
+            XCTAssertEqual(nestedArray?.count, 2, "Each nested array should have 2 elements")
+        }
+    }
+
+    func testDecodeDeeplyNestedArrays() throws {
+        // Test deeply nested arrays [[[1, 2]], [[3, 4]]]
+        let json = """
+        {
+            "items": [[[1, 2]], [[3, 4]]]
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyArrayWrapper.self, from: jsonData)
+
+        XCTAssertEqual(decoded.items.count, 2)
+
+        let firstOuter = decoded.items[0] as? [Any]
+        XCTAssertNotNil(firstOuter)
+        XCTAssertEqual(firstOuter?.count, 1)
+
+        let firstInner = firstOuter?[0] as? [Any]
+        XCTAssertNotNil(firstInner)
+        XCTAssertEqual(firstInner?.count, 2)
+        XCTAssertEqual(firstInner?[0] as? Double, 1.0)
+        XCTAssertEqual(firstInner?[1] as? Double, 2.0)
+    }
+
+    func testDecodeMixedNestedArrays() throws {
+        // Test mixed content in nested arrays
+        let json = """
+        {
+            "items": [["a", "b"], [1, 2], [true, false]]
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyArrayWrapper.self, from: jsonData)
+
+        XCTAssertEqual(decoded.items.count, 3)
+
+        let stringArray = decoded.items[0] as? [Any]
+        XCTAssertEqual(stringArray?[0] as? String, "a")
+        XCTAssertEqual(stringArray?[1] as? String, "b")
+
+        let numberArray = decoded.items[1] as? [Any]
+        XCTAssertEqual(numberArray?[0] as? Double, 1.0)
+        XCTAssertEqual(numberArray?[1] as? Double, 2.0)
+
+        let boolArray = decoded.items[2] as? [Any]
+        XCTAssertEqual(boolArray?[0] as? Bool, true)
+        XCTAssertEqual(boolArray?[1] as? Bool, false)
+    }
+
+    func testDecodeAnyArrayEmpty() throws {
+        // Test decoding empty array
+        let json = """
+        {
+            "items": []
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyArrayWrapper.self, from: jsonData)
+
+        XCTAssertTrue(decoded.items.isEmpty)
+    }
+
+    func testDecodeAnyArrayIfPresent() throws {
+        // Test decodeIfPresent when key is present
+        let jsonWithKey = """
+        {
+            "required": "value",
+            "optional": [1, 2, 3]
+        }
+        """
+        let dataWithKey = jsonWithKey.data(using: .utf8)!
+        let decodedWithKey = try JSONDecoder().decode(OptionalAnyArrayWrapper.self, from: dataWithKey)
+
+        XCTAssertEqual(decodedWithKey.required, "value")
+        XCTAssertNotNil(decodedWithKey.optional)
+        XCTAssertEqual(decodedWithKey.optional?.count, 3)
+
+        // Test decodeIfPresent when key is missing
+        let jsonWithoutKey = """
+        {
+            "required": "value"
+        }
+        """
+        let dataWithoutKey = jsonWithoutKey.data(using: .utf8)!
+        let decodedWithoutKey = try JSONDecoder().decode(OptionalAnyArrayWrapper.self, from: dataWithoutKey)
+
+        XCTAssertNil(decodedWithoutKey.optional)
+
+        // Test decodeIfPresent when key is null
+        let jsonWithNull = """
+        {
+            "required": "value",
+            "optional": null
+        }
+        """
+        let dataWithNull = jsonWithNull.data(using: .utf8)!
+        let decodedWithNull = try JSONDecoder().decode(OptionalAnyArrayWrapper.self, from: dataWithNull)
+
+        XCTAssertNil(decodedWithNull.optional)
+    }
+
+    func testDecodeAnyDictionaryDeeplyNested() throws {
+        // Test deeply nested structures
+        let json = """
+        {
+            "data": {
+                "level1": {
+                    "level2": {
+                        "level3": {
+                            "value": "deep"
+                        }
+                    }
+                }
+            }
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyDictionaryWrapper.self, from: jsonData)
+
+        let level1 = decoded.data["level1"] as? [String: Any]
+        XCTAssertNotNil(level1)
+
+        let level2 = level1?["level2"] as? [String: Any]
+        XCTAssertNotNil(level2)
+
+        let level3 = level2?["level3"] as? [String: Any]
+        XCTAssertNotNil(level3)
+
+        XCTAssertEqual(level3?["value"] as? String, "deep")
+    }
+
+    func testDecodeAnyArrayWithNullValues() throws {
+        // Test array containing null values - they should be skipped per the extension implementation
+        let json = """
+        {
+            "items": [1, null, 2, null, 3]
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyArrayWrapper.self, from: jsonData)
+
+        // The extension skips null values, so we should only get the non-null values
+        XCTAssertEqual(decoded.items.count, 3)
+        XCTAssertEqual(decoded.items[0] as? Double, 1.0)
+        XCTAssertEqual(decoded.items[1] as? Double, 2.0)
+        XCTAssertEqual(decoded.items[2] as? Double, 3.0)
+    }
+
+    func testDecodeAnyDictionaryMixedTypes() throws {
+        // Test comprehensive mixed types
+        let json = """
+        {
+            "data": {
+                "string": "text",
+                "integer": 42,
+                "float": 3.14159,
+                "boolTrue": true,
+                "boolFalse": false,
+                "array": [1, "two", true],
+                "object": {"nested": "value"},
+                "emptyArray": [],
+                "emptyObject": {}
+            }
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(AnyDictionaryWrapper.self, from: jsonData)
+
+        XCTAssertEqual(decoded.data["string"] as? String, "text")
+        XCTAssertEqual(decoded.data["integer"] as? Int, 42)
+        if let floatValue = decoded.data["float"] as? Double {
+            XCTAssertEqual(floatValue, 3.14159, accuracy: 0.00001)
+        } else {
+            XCTFail("float value should be a Double")
+        }
+        XCTAssertEqual(decoded.data["boolTrue"] as? Bool, true)
+        XCTAssertEqual(decoded.data["boolFalse"] as? Bool, false)
+
+        let array = decoded.data["array"] as? [Any]
+        XCTAssertEqual(array?.count, 3)
+
+        let object = decoded.data["object"] as? [String: Any]
+        XCTAssertEqual(object?["nested"] as? String, "value")
+
+        let emptyArray = decoded.data["emptyArray"] as? [Any]
+        XCTAssertTrue(emptyArray?.isEmpty ?? false)
+
+        let emptyObject = decoded.data["emptyObject"] as? [String: Any]
+        XCTAssertTrue(emptyObject?.isEmpty ?? false)
+    }
+
+    // MARK: - KeyedCoding+Collections Typed Tests (using synthesized Decodable)
+    // These tests verify standard Decodable behavior with typed structs.
+
+    func testDecodeDictionaryWithTypedValues() throws {
+        // Test decoding a JSON dictionary with typed values using a safe wrapper
+        let json = """
+        {
+            "stringValue": "hello",
+            "intValue": 42,
+            "doubleValue": 3.14,
+            "boolValue": true
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(TypedDictionaryContainer.self, from: jsonData)
+
+        XCTAssertEqual(decoded.stringValue, "hello")
+        XCTAssertEqual(decoded.intValue, 42)
+        XCTAssertEqual(decoded.doubleValue, 3.14, accuracy: 0.001)
+        XCTAssertTrue(decoded.boolValue)
+    }
+
+    func testDecodeOptionalTypedDictionary() throws {
+        // Test decoding with present optional fields
+        let jsonWithValues = """
+        {
+            "requiredField": "required",
+            "optionalString": "optional",
+            "optionalInt": 123
+        }
+        """
+        let dataWithValues = jsonWithValues.data(using: .utf8)!
+        let decodedWithValues = try JSONDecoder().decode(OptionalTypedContainer.self, from: dataWithValues)
+        XCTAssertEqual(decodedWithValues.requiredField, "required")
+        XCTAssertEqual(decodedWithValues.optionalString, "optional")
+        XCTAssertEqual(decodedWithValues.optionalInt, 123)
+
+        // Test decoding without optional keys
+        let jsonWithoutOptional = """
+        {
+            "requiredField": "required"
+        }
+        """
+        let dataWithoutOptional = jsonWithoutOptional.data(using: .utf8)!
+        let decodedWithoutOptional = try JSONDecoder().decode(OptionalTypedContainer.self, from: dataWithoutOptional)
+        XCTAssertEqual(decodedWithoutOptional.requiredField, "required")
+        XCTAssertNil(decodedWithoutOptional.optionalString)
+        XCTAssertNil(decodedWithoutOptional.optionalInt)
+
+        // Test decoding with null value
+        let jsonWithNull = """
+        {
+            "requiredField": "required",
+            "optionalString": null
+        }
+        """
+        let dataWithNull = jsonWithNull.data(using: .utf8)!
+        let decodedWithNull = try JSONDecoder().decode(OptionalTypedContainer.self, from: dataWithNull)
+        XCTAssertNil(decodedWithNull.optionalString)
+    }
+
+    func testDecodeArrayWithTypedValues() throws {
+        // Test decoding a JSON array with typed values
+        let json = """
+        {
+            "strings": ["first", "second", "third"],
+            "numbers": [1, 2, 3]
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(TypedArrayContainer.self, from: jsonData)
+        XCTAssertEqual(decoded.strings.count, 3)
+        XCTAssertEqual(decoded.strings[0], "first")
+        XCTAssertEqual(decoded.strings[1], "second")
+        XCTAssertEqual(decoded.strings[2], "third")
+        XCTAssertEqual(decoded.numbers, [1, 2, 3])
+    }
+
+    func testDecodeOptionalTypedArray() throws {
+        // Test decoding with present array
+        let jsonWithArray = """
+        {
+            "requiredArray": ["a"],
+            "optionalArray": ["b", "c"]
+        }
+        """
+        let dataWithArray = jsonWithArray.data(using: .utf8)!
+        let decodedWithArray = try JSONDecoder().decode(OptionalTypedArrayContainer.self, from: dataWithArray)
+        XCTAssertEqual(decodedWithArray.requiredArray, ["a"])
+        XCTAssertEqual(decodedWithArray.optionalArray, ["b", "c"])
+
+        // Test decoding without the optional key
+        let jsonWithoutArray = """
+        {
+            "requiredArray": ["a"]
+        }
+        """
+        let dataWithoutArray = jsonWithoutArray.data(using: .utf8)!
+        let decodedWithoutArray = try JSONDecoder().decode(OptionalTypedArrayContainer.self, from: dataWithoutArray)
+        XCTAssertEqual(decodedWithoutArray.requiredArray, ["a"])
+        XCTAssertNil(decodedWithoutArray.optionalArray)
+
+        // Test decoding with null value
+        let jsonWithNull = """
+        {
+            "requiredArray": ["a"],
+            "optionalArray": null
+        }
+        """
+        let dataWithNull = jsonWithNull.data(using: .utf8)!
+        let decodedWithNull = try JSONDecoder().decode(OptionalTypedArrayContainer.self, from: dataWithNull)
+        XCTAssertNil(decodedWithNull.optionalArray)
+    }
+
+    func testDecodeNestedStructures() throws {
+        // Test decoding nested objects and arrays
+        let json = """
+        {
+            "name": "parent",
+            "nested": {
+                "name": "child",
+                "value": 42
+            },
+            "items": [
+                {"name": "item1", "value": 1},
+                {"name": "item2", "value": 2}
+            ]
+        }
+        """
+        let jsonData = json.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(NestedTypedContainer.self, from: jsonData)
+        XCTAssertEqual(decoded.name, "parent")
+        XCTAssertEqual(decoded.nested.name, "child")
+        XCTAssertEqual(decoded.nested.value, 42)
+        XCTAssertEqual(decoded.items.count, 2)
+        XCTAssertEqual(decoded.items[0].name, "item1")
+        XCTAssertEqual(decoded.items[1].value, 2)
+    }
+
+    func testDecodeEmptyCollections() throws {
+        // Test decoding empty arrays
+        let emptyArrayJson = """
+        {
+            "strings": [],
+            "numbers": []
+        }
+        """
+        let emptyArrayData = emptyArrayJson.data(using: .utf8)!
+        let decodedArray = try JSONDecoder().decode(TypedArrayContainer.self, from: emptyArrayData)
+        XCTAssertTrue(decodedArray.strings.isEmpty, "Empty array should be decoded as empty")
+        XCTAssertTrue(decodedArray.numbers.isEmpty, "Empty array should be decoded as empty")
+    }
+
+    func testJSONCodingKeysInitializers() {
+        // Test string-based initializer
+        let stringKey = JSONCodingKeys(stringValue: "testKey")
+        XCTAssertNotNil(stringKey)
+        XCTAssertEqual(stringKey?.stringValue, "testKey")
+        XCTAssertNil(stringKey?.intValue)
+
+        // Test int-based initializer
+        let intKey = JSONCodingKeys(intValue: 42)
+        XCTAssertNotNil(intKey)
+        XCTAssertEqual(intKey?.stringValue, "42")
+        XCTAssertEqual(intKey?.intValue, 42)
+
+        // Test with zero
+        let zeroKey = JSONCodingKeys(intValue: 0)
+        XCTAssertNotNil(zeroKey)
+        XCTAssertEqual(zeroKey?.stringValue, "0")
+        XCTAssertEqual(zeroKey?.intValue, 0)
+
+        // Test with negative number
+        let negativeKey = JSONCodingKeys(intValue: -5)
+        XCTAssertNotNil(negativeKey)
+        XCTAssertEqual(negativeKey?.stringValue, "-5")
+        XCTAssertEqual(negativeKey?.intValue, -5)
+    }
+
+    // MARK: - URLRequest+MultipartFormData Tests
+
+    func testMultipartFormDataBasic() throws {
+        let url = URL(string: "https://example.com/upload")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let testData = "Hello, World!".data(using: .utf8)!
+        try request.setMultipartFormData(["field1": testData], encoding: .utf8)
+
+        // Verify Content-Type header is set
+        let contentType = request.value(forHTTPHeaderField: "Content-Type")
+        XCTAssertNotNil(contentType, "Content-Type header should be set")
+        XCTAssertTrue(contentType!.contains("multipart/form-data"), "Content-Type should be multipart/form-data")
+        XCTAssertTrue(contentType!.contains("boundary="), "Content-Type should contain boundary")
+        XCTAssertTrue(contentType!.contains("charset="), "Content-Type should contain charset")
+
+        // Verify httpBody is set
+        XCTAssertNotNil(request.httpBody, "HTTP body should be set")
+
+        // Verify body contains the field name
+        let bodyString = String(data: request.httpBody!, encoding: .utf8)!
+        XCTAssertTrue(bodyString.contains("Content-Disposition: form-data; name=\"field1\""), "Body should contain field disposition")
+        XCTAssertTrue(bodyString.contains("Hello, World!"), "Body should contain the data")
+    }
+
+    func testMultipartFormDataMultipleFields() throws {
+        let url = URL(string: "https://example.com/upload")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let field1Data = "Field 1 Data".data(using: .utf8)!
+        let field2Data = "Field 2 Data".data(using: .utf8)!
+        let parameters: [String: Data] = [
+            "field1": field1Data,
+            "field2": field2Data
+        ]
+
+        try request.setMultipartFormData(parameters, encoding: .utf8)
+
+        let bodyString = String(data: request.httpBody!, encoding: .utf8)!
+
+        // Both fields should be present
+        XCTAssertTrue(bodyString.contains("name=\"field1\""), "Body should contain field1")
+        XCTAssertTrue(bodyString.contains("name=\"field2\""), "Body should contain field2")
+        XCTAssertTrue(bodyString.contains("Field 1 Data"), "Body should contain field1 data")
+        XCTAssertTrue(bodyString.contains("Field 2 Data"), "Body should contain field2 data")
+    }
+
+    func testMultipartFormDataEmptyParameters() throws {
+        let url = URL(string: "https://example.com/upload")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        try request.setMultipartFormData([:], encoding: .utf8)
+
+        // Should still set Content-Type and body
+        XCTAssertNotNil(request.value(forHTTPHeaderField: "Content-Type"))
+        XCTAssertNotNil(request.httpBody)
+
+        // Body should just have the closing boundary
+        let bodyString = String(data: request.httpBody!, encoding: .utf8)!
+        XCTAssertTrue(bodyString.contains("--"), "Body should contain boundary markers")
+    }
+
+    func testMultipartFormDataBinaryContent() throws {
+        let url = URL(string: "https://example.com/upload")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        // Create binary data (not valid UTF-8 text)
+        let binaryData = Data([0x00, 0x01, 0xFF, 0xFE, 0x89, 0x50, 0x4E, 0x47])
+
+        try request.setMultipartFormData(["binaryField": binaryData], encoding: .utf8)
+
+        XCTAssertNotNil(request.httpBody, "HTTP body should be set")
+
+        // Verify the binary data is in the body
+        let body = request.httpBody!
+        XCTAssertTrue(body.count > binaryData.count, "Body should contain binary data plus headers")
+    }
+
+    func testMultipartFormDataEncodingError() {
+        let url = URL(string: "https://example.com/upload")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        // Create a field name that cannot be converted to ASCII
+        let testData = "test".data(using: .utf8)!
+
+        // ASCII encoding should fail for non-ASCII field names
+        // Note: The implementation checks if the field name can be converted to the encoding
+        // Using Japanese characters that cannot be encoded in ASCII
+        let nonAsciiFieldName = "field\u{1234}"
+        let parameters: [String: Data] = [nonAsciiFieldName: testData]
+
+        // This should throw an EncodingError for the name
+        XCTAssertThrowsError(try request.setMultipartFormData(parameters, encoding: .ascii)) { error in
+            XCTAssertTrue(error is EncodingError, "Should throw EncodingError")
+            if let encodingError = error as? EncodingError {
+                XCTAssertEqual(encodingError.what, "name", "Error should be for 'name'")
+            }
+        }
+    }
+
+    func testMultipartFormDataSpecialFieldNames() throws {
+        let url = URL(string: "https://example.com/upload")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let testData = "test".data(using: .utf8)!
+
+        // Test with special characters in field name (but still ASCII-compatible)
+        let parameters: [String: Data] = [
+            "field-with-dashes": testData,
+            "field_with_underscores": testData,
+            "field.with.dots": testData
+        ]
+
+        try request.setMultipartFormData(parameters, encoding: .utf8)
+
+        let bodyString = String(data: request.httpBody!, encoding: .utf8)!
+        XCTAssertTrue(bodyString.contains("name=\"field-with-dashes\""))
+        XCTAssertTrue(bodyString.contains("name=\"field_with_underscores\""))
+        XCTAssertTrue(bodyString.contains("name=\"field.with.dots\""))
+    }
+
+    func testEncodingErrorDescription() {
+        let error = EncodingError(what: "test_field")
+        XCTAssertEqual(error.what, "test_field", "Error should store the 'what' field")
+    }
+
+    // MARK: - String UTF-8 Extension Tests (StringExtension.swift)
+    // Note: These tests only cover ASCII strings because the current implementation
+    // has a known limitation with non-ASCII characters (bytes >= 128).
+
+    func testDataUsingUTF8StringEncoding() {
+        // Test basic ASCII string
+        let asciiString = "Hello"
+        let asciiData = asciiString.dataUsingUTF8StringEncoding
+        XCTAssertEqual(asciiData, Data([72, 101, 108, 108, 111]), "ASCII string should encode correctly")
+
+        // Test empty string
+        let emptyString = ""
+        let emptyData = emptyString.dataUsingUTF8StringEncoding
+        XCTAssertEqual(emptyData, Data(), "Empty string should produce empty data")
+
+        // Test string with numbers
+        let numberString = "12345"
+        let numberData = numberString.dataUsingUTF8StringEncoding
+        XCTAssertEqual(numberData, Data([49, 50, 51, 52, 53]), "Number string should encode correctly")
+
+        // Test string with special characters (ASCII range)
+        let specialString = "!@#$%"
+        let specialData = specialString.dataUsingUTF8StringEncoding
+        XCTAssertEqual(specialData, Data([33, 64, 35, 36, 37]), "Special characters should encode correctly")
+
+        // Test with various ASCII characters
+        let allAsciiPrintable = " ~"  // Space (32) and tilde (126) - ASCII range boundaries
+        let asciiRangeData = allAsciiPrintable.dataUsingUTF8StringEncoding
+        XCTAssertEqual(asciiRangeData, Data([32, 126]), "ASCII boundary characters should encode correctly")
+
+        // Test with newline and tab
+        let whitespaceString = "a\nb\tc"
+        let whitespaceData = whitespaceString.dataUsingUTF8StringEncoding
+        XCTAssertEqual(whitespaceData, Data([97, 10, 98, 9, 99]), "Whitespace characters should encode correctly")
+    }
+
+    func testArrayUsingUTF8StringEncoding() {
+        // Test basic ASCII string
+        let asciiString = "Hello"
+        let asciiArray = asciiString.arrayUsingUTF8StringEncoding
+        XCTAssertEqual(asciiArray, [72, 101, 108, 108, 111], "ASCII string should encode correctly")
+
+        // Test empty string
+        let emptyString = ""
+        let emptyArray = emptyString.arrayUsingUTF8StringEncoding
+        XCTAssertEqual(emptyArray, [], "Empty string should produce empty array")
+
+        // Test string with numbers
+        let numberString = "12345"
+        let numberArray = numberString.arrayUsingUTF8StringEncoding
+        XCTAssertEqual(numberArray, [49, 50, 51, 52, 53], "Number string should encode correctly")
+
+        // Test string with special characters (ASCII range)
+        let specialString = "!@#$%"
+        let specialArray = specialString.arrayUsingUTF8StringEncoding
+        XCTAssertEqual(specialArray, [33, 64, 35, 36, 37], "Special characters should encode correctly")
+
+        // Test with various ASCII characters
+        let allAsciiPrintable = " ~"  // Space (32) and tilde (126) - ASCII range boundaries
+        let asciiRangeArray = allAsciiPrintable.arrayUsingUTF8StringEncoding
+        XCTAssertEqual(asciiRangeArray, [32, 126], "ASCII boundary characters should encode correctly")
+    }
+
+    func testDataAndArrayConsistency() {
+        // Verify that dataUsingUTF8StringEncoding and arrayUsingUTF8StringEncoding
+        // produce consistent results (ASCII strings only due to implementation limitation)
+        let testStrings = ["Hello", "", "Test123", "Mixed content!", "a\nb\tc"]
+
+        for string in testStrings {
+            let dataResult = string.dataUsingUTF8StringEncoding
+            let arrayResult = string.arrayUsingUTF8StringEncoding
+
+            XCTAssertEqual(dataResult, Data(arrayResult),
+                          "Data and array encodings should be consistent for '\(string)'")
+        }
+    }
+
+    func testUTF8EncodingNeverNil() {
+        // Test that the property never returns nil (unlike String.data(using:))
+        // Testing with ASCII strings only due to implementation limitation
+        let testStrings = [
+            "Normal string",
+            "",
+            "String with\nnewlines",
+            "String\twith\ttabs",
+            String(repeating: "a", count: 10000) // long string
+        ]
+
+        for string in testStrings {
+            let data = string.dataUsingUTF8StringEncoding
+            let array = string.arrayUsingUTF8StringEncoding
+
+            // These should never fail for ASCII strings
+            XCTAssertNotNil(data, "dataUsingUTF8StringEncoding should never be nil")
+            XCTAssertNotNil(array, "arrayUsingUTF8StringEncoding should never be nil")
+        }
+    }
+
+    // MARK: - String+Base32 Tests
+
+    func testBase32EncodedString() {
+        // Test basic encoding
+        let text = "Hello"
+        let encoded = text.base32EncodedString
+        XCTAssertEqual(encoded, "JBSWY3DP", "Base32 encoding should match RFC 4648")
+
+        // Test empty string
+        let empty = ""
+        let emptyEncoded = empty.base32EncodedString
+        XCTAssertEqual(emptyEncoded, "", "Empty string should encode to empty")
+
+        // Test longer text
+        let longer = "Hello, World!"
+        let longerEncoded = longer.base32EncodedString
+        XCTAssertFalse(longerEncoded.isEmpty, "Longer text should encode")
+    }
+
+    func testBase32DecodedData() {
+        // Test basic decoding
+        let encoded = "JBSWY3DP"
+        let decoded = encoded.base32DecodedData
+        XCTAssertNotNil(decoded, "Valid base32 should decode")
+        XCTAssertEqual(String(data: decoded!, encoding: .utf8), "Hello", "Decoded data should match original")
+
+        // Test empty string
+        let empty = ""
+        let emptyDecoded = empty.base32DecodedData
+        XCTAssertNotNil(emptyDecoded, "Empty string should decode")
+        XCTAssertEqual(emptyDecoded?.count, 0, "Empty decode should be empty data")
+
+        // Test invalid base32 (contains invalid character '1')
+        let invalid = "1234ABCD"
+        let invalidDecoded = invalid.base32DecodedData
+        XCTAssertNil(invalidDecoded, "Invalid base32 should return nil")
+    }
+
+    func testBase32DecodedString() {
+        // Test basic decoding to string
+        let encoded = "JBSWY3DP"
+        let decoded = encoded.base32DecodedString()
+        XCTAssertEqual(decoded, "Hello", "Base32 decoded string should match original")
+
+        // Test longer string with padding (ORSXG5A= is base32 of "test")
+        let paddedEncoded = "ORSXG5A="
+        let paddedDecoded = paddedEncoded.base32DecodedString()
+        XCTAssertEqual(paddedDecoded, "test", "Padded base32 should decode correctly")
+    }
+
+    func testBase32HexEncodedString() {
+        // Test base32hex encoding
+        let text = "Hello"
+        let encoded = text.base32HexEncodedString
+        XCTAssertFalse(encoded.isEmpty, "Base32hex should encode")
+
+        // Base32hex uses different alphabet (0-9, A-V)
+        // Verify it's different from standard base32
+        let standardEncoded = text.base32EncodedString
+        XCTAssertNotEqual(encoded, standardEncoded, "Base32hex should differ from standard base32")
+    }
+
+    func testBase32HexDecodedData() {
+        // Encode then decode to verify round-trip
+        let original = "Test"
+        let encoded = original.base32HexEncodedString
+        let decoded = encoded.base32HexDecodedData
+        XCTAssertNotNil(decoded, "Base32hex should decode")
+        XCTAssertEqual(String(data: decoded!, encoding: .utf8), original, "Round-trip should preserve data")
+    }
+
+    func testBase32HexDecodedString() {
+        // Encode then decode to verify round-trip
+        let original = "Hello"
+        let encoded = original.base32HexEncodedString
+        let decoded = encoded.base32HexDecodedString()
+        XCTAssertEqual(decoded, original, "Base32hex round-trip should preserve string")
+    }
+
+    func testBase32RoundTrip() {
+        // Test round-trip for various strings
+        let testStrings = ["A", "AB", "ABC", "ABCD", "ABCDE", "Hello, World!", ""]
+
+        for original in testStrings {
+            let encoded = original.base32EncodedString
+            let decoded = encoded.base32DecodedString()
+            XCTAssertEqual(decoded, original, "Base32 round-trip should preserve '\(original)'")
+        }
+    }
+
+    // MARK: - Data+Base32 Tests
+
+    func testDataBase32EncodedString() {
+        // Test basic encoding
+        let data = Data([72, 101, 108, 108, 111]) // "Hello"
+        let encoded = data.base32EncodedString
+        XCTAssertEqual(encoded, "JBSWY3DP", "Data base32 encoding should match")
+
+        // Test empty data
+        let emptyData = Data()
+        let emptyEncoded = emptyData.base32EncodedString
+        XCTAssertEqual(emptyEncoded, "", "Empty data should encode to empty string")
+    }
+
+    func testDataBase32EncodedData() {
+        // Test that encoded data is UTF-8 representation of encoded string
+        let data = Data([72, 101, 108, 108, 111]) // "Hello"
+        let encodedData = data.base32EncodedData
+        let encodedString = data.base32EncodedString
+
+        XCTAssertEqual(encodedData, encodedString.data(using: .utf8),
+                      "Encoded data should be UTF-8 of encoded string")
+    }
+
+    func testDataBase32DecodedData() {
+        // Test decoding base32-encoded data
+        let encodedString = "JBSWY3DP"
+        let encodedData = encodedString.data(using: .utf8)!
+        let decoded = encodedData.base32DecodedData
+
+        XCTAssertNotNil(decoded, "Should decode successfully")
+        XCTAssertEqual(decoded, Data([72, 101, 108, 108, 111]), "Decoded should be 'Hello' bytes")
+    }
+
+    func testDataBase32HexEncodedString() {
+        // Test base32hex encoding
+        let data = Data([72, 101, 108, 108, 111]) // "Hello"
+        let encoded = data.base32HexEncodedString
+        XCTAssertFalse(encoded.isEmpty, "Base32hex should encode")
+
+        // Should be different from standard base32
+        let standardEncoded = data.base32EncodedString
+        XCTAssertNotEqual(encoded, standardEncoded, "Base32hex should differ from standard")
+    }
+
+    func testDataBase32HexEncodedData() {
+        // Test that hex encoded data is UTF-8 representation
+        let data = Data([72, 101, 108, 108, 111])
+        let encodedData = data.base32HexEncodedData
+        let encodedString = data.base32HexEncodedString
+
+        XCTAssertEqual(encodedData, encodedString.data(using: .utf8),
+                      "Hex encoded data should be UTF-8 of encoded string")
+    }
+
+    func testDataBase32HexDecodedData() {
+        // Encode then decode to verify round-trip
+        let original = Data([1, 2, 3, 4, 5])
+        let encodedString = original.base32HexEncodedString
+        let encodedData = encodedString.data(using: .utf8)!
+        let decoded = encodedData.base32HexDecodedData
+
+        XCTAssertNotNil(decoded, "Should decode successfully")
+        XCTAssertEqual(decoded, original, "Round-trip should preserve data")
+    }
+
+    func testDataBase32RoundTrip() {
+        // Test round-trip for various data
+        let testData = [
+            Data(),
+            Data([0]),
+            Data([0, 1]),
+            Data([0, 1, 2]),
+            Data([0, 1, 2, 3]),
+            Data([0, 1, 2, 3, 4]),
+            Data((0..<256).map { UInt8($0) })
+        ]
+
+        for original in testData {
+            let encoded = original.base32EncodedString
+            let decoded = encoded.base32DecodedData
+            XCTAssertEqual(decoded, original, "Base32 round-trip should preserve data of length \(original.count)")
+        }
+    }
+}
+
+// MARK: - Test Helper Types for KeyedCoding+Collections
+
+/// Helper struct for testing typed dictionary decoding
+private struct TypedDictionaryContainer: Decodable {
+    let stringValue: String
+    let intValue: Int
+    let doubleValue: Double
+    let boolValue: Bool
+}
+
+/// Helper struct for testing optional typed values
+private struct OptionalTypedContainer: Decodable {
+    let requiredField: String
+    let optionalString: String?
+    let optionalInt: Int?
+}
+
+/// Helper struct for testing typed array decoding
+private struct TypedArrayContainer: Decodable {
+    let strings: [String]
+    let numbers: [Int]
+}
+
+/// Helper struct for testing optional typed arrays
+private struct OptionalTypedArrayContainer: Decodable {
+    let requiredArray: [String]
+    let optionalArray: [String]?
+}
+
+/// Helper struct for testing nested structures
+private struct NestedTypedContainer: Decodable {
+    let name: String
+    let nested: NestedItem
+    let items: [NestedItem]
+
+    struct NestedItem: Decodable {
+        let name: String
+        let value: Int
+    }
+}
+
+// MARK: - Test Helper Types for KeyedCoding+Collections Extension Tests
+// These structs EXPLICITLY call the extension methods in their init(from decoder:)
+
+/// Wrapper that explicitly calls decode([String: Any].self, forKey:) extension method
+private struct AnyDictionaryWrapper: Decodable {
+    let data: [String: Any]
+
+    enum CodingKeys: String, CodingKey {
+        case data
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        // This explicitly calls the extension method:
+        self.data = try container.decode([String: Any].self, forKey: .data)
+    }
+}
+
+/// Wrapper that explicitly calls decodeIfPresent([String: Any].self, forKey:) extension method
+private struct OptionalAnyDictionaryWrapper: Decodable {
+    let required: String
+    let optional: [String: Any]?
+
+    enum CodingKeys: String, CodingKey {
+        case required
+        case optional
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.required = try container.decode(String.self, forKey: .required)
+        // This explicitly calls the extension method:
+        self.optional = try container.decodeIfPresent([String: Any].self, forKey: .optional)
+    }
+}
+
+/// Wrapper that explicitly calls decode([Any].self, forKey:) extension method
+private struct AnyArrayWrapper: Decodable {
+    let items: [Any]
+
+    enum CodingKeys: String, CodingKey {
+        case items
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        // This explicitly calls the extension method:
+        self.items = try container.decode([Any].self, forKey: .items)
+    }
+}
+
+/// Wrapper that explicitly calls decodeIfPresent([Any].self, forKey:) extension method
+private struct OptionalAnyArrayWrapper: Decodable {
+    let required: String
+    let optional: [Any]?
+
+    enum CodingKeys: String, CodingKey {
+        case required
+        case optional
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.required = try container.decode(String.self, forKey: .required)
+        // This explicitly calls the extension method:
+        self.optional = try container.decodeIfPresent([Any].self, forKey: .optional)
     }
 }
