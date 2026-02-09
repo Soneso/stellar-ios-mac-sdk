@@ -1,5 +1,5 @@
 //
-//  XDRLowCoverageUnitTests.swift
+//  XDRCoreTypesUnitTests.swift
 //  stellarsdkTests
 //
 //  Created by Soneso
@@ -9,7 +9,7 @@
 import XCTest
 import stellarsdk
 
-class XDRLowCoverageUnitTests: XCTestCase {
+class XDRCoreTypesUnitTests: XCTestCase {
 
     // MARK: - TransactionResultXDR Tests
 

@@ -1360,12 +1360,95 @@ class URISchemeUnitTests: XCTestCase {
     }
 
     func testPayOperationURIWithMemoTypeWithoutMemo() {
+        // When no memo is provided, memo_type should NOT be added per SEP-0007
         let uri = uriScheme.getPayOperationURI(
             destination: testDestinationAccountId,
             memoType: MemoTypeAsString.TEXT
         )
 
-        XCTAssertTrue(uri.contains("memo_type="))
+        XCTAssertFalse(uri.contains("memo_type="), "memo_type should not be present when no memo is provided")
+        XCTAssertFalse(uri.contains("memo="), "memo should not be present")
+    }
+
+    func testPayOperationURIWithMemoTypeAndMemo() {
+        // When memo is provided, memo_type SHOULD be added per SEP-0007
+        let uri = uriScheme.getPayOperationURI(
+            destination: testDestinationAccountId,
+            memo: "Test memo",
+            memoType: MemoTypeAsString.TEXT
+        )
+
+        XCTAssertTrue(uri.contains("memo_type=MEMO_TEXT"), "memo_type should be present when memo is provided")
+        XCTAssertTrue(uri.contains("memo="), "memo should be present")
+    }
+
+    func testPayOperationURIWithMemoTypeID() {
+        let uri = uriScheme.getPayOperationURI(
+            destination: testDestinationAccountId,
+            memo: "12345",
+            memoType: MemoTypeAsString.ID
+        )
+
+        XCTAssertTrue(uri.contains("memo_type=MEMO_ID"), "memo_type should be MEMO_ID")
+        XCTAssertTrue(uri.contains("memo=12345"), "memo should contain the ID value")
+    }
+
+    func testPayOperationURIWithMemoTypeHASH() {
+        let uri = uriScheme.getPayOperationURI(
+            destination: testDestinationAccountId,
+            memo: "somehashvalue",
+            memoType: MemoTypeAsString.HASH
+        )
+
+        XCTAssertTrue(uri.contains("memo_type=MEMO_HASH"), "memo_type should be MEMO_HASH")
+        XCTAssertTrue(uri.contains("memo="), "memo should be present")
+    }
+
+    func testPayOperationURIWithMemoTypeRETURN() {
+        let uri = uriScheme.getPayOperationURI(
+            destination: testDestinationAccountId,
+            memo: "returnhashvalue",
+            memoType: MemoTypeAsString.RETURN
+        )
+
+        XCTAssertTrue(uri.contains("memo_type=MEMO_RETURN"), "memo_type should be MEMO_RETURN")
+        XCTAssertTrue(uri.contains("memo="), "memo should be present")
+    }
+
+    func testPayOperationURIWithDefaultMemoType() {
+        // Test that default memoType (TEXT) is used when memo is provided but memoType is not specified
+        let uri = uriScheme.getPayOperationURI(
+            destination: testDestinationAccountId,
+            memo: "Test memo"
+        )
+
+        XCTAssertTrue(uri.contains("memo_type=MEMO_TEXT"), "default memo_type should be MEMO_TEXT when memo is provided")
+        XCTAssertTrue(uri.contains("memo="), "memo should be present")
+    }
+
+    func testPayOperationURIWithNilMemoAndNilMemoType() {
+        // When both memo and memoType are nil, neither should be present
+        let uri = uriScheme.getPayOperationURI(
+            destination: testDestinationAccountId,
+            memo: nil,
+            memoType: nil
+        )
+
+        XCTAssertFalse(uri.contains("memo_type="), "memo_type should not be present when memo is nil")
+        XCTAssertFalse(uri.contains("memo="), "memo should not be present")
+    }
+
+    func testPayOperationURIBasicWithoutMemoOrMemoType() {
+        // Test that a basic URI without any memo-related parameters works correctly
+        let uri = uriScheme.getPayOperationURI(
+            destination: testDestinationAccountId,
+            amount: Decimal(100)
+        )
+
+        XCTAssertFalse(uri.contains("memo_type="), "memo_type should not be present in basic URI")
+        XCTAssertFalse(uri.contains("memo="), "memo should not be present in basic URI")
+        XCTAssertTrue(uri.contains("destination="), "destination should be present")
+        XCTAssertTrue(uri.contains("amount=100"), "amount should be present")
     }
 
     // MARK: - Sign Transaction Edge Cases

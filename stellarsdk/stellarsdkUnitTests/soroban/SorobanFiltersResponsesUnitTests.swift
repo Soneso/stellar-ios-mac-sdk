@@ -892,12 +892,7 @@ final class SorobanFiltersResponsesUnitTests: XCTestCase {
 
     // MARK: - Integration Tests
 
-    func testEventFilterWithComplexTopicFilters() throws {
-        let val1 = SCValXDR.u32(12345)
-        let val2 = SCValXDR.i32(-67890)
-        let segment1 = SegmentFilter(wildcard: "*")
-        let segment2 = SegmentFilter(scval: [val1, val2])
-
+    func testEventFilterWithComplexTopicFilters() {
         let topic1 = TopicFilter(segmentMatchers: ["transfer"])
         let topic2 = TopicFilter(segmentMatchers: ["mint", "*"])
 

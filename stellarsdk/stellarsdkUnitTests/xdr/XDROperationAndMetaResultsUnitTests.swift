@@ -1,5 +1,5 @@
 //
-//  XDRResultsAdditionalUnitTests.swift
+//  XDROperationAndMetaResultsUnitTests.swift
 //  stellarsdkTests
 //
 //  Created by Soneso
@@ -9,7 +9,7 @@
 import XCTest
 import stellarsdk
 
-class XDRResultsAdditionalUnitTests: XCTestCase {
+class XDROperationAndMetaResultsUnitTests: XCTestCase {
 
     // MARK: - EndSponsoringFutureReservesResultXDR Tests
 

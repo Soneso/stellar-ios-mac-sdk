@@ -574,10 +574,6 @@ final class SorobanServerUnitTests: XCTestCase {
     func testSorobanServerHasExpectedPublicMethods() {
         // This test verifies that SorobanServer exposes the expected public API
         // Actual network calls are tested in integration tests
-
         XCTAssertNotNil(server)
-
-        // Verify the server is of the correct type
-        XCTAssertTrue(server is SorobanServer)
     }
 }

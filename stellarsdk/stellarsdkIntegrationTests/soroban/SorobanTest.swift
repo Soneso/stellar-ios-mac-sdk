@@ -110,8 +110,9 @@ class SorobanTest: XCTestCase {
         // test contract data
         await getContractData()
 
-        // test SAC with source account
-        await deploySACWithSourceAccount()
+        // DISABLED: SAC deployment from address no longer works after protocol changes
+        // The combination CONTRACT_ID_PREIMAGE_FROM_ADDRESS + CONTRACT_EXECUTABLE_TOKEN is no longer accepted
+        // await deploySACWithSourceAccount()
         
         // test SAC with asset
         await deploySACWithAsset()
@@ -749,6 +750,10 @@ class SorobanTest: XCTestCase {
         }
     }
     
+    // DISABLED: This test no longer works after protocol changes.
+    // The combination CONTRACT_ID_PREIMAGE_FROM_ADDRESS + CONTRACT_EXECUTABLE_TOKEN
+    // is no longer accepted by the network. Use deploySACWithAsset() instead.
+    /*
     func deploySACWithSourceAccount() async {
         await refreshSubmitterAccount()
         
@@ -827,7 +832,8 @@ class SorobanTest: XCTestCase {
         
         await getTransactionDetails(transactionHash: deploySATransactionId!, type:"HostFunctionTypeHostFunctionTypeCreateContract", delaySec: 10.0)
     }
-    
+    */
+
     func deploySACWithAsset() async {
         await refreshSubmitterAccount()
         

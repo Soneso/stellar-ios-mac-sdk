@@ -1,5 +1,5 @@
 //
-//  XDRTransactionTypesTier6UnitTests.swift
+//  TransactionV0XDRUnitTests.swift
 //  stellarsdkTests
 //
 //  Created by Soneso
@@ -9,7 +9,7 @@
 import XCTest
 import stellarsdk
 
-class XDRTransactionTypesTier6UnitTests: XCTestCase {
+class TransactionV0XDRUnitTests: XCTestCase {
 
     // Helper method to create a simple bump sequence operation
     private func createBumpSequenceOperation(bumpTo: Int64 = 1000000) -> OperationXDR {

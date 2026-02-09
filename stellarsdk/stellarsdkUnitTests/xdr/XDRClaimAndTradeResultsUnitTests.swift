@@ -1,5 +1,5 @@
 //
-//  XDRTypesLowCoverageUnitTests.swift
+//  XDRClaimAndTradeResultsUnitTests.swift
 //  stellarsdkTests
 //
 //  Created by Soneso
@@ -9,7 +9,7 @@
 import XCTest
 import stellarsdk
 
-class XDRTypesLowCoverageUnitTests: XCTestCase {
+class XDRClaimAndTradeResultsUnitTests: XCTestCase {
 
     // MARK: - Helper Methods
 

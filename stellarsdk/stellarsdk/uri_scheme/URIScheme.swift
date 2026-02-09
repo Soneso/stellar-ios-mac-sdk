@@ -214,8 +214,9 @@ public class URIScheme: NSObject {
             }
         }
 
-        if let memoType = memoType {
+        if let _ = memo, let memoType = memoType {
             // Convert memo type to SEP-0007 format: "MEMO_" + uppercase type
+            // Only add memo_type when memo is actually provided per SEP-0007
             let sepMemoType = "MEMO_\(memoType.uppercased())"
             params.append("\(PayOperationParams.memo_type)=\(sepMemoType)")
         }
