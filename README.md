@@ -161,7 +161,7 @@ case .failure(let error):
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L18)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L18)
  
 #### 2.2 Public net
 
@@ -193,7 +193,7 @@ case .failure(error: let error):
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L37)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L37)
 
 ### 3. Check account
 #### 3.1 Basic info
@@ -233,7 +233,7 @@ case .failure(let error):
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L92)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L92)
 
 #### 3.2 Check payments
 
@@ -265,7 +265,7 @@ case .failure(let error):
     // ...
 }
 ```
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L139)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L139)
 
 You can use the parameters:`limit`, `order`, and `cursor` to customize the query. You can also get most recent payments for accounts, ledgers and transactions. 
 
@@ -275,7 +275,7 @@ For example get payments for account:
 sdk.payments.getPayments(forAccount:keyPair.accountId, order:Order.descending, limit:10)
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L171)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L171)
 
 Horizon has SSE support for push data. You can use it like this:
 
@@ -313,7 +313,7 @@ later you can close the stream item:
 streamItem.close()
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L201)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L201)
 
 #### 3.3 Check others
 
@@ -357,7 +357,7 @@ default:
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L281)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L281)
 
 Get a transaction envelope from an XDR string:
 
@@ -370,7 +370,7 @@ do {
     print("Invalid xdr string")
 }
 ```
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L342)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L342)
 
 Get a transaction object from an XDR string:
 
@@ -463,7 +463,7 @@ let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transacti
 print (uriScheme);
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L372)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L372)
 
 #### 7.2 Generate a URI for pay operation
 
@@ -476,7 +476,7 @@ let uriScheme = uriSchemeBuilder.getPayOperationURI(destination: "GAK7I2E6PVBFF2
 print (uriScheme);
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L424)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L424)
 
 #### 7.3 Sign a transaction from a given URI and send it to the network
 
