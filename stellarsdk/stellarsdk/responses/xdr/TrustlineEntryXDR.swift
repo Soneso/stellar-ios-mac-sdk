@@ -148,13 +148,17 @@ public enum TrustlineEntryExtV1XDR: XDRCodable, Sendable {
 public struct TrustlineEntryExtensionV2: XDRCodable, Sendable {
     public let liquidityPoolUseCount: Int32 = 0
     public let reserved: Int32 = 0
-    
+
+    public init() {
+        // Default initializer with constant values
+    }
+
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         _ = try container.decode(Int32.self)
         _ = try container.decode(Int32.self)
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(liquidityPoolUseCount)

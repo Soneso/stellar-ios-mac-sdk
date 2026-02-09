@@ -20,7 +20,7 @@ public class SimulateHostFunctionResult {
     /// The return value from the contract function call as an XDR-encoded SCVal.
     public let returnedValue: SCValXDR
     
-    internal init(transactionData: SorobanTransactionDataXDR, returnedValue: SCValXDR, auth: [SorobanAuthorizationEntryXDR]? = nil) {
+    public init(transactionData: SorobanTransactionDataXDR, returnedValue: SCValXDR, auth: [SorobanAuthorizationEntryXDR]? = nil) {
         self.auth = auth
         self.transactionData = transactionData
         self.returnedValue = returnedValue

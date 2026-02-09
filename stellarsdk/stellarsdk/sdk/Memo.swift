@@ -116,9 +116,9 @@ extension Memo:MemoHashProtocol {
     public func hexValue() throws -> String {
         switch self {
         case .hash(let hash):
-            return hash.hexEncodedString()
+            return hash.base16EncodedString()
         case .returnHash(let returnHash):
-            return returnHash.hexEncodedString()
+            return returnHash.base16EncodedString()
         default:
             throw StellarSDKError.invalidArgument(message: "Only hash, return_hash has hex value")
         }

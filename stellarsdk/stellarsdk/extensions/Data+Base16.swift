@@ -5,13 +5,22 @@
 //  Created by Istvan Elekes on 2/19/18.
 //  Copyright © 2018 Soneso. All rights reserved.
 //
+//  DEPRECATED: This file is deprecated. Use Data+B16.swift instead.
+//  - hexEncodedString() -> use base16EncodedString() from Data+B16.swift
+//  - HexEncodingOptions.upperCase -> use Base16EncodingOptions.uppercase
+//
+//  Data+B16.swift provides both encoding and decoding functionality,
+//  while this file only provides encoding.
+//
 
 import Foundation
 
 /// Extension providing hexadecimal (base16) encoding for Data.
+/// - Note: This extension is deprecated. Use `base16EncodedString()` from Data+B16.swift instead.
 extension Data {
 
     /// Options for hexadecimal encoding.
+    /// - Note: Deprecated. Use `Base16EncodingOptions` from Data+B16.swift instead.
     struct HexEncodingOptions: OptionSet {
         let rawValue: Int
         /// Use uppercase letters (A-F) instead of lowercase (a-f).
@@ -29,6 +38,9 @@ extension Data {
     /// let hex = data.hexEncodedString() // "1234abcd"
     /// let hexUpper = data.hexEncodedString(options: .upperCase) // "1234ABCD"
     /// ```
+    ///
+    /// - Note: Deprecated. Use `base16EncodedString()` from Data+B16.swift instead.
+    @available(*, deprecated, message: "Use base16EncodedString() from Data+B16.swift instead")
     func hexEncodedString(options: HexEncodingOptions = []) -> String {
         let hexDigits = Array((options.contains(.upperCase) ? "0123456789ABCDEF" : "0123456789abcdef").utf16)
         var chars: [unichar] = []

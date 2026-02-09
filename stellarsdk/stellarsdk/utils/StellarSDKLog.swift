@@ -149,7 +149,7 @@ public final class StellarSDKLog: Sendable {
     public static func printErrorResponse(tag: String, errorResponse: ErrorResponse?) {
         if let response = errorResponse {
             print("\(tag): Horizon Error response type: \(response.type)")
-            print("\(tag): Horizon Error response tite: \(response.title)")
+            print("\(tag): Horizon Error response title: \(response.title)")
             print("\(tag): Horizon Error response httpStatusCode: \(response.httpStatusCode)")
             print("\(tag): Horizon Error response detail: \(response.detail)")
             if let horizonInstance = response.instance {

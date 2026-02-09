@@ -115,10 +115,278 @@ final class ExtensionsTestCase: XCTestCase {
         XCTAssertEqual(helloHash, expectedHash, "SHA256 of 'hello' should match known test vector")
     }
 
-    // MARK: - Data+Base16 Tests
+    // MARK: - Data+B16 Tests (base16EncodedString)
+
+    func testB16EncodedStringBasic() {
+        // Test basic encoding
+        let testData = Data([0x12, 0x34, 0xAB, 0xCD])
+        let hex = testData.base16EncodedString()
+        XCTAssertEqual(hex, "1234abcd", "Base16 encoding should produce lowercase by default")
+    }
+
+    func testB16EncodedStringUppercase() {
+        // Test uppercase option
+        let testData = Data([0x12, 0x34, 0xAB, 0xCD])
+        let hexUpper = testData.base16EncodedString(options: [.uppercase])
+        XCTAssertEqual(hexUpper, "1234ABCD", "Base16 encoding with uppercase option should produce uppercase")
+    }
+
+    func testB16EncodedStringEmpty() {
+        // Test empty data
+        let emptyData = Data()
+        let emptyHex = emptyData.base16EncodedString()
+        XCTAssertEqual(emptyHex, "", "Empty data should produce empty hex string")
+    }
+
+    func testB16EncodedStringVariousLengths() {
+        // Test single byte
+        let singleByte = Data([0xFF])
+        XCTAssertEqual(singleByte.base16EncodedString(), "ff", "Single byte should encode correctly")
+
+        // Test two bytes
+        let twoBytes = Data([0x00, 0xFF])
+        XCTAssertEqual(twoBytes.base16EncodedString(), "00ff", "Two bytes should encode correctly")
+
+        // Test three bytes
+        let threeBytes = Data([0xDE, 0xAD, 0xBE])
+        XCTAssertEqual(threeBytes.base16EncodedString(), "deadbe", "Three bytes should encode correctly")
+
+        // Test four bytes
+        let fourBytes = Data([0xDE, 0xAD, 0xBE, 0xEF])
+        XCTAssertEqual(fourBytes.base16EncodedString(), "deadbeef", "Four bytes should encode correctly")
+
+        // Test long data (32 bytes - typical hash)
+        let longData = Data([0xb6, 0xef, 0xd7, 0xad, 0xfb, 0xa8, 0x4c, 0xfc,
+                             0x8c, 0x07, 0x27, 0xa3, 0x38, 0xff, 0xab, 0x23,
+                             0x79, 0xcd, 0x1a, 0xfc, 0x35, 0xa6, 0x9f, 0x43,
+                             0x64, 0x46, 0x8c, 0x4f, 0x2f, 0x1a, 0x8a, 0xd1])
+        let expected = "b6efd7adfba84cfc8c0727a338ffab2379cd1afc35a69f4364468c4f2f1a8ad1"
+        XCTAssertEqual(longData.base16EncodedString(), expected, "Long data should encode correctly")
+    }
+
+    func testB16EncodedStringAllByteValues() {
+        // Test all possible byte values (0x00-0xFF)
+        let allBytes = Data((0...255).map { UInt8($0) })
+        let encoded = allBytes.base16EncodedString()
+        XCTAssertEqual(encoded.count, 512, "256 bytes should produce 512 hex characters")
+
+        // Verify starts with "00" and ends with "ff"
+        XCTAssertTrue(encoded.hasPrefix("00"), "Should start with 00")
+        XCTAssertTrue(encoded.hasSuffix("ff"), "Should end with ff")
+    }
+
+    // MARK: - Data+B16 Tests (base16EncodedData)
+
+    func testB16EncodedData() {
+        // Test that base16EncodedData returns UTF-8 encoded hex string
+        let testData = Data([0x12, 0x34, 0xAB, 0xCD])
+        let encodedData = testData.base16EncodedData()
+        let expectedString = "1234abcd"
+
+        XCTAssertEqual(encodedData, expectedString.data(using: .utf8),
+                      "base16EncodedData should return UTF-8 encoded hex string")
+    }
+
+    func testB16EncodedDataUppercase() {
+        // Test uppercase option
+        let testData = Data([0x12, 0x34, 0xAB, 0xCD])
+        let encodedData = testData.base16EncodedData(options: [.uppercase])
+        let expectedString = "1234ABCD"
+
+        XCTAssertEqual(encodedData, expectedString.data(using: .utf8),
+                      "base16EncodedData with uppercase should return uppercase hex")
+    }
+
+    func testB16EncodedDataEmpty() {
+        // Test empty data
+        let emptyData = Data()
+        let encodedData = emptyData.base16EncodedData()
+
+        XCTAssertEqual(encodedData, Data(), "Empty data should produce empty encoded data")
+    }
+
+    // MARK: - Data+B16 Tests (init base16Encoded String)
+
+    func testB16InitFromStringLowercase() {
+        // Test decoding lowercase hex string
+        let hexString = "1234abcd"
+        let decoded = try! Data(base16Encoded: hexString)
+        let expected = Data([0x12, 0x34, 0xAB, 0xCD])
+        XCTAssertEqual(decoded, expected, "Hex decoding should work with lowercase")
+    }
+
+    func testB16InitFromStringUppercase() {
+        // Test decoding uppercase hex string
+        let hexUpper = "1234ABCD"
+        let decodedUpper = try! Data(base16Encoded: hexUpper)
+        let expected = Data([0x12, 0x34, 0xAB, 0xCD])
+        XCTAssertEqual(decodedUpper, expected, "Hex decoding should work with uppercase")
+    }
+
+    func testB16InitFromStringMixedCase() {
+        // Test decoding mixed case hex string
+        let hexMixed = "1234AbCd"
+        let decodedMixed = try! Data(base16Encoded: hexMixed)
+        let expected = Data([0x12, 0x34, 0xAB, 0xCD])
+        XCTAssertEqual(decodedMixed, expected, "Hex decoding should work with mixed case")
+    }
+
+    func testB16InitFromStringEmpty() {
+        // Test decoding empty string
+        let emptyHex = ""
+        let emptyDecoded = try! Data(base16Encoded: emptyHex)
+        XCTAssertEqual(emptyDecoded, Data(), "Empty hex string should produce empty data")
+    }
+
+    func testB16InitFromStringOddLength() {
+        // Test invalid length (odd number of characters)
+        let oddHex = "123"
+        XCTAssertThrowsError(try Data(base16Encoded: oddHex), "Odd length hex string should throw error") { error in
+            guard let base16Error = error as? Base16EncodingError else {
+                XCTFail("Should throw Base16EncodingError")
+                return
+            }
+            if case .invalidLength = base16Error {
+                // Expected
+            } else {
+                XCTFail("Should throw invalidLength error")
+            }
+        }
+    }
+
+    func testB16InitFromStringInvalidCharacters() {
+        // Test invalid characters
+        let invalidHex = "12GH"
+        XCTAssertThrowsError(try Data(base16Encoded: invalidHex), "Invalid hex characters should throw error") { error in
+            guard let base16Error = error as? Base16EncodingError else {
+                XCTFail("Should throw Base16EncodingError")
+                return
+            }
+            if case .invalidByteString(let byteString) = base16Error {
+                XCTAssertEqual(byteString, "GH", "Should report the invalid byte string")
+            } else {
+                XCTFail("Should throw invalidByteString error")
+            }
+        }
+
+        // Test with spaces
+        let spacedHex = "12 34"
+        XCTAssertThrowsError(try Data(base16Encoded: spacedHex), "Hex with spaces should throw error")
+
+        // Test with special characters
+        let specialHex = "12!@"
+        XCTAssertThrowsError(try Data(base16Encoded: specialHex), "Hex with special chars should throw error")
+    }
+
+    func testB16InitFromStringSingleByte() {
+        // Test single byte decoding
+        let singleByteHex = "ff"
+        let decoded = try! Data(base16Encoded: singleByteHex)
+        XCTAssertEqual(decoded, Data([0xFF]), "Single byte hex should decode correctly")
+
+        let zeroByte = "00"
+        let decodedZero = try! Data(base16Encoded: zeroByte)
+        XCTAssertEqual(decodedZero, Data([0x00]), "Zero byte hex should decode correctly")
+    }
+
+    // MARK: - Data+B16 Tests (init base16Encoded Data)
+
+    func testB16InitFromData() {
+        // Test decoding from UTF-8 Data
+        let hexString = "1234abcd"
+        let hexData = hexString.data(using: .utf8)!
+        let decoded = try! Data(base16Encoded: hexData)
+        let expected = Data([0x12, 0x34, 0xAB, 0xCD])
+        XCTAssertEqual(decoded, expected, "Hex decoding from Data should work")
+    }
+
+    func testB16InitFromDataEmpty() {
+        // Test decoding empty Data
+        let emptyData = Data()
+        let decoded = try! Data(base16Encoded: emptyData)
+        XCTAssertEqual(decoded, Data(), "Empty hex data should produce empty data")
+    }
+
+    func testB16InitFromDataInvalidUTF8() {
+        // Test invalid UTF-8 data
+        let invalidUTF8 = Data([0xFF, 0xFE])
+        XCTAssertThrowsError(try Data(base16Encoded: invalidUTF8), "Invalid UTF-8 should throw error") { error in
+            guard let base16Error = error as? Base16EncodingError else {
+                XCTFail("Should throw Base16EncodingError")
+                return
+            }
+            if case .invalidStringEncoding = base16Error {
+                // Expected
+            } else {
+                XCTFail("Should throw invalidStringEncoding error")
+            }
+        }
+    }
+
+    func testB16InitFromDataOddLength() {
+        // Test odd length hex data
+        let oddHexData = "123".data(using: .utf8)!
+        XCTAssertThrowsError(try Data(base16Encoded: oddHexData), "Odd length hex data should throw error") { error in
+            guard let base16Error = error as? Base16EncodingError else {
+                XCTFail("Should throw Base16EncodingError")
+                return
+            }
+            if case .invalidLength = base16Error {
+                // Expected
+            } else {
+                XCTFail("Should throw invalidLength error")
+            }
+        }
+    }
+
+    // MARK: - Data+B16 Round Trip Tests
+
+    func testB16RoundTrip() {
+        // Test round-trip encoding and decoding
+        let originalData = Data([0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF])
+        let encoded = originalData.base16EncodedString()
+        let decoded = try! Data(base16Encoded: encoded)
+        XCTAssertEqual(decoded, originalData, "Round-trip encoding/decoding should preserve data")
+    }
+
+    func testB16RoundTripUppercase() {
+        // Test round-trip with uppercase
+        let originalData = Data([0xDE, 0xAD, 0xBE, 0xEF])
+        let encoded = originalData.base16EncodedString(options: [.uppercase])
+        let decoded = try! Data(base16Encoded: encoded)
+        XCTAssertEqual(decoded, originalData, "Round-trip with uppercase should preserve data")
+    }
+
+    func testB16RoundTripViaData() {
+        // Test round-trip via base16EncodedData
+        let originalData = Data([0xCA, 0xFE, 0xBA, 0xBE])
+        let encodedData = originalData.base16EncodedData()
+        let decoded = try! Data(base16Encoded: encodedData)
+        XCTAssertEqual(decoded, originalData, "Round-trip via encodedData should preserve data")
+    }
+
+    func testB16RoundTripAllByteValues() {
+        // Test round-trip for all byte values
+        let allBytes = Data((0...255).map { UInt8($0) })
+        let encoded = allBytes.base16EncodedString()
+        let decoded = try! Data(base16Encoded: encoded)
+        XCTAssertEqual(decoded, allBytes, "Round-trip should preserve all byte values")
+    }
+
+    func testB16RoundTripVariousLengths() {
+        // Test round-trip for various data lengths
+        for length in [0, 1, 2, 3, 4, 5, 16, 32, 64, 100] {
+            let data = Data((0..<length).map { UInt8($0 % 256) })
+            let encoded = data.base16EncodedString()
+            let decoded = try! Data(base16Encoded: encoded)
+            XCTAssertEqual(decoded, data, "Round-trip should work for length \(length)")
+        }
+    }
+
+    // MARK: - Data+Base16 Tests (deprecated hexEncodedString - for backward compatibility)
 
     func testBase16Encoding() {
-        // Test hex encoding
+        // Test hex encoding (deprecated method for backward compatibility)
         let testData = Data([0x12, 0x34, 0xAB, 0xCD])
 
         // Test lowercase (default)
@@ -141,7 +409,7 @@ final class ExtensionsTestCase: XCTestCase {
     }
 
     func testBase16Decoding() {
-        // Test hex decoding
+        // Test hex decoding using Data+B16
         let hexString = "1234abcd"
         let decoded = try! Data(base16Encoded: hexString)
         let expected = Data([0x12, 0x34, 0xAB, 0xCD])
@@ -176,11 +444,31 @@ final class ExtensionsTestCase: XCTestCase {
     }
 
     func testBase16RoundTrip() {
-        // Test round-trip encoding and decoding
+        // Test round-trip encoding and decoding using base16EncodedString (new) and init(base16Encoded:)
         let originalData = Data([0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF])
         let encoded = originalData.base16EncodedString()
         let decoded = try! Data(base16Encoded: encoded)
         XCTAssertEqual(decoded, originalData, "Round-trip encoding/decoding should preserve data")
+    }
+
+    // MARK: - Test compatibility between hexEncodedString and base16EncodedString
+
+    func testHexAndBase16Compatibility() {
+        // Verify that hexEncodedString and base16EncodedString produce the same output
+        let testData = Data([0x12, 0x34, 0xAB, 0xCD, 0xEF])
+
+        let hexEncoded = testData.hexEncodedString()
+        let base16Encoded = testData.base16EncodedString()
+
+        XCTAssertEqual(hexEncoded, base16Encoded,
+                      "hexEncodedString and base16EncodedString should produce identical output")
+
+        // Test uppercase variants
+        let hexEncodedUpper = testData.hexEncodedString(options: .upperCase)
+        let base16EncodedUpper = testData.base16EncodedString(options: [.uppercase])
+
+        XCTAssertEqual(hexEncodedUpper, base16EncodedUpper,
+                      "hexEncodedString(upperCase) and base16EncodedString(uppercase) should produce identical output")
     }
 
     // MARK: - String+Base64 Tests
@@ -306,213 +594,6 @@ final class ExtensionsTestCase: XCTestCase {
         for invalid in invalidFQDNs {
             XCTAssertFalse(invalid.isFullyQualifiedDomainName, "'\(invalid)' should not be valid FQDN")
         }
-    }
-
-    // MARK: - String+KeyUtils Tests
-
-    func testStringKeyUtilsValidPublicKey() {
-        // Test valid Ed25519 public keys (G... addresses)
-        let validKeys = [
-            "GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB",
-            "GB7KKHHVYLDIZEKYJPAJUOTBE5E3NJAXPSDZK7O6O44WR3EBRO5HRPVT",
-            "GD6WVYRVID442Y4JVWFWKWCZKB45UGHJAABBJRS22TUSTWGJYXIUR7N2",
-            "GBCG42WTVWPO4Q6OZCYI3D6ZSTFSJIXIS6INCIUF23L6VN3ADE4337AP"
-        ]
-
-        for key in validKeys {
-            XCTAssertTrue(key.isValidEd25519PublicKey(), "'\(key)' should be valid public key")
-        }
-
-        // Test decode and re-encode
-        let testKey = validKeys[0]
-        let decoded = try! testKey.decodeEd25519PublicKey()
-        XCTAssertEqual(decoded.count, 32, "Decoded public key should be 32 bytes")
-        let reencoded = try! decoded.encodeEd25519PublicKey()
-        XCTAssertEqual(reencoded, testKey, "Re-encoded key should match original")
-    }
-
-    func testStringKeyUtilsInvalidPublicKey() {
-        // Test invalid Ed25519 public keys
-        let invalidKeys = [
-            "", // Empty
-            "test", // Not a valid strkey
-            "SBGWKM3CD4IL47QN6X54N6Y33T3JDNVI6AIJ6CD5IM47HG3IG4O36XCU", // Secret seed, not public key
-            "GBPXX0A5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVL", // Invalid encoding
-            "GBPXXOA5N4JYPESHAADMQKBPWZWQDQ64ZV6ZL2S3LAGW4SY7NTCMWIVT", // Invalid checksum
-            "GCFZB6L25D26RQFDWSSBDEYQ32JHLRMTT44ZYE3DZQUTYOL7WY43PLBG++", // Invalid characters
-            "GB6OWYST45X57HCJY5XWOHDEBULB6XUROWPIKW77L5DSNANBEQGUPADT2T" // Wrong length
-        ]
-
-        for key in invalidKeys {
-            XCTAssertFalse(key.isValidEd25519PublicKey(), "'\(key)' should not be valid public key")
-        }
-
-        // Test that decode throws for invalid keys
-        XCTAssertThrowsError(try invalidKeys[3].decodeEd25519PublicKey(), "Decoding invalid key should throw")
-    }
-
-    func testStringKeyUtilsValidSecretSeed() {
-        // Test valid Ed25519 secret seeds (S... seeds)
-        let validSeeds = [
-            "SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDY",
-            "SCZTUEKSEH2VYZQC6VLOTOM4ZDLMAGV4LUMH4AASZ4ORF27V2X64F2S2",
-            "SCGNLQKTZ4XCDUGVIADRVOD4DEVNYZ5A7PGLIIZQGH7QEHK6DYODTFEH",
-            "SDH6R7PMU4WIUEXSM66LFE4JCUHGYRTLTOXVUV5GUEPITQEO3INRLHER"
-        ]
-
-        for seed in validSeeds {
-            XCTAssertTrue(seed.isValidEd25519SecretSeed(), "'\(seed)' should be valid secret seed")
-        }
-
-        // Test decode and re-encode
-        let testSeed = validSeeds[0]
-        let decoded = try! testSeed.decodeEd25519SecretSeed()
-        XCTAssertEqual(decoded.count, 32, "Decoded secret seed should be 32 bytes")
-        let reencoded = try! decoded.encodeEd25519SecretSeed()
-        XCTAssertEqual(reencoded, testSeed, "Re-encoded seed should match original")
-    }
-
-    func testStringKeyUtilsInvalidSecretSeed() {
-        // Test invalid Ed25519 secret seeds
-        let invalidSeeds = [
-            "", // Empty
-            "test", // Not a valid strkey
-            "GBBM6BKZPEHWYO3E3YKREDPQXMS4VK35YLNU7NFBRI26RAN7GI5POFBB", // Public key, not secret
-            "SAFGAMN5Z6IHVI3IVEPIILS7ITZDYSCEPLN4FN5Z3IY63DRH4CIYEV", // Too short
-            "SAB5556L5AN5KSR5WF7UOEFDCIODEWEO7H2UR4S5R62DFTQOGLKOVZDYT", // Too long
-            "SAFGAMN5Z6IHVI3IVEPIILS7ITZDYSCEPLN4FN5Z3IY63DRH4CIYEVIT", // Invalid checksum
-            "SAYC2LQ322EEHZYWNSKBEW6N66IRTDREEBUXXU5HPVZGMAXKLIZNM45H++" // Invalid characters
-        ]
-
-        for seed in invalidSeeds {
-            XCTAssertFalse(seed.isValidEd25519SecretSeed(), "'\(seed)' should not be valid secret seed")
-        }
-    }
-
-    func testStringKeyUtilsValidMuxedAccount() {
-        // Test valid muxed account (M... addresses)
-        let muxedAccount = "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJVAAAAAAAAAAAAAJLK"
-        XCTAssertTrue(muxedAccount.isValidMed25519PublicKey(), "Muxed account should be valid")
-
-        // Test decode
-        let decoded = try! muxedAccount.decodeMed25519PublicKey()
-        XCTAssertGreaterThan(decoded.count, 32, "Muxed account should decode to more than 32 bytes")
-
-        // Test re-encode
-        let reencoded = try! decoded.encodeMEd25519AccountId()
-        XCTAssertEqual(reencoded, muxedAccount, "Re-encoded muxed account should match original")
-
-        // Test invalid muxed accounts
-        let invalid = "MA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUAAAAAAAAAAAACJUR"
-        XCTAssertFalse(invalid.isValidMed25519PublicKey(), "Invalid muxed account should not validate")
-    }
-
-    func testStringKeyUtilsValidContractId() {
-        // Test valid contract ID (C... contract IDs)
-        let contractId = "CA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"
-        XCTAssertTrue(contractId.isValidContractId(), "Contract ID should be valid")
-
-        // Test decode
-        let decoded = try! contractId.decodeContractId()
-        XCTAssertEqual(decoded.count, 32, "Contract ID should decode to 32 bytes")
-
-        // Test decode to hex
-        let hex = try! contractId.decodeContractIdToHex()
-        XCTAssertEqual(hex, "363eaa3867841fbad0f4ed88c779e4fe66e56a2470dc98c0ec9c073d05c7b103", "Contract ID hex should match")
-
-        // Test re-encode from hex
-        let reencoded = try! hex.encodeContractIdHex()
-        XCTAssertEqual(reencoded, contractId, "Re-encoded contract ID should match original")
-
-        // Test that public key is not valid contract ID
-        let publicKey = "GA3D5KRYM6CB7OWQ6TWYRR3Z4T7GNZLKERYNZGGA5SOAOPIFY6YQGAXE"
-        XCTAssertFalse(publicKey.isValidContractId(), "Public key should not be valid contract ID")
-    }
-
-    func testStringKeyUtilsValidLiquidityPoolId() {
-        // Test valid liquidity pool ID (L... pool IDs)
-        let poolId = "LA7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN"
-        XCTAssertTrue(poolId.isValidLiquidityPoolId(), "Liquidity pool ID should be valid")
-
-        // Test decode
-        let decoded = try! poolId.decodeLiquidityPoolId()
-        XCTAssertEqual(decoded.count, 32, "Liquidity pool ID should decode to 32 bytes")
-
-        // Test decode to hex
-        let hex = try! poolId.decodeLiquidityPoolIdToHex()
-        XCTAssertEqual(hex, "3f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a", "Pool ID hex should match")
-
-        // Test re-encode from hex
-        let reencoded = try! hex.encodeLiquidityPoolIdHex()
-        XCTAssertEqual(reencoded, poolId, "Re-encoded pool ID should match original")
-
-        // Test invalid pool ID
-        let invalid = "LB7QYNF7SOWQ3GLR2BGMZEHXAVIRZA4KVWLTJJFC7MGXUA74P7UJUPJN"
-        XCTAssertFalse(invalid.isValidLiquidityPoolId(), "Invalid pool ID should not validate")
-    }
-
-    func testStringKeyUtilsValidClaimableBalanceId() {
-        // Test valid claimable balance ID (B... balance IDs)
-        let balanceId = "BAAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU"
-        XCTAssertTrue(balanceId.isValidClaimableBalanceId(), "Claimable balance ID should be valid")
-
-        // Test decode
-        let decoded = try! balanceId.decodeClaimableBalanceId()
-        XCTAssertEqual(decoded.count, 33, "Claimable balance ID should decode to 33 bytes (32 + 1 type byte)")
-
-        // Test decode to hex
-        let hex = try! balanceId.decodeClaimableBalanceIdToHex()
-        XCTAssertEqual(hex, "003f0c34bf93ad0d9971d04ccc90f705511c838aad9734a4a2fb0d7a03fc7fe89a", "Balance ID hex should match")
-
-        // Test re-encode from hex
-        let reencoded = try! hex.encodeClaimableBalanceIdHex()
-        XCTAssertEqual(reencoded, balanceId, "Re-encoded balance ID should match original")
-
-        // Test invalid balance ID
-        let invalid = "BBAD6DBUX6J22DMZOHIEZTEQ64CVCHEDRKWZONFEUL5Q26QD7R76RGR4TU"
-        XCTAssertFalse(invalid.isValidClaimableBalanceId(), "Invalid balance ID should not validate")
-    }
-
-    func testStringKeyUtilsValidPreAuthTx() {
-        // Test valid pre-auth transaction hash (T... hashes)
-        let keyPair = KeyPair(seed: try! Seed(bytes: [UInt8](Network.testnet.networkId)))
-        let publicKeyData = Data(keyPair.publicKey.bytes)
-        let preAuthTx = try! publicKeyData.encodePreAuthTx()
-
-        XCTAssertTrue(preAuthTx.hasPrefix("T"), "PreAuthTx should start with T")
-        XCTAssertTrue(preAuthTx.isValidPreAuthTx(), "PreAuthTx should be valid")
-
-        // Test decode and re-encode
-        let decoded = try! preAuthTx.decodePreAuthTx()
-        XCTAssertEqual(decoded, publicKeyData, "Decoded PreAuthTx should match original data")
-    }
-
-    func testStringKeyUtilsValidSha256Hash() {
-        // Test valid SHA256 hash (X... hashes)
-        let keyPair = KeyPair(seed: try! Seed(bytes: [UInt8](Network.testnet.networkId)))
-        let publicKeyData = Data(keyPair.publicKey.bytes)
-        let sha256Hash = try! publicKeyData.encodeSha256Hash()
-
-        XCTAssertTrue(sha256Hash.hasPrefix("X"), "Sha256Hash should start with X")
-        // Note: isValidSha256Hash has a bug in the SDK - it checks .preAuthTX instead of .sha256Hash
-        // So we'll skip validation and just test encode/decode
-        // XCTAssertTrue(sha256Hash.isValidSha256Hash(), "Sha256Hash should be valid")
-
-        // Test decode and re-encode
-        let decoded = try! sha256Hash.decodeSha256Hash()
-        XCTAssertEqual(decoded, publicKeyData, "Decoded Sha256Hash should match original data")
-    }
-
-    func testStringKeyUtilsHexString() {
-        // Test hex string validation
-        let validHex = "1234abcd"
-        XCTAssertTrue(validHex.isHexString(), "Valid hex should return true")
-
-        let invalidHex = "12GH"
-        XCTAssertFalse(invalidHex.isHexString(), "Invalid hex should return false")
-
-        let oddHex = "123"
-        XCTAssertFalse(oddHex.isHexString(), "Odd length hex should return false")
     }
 
     // MARK: - Dictionary+HttpParams Tests

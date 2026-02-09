@@ -301,13 +301,13 @@ public class KycService: NSObject {
         do {
             let tomlString = try String(contentsOf: url, encoding: .utf8)
             let toml = try Toml(withString: tomlString)
-            if let kycServerAddress = toml.string(kycServerKey) != nil ? toml.string(kycServerKey) : toml.string(transferServerKey) {
+            if let kycServerAddress = toml.string(kycServerKey) ?? toml.string(transferServerKey) {
                 let kycService = KycService(kycServiceAddress: kycServerAddress)
                 return .success(response: kycService)
             } else {
                 return .failure(error: .noKycOrTransferServerSet)
             }
-            
+
         } catch {
             return .failure(error: .invalidToml)
         }

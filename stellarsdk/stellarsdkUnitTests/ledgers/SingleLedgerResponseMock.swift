@@ -2,7 +2,7 @@
 //  SingleLedgerResponseMock.swift
 //  stellarsdkTests
 //
-//  Created by AI Assistant on 04.02.26.
+//  Created by Soneso on 04.02.26.
 //  Copyright © 2026 Soneso. All rights reserved.
 //
 

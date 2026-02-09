@@ -31,7 +31,7 @@ public class ClaimClaimableBalanceOperation:Operation {
     public init(fromXDR:ClaimClaimableBalanceOpXDR, sourceAccountId:String?) throws {
         switch fromXDR.balanceID {
         case .claimableBalanceIDTypeV0(let hash):
-            self.balanceId = hash.wrapped.hexEncodedString()
+            self.balanceId = hash.wrapped.base16EncodedString()
         }
         super.init(sourceAccountId: sourceAccountId)
     }

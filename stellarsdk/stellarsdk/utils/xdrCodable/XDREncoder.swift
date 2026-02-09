@@ -38,8 +38,8 @@ public extension XDREncodable {
 
 /// The actual binary encoder class.
 public class XDREncoder {
-    fileprivate var data: [UInt8] = []
-    
+    public var data: [UInt8] = []
+
     public init() {}
 }
 

@@ -98,11 +98,15 @@ public struct Sep24WithdrawRequest: Sendable {
     public func toParameters() -> [String:Data] {
         var parameters = [String:Data]()
         parameters["asset_code"] = assetCode.data(using: .utf8)
-        
+
         if let assetIssuer = assetIssuer {
             parameters["asset_issuer"] = assetIssuer.data(using: .utf8)
         }
-        
+
+        if let destinationAsset = destinationAsset {
+            parameters["destination_asset"] = destinationAsset.data(using: .utf8)
+        }
+
         if let amount = amount {
             parameters["amount"] = amount.data(using: .utf8)
         }

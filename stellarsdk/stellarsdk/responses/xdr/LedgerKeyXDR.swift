@@ -151,7 +151,7 @@ public struct LiquidityPoolIDXDR: XDRCodable, Sendable {
     }
     
     public var poolIDString: String {
-        return liquidityPoolID.wrapped.hexEncodedString()
+        return liquidityPoolID.wrapped.base16EncodedString()
     }
 }
 

@@ -233,7 +233,7 @@ public class ChangeTrustAsset : Asset, @unchecked Sendable {
         let data = Data(bytes: xdrBytes, count: xdrBytes.count)
         let hash = data.sha256Hash
 
-        return hash.hexEncodedString()
+        return hash.base16EncodedString()
     }
 
     /// Generates ChangeTrustAssetXDR object for change trust operations.

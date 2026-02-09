@@ -407,7 +407,7 @@ public enum SCAddressXDR: XDRCodable, Sendable {
     public var contractId:String? {
         switch self {
         case .contract(let data):
-            return data.wrapped.hexEncodedString()
+            return data.wrapped.base16EncodedString()
         default:
             return nil
         }

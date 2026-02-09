@@ -2,7 +2,7 @@
 //  Ed25519DerivationTestCase.swift
 //  stellarsdk
 //
-//  Created by Claude on 03.02.26.
+//  Created by Soneso on 03.02.26.
 //  Copyright © 2026 Soneso. All rights reserved.
 //
 
@@ -293,5 +293,57 @@ final class Ed25519DerivationTestCase: XCTestCase {
 
         XCTAssertNotEqual(account1.raw, account2.raw)
         XCTAssertNotEqual(account1.chainCode, account2.chainCode)
+    }
+
+    // MARK: - SEP-0005 Test Vector 2: 15-word mnemonic
+
+    func testSEP0005Vector2_15WordMnemonic() throws {
+        // SEP-0005 Test Vector 2: 15-word mnemonic
+        let mnemonic15Words = "resource asthma orphan phone ice canvas fire useful arch jewel impose vague theory cushion top"
+
+        let testVectors: [(index: UInt32, accountId: String)] = [
+            (0, "GAVXVW5MCK7Q66RIBWZZKZEDQTRXWCZUP4DIIFXCCENGW2P6W4OA34RH"),
+            (2, "GAUA3XK3SGEQFNCBM423WIM5WCZ4CR4ZDPDFCYSFLCTODGGGJMPOHAAE"),
+            (4, "GCSCZVGV2Y3EQ2RATJ7TE6PVWTW5OH5SMG754AF6W6YM3KJF7RMNPB4Y"),
+            (8, "GD3KWA24OIM7V3MZKDAVSLN3NBHGKVURNJ72ZCTAJSDTF7RIGFXPW5FQ"),
+        ]
+
+        let bip39Seed = Mnemonic.createSeed(mnemonic: mnemonic15Words)
+        let masterKey = Ed25519Derivation(seed: bip39Seed)
+        let coinType = masterKey.derived(at: 44).derived(at: 148)
+
+        for testVector in testVectors {
+            let account = coinType.derived(at: testVector.index)
+            let keyPair = try KeyPair(seed: Seed(bytes: [UInt8](account.raw)))
+
+            XCTAssertEqual(keyPair.accountId, testVector.accountId,
+                          "Account ID mismatch for 15-word mnemonic at index \(testVector.index)")
+        }
+    }
+
+    // MARK: - SEP-0005 Test Vector 5: Edge case (all "abandon")
+
+    func testSEP0005Vector5_AbandonMnemonic() throws {
+        // SEP-0005 Test Vector 5: Edge case with "abandon" repeated
+        let mnemonicAbandon = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+
+        let testVectors: [(index: UInt32, accountId: String)] = [
+            (0, "GB3JDWCQJCWMJ3IILWIGDTQJJC5567PGVEVXSCVPEQOTDN64VJBDQBYX"),
+            (2, "GBFPWBTN4AXHPWPTQVQBP4KRZ2YVYYOGRMV2PEYL2OBPPJDP7LECEVHR"),
+            (4, "GCQ3J35MKPKJX7JDXRHC5YTXTULFMCBMZ5IC63EDR66QA3LO7264ZL7Q"),
+            (8, "GABTYCZJMCP55SS6I46SR76IHETZDLG4L37MLZRZKQDGBLS5RMP65TSX"),
+        ]
+
+        let bip39Seed = Mnemonic.createSeed(mnemonic: mnemonicAbandon)
+        let masterKey = Ed25519Derivation(seed: bip39Seed)
+        let coinType = masterKey.derived(at: 44).derived(at: 148)
+
+        for testVector in testVectors {
+            let account = coinType.derived(at: testVector.index)
+            let keyPair = try KeyPair(seed: Seed(bytes: [UInt8](account.raw)))
+
+            XCTAssertEqual(keyPair.accountId, testVector.accountId,
+                          "Account ID mismatch for 'abandon' mnemonic at index \(testVector.index)")
+        }
     }
 }

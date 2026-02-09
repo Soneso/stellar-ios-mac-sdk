@@ -196,8 +196,10 @@ public class OperationsService: @unchecked Sendable {
             do {
                 let operation = try self.operationsFactory.operationFromData(data: data)
                 return .success(details: operation)
+            } catch let error as HorizonRequestError {
+                return .failure(error: error)
             } catch {
-                return .failure(error: error as! HorizonRequestError)
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
         case .failure(let error):
             return .failure(error:error)
@@ -298,8 +300,10 @@ public class OperationsService: @unchecked Sendable {
             do {
                 let operations = try self.operationsFactory.operationsFromResponseData(data: data)
                 return .success(page: operations)
+            } catch let error as HorizonRequestError {
+                return .failure(error: error)
             } catch {
-                return .failure(error: error as! HorizonRequestError)
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
         case .failure(let error):
             return .failure(error:error)

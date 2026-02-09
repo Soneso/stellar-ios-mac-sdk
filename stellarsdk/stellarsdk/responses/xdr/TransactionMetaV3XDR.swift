@@ -16,7 +16,7 @@ public struct TransactionMetaV3XDR: XDRCodable, Sendable {
     public let txChangesAfter: LedgerEntryChangesXDR
     public let sorobanMeta: SorobanTransactionMetaXDR?
     
-    internal init(ext: ExtensionPoint, txChangesBefore: LedgerEntryChangesXDR, operations: [OperationMetaXDR], txChangesAfter: LedgerEntryChangesXDR, sorobanMeta: SorobanTransactionMetaXDR? = nil) {
+    public init(ext: ExtensionPoint, txChangesBefore: LedgerEntryChangesXDR, operations: [OperationMetaXDR], txChangesAfter: LedgerEntryChangesXDR, sorobanMeta: SorobanTransactionMetaXDR? = nil) {
         self.ext = ext
         self.txChangesBefore = txChangesBefore
         self.operations = operations

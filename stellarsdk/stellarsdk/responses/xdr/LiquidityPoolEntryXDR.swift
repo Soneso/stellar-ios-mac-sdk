@@ -29,7 +29,7 @@ public struct LiquidityPoolEntryXDR: XDRCodable, Sendable {
     }
     
     public var poolIDString: String {
-        return liquidityPoolID.wrapped.hexEncodedString()
+        return liquidityPoolID.wrapped.base16EncodedString()
     }
 }
 

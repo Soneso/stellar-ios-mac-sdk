@@ -2,7 +2,7 @@
 //  MiscResponsesUnitTests.swift
 //  stellarsdkTests
 //
-//  Created by Claude Code
+//  Created by Soneso
 //  Copyright © 2025 Soneso. All rights reserved.
 //
 

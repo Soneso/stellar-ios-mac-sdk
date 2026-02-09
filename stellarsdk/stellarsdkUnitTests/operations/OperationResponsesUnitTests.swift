@@ -2,7 +2,7 @@
 //  OperationResponsesUnitTests.swift
 //  stellarsdkTests
 //
-//  Created by Claude Code
+//  Created by Soneso on 04.02.26.
 //  Copyright 2025 Soneso. All rights reserved.
 //
 

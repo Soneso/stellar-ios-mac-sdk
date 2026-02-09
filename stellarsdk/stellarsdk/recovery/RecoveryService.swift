@@ -244,10 +244,10 @@ public class RecoveryService: NSObject {
             return .unauthorized(message: extractErrorMessage(message: message))
         case .notFound(let message, _):
             return .notFound(message: extractErrorMessage(message: message))
+        case .duplicate(let message, _):
+            return .conflict(message: extractErrorMessage(message: message))
         default:
             return .horizonError(error: horizonError)
-        
-        // todo conflict 409
         }
     }
     

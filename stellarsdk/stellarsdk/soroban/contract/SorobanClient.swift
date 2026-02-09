@@ -224,7 +224,7 @@ public class SorobanClient {
             guard let bytes = returnedValue.bytes else {
                 throw SorobanClientError.installFailed(message: "Could not extract wasm hash from simulation result.")
             }
-            return bytes.hexEncodedString()
+            return bytes.base16EncodedString()
         }
         let response = try await tx.signAndSend(force: force)
         if let wasmHash = response.wasmId {

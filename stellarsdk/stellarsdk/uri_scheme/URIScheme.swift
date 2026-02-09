@@ -213,6 +213,12 @@ public class URIScheme: NSObject {
                 break
             }
         }
+
+        if let memoType = memoType {
+            // Convert memo type to SEP-0007 format: "MEMO_" + uppercase type
+            let sepMemoType = "MEMO_\(memoType.uppercased())"
+            params.append("\(PayOperationParams.memo_type)=\(sepMemoType)")
+        }
         
         if let callBack = callBack, let urlEncodedCallBack = callBack.urlEncoded {
             params.append("\(PayOperationParams.callback)=\(urlEncodedCallBack)")

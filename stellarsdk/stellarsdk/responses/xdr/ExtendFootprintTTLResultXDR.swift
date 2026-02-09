@@ -44,16 +44,16 @@ public enum ExtendFootprintTTLResultXDR: XDRCodable, Sendable {
     }
     
     public func encode(to encoder: Encoder) throws {
-        let _ = encoder.unkeyedContainer()
+        var container = encoder.unkeyedContainer()
         switch self {
         case .success:
-            break
+            try container.encode(ExtendFootprintTTLResultCode.success.rawValue)
         case .malformed:
-            break
+            try container.encode(ExtendFootprintTTLResultCode.malformed.rawValue)
         case .resourceLimitExceeded:
-            break
+            try container.encode(ExtendFootprintTTLResultCode.resourceLimitExceeded.rawValue)
         case .insufficientRefundableFee:
-            break
+            try container.encode(ExtendFootprintTTLResultCode.insufficientRefundableFee.rawValue)
         }
     }
 }

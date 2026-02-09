@@ -70,14 +70,20 @@ public extension String {
 
         var newData = Data(capacity: hexStr.count/2)
 
-        var indexIsEven = true
-        for i in hexStr.indices {
-            if indexIsEven {
-                let byteRange = i...hexStr.index(after: i)
-                guard let byte = UInt8(hexStr[byteRange], radix: 16) else { return nil }
-                newData.append(byte)
+        var currentIndex = hexStr.startIndex
+        while currentIndex < hexStr.endIndex {
+            // Safely get the next index for the second hex digit
+            guard let nextIndex = hexStr.index(currentIndex, offsetBy: 1, limitedBy: hexStr.endIndex),
+                  nextIndex < hexStr.endIndex else {
+                return nil
             }
-            indexIsEven.toggle()
+
+            let byteEndIndex = hexStr.index(after: nextIndex)
+            let byteRange = currentIndex..<byteEndIndex
+            guard let byte = UInt8(hexStr[byteRange], radix: 16) else { return nil }
+            newData.append(byte)
+
+            currentIndex = byteEndIndex
         }
         return newData
     }
@@ -94,9 +100,18 @@ public extension String {
         while hex.hasPrefix("00") && hex.count >= 66 {
             hex = String(hex.dropFirst(2))
         }
+
+        // Pad to even length if necessary
+        if hex.count % 2 != 0 {
+            hex = "0" + hex
+        }
+
         var data = Data()
         while(hex.count > 0) {
-            let subIndex = hex.index(hex.startIndex, offsetBy: 2)
+            // Safely get index for next 2 characters
+            guard let subIndex = hex.index(hex.startIndex, offsetBy: 2, limitedBy: hex.endIndex) else {
+                break
+            }
             let c = String(hex[..<subIndex])
             hex = String(hex[subIndex...])
             var ch: UInt64 = 0

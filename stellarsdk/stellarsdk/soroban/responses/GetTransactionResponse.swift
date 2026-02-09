@@ -199,7 +199,7 @@ public struct GetTransactionResponse: Decodable, Sendable {
     
     private var binHex:String? {
         if let data = bin {
-            return data.hexEncodedString()
+            return data.base16EncodedString()
         }
         return nil
     }
