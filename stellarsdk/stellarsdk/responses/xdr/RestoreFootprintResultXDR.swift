@@ -41,14 +41,14 @@ public enum RestoreFootprintResultXDR: XDRCodable, Sendable {
     }
     
     public func encode(to encoder: Encoder) throws {
-        let _ = encoder.unkeyedContainer()
+        var container = encoder.unkeyedContainer()
         switch self {
         case .success:
-            break
+            try container.encode(RestoreFootprintResultCode.success.rawValue)
         case .malformed:
-            break
+            try container.encode(RestoreFootprintResultCode.malformed.rawValue)
         case .resourceLimitExceeded:
-            break
+            try container.encode(RestoreFootprintResultCode.resourceLimitExceeded.rawValue)
         }
     }
 }

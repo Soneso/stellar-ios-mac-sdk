@@ -10,8 +10,8 @@ import Foundation
 
 public struct LedgerKeyAccountXDR: XDRCodable, Sendable {
     public let accountID: PublicKey
-    
-    init(accountID: PublicKey) {
+
+    public init(accountID: PublicKey) {
         self.accountID = accountID
     }
     

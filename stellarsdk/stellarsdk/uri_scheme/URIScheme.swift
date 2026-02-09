@@ -213,6 +213,13 @@ public class URIScheme: NSObject {
                 break
             }
         }
+
+        if let _ = memo, let memoType = memoType {
+            // Convert memo type to SEP-0007 format: "MEMO_" + uppercase type
+            // Only add memo_type when memo is actually provided per SEP-0007
+            let sepMemoType = "MEMO_\(memoType.uppercased())"
+            params.append("\(PayOperationParams.memo_type)=\(sepMemoType)")
+        }
         
         if let callBack = callBack, let urlEncodedCallBack = callBack.urlEncoded {
             params.append("\(PayOperationParams.callback)=\(urlEncodedCallBack)")
@@ -321,13 +328,19 @@ public class URIScheme: NSObject {
     /// - Parameter url: The SEP-0007 URI to parse
     /// - Returns: The parameter value if found, nil otherwise
     public func getValue(forParam param: SignTransactionParams, fromURL url: String) -> String? {
-        let fields = url.split(separator: "&")
+        // Extract query string (everything after ?)
+        guard let queryStart = url.range(of: "?") else {
+            return nil
+        }
+
+        let queryString = String(url[queryStart.upperBound...])
+        let fields = queryString.split(separator: "&")
+
         for field in fields {
-            if field.hasPrefix("\(param)") {
+            if field.hasPrefix("\(param)=") {
                 return field.replacingOccurrences(of: "\(param)=", with: "")
             }
         }
-        
         return nil
     }
     

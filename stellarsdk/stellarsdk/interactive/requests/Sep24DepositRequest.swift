@@ -93,11 +93,15 @@ public struct Sep24DepositRequest: Sendable {
     public func toParameters() -> [String:Data] {
         var parameters = [String:Data]()
         parameters["asset_code"] = assetCode.data(using: .utf8)
-        
+
         if let assetIssuer = assetIssuer {
             parameters["asset_issuer"] = assetIssuer.data(using: .utf8)
         }
-        
+
+        if let sourceAsset = sourceAsset {
+            parameters["source_asset"] = sourceAsset.data(using: .utf8)
+        }
+
         if let amount = amount {
             parameters["amount"] = amount.data(using: .utf8)
         }

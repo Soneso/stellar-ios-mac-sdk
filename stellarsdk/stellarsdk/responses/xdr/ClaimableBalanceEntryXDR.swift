@@ -81,7 +81,7 @@ public enum ClaimableBalanceIDXDR: XDRCodable, Sendable {
             let type = UInt8(ClaimableBalanceIDType.claimableBalanceIDTypeV0.rawValue) // put the type into the first byte
             var result = Data([type])
             result.append(data.wrapped)
-            return result.hexEncodedString()
+            return result.base16EncodedString()
         }
     }
 }

@@ -279,7 +279,7 @@ public indirect enum SCSpecTypeDefXDR: XDRCodable, Sendable {
         switch self {
         case .val: return SCSpecType.val.rawValue
         case .bool: return SCSpecType.bool.rawValue
-        case .void: return SCSpecType.bool.rawValue
+        case .void: return SCSpecType.void.rawValue
         case .error: return SCSpecType.error.rawValue
         case .u32: return SCSpecType.u32.rawValue
         case .i32: return SCSpecType.i32.rawValue

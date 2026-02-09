@@ -43,7 +43,7 @@ public class LiquidityPoolWithdrawOperation:Operation {
     ///
     public init(fromXDR:LiquidityPoolWithdrawOpXDR, sourceAccountId:String?) {
         
-        self.liquidityPoolId = fromXDR.liquidityPoolID.wrapped.hexEncodedString()
+        self.liquidityPoolId = fromXDR.liquidityPoolID.wrapped.base16EncodedString()
         self.amount = Operation.fromXDRAmount(fromXDR.amount)
         self.minAmountA = Operation.fromXDRAmount(fromXDR.minAmountA)
         self.minAmountB = Operation.fromXDRAmount(fromXDR.minAmountB)

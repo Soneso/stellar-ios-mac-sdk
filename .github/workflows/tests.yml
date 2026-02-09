@@ -1,0 +1,48 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  unit-tests:
+    runs-on: macos-15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.2'
+
+      - name: Run unit tests with coverage
+        run: |
+          swift test --filter stellarsdkUnitTests --enable-code-coverage
+
+      - name: Export coverage
+        run: |
+          mkdir -p coverage
+          BIN_PATH=$(swift build --show-bin-path)
+          PROFDATA=$(find .build -name 'default.profdata' -type f | head -1)
+          TEST_BIN=$(find "$BIN_PATH" -name '*.xctest' -type d 2>/dev/null | head -1)
+          if [ -n "$TEST_BIN" ]; then
+            EXEC="$TEST_BIN/Contents/MacOS/$(basename "$TEST_BIN" .xctest)"
+          else
+            EXEC=$(find "$BIN_PATH" -name 'stellarsdkPackageTests' -type f | head -1)
+          fi
+          xcrun llvm-cov export \
+            "$EXEC" \
+            -instr-profile="$PROFDATA" \
+            -format=lcov > coverage/lcov.info
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage/lcov.info
+          flags: unit
+          fail_ci_if_error: false
+          verbose: true

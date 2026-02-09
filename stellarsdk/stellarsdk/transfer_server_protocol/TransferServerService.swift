@@ -458,7 +458,7 @@ public class TransferServerService: NSObject {
     public func info(language: String? = nil, jwtToken:String? = nil) async -> AnchorInfoResponseEnum {
         var requestPath = "/info"
         if let language = language {
-            requestPath += "&lang=\(language)"
+            requestPath += "?lang=\(language)"
         }
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwtToken)

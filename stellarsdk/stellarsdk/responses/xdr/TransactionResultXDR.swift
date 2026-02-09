@@ -28,7 +28,7 @@ public enum TransactionResultCode: Int32, Sendable {
     case sorobanInvalid = -17 // soroban-specific preconditions were not met
 }
 
-public enum TransactionResultBodyXDR: Encodable, Sendable {
+public enum TransactionResultBodyXDR: XDREncodable, Sendable {
     case success([OperationResultXDR])
     case failed([OperationResultXDR])
     case feeBumpInnerSuccess(InnerTransactionResultPair)
@@ -75,8 +75,7 @@ public enum TransactionResultBodyXDR: Encodable, Sendable {
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(type())
-        
+
         switch self {
         case .success(let operationResult):
             try container.encode(operationResult)
@@ -175,7 +174,7 @@ public struct TransactionResultXDR: XDRCodable, Sendable {
     
 }
 
-public enum InnerTransactionResultBodyXDR: Encodable, Sendable {
+public enum InnerTransactionResultBodyXDR: XDREncodable, Sendable {
     case success([OperationResultXDR])
     case failed([OperationResultXDR])
     case tooEarly
@@ -193,7 +192,7 @@ public enum InnerTransactionResultBodyXDR: Encodable, Sendable {
     case badMinSeqAgeOrGap
     case malformed
     case sorobanInvalid
-    
+
     public func type() -> Int32 {
         switch self {
         case .success(_): return TransactionResultCode.success.rawValue
@@ -215,11 +214,10 @@ public enum InnerTransactionResultBodyXDR: Encodable, Sendable {
         case .sorobanInvalid: return TransactionResultCode.sorobanInvalid.rawValue
         }
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        try container.encode(type())
-        
+
         switch self {
         case .success(let operationResult):
             try container.encode(operationResult)

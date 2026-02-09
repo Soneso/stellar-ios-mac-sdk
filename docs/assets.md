@@ -164,7 +164,7 @@ let transaction = try Transaction(sourceAccount: accountResponse,
                                   memo: Memo.none)
 ```
 
-You can find the full working code as a testcase [here](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/IssueAssetTest.swift).
+You can find the full working code as a testcase [here](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/IssueAssetTest.swift).
 
 ### Publish Information About An Asset
 

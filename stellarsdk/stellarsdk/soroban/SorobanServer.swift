@@ -552,7 +552,7 @@ public class SorobanServer: @unchecked Sendable {
                     return .failure(error: .requestFailed(message: "could not extract wasm id"))
                 }
                 let data = try? LedgerEntryDataXDR(fromBase64: firstEntry.xdr)
-                if let contractData = data?.contractData, let wasmId = contractData.val.contractInstance?.executable.wasm?.wrapped.hexEncodedString() {
+                if let contractData = data?.contractData, let wasmId = contractData.val.contractInstance?.executable.wasm?.wrapped.base16EncodedString() {
                     let response = await self.getContractCodeForWasmId(wasmId: wasmId)
                     switch response {
                     case .success(let response):

@@ -47,7 +47,7 @@ public class LiquidityPoolDepositOperation:Operation {
     ///
     public init(fromXDR:LiquidityPoolDepositOpXDR, sourceAccountId:String?) {
         
-        self.liquidityPoolId = fromXDR.liquidityPoolID.wrapped.hexEncodedString()
+        self.liquidityPoolId = fromXDR.liquidityPoolID.wrapped.base16EncodedString()
         self.maxAmountA = Operation.fromXDRAmount(fromXDR.maxAmountA)
         self.maxAmountB = Operation.fromXDRAmount(fromXDR.maxAmountB)
         

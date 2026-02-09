@@ -1,4 +1,5 @@
 # stellar-ios-mac-sdk
+[![GitHub release](https://img.shields.io/github/v/release/Soneso/stellar-ios-mac-sdk)](https://github.com/Soneso/stellar-ios-mac-sdk/releases) [![Tests](https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml/badge.svg)](https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml) [![codecov](https://codecov.io/gh/Soneso/stellar-ios-mac-sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/Soneso/stellar-ios-mac-sdk) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-ios-mac-sdk)
 
 The Soneso open source Stellar SDK for iOS &amp; Mac provides APIs to query Horizon and Soroban RPC, build, sign and submit transactions to the Stellar Network. It supports different Stellar Ecosystem Proposals and helps developers deploy and invoke Soroban Smart Contracts.
 
@@ -161,7 +162,7 @@ case .failure(let error):
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L18)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L18)
  
 #### 2.2 Public net
 
@@ -193,7 +194,7 @@ case .failure(error: let error):
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L37)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L37)
 
 ### 3. Check account
 #### 3.1 Basic info
@@ -233,7 +234,7 @@ case .failure(let error):
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L92)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L92)
 
 #### 3.2 Check payments
 
@@ -265,7 +266,7 @@ case .failure(let error):
     // ...
 }
 ```
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L139)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L139)
 
 You can use the parameters:`limit`, `order`, and `cursor` to customize the query. You can also get most recent payments for accounts, ledgers and transactions. 
 
@@ -275,7 +276,7 @@ For example get payments for account:
 sdk.payments.getPayments(forAccount:keyPair.accountId, order:Order.descending, limit:10)
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L171)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L171)
 
 Horizon has SSE support for push data. You can use it like this:
 
@@ -313,7 +314,7 @@ later you can close the stream item:
 streamItem.close()
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L201)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L201)
 
 #### 3.3 Check others
 
@@ -357,7 +358,7 @@ default:
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L281)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L281)
 
 Get a transaction envelope from an XDR string:
 
@@ -370,7 +371,7 @@ do {
     print("Invalid xdr string")
 }
 ```
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L342)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L342)
 
 Get a transaction object from an XDR string:
 
@@ -463,7 +464,7 @@ let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transacti
 print (uriScheme);
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L372)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L372)
 
 #### 7.2 Generate a URI for pay operation
 
@@ -476,7 +477,7 @@ let uriScheme = uriSchemeBuilder.getPayOperationURI(destination: "GAK7I2E6PVBFF2
 print (uriScheme);
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L424)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L424)
 
 #### 7.3 Sign a transaction from a given URI and send it to the network
 
@@ -671,9 +672,4 @@ Contributions are welcome! There are several ways you can help improve this SDK:
 - 🔧 Submit a Pull Request with code improvements  
 
 Please check out our [Contributing Guide](./CONTRIBUTING.md) for details. 🙏
-
-
-## DeepWiki
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Soneso/stellar-ios-mac-sdk)
-
 

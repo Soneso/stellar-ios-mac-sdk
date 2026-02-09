@@ -50,10 +50,10 @@ public enum ClaimantXDR: XDRCodable, Sendable {
 
 
 public struct ClaimantV0XDR: XDRCodable, Sendable {
-    let accountID: PublicKey
-    let predicate: ClaimPredicateXDR
-    
-    init(accountID: PublicKey, predicate:ClaimPredicateXDR) {
+    public let accountID: PublicKey
+    public let predicate: ClaimPredicateXDR
+
+    public init(accountID: PublicKey, predicate:ClaimPredicateXDR) {
         self.accountID = accountID
         self.predicate = predicate
     }

@@ -30,7 +30,7 @@ public struct TransactionMetaV4XDR: XDRCodable, Sendable {
     // Used for all diagnostic information
     public let diagnosticEvents: [DiagnosticEventXDR]
     
-    internal init(ext: ExtensionPoint, txChangesBefore: LedgerEntryChangesXDR, operations: [OperationMetaV2XDR], txChangesAfter: LedgerEntryChangesXDR, sorobanMeta: SorobanTransactionMetaV2XDR? = nil, events:[TransactionEventXDR], diagnosticEvents:[DiagnosticEventXDR]) {
+    public init(ext: ExtensionPoint, txChangesBefore: LedgerEntryChangesXDR, operations: [OperationMetaV2XDR], txChangesAfter: LedgerEntryChangesXDR, sorobanMeta: SorobanTransactionMetaV2XDR? = nil, events:[TransactionEventXDR], diagnosticEvents:[DiagnosticEventXDR]) {
         self.ext = ext
         self.txChangesBefore = txChangesBefore
         self.operations = operations

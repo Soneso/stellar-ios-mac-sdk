@@ -92,7 +92,7 @@ public enum TrustlineAssetXDR: XDRCodable, Sendable {
     public var poolId: String? {
         switch self {
         case .poolShare(let data):
-            return data.wrapped.hexEncodedString()
+            return data.wrapped.base16EncodedString()
         default:
             return nil
         }

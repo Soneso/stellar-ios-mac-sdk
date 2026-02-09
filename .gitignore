@@ -69,3 +69,17 @@ fastlane/test_output
 
 # Jazzy-generated documentation
 api-docs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+api-docs-publishing.md
+
+# Coverage
+coverage/
+*.xcresult

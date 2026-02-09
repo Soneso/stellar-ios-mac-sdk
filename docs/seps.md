@@ -83,7 +83,7 @@ if let federationServer = stellarToml.accountInformation.federationServer {
 // stellarToml.validatorInformation...
 ```
 
-You can find more source code examples regarding SEP-0001 in the [Toml test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/toml/TomlTestCase.swift) of the SDK. 
+You can find more source code examples regarding SEP-0001 in the [Toml test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/toml/TomlTestCase.swift) of the SDK. 
 
 # Federation Protocol - SEP-0002
 
@@ -132,7 +132,7 @@ case .failure(_):
 }
 ```
 
-You can find more source code examples regarding SEP-0002 in the [Federation test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/federation/FederationTestCase.swift) of the SDK. 
+You can find more source code examples regarding SEP-0002 in the [Federation test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkUnitTests/sep/federation/FederationTestCase.swift) of the SDK. 
 
 # Key Derivation Methods for Stellar Accounts - SEP-0005
 
@@ -179,7 +179,7 @@ let account1 = coinType.derived(at: 1)
 let keyPair1 = try! KeyPair.init(seed: Seed(bytes: account1.raw.bytes))
 ```      
 
-You can find more source code examples regarding SEP-0005 in the [Mnemonic generation test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/wallet/MnemonicGeneration.swift) and the [Mnemonic keypair generation test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/wallet/MnemonicKeyPairGeneration.swift) of the SDK. 
+You can find more source code examples regarding SEP-0005 in the [Mnemonic generation test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkUnitTests/sep/wallet/MnemonicGenerationTestCase.swift) and the [Mnemonic keypair generation test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkUnitTests/sep/wallet/MnemonicKeyPairGenerationTestCase.swift) of the SDK. 
 
 # Anchor Client Interoperability - SEP-0006
 
@@ -213,7 +213,7 @@ let uriScheme = uriSchemeBuilder.getSignTransactionURI(transactionXDR: transacti
 print (uriScheme);
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L372)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L372)
 
 ## Generate a URI for pay operation
 
@@ -226,7 +226,7 @@ let uriScheme = uriSchemeBuilder.getPayOperationURI(destination: "GAK7I2E6PVBFF2
 print (uriScheme);
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L424)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L424)
 
 ## Sign a transaction from a given URI and send it to the network
 
@@ -245,7 +245,7 @@ uriBuilder.signTransaction(forURL: uri, signerKeyPair: keyPair, transactionConfi
 }
 ```
 
-You can find more source code examples regarding SEP-0007 in the [Uri scheme test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/uri_scheme/URISchemeTestCase.swift) of the SDK. 
+You can find more source code examples regarding SEP-0007 in the [Uri scheme test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/uri_scheme/URISchemeTestCase.swift) of the SDK. 
 
 #  Regulated Assets - SEP-0008
 
@@ -293,7 +293,7 @@ let webAuthenticator = WebAuthenticator.from(domain:"yourserverhomedomain.com", 
 ```
 The Web Authenticator can now be used to get the JWT token.
 
-You can find more source code examples regarding SEP-0010 in the [Web authenticator test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/web_authenticator/WebAuthenticatorTestCase.swift) of the SDK. 
+You can find more source code examples regarding SEP-0010 in the [Web authenticator test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkUnitTests/sep/web_authenticator/WebAuthenticatorTestCase.swift) of the SDK. 
 
 # Txrep - SEP-0011
 
@@ -301,7 +301,7 @@ Txrep: human-readable low-level representation of Stellar transactions is descri
 
 For more details have a look to our [Txrep examples](docs/SEP-0011.md)
 
-You can find more source code examples regarding SEP-0011 in this [SDK test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/transactions/TransactionsLocalTestCase.swift) of the SDK. 
+You can find more source code examples regarding SEP-0011 in this [SDK test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/transactions/TransactionsRemoteTestCase.swift) of the SDK. 
 
 # Hosted Deposit and Withdrawal
 

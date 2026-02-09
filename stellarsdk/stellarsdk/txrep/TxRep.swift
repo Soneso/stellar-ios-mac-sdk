@@ -2472,8 +2472,8 @@ public class TxRep: NSObject {
     }
     
     private static func addSignature(signature:DecoratedSignatureXDR, index: Int, prefix:String, lines: inout [String]) -> Void {
-        addLine(key: prefix + "signatures[" + String(index) + "].hint", value: signature.hint.wrapped.hexEncodedString(), lines: &lines)
-        addLine(key: prefix + "signatures[" + String(index) + "].signature", value: signature.signature.hexEncodedString() , lines: &lines)
+        addLine(key: prefix + "signatures[" + String(index) + "].hint", value: signature.hint.wrapped.base16EncodedString(), lines: &lines)
+        addLine(key: prefix + "signatures[" + String(index) + "].signature", value: signature.signature.base16EncodedString() , lines: &lines)
     }
     
     private static func addOperations(operations:[OperationXDR], prefix:String, lines: inout [String]) -> Void {
@@ -2655,7 +2655,7 @@ public class TxRep: NSObject {
             }
             if let dataValue = manageDataOp.dataValue {
                 addLine(key: operationPrefix + "dataValue._present", value: "true", lines: &lines)
-                addLine(key: operationPrefix + "dataValue", value: dataValue.hexEncodedString(), lines: &lines)
+                addLine(key: operationPrefix + "dataValue", value: dataValue.base16EncodedString(), lines: &lines)
             } else {
                 addLine(key: operationPrefix + "dataValue._present", value: "false", lines: &lines)
             }
@@ -2683,7 +2683,7 @@ public class TxRep: NSObject {
             addLine(key: operationPrefix + "balanceID.type", value: "CLAIMABLE_BALANCE_ID_TYPE_V0", lines: &lines)
             switch claimOp.balanceID {
             case .claimableBalanceIDTypeV0(let data):
-                let balanceId = data.wrapped.hexEncodedString()
+                let balanceId = data.wrapped.base16EncodedString()
                 addLine(key: operationPrefix + "balanceID.v0", value: balanceId, lines: &lines)
             }
             break
@@ -2727,7 +2727,7 @@ public class TxRep: NSObject {
             let claimableBalanceIDXDR = cOp.claimableBalanceID
             switch claimableBalanceIDXDR {
             case .claimableBalanceIDTypeV0(let wrappedData32):
-                let balanceId = wrappedData32.wrapped.hexEncodedString()
+                let balanceId = wrappedData32.wrapped.base16EncodedString()
                 addLine(key: operationPrefix + "balanceID.v0", value: balanceId, lines: &lines)
                 break
             }
@@ -2739,7 +2739,7 @@ public class TxRep: NSObject {
             addLine(key: operationPrefix + "setFlags", value: String(sOp.setFlags), lines: &lines)
             break
         case .liquidityPoolDeposit(let lOp):
-            addLine(key: operationPrefix + "liquidityPoolID", value: lOp.liquidityPoolID.wrapped.hexEncodedString(), lines: &lines)
+            addLine(key: operationPrefix + "liquidityPoolID", value: lOp.liquidityPoolID.wrapped.base16EncodedString(), lines: &lines)
             addLine(key: operationPrefix + "maxAmountA", value: String(lOp.maxAmountA), lines: &lines)
             addLine(key: operationPrefix + "maxAmountB", value: String(lOp.maxAmountB), lines: &lines)
             addLine(key: operationPrefix + "minPrice.n", value: String(lOp.minPrice.n), lines: &lines)
@@ -2748,7 +2748,7 @@ public class TxRep: NSObject {
             addLine(key: operationPrefix + "maxPrice.d", value: String(lOp.maxPrice.d), lines: &lines)
             break
         case .liquidityPoolWithdraw(let lOp):
-            addLine(key: operationPrefix + "liquidityPoolID", value: lOp.liquidityPoolID.wrapped.hexEncodedString(), lines: &lines)
+            addLine(key: operationPrefix + "liquidityPoolID", value: lOp.liquidityPoolID.wrapped.base16EncodedString(), lines: &lines)
             addLine(key: operationPrefix + "amount", value: String(lOp.amount), lines: &lines)
             addLine(key: operationPrefix + "minAmountA", value: String(lOp.minAmountA), lines: &lines)
             addLine(key: operationPrefix + "minAmountB", value: String(lOp.minAmountB), lines: &lines)
@@ -2769,7 +2769,7 @@ public class TxRep: NSObject {
                 let prefix = fcPrefix + "createContractV2."
                 addCreateContractV2Args(args: xdr, prefix: prefix, lines: &lines)
             case .uploadContractWasm(let data):
-                addLine(key: fcPrefix + "wasm" , value: data.hexEncodedString(), lines: &lines)
+                addLine(key: fcPrefix + "wasm" , value: data.base16EncodedString(), lines: &lines)
             }
             
             addLine(key: operationPrefix + "auth.len" , value: String(iOp.auth.count), lines: &lines)
@@ -2809,7 +2809,7 @@ public class TxRep: NSObject {
             break
         case .contract(let wrappedData32):
             addLine(key: prefix + "type" , value: "SC_ADDRESS_TYPE_CONTRACT", lines: &lines)
-            addLine(key: prefix + "contractId" , value: try! (wrappedData32.wrapped.hexEncodedString()).encodeContractIdHex(), lines: &lines)
+            addLine(key: prefix + "contractId" , value: try! (wrappedData32.wrapped.base16EncodedString()).encodeContractIdHex(), lines: &lines)
             break
         case .muxedAccount(let muxed):
             let muxedAccount = MuxedAccountXDR.med25519(muxed)
@@ -2895,7 +2895,7 @@ public class TxRep: NSObject {
             break
         case .i32(let int32):
             addLine(key: prefix + "type" , value: "SCV_I32", lines: &lines)
-            addLine(key: prefix + "u32" , value: String(int32), lines: &lines)
+            addLine(key: prefix + "i32" , value: String(int32), lines: &lines)
             break
         case .u64(let uInt64):
             addLine(key: prefix + "type" , value: "SCV_U64", lines: &lines)
@@ -2937,7 +2937,7 @@ public class TxRep: NSObject {
             addLine(key: prefix + "i256.lo_lo" , value: String(i256PartsXDR.loLo), lines: &lines)
         case .bytes(let data):
             addLine(key: prefix + "type" , value: "SCV_BYTES", lines: &lines)
-            addLine(key: prefix + "bytes" , value: data.hexEncodedString(), lines: &lines)
+            addLine(key: prefix + "bytes" , value: data.base16EncodedString(), lines: &lines)
         case .string(let str):
             addLine(key: prefix + "type" , value: "SCV_STRING", lines: &lines)
             addLine(key: prefix + "str" , value: str, lines: &lines)
@@ -3001,7 +3001,7 @@ public class TxRep: NSObject {
         switch val {
         case .wasm(let wrappedData32):
             addLine(key: prefix + "type" , value: "CONTRACT_EXECUTABLE_WASM", lines: &lines)
-            addLine(key: prefix + "wasm_hash" , value: wrappedData32.wrapped.hexEncodedString(), lines: &lines)
+            addLine(key: prefix + "wasm_hash" , value: wrappedData32.wrapped.base16EncodedString(), lines: &lines)
         case .token:
             addLine(key: prefix + "type" , value: "CONTRACT_EXECUTABLE_STELLAR_ASSET", lines: &lines)
         }
@@ -3012,7 +3012,7 @@ public class TxRep: NSObject {
         case .fromAddress(let xdr):
             addLine(key: prefix + "type" , value: "CONTRACT_ID_PREIMAGE_FROM_ADDRESS", lines: &lines)
             addSCAddress(addr: xdr.address, prefix: prefix + "fromAddress.address.", lines: &lines)
-            addLine(key: prefix + "fromAddress.salt", value: xdr.salt.wrapped.hexEncodedString(), lines: &lines)
+            addLine(key: prefix + "fromAddress.salt", value: xdr.salt.wrapped.base16EncodedString(), lines: &lines)
         case .fromAsset(let asset):
             addLine(key: prefix + "type" , value: "CONTRACT_ID_PREIMAGE_FROM_ASSET", lines: &lines)
             addLine(key: prefix + "fromAsset", value: encodeAsset(asset: asset), lines: &lines)
@@ -3158,12 +3158,12 @@ public class TxRep: NSObject {
             addLine(key: prefix + "claimableBalance.balanceID.type", value: "CLAIMABLE_BALANCE_ID_TYPE_V0", lines: &lines)
             switch claimableBalanceIDXDR {
             case .claimableBalanceIDTypeV0(let wrappedData32):
-                let balanceId = wrappedData32.wrapped.hexEncodedString()
+                let balanceId = wrappedData32.wrapped.base16EncodedString()
                 addLine(key: prefix + "claimableBalance.balanceID.v0", value: balanceId, lines: &lines)
             }
         case .liquidityPool(let xdr):
             addLine(key: prefix + "type", value: "LIQUIDITY_POOL", lines: &lines)
-            addLine(key: prefix + "liquidityPool.liquidityPoolID", value: xdr.liquidityPoolID.wrapped.hexEncodedString(), lines: &lines)
+            addLine(key: prefix + "liquidityPool.liquidityPoolID", value: xdr.liquidityPoolID.wrapped.base16EncodedString(), lines: &lines)
         case .contractData(let xdr):
             addLine(key: prefix + "type", value: "CONTRACT_DATA", lines: &lines)
             addSCAddress(addr: xdr.contract, prefix: prefix + "contractData.contract.", lines: &lines)
@@ -3176,13 +3176,13 @@ public class TxRep: NSObject {
             }
         case .contractCode(let xdr):
             addLine(key: prefix + "type", value: "CONTRACT_CODE", lines: &lines)
-            addLine(key: prefix + "contractCode.hash", value: xdr.hash.wrapped.hexEncodedString(), lines: &lines)
+            addLine(key: prefix + "contractCode.hash", value: xdr.hash.wrapped.base16EncodedString(), lines: &lines)
         case .configSetting(let id):
             addLine(key: prefix + "type", value: "CONFIG_SETTING", lines: &lines)
             addConfigSettingID(id: id, prefix: prefix + "configSetting.configSettingID", lines: &lines)
         case .ttl(let xdr):
             addLine(key: prefix + "type", value: "TTL", lines: &lines)
-            addLine(key: prefix + "ttl.keyHash", value: xdr.keyHash.wrapped.hexEncodedString(), lines: &lines)
+            addLine(key: prefix + "ttl.keyHash", value: xdr.keyHash.wrapped.base16EncodedString(), lines: &lines)
         }
     }
     
@@ -3296,7 +3296,7 @@ public class TxRep: NSObject {
         case .native:
             return "XLM"
         case .poolShare(let data):
-            return data.wrapped.hexEncodedString()
+            return data.wrapped.base16EncodedString()
         default:
             return asset.assetCode! + ":" + asset.issuer!.accountId
         }

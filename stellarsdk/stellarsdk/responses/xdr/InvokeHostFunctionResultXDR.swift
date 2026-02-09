@@ -56,17 +56,18 @@ public enum InvokeHostFunctionResultXDR: XDRCodable, Sendable {
         var container = encoder.unkeyedContainer()
         switch self {
         case .success(let val):
+            try container.encode(InvokeHostFunctionResultCode.success.rawValue)
             try container.encode(val)
         case .malformed:
-            break
+            try container.encode(InvokeHostFunctionResultCode.malformed.rawValue)
         case .trapped:
-            break
+            try container.encode(InvokeHostFunctionResultCode.trapped.rawValue)
         case .resourceLimitExceeded:
-            break
+            try container.encode(InvokeHostFunctionResultCode.resourceLimitExceeded.rawValue)
         case .entryExpired:
-            break
+            try container.encode(InvokeHostFunctionResultCode.entryArchived.rawValue)
         case .insufficientRefundableFee:
-            break
+            try container.encode(InvokeHostFunctionResultCode.insufficientRefundableFee.rawValue)
         }
     }
 }

@@ -100,7 +100,7 @@ public class FeeBumpTransaction {
     /// Computes and returns the transaction hash as a hex-encoded string for the specified network.
     public func getTransactionHash(network:Network) throws -> String {
         let transactionHash = try [UInt8](feeBumpTransactionXDR.hash(network: network))
-        let str = Data(transactionHash).hexEncodedString()
+        let str = Data(transactionHash).base16EncodedString()
         return str
     }
 

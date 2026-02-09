@@ -65,11 +65,11 @@ public enum HashIDPreimageXDR: XDRCodable, Sendable {
 }
 
 public struct OperationID: XDRCodable, Sendable {
-    let sourceAccount: MuxedAccountXDR
-    let seqNum: Int64
-    let opNum: UInt64
+    public let sourceAccount: MuxedAccountXDR
+    public let seqNum: Int64
+    public let opNum: UInt64
     
-    init(sourceAccount: MuxedAccountXDR, seqNum:Int64, opNum:UInt64) {
+    public init(sourceAccount: MuxedAccountXDR, seqNum:Int64, opNum:UInt64) {
         self.sourceAccount = sourceAccount
         self.seqNum = seqNum
         self.opNum = opNum
@@ -84,13 +84,13 @@ public struct OperationID: XDRCodable, Sendable {
 }
 
 public struct RevokeID: XDRCodable, Sendable {
-    let sourceAccount: MuxedAccountXDR
-    let seqNum: Int64
-    let opNum: UInt64
-    let liquidityPoolID:WrappedData32
-    let asset:AssetXDR
+    public let sourceAccount: MuxedAccountXDR
+    public let seqNum: Int64
+    public let opNum: UInt64
+    public let liquidityPoolID:WrappedData32
+    public let asset:AssetXDR
     
-    init(sourceAccount: MuxedAccountXDR, seqNum:Int64, opNum:UInt64, liquidityPoolID:WrappedData32, asset:AssetXDR) {
+    public init(sourceAccount: MuxedAccountXDR, seqNum:Int64, opNum:UInt64, liquidityPoolID:WrappedData32, asset:AssetXDR) {
         self.sourceAccount = sourceAccount
         self.seqNum = seqNum
         self.opNum = opNum

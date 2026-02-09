@@ -62,7 +62,7 @@ case .failure(let error):
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L92)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L92)
 
 Now that you have an account you can create other accounts by using it. To do so, we send need to send a transaction to the Stellar Network containing a so called create account operation. From the Stellar developer site, you learn the basics about [transactions and operations](https://developers.stellar.org/docs/fundamentals-and-concepts/stellar-data-structures/operations-and-transactions#transactions).
 
@@ -92,7 +92,7 @@ case .failure(error: let error):
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L37)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L37)
 
 ## Update Account Details
 

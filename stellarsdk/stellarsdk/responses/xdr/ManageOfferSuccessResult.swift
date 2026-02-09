@@ -14,14 +14,23 @@ public enum ManageOfferEffect: Int32 {
     case deleted = 2
 }
 
-public enum ManageOfferSuccessResultOfferXDR: Encodable, Sendable {
+public enum ManageOfferSuccessResultOfferXDR: XDREncodable, Sendable {
     case created(OfferEntryXDR)
     case updated
-    
+
+    public func effect() -> ManageOfferEffect {
+        switch self {
+        case .created(_): return .created
+        case .updated: return .updated
+        }
+    }
+
     public func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(effect().rawValue)
+
         switch self {
         case .created(let offer):
-            var container = encoder.unkeyedContainer()
             try container.encode(offer)
         default:
             break

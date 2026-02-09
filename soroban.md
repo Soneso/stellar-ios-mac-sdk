@@ -75,7 +75,7 @@ The easiest way to interact with Soroban smart contracts is by using the class `
 If you want to create a smart contract for testing, you can find the official examples [here](https://github.com/stellar/soroban-examples).
 You can also create smart contracts with our AssemblyScript Soroban SDK. Examples can be found [here](https://github.com/Soneso/as-soroban-examples).
 
-The following chapters show examples of interaction with Soroban smart contracts. Please also take a look at the [`SorobanClientTest`](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanClientTest.swift), where you can try out this functionality right away.
+The following chapters show examples of interaction with Soroban smart contracts. Please also take a look at the [`SorobanClientTest`](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/soroban/SorobanClientTest.swift), where you can try out this functionality right away.
 
 ### Install a contract
 
@@ -798,7 +798,7 @@ Task {
 
 ### Generated Bindings examples
 
-For examples of using generated bindings, see [SorobanClientTest.swift](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanClientTest.swift), particularly the binding test functions:
+For examples of using generated bindings, see [SorobanClientTest.swift](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/soroban/SorobanClientTest.swift), particularly the binding test functions:
 - `helloContractBindingTest()` - Simple contract interaction
 - `authContractBindingTest()` - Authorization handling
 - `atomicSwapBindingTest()` - Complex multi-contract interaction
@@ -1172,7 +1172,7 @@ To load the latest ledger sequence you can use:
 self.sorobanServer.getLatestLedger() { (response) -> (Void) in // ...
 ```
 
-You can find multiple examples in the [Soroban Auth Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanAuthTest.swift) and in the [Atomic Swap Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanAtomicSwapTest.swift) of the SDK.
+You can find multiple examples in the [Soroban Auth Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/soroban/SorobanAuthTest.swift) and in the [Atomic Swap Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/soroban/SorobanAtomicSwapTest.swift) of the SDK.
 
 #### Get Events
 
@@ -1195,12 +1195,12 @@ case .failure(let error):
 
 contractId must currently start with "C...". If you only have the hex value you can encode it with: `contractId.encodeContractIdHex()`
 
-Find the complete code in the [Soroban Events Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanEventsTest.swift).
+Find the complete code in the [Soroban Events Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/soroban/SorobanEventsTest.swift).
 
 
 #### Hints and Tips
 
-You can find the working code and more in the [SorobanClient Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanClientTest.swift), [Soroban Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban), the [Soroban Auth Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanAuthTest.swift) and in the [Atomic Swap Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanAtomicSwapTest.swift) of the iOS SDK. The wasm byte-code files can also be found there.
+You can find the working code and more in the [SorobanClient Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/soroban/SorobanClientTest.swift), [Soroban Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/soroban), the [Soroban Auth Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/soroban/SorobanAuthTest.swift) and in the [Atomic Swap Test](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/soroban/SorobanAtomicSwapTest.swift) of the iOS SDK. The wasm byte-code files can also be found there.
 
 For a better understanding of an error you can enable the ```SorobanServer``` logging:
 
@@ -1258,4 +1258,4 @@ case .parsingFailure (let error):
 ```
 
 The parser returns a `SorobanContractInfo` object containing the parsed data.
-In [SorobanParserTest.swift](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/soroban/SorobanParserTest.swift) you can find a detailed example of how you can access the parsed data.
+In [SorobanParserUnitTests.swift](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkUnitTests/soroban/SorobanParserUnitTests.swift) you can find a detailed example of how you can access the parsed data.

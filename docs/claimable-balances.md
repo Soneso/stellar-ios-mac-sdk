@@ -9,6 +9,6 @@ Claimable balances allow an account to send a payment to another account that is
 
 Claimable Balances are described in more detail in the [Claimable Balances](https://developers.stellar.org/docs/encyclopedia/claimable-balances) chapter of the Stellar developer site.
 
-Source code examples of using Claimable Balances with the SDK can be found in the [Operations test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/operations/OperationsRemoteTestCase.swift) and in the [Clawback test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/payments/ClawbackTestCase.swift) of the SDK.
+Source code examples of using Claimable Balances with the SDK can be found in the [Operations test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/operations/OperationsRemoteTestCase.swift) and in the [Clawback test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/payments/ClawbackTestCase.swift) of the SDK.
 
 Next chapter is [Sponsoring Future reserves](sponsoring.md)

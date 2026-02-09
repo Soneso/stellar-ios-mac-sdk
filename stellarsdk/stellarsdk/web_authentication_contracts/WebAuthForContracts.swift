@@ -928,20 +928,20 @@ public class WebAuthForContracts: @unchecked Sendable {
         switch address {
         case .account(let accountId):
             let data = try accountId.accountId.decodeEd25519PublicKey()
-            return data.hexEncodedString()
+            return data.base16EncodedString()
         case .contract(let contractId):
-            return contractId.wrapped.hexEncodedString()
+            return contractId.wrapped.base16EncodedString()
         case .muxedAccount(let muxedAccount):
             // For muxed accounts, decode to get the underlying ed25519 key
             let data = try muxedAccount.accountId.decodeEd25519PublicKey()
-            return data.hexEncodedString()
+            return data.base16EncodedString()
         case .claimableBalanceId(let balanceId):
             switch balanceId {
             case .claimableBalanceIDTypeV0(let data):
-                return data.wrapped.hexEncodedString()
+                return data.wrapped.base16EncodedString()
             }
         case .liquidityPoolId(let poolId):
-            return poolId.liquidityPoolID.wrapped.hexEncodedString()
+            return poolId.liquidityPoolID.wrapped.base16EncodedString()
         }
     }
 }

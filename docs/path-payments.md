@@ -10,6 +10,6 @@ It is possible for path payments to fail if there are no viable exchange paths.
 
 Path payments use the Path Payment Strict Send or Path Payment Strict Receive operations. Path Payment Strict Send allows a user to specify the amount of the asset to send. The amount received will vary based on offers in the order books and/or liquidity pools. Path Payment allows a user to specify the amount of the asset received. The amount sent will vary based on the offers in the order books/liquidity pools.
 
-Source code examples can be found in [the path payment test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/payment_paths/PaymentPathsTestCase.swift)
+Source code examples can be found in [the path payment test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/payment_paths/PaymentPathsTestCase.swift)
 
 Next chapter is [Trading](trading.md)

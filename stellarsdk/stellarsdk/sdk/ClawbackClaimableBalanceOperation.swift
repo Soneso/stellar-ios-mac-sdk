@@ -30,7 +30,7 @@ public class ClawbackClaimableBalanceOperation:Operation {
     public init(fromXDR:ClawbackClaimableBalanceOpXDR, sourceAccountId:String?) throws {
         switch fromXDR.claimableBalanceID {
         case .claimableBalanceIDTypeV0(let hash):
-            self.claimableBalanceID = hash.wrapped.hexEncodedString()
+            self.claimableBalanceID = hash.wrapped.base16EncodedString()
         }
         super.init(sourceAccountId: sourceAccountId)
     }

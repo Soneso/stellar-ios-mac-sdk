@@ -120,7 +120,7 @@ public enum KYCNaturalPersonFieldsEnum: Sendable {
     /// Referral ID used to identify the source of the customer
     case referralId(String)
     
-    var parameter:(String, Data) {
+    public var parameter:(String, Data) {
         get {
             switch self {
             case .lastName(let value):
@@ -249,7 +249,7 @@ public enum KYCFinancialAccountFieldsEnum: Sendable {
     /// Destination tag/memo used to identify a cryptocurrency transaction
     case cryptoMemo(String)
     
-    var parameter:(String, Data) {
+    public var parameter:(String, Data) {
         get {
             switch self {
             case .bankName(let value):
@@ -347,7 +347,7 @@ public enum KYCOrganizationFieldsEnum: Sendable {
     /// Organization contact phone
     case phone(String)
     
-    var parameter:(String, Data) {
+    public var parameter:(String, Data) {
         get {
             switch self {
             case .name(let value):
@@ -433,7 +433,7 @@ public enum KYCCardFieldsEnum: Sendable {
     /// Token representation of the card in an external payment system (e.g. Stripe)
     case token(String)
     
-    var parameter:(String, Data) {
+    public var parameter:(String, Data) {
         get {
             switch self {
             case .number(let value):

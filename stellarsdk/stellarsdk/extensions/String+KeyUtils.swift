@@ -86,7 +86,7 @@ extension String {
     
     /// Returns true if the string represents a valid strkey sha256 hash . Must start with "X"
     public func isValidSha256Hash() -> Bool {
-        return isValid(versionByte: .preAuthTX)
+        return isValid(versionByte: .sha256Hash)
     }
     
     /// Decodes strkey signed payload ("P...") to Ed25519SignedPayload.
@@ -108,7 +108,7 @@ extension String {
     /// Decodes strkey contract id ("C...") to raw data and then returns the hex encoded string representation of the raw data.
     public func decodeContractIdToHex() throws -> String {
         let data = try decodeCheck(versionByte: .contract)
-        return data.hexEncodedString()
+        return data.base16EncodedString()
     }
     
     /// Returns true if the string represents a valid strkey contract id . Must start with "C"
@@ -124,7 +124,7 @@ extension String {
     /// Decodes strkey claimable balance id  ("B...") to raw data and then returns the hex encoded string representation of the raw data.
     public func decodeClaimableBalanceIdToHex() throws -> String {
         let data = try decodeCheck(versionByte: .claimableBalance)
-        return data.hexEncodedString()
+        return data.base16EncodedString()
     }
     
     /// Returns true if the string represents a valid strkey claimable balance id. Must start with "B"
@@ -140,7 +140,7 @@ extension String {
     /// Decodes strkey liquidity pool id ("L...") to raw data and then returns the hex encoded string representation of the raw data.
     public func decodeLiquidityPoolIdToHex() throws -> String {
         let data = try decodeCheck(versionByte: .liquidityPool)
-        return data.hexEncodedString()
+        return data.base16EncodedString()
     }
     
     /// Returns true if the string represents a valid strkey liquidity pool id. Must start with "L"

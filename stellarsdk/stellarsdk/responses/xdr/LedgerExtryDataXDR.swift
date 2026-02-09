@@ -312,14 +312,14 @@ public struct ContractCodeCostInputsXDR: XDRCodable, Sendable {
         try container.encode(nInstructions)
         try container.encode(nFunctions)
         try container.encode(nGlobals)
+        try container.encode(nTableEntries)
         try container.encode(nTypes)
         try container.encode(nDataSegments)
         try container.encode(nElemSegments)
         try container.encode(nImports)
         try container.encode(nExports)
-        try container.encode(nInstructions)
         try container.encode(nDataSegmentBytes)
-        
+
     }
 }
 

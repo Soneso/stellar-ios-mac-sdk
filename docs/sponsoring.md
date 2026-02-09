@@ -8,6 +8,6 @@ Anything that increases the minimum balance can be sponsored (account creation, 
 
 Sponsoring future reservers are described in detail in the [Sponsored Reserves](https://developers.stellar.org/docs/encyclopedia/sponsored-reserves) chapter of the Stellar developer site.
 
-Source code examples of using Sponsoring reserves with the SDK can be found in the [Operations test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/operations/OperationsRemoteTestCase.swift) of the SDK.
+Source code examples of using Sponsoring reserves with the SDK can be found in the [Operations test cases](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/operations/OperationsRemoteTestCase.swift) of the SDK.
 
 Next chapter is [Stellar Ecosystem Proposals](seps.md).

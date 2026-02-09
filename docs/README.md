@@ -22,7 +22,7 @@ API documentation can be found [here](https://soneso.github.io/stellar-ios-mac-s
 
 We have structured the documentation in such a way that it starts with the basics and builds on this to cover the more advanced topics. Of course, it can also be used as a reference work. 
 
-Many of the source code examples from the documentation can also be found as [test cases](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdkTests) in the source code of the SDK. If you don't find what you search for in this documentation, we recommend you to also look for it in the [test cases](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdkTests), because they cover the whole functionality of the SDK.
+Many of the source code examples from the documentation can also be found as [test cases](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdkIntegrationTests) in the source code of the SDK. If you don't find what you search for in this documentation, we recommend you to also look for it in the [test cases](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdkIntegrationTests), because they cover the whole functionality of the SDK.
 
 | Topics | Description |
 | :--- | :--- |

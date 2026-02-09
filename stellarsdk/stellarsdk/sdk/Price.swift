@@ -34,8 +34,8 @@ public final class Price: Decodable, Sendable {
     /// - Returns the created Price object.
     ///
     public static func fromString(price:String) -> Price {
-        
-        let maxInt:Decimal = Decimal(Int.max)
+
+        let maxInt32:Decimal = Decimal(Int32.max)
         guard var number = Decimal(string: price) else { return Price(numerator: 0, denominator: 0)}
         var a:Decimal = 0
         var f:Decimal
@@ -44,12 +44,12 @@ public final class Price: Decodable, Sendable {
         fractions.append([Decimal(1), Decimal(0)])
         var i:Int = 2
         while (true) {
-            if number > maxInt { break }
-            NSDecimalRound(&a, &number, 0, .plain)
+            if number > maxInt32 { break }
+            NSDecimalRound(&a, &number, 0, .down)
             f = number - a
             let h:Decimal = a * fractions[i-1][0] + fractions[i-2][0]
             let k:Decimal = a * fractions[i-1][1] + fractions[i-2][1]
-            if h > maxInt || k > maxInt { break }
+            if h > maxInt32 || k > maxInt32 { break }
             fractions.append([h,k])
             if f == 0 { break }
             number = 1/f
