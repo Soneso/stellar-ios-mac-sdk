@@ -1122,15 +1122,9 @@ Success!
 
 #### Deploying Stellar Asset Contract (SAC)
 
-The iOS SDK also provides support for deploying the build-in [Stellar Asset Contract](https://soroban.stellar.org/docs/built-in-contracts/stellar-asset-contract) (SAC). The following operations are available for this purpose:
+The iOS SDK provides support for deploying the built-in [Stellar Asset Contract](https://soroban.stellar.org/docs/built-in-contracts/stellar-asset-contract) (SAC).
 
-1. Deploy SAC with source account:
-
-```swift
-let operation = try InvokeHostFunctionOperation.forDeploySACWithSourceAccount(address: SCAddressXDR(accountId: accountId))
-```
-
-2. Deploy SAC with asset:
+Per [CAP-0046-06](https://stellar.org/protocol/cap-46-06), SAC deployment requires the `FROM_ASSET` preimage type. Use `forDeploySACWithAsset()`:
 
 ```swift
 let operation = try InvokeHostFunctionOperation.forDeploySACWithAsset(asset: asset)

@@ -59,17 +59,6 @@ public class InvokeHostFunctionOperation:Operation {
         return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
     }
 
-    /// Creates an operation to deploy a Stellar Asset Contract using a source account address.
-    public static func forDeploySACWithSourceAccount(address: SCAddressXDR, salt:WrappedData32? = nil, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
-        let saltToSet = try salt ?? randomSalt()
-        let contractIdPreimageFormAddress = ContractIDPreimageFromAddressXDR(address: address, salt: saltToSet)
-        let contractIDPreimage = ContractIDPreimageXDR.fromAddress(contractIdPreimageFormAddress)
-        let executable = ContractExecutableXDR.token
-        let createContractArgs = CreateContractArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable)
-        let hostFunction = HostFunctionXDR.createContract(createContractArgs)
-        return InvokeHostFunctionOperation(hostFunction: hostFunction, sourceAccountId: sourceAccountId)
-    }
-
     /// Creates an operation to deploy a Stellar Asset Contract for a specific asset.
     public static func forDeploySACWithAsset(asset:Asset, sourceAccountId:String? = nil) throws -> InvokeHostFunctionOperation {
         let contractIDPreimage = ContractIDPreimageXDR.fromAsset(try asset.toXDR())
