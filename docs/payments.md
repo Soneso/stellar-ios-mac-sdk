@@ -51,7 +51,7 @@ case .failure(let error):
 }
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L299)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L299)
 
 Hint: Sometimes it makes sense to first check if the destination account exists before sending the payment. If the account does not exist, you will be charged the transaction fee when the transaction fails. To check if the account exists you can just try to load its details with: ```swift sdk.accounts.getAccountDetails ```
 
@@ -97,7 +97,7 @@ later you can close the stream item:
 streamItem.close()
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L222)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L222)
 
 
 ## Check payments
@@ -125,7 +125,7 @@ case .failure(let error):
     StellarSDKLog.printHorizonRequestErrorMessage(tag:"Test", horizonRequestError:error)
 }
 ```
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L158)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L158)
 
 You can use the parameters:`limit`, `order`, and `cursor` to customize the query. You can also get most recent payments for accounts, ledgers and transactions. 
 
@@ -135,6 +135,6 @@ For example get payments for account:
 sdk.payments.getPayments(forAccount:keyPair.accountId, order:Order.descending, limit:10)
 ```
 
-See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L188)
+See also: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L188)
 
 Next chapter is [Working with Assets](assets.md).

@@ -38,7 +38,7 @@ later you can close the stream item:
 streamItem.close()
 ```
 
-See: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L222) 
+See: [detailed code example](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L222) 
 
 
 Next chapter is [Path Payments](path-payments.md).

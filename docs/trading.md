@@ -4,9 +4,9 @@ Trading on Stellar is described under [SDEX and Liquidity Pools](https://develop
 
 Related source code examples can be found in the following test classes:
 
-- [Offers](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/offers/OffersRemoteTestCase.swift)
-- [Liquidity Pools](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/amm/AmmTestCase.swift)
-- [Trades](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/trades/TradesTestCase.swift)
+- [Offers](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/offers/OffersRemoteTestCase.swift)
+- [Liquidity Pools](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/amm/AmmTestCase.swift)
+- [Trades](https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/trades/TradesTestCase.swift)
 
 
 Next chapter is [Claimable Balances](claimable-balances.md).
