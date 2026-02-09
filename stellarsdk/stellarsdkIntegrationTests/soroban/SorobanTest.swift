@@ -110,10 +110,6 @@ class SorobanTest: XCTestCase {
         // test contract data
         await getContractData()
 
-        // DISABLED: SAC deployment from address no longer works after protocol changes
-        // The combination CONTRACT_ID_PREIMAGE_FROM_ADDRESS + CONTRACT_EXECUTABLE_TOKEN is no longer accepted
-        // await deploySACWithSourceAccount()
-        
         // test SAC with asset
         await deploySACWithAsset()
         
@@ -750,90 +746,6 @@ class SorobanTest: XCTestCase {
         }
     }
     
-    // DISABLED: This test no longer works after protocol changes.
-    // The combination CONTRACT_ID_PREIMAGE_FROM_ADDRESS + CONTRACT_EXECUTABLE_TOKEN
-    // is no longer accepted by the network. Use deploySACWithAsset() instead.
-    /*
-    func deploySACWithSourceAccount() async {
-        await refreshSubmitterAccount()
-        
-        let deployOperation = try! InvokeHostFunctionOperation.forDeploySACWithSourceAccount(address: SCAddressXDR(accountId: submitterAccount!.accountId))
-        
-        let transaction = try! Transaction(sourceAccount: submitterAccount!,
-                                           operations: [deployOperation], memo: Memo.none)
-        let simulateTxRequest = SimulateTransactionRequest(transaction: transaction)
-        var simulateTxResponse:SimulateTransactionResponse? = nil
-        let simulateTxResponseEnum = await sorobanServer.simulateTransaction(simulateTxRequest: simulateTxRequest)
-        switch simulateTxResponseEnum {
-        case .success(let response):
-            simulateTxResponse = response
-        case .failure(let error):
-            self.printError(error: error)
-            XCTFail()
-        }
-        let simulateResponse = simulateTxResponse!
-        XCTAssertNotNil(simulateResponse.results)
-        XCTAssert(simulateResponse.results!.count > 0)
-        XCTAssertNotNil(simulateResponse.footprint)
-        XCTAssertNotNil(simulateResponse.transactionData)
-        XCTAssertNotNil(simulateResponse.minResourceFee)
-        
-        switch self.network {
-        case .futurenet:
-            XCTAssertNotNil(simulateResponse.stateChanges)
-            let stateChange = simulateResponse.stateChanges!.first
-            XCTAssertNotNil(stateChange!.after)
-        default:
-            break
-        }
-        
-        transaction.setSorobanTransactionData(data: simulateResponse.transactionData!)
-        transaction.addResourceFee(resourceFee: simulateResponse.minResourceFee!)
-        transaction.setSorobanAuth(auth: simulateResponse.sorobanAuth)
-        try! transaction.sign(keyPair: self.submitterKeyPair, network: self.network)
-        let deploySAFootprint = simulateResponse.footprint
-        XCTAssertNotNil(deploySAFootprint)
-        // check encoding and decoding
-        let enveloperXdr = try! transaction.encodedEnvelope();
-        XCTAssertEqual(enveloperXdr, try! Transaction(envelopeXdr: enveloperXdr).encodedEnvelope())
-        
-        var deploySATransactionId:String? = nil
-        let sendTxResponseEnum = await sorobanServer.sendTransaction(transaction: transaction)
-        switch sendTxResponseEnum {
-        case .success(let response):
-            XCTAssertNotEqual(SendTransactionResponse.STATUS_ERROR, response.status)
-            deploySATransactionId = response.transactionId
-        case .failure(let error):
-            self.printError(error: error)
-            XCTFail()
-        }
-        
-        // wait a couple of seconds before checking the status
-        try! await Task.sleep(nanoseconds: UInt64(10 * Double(NSEC_PER_SEC)))
-        let statusResponseEnum = await sorobanServer.getTransaction(transactionHash: deploySATransactionId!)
-        switch statusResponseEnum {
-        case .success(let statusResponse):
-            XCTAssertEqual(GetTransactionResponse.STATUS_SUCCESS, statusResponse.status)
-        case .failure(let error):
-            self.printError(error: error)
-            XCTFail()
-        }
-        
-        // get ledger entries
-        let contractDataKey = deploySAFootprint!.contractDataLedgerKey
-        let responseEnum = await sorobanServer.getLedgerEntries(base64EncodedKeys:[contractDataKey!])
-        switch responseEnum {
-        case .success(let response):
-            XCTAssert(Int(exactly: response.latestLedger)! > 0)
-        case .failure(let error):
-            self.printError(error: error)
-            XCTFail()
-        }
-        
-        await getTransactionDetails(transactionHash: deploySATransactionId!, type:"HostFunctionTypeHostFunctionTypeCreateContract", delaySec: 10.0)
-    }
-    */
-
     func deploySACWithAsset() async {
         await refreshSubmitterAccount()
         
