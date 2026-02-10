@@ -2,7 +2,7 @@
 
 **Generated:** 2026-02-10
 
-**SDK Version:** 3.4.2
+**SDK Version:** 3.4.3
 
 **SEP Version:** 0.0.1
 

@@ -1,8 +1,8 @@
 # SEP-0007 (URI Scheme to facilitate delegated signing) Compatibility Matrix
 
-**Generated:** 2026-01-07
+**Generated:** 2026-02-10
 
-**SDK Version:** 3.4.2
+**SDK Version:** 3.4.3
 
 **SEP Version:** 2.1.0
 
@@ -97,7 +97,7 @@ The signing applications (wallets) should follow the [recommended security best 
 | `asset_code` |  | ✅ | `PayOperationParams.asset_code` | Asset code for the payment (e.g., USD, BTC) |
 | `asset_issuer` |  | ✅ | `PayOperationParams.asset_issuer` | Stellar account ID of asset issuer |
 | `memo` |  | ✅ | `PayOperationParams.memo` | Memo value to attach to transaction |
-| `memo_type` |  | ✅ | `memoType parameter in getPayOperationURI` | Type of memo (MEMO_TEXT, MEMO_ID, MEMO_HASH, MEMO_RETURN) |
+| `memo_type` |  | ✅ | `PayOperationParams.memo_type` | Type of memo (MEMO_TEXT, MEMO_ID, MEMO_HASH, MEMO_RETURN) |
 
 ### Common Parameters
 
