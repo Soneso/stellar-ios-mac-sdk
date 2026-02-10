@@ -1,6 +1,48 @@
 {
   "warnings": [
     {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/federation/toml/Date.swift",
+      "line": 44,
+      "symbol": "Date.init(rfc3339String:fractionalSeconds:localTime:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/federation/toml/Date.swift",
+      "line": 61,
+      "symbol": "Date.rfc3339String()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/kyc/KycAmlFields.swift",
+      "line": 123,
+      "symbol": "KYCNaturalPersonFieldsEnum.parameter",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/kyc/KycAmlFields.swift",
+      "line": 252,
+      "symbol": "KYCFinancialAccountFieldsEnum.parameter",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/kyc/KycAmlFields.swift",
+      "line": 350,
+      "symbol": "KYCOrganizationFieldsEnum.parameter",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/kyc/KycAmlFields.swift",
+      "line": 436,
+      "symbol": "KYCCardFieldsEnum.parameter",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/libs/HDWallet/BigInt/SMP.swift",
       "line": 383,
       "symbol": "BInt.init(number:withBase:)",
@@ -267,6 +309,13 @@
       "warning": "undocumented"
     },
     {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/soroban/contract/SimulateHostFunctionResult.swift",
+      "line": 23,
+      "symbol": "SimulateHostFunctionResult.init(transactionData:returnedValue:auth:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift",
       "line": 106,
       "symbol": "Array.init(fromBinary:)",
@@ -389,6 +438,13 @@
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDREncoder.swift",
       "line": 26,
       "symbol": "XDREncodable.xdrEncoded",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDREncoder.swift",
+      "line": 41,
+      "symbol": "XDREncoder.data",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },

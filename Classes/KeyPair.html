@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.2 Docs
+          stellarsdk 3.4.3 Docs
         </a>
          (98% documented)
       </p>
@@ -1208,6 +1208,9 @@
                 <a class="nav-group-task-link" href="../Extensions/Data/Base16EncodingOptions.html">– Base16EncodingOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Extensions/Date.html">Date</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Extensions/DateFormatter.html">DateFormatter</a>
               </li>
               <li class="nav-group-task">
@@ -1937,7 +1940,7 @@ The private key (seed) is encoded as a secret seed starting with &lsquo;S&rsquo;
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L51-L284">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L51-L349">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2784,13 +2787,289 @@ revealing the full public key or payload.</p>
                 </li>
               </ul>
             </div>
+            <div class="task-group">
+              <div class="task-name-container">
+                <a name="/SEP-53%20Message%20Signing%20and%20Verification"></a>
+                <a name="//apple_ref/swift/Section/SEP-53 Message Signing and Verification" class="dashAnchor"></a>
+                <div class="section-name-container">
+                  <a class="section-name-link" href="#/SEP-53%20Message%20Signing%20and%20Verification"></a>
+                  <h3 class="section-name"><span>SEP-53 Message Signing and Verification</span>
+</h3>
+                </div>
+              </div>
+              <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk7KeyPairC11signMessageySays5UInt8VGAGKF"></a>
+                    <a name="//apple_ref/swift/Method/signMessage(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk7KeyPairC11signMessageySays5UInt8VGAGKF">signMessage(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Signs a binary message according to
+<a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md">SEP-53</a>.</p>
+
+<p>The message is prepended with &ldquo;Stellar Signed Message:\n&rdquo;, hashed with SHA-256,
+and the digest is signed with this keypair&rsquo;s Ed25519 private key.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code><a href="../Enums/Ed25519Error.html#/s:10stellarsdk12Ed25519ErrorO17missingPrivateKeyyA2CmF">Ed25519Error.missingPrivateKey</a></code> if this keypair has no private key.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">signMessage</span><span class="p">(</span><span class="n">_</span> <span class="nv">message</span><span class="p">:</span> <span class="p">[</span><span class="kt">UInt8</span><span class="p">])</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">UInt8</span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>message</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The raw bytes of the message to sign.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A 64-byte Ed25519 signature.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L307-L313">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk7KeyPairC11signMessageySays5UInt8VGSSKF"></a>
+                    <a name="//apple_ref/swift/Method/signMessage(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk7KeyPairC11signMessageySays5UInt8VGSSKF">signMessage(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Signs a UTF-8 string message according to
+<a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md">SEP-53</a>.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code><a href="../Enums/Ed25519Error.html#/s:10stellarsdk12Ed25519ErrorO17missingPrivateKeyyA2CmF">Ed25519Error.missingPrivateKey</a></code> if this keypair has no private key.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">signMessage</span><span class="p">(</span><span class="n">_</span> <span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">UInt8</span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>message</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The string message to sign (will be UTF-8 encoded).</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>A 64-byte Ed25519 signature.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L321-L323">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk7KeyPairC13verifyMessage_9signatureSbSays5UInt8VG_AHtKF"></a>
+                    <a name="//apple_ref/swift/Method/verifyMessage(_:signature:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk7KeyPairC13verifyMessage_9signatureSbSays5UInt8VG_AHtKF">verifyMessage(_:<wbr>signature:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Verifies a binary message signature according to
+<a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md">SEP-53</a>.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code><a href="../Enums/Ed25519Error.html#/s:10stellarsdk12Ed25519ErrorO22invalidSignatureLengthyA2CmF">Ed25519Error.invalidSignatureLength</a></code> if signature is not 64 bytes.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">verifyMessage</span><span class="p">(</span><span class="n">_</span> <span class="nv">message</span><span class="p">:</span> <span class="p">[</span><span class="kt">UInt8</span><span class="p">],</span> <span class="nv">signature</span><span class="p">:</span> <span class="p">[</span><span class="kt">UInt8</span><span class="p">])</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>message</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The original message bytes.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>signature</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The 64-byte Ed25519 signature to verify.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p><code>true</code> if the signature is valid, <code>false</code> otherwise.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L333-L336">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk7KeyPairC13verifyMessage_9signatureSbSS_Says5UInt8VGtKF"></a>
+                    <a name="//apple_ref/swift/Method/verifyMessage(_:signature:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk7KeyPairC13verifyMessage_9signatureSbSS_Says5UInt8VGtKF">verifyMessage(_:<wbr>signature:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Verifies a UTF-8 string message signature according to
+<a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md">SEP-53</a>.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code><a href="../Enums/Ed25519Error.html#/s:10stellarsdk12Ed25519ErrorO22invalidSignatureLengthyA2CmF">Ed25519Error.invalidSignatureLength</a></code> if signature is not 64 bytes.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">func</span> <span class="nf">verifyMessage</span><span class="p">(</span><span class="n">_</span> <span class="nv">message</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">signature</span><span class="p">:</span> <span class="p">[</span><span class="kt">UInt8</span><span class="p">])</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>message</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The original string message (will be UTF-8 encoded).</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>signature</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The 64-byte Ed25519 signature to verify.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p><code>true</code> if the signature is valid, <code>false</code> otherwise.</p>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/crypto/KeyPair.swift#L346-L348">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
         </section>
 
       </article>
     </div>
     <section class="footer">
-      <p>© 2025 Soneso. All rights reserved.</p>
+      <p>© 2026 Soneso. All rights reserved.</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
     </section>
   </body>

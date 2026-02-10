@@ -20,7 +20,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.4.2 Docs
+          stellarsdk 3.4.3 Docs
         </a>
          (98% documented)
       </p>
@@ -1203,6 +1203,9 @@
                 <a class="nav-group-task-link" href="Extensions/Data/Base16EncodingOptions.html">– Base16EncodingOptions</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Extensions/Date.html">Date</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Extensions/DateFormatter.html">DateFormatter</a>
               </li>
               <li class="nav-group-task">
@@ -1878,11 +1881,13 @@
             
             <h1 id='stellar-ios-mac-sdk' class='heading'>stellar-ios-mac-sdk</h1>
 
+<p><a href="https://github.com/Soneso/stellar-ios-mac-sdk/releases"><img src="https://img.shields.io/github/v/release/Soneso/stellar-ios-mac-sdk" alt="GitHub release"></a> <a href="https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml"><img src="https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml/badge.svg" alt="Tests"></a> <a href="https://codecov.io/gh/Soneso/stellar-ios-mac-sdk"><img src="https://codecov.io/gh/Soneso/stellar-ios-mac-sdk/branch/master/graph/badge.svg" alt="codecov"></a> <a href="https://deepwiki.com/Soneso/stellar-ios-mac-sdk"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a></p>
+
 <p>The Soneso open source Stellar SDK for iOS &amp; Mac provides APIs to query Horizon and Soroban RPC, build, sign and submit transactions to the Stellar Network. It supports different Stellar Ecosystem Proposals and helps developers deploy and invoke Soroban Smart Contracts.</p>
 <h2 id='installation' class='heading'>Installation</h2>
 <h3 id='swift-package-manager' class='heading'>Swift Package Manager</h3>
 <h4 id='latest-stable-release' class='heading'>Latest stable release:</h4>
-<pre class="highlight swift"><code><span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"stellarsdk"</span><span class="p">,</span> <span class="nv">url</span><span class="p">:</span> <span class="s">"git@github.com:Soneso/stellar-ios-mac-sdk.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"3.4.2"</span><span class="p">),</span>
+<pre class="highlight swift"><code><span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"stellarsdk"</span><span class="p">,</span> <span class="nv">url</span><span class="p">:</span> <span class="s">"git@github.com:Soneso/stellar-ios-mac-sdk.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"3.4.3"</span><span class="p">),</span>
 </code></pre>
 
 <p>If not loading (err: <code>cannot use bare repository</code>), then remove:</p>
@@ -1902,7 +1907,7 @@
 <pre class="highlight ruby"><code><span class="n">use_frameworks!</span>
 
 <span class="n">target</span> <span class="s1">'&lt;Your Target Name&gt;'</span> <span class="k">do</span>
-    <span class="n">pod</span> <span class="s1">'stellar-ios-mac-sdk'</span><span class="p">,</span> <span class="s1">'~&gt; 3.4.2'</span>
+    <span class="n">pod</span> <span class="s1">'stellar-ios-mac-sdk'</span><span class="p">,</span> <span class="s1">'~&gt; 3.4.3'</span>
 <span class="k">end</span>
 </code></pre>
 
@@ -1921,7 +1926,7 @@
 
 <p>To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify it in your <code>Cartfile</code>:</p>
 <h4 id='last-stable-release' class='heading'>Last stable release:</h4>
-<pre class="highlight plaintext"><code>github "soneso/stellar-ios-mac-sdk" ~&gt; 3.4.2
+<pre class="highlight plaintext"><code>github "soneso/stellar-ios-mac-sdk" ~&gt; 3.4.3
 </code></pre>
 
 <p>Run <code>carthage update</code> to build the framework and drag the build <code>stellar-ios-mac-sdk.framework</code> into your Xcode project.</p>
@@ -2003,7 +2008,7 @@
 <span class="p">}</span>
 </code></pre>
 
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L18">detailed code example</a></p>
+<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L18">detailed code example</a></p>
 <h4 id='2-2-public-net' class='heading'>2.2 Public net</h4>
 
 <p>On the other hand, if you would like to create an account in the public net, you should buy some Stellar Lumens from an exchange. See <a href="https://www.stellar.org/lumens/exchanges">Stellar&rsquo;s lumen buying guide</a>. When you withdraw the Lumens into your new account, the exchange will automatically create the account for you. However, if you want to create an account from another account of your own, you may run the following code:</p>
@@ -2032,7 +2037,7 @@
 <span class="p">}</span>
 </code></pre>
 
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L37">detailed code example</a></p>
+<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L37">detailed code example</a></p>
 <h3 id='3-check-account' class='heading'>3. Check account</h3>
 <h4 id='3-1-basic-info' class='heading'>3.1 Basic info</h4>
 
@@ -2069,7 +2074,7 @@
 <span class="p">}</span>
 </code></pre>
 
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L92">detailed code example</a></p>
+<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L92">detailed code example</a></p>
 <h4 id='3-2-check-payments' class='heading'>3.2 Check payments</h4>
 
 <p>You can check the most recent payments by:</p>
@@ -2099,7 +2104,7 @@
 <span class="p">}</span>
 </code></pre>
 
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L139">detailed code example</a></p>
+<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L139">detailed code example</a></p>
 
 <p>You can use the parameters:<code>limit</code>, <code>order</code>, and <code>cursor</code> to customize the query. You can also get most recent payments for accounts, ledgers and transactions. </p>
 
@@ -2107,7 +2112,7 @@
 <pre class="highlight swift"><code><span class="n">sdk</span><span class="o">.</span><span class="n">payments</span><span class="o">.</span><span class="nf">getPayments</span><span class="p">(</span><span class="nv">forAccount</span><span class="p">:</span><span class="n">keyPair</span><span class="o">.</span><span class="n">accountId</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span><span class="kt">Order</span><span class="o">.</span><span class="n">descending</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span><span class="mi">10</span><span class="p">)</span>
 </code></pre>
 
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L171">detailed code example</a></p>
+<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L171">detailed code example</a></p>
 
 <p>Horizon has SSE support for push data. You can use it like this:</p>
 
@@ -2141,7 +2146,7 @@
 <pre class="highlight swift"><code><span class="n">streamItem</span><span class="o">.</span><span class="nf">close</span><span class="p">()</span>
 </code></pre>
 
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L201">detailed code example</a></p>
+<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L201">detailed code example</a></p>
 <h4 id='3-3-check-others' class='heading'>3.3 Check others</h4>
 
 <p>Just like payments, you can check <code>assets</code>, <code>transactions</code>, <code>effects</code>, <code>offers</code>, <code>operations</code>, <code>ledgers</code> etc.  by:</p>
@@ -2179,7 +2184,7 @@
 <span class="p">}</span>
 </code></pre>
 
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L281">detailed code example</a></p>
+<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L281">detailed code example</a></p>
 
 <p>Get a transaction envelope from an XDR string:</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">xdrString</span> <span class="o">=</span> <span class="s">"AAAAAJ/Ax+axve53/7sXfQY0fI6jzBeHEcPl0Vsg1C2tqyRbAAAAZAAAAAAAAAAAAAAAAQAAAABb2L/OAAAAAFvYwPoAAAAAAAAAAQAAAAEAAAAAo7FW8r8Nj+SMwPPeAoL4aUkLob7QU68+9Y8CAia5k78AAAAKAAAAN0NJcDhiSHdnU2hUR042ZDE3bjg1ZlFGRVBKdmNtNFhnSWhVVFBuUUF4cUtORVd4V3JYIGF1dGgAAAAAAQAAAEDh/7kQjZbcXypISjto5NtGLuaDGrfL/F08apZQYp38JNMNQ9p/e1Fy0z23WOg/Ic+e91+hgbdTude6+1+i0V41AAAAAAAAAAGtqyRbAAAAQNeY1rEwPynWnVXaaE/XWeuRnOHS/479J+Eu7s5OplSlF41xB7E8u9WzEItaOs167xuOVcLZUKBCBF1fnfzMEQg="</span>
@@ -2191,7 +2196,7 @@
 <span class="p">}</span>
 </code></pre>
 
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L342">detailed code example</a></p>
+<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L342">detailed code example</a></p>
 
 <p>Get a transaction object from an XDR string:</p>
 <pre class="highlight swift"><code><span class="k">let</span> <span class="nv">xdrString</span> <span class="o">=</span> <span class="s">"AAAAAJ/Ax+axve53/7sXfQY0fI6jzBeHEcPl0Vsg1C2tqyRbAAAAZAAAAAAAAAAAAAAAAQAAAABb2L/OAAAAAFvYwPoAAAAAAAAAAQAAAAEAAAAAo7FW8r8Nj+SMwPPeAoL4aUkLob7QU68+9Y8CAia5k78AAAAKAAAAN0NJcDhiSHdnU2hUR042ZDE3bjg1ZlFGRVBKdmNtNFhnSWhVVFBuUUF4cUtORVd4V3JYIGF1dGgAAAAAAQAAAEDh/7kQjZbcXypISjto5NtGLuaDGrfL/F08apZQYp38JNMNQ9p/e1Fy0z23WOg/Ic+e91+hgbdTude6+1+i0V41AAAAAA=="</span>
@@ -2270,7 +2275,7 @@
 <span class="nf">print</span> <span class="p">(</span><span class="n">uriScheme</span><span class="p">);</span>
 </code></pre>
 
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L372">detailed code example</a></p>
+<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L372">detailed code example</a></p>
 <h4 id='7-2-generate-a-uri-for-pay-operation' class='heading'>7.2 Generate a URI for pay operation</h4>
 
 <p>Generate a URI that will serve as a request to pay a specific address with a specific asset, regardless of the source asset used by the payer.</p>
@@ -2280,7 +2285,7 @@
 <span class="nf">print</span> <span class="p">(</span><span class="n">uriScheme</span><span class="p">);</span>
 </code></pre>
 
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkTests/docs/QuickStartTest.swift#L424">detailed code example</a></p>
+<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L424">detailed code example</a></p>
 <h4 id='7-3-sign-a-transaction-from-a-given-uri-and-send-it-to-the-network' class='heading'>7.3 Sign a transaction from a given URI and send it to the network</h4>
 
 <p>Signs a transaction from a URI and sends it to the callback url if present or to the stellar network otherwise.</p>
@@ -2389,6 +2394,19 @@
 <h3 id='13-regulated-assets' class='heading'>13. Regulated Assets</h3>
 
 <p>see <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0008.md">SEP-08 - Regulated Assets</a></p>
+<h3 id='14-sign-and-verify-messages' class='heading'>14. Sign and Verify Messages</h3>
+
+<p>Sign and verify arbitrary messages with Stellar keypairs as defined by <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md">SEP-0053</a>.</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">keyPair</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">KeyPair</span><span class="p">(</span><span class="nv">secretSeed</span><span class="p">:</span> <span class="s">"SXXX..."</span><span class="p">)</span>
+
+<span class="c1">// Sign a message</span>
+<span class="k">let</span> <span class="nv">signature</span> <span class="o">=</span> <span class="k">try</span> <span class="n">keyPair</span><span class="o">.</span><span class="nf">signMessage</span><span class="p">(</span><span class="s">"Hello, Stellar!"</span><span class="p">)</span>
+
+<span class="c1">// Verify</span>
+<span class="k">let</span> <span class="nv">isValid</span> <span class="o">=</span> <span class="k">try</span> <span class="n">keyPair</span><span class="o">.</span><span class="nf">verifyMessage</span><span class="p">(</span><span class="s">"Hello, Stellar!"</span><span class="p">,</span> <span class="nv">signature</span><span class="p">:</span> <span class="n">signature</span><span class="p">)</span>
+</code></pre>
+
+<p>See <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0053.md">SEP-0053 SDK documentation</a> for details.</p>
 <h2 id='documentation-and-examples' class='heading'>Documentation and Examples</h2>
 
 <p>You can find more documentation and examples in the <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs">docs</a> folder.</p>
@@ -2416,6 +2434,7 @@
 <li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md">SEP-0030</a> - Account Recovery</li>
 <li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md">SEP-0038</a> - Anchor RFQ API</li>
 <li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md">SEP-0045</a> - Web Authentication for Contract Accounts</li>
+<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md">SEP-0053</a> - Sign and Verify Messages</li>
 </ul>
 <h2 id='soroban-support' class='heading'>Soroban support</h2>
 
@@ -2462,9 +2481,6 @@ or open an issue directly:  </p>
 </ul>
 
 <p>Please check out our <a href="./CONTRIBUTING.md">Contributing Guide</a> for details. 🙏</p>
-<h2 id='deepwiki' class='heading'>DeepWiki</h2>
-
-<p><a href="https://deepwiki.com/Soneso/stellar-ios-mac-sdk"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a></p>
 
           </div>
         </section>
@@ -2473,7 +2489,7 @@ or open an issue directly:  </p>
       </article>
     </div>
     <section class="footer">
-      <p>© 2025 Soneso. All rights reserved.</p>
+      <p>© 2026 Soneso. All rights reserved.</p>
       <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.4</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
     </section>
   </body>
