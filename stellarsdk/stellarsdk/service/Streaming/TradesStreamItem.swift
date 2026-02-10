@@ -11,6 +11,11 @@ public class TradesStreamItem: @unchecked Sendable {
         self.requestUrl = requestUrl
     }
 
+    init(requestUrl: String, streamingHelper: StreamingHelper) {
+        self.streamingHelper = streamingHelper
+        self.requestUrl = requestUrl
+    }
+
     /// Establishes the SSE connection and delivers trade responses as they arrive from Horizon.
     public func onReceive(response:@escaping StreamResponseEnum<TradeResponse>.ResponseClosure) {
         streamingHelper.streamFrom(requestUrl:requestUrl) { [weak self] (helperResponse) -> (Void) in

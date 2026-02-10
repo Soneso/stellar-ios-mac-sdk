@@ -11,6 +11,11 @@ public class OffersStreamItem: @unchecked Sendable {
         self.requestUrl = requestUrl
     }
 
+    init(requestUrl: String, streamingHelper: StreamingHelper) {
+        self.streamingHelper = streamingHelper
+        self.requestUrl = requestUrl
+    }
+
     /// Establishes the SSE connection and delivers offer responses as they arrive from Horizon.
     public func onReceive(response:@escaping StreamResponseEnum<OfferResponse>.ResponseClosure) {
         streamingHelper.streamFrom(requestUrl:requestUrl) { [weak self] (helperResponse) -> (Void) in

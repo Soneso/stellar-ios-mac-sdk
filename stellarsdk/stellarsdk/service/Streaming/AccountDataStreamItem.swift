@@ -60,6 +60,11 @@ public class AccountDataStreamItem: @unchecked Sendable {
         self.requestUrl = requestUrl
     }
 
+    init(requestUrl: String, streamingHelper: StreamingHelper) {
+        self.streamingHelper = streamingHelper
+        self.requestUrl = requestUrl
+    }
+
     /// Establishes the SSE connection and delivers data entry responses as they arrive from Horizon.
     ///
     /// The response closure is called multiple times:

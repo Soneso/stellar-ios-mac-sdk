@@ -30,7 +30,7 @@ class AccountStreamingTestCase: XCTestCase {
         let manageDataOp = ManageDataOperation(sourceAccountId: testAccountId, name: "test_key", data: "initial".data(using: .utf8))
         let createAccountOp = try! CreateAccountOperation(sourceAccountId: testAccountId, destinationAccountId: destinationAccountId, startBalance: 10.0)
 
-        var response = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
+        let response = network.passphrase == Network.testnet.passphrase ? await sdk.accounts.createTestAccount(accountId: testAccountId) : await sdk.accounts.createFutureNetTestAccount(accountId: testAccountId)
         switch response {
         case .success(_):
             break

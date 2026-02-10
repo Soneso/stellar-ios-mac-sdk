@@ -19,6 +19,11 @@ public class LedgersStreamItem: @unchecked Sendable {
         self.requestUrl = requestUrl
     }
 
+    init(requestUrl: String, streamingHelper: StreamingHelper) {
+        self.streamingHelper = streamingHelper
+        self.requestUrl = requestUrl
+    }
+
     /// Establishes the SSE connection and delivers ledger responses as they arrive from Horizon.
     public func onReceive(response:@escaping StreamResponseEnum<LedgerResponse>.ResponseClosure) {
         streamingHelper.streamFrom(requestUrl:requestUrl) { [weak self] (helperResponse) -> (Void) in

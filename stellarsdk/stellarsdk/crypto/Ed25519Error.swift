@@ -69,4 +69,10 @@ public enum Ed25519Error: Error {
     /// Ed25519 signatures must be exactly 64 bytes. This error is thrown when
     /// attempting to verify a signature that doesn't match the expected length.
     case invalidSignatureLength
+
+    /// The keypair does not contain a private key and cannot sign.
+    ///
+    /// Thrown when attempting to sign a message with a public-key-only keypair.
+    /// Create the keypair from a secret seed or generate a new keypair to sign.
+    case missingPrivateKey
 }
