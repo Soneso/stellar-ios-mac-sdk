@@ -18,6 +18,7 @@ This SDK provides implementations of following SEPs:
 - [SEP-0030](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md) - Account Recovery
 - [SEP-0038](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md) - Anchor RFQ API (Quotes)
 - [SEP-0045](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md) - Web Authentication for Contract Accounts
+- [SEP-0053](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md) - Sign and Verify Messages
 
 # Stellar Info File - SEP-0001
 
@@ -318,4 +319,8 @@ see [SEP-38 - Anchor RFQ API](https://github.com/Soneso/stellar-ios-mac-sdk/tree
 # Web Authentication for Contract Accounts
 
 see [SEP-45 - Web Authentication for Contract Accounts](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0045.md)
+
+# Sign and Verify Messages
+
+see [SEP-53 - Sign and Verify Messages](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0053.md)
 

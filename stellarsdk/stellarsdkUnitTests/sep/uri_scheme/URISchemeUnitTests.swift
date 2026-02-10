@@ -695,38 +695,32 @@ class URISchemeUnitTests: XCTestCase {
         let transactionXDR = try createTestTransactionXDR()
         let result = SetupTransactionXDREnum.success(transactionXDR: transactionXDR)
 
-        switch result {
-        case .success(let xdr):
-            XCTAssertNotNil(xdr)
-        case .failure:
-            XCTFail("Expected success")
+        guard case .success(let xdr) = result else {
+            return XCTFail("Expected success")
         }
+        XCTAssertNotNil(xdr)
     }
 
     func testSetupTransactionXDREnumSuccessWithNil() {
         let result = SetupTransactionXDREnum.success(transactionXDR: nil)
 
-        switch result {
-        case .success(let xdr):
-            XCTAssertNil(xdr)
-        case .failure:
-            XCTFail("Expected success")
+        guard case .success(let xdr) = result else {
+            return XCTFail("Expected success")
         }
+        XCTAssertNil(xdr)
     }
 
     func testSetupTransactionXDREnumFailure() {
         let error = HorizonRequestError.requestFailed(message: "Test error", horizonErrorResponse: nil)
         let result = SetupTransactionXDREnum.failure(error: error)
 
-        switch result {
-        case .success:
-            XCTFail("Expected failure")
-        case .failure(let returnedError):
-            if case HorizonRequestError.requestFailed(let message, _) = returnedError {
-                XCTAssertEqual(message, "Test error")
-            } else {
-                XCTFail("Wrong error type")
-            }
+        guard case .failure(let returnedError) = result else {
+            return XCTFail("Expected failure")
+        }
+        if case HorizonRequestError.requestFailed(let message, _) = returnedError {
+            XCTAssertEqual(message, "Test error")
+        } else {
+            XCTFail("Wrong error type")
         }
     }
 
@@ -735,44 +729,31 @@ class URISchemeUnitTests: XCTestCase {
     func testSubmitTransactionEnumSuccess() {
         let result = SubmitTransactionEnum.success
 
-        switch result {
-        case .success:
-            XCTAssertTrue(true)
-        case .destinationRequiresMemo:
-            XCTFail("Expected success")
-        case .failure:
-            XCTFail("Expected success")
+        guard case .success = result else {
+            return XCTFail("Expected success")
         }
     }
 
     func testSubmitTransactionEnumDestinationRequiresMemo() {
         let result = SubmitTransactionEnum.destinationRequiresMemo(destinationAccountId: testDestinationAccountId)
 
-        switch result {
-        case .success:
-            XCTFail("Expected destinationRequiresMemo")
-        case .destinationRequiresMemo(let accountId):
-            XCTAssertEqual(accountId, testDestinationAccountId)
-        case .failure:
-            XCTFail("Expected destinationRequiresMemo")
+        guard case .destinationRequiresMemo(let accountId) = result else {
+            return XCTFail("Expected destinationRequiresMemo")
         }
+        XCTAssertEqual(accountId, testDestinationAccountId)
     }
 
     func testSubmitTransactionEnumFailure() {
         let error = HorizonRequestError.requestFailed(message: "Submit failed", horizonErrorResponse: nil)
         let result = SubmitTransactionEnum.failure(error: error)
 
-        switch result {
-        case .success:
-            XCTFail("Expected failure")
-        case .destinationRequiresMemo:
-            XCTFail("Expected failure")
-        case .failure(let returnedError):
-            if case HorizonRequestError.requestFailed(let message, _) = returnedError {
-                XCTAssertEqual(message, "Submit failed")
-            } else {
-                XCTFail("Wrong error type")
-            }
+        guard case .failure(let returnedError) = result else {
+            return XCTFail("Expected failure")
+        }
+        if case HorizonRequestError.requestFailed(let message, _) = returnedError {
+            XCTAssertEqual(message, "Submit failed")
+        } else {
+            XCTFail("Wrong error type")
         }
     }
 
@@ -782,26 +763,20 @@ class URISchemeUnitTests: XCTestCase {
         let signedURL = "web+stellar:tx?xdr=...&signature=..."
         let result = SignURLEnum.success(signedURL: signedURL)
 
-        switch result {
-        case .success(let url):
-            XCTAssertEqual(url, signedURL)
-        case .failure:
-            XCTFail("Expected success")
+        guard case .success(let url) = result else {
+            return XCTFail("Expected success")
         }
+        XCTAssertEqual(url, signedURL)
     }
 
     func testSignURLEnumFailure() {
         let result = SignURLEnum.failure(.invalidSignature)
 
-        switch result {
-        case .success:
-            XCTFail("Expected failure")
-        case .failure(let error):
-            if case .invalidSignature = error {
-                XCTAssertTrue(true)
-            } else {
-                XCTFail("Expected invalidSignature error")
-            }
+        guard case .failure(let error) = result else {
+            return XCTFail("Expected failure")
+        }
+        guard case .invalidSignature = error else {
+            return XCTFail("Expected invalidSignature error")
         }
     }
 
@@ -810,41 +785,30 @@ class URISchemeUnitTests: XCTestCase {
     func testURISchemeIsValidEnumSuccess() {
         let result = URISchemeIsValidEnum.success
 
-        switch result {
-        case .success:
-            XCTAssertTrue(true)
-        case .failure:
-            XCTFail("Expected success")
+        guard case .success = result else {
+            return XCTFail("Expected success")
         }
     }
 
     func testURISchemeIsValidEnumFailureMissingOriginDomain() {
         let result = URISchemeIsValidEnum.failure(.missingOriginDomain)
 
-        switch result {
-        case .success:
-            XCTFail("Expected failure")
-        case .failure(let error):
-            if case .missingOriginDomain = error {
-                XCTAssertTrue(true)
-            } else {
-                XCTFail("Expected missingOriginDomain error")
-            }
+        guard case .failure(let error) = result else {
+            return XCTFail("Expected failure")
+        }
+        guard case .missingOriginDomain = error else {
+            return XCTFail("Expected missingOriginDomain error")
         }
     }
 
     func testURISchemeIsValidEnumFailureInvalidOriginDomain() {
         let result = URISchemeIsValidEnum.failure(.invalidOriginDomain)
 
-        switch result {
-        case .success:
-            XCTFail("Expected failure")
-        case .failure(let error):
-            if case .invalidOriginDomain = error {
-                XCTAssertTrue(true)
-            } else {
-                XCTFail("Expected invalidOriginDomain error")
-            }
+        guard case .failure(let error) = result else {
+            return XCTFail("Expected failure")
+        }
+        guard case .invalidOriginDomain = error else {
+            return XCTFail("Expected invalidOriginDomain error")
         }
     }
 
@@ -1641,15 +1605,13 @@ class URISchemeUnitTests: XCTestCase {
 
         for error in errors {
             let result = URISchemeIsValidEnum.failure(error)
-            switch result {
-            case .success:
-                XCTFail("Should be failure")
-            case .failure(let returnedError):
-                switch returnedError {
-                case .invalidSignature, .invalidOriginDomain, .missingOriginDomain,
-                     .missingSignature, .invalidTomlDomain, .invalidToml, .tomlSignatureMissing:
-                    XCTAssertTrue(true)
-                }
+            guard case .failure(let returnedError) = result else {
+                return XCTFail("Should be failure")
+            }
+            switch returnedError {
+            case .invalidSignature, .invalidOriginDomain, .missingOriginDomain,
+                 .missingSignature, .invalidTomlDomain, .invalidToml, .tomlSignatureMissing:
+                XCTAssertTrue(true)
             }
         }
     }
@@ -1667,15 +1629,13 @@ class URISchemeUnitTests: XCTestCase {
 
         for error in errors {
             let result = SignURLEnum.failure(error)
-            switch result {
-            case .success:
-                XCTFail("Should be failure")
-            case .failure(let returnedError):
-                switch returnedError {
-                case .invalidSignature, .invalidOriginDomain, .missingOriginDomain,
-                     .missingSignature, .invalidTomlDomain, .invalidToml, .tomlSignatureMissing:
-                    XCTAssertTrue(true)
-                }
+            guard case .failure(let returnedError) = result else {
+                return XCTFail("Should be failure")
+            }
+            switch returnedError {
+            case .invalidSignature, .invalidOriginDomain, .missingOriginDomain,
+                 .missingSignature, .invalidTomlDomain, .invalidToml, .tomlSignatureMissing:
+                XCTAssertTrue(true)
             }
         }
     }

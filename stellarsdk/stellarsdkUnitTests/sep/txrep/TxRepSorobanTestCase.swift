@@ -273,7 +273,7 @@ class TxRepSorobanTestCase: XCTestCase {
         let transaction = try Transaction(
             sourceAccount: account,
             operations: [uploadOperation],
-            memo: .none
+            memo: Memo.none
         )
 
         try transaction.sign(keyPair: source, network: .testnet)
@@ -305,7 +305,7 @@ class TxRepSorobanTestCase: XCTestCase {
         let transaction = try Transaction(
             sourceAccount: account,
             operations: [createOperation],
-            memo: .none
+            memo: Memo.none
         )
 
         try transaction.sign(keyPair: source, network: .testnet)

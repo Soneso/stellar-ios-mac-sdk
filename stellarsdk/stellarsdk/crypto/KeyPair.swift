@@ -281,4 +281,69 @@ public final class KeyPair: @unchecked Sendable {
     public func verify(signature: [UInt8], message: [UInt8]) throws -> Bool {
         return try publicKey.verify(signature: signature, message: message)
     }
+
+    // MARK: - SEP-53 Message Signing and Verification
+
+    /// Calculates the SHA-256 hash of a SEP-53 prefixed message.
+    ///
+    /// - Parameter message: The raw message bytes.
+    /// - Returns: The SHA-256 hash of the prefix concatenated with the message.
+    private static func calculateMessageHash(_ message: [UInt8]) -> [UInt8] {
+        let prefix: [UInt8] = Array("Stellar Signed Message:\n".utf8)
+        var payload = prefix
+        payload.append(contentsOf: message)
+        return [UInt8](Data(payload).sha256Hash)
+    }
+
+    /// Signs a binary message according to
+    /// [SEP-53](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md).
+    ///
+    /// The message is prepended with "Stellar Signed Message:\n", hashed with SHA-256,
+    /// and the digest is signed with this keypair's Ed25519 private key.
+    ///
+    /// - Parameter message: The raw bytes of the message to sign.
+    /// - Returns: A 64-byte Ed25519 signature.
+    /// - Throws: `Ed25519Error.missingPrivateKey` if this keypair has no private key.
+    public func signMessage(_ message: [UInt8]) throws -> [UInt8] {
+        guard privateKey != nil else {
+            throw Ed25519Error.missingPrivateKey
+        }
+        let messageHash = KeyPair.calculateMessageHash(message)
+        return sign(messageHash)
+    }
+
+    /// Signs a UTF-8 string message according to
+    /// [SEP-53](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md).
+    ///
+    /// - Parameter message: The string message to sign (will be UTF-8 encoded).
+    /// - Returns: A 64-byte Ed25519 signature.
+    /// - Throws: `Ed25519Error.missingPrivateKey` if this keypair has no private key.
+    public func signMessage(_ message: String) throws -> [UInt8] {
+        return try signMessage([UInt8](message.utf8))
+    }
+
+    /// Verifies a binary message signature according to
+    /// [SEP-53](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md).
+    ///
+    /// - Parameters:
+    ///   - message: The original message bytes.
+    ///   - signature: The 64-byte Ed25519 signature to verify.
+    /// - Returns: `true` if the signature is valid, `false` otherwise.
+    /// - Throws: `Ed25519Error.invalidSignatureLength` if signature is not 64 bytes.
+    public func verifyMessage(_ message: [UInt8], signature: [UInt8]) throws -> Bool {
+        let messageHash = KeyPair.calculateMessageHash(message)
+        return try verify(signature: signature, message: messageHash)
+    }
+
+    /// Verifies a UTF-8 string message signature according to
+    /// [SEP-53](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md).
+    ///
+    /// - Parameters:
+    ///   - message: The original string message (will be UTF-8 encoded).
+    ///   - signature: The 64-byte Ed25519 signature to verify.
+    /// - Returns: `true` if the signature is valid, `false` otherwise.
+    /// - Throws: `Ed25519Error.invalidSignatureLength` if signature is not 64 bytes.
+    public func verifyMessage(_ message: String, signature: [UInt8]) throws -> Bool {
+        return try verifyMessage([UInt8](message.utf8), signature: signature)
+    }
 }

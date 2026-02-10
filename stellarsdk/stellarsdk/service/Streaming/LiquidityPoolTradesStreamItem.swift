@@ -54,6 +54,11 @@ public class LiquidityPoolTradesStreamItem: @unchecked Sendable {
         self.requestUrl = requestUrl
     }
 
+    init(requestUrl: String, streamingHelper: StreamingHelper) {
+        self.streamingHelper = streamingHelper
+        self.requestUrl = requestUrl
+    }
+
     /// Establishes the SSE connection and delivers trade responses as they arrive from Horizon.
     ///
     /// The response closure is called multiple times:

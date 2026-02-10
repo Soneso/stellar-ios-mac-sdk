@@ -449,4 +449,314 @@ final class KeyPairTestCase: XCTestCase {
         XCTAssertEqual(originalKeyPair.accountId, restoredKeyPair.accountId)
         XCTAssertEqual(originalKeyPair.publicKey.bytes, restoredKeyPair.publicKey.bytes)
     }
+
+    // MARK: - SEP-53: Sign and Verify Messages
+
+    // SEP-53 test keypair constants
+    private let sep53Seed = "SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW"
+    private let sep53AccountId = "GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L"
+
+    private func hexToBytes(_ hex: String) -> [UInt8] {
+        var bytes = [UInt8]()
+        var index = hex.startIndex
+        while index < hex.endIndex {
+            let nextIndex = hex.index(index, offsetBy: 2)
+            let byteString = hex[index..<nextIndex]
+            bytes.append(UInt8(byteString, radix: 16)!)
+            index = nextIndex
+        }
+        return bytes
+    }
+
+    private func bytesToHex(_ bytes: [UInt8]) -> String {
+        return bytes.map { String(format: "%02x", $0) }.joined()
+    }
+
+    // Test 1: Sign an ASCII string message and verify the expected signature
+    func testSEP53SignMessageASCII() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+        XCTAssertEqual(keyPair.accountId, sep53AccountId)
+
+        let signature = try keyPair.signMessage("Hello, World!")
+        XCTAssertEqual(
+            bytesToHex(signature),
+            "7cee5d6d885752104c85eea421dfdcb95abf01f1271d11c4bec3fcbd7874dccd6e2e98b97b8eb23b643cac4073bb77de5d07b0710139180ae9f3cbba78f2ba04"
+        )
+    }
+
+    // Test 2: Sign a UTF-8 string message with multibyte characters
+    func testSEP53SignMessageUTF8() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+
+        let signature = try keyPair.signMessage("こんにちは、世界！")
+        XCTAssertEqual(
+            bytesToHex(signature),
+            "083536eb95ecf32dce59b07fe7a1fd8cf814b2ce46f40d2a16e4ea1f6cecd980e04e6fbef9d21f98011c785a81edb85f3776a6e7d942b435eb0adc07da4d4604"
+        )
+    }
+
+    // Test 3: Sign a binary message (raw bytes)
+    func testSEP53SignMessageBinary() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+        let binaryData = Data(base64Encoded: "2zZDP1sa1BVBfLP7TeeMk3sUbaxAkUhBhDiNdrksaFo=")!
+        let binaryBytes = [UInt8](binaryData)
+
+        let signature = try keyPair.signMessage(binaryBytes)
+        XCTAssertEqual(
+            bytesToHex(signature),
+            "540d7eee179f370bf634a49c1fa9fe4a58e3d7990b0207be336c04edfcc539ff8bd0c31bb2c0359b07c9651cb2ae104e4504657b5d17d43c69c7e50e23811b0d"
+        )
+    }
+
+    // Test 4: Verify an ASCII string message with a known-good signature
+    func testSEP53VerifyMessageASCII() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+        let sig = hexToBytes("7cee5d6d885752104c85eea421dfdcb95abf01f1271d11c4bec3fcbd7874dccd6e2e98b97b8eb23b643cac4073bb77de5d07b0710139180ae9f3cbba78f2ba04")
+
+        let isValid = try keyPair.verifyMessage("Hello, World!", signature: sig)
+        XCTAssertTrue(isValid)
+    }
+
+    // Test 5: Verify a UTF-8 string message with a known-good signature
+    func testSEP53VerifyMessageUTF8() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+        let sig = hexToBytes("083536eb95ecf32dce59b07fe7a1fd8cf814b2ce46f40d2a16e4ea1f6cecd980e04e6fbef9d21f98011c785a81edb85f3776a6e7d942b435eb0adc07da4d4604")
+
+        let isValid = try keyPair.verifyMessage("こんにちは、世界！", signature: sig)
+        XCTAssertTrue(isValid)
+    }
+
+    // Test 6: Verify a binary message with a known-good signature
+    func testSEP53VerifyMessageBinary() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+        let binaryData = Data(base64Encoded: "2zZDP1sa1BVBfLP7TeeMk3sUbaxAkUhBhDiNdrksaFo=")!
+        let binaryBytes = [UInt8](binaryData)
+        let sig = hexToBytes("540d7eee179f370bf634a49c1fa9fe4a58e3d7990b0207be336c04edfcc539ff8bd0c31bb2c0359b07c9651cb2ae104e4504657b5d17d43c69c7e50e23811b0d")
+
+        let isValid = try keyPair.verifyMessage(binaryBytes, signature: sig)
+        XCTAssertTrue(isValid)
+    }
+
+    // Test 7: Verify a message using a public-key-only keypair
+    func testSEP53VerifyWithPublicKeyOnly() throws {
+        let fullKeyPair = try KeyPair(secretSeed: sep53Seed)
+        let signature = try fullKeyPair.signMessage("Hello, World!")
+
+        let publicKeyPair = try KeyPair(accountId: sep53AccountId)
+        let isValid = try publicKeyPair.verifyMessage("Hello, World!", signature: signature)
+        XCTAssertTrue(isValid)
+    }
+
+    // Test 8: Verify returns false for an invalid (all-zeros) signature
+    func testSEP53VerifyInvalidSignature() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+        let invalidSig = [UInt8](repeating: 0, count: 64)
+
+        let isValid = try keyPair.verifyMessage("Hello, World!", signature: invalidSig)
+        XCTAssertFalse(isValid)
+    }
+
+    // Test 9: Verify returns false when the message does not match the signature
+    func testSEP53VerifyWrongMessage() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+        let signature = try keyPair.signMessage("message A")
+
+        let isValid = try keyPair.verifyMessage("message B", signature: signature)
+        XCTAssertFalse(isValid)
+    }
+
+    // Test 10: Verify returns false when using a different key
+    func testSEP53VerifyWrongKey() throws {
+        let signingKeyPair = try KeyPair(secretSeed: sep53Seed)
+        let signature = try signingKeyPair.signMessage("Hello, World!")
+
+        let wrongKeyPair = try KeyPair(accountId: testAccountId)
+        let isValid = try wrongKeyPair.verifyMessage("Hello, World!", signature: signature)
+        XCTAssertFalse(isValid)
+    }
+
+    // Test 11: Verify throws for a signature that is too short (63 bytes)
+    func testSEP53VerifyInvalidSignatureLength() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+        let shortSig = [UInt8](repeating: 0, count: 63)
+
+        XCTAssertThrowsError(try keyPair.verifyMessage("Hello, World!", signature: shortSig)) { error in
+            XCTAssertTrue(error is Ed25519Error)
+            if case Ed25519Error.invalidSignatureLength = error {
+                // Expected error
+            } else {
+                XCTFail("Wrong error type: \(error)")
+            }
+        }
+    }
+
+    // Test 12: Signing with a public-key-only keypair throws missingPrivateKey
+    func testSEP53SignWithPublicKeyOnlyThrows() throws {
+        let publicKeyPair = try KeyPair(accountId: sep53AccountId)
+
+        XCTAssertThrowsError(try publicKeyPair.signMessage("test")) { error in
+            XCTAssertTrue(error is Ed25519Error)
+            if case Ed25519Error.missingPrivateKey = error {
+                // Expected error
+            } else {
+                XCTFail("Wrong error type: \(error)")
+            }
+        }
+
+        // Also test binary variant
+        XCTAssertThrowsError(try publicKeyPair.signMessage([UInt8]("test".utf8))) { error in
+            XCTAssertTrue(error is Ed25519Error)
+            if case Ed25519Error.missingPrivateKey = error {
+                // Expected error
+            } else {
+                XCTFail("Wrong error type: \(error)")
+            }
+        }
+    }
+
+    // Test 13: Sign and verify an empty string message (round-trip)
+    func testSEP53SignEmptyStringMessage() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+
+        let signature = try keyPair.signMessage("")
+        let isValid = try keyPair.verifyMessage("", signature: signature)
+        XCTAssertTrue(isValid)
+    }
+
+    // Test 14: Sign and verify an empty binary message (round-trip)
+    func testSEP53SignEmptyBinaryMessage() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+        let emptyBytes: [UInt8] = []
+
+        let signature = try keyPair.signMessage(emptyBytes)
+        let isValid = try keyPair.verifyMessage(emptyBytes, signature: signature)
+        XCTAssertTrue(isValid)
+    }
+
+    // Test 15: Round-trip sign and verify a string message with a random keypair
+    func testSEP53RoundTripStringMessage() throws {
+        let keyPair = try KeyPair.generateRandomKeyPair()
+
+        let signature = try keyPair.signMessage("arbitrary test message for round trip")
+        let isValid = try keyPair.verifyMessage("arbitrary test message for round trip", signature: signature)
+        XCTAssertTrue(isValid)
+    }
+
+    // Test 16: Round-trip sign and verify a binary message with a random keypair
+    func testSEP53RoundTripBinaryMessage() throws {
+        let keyPair = try KeyPair.generateRandomKeyPair()
+        let binaryMessage = [UInt8](repeating: 0xAB, count: 256)
+
+        let signature = try keyPair.signMessage(binaryMessage)
+        let isValid = try keyPair.verifyMessage(binaryMessage, signature: signature)
+        XCTAssertTrue(isValid)
+    }
+
+    // Test 17: String and binary sign/verify paths produce equivalent results
+    func testSEP53CrossVerifyStringAndBinary() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+
+        let signatureFromString = try keyPair.signMessage("Hello, World!")
+        let isValid = try keyPair.verifyMessage([UInt8]("Hello, World!".utf8), signature: signatureFromString)
+        XCTAssertTrue(isValid)
+    }
+
+    // Test 18: Ed25519 signatures are deterministic
+    func testSEP53DeterministicSignature() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+
+        let sig1 = try keyPair.signMessage("deterministic test")
+        let sig2 = try keyPair.signMessage("deterministic test")
+        XCTAssertEqual(sig1, sig2)
+    }
+
+    // Test 19: Verify throws for a signature that is too long (65 bytes)
+    func testSEP53VerifyOversizedSignatureLength() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+        let longSig = [UInt8](repeating: 0, count: 65)
+
+        XCTAssertThrowsError(try keyPair.verifyMessage("Hello, World!", signature: longSig)) { error in
+            XCTAssertTrue(error is Ed25519Error)
+            if case Ed25519Error.invalidSignatureLength = error {
+                // Expected error
+            } else {
+                XCTFail("Wrong error type: \(error)")
+            }
+        }
+    }
+
+    // Test 20: Sign and verify a large (~100KB) binary message
+    func testSEP53SignAndVerifyLargeMessage() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+        let largeMessage = [UInt8](repeating: 0x42, count: 100_000)
+
+        let signature = try keyPair.signMessage(largeMessage)
+        let isValid = try keyPair.verifyMessage(largeMessage, signature: signature)
+        XCTAssertTrue(isValid)
+    }
+
+    // Test 21: Sign and verify binary data containing null bytes
+    func testSEP53SignAndVerifyBinaryWithNullBytes() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+        let messageWithNulls: [UInt8] = [0x00, 0x01, 0x00, 0xFF, 0x00]
+
+        let signature = try keyPair.signMessage(messageWithNulls)
+        let isValid = try keyPair.verifyMessage(messageWithNulls, signature: signature)
+        XCTAssertTrue(isValid)
+    }
+
+    // Test 22: Sign and verify via base64-encoded signature round-trip
+    func testSEP53Base64EncodingRoundTrip() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+
+        let signature = try keyPair.signMessage("Hello, World!")
+        let base64Signature = Data(signature).base64EncodedString()
+
+        // Decode and verify
+        let decodedSignature = [UInt8](Data(base64Encoded: base64Signature)!)
+        let isValid = try keyPair.verifyMessage("Hello, World!", signature: decodedSignature)
+        XCTAssertTrue(isValid)
+
+        // Verify known base64 value for spec vector
+        XCTAssertEqual(
+            base64Signature,
+            "fO5dbYhXUhBMhe6kId/cuVq/AfEnHRHEvsP8vXh03M1uLpi5e46yO2Q8rEBzu3feXQewcQE5GArp88u6ePK6BA=="
+        )
+    }
+
+    // Test 23: Sign and verify via hex-encoded signature round-trip
+    func testSEP53HexEncodingRoundTrip() throws {
+        let keyPair = try KeyPair(secretSeed: sep53Seed)
+
+        let signature = try keyPair.signMessage("こんにちは、世界！")
+        let hexSignature = bytesToHex(signature)
+
+        // Decode and verify
+        let decodedSignature = hexToBytes(hexSignature)
+        let isValid = try keyPair.verifyMessage("こんにちは、世界！", signature: decodedSignature)
+        XCTAssertTrue(isValid)
+
+        // Verify known hex value for spec vector
+        XCTAssertEqual(
+            hexSignature,
+            "083536eb95ecf32dce59b07fe7a1fd8cf814b2ce46f40d2a16e4ea1f6cecd980e04e6fbef9d21f98011c785a81edb85f3776a6e7d942b435eb0adc07da4d4604"
+        )
+    }
+
+    // Test 24: Cross-construction round-trip (sign with seed, verify with account ID)
+    func testSEP53CrossConstructionRoundTrip() throws {
+        let signerKeyPair = try KeyPair(secretSeed: sep53Seed)
+        let signature = try signerKeyPair.signMessage("cross-construction test")
+
+        // Create a verification-only keypair from the account ID
+        let verifierKeyPair = try KeyPair(accountId: sep53AccountId)
+        XCTAssertNil(verifierKeyPair.privateKey)
+
+        let isValid = try verifierKeyPair.verifyMessage("cross-construction test", signature: signature)
+        XCTAssertTrue(isValid)
+
+        // Verify wrong message fails with the verifier keypair
+        let isInvalid = try verifierKeyPair.verifyMessage("wrong message", signature: signature)
+        XCTAssertFalse(isInvalid)
+    }
 }

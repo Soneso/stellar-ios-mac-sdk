@@ -20,6 +20,11 @@ public class OperationsStreamItem: @unchecked Sendable {
         self.requestUrl = requestUrl
     }
 
+    init(requestUrl: String, streamingHelper: StreamingHelper) {
+        self.streamingHelper = streamingHelper
+        self.requestUrl = requestUrl
+    }
+
     /// Establishes the SSE connection and delivers operation responses as they arrive from Horizon.
     public func onReceive(response:@escaping StreamResponseEnum<OperationResponse>.ResponseClosure) {
         streamingHelper.streamFrom(requestUrl:requestUrl) { [weak self] (helperResponse) -> (Void) in

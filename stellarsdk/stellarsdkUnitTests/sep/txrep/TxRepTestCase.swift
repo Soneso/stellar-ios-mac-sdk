@@ -244,7 +244,7 @@ class TxRepTestCase: XCTestCase {
         let innerTransaction = try Transaction(
             sourceAccount: account,
             operations: [payment],
-            memo: .none
+            memo: Memo.none
         )
 
         try innerTransaction.sign(keyPair: innerSource, network: .testnet)

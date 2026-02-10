@@ -600,9 +600,25 @@ See [SEP-0030: Account Recovery](https://github.com/Soneso/stellar-ios-mac-sdk/t
 
 see [SEP-38 - Anchor RFQ API](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0038.md)
 
-### 13. Regulated Assets 
+### 13. Regulated Assets
 
 see [SEP-08 - Regulated Assets](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0008.md)
+
+### 14. Sign and Verify Messages
+
+Sign and verify arbitrary messages with Stellar keypairs as defined by [SEP-0053](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md).
+
+```swift
+let keyPair = try KeyPair(secretSeed: "SXXX...")
+
+// Sign a message
+let signature = try keyPair.signMessage("Hello, Stellar!")
+
+// Verify
+let isValid = try keyPair.verifyMessage("Hello, Stellar!", signature: signature)
+```
+
+See [SEP-0053 SDK documentation](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0053.md) for details.
 
 ## Documentation and Examples
 
@@ -632,6 +648,7 @@ Our SDK is also used by the [LOBSTR Wallet](https://lobstr.co).
 - [SEP-0030](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md) - Account Recovery
 - [SEP-0038](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md) - Anchor RFQ API
 - [SEP-0045](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md) - Web Authentication for Contract Accounts
+- [SEP-0053](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md) - Sign and Verify Messages
 
 ## Soroban support
 
