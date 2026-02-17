@@ -404,7 +404,6 @@ class PaymentsTestCase: XCTestCase, @unchecked Sendable {
         }
     }
 
-    @MainActor
     func testEventStream() async {
         let sourceAccountKeyPair = testKeyPair
         let destinationAccountId = IOMIssuingAccountKeyPair.accountId
@@ -413,9 +412,9 @@ class PaymentsTestCase: XCTestCase, @unchecked Sendable {
         let eventSource = EventSource(url: url)
         let stream = eventSource.eventStream()
 
-        var eventReceived = false
+        nonisolated(unsafe) var eventReceived = false
 
-        let streamTask = Task {
+        let streamTask = Task { @Sendable in
             for await (_, _, data) in stream {
                 if let paymentData = data?.data(using: .utf8) {
                     do {
