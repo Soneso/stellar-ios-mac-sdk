@@ -14,9 +14,9 @@ import Foundation
 /// is authenticated as this identity.
 public struct SEP30ResponseIdentity: Decodable , Sendable {
 
-    /// Role of this identity in relation to the account.
-    /// Common values: "owner", "sender", "receiver".
-    public let role: String
+    /// Role of this identity in relation to the account, if provided by the server.
+    /// Common values: "owner", "sender", "receiver". For GET /accounts, this may be absent.
+    public let role: String?
 
     /// Indicates if the currently authenticated client matches this identity.
     /// Present and true when the authenticated JWT corresponds to this identity's authentication methods.
@@ -35,7 +35,7 @@ public struct SEP30ResponseIdentity: Decodable , Sendable {
      */
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        role = try values.decode(String.self, forKey: .role)
+        role = try values.decodeIfPresent(String.self, forKey: .role)
         authenticated = try values.decodeIfPresent(Bool.self, forKey: .authenticated)
     }
 }

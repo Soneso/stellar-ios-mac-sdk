@@ -868,6 +868,33 @@ class RecoveryServiceTestCase: XCTestCase {
         }
     }
 
+    func testSep30AccountsResponseDecodingWithoutRole() {
+        let jsonString = """
+        {
+            "accounts": [
+                {
+                    "address": "GBND3FJRQBNFJ4ACERGEXUXU4RKK3ZV2N3FRRFU3ONYU6SJUN6EZXPTD",
+                    "identities": [{ "authenticated": true }],
+                    "signers": [{ "key": "GBTPAH6NWK25GESZYJ3XWPTNQUIMYNK7VU7R4NSTMZXOEKCOBKJVJ2XY" }]
+                }
+            ]
+        }
+        """
+
+        let jsonData = jsonString.data(using: .utf8)!
+        let decoder = JSONDecoder()
+
+        do {
+            let response = try decoder.decode(Sep30AccountsResponse.self, from: jsonData)
+            XCTAssertEqual(1, response.accounts.count)
+            XCTAssertEqual(1, response.accounts[0].identities.count)
+            XCTAssertNil(response.accounts[0].identities[0].role)
+            XCTAssertTrue(response.accounts[0].identities[0].authenticated!)
+        } catch {
+            XCTFail("Failed to decode Sep30AccountsResponse without role: \(error)")
+        }
+    }
+
     // MARK: - Legacy Error Tests (Backward Compatibility)
 
     func testBadReqErr() async {

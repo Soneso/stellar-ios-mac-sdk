@@ -404,6 +404,7 @@ class PaymentsTestCase: XCTestCase, @unchecked Sendable {
         }
     }
 
+    @MainActor
     func testEventStream() async {
         let sourceAccountKeyPair = testKeyPair
         let destinationAccountId = IOMIssuingAccountKeyPair.accountId
