@@ -164,8 +164,12 @@ public class RegulatedAssetsService {
         for currency in tomlData.currenciesDocumentation {
             if let code = currency.code, let issuer = currency.issuer, let regulated = currency.regulated, regulated, let approvalServer = currency.approvalServer {
                 let type = code.count <= 4 ? AssetType.ASSET_TYPE_CREDIT_ALPHANUM4 : AssetType.ASSET_TYPE_CREDIT_ALPHANUM12
-                if let asset = try RegulatedAsset(type:type, assetCode: code, issuerId: issuer, approvalServer:approvalServer, approvalCriteria: currency.approvalCriteria) {
-                    tempRegulatedAssets.append(asset)
+                do {
+                    if let asset = try RegulatedAsset(type:type, assetCode: code, issuerId: issuer, approvalServer:approvalServer, approvalCriteria: currency.approvalCriteria) {
+                        tempRegulatedAssets.append(asset)
+                    }
+                } catch {
+                    continue
                 }
             }
         }

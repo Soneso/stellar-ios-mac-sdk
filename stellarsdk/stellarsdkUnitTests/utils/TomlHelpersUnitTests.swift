@@ -489,18 +489,6 @@ final class TomlHelpersUnitTests: XCTestCase {
         XCTAssertNotNil(date)
     }
 
-    func testDateRFC3339WithLocalTime() {
-        // Note: This test documents a potential bug in localTimeOffset()
-        // The function appears to append timezone without proper sign and colon format
-        // Expected format: "+05:00" or "-05:00", but localTimeOffset() returns "0500"
-        let dateString = "1979-05-27T07:32:00"
-        let date = Date(rfc3339String: dateString, fractionalSeconds: false, localTime: true)
-
-        // Test documents current behavior - localTimeOffset format may be incorrect
-        // Skip assertion as this appears to be a bug in the implementation
-        _ = date
-    }
-
     func testDateRFC3339WithPositiveTimeZone() {
         let dateString = "1979-05-27T07:32:00+05:30"
         let date = Date(rfc3339String: dateString, fractionalSeconds: false, localTime: false)

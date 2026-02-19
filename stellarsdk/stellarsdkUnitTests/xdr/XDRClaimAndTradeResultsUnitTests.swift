@@ -317,9 +317,9 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
     }
 
     func testPathPaymentResultXDREmptyMalformed() throws {
-        // Test empty case by decoding raw XDR (encoding bug: empty case doesn't encode code)
-        let xdrData: [UInt8] = [0xFF, 0xFF, 0xFF, 0xFF] // -1 (malformed)
-        let decoded = try XDRDecoder.decode(PathPaymentResultXDR.self, data: xdrData)
+        let result = PathPaymentResultXDR.empty(PathPaymentResultCode.malformed.rawValue)
+        let encoded = try XDREncoder.encode(result)
+        let decoded = try XDRDecoder.decode(PathPaymentResultXDR.self, data: encoded)
 
         switch decoded {
         case .empty(let code):
@@ -330,9 +330,9 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
     }
 
     func testPathPaymentResultXDREmptyUnderfounded() throws {
-        // Test empty case by decoding raw XDR (encoding bug: empty case doesn't encode code)
-        let xdrData: [UInt8] = [0xFF, 0xFF, 0xFF, 0xFE] // -2 (underfounded)
-        let decoded = try XDRDecoder.decode(PathPaymentResultXDR.self, data: xdrData)
+        let result = PathPaymentResultXDR.empty(PathPaymentResultCode.underfounded.rawValue)
+        let encoded = try XDREncoder.encode(result)
+        let decoded = try XDRDecoder.decode(PathPaymentResultXDR.self, data: encoded)
 
         switch decoded {
         case .empty(let code):
@@ -801,70 +801,4 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
         }
     }
 
-    // MARK: - OperationResultXDR Tests
-    // NOTE: OperationResultXDR has an encoding bug where operation type is not encoded
-    // These tests focus on the empty (error) case which works correctly
-
-    func testOperationResultXDREmpty() throws {
-        let result = OperationResultXDR.empty(OperationResultCode.badAuth.rawValue)
-
-        let encoded = try XDREncoder.encode(result)
-        let decoded = try XDRDecoder.decode(OperationResultXDR.self, data: encoded)
-
-        switch decoded {
-        case .empty(let code):
-            XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
-        default:
-            XCTFail("Expected empty case")
-        }
-    }
-
-    func testOperationResultCodeAllValues() {
-        XCTAssertEqual(OperationResultCode.inner.rawValue, 0)
-        XCTAssertEqual(OperationResultCode.badAuth.rawValue, -1)
-        XCTAssertEqual(OperationResultCode.noAccount.rawValue, -2)
-        XCTAssertEqual(OperationResultCode.notSupported.rawValue, -3)
-        XCTAssertEqual(OperationResultCode.tooManySubentries.rawValue, -4)
-        XCTAssertEqual(OperationResultCode.exceededWorkLimit.rawValue, -5)
-        XCTAssertEqual(OperationResultCode.tooManySponsoring.rawValue, -6)
-    }
-
-    func testOperationResultCodeEnumCasesExist() {
-        // Test that all OperationResultXDR enum cases can be created
-        // We can't test encoding/decoding of inner results due to SDK encoding bug
-
-        // Create instances to ensure enum cases exist
-        let _ = OperationResultXDR.createAccount(0, CreateAccountResultXDR.success(0))
-        let _ = OperationResultXDR.payment(0, PaymentResultXDR.success(0))
-        let _ = OperationResultXDR.changeTrust(0, ChangeTrustResultXDR.success(0))
-        let _ = OperationResultXDR.setOptions(0, SetOptionsResultXDR.success(0))
-        let successResult = ManageOfferSuccessResultXDR(offersClaimed: [], offer: nil)
-        let _ = OperationResultXDR.manageSellOffer(0, ManageOfferResultXDR.success(0, successResult))
-        let _ = OperationResultXDR.createPassiveSellOffer(0, ManageOfferResultXDR.success(0, successResult))
-        let _ = OperationResultXDR.manageBuyOffer(0, ManageOfferResultXDR.success(0, successResult))
-        let _ = OperationResultXDR.allowTrust(0, AllowTrustResultXDR.success(0))
-        let _ = OperationResultXDR.accountMerge(0, AccountMergeResultXDR.success(0, 1000000))
-        let _ = OperationResultXDR.manageData(0, ManageDataResultXDR.success(0))
-        let _ = OperationResultXDR.bumpSequence(0, BumpSequenceResultXDR.success(0))
-
-        XCTAssertTrue(true) // All cases created successfully
-    }
-
-    func testOperationResultXDRRoundTripBase64() throws {
-        let result = OperationResultXDR.empty(OperationResultCode.badAuth.rawValue)
-
-        guard let base64 = result.xdrEncoded else {
-            XCTFail("Failed to encode to base64")
-            return
-        }
-
-        let decoded = try OperationResultXDR(xdr: base64)
-
-        switch decoded {
-        case .empty(let code):
-            XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
-        default:
-            XCTFail("Expected empty case")
-        }
-    }
 }

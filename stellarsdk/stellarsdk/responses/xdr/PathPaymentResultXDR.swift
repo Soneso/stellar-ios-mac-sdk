@@ -62,8 +62,8 @@ public enum PathPaymentResultXDR: XDRCodable, Sendable {
             case .noIssuer(let code, let asset):
                 try container.encode(code)
                 try container.encode(asset)
-            case .empty:
-                break
+            case .empty(let code):
+                try container.encode(code)
         }
     }
 }

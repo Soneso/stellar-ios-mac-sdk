@@ -2430,7 +2430,7 @@ public class TxRep: NSObject {
                 }
                 break
             case "MEMO_RETURN":
-                key = prefix + "memo.return"
+                key = prefix + "memo.retHash"
                 if let hashStr = dic[key] {
                     if let data = hashStr.data(using: .hexadecimal) {
                         do {
@@ -3546,12 +3546,12 @@ public class TxRep: NSObject {
         case .hash (_):
             addLine(key: prefix + "memo.type", value: "MEMO_HASH", lines: &lines)
             if let m = Memo(memoXDR: memo) {
-                addLine(key: prefix + "memo.hash", value: try m.trimmedHexValue(), lines: &lines)
+                addLine(key: prefix + "memo.hash", value: try m.hexValue(), lines: &lines)
             }
         case .returnHash (_):
             addLine(key: prefix + "memo.type", value: "MEMO_RETURN", lines: &lines)
             if let m = Memo(memoXDR: memo) {
-                addLine(key: prefix + "memo.retHash", value: try m.trimmedHexValue(), lines: &lines)
+                addLine(key: prefix + "memo.retHash", value: try m.hexValue(), lines: &lines)
             }
         }
     }

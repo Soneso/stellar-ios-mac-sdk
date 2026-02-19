@@ -11,6 +11,12 @@ import stellarsdk
 
 class XDRResultsUnitTests: XCTestCase {
 
+    // MARK: - Helper Methods
+
+    func createTestPublicKey() throws -> PublicKey {
+        return try PublicKey(accountId: "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ")
+    }
+
     // MARK: - AccountMergeResultXDR Tests
 
     func testAccountMergeResultXDRSuccess() throws {
@@ -1127,9 +1133,6 @@ class XDRResultsUnitTests: XCTestCase {
     }
 
     func testPathPaymentStrictReceiveResultXDRAllErrorCases() throws {
-        // Test key PathPaymentResultCode error cases (strict receive uses same codes)
-        // Note: PathPaymentResultXDR.empty encoding has a known limitation - it doesn't encode
-        // the discriminant code. This test verifies object creation and code values.
         let errorCases: [(PathPaymentResultCode, String)] = [
             (.malformed, "malformed"),
             (.underfounded, "underfunded"),
@@ -1147,7 +1150,12 @@ class XDRResultsUnitTests: XCTestCase {
         for (errorCode, name) in errorCases {
             let result = PathPaymentResultXDR.empty(errorCode.rawValue)
 
-            switch result {
+            let encoded = try XDREncoder.encode(result)
+            XCTAssertFalse(encoded.isEmpty, "Encoding failed for \(name)")
+
+            let decoded = try XDRDecoder.decode(PathPaymentResultXDR.self, data: encoded)
+
+            switch decoded {
             case .success:
                 XCTFail("Expected empty case for \(name), got success")
             case .empty(let code):
@@ -1159,9 +1167,6 @@ class XDRResultsUnitTests: XCTestCase {
     }
 
     func testPathPaymentStrictSendResultXDRAllErrorCases() throws {
-        // Test key PathPaymentResultCode error cases (strict send uses same codes)
-        // Note: PathPaymentResultXDR.empty encoding has a known limitation - it doesn't encode
-        // the discriminant code. This test verifies object creation and code values.
         let errorCases: [(PathPaymentResultCode, String)] = [
             (.malformed, "malformed"),
             (.underfounded, "underfunded"),
@@ -1179,7 +1184,12 @@ class XDRResultsUnitTests: XCTestCase {
         for (errorCode, name) in errorCases {
             let result = PathPaymentResultXDR.empty(errorCode.rawValue)
 
-            switch result {
+            let encoded = try XDREncoder.encode(result)
+            XCTAssertFalse(encoded.isEmpty, "Encoding failed for \(name)")
+
+            let decoded = try XDRDecoder.decode(PathPaymentResultXDR.self, data: encoded)
+
+            switch decoded {
             case .success:
                 XCTFail("Expected empty case for \(name), got success")
             case .empty(let code):
@@ -1373,6 +1383,136 @@ class XDRResultsUnitTests: XCTestCase {
             case .empty(let code):
                 XCTAssertEqual(code, errorCode.rawValue, "Error code mismatch for \(name)")
             }
+        }
+    }
+
+    // MARK: - OperationResultXDR Tests
+
+    func testOperationResultXDREmpty() throws {
+        let result = OperationResultXDR.empty(OperationResultCode.badAuth.rawValue)
+
+        let encoded = try XDREncoder.encode(result)
+        let decoded = try XDRDecoder.decode(OperationResultXDR.self, data: encoded)
+
+        switch decoded {
+        case .empty(let code):
+            XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
+        default:
+            XCTFail("Expected empty case")
+        }
+    }
+
+    func testOperationResultCodeAllValues() {
+        XCTAssertEqual(OperationResultCode.inner.rawValue, 0)
+        XCTAssertEqual(OperationResultCode.badAuth.rawValue, -1)
+        XCTAssertEqual(OperationResultCode.noAccount.rawValue, -2)
+        XCTAssertEqual(OperationResultCode.notSupported.rawValue, -3)
+        XCTAssertEqual(OperationResultCode.tooManySubentries.rawValue, -4)
+        XCTAssertEqual(OperationResultCode.exceededWorkLimit.rawValue, -5)
+        XCTAssertEqual(OperationResultCode.tooManySponsoring.rawValue, -6)
+    }
+
+    func testOperationResultXDRInnerRoundTrip() throws {
+        let publicKey = try createTestPublicKey()
+        let offerEntry = OfferEntryXDR(
+            sellerID: publicKey,
+            offerID: 12345,
+            selling: AssetXDR.native,
+            buying: AssetXDR.native,
+            amount: 1000000,
+            price: PriceXDR(n: 2, d: 1),
+            flags: 0
+        )
+        let successResult = ManageOfferSuccessResultXDR(offersClaimed: [], offer: .created(offerEntry))
+        let claimableBalanceId = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(WrappedData32(Data(repeating: 0xAB, count: 32)))
+        let invokeHash = WrappedData32(Data(repeating: 0xCD, count: 32))
+
+        let cases: [(OperationResultXDR, String)] = [
+            (.createAccount(0, CreateAccountResultXDR.success(0)), "createAccount"),
+            (.payment(0, PaymentResultXDR.success(0)), "payment"),
+            (.pathPayment(0, PathPaymentResultXDR.empty(PathPaymentResultCode.malformed.rawValue)), "pathPayment"),
+            (.changeTrust(0, ChangeTrustResultXDR.success(0)), "changeTrust"),
+            (.setOptions(0, SetOptionsResultXDR.success(0)), "setOptions"),
+            (.manageSellOffer(0, ManageOfferResultXDR.success(0, successResult)), "manageSellOffer"),
+            (.createPassiveSellOffer(0, ManageOfferResultXDR.success(0, successResult)), "createPassiveSellOffer"),
+            (.manageBuyOffer(0, ManageOfferResultXDR.success(0, successResult)), "manageBuyOffer"),
+            (.allowTrust(0, AllowTrustResultXDR.success(0)), "allowTrust"),
+            (.accountMerge(0, AccountMergeResultXDR.success(0, 1000000)), "accountMerge"),
+            (.inflation(0, InflationResultXDR.empty(InflationResultCode.notTime.rawValue)), "inflation"),
+            (.manageData(0, ManageDataResultXDR.success(0)), "manageData"),
+            (.bumpSequence(0, BumpSequenceResultXDR.success(0)), "bumpSequence"),
+            (.pathPaymentStrictSend(0, PathPaymentResultXDR.empty(PathPaymentResultCode.malformed.rawValue)), "pathPaymentStrictSend"),
+            (.createClaimableBalance(0, CreateClaimableBalanceResultXDR.success(0, claimableBalanceId)), "createClaimableBalance"),
+            (.claimClaimableBalance(0, ClaimClaimableBalanceResultXDR.success(0)), "claimClaimableBalance"),
+            (.beginSponsoringFutureReserves(0, BeginSponsoringFutureReservesResultXDR.success(0)), "beginSponsoringFutureReserves"),
+            (.endSponsoringFutureReserves(0, EndSponsoringFutureReservesResultXDR.success(0)), "endSponsoringFutureReserves"),
+            (.revokeSponsorship(0, RevokeSponsorshipResultXDR.success(0)), "revokeSponsorship"),
+            (.clawback(0, ClawbackResultXDR.success(0)), "clawback"),
+            (.clawbackClaimableBalance(0, ClawbackClaimableBalanceResultXDR.success(0)), "clawbackClaimableBalance"),
+            (.setTrustLineFlags(0, SetTrustLineFlagsResultXDR.success(0)), "setTrustLineFlags"),
+            (.liquidityPoolDeposit(0, LiquidityPoolDepositResultXDR.success(0)), "liquidityPoolDeposit"),
+            (.liquidityPoolWithdraw(0, LiquidityPoolWithdrawResultXDR.success(0)), "liquidityPoolWithdraw"),
+            (.invokeHostFunction(0, InvokeHostFunctionResultXDR.success(invokeHash)), "invokeHostFunction"),
+            (.extendFootprintTTL(0, ExtendFootprintTTLResultXDR.success), "extendFootprintTTL"),
+            (.restoreFootprint(0, RestoreFootprintResultXDR.success), "restoreFootprint"),
+        ]
+
+        for (result, name) in cases {
+            let encoded = try XDREncoder.encode(result)
+            XCTAssertFalse(encoded.isEmpty, "Encoding failed for \(name)")
+
+            let decoded = try XDRDecoder.decode(OperationResultXDR.self, data: encoded)
+
+            switch (result, decoded) {
+            case (.createAccount, .createAccount),
+                 (.payment, .payment),
+                 (.pathPayment, .pathPayment),
+                 (.changeTrust, .changeTrust),
+                 (.setOptions, .setOptions),
+                 (.manageSellOffer, .manageSellOffer),
+                 (.createPassiveSellOffer, .createPassiveSellOffer),
+                 (.manageBuyOffer, .manageBuyOffer),
+                 (.allowTrust, .allowTrust),
+                 (.accountMerge, .accountMerge),
+                 (.inflation, .inflation),
+                 (.manageData, .manageData),
+                 (.bumpSequence, .bumpSequence),
+                 (.pathPaymentStrictSend, .pathPaymentStrictSend),
+                 (.createClaimableBalance, .createClaimableBalance),
+                 (.claimClaimableBalance, .claimClaimableBalance),
+                 (.beginSponsoringFutureReserves, .beginSponsoringFutureReserves),
+                 (.endSponsoringFutureReserves, .endSponsoringFutureReserves),
+                 (.revokeSponsorship, .revokeSponsorship),
+                 (.clawback, .clawback),
+                 (.clawbackClaimableBalance, .clawbackClaimableBalance),
+                 (.setTrustLineFlags, .setTrustLineFlags),
+                 (.liquidityPoolDeposit, .liquidityPoolDeposit),
+                 (.liquidityPoolWithdraw, .liquidityPoolWithdraw),
+                 (.invokeHostFunction, .invokeHostFunction),
+                 (.extendFootprintTTL, .extendFootprintTTL),
+                 (.restoreFootprint, .restoreFootprint):
+                break // Round-trip matched
+            default:
+                XCTFail("Round-trip mismatch for \(name)")
+            }
+        }
+    }
+
+    func testOperationResultXDRRoundTripBase64() throws {
+        let result = OperationResultXDR.empty(OperationResultCode.badAuth.rawValue)
+
+        guard let base64 = result.xdrEncoded else {
+            XCTFail("Failed to encode to base64")
+            return
+        }
+
+        let decoded = try OperationResultXDR(xdr: base64)
+
+        switch decoded {
+        case .empty(let code):
+            XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
+        default:
+            XCTFail("Expected empty case")
         }
     }
 }

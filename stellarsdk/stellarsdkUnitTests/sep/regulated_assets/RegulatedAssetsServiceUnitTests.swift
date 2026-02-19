@@ -1513,13 +1513,9 @@ final class RegulatedAssetsServiceUnitTests: XCTestCase {
         """
 
         let toml = try StellarToml(fromString: tomlString)
+        let service = try RegulatedAssetsService(tomlData: toml, network: .testnet)
 
-        // SDK has a bug: the throwing failable initializer doesn't catch errors properly in the if-let statement
-        // It should skip invalid assets, but instead it throws. This is a language behavior with throwing failable inits.
-        // Test that it throws for now, documenting this as a bug.
-        XCTAssertThrowsError(try RegulatedAssetsService(tomlData: toml, network: .testnet)) { error in
-            // Expected to throw when encountering invalid issuer ID
-        }
+        XCTAssertEqual(service.regulatedAssets.count, 0, "Invalid issuer ID should be ignored")
     }
 
     func testRegulatedAssetWithTooLongAssetCode() throws {

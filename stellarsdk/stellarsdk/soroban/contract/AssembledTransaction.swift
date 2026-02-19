@@ -304,12 +304,7 @@ public class AssembledTransaction {
         }
         
         let allNeededSigners = try needsNonInvokerSigningBy()
-        var neededAccountSigners:[String] = []
-        for signer in allNeededSigners {
-            if signer.starts(with: "C") {
-                neededAccountSigners.append(signer)
-            }
-        }
+        let neededAccountSigners = allNeededSigners.filter { !$0.starts(with: "C") }
         if !neededAccountSigners.isEmpty {
             throw AssembledTransactionError.multipleSignersRequired(message: "Transaction requires signatures from multiple signers. See `needsNonInvokerSigningBy` for details.")
         }
@@ -356,8 +351,8 @@ public class AssembledTransaction {
             throw AssembledTransactionError.unexpectedTxType(message: "Unexpected Transaction type; no operations found.")
         }
         var needed:[String] = []
-        guard let firstOp = ops.first, let invokeHostFuncOp = firstOp as? InvokeHostFunctionOperation else {
-            throw AssembledTransactionError.unexpectedTxType(message: "Unexpected Transaction type; no invoke host function operations found.")
+        guard let invokeHostFuncOp = ops.first as? InvokeHostFunctionOperation else {
+            return needed
         }
         let authEntries = invokeHostFuncOp.auth
         for entry in authEntries {

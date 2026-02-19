@@ -117,8 +117,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
     // MARK: - Build Method Tests
 
     func testBuildWithSimulation() async throws {
-        setupMockForGetAccount()
-        setupMockForSimulateTransaction()
+        setupRpcMock(simulateResponse: .success)
 
         let options = AssembledTransactionOptions(
             clientOptions: clientOptions,
@@ -127,18 +126,13 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             arguments: nil
         )
 
-        do {
-            let tx = try await AssembledTransaction.build(options: options)
-            XCTAssertNotNil(tx)
-            XCTAssertNotNil(tx.raw)
-        } catch {
-            // Expected to fail without full mock setup
-            XCTAssertTrue(true)
-        }
+        let tx = try await AssembledTransaction.build(options: options)
+        XCTAssertNotNil(tx)
+        XCTAssertNotNil(tx.raw)
     }
 
     func testBuildWithoutSimulation() async throws {
-        setupMockForGetAccount()
+        setupRpcMock()
 
         let customMethodOptions = MethodOptions(simulate: false)
         let options = AssembledTransactionOptions(
@@ -147,20 +141,14 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             method: "test"
         )
 
-        do {
-            let tx = try await AssembledTransaction.build(options: options)
-            XCTAssertNotNil(tx)
-            XCTAssertNotNil(tx.raw)
-            XCTAssertNil(tx.simulationResponse)
-        } catch {
-            // Expected to fail without full mock setup
-            XCTAssertTrue(true)
-        }
+        let tx = try await AssembledTransaction.build(options: options)
+        XCTAssertNotNil(tx)
+        XCTAssertNotNil(tx.raw)
+        XCTAssertNil(tx.simulationResponse)
     }
 
     func testBuildWithOpCustomOperation() async throws {
-        setupMockForGetAccount()
-        setupMockForSimulateTransaction()
+        setupRpcMock(simulateResponse: .success)
 
         let operation = try InvokeHostFunctionOperation.forInvokingContract(
             contractId: mockContractId,
@@ -174,14 +162,9 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             method: "custom_function"
         )
 
-        do {
-            let tx = try await AssembledTransaction.buildWithOp(operation: operation, options: options)
-            XCTAssertNotNil(tx)
-            XCTAssertNotNil(tx.raw)
-        } catch {
-            // Expected to fail without full mock setup
-            XCTAssertTrue(true)
-        }
+        let tx = try await AssembledTransaction.buildWithOp(operation: operation, options: options)
+        XCTAssertNotNil(tx)
+        XCTAssertNotNil(tx.raw)
     }
 
     // MARK: - Simulate Method Tests
@@ -206,8 +189,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
     }
 
     func testSimulateWithSuccessResponse() async throws {
-        setupMockForGetAccount()
-        setupMockForSimulateTransactionSuccess()
+        setupRpcMock(simulateResponse: .success)
 
         let options = AssembledTransactionOptions(
             clientOptions: clientOptions,
@@ -215,19 +197,13 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             method: "test"
         )
 
-        do {
-            let tx = try await AssembledTransaction.build(options: options)
-            try await tx.simulate()
-            XCTAssertNotNil(tx.simulationResponse)
-        } catch {
-            // Expected to fail without full mock setup
-            XCTAssertTrue(true)
-        }
+        let tx = try await AssembledTransaction.build(options: options)
+        try await tx.simulate()
+        XCTAssertNotNil(tx.simulationResponse)
     }
 
     func testSimulateWithFailureResponse() async throws {
-        setupMockForGetAccount()
-        setupMockForSimulateTransactionFailure()
+        setupRpcMock(simulateResponse: .failure)
 
         let options = AssembledTransactionOptions(
             clientOptions: clientOptions,
@@ -239,14 +215,13 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             let tx = try await AssembledTransaction.build(options: options)
             try await tx.simulate()
             XCTFail("Expected simulation to fail")
-        } catch {
-            XCTAssertTrue(true)
+        } catch AssembledTransactionError.simulationFailed {
+            // Expected: simulation returns an error
         }
     }
 
     func testSimulateWithRestorePreambleNoPrivateKey() async throws {
-        setupMockForGetAccount()
-        setupMockForSimulateTransactionWithRestorePreamble()
+        setupRpcMock(simulateResponse: .restorePreamble)
 
         let keyPairNoPrivate = try KeyPair(accountId: keyPair.accountId)
         let optionsNoPrivate = ClientOptions(
@@ -267,10 +242,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             try await tx.simulate(restore: true)
             XCTFail("Expected missingPrivateKey error")
         } catch AssembledTransactionError.missingPrivateKey {
-            XCTAssertTrue(true)
-        } catch {
-            // May fail earlier in network call
-            XCTAssertTrue(true)
+            // Expected: source keypair has no private key for auto-restore
         }
     }
 
@@ -296,8 +268,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
     }
 
     func testSignWithoutPrivateKey() async throws {
-        setupMockForGetAccount()
-        setupMockForSimulateTransactionSuccess()
+        setupRpcMock(simulateResponse: .success)
 
         let keyPairNoPrivate = try KeyPair(accountId: keyPair.accountId)
         let optionsNoPrivate = ClientOptions(
@@ -318,10 +289,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             try tx.sign()
             XCTFail("Expected missingPrivateKey error")
         } catch AssembledTransactionError.missingPrivateKey {
-            XCTAssertTrue(true)
-        } catch {
-            // May fail earlier in build
-            XCTAssertTrue(true)
+            // Expected: keypair has no private key
         }
     }
 
@@ -361,13 +329,8 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         tx.tx = try createMockTransaction()
         tx.simulationResponse = createMockSimulationResponseReadCall()
 
-        do {
-            try tx.sign(force: true)
-            XCTAssertNotNil(tx.signed)
-        } catch {
-            // May fail due to incomplete mock setup
-            XCTAssertTrue(true)
-        }
+        try tx.sign(force: true)
+        XCTAssertNotNil(tx.signed)
     }
 
     func testSignWithMultipleSignersRequired() async throws {
@@ -385,13 +348,11 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
 
         do {
             try tx.sign()
-            // Sign might succeed if no contract signers are detected
-            XCTAssertNotNil(tx.signed)
+            XCTFail("Expected multipleSignersRequired error")
         } catch AssembledTransactionError.multipleSignersRequired(let message) {
             XCTAssertTrue(message.contains("multiple signers"))
         } catch {
-            // Expected - mock transaction has complexities
-            XCTAssertTrue(true)
+            XCTFail("Unexpected error: \(error)")
         }
     }
 
@@ -408,13 +369,8 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         tx.tx = try createMockTransaction()
         tx.simulationResponse = createMockSimulationResponseWriteCall()
 
-        do {
-            try tx.sign(force: true)
-            XCTAssertNotNil(tx.signed)
-        } catch {
-            // May fail due to incomplete mock setup
-            XCTAssertTrue(true)
-        }
+        try tx.sign(force: true)
+        XCTAssertNotNil(tx.signed)
     }
 
     func testSignWithCustomKeyPair() async throws {
@@ -430,13 +386,8 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         tx.tx = try createMockTransaction()
         tx.simulationResponse = createMockSimulationResponseWriteCall()
 
-        do {
-            try tx.sign(sourceAccountKeyPair: customKeyPair, force: true)
-            XCTAssertNotNil(tx.signed)
-        } catch {
-            // May fail due to incomplete mock setup
-            XCTAssertTrue(true)
-        }
+        try tx.sign(sourceAccountKeyPair: customKeyPair, force: true)
+        XCTAssertNotNil(tx.signed)
     }
 
     // MARK: - Send Method Tests
@@ -461,8 +412,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
     }
 
     func testSendWithErrorStatus() async throws {
-        setupMockForSendTransactionError()
-        setupMockForGetTransaction()
+        setupRpcMock(sendResponse: .error)
 
         let options = AssembledTransactionOptions(
             clientOptions: clientOptions,
@@ -477,10 +427,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             _ = try await tx.send()
             XCTFail("Expected sendFailed error")
         } catch AssembledTransactionError.sendFailed {
-            XCTAssertTrue(true)
-        } catch {
-            // May fail with network error
-            XCTAssertTrue(true)
+            // Expected: send returns ERROR status
         }
     }
 
@@ -506,12 +453,11 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
     }
 
     func testSignAndSendSuccess() async throws {
-        setupMockForSendTransactionSuccess()
-        setupMockForGetTransactionSuccess()
+        setupRpcMock(sendResponse: .success, getTransactionResponse: .success)
 
         let options = AssembledTransactionOptions(
             clientOptions: clientOptions,
-            methodOptions: methodOptions,
+            methodOptions: MethodOptions(timeoutInSeconds: 10),
             method: "test"
         )
 
@@ -519,24 +465,18 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         tx.tx = try createMockTransaction()
         tx.simulationResponse = createMockSimulationResponseWriteCall()
 
-        do {
-            let response = try await tx.signAndSend(force: true)
-            XCTAssertNotNil(response)
-        } catch {
-            // Expected to fail without full mock infrastructure
-            XCTAssertTrue(true)
-        }
+        let response = try await tx.signAndSend(force: true)
+        XCTAssertNotNil(response)
     }
 
     func testSignAndSendWithCustomKeyPair() async throws {
-        setupMockForSendTransactionSuccess()
-        setupMockForGetTransactionSuccess()
+        setupRpcMock(sendResponse: .success, getTransactionResponse: .success)
 
         let customKeyPair = try KeyPair.generateRandomKeyPair()
 
         let options = AssembledTransactionOptions(
             clientOptions: clientOptions,
-            methodOptions: methodOptions,
+            methodOptions: MethodOptions(timeoutInSeconds: 10),
             method: "test"
         )
 
@@ -544,13 +484,8 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         tx.tx = try createMockTransaction()
         tx.simulationResponse = createMockSimulationResponseWriteCall()
 
-        do {
-            let response = try await tx.signAndSend(sourceAccountKeyPair: customKeyPair, force: true)
-            XCTAssertNotNil(response)
-        } catch {
-            // Expected to fail without full mock infrastructure
-            XCTAssertTrue(true)
-        }
+        let response = try await tx.signAndSend(sourceAccountKeyPair: customKeyPair, force: true)
+        XCTAssertNotNil(response)
     }
 
     // MARK: - GetSimulationData Method Tests
@@ -780,13 +715,8 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         let tx = AssembledTransaction(options: options)
         tx.tx = try createMockTransactionWithAuth()
 
-        do {
-            let signers = try tx.needsNonInvokerSigningBy()
-            XCTAssertGreaterThanOrEqual(signers.count, 0)
-        } catch {
-            // May fail due to complex mock setup
-            XCTAssertTrue(true)
-        }
+        let signers = try tx.needsNonInvokerSigningBy()
+        XCTAssertGreaterThan(signers.count, 0)
     }
 
     func testNeedsNonInvokerSigningByIncludeAlreadySigned() throws {
@@ -799,15 +729,26 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         let tx = AssembledTransaction(options: options)
         tx.tx = try createMockTransactionWithAuth()
 
-        do {
-            let signersExcluded = try tx.needsNonInvokerSigningBy(includeAlreadySigned: false)
-            let signersIncluded = try tx.needsNonInvokerSigningBy(includeAlreadySigned: true)
+        let signersExcluded = try tx.needsNonInvokerSigningBy(includeAlreadySigned: false)
+        let signersIncluded = try tx.needsNonInvokerSigningBy(includeAlreadySigned: true)
 
-            XCTAssertGreaterThanOrEqual(signersIncluded.count, signersExcluded.count)
-        } catch {
-            // May fail due to complex mock setup
-            XCTAssertTrue(true)
-        }
+        XCTAssertGreaterThanOrEqual(signersIncluded.count, signersExcluded.count)
+    }
+
+    func testNeedsNonInvokerSigningByNonInvokeHostFunctionOp() throws {
+        let options = AssembledTransactionOptions(
+            clientOptions: clientOptions,
+            methodOptions: methodOptions,
+            method: "test"
+        )
+
+        let tx = AssembledTransaction(options: options)
+        let account = Account(keyPair: keyPair, sequenceNumber: 12345)
+        let restoreOp = RestoreFootprintOperation()
+        tx.tx = try Transaction(sourceAccount: account, operations: [restoreOp], memo: Memo.none)
+
+        let signers = try tx.needsNonInvokerSigningBy()
+        XCTAssertEqual(signers.count, 0)
     }
 
     // MARK: - SignAuthEntries Method Tests
@@ -849,10 +790,9 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             try await tx.signAuthEntries(signerKeyPair: keyPairNoPrivate)
             XCTFail("Expected missingPrivateKey error")
         } catch AssembledTransactionError.missingPrivateKey {
-            XCTAssertTrue(true)
+            // Expected: keypair has no private key
         } catch {
-            // May fail earlier due to mock setup
-            XCTAssertTrue(true)
+            XCTFail("Unexpected error: \(error)")
         }
     }
 
@@ -874,13 +814,8 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             return signedEntry
         }
 
-        do {
-            try await tx.signAuthEntries(signerKeyPair: keyPair, authorizeEntryCallback: callback)
-            XCTAssertNotNil(tx.tx)
-        } catch {
-            // May fail due to complex mock setup
-            XCTAssertTrue(true)
-        }
+        try await tx.signAuthEntries(signerKeyPair: keyPair, authorizeEntryCallback: callback)
+        XCTAssertNotNil(tx.tx)
     }
 
     func testSignAuthEntriesWithValidUntilLedgerSeq() async throws {
@@ -893,40 +828,27 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         let tx = AssembledTransaction(options: options)
         tx.tx = try createMockTransactionWithAuthForSigner(accountId: keyPair.accountId)
 
-        do {
-            try await tx.signAuthEntries(signerKeyPair: keyPair, validUntilLedgerSeq: 1000000)
-            XCTAssertNotNil(tx.tx)
-        } catch {
-            // May fail due to complex mock setup
-            XCTAssertTrue(true)
-        }
+        try await tx.signAuthEntries(signerKeyPair: keyPair, validUntilLedgerSeq: 1000000)
+        XCTAssertNotNil(tx.tx)
     }
 
     // MARK: - RestoreFootprint Method Tests
 
     func testRestoreFootprint() async throws {
-        setupMockForGetAccount()
-        setupMockForSimulateTransactionSuccess()
-        setupMockForSendTransactionSuccess()
-        setupMockForGetTransactionSuccess()
+        setupRpcMock(simulateResponse: .success, sendResponse: .success, getTransactionResponse: .success)
 
         let restorePreamble = createMockRestorePreamble()
 
         let options = AssembledTransactionOptions(
             clientOptions: clientOptions,
-            methodOptions: methodOptions,
+            methodOptions: MethodOptions(timeoutInSeconds: 10),
             method: "test"
         )
 
         let tx = AssembledTransaction(options: options)
 
-        do {
-            let response = try await tx.restoreFootprint(restorePreamble: restorePreamble)
-            XCTAssertNotNil(response)
-        } catch {
-            // Expected to fail without full mock setup
-            XCTAssertTrue(true)
-        }
+        let response = try await tx.restoreFootprint(restorePreamble: restorePreamble)
+        XCTAssertNotNil(response)
     }
 
     // MARK: - Error Cases Tests
@@ -1033,148 +955,104 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
         XCTAssertEqual(tx.options.methodOptions.timeoutInSeconds, longTimeout)
     }
 
-    // MARK: - Helper Methods
+    // MARK: - Mock Response Type Enums
 
-    private func setupMockForGetAccount() {
-        let handler: MockHandler = { mock, request in
-            mock.statusCode = 200
-            return self.accountResponseJson()
-        }
-
-        let mock = RequestMock(
-            host: "soroban-testnet.stellar.org",
-            path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        )
-
-        ServerMock.add(mock: mock)
+    enum SimulateResponseType {
+        case success
+        case successReadCall
+        case failure
+        case restorePreamble
     }
 
-    private func setupMockForSimulateTransaction() {
-        let handler: MockHandler = { mock, request in
-            mock.statusCode = 200
-            return self.simulateTransactionResponseJson()
-        }
-
-        let mock = RequestMock(
-            host: "soroban-testnet.stellar.org",
-            path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        )
-
-        ServerMock.add(mock: mock)
+    enum SendResponseType {
+        case success
+        case error
     }
 
-    private func setupMockForSimulateTransactionSuccess() {
-        let handler: MockHandler = { mock, request in
-            mock.statusCode = 200
-            return self.simulateTransactionSuccessJson()
-        }
-
-        let mock = RequestMock(
-            host: "soroban-testnet.stellar.org",
-            path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        )
-
-        ServerMock.add(mock: mock)
+    enum GetTransactionResponseType {
+        case success
+        case notFound
     }
 
-    private func setupMockForSimulateTransactionFailure() {
-        let handler: MockHandler = { mock, request in
-            mock.statusCode = 200
-            return self.simulateTransactionFailureJson()
-        }
+    // MARK: - Unified RPC Mock Setup
 
+    /// Sets up a single mock handler that routes JSON-RPC requests by method name.
+    /// This ensures that multiple RPC methods (getLedgerEntries, simulateTransaction,
+    /// sendTransaction, getTransaction, getLatestLedger) all work correctly within
+    /// the same test, because only one RequestMock is registered and it dispatches
+    /// based on the request body content.
+    private func setupRpcMock(
+        simulateResponse: SimulateResponseType? = nil,
+        sendResponse: SendResponseType? = nil,
+        getTransactionResponse: GetTransactionResponseType? = nil
+    ) {
         let mock = RequestMock(
             host: "soroban-testnet.stellar.org",
             path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        )
-
-        ServerMock.add(mock: mock)
-    }
-
-    private func setupMockForSimulateTransactionWithRestorePreamble() {
-        let handler: MockHandler = { mock, request in
+            httpMethod: "POST"
+        ) { mock, request in
             mock.statusCode = 200
-            return self.simulateTransactionWithRestorePreambleJson()
+
+            // Read the request body to determine the JSON-RPC method
+            let bodyString: String?
+            if let bodyData = request.httpBody {
+                bodyString = String(data: bodyData, encoding: .utf8)
+            } else if let stream = request.httpBodyStream {
+                let data = stream.readfully()
+                bodyString = String(data: data, encoding: .utf8)
+            } else {
+                bodyString = nil
+            }
+
+            guard let body = bodyString else {
+                return nil
+            }
+
+            if body.contains("\"getLedgerEntries\"") {
+                return self.getLedgerEntriesAccountJson()
+            }
+
+            if body.contains("\"simulateTransaction\"") {
+                switch simulateResponse {
+                case .success, .successReadCall:
+                    return self.simulateTransactionSuccessJson()
+                case .failure:
+                    return self.simulateTransactionFailureJson()
+                case .restorePreamble:
+                    return self.simulateTransactionWithRestorePreambleJson()
+                case .none:
+                    return nil
+                }
+            }
+
+            if body.contains("\"sendTransaction\"") {
+                switch sendResponse {
+                case .success:
+                    return self.sendTransactionSuccessJson()
+                case .error:
+                    return self.sendTransactionErrorJson()
+                case .none:
+                    return nil
+                }
+            }
+
+            if body.contains("\"getTransaction\"") {
+                switch getTransactionResponse {
+                case .success:
+                    return self.getTransactionSuccessJson()
+                case .notFound:
+                    return self.getTransactionResponseJson()
+                case .none:
+                    return nil
+                }
+            }
+
+            if body.contains("\"getLatestLedger\"") {
+                return self.getLatestLedgerJson()
+            }
+
+            return nil
         }
-
-        let mock = RequestMock(
-            host: "soroban-testnet.stellar.org",
-            path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        )
-
-        ServerMock.add(mock: mock)
-    }
-
-    private func setupMockForSendTransactionSuccess() {
-        let handler: MockHandler = { mock, request in
-            mock.statusCode = 200
-            return self.sendTransactionSuccessJson()
-        }
-
-        let mock = RequestMock(
-            host: "soroban-testnet.stellar.org",
-            path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        )
-
-        ServerMock.add(mock: mock)
-    }
-
-    private func setupMockForSendTransactionError() {
-        let handler: MockHandler = { mock, request in
-            mock.statusCode = 200
-            return self.sendTransactionErrorJson()
-        }
-
-        let mock = RequestMock(
-            host: "soroban-testnet.stellar.org",
-            path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        )
-
-        ServerMock.add(mock: mock)
-    }
-
-    private func setupMockForGetTransaction() {
-        let handler: MockHandler = { mock, request in
-            mock.statusCode = 200
-            return self.getTransactionResponseJson()
-        }
-
-        let mock = RequestMock(
-            host: "soroban-testnet.stellar.org",
-            path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        )
-
-        ServerMock.add(mock: mock)
-    }
-
-    private func setupMockForGetTransactionSuccess() {
-        let handler: MockHandler = { mock, request in
-            mock.statusCode = 200
-            return self.getTransactionSuccessJson()
-        }
-
-        let mock = RequestMock(
-            host: "soroban-testnet.stellar.org",
-            path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        )
 
         ServerMock.add(mock: mock)
     }
@@ -1184,15 +1062,9 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             mock.statusCode = 200
             return self.getLatestLedgerJson()
         }
-
-        let mock = RequestMock(
-            host: "soroban-testnet.stellar.org",
-            path: "*",
-            httpMethod: "POST",
-            mockHandler: handler
-        )
-
-        ServerMock.add(mock: mock)
+        ServerMock.add(mock: RequestMock(
+            host: "soroban-testnet.stellar.org", path: "*", httpMethod: "POST", mockHandler: handler
+        ))
     }
 
     // MARK: - Mock Transaction Helpers
@@ -1634,27 +1506,77 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
 
     // MARK: - Mock JSON Response Helpers
 
-    private func accountResponseJson() -> String {
+    private func getLedgerEntriesAccountJson() -> String {
+        // Build a valid LedgerEntryDataXDR.account XDR to return as a ledger entry
+        let publicKey = keyPair.publicKey
+        let accountEntry = AccountEntryXDR(
+            accountID: publicKey,
+            balance: 100_000_000_0,
+            sequenceNumber: 12345,
+            numSubEntries: 0,
+            homeDomain: "",
+            flags: 0,
+            thresholds: WrappedData4(Data([1, 0, 0, 0])),
+            signers: []
+        )
+        let ledgerEntryData = LedgerEntryDataXDR.account(accountEntry)
+        let xdrBase64 = ledgerEntryData.xdrEncoded!
+
+        // Also need the ledger key for the response
+        let accountKey = LedgerKeyXDR.account(LedgerKeyAccountXDR(accountID: publicKey))
+        let keyBase64 = accountKey.xdrEncoded!
+
         return """
         {
             "jsonrpc": "2.0",
             "id": 1,
             "result": {
-                "id": "\(keyPair.accountId)",
-                "sequence": "12345"
+                "entries": [
+                    {
+                        "key": "\(keyBase64)",
+                        "xdr": "\(xdrBase64)",
+                        "lastModifiedLedgerSeq": 999000
+                    }
+                ],
+                "latestLedger": 1000000
             }
         }
         """
     }
 
+    private func validTransactionDataXdrBase64(includeWriteFootprint: Bool = true) -> String {
+        var readWrite: [LedgerKeyXDR] = []
+        if includeWriteFootprint {
+            readWrite.append(LedgerKeyXDR.contractData(LedgerKeyContractDataXDR(
+                contract: try! SCAddressXDR(contractId: mockContractId),
+                key: SCValXDR.u32(1),
+                durability: .persistent
+            )))
+        }
+        let transactionData = SorobanTransactionDataXDR(
+            resources: SorobanResourcesXDR(
+                footprint: LedgerFootprintXDR(readOnly: [], readWrite: readWrite),
+                instructions: 1000,
+                diskReadBytes: 100,
+                writeBytes: 50
+            ),
+            resourceFee: 10000
+        )
+        return transactionData.xdrEncoded!
+    }
+
     private func simulateTransactionResponseJson() -> String {
+        let txDataXdr = validTransactionDataXdrBase64()
+        let returnValue = SCValXDR.u32(10)
+        let returnValueXdr = returnValue.xdrEncoded!
+
         return """
         {
             "jsonrpc": "2.0",
             "id": 1,
             "result": {
-                "latestLedger": "1000000",
-                "transactionData": "AAAAAAAAAAIAAAAGAAAAAem354u9STQWq5b3Ed1j9tOemvL7xV0NPwhn4gXg0AP8AAAAFAAAAAEAAAAAAAAAAA==",
+                "latestLedger": 1000000,
+                "transactionData": "\(txDataXdr)",
                 "minResourceFee": "10000",
                 "cost": {
                     "cpuInsns": "1000",
@@ -1662,7 +1584,8 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
                 },
                 "results": [
                     {
-                        "xdr": "AAAABQAAAAo="
+                        "auth": [],
+                        "xdr": "\(returnValueXdr)"
                     }
                 ]
             }
@@ -1671,26 +1594,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
     }
 
     private func simulateTransactionSuccessJson() -> String {
-        return """
-        {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "result": {
-                "latestLedger": "1000000",
-                "transactionData": "AAAAAAAAAAIAAAAGAAAAAem354u9STQWq5b3Ed1j9tOemvL7xV0NPwhn4gXg0AP8AAAAFAAAAAEAAAAAAAAAAA==",
-                "minResourceFee": "10000",
-                "cost": {
-                    "cpuInsns": "1000",
-                    "memBytes": "2000"
-                },
-                "results": [
-                    {
-                        "xdr": "AAAABQAAAAo="
-                    }
-                ]
-            }
-        }
-        """
+        return simulateTransactionResponseJson()
     }
 
     private func simulateTransactionFailureJson() -> String {
@@ -1699,7 +1603,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             "jsonrpc": "2.0",
             "id": 1,
             "result": {
-                "latestLedger": "1000000",
+                "latestLedger": 1000000,
                 "error": "Simulation failed: invalid contract"
             }
         }
@@ -1707,14 +1611,15 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
     }
 
     private func simulateTransactionWithRestorePreambleJson() -> String {
+        let txDataXdr = validTransactionDataXdrBase64()
         return """
         {
             "jsonrpc": "2.0",
             "id": 1,
             "result": {
-                "latestLedger": "1000000",
+                "latestLedger": 1000000,
                 "restorePreamble": {
-                    "transactionData": "AAAAAAAAAAIAAAAGAAAAAem354u9STQWq5b3Ed1j9tOemvL7xV0NPwhn4gXg0AP8AAAAFAAAAAEAAAAAAAAAAA==",
+                    "transactionData": "\(txDataXdr)",
                     "minResourceFee": "5000"
                 }
             }
@@ -1730,7 +1635,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             "result": {
                 "status": "PENDING",
                 "hash": "abc123def456",
-                "latestLedger": "1000000",
+                "latestLedger": 1000000,
                 "latestLedgerCloseTime": "1234567890"
             }
         }
@@ -1745,7 +1650,7 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             "result": {
                 "status": "ERROR",
                 "hash": "abc123def456",
-                "latestLedger": "1000000",
+                "latestLedger": 1000000,
                 "latestLedgerCloseTime": "1234567890",
                 "errorResultXdr": "AAAAAAAAAGT////7AAAAAA=="
             }
@@ -1760,8 +1665,10 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             "id": 1,
             "result": {
                 "status": "NOT_FOUND",
-                "latestLedger": "1000000",
-                "latestLedgerCloseTime": "1234567890"
+                "latestLedger": 1000000,
+                "latestLedgerCloseTime": "1234567890",
+                "oldestLedger": 900000,
+                "oldestLedgerCloseTime": "1234500000"
             }
         }
         """
@@ -1774,9 +1681,13 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             "id": 1,
             "result": {
                 "status": "SUCCESS",
-                "latestLedger": "1000000",
+                "latestLedger": 1000000,
                 "latestLedgerCloseTime": "1234567890",
+                "oldestLedger": 900000,
+                "oldestLedgerCloseTime": "1234500000",
                 "applicationOrder": 1,
+                "ledger": 999999,
+                "createdAt": "1234567880",
                 "envelopeXdr": "AAAAAA==",
                 "resultXdr": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAA=",
                 "resultMetaXdr": "AAAAAA=="

@@ -162,6 +162,37 @@ class TxRepTestCase: XCTestCase {
         XCTAssertTrue(txRep.contains("tx.memo.retHash:"))
     }
 
+    func testMemoReturnRoundTrip() throws {
+        let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let account = Account(keyPair: source, sequenceNumber: 500)
+        let destination = try KeyPair(accountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR")
+
+        let payment = try PaymentOperation(
+            sourceAccountId: nil,
+            destinationAccountId: destination.accountId,
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            amount: Decimal(5)
+        )
+
+        let returnData = Data(repeating: 0xAB, count: 32)
+        let transaction = try Transaction(
+            sourceAccount: account,
+            operations: [payment],
+            memo: .returnHash(returnData)
+        )
+
+        let envelope = try transaction.encodedEnvelope()
+        let txRep = try TxRep.toTxRep(transactionEnvelope: envelope)
+        let roundTrippedEnvelope = try TxRep.fromTxRep(txRep: txRep)
+        let roundTrippedTx = try Transaction(envelopeXdr: roundTrippedEnvelope)
+
+        if case .returnHash(let data) = roundTrippedTx.memo {
+            XCTAssertEqual(data, returnData)
+        } else {
+            XCTFail("Expected MEMO_RETURN memo after round-trip")
+        }
+    }
+
     func testFromTxRepBasicTransaction() throws {
         let txRep = """
         type: ENVELOPE_TYPE_TX

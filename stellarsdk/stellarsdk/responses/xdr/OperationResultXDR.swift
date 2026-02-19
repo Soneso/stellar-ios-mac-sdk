@@ -124,84 +124,111 @@ public enum OperationResultXDR: XDRCodable, Sendable {
         switch self {
             case .createAccount(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.accountCreated.rawValue)
                 try container.encode(result)
             case .payment(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.payment.rawValue)
                 try container.encode(result)
             case .pathPayment(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.pathPayment.rawValue)
                 try container.encode(result)
             case .manageSellOffer(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.manageSellOffer.rawValue)
                 try container.encode(result)
             case .manageBuyOffer(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.manageBuyOffer.rawValue)
                 try container.encode(result)
             case .createPassiveSellOffer(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.createPassiveSellOffer.rawValue)
                 try container.encode(result)
             case .setOptions(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.setOptions.rawValue)
                 try container.encode(result)
             case .changeTrust(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.changeTrust.rawValue)
                 try container.encode(result)
             case .allowTrust(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.allowTrust.rawValue)
                 try container.encode(result)
             case .accountMerge(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.accountMerge.rawValue)
                 try container.encode(result)
             case .inflation(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.inflation.rawValue)
                 try container.encode(result)
             case .manageData(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.manageData.rawValue)
                 try container.encode(result)
             case .bumpSequence(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.bumpSequence.rawValue)
                 try container.encode(result)
             case .pathPaymentStrictSend(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.pathPaymentStrictSend.rawValue)
                 try container.encode(result)
             case .createClaimableBalance(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.createClaimableBalance.rawValue)
                 try container.encode(result)
             case .claimClaimableBalance(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.claimClaimableBalance.rawValue)
                 try container.encode(result)
             case .beginSponsoringFutureReserves(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.beginSponsoringFutureReserves.rawValue)
                 try container.encode(result)
             case .endSponsoringFutureReserves(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.endSponsoringFutureReserves.rawValue)
                 try container.encode(result)
             case .revokeSponsorship(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.revokeSponsorship.rawValue)
                 try container.encode(result)
             case .clawback(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.clawback.rawValue)
                 try container.encode(result)
             case .clawbackClaimableBalance(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.clawbackClaimableBalance.rawValue)
                 try container.encode(result)
             case .setTrustLineFlags(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.setTrustLineFlags.rawValue)
                 try container.encode(result)
             case .liquidityPoolDeposit(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.liquidityPoolDeposit.rawValue)
                 try container.encode(result)
             case .liquidityPoolWithdraw(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.liquidityPoolWithdraw.rawValue)
                 try container.encode(result)
             case .invokeHostFunction(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.invokeHostFunction.rawValue)
                 try container.encode(result)
             case .extendFootprintTTL(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.extendFootprintTTL.rawValue)
                 try container.encode(result)
             case .restoreFootprint(let code, let result):
                 try container.encode(code)
+                try container.encode(OperationType.restoreFootprint.rawValue)
                 try container.encode(result)
             case .empty (let code):
                 try container.encode(code)

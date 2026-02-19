@@ -415,9 +415,9 @@ class TxRepErrorHandlingTestCase: XCTestCase {
 
         XCTAssertThrowsError(try TxRep.fromTxRep(txRep: txRep)) { error in
             if case TxRepError.missingValue(let key) = error {
-                XCTAssertTrue(key.contains("memo.return"))
+                XCTAssertTrue(key.contains("memo.retHash"))
             } else {
-                XCTFail("Expected missingValue error for memo.return")
+                XCTFail("Expected missingValue error for memo.retHash")
             }
         }
     }
@@ -429,7 +429,7 @@ class TxRepErrorHandlingTestCase: XCTestCase {
         tx.fee: 100
         tx.seqNum: 46489056724385793
         tx.memo.type: MEMO_RETURN
-        tx.memo.return: not_valid_hex
+        tx.memo.retHash: not_valid_hex
         tx.operations.len: 0
         tx.ext.v: 0
         signatures.len: 0
@@ -437,9 +437,9 @@ class TxRepErrorHandlingTestCase: XCTestCase {
 
         XCTAssertThrowsError(try TxRep.fromTxRep(txRep: txRep)) { error in
             if case TxRepError.invalidValue(let key) = error {
-                XCTAssertTrue(key.contains("memo.return"))
+                XCTAssertTrue(key.contains("memo.retHash"))
             } else {
-                XCTFail("Expected invalidValue error for memo.return")
+                XCTFail("Expected invalidValue error for memo.retHash")
             }
         }
     }
