@@ -10,27 +10,42 @@ import Foundation
 
 public class TransactionV1EnvelopeXDR: NSObject, XDRCodable, @unchecked Sendable {
     public let tx: TransactionXDR
-    public var signatures: [DecoratedSignatureXDR]
-    
+    public var signatures: [DecoratedSignatureXDR] {
+        lock.lock()
+        defer { lock.unlock() }
+        return _signatures
+    }
+    private var _signatures: [DecoratedSignatureXDR]
+    private let lock = NSLock()
+
     public init(tx: TransactionXDR, signatures: [DecoratedSignatureXDR]) {
         self.tx = tx
-        self.signatures = signatures
+        self._signatures = signatures
     }
-    
+
     public required init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
-        
+
         tx = try container.decode(TransactionXDR.self)
-        signatures = try decodeArray(type: DecoratedSignatureXDR.self, dec: decoder)
+        _signatures = try decodeArray(type: DecoratedSignatureXDR.self, dec: decoder)
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
-        
+
         try container.encode(tx)
-        try container.encode(signatures)
+        lock.lock()
+        let sigs = _signatures
+        lock.unlock()
+        try container.encode(sigs)
     }
-    
+
+    public func appendSignature(_ signature: DecoratedSignatureXDR) {
+        lock.lock()
+        defer { lock.unlock() }
+        _signatures.append(signature)
+    }
+
     /// Human readable Stellar account ID of the transaction.
     public var txSourceAccountId: String {
         get {

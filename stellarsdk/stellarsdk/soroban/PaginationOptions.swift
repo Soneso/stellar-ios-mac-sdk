@@ -43,7 +43,7 @@ import Foundation
 /// - [SorobanServer.getEvents] for event queries
 /// - [SorobanServer.getTransactions] for transaction queries
 /// - [SorobanServer.getLedgers] for ledger queries
-public class PaginationOptions {
+public final class PaginationOptions: Sendable {
 
     /// Pagination cursor from previous response for retrieving the next page of results.
     public let cursor:String?

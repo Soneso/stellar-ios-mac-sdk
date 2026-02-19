@@ -10,7 +10,7 @@ import Foundation
 
 /// Enumeration of all Stellar operation types.
 /// Each operation type corresponds to a specific action that can be performed on the Stellar network.
-public enum OperationType: Int32 {
+public enum OperationType: Int32, Sendable {
     /// Creates and funds a new account with a starting balance.
     case accountCreated = 0
     /// Sends native or non-native assets from source account to destination account.

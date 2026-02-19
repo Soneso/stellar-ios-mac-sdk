@@ -48,7 +48,7 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - DataForAccountResponse for the data entry structure
 /// - ManageDataOperation for setting account data
-public class AccountDataStreamItem: @unchecked Sendable {
+public final class AccountDataStreamItem: Sendable {
     private let streamingHelper: StreamingHelper
     private let requestUrl: String
 

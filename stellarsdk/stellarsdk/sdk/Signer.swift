@@ -10,7 +10,7 @@ import Foundation
 
 /// Utility class for creating signer keys used in multi-signature account configurations.
 /// Supports ED25519 public keys, SHA256 hashes, pre-authorized transactions, and signed payloads.
-public class Signer {
+public final class Signer: Sendable {
 
     /// Creates an ED25519 public key signer from a key pair.
     /// - Parameter keyPair: The key pair containing the public key to use as a signer.

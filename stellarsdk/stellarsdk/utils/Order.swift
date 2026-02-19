@@ -20,7 +20,7 @@ import Foundation
 ///     // ...
 /// }
 /// ```
-public enum Order: String {
+public enum Order: String, Sendable {
     /// Ascending order (oldest to newest, chronological).
     case ascending = "asc"
 

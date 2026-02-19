@@ -44,7 +44,7 @@ import Foundation
 /// - [TopicFilter] for combining segment filters
 /// - [EventFilter] for filtering contract events
 /// - [SCValXDR] for Soroban value types
-public class SegmentFilter {
+public final class SegmentFilter: Sendable {
 
     /// Wildcard pattern for matching any value at this segment position.
     ///

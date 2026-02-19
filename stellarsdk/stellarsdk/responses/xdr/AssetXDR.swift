@@ -9,7 +9,7 @@
 import Foundation
 
 
-public struct AssetType {
+public struct AssetType: Sendable {
     public static let ASSET_TYPE_NATIVE: Int32 = 0
     public static let ASSET_TYPE_CREDIT_ALPHANUM4: Int32 = 1
     public static let ASSET_TYPE_CREDIT_ALPHANUM12: Int32 = 2

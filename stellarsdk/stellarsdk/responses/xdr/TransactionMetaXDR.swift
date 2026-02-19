@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum TransactionMetaType: Int32 {
+public enum TransactionMetaType: Int32, Sendable {
     case operations = 0
     case transactionMetaV1 = 1
     case transactionMetaV2 = 2

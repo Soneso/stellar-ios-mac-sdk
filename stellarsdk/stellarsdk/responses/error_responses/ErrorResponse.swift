@@ -95,7 +95,7 @@ public class ErrorResponse: Decodable, @unchecked Sendable {
 ///
 /// Contains transaction-specific debugging data including XDR representations
 /// and result codes from Stellar Core.
-public class ErrorResponseExtras: Decodable, @unchecked Sendable {
+public final class ErrorResponseExtras: Decodable, Sendable {
     /// Base64-encoded XDR of the transaction envelope that failed.
     public let envelopeXdr: String?
 
@@ -136,7 +136,7 @@ public class ErrorResponseExtras: Decodable, @unchecked Sendable {
 /// - tx_insufficient_balance: Not enough XLM to pay fee
 ///
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ErrorResultCodes: Decodable, @unchecked Sendable {
+public final class ErrorResultCodes: Decodable, Sendable {
     /// Transaction-level result code (e.g., "tx_failed", "tx_bad_seq").
     public let transaction: String?
 

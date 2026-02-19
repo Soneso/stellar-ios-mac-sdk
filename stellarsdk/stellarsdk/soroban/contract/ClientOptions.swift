@@ -35,19 +35,19 @@ import Foundation
 /// See also:
 /// - [SorobanClient.forClientOptions] for creating client instances
 /// - [MethodOptions] for transaction-specific settings
-public class ClientOptions {
-    
+public final class ClientOptions: Sendable {
+
     /// Keypair of the Stellar account that will send this transaction. If restore is set to true, and restore is needed, the keypair must contain the private key (secret seed) otherwise the public key is sufficient.
-    public var sourceAccountKeyPair:KeyPair
-    
+    public let sourceAccountKeyPair:KeyPair
+
     /// The address of the contract the client will interact with.
-    public var contractId:String
-    
+    public let contractId:String
+
     /// The Stellar network this contract is deployed
-    public var network:Network
-    
+    public let network:Network
+
     /// The URL of the RPC instance that will be used to interact with this contract.
-    public var rpcUrl:String
+    public let rpcUrl:String
     
     /// Enable soroban server logging (helpful for debugging). Default: false.
     public let enableServerLogging:Bool

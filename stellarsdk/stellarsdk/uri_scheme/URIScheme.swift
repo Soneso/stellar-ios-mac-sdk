@@ -21,7 +21,7 @@ public let PayOperation = "pay?"
 public let MessageMaximumLength = 300
 
 /// An enum used to differentiate between a successful and a failed transaction setup.
-public enum SetupTransactionXDREnum {
+public enum SetupTransactionXDREnum: Sendable {
     /// Successfully parsed and constructed the transaction XDR from the URI.
     case success(transactionXDR: TransactionXDR?)
     /// Failed to setup the transaction from the URI.
@@ -29,7 +29,7 @@ public enum SetupTransactionXDREnum {
 }
 
 /// An enum used to differentiate between a successful and a failed transaction submission.
-public enum SubmitTransactionEnum {
+public enum SubmitTransactionEnum: Sendable {
     /// Transaction submitted successfully to the network.
     case success
     /// Transaction requires a memo for the destination account per SEP-0029.
@@ -39,7 +39,7 @@ public enum SubmitTransactionEnum {
 }
 
 /// Closure type for transaction confirmation callbacks. Returns true to proceed, false to cancel.
-public typealias TransactionConfirmationClosure = ((TransactionXDR) -> (Bool))
+public typealias TransactionConfirmationClosure = @Sendable (TransactionXDR) -> (Bool)
 
 /// Implements SEP-0007 - URI Scheme to Facilitate Delegated Signing.
 ///
@@ -70,9 +70,11 @@ public typealias TransactionConfirmationClosure = ((TransactionXDR) -> (Bool))
 ///
 /// See also:
 /// - [SEP-0007 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md)
-public class URIScheme: NSObject {
+public final class URIScheme: Sendable {
     let sdk = StellarSDK()
-    
+
+    public init() {}
+
     /// Generates a SEP-0007 compliant URI to request transaction signing.
     ///
     /// All parameter values are URL-encoded automatically.

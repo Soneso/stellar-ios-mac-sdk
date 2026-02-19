@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct MemoType {
+public struct MemoType: Sendable {
     static let MEMO_TYPE_NONE: Int32 = 0
     static let MEMO_TYPE_TEXT: Int32 = 1
     static let MEMO_TYPE_ID: Int32 = 2

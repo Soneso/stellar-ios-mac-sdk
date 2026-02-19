@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for payment path finding requests.
-public enum PaymentPathsResponseEnum {
+public enum PaymentPathsResponseEnum: Sendable {
     /// Successfully found payment paths with routing details.
     case success(details: FindPaymentPathsResponse)
     /// Request failed with Horizon error.

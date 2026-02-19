@@ -11,7 +11,7 @@ import Foundation
 /// Represents a claimant predicate that defines conditions for claiming a claimable balance.
 /// Predicates can be unconditional or time-based, and can be combined using logical operators.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ClaimantPredicateResponse: NSObject, Decodable, @unchecked Sendable {
+public final class ClaimantPredicateResponse: Decodable, Sendable {
 
     /// Indicates whether the claimable balance can be claimed without any conditions.
     public let unconditional: Bool?

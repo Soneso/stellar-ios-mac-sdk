@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum BumpSequenceResultCode: Int32 {
+public enum BumpSequenceResultCode: Int32, Sendable {
     // codes considered as "success" for the operation
     case success = 0 // success
     

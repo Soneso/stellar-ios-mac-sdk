@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum CreateAccountResultCode: Int32 {
+public enum CreateAccountResultCode: Int32, Sendable {
     // codes considered as "success" for the operation
     case success = 0 // account was created
     

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Streams offer data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class OffersStreamItem: @unchecked Sendable {
+public final class OffersStreamItem: Sendable {
     private let streamingHelper: StreamingHelper
     private let requestUrl: String
 

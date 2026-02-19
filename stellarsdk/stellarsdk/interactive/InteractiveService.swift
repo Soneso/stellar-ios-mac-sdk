@@ -1,7 +1,7 @@
 import Foundation
 
 /// Result enum for initializing interactive service from a domain.
-public enum InteractiveServiceForDomainEnum {
+public enum InteractiveServiceForDomainEnum: Sendable {
     /// Successfully created interactive service instance.
     case success(response: InteractiveService)
     /// Failed to initialize service from domain.
@@ -9,7 +9,7 @@ public enum InteractiveServiceForDomainEnum {
 }
 
 /// Result enum for SEP-24 info endpoint requests.
-public enum Sep24InfoResponseEnum {
+public enum Sep24InfoResponseEnum: Sendable {
     /// Successfully retrieved anchor's supported assets and features.
     case success(response: Sep24InfoResponse)
     /// Request failed with interactive service error.
@@ -17,7 +17,7 @@ public enum Sep24InfoResponseEnum {
 }
 
 /// Result enum for SEP-24 fee endpoint requests.
-public enum Sep24FeeResponseEnum {
+public enum Sep24FeeResponseEnum: Sendable {
     /// Successfully retrieved fee information for deposit or withdrawal.
     case success(response: Sep24FeeResponse)
     /// Request failed with interactive service error.
@@ -25,7 +25,7 @@ public enum Sep24FeeResponseEnum {
 }
 
 /// Result enum for SEP-24 interactive deposit or withdrawal initiation.
-public enum Sep24InteractiveResponseEnum {
+public enum Sep24InteractiveResponseEnum: Sendable {
     /// Successfully initiated interactive flow, returns URL for user interaction.
     case success(response: Sep24InteractiveResponse)
     /// Request failed with interactive service error.
@@ -33,7 +33,7 @@ public enum Sep24InteractiveResponseEnum {
 }
 
 /// Result enum for SEP-24 transactions list endpoint requests.
-public enum Sep24TransactionsResponseEnum {
+public enum Sep24TransactionsResponseEnum: Sendable {
     /// Successfully retrieved list of transactions.
     case success(response: Sep24TransactionsResponse)
     /// Request failed with interactive service error.
@@ -41,7 +41,7 @@ public enum Sep24TransactionsResponseEnum {
 }
 
 /// Result enum for SEP-24 single transaction status requests.
-public enum Sep24TransactionResponseEnum {
+public enum Sep24TransactionResponseEnum: Sendable {
     /// Successfully retrieved transaction status and details.
     case success(response: Sep24TransactionResponse)
     /// Request failed with interactive service error.
@@ -218,10 +218,10 @@ public enum Sep24TransactionResponseEnum {
 /// - [SEP-0024 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
 /// - [WebAuthenticator] for SEP-0010 authentication
 /// - [StellarToml] for service discovery
-public class InteractiveService: NSObject {
+public final class InteractiveService: @unchecked Sendable {
 
     /// The base URL of the SEP-24 interactive service endpoint for hosted deposit and withdrawal.
-    public var serviceAddress: String
+    public let serviceAddress: String
     private let serviceHelper: ServiceHelper
     private let jsonDecoder = JSONDecoder()
 

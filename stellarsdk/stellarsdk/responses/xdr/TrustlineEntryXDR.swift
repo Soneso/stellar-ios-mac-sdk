@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct TrustLineFlags {
+public struct TrustLineFlags: Sendable {
     // issuer has authorized account to perform transactions with its credit
     public static let AUTHORIZED_FLAG: UInt32 = 1
     // issuer has authorized account to maintain and reduce liabilities for its

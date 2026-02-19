@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a Stellar path payment operation guaranteeing exact destination amount received.
-public class PathPaymentStrictReceiveOperation:PathPaymentOperation
+public class PathPaymentStrictReceiveOperation:PathPaymentOperation, @unchecked Sendable
 {
     
     /// Creates a new PathPaymentStrictReceiveOperation object.

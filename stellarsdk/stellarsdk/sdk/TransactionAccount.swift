@@ -9,7 +9,7 @@
 import Foundation
 
 /// Specifies protocol for Account object used when creating an Transaction object.
-public protocol TransactionAccount {
+public protocol TransactionAccount: Sendable {
     
     /// Returns keypair associated with this Account.
     var keyPair: KeyPair { get }

@@ -9,7 +9,7 @@
 import Foundation
 
 /// Errors that occur during WebAuthenticator initialization.
-public enum WebAuthenticatorError: Error {
+public enum WebAuthenticatorError: Error, Sendable {
     /// The provided domain is not a valid URL or domain format.
     case invalidDomain
     /// The stellar.toml file could not be parsed or is malformed.
@@ -19,7 +19,7 @@ public enum WebAuthenticatorError: Error {
 }
 
 /// Challenge validation errors.
-public enum ChallengeValidationError: Error {
+public enum ChallengeValidationError: Error, Sendable {
     /// The transaction sequence number is not 0 as required by SEP-10.
     case sequenceNumberNot0
     /// The source account of an operation does not match the expected account.
@@ -53,7 +53,7 @@ public enum ChallengeValidationError: Error {
 }
 
 /// Possible errors received from a JWT token response.
-public enum GetJWTTokenError: Error {
+public enum GetJWTTokenError: Error, Sendable {
     /// Network or server request failed during SEP-10 authentication flow.
     case requestError(HorizonRequestError)
     /// Failed to parse server response or transaction data.
@@ -65,7 +65,7 @@ public enum GetJWTTokenError: Error {
 }
 
 /// Result enum for creating a WebAuthenticator instance from a domain's stellar.toml file.
-public enum WebAuthenticatorForDomainEnum {
+public enum WebAuthenticatorForDomainEnum: Sendable {
     /// Successfully created WebAuthenticator instance with endpoint from stellar.toml.
     case success(response: WebAuthenticator)
     /// Failed to create authenticator due to invalid domain, malformed TOML, or missing WEB_AUTH_ENDPOINT.
@@ -73,7 +73,7 @@ public enum WebAuthenticatorForDomainEnum {
 }
 
 /// Result enum for SEP-10 challenge transaction requests.
-public enum ChallengeResponseEnum {
+public enum ChallengeResponseEnum: Sendable {
     /// Successfully retrieved challenge transaction from authentication server.
     case success(challenge: String)
     /// Failed to retrieve challenge due to network or server error.
@@ -81,7 +81,7 @@ public enum ChallengeResponseEnum {
 }
 
 /// Result enum for submitting signed challenge transactions.
-public enum SendChallengeResponseEnum {
+public enum SendChallengeResponseEnum: Sendable {
     /// Successfully submitted signed challenge and received JWT authentication token.
     case success(jwtToken: String)
     /// Failed to submit signed challenge due to invalid signature or server error.
@@ -97,7 +97,7 @@ public enum GetJWTTokenResponseEnum: Sendable {
 }
 
 /// Result enum for challenge transaction validation.
-public enum ChallengeValidationResponseEnum {
+public enum ChallengeValidationResponseEnum: Sendable {
     /// Challenge transaction passed all SEP-10 validation requirements.
     case success
     /// Challenge validation failed due to security or protocol violation.
@@ -234,7 +234,7 @@ public enum ChallengeValidationResponseEnum {
 /// See also:
 /// - [SEP-0010 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md)
 /// - [StellarToml] for discovering authentication endpoints
-public class WebAuthenticator: @unchecked Sendable {
+public final class WebAuthenticator: Sendable {
     /// The URL of the SEP-10 web authentication endpoint for obtaining JWT tokens.
     public let authEndpoint: String
     /// The server's public signing key used to validate challenge transaction signatures.

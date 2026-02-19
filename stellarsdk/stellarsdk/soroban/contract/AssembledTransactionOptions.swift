@@ -9,7 +9,7 @@
 import Foundation
 
 /// Configuration options for assembling and simulating Soroban smart contract transactions.
-public class AssembledTransactionOptions {
+public final class AssembledTransactionOptions: Sendable {
 
     /// Client configuration including RPC endpoint, network, and source account.
     public let clientOptions:ClientOptions

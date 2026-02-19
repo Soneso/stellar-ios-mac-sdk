@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for transaction details requests.
-public enum TransactionDetailsResponseEnum {
+public enum TransactionDetailsResponseEnum: Sendable {
     /// Successfully retrieved transaction details from Horizon.
     case success(details: TransactionResponse)
     /// Failed to retrieve transaction details due to a network or server error.
@@ -19,7 +19,7 @@ public enum TransactionDetailsResponseEnum {
 /// Result enum for transaction submission requests.
 ///
 /// Includes a special case for SEP-29 compliance when a destination requires a memo.
-public enum TransactionPostResponseEnum {
+public enum TransactionPostResponseEnum: Sendable {
     /// Successfully submitted transaction and received confirmation from Horizon.
     case success(details: SubmitTransactionResponse)
     /// Transaction rejected because destination account requires a memo per SEP-29.
@@ -31,7 +31,7 @@ public enum TransactionPostResponseEnum {
 /// Result enum for async transaction submission requests.
 ///
 /// Async submission returns immediately after validation without waiting for ledger inclusion.
-public enum TransactionPostAsyncResponseEnum {
+public enum TransactionPostAsyncResponseEnum: Sendable {
     /// Successfully validated and queued transaction for async processing.
     case success(details: SubmitTransactionAsyncResponse)
     /// Transaction rejected because destination account requires a memo per SEP-29.
@@ -41,7 +41,7 @@ public enum TransactionPostAsyncResponseEnum {
 }
 
 /// Result enum for SEP-29 memo requirement checks.
-public enum CheckMemoRequiredResponseEnum {
+public enum CheckMemoRequiredResponseEnum: Sendable {
     /// Destination accounts do not require memos per SEP-29.
     case noMemoRequired
     /// Destination account has config.memo_required set and requires a memo.
@@ -51,7 +51,7 @@ public enum CheckMemoRequiredResponseEnum {
 }
 
 /// Defines transaction stream filter options for real-time transaction updates.
-public enum TransactionsChange {
+public enum TransactionsChange: Sendable {
     /// Streams all transactions from the network
     case allTransactions(cursor:String?)
     /// Streams transactions where the specified account is the source

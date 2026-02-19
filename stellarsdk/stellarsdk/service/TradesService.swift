@@ -9,7 +9,7 @@
 import Foundation
 
 /// Defines trade stream filter options for real-time DEX trade updates.
-public enum TradesChange {
+public enum TradesChange: Sendable {
     /// Streams all trades filtered by base and counter asset pair
     case allTrades(baseAssetType:String?,
                    baseAssetCode:String?,

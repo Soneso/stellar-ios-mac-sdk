@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum ClaimPredicateType: Int32 {
+public enum ClaimPredicateType: Int32, Sendable {
     case claimPredicateUnconditional = 0
     case claimPredicateAnd = 1
     case claimPredicateOr = 2

@@ -9,7 +9,7 @@
 import Foundation
 
 /// Errors that can occur when creating fee bump transactions.
-public enum FeeBumpTransactionError: Error {
+public enum FeeBumpTransactionError: Error, Sendable {
     /// Fee is smaller than the minimum base fee required by the network.
     case feeSmallerThanBaseFee(message: String)
     /// Fee is smaller than the inner transaction's fee.
@@ -18,7 +18,7 @@ public enum FeeBumpTransactionError: Error {
 
 /// Represents a Fee Bump Transaction in Stellar network.
 /// See https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md
-public class FeeBumpTransaction {
+public class FeeBumpTransaction: @unchecked Sendable {
 
     /// The maximum fee willing to pay for the fee bump transaction in stroops.
     public let fee:UInt64
@@ -29,17 +29,26 @@ public class FeeBumpTransaction {
     /// The transaction being fee-bumped.
     public let innerTransaction:Transaction
     /// The XDR representation of this fee bump transaction.
-    public private(set) var feeBumpTransactionXDR:FeeBumpTransactionXDR
+    public var feeBumpTransactionXDR:FeeBumpTransactionXDR {
+        lock.lock()
+        defer { lock.unlock() }
+        return _feeBumpTransactionXDR
+    }
     /// The XDR representation of the inner transaction.
-    public private(set) var innerTransactionXDR:FeeBumpTransactionXDR.InnerTransactionXDR
+    public let innerTransactionXDR:FeeBumpTransactionXDR.InnerTransactionXDR
 
     /// The base64-encoded XDR string of this fee bump transaction.
     public var xdrEncoded: String? {
         get {
-            return feeBumpTransactionXDR.xdrEncoded
+            lock.lock()
+            defer { lock.unlock() }
+            return _feeBumpTransactionXDR.xdrEncoded
         }
     }
-    
+
+    private var _feeBumpTransactionXDR:FeeBumpTransactionXDR
+    private let lock = NSLock()
+
     /// Creates a new FeeBumpTransaction object.
     ///
     /// - Parameter sourceAccount: Account that originates the transaction.
@@ -59,54 +68,64 @@ public class FeeBumpTransaction {
         if fee < innerBaseFee {
             throw FeeBumpTransactionError.feeSmallerThanBaseFee(message: "base fee cannot be lower than provided inner transaction  fee :\(innerBaseFee)")
         }
-        
-        
+
+
         self.sourceAccount = sourceAccount
         self.sourceAccountId = sourceAccount.accountId
         self.fee = fee
         self.innerTransaction = innerTransaction
         self.innerTransactionXDR = try FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerTransaction.transactionXDR.toEnvelopeV1XDR())
-        
-        self.feeBumpTransactionXDR = FeeBumpTransactionXDR(sourceAccount: sourceAccount.xdr, innerTx: self.innerTransactionXDR, fee: self.fee)
-        
+
+        self._feeBumpTransactionXDR = FeeBumpTransactionXDR(sourceAccount: sourceAccount.xdr, innerTx: self.innerTransactionXDR, fee: self.fee)
+
         self.sourceAccount.incrementSequenceNumber()
-        
+
     }
-    
+
     /// Each transaction needs to be signed before sending it to the stellar network.
     ///
     /// - Parameter keyPair: key pair to be used as a signer. Must containing the private key.
     /// - Parameter network: Network to specify which Stellar network you want to use.
     ///
     public func sign(keyPair:KeyPair, network:Network) throws {
-        
+
         if (keyPair.privateKey == nil) {
             throw StellarSDKError.invalidArgument(message: "KeyPair must contain the private key to be able to sign the transaction.")
         }
-        
-        try self.feeBumpTransactionXDR.sign(keyPair: keyPair, network: network)
+
+        lock.lock()
+        defer { lock.unlock() }
+        try self._feeBumpTransactionXDR.sign(keyPair: keyPair, network: network)
     }
 
     /// Adds a pre-computed signature to the fee bump transaction without requiring the private key.
     public func addSignature(signature:DecoratedSignatureXDR) -> Void {
-        self.feeBumpTransactionXDR.addSignature(signature: signature)
+        lock.lock()
+        defer { lock.unlock() }
+        self._feeBumpTransactionXDR.addSignature(signature: signature)
     }
 
     /// Returns the base64-encoded transaction envelope XDR for submission to the network.
     public func encodedEnvelope() throws -> String {
-        return try feeBumpTransactionXDR.encodedEnvelope()
+        lock.lock()
+        defer { lock.unlock() }
+        return try _feeBumpTransactionXDR.encodedEnvelope()
     }
 
     /// Computes and returns the transaction hash as a hex-encoded string for the specified network.
     public func getTransactionHash(network:Network) throws -> String {
-        let transactionHash = try [UInt8](feeBumpTransactionXDR.hash(network: network))
+        lock.lock()
+        defer { lock.unlock() }
+        let transactionHash = try [UInt8](_feeBumpTransactionXDR.hash(network: network))
         let str = Data(transactionHash).base16EncodedString()
         return str
     }
 
     /// Computes and returns the transaction hash as Data for the specified network.
     public func getTransactionHashData(network:Network) throws -> Data {
-        let transactionHash = try [UInt8](feeBumpTransactionXDR.hash(network: network))
+        lock.lock()
+        defer { lock.unlock() }
+        let transactionHash = try [UInt8](_feeBumpTransactionXDR.hash(network: network))
         let data = Data(transactionHash)
         return data
     }

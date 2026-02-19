@@ -9,7 +9,7 @@
 import Foundation
 
 /// Defines effect stream filter options for real-time effect updates.
-public enum EffectsChange {
+public enum EffectsChange: Sendable {
     /// Streams all effects from the network
     case allEffects(cursor:String?)
     /// Streams effects that changed the specified account

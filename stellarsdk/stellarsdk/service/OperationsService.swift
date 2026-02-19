@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for operation details requests.
-public enum OperationDetailsResponseEnum {
+public enum OperationDetailsResponseEnum: Sendable {
     /// Successfully retrieved operation details from Horizon.
     case success(details: OperationResponse)
     /// Failed to retrieve operation details due to a network or server error.
@@ -17,7 +17,7 @@ public enum OperationDetailsResponseEnum {
 }
 
 /// Defines operation stream filter options for real-time operation updates.
-public enum OperationsChange {
+public enum OperationsChange: Sendable {
     /// Streams all operations from the network
     case allOperations(cursor:String?)
     /// Streams operations where the specified account is the source

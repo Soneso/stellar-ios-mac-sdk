@@ -9,7 +9,7 @@
 import Foundation
 
 /// Restores archived contract state entries in Soroban to active state.
-public class RestoreFootprintOperation:Operation {
+public class RestoreFootprintOperation:Operation, @unchecked Sendable {
     
     public override init(sourceAccountId:String? = nil) {
         super.init(sourceAccountId: sourceAccountId)

@@ -174,7 +174,8 @@ import Foundation
 /// To see an even more complicated example, where Alice swaps with Bob but the
 /// transaction is invoked by yet another party, check out in the SorobanClientTest.atomicSwapTest()
 ///
-public class AssembledTransaction {
+// @unchecked Sendable: Sequential workflow object (build -> simulate -> sign -> send). Single-owner, not shared across threads.
+public final class AssembledTransaction: @unchecked Sendable {
 
     /// Unconstructed transaction envelope that can be modified before simulation.
     public var raw:Transaction?

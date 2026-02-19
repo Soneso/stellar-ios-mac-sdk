@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for SEP-30 account operations (register, update, get, delete).
-public enum Sep30AccountResponseEnum {
+public enum Sep30AccountResponseEnum: Sendable {
     /// Successfully completed account operation, returns account details.
     case success(response: Sep30AccountResponse)
     /// Request failed with recovery service error.
@@ -17,7 +17,7 @@ public enum Sep30AccountResponseEnum {
 }
 
 /// Result enum for SEP-30 transaction signing requests.
-public enum Sep30SignatureResponseEnum {
+public enum Sep30SignatureResponseEnum: Sendable {
     /// Successfully signed transaction, returns signature and network passphrase.
     case success(response: Sep30SignatureResponse)
     /// Request failed with recovery service error.
@@ -25,7 +25,7 @@ public enum Sep30SignatureResponseEnum {
 }
 
 /// Result enum for SEP-30 list accounts requests.
-public enum Sep30AccountsResponseEnum {
+public enum Sep30AccountsResponseEnum: Sendable {
     /// Successfully retrieved list of accessible accounts.
     case success(response: Sep30AccountsResponse)
     /// Request failed with recovery service error.
@@ -66,10 +66,10 @@ public enum Sep30AccountsResponseEnum {
 /// See also:
 /// - [SEP-0030 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md)
 /// - [WebAuthenticator] for SEP-10 authentication
-public class RecoveryService: NSObject {
+public final class RecoveryService: @unchecked Sendable {
 
     /// The base URL of the SEP-30 account recovery service endpoint for multi-party account recovery.
-    public var serviceAddress: String
+    public let serviceAddress: String
     private let serviceHelper: ServiceHelper
     private let jsonDecoder = JSONDecoder()
 

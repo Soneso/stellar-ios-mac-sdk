@@ -9,7 +9,7 @@
 import Foundation
 
 /// Protocol defining the interface for transaction memos that attach messages or data to Stellar transactions.
-public protocol MemoProtocol {
+public protocol MemoProtocol: Sendable {
     /// Converts the memo to its XDR representation for network transmission.
     func toXDR() -> MemoXDR
     /// Creates a text memo from the provided string.
@@ -23,7 +23,7 @@ public protocol MemoProtocol {
 }
 
 /// Protocol for memos containing hash values with hex encoding capabilities.
-public protocol MemoHashProtocol {
+public protocol MemoHashProtocol: Sendable {
     /// Returns the hex-encoded string representation of the hash value.
     func hexValue() throws -> String
     /// Returns the hex-encoded hash value with leading zeros removed.

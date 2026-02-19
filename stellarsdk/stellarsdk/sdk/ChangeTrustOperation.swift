@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a change trust operation. Creates, updates, or deletes a trustline.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ChangeTrustOperation:Operation {
+public class ChangeTrustOperation:Operation, @unchecked Sendable {
 
     /// The asset of the trustline.
     public let asset:ChangeTrustAsset

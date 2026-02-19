@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a Stellar manage sell offer operation creating or modifying offers with fixed sell amounts.
-public class ManageSellOfferOperation:ManageOfferOperation {
+public class ManageSellOfferOperation:ManageOfferOperation, @unchecked Sendable {
     
     /// Creates a new ManageOfferOperation object.
     ///

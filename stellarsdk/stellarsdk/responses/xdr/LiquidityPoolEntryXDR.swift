@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum LiquidityPoolType: Int32 {
+public enum LiquidityPoolType: Int32, Sendable {
     case constantProduct = 0
 }
 

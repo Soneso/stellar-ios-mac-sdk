@@ -9,12 +9,12 @@
 import Foundation
 
 /// see https://github.com/stellar/stellar-protocol/blob/master/core/cap-0027.md
-public class MuxedAccount: Account
+public class MuxedAccount: Account, @unchecked Sendable
 {
     /// The optional subaccount ID for multiplexed accounts (CAP-27).
-    public private(set) var id: UInt64?
+    public let id: UInt64?
     /// The XDR representation of this muxed account.
-    public private(set) var xdr: MuxedAccountXDR
+    public let xdr: MuxedAccountXDR
 
     /// Human readable Stellar ed25519 or med25519 account ID.
     public override var accountId: String {

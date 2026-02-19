@@ -40,7 +40,7 @@ import Foundation
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - AccountResponse for the account data structure
-public class AccountStreamItem: @unchecked Sendable {
+public final class AccountStreamItem: Sendable {
     private let streamingHelper: StreamingHelper
     private let requestUrl: String
 

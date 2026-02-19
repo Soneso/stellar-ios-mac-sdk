@@ -9,7 +9,7 @@
 import Foundation
 
 /// Errors that can occur when making requests to the Horizon API server.
-public enum HorizonRequestError: Error {
+public enum HorizonRequestError: Error, Sendable {
     /// The request failed due to a network or connection error.
     case requestFailed(message: String, horizonErrorResponse:ErrorResponse?)
     /// The request was invalid or malformed. HTTP status code 400.

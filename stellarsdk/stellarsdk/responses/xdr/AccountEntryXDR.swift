@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct AccountFlags {
+public struct AccountFlags: Sendable {
     // Flags set on issuer accounts
     // trust lines are created with authorized set to "false" requiring
     // the issuer to set it for each trust line

@@ -37,7 +37,7 @@ import Foundation
 ///
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
-public enum Network {
+public enum Network: Sendable {
     /// The Stellar public network (mainnet) - "Public Global Stellar Network ; September 2015"
     case `public`
 

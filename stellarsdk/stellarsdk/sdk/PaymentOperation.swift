@@ -46,7 +46,7 @@ import Foundation
 ///
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class PaymentOperation:Operation {
+public class PaymentOperation:Operation, @unchecked Sendable {
 
     /// The destination account that will receive the payment.
     public let destinationAccountId:String

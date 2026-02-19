@@ -11,7 +11,7 @@ import Foundation
 /// Enumeration of all available effect types on the Stellar network.
 /// Effects represent specific changes that occur to the ledger as a result of operations in successfully submitted transactions.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public enum EffectType: Int {
+public enum EffectType: Int, Sendable {
     /// Account was created with a starting balance.
     case accountCreated = 0
     /// Account was removed from the ledger.

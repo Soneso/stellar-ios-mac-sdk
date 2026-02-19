@@ -1,7 +1,7 @@
 import Foundation
 
 /// Streams trade data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class TradesStreamItem: @unchecked Sendable {
+public final class TradesStreamItem: Sendable {
     private let streamingHelper: StreamingHelper
     private let requestUrl: String
 

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum RevokeSponsorshipType: Int32 {
+public enum RevokeSponsorshipType: Int32, Sendable {
     case revokeSponsorshipLedgerEntry = 0
     case revokeSponsorshipSignerEntry = 1
 }

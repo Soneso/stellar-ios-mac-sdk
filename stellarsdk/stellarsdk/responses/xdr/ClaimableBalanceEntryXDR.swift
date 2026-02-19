@@ -8,11 +8,11 @@
 
 import Foundation
 
-public enum ClaimableBalanceIDType: Int32 {
+public enum ClaimableBalanceIDType: Int32, Sendable {
     case claimableBalanceIDTypeV0 = 0
 }
 
-public struct ClaimableBalanceFlags {
+public struct ClaimableBalanceFlags: Sendable {
     
     // If set, the issuer account of the asset held by the claimable balance may
     // clawback the claimable balance

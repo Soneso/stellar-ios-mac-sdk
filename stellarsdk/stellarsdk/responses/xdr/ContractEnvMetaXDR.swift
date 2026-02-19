@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum SCEnvMetaKind: Int32 {
+public enum SCEnvMetaKind: Int32, Sendable {
     case interfaceVersion = 0
 }
 

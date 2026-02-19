@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a claimant authorized to claim a claimable balance with optional predicates.
-public class Claimant {
+public final class Claimant: Sendable {
 
     /// The account ID that can claim the balance.
     public final let destination:String

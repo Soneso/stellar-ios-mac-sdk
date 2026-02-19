@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a Stellar liquidity pool withdraw operation for removing liquidity from AMM pools.
-public class LiquidityPoolWithdrawOperation:Operation {
+public class LiquidityPoolWithdrawOperation:Operation, @unchecked Sendable {
 
     /// The liquidity pool ID.
     public let liquidityPoolId:String

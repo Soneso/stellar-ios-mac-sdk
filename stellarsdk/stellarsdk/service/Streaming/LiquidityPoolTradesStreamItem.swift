@@ -42,7 +42,7 @@ import Foundation
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - TradeResponse for the trade data structure
 /// - LiquidityPoolsService for related liquidity pool operations
-public class LiquidityPoolTradesStreamItem: @unchecked Sendable {
+public final class LiquidityPoolTradesStreamItem: Sendable {
     private let streamingHelper: StreamingHelper
     private let requestUrl: String
 

@@ -11,7 +11,7 @@ import Foundation
 /**
  * Preconditions of a transaction per <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md#specification">CAP-21<a/>
  */
-final public class TransactionPreconditions {
+final public class TransactionPreconditions: Sendable {
 
     /// Maximum number of extra signers allowed per transaction preconditions.
     final public let MAX_EXTRA_SIGNERS_COUNT = 2;

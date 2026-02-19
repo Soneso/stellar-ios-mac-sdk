@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a Stellar set trustline flags operation allowing issuers to authorize or revoke trustlines.
-public class SetTrustlineFlagsOperation:Operation {
+public class SetTrustlineFlagsOperation:Operation, @unchecked Sendable {
 
     /// The asset of the trustline whose flags are being modified.
     public let asset:Asset

@@ -10,7 +10,7 @@
 ///
 /// These errors indicate issues with key material, signatures, or cryptographic operations
 /// related to Ed25519 keypairs used in Stellar.
-public enum Ed25519Error: Error {
+public enum Ed25519Error: Error, Sendable {
 
     /// Cryptographic random seed generation failed.
     ///

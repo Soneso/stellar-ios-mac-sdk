@@ -11,7 +11,7 @@ import Foundation
 /// Response enum for health check requests.
 ///
 /// Represents the result of a Soroban RPC health check operation.
-public enum GetHealthResponseEnum {
+public enum GetHealthResponseEnum: Sendable {
     /// Successfully retrieved health status from Soroban RPC.
     case success(response: GetHealthResponse)
     /// Failed to retrieve health status, error details in associated value.
@@ -21,7 +21,7 @@ public enum GetHealthResponseEnum {
 /// Response enum for network information requests.
 ///
 /// Returned when querying general information about the Soroban network configuration.
-public enum GetNetworkResponseEnum {
+public enum GetNetworkResponseEnum: Sendable {
     /// Successfully retrieved network information from Soroban RPC.
     case success(response: GetNetworkResponse)
     /// Failed to retrieve network information, error details in associated value.
@@ -31,7 +31,7 @@ public enum GetNetworkResponseEnum {
 /// Response enum for fee statistics requests.
 ///
 /// Contains inclusion fee statistics used for transaction prioritization and spam prevention.
-public enum GetFeeStatsResponseEnum {
+public enum GetFeeStatsResponseEnum: Sendable {
     /// Successfully retrieved fee statistics from Soroban RPC.
     case success(response: GetFeeStatsResponse)
     /// Failed to retrieve fee statistics, error details in associated value.
@@ -41,7 +41,7 @@ public enum GetFeeStatsResponseEnum {
 /// Response enum for version information requests.
 ///
 /// Returns RPC and Captive Core version information.
-public enum GetVersionInfoResponseEnum {
+public enum GetVersionInfoResponseEnum: Sendable {
     /// Successfully retrieved version information from Soroban RPC.
     case success(response: GetVersionInfoResponse)
     /// Failed to retrieve version information, error details in associated value.
@@ -51,7 +51,7 @@ public enum GetVersionInfoResponseEnum {
 /// Response enum for ledger entries requests.
 ///
 /// Used when reading the current value of ledger entries directly, including contract state.
-public enum GetLedgerEntriesResponseEnum {
+public enum GetLedgerEntriesResponseEnum: Sendable {
     /// Successfully retrieved ledger entries from Soroban RPC.
     case success(response: GetLedgerEntriesResponse)
     /// Failed to retrieve ledger entries, error details in associated value.
@@ -61,7 +61,7 @@ public enum GetLedgerEntriesResponseEnum {
 /// Response enum for latest ledger requests.
 ///
 /// Returns information about the most recent known ledger.
-public enum GetLatestLedgerResponseEnum {
+public enum GetLatestLedgerResponseEnum: Sendable {
     /// Successfully retrieved latest ledger information from Soroban RPC.
     case success(response: GetLatestLedgerResponse)
     /// Failed to retrieve latest ledger information, error details in associated value.
@@ -72,7 +72,7 @@ public enum GetLatestLedgerResponseEnum {
 ///
 /// Contains simulation results including return values, resource costs, and ledger footprint
 /// for a contract invocation without submitting to the network.
-public enum SimulateTransactionResponseEnum {
+public enum SimulateTransactionResponseEnum: Sendable {
     /// Successfully simulated transaction on Soroban RPC.
     case success(response: SimulateTransactionResponse)
     /// Failed to simulate transaction, error details in associated value.
@@ -83,7 +83,7 @@ public enum SimulateTransactionResponseEnum {
 ///
 /// Returned when submitting a transaction to the Soroban network.
 /// Note that submission does not wait for completion.
-public enum SendTransactionResponseEnum {
+public enum SendTransactionResponseEnum: Sendable {
     /// Successfully submitted transaction to Soroban RPC.
     case success(response: SendTransactionResponse)
     /// Failed to submit transaction, error details in associated value.
@@ -93,7 +93,7 @@ public enum SendTransactionResponseEnum {
 /// Response enum for transaction status requests.
 ///
 /// Used to poll for transaction completion status after submission.
-public enum GetTransactionResponseEnum {
+public enum GetTransactionResponseEnum: Sendable {
     /// Successfully retrieved transaction status from Soroban RPC.
     case success(response: GetTransactionResponse)
     /// Failed to retrieve transaction status, error details in associated value.
@@ -103,7 +103,7 @@ public enum GetTransactionResponseEnum {
 /// Response enum for transactions list requests.
 ///
 /// Returns a paginated list of transactions starting from a specified ledger.
-public enum GetTransactionsResponseEnum {
+public enum GetTransactionsResponseEnum: Sendable {
     /// Successfully retrieved transactions list from Soroban RPC.
     case success(response: GetTransactionsResponse)
     /// Failed to retrieve transactions list, error details in associated value.
@@ -113,7 +113,7 @@ public enum GetTransactionsResponseEnum {
 /// Response enum for events query requests.
 ///
 /// Returns contract events emitted within a specified ledger range.
-public enum GetEventsResponseEnum {
+public enum GetEventsResponseEnum: Sendable {
     /// Successfully retrieved contract events from Soroban RPC.
     case success(response: GetEventsResponse)
     /// Failed to retrieve contract events, error details in associated value.
@@ -123,7 +123,7 @@ public enum GetEventsResponseEnum {
 /// Response enum for account nonce requests.
 ///
 /// Returns the current nonce for an account.
-public enum GetNonceResponseEnum {
+public enum GetNonceResponseEnum: Sendable {
     /// Successfully retrieved account nonce from Soroban RPC.
     case success(response: UInt64)
     /// Failed to retrieve account nonce, error details in associated value.
@@ -133,7 +133,7 @@ public enum GetNonceResponseEnum {
 /// Response enum for ledgers list requests.
 ///
 /// Returns a paginated list of ledgers starting from a specified point.
-public enum GetLedgersResponseEnum {
+public enum GetLedgersResponseEnum: Sendable {
     /// Successfully retrieved ledgers list from Soroban RPC.
     case success(response: GetLedgersResponse)
     /// Failed to retrieve ledgers list, error details in associated value.
@@ -143,7 +143,7 @@ public enum GetLedgersResponseEnum {
 /// Response enum for contract code requests.
 ///
 /// Returns the WebAssembly bytecode for a deployed contract.
-public enum GetContractCodeResponseEnum {
+public enum GetContractCodeResponseEnum: Sendable {
     /// Successfully retrieved contract code from Soroban RPC.
     case success(response: ContractCodeEntryXDR)
     /// Failed to retrieve contract code, error details in associated value.
@@ -153,7 +153,7 @@ public enum GetContractCodeResponseEnum {
 /// Response enum for contract information requests.
 ///
 /// Returns parsed contract metadata including spec entries, environment info, and contract metadata.
-public enum GetContractInfoEnum {
+public enum GetContractInfoEnum: Sendable {
     /// Successfully retrieved and parsed contract information from Soroban RPC.
     case success(response: SorobanContractInfo)
     /// Failed to parse contract bytecode, error details in associated value.
@@ -165,7 +165,7 @@ public enum GetContractInfoEnum {
 /// Response enum for account information requests.
 ///
 /// Returns minimal account information needed for transaction construction.
-public enum GetAccountResponseEnum {
+public enum GetAccountResponseEnum: Sendable {
     /// Successfully retrieved account information from Soroban RPC.
     case success(response: Account)
     /// Failed to retrieve account information, error details in associated value.
@@ -175,7 +175,7 @@ public enum GetAccountResponseEnum {
 /// Response enum for contract data requests.
 ///
 /// Returns the current value of contract storage entries.
-public enum GetContractDataResponseEnum {
+public enum GetContractDataResponseEnum: Sendable {
     /// Successfully retrieved contract data from Soroban RPC.
     case success(response: LedgerEntry)
     /// Failed to retrieve contract data, error details in associated value.

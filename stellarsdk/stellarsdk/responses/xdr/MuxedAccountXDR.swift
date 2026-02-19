@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct CryptoKeyType {
+public struct CryptoKeyType: Sendable {
     static let KEY_TYPE_ED25519: Int32 = 0
     static let KEY_TYPE_PRE_AUTH_TX: Int32 = 1
     static let KEY_TYPE_HASH_X: Int32 = 2

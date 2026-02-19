@@ -9,7 +9,7 @@
 import Foundation
 
 /// Errors that can occur during TxRep parsing or generation.
-public enum TxRepError: Error {
+public enum TxRepError: Error, Sendable {
     /// A required value is missing for the specified key.
     case missingValue(key:String)
 
@@ -38,7 +38,9 @@ public enum TxRepError: Error {
 /// ```
 ///
 /// See: [SEP-0011](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md) for the TxRep specification.
-public class TxRep: NSObject {
+public final class TxRep: Sendable {
+
+    public init() {}
 
     /// Converts a transaction envelope XDR to TxRep format.
     ///

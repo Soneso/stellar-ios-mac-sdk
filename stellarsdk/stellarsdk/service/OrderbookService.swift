@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for orderbook requests.
-public enum OrderbookResponseEnum {
+public enum OrderbookResponseEnum: Sendable {
     /// Successful orderbook retrieval with bid and ask details.
     case success(details: OrderbookResponse)
     /// Request failed with Horizon error.
@@ -17,7 +17,7 @@ public enum OrderbookResponseEnum {
 }
 
 /// Configuration for orderbook streaming filters.
-public enum OrderbookChange {
+public enum OrderbookChange: Sendable {
     /// Stream orderbook updates for a specific trading pair.
     case orderbook(sellingAssetType:String,
                    sellingAssetCode:String?,

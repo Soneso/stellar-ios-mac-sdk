@@ -9,7 +9,7 @@
 import Foundation
 
 /// Defines payment stream filter options for real-time payment updates.
-public enum PaymentsChange {
+public enum PaymentsChange: Sendable {
     /// Streams all payment operations from the network
     case allPayments(cursor:String?)
     /// Streams payments where the specified account is sender or receiver

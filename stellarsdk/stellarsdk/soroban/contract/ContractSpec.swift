@@ -51,7 +51,7 @@ import Foundation
 /// See also:
 /// - [SorobanClient] for high-level contract interaction
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class ContractSpec {
+public final class ContractSpec: Sendable {
     
     /// The spec entries of the contract
     public let entries: [SCSpecEntryXDR]
@@ -618,7 +618,7 @@ public class ContractSpec {
 }
 
 /// Errors that occur when parsing, validating, or converting Soroban contract specifications.
-public enum ContractSpecError: Error {
+public enum ContractSpecError: Error, Sendable {
     /// Specified contract function name does not exist in the contract specification.
     case functionNotFound(name: String)
     /// Required function argument is missing from the provided arguments.

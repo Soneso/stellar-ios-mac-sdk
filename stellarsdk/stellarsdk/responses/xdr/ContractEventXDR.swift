@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum ContractEventType: Int32 {
+public enum ContractEventType: Int32, Sendable {
     case system = 0
     case contract = 1
     case diagnostic = 2

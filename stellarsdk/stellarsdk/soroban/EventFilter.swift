@@ -53,7 +53,7 @@ import Foundation
 /// - [SorobanServer.getEvents] for querying events
 /// - [TopicFilter] for topic-based filtering
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class EventFilter {
+public final class EventFilter: Sendable {
     
     /// Event type filter criteria (system, contract, or diagnostic). If omitted, all types are included.
     public let type:String?

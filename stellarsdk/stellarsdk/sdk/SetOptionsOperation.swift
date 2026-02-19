@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a set options operation. This operation sets the options for an account.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class SetOptionsOperation:Operation {
+public class SetOptionsOperation:Operation, @unchecked Sendable {
 
     /// Account of the inflation destination.
     public let inflationDestination:KeyPair?

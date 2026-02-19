@@ -12,7 +12,7 @@ import Foundation
 ///
 /// This enumeration represents all possible failure cases when resolving Stellar addresses,
 /// performing reverse lookups, or communicating with federation servers.
-public enum FederationError: Error {
+public enum FederationError: Error, Sendable {
 
     /// The provided Stellar address format is invalid.
     ///

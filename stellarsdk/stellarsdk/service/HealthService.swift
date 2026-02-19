@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for health check requests.
-public enum HealthCheckResponseEnum {
+public enum HealthCheckResponseEnum: Sendable {
     /// Successfully retrieved health check details from Horizon.
     case success(details: HealthCheckResponse)
     /// Failed to retrieve health check details due to a network or server error.

@@ -58,7 +58,7 @@ import Foundation
 public struct PageResponse<Element:Decodable & Sendable>: Decodable, Sendable {
 
     /// Result enum for paginated responses.
-    public enum ResponseEnum {
+    public enum ResponseEnum: Sendable {
         /// Successfully fetched the requested page of results.
         case success(page: PageResponse)
         /// Failed to fetch the page due to an error.

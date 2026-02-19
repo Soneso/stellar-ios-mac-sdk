@@ -15,7 +15,7 @@ import Foundation
 /// response parsing failures.
 ///
 /// See [SEP-38: Quote Service](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)
-public enum QuoteServiceError: Error {
+public enum QuoteServiceError: Error, Sendable {
 
     /// An invalid argument was provided to the service.
     ///

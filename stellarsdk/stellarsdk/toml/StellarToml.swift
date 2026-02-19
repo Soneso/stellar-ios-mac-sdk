@@ -9,7 +9,7 @@
 import Foundation
 
 /// Errors that can occur when loading a stellar.toml file from a domain.
-public enum TomlFileError: Error {
+public enum TomlFileError: Error, Sendable {
     /// The provided domain is invalid or cannot be used to construct a valid URL.
     case invalidDomain
     /// The stellar.toml file could not be parsed or contains invalid TOML syntax.
@@ -20,7 +20,7 @@ public enum TomlFileError: Error {
 ///
 /// Per SEP-0001, a stellar.toml can link to separate TOML files for individual currencies
 /// using toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
-public enum TomlCurrencyLoadError: Error {
+public enum TomlCurrencyLoadError: Error, Sendable {
     /// The provided URL string is invalid or cannot be parsed.
     case invalidUrl
     /// The currency TOML file could not be parsed or contains invalid TOML syntax.
@@ -28,7 +28,7 @@ public enum TomlCurrencyLoadError: Error {
 }
 
 /// Result type for stellar.toml loading operations.
-public enum TomlForDomainEnum {
+public enum TomlForDomainEnum: Sendable {
     /// Successfully loaded and parsed stellar.toml file from the domain.
     case success(response: StellarToml)
     /// Failed to load or parse the stellar.toml file from the domain.
@@ -36,7 +36,7 @@ public enum TomlForDomainEnum {
 }
 
 /// Result type for currency TOML loading operations.
-public enum TomlCurrencyFromUrlEnum {
+public enum TomlCurrencyFromUrlEnum: Sendable {
     /// Successfully loaded and parsed currency TOML from the linked URL per SEP-0001.
     case success(response: CurrencyDocumentation)
     /// Failed to load or parse the currency TOML from the linked URL.
@@ -90,19 +90,19 @@ public enum TomlCurrencyFromUrlEnum {
 /// See also:
 /// - [SEP-0001 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 /// - Supported version: 2.7.0
-public class StellarToml {
+public final class StellarToml: @unchecked Sendable {
 
     /// Service endpoints and signing keys from the stellar.toml ACCOUNT section.
-    public var accountInformation: AccountInformation
+    public let accountInformation: AccountInformation
     /// Organization and issuer metadata from the stellar.toml DOCUMENTATION section.
-    public var issuerDocumentation: IssuerDocumentation
+    public let issuerDocumentation: IssuerDocumentation
     /// Key personnel and support contact information from the stellar.toml PRINCIPALS section.
-    public var pointsOfContact: [PointOfContactDocumentation] = []
+    public let pointsOfContact: [PointOfContactDocumentation]
     /// Supported asset definitions and metadata from the stellar.toml CURRENCIES section.
-    public var currenciesDocumentation: [CurrencyDocumentation] = []
+    public let currenciesDocumentation: [CurrencyDocumentation]
     /// Validator node configuration and history archives from the stellar.toml VALIDATORS section.
-    public var validatorsInformation: [ValidatorInformation] = []
-    
+    public let validatorsInformation: [ValidatorInformation]
+
     /// Creates a StellarToml instance by parsing a TOML string.
     ///
     /// - Parameter string: A string containing the stellar.toml content
@@ -116,7 +116,7 @@ public class StellarToml {
         }
         let toml = parsedToml!
         accountInformation = AccountInformation(fromToml: toml)
-        
+
         if let documentation = toml.table("DOCUMENTATION"){
             issuerDocumentation = IssuerDocumentation(fromToml: documentation)
         } else {
@@ -124,28 +124,34 @@ public class StellarToml {
         }
 
         if let principals = toml.table("PRINCIPALS") {
-            pointsOfContact = []
+            var pocs = [PointOfContactDocumentation]()
             for pocToml in principals.tables() {
-                let poc = PointOfContactDocumentation(fromToml: pocToml)
-                pointsOfContact.append(poc)
+                pocs.append(PointOfContactDocumentation(fromToml: pocToml))
             }
+            pointsOfContact = pocs
+        } else {
+            pointsOfContact = []
         }
         if let currencies = toml.table("CURRENCIES") {
-            currenciesDocumentation = []
+            var docs = [CurrencyDocumentation]()
             for currencies in currencies.tables() {
-                let currency = CurrencyDocumentation(fromToml: currencies)
-                currenciesDocumentation.append(currency)
+                docs.append(CurrencyDocumentation(fromToml: currencies))
             }
+            currenciesDocumentation = docs
+        } else {
+            currenciesDocumentation = []
         }
-        
+
         if let validators = toml.table("VALIDATORS") {
-            validatorsInformation = []
+            var vals = [ValidatorInformation]()
             for validatorToml in validators.tables() {
-                let validator = ValidatorInformation(fromToml: validatorToml)
-                validatorsInformation.append(validator)
+                vals.append(ValidatorInformation(fromToml: validatorToml))
             }
+            validatorsInformation = vals
+        } else {
+            validatorsInformation = []
         }
-        
+
     }
     
     /// Loads and parses stellar.toml file from a domain per SEP-0001.

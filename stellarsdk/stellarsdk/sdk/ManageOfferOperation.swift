@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a manage offer operation. Creates, updates, or deletes an offer.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class ManageOfferOperation:Operation {
+public class ManageOfferOperation:Operation, @unchecked Sendable {
 
     /// The asset being sold.
     public let selling:Asset

@@ -11,7 +11,7 @@ import Foundation
 /// Response enum for creating a RegulatedAssetsService instance from a domain.
 ///
 /// Returned by `RegulatedAssetsService.forDomain()` methods.
-public enum RegulatedAssetsServiceForDomainEnum {
+public enum RegulatedAssetsServiceForDomainEnum: Sendable {
     /// Service instance created successfully.
     case success(response: RegulatedAssetsService)
     /// Failed to create service instance.
@@ -21,7 +21,7 @@ public enum RegulatedAssetsServiceForDomainEnum {
 /// Response enum for checking if an asset requires authorization.
 ///
 /// Returned by `RegulatedAssetsService.authorizationRequired()` methods.
-public enum AuthorizationRequiredEnum {
+public enum AuthorizationRequiredEnum: Sendable {
     /// Check completed, returns whether authorization is required.
     case success(required: Bool)
     /// Failed to check authorization requirement.
@@ -32,7 +32,7 @@ public enum AuthorizationRequiredEnum {
 ///
 /// Returned by `RegulatedAssetsService.postTransaction()` methods. Represents
 /// the various possible outcomes defined in SEP-08.
-public enum PostSep08TransactionEnum {
+public enum PostSep08TransactionEnum: Sendable {
     /// Transaction approved without modifications.
     case success(response: Sep08PostTransactionSuccess)
     /// Transaction approved with modifications by the issuer.
@@ -51,7 +51,7 @@ public enum PostSep08TransactionEnum {
 ///
 /// Returned by `RegulatedAssetsService.postAction()` methods when responding
 /// to an action_required status.
-public enum PostSep08ActionEnum {
+public enum PostSep08ActionEnum: Sendable {
     /// Action completed successfully, no further action required.
     case done
     /// Client should follow the next URL provided.
@@ -106,7 +106,7 @@ public enum PostSep08ActionEnum {
 /// See also:
 /// - [SEP-0008 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md)
 /// - [StellarToml] for discovering regulated assets
-public class RegulatedAssetsService {
+public final class RegulatedAssetsService: @unchecked Sendable {
 
     /// The parsed stellar.toml configuration containing regulated asset definitions and approval server URLs.
     public let tomlData:StellarToml
@@ -348,7 +348,7 @@ public class RegulatedAsset:Asset, @unchecked Sendable {
 }
 
 /// Errors that can occur during regulated assets service operations.
-public enum RegulatedAssetsServiceError: Error {
+public enum RegulatedAssetsServiceError: Error, Sendable {
     /// The provided domain is invalid or malformed.
     case invalidDomain
     /// The stellar.toml file is invalid, missing, or does not contain required fields.

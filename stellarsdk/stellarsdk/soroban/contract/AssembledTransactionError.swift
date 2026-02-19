@@ -9,7 +9,7 @@
 import Foundation
 
 /// Errors that occur during Soroban assembled transaction lifecycle operations.
-public enum AssembledTransactionError: Error {
+public enum AssembledTransactionError: Error, Sendable {
     /// Transaction builder has not yet assembled the transaction from provided operations.
     case notYetAssembled(message: String)
     /// Transaction has not yet been simulated against the Soroban network.

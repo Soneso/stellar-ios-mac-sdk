@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for federation address resolution requests.
-public enum ResolveResponseEnum {
+public enum ResolveResponseEnum: Sendable {
     /// Successfully resolved Stellar address to account ID and memo
     case success(response: ResolveAddressResponse)
     /// Failed to resolve address, contains error information
@@ -17,7 +17,7 @@ public enum ResolveResponseEnum {
 }
 
 /// Result enum for federation server discovery requests.
-public enum FederationForDomainEnum {
+public enum FederationForDomainEnum: Sendable {
     /// Successfully discovered federation server from stellar.toml
     case success(response: Federation)
     /// Failed to discover federation server, contains error information
@@ -64,10 +64,10 @@ public enum FederationForDomainEnum {
 /// See also:
 /// - [SEP-0002 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md)
 /// - [StellarToml] for discovering federation servers
-public class Federation: NSObject {
+public final class Federation: @unchecked Sendable {
 
     /// The URL of the SEP-2 federation server endpoint for resolving addresses.
-    public var federationAddress: String
+    public let federationAddress: String
     private let serviceHelper: ServiceHelper
     private let jsonDecoder = JSONDecoder()
 

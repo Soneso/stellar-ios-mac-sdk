@@ -53,22 +53,25 @@ import Foundation
 ///
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class Operation {
+public class Operation: @unchecked Sendable {
     /// The source account for this operation. If nil, uses the transaction's source account.
-    public private(set) var sourceAccountId:String? //"G..." or "M..."
+    public let sourceAccountId:String? //"G..." or "M..."
 
     /// The XDR representation of the source account (supports muxed accounts).
-    public private(set) var sourceAccountXdr: MuxedAccountXDR?
+    public let sourceAccountXdr: MuxedAccountXDR?
 
     /// Creates a new operation object.
     ///
     /// - Parameter sourceAccountId: Optional source account for this operation. If provided, must be a valid
     ///   account ID (G-address or M-address). If nil or invalid, the transaction's source account will be used.
     public init(sourceAccountId:String?) {
-        
+
         if let saId = sourceAccountId, let mux = try? saId.decodeMuxedAccount() {
-            self.sourceAccountId = sourceAccountId
+            self.sourceAccountId = saId
             self.sourceAccountXdr = mux
+        } else {
+            self.sourceAccountId = nil
+            self.sourceAccountXdr = nil
         }
     }
     

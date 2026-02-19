@@ -109,7 +109,7 @@ public struct TransactionXDR: XDRCodable, Sendable {
     }
 }
 
-public enum ContractIDPreimageType: Int32 {
+public enum ContractIDPreimageType: Int32, Sendable {
     case fromAddress = 0
     case fromAsset = 1
 }
@@ -278,7 +278,7 @@ public struct CreateContractV2ArgsXDR: XDRCodable, Sendable {
     }
 }
 
-public enum HostFunctionType: Int32 {
+public enum HostFunctionType: Int32, Sendable {
     case invokeContract = 0
     case createContract = 1
     case uploadContractWasm = 2
@@ -379,7 +379,7 @@ public enum HostFunctionXDR: XDRCodable, Sendable {
     }
 }
 
-public enum SorobanAuthorizedFunctionType: Int32 {
+public enum SorobanAuthorizedFunctionType: Int32, Sendable {
     case contractFn = 0
     case createContractHostFn = 1
     case createContractV2HostFn = 2
@@ -523,7 +523,7 @@ public struct SorobanAddressCredentialsXDR: XDRCodable, Sendable {
     }
 }
 
-public enum SorobanCredentialsType: Int32 {
+public enum SorobanCredentialsType: Int32, Sendable {
     case sourceAccount = 0
     case address = 1
 }
@@ -631,7 +631,7 @@ public struct SorobanAuthorizationEntryXDR: XDRCodable, Sendable {
     }
 }
 
-public class AccountEd25519Signature: @unchecked Sendable {
+public final class AccountEd25519Signature: Sendable {
     
     public let publicKey:PublicKey
     public let signature:[UInt8]

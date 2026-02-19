@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum PreconditionType: Int32 {
+public enum PreconditionType: Int32, Sendable {
     case none = 0
     case time = 1
     case v2 = 2

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum LedgerEntryChangeType: Int32 {
+public enum LedgerEntryChangeType: Int32, Sendable {
     // entry was added to the ledger
     case ledgerEntryCreated = 0
     

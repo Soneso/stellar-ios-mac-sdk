@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a claim claimable balance operation. Claimable Balances can be used to “split up” a payment into two parts, which allows the sending to only depend on the sending account, and the receipt to only depend on the receiving account.
 /// See [Stellar developer docs](https://developers.stellar.org).
-public class ClaimClaimableBalanceOperation:Operation {
+public class ClaimClaimableBalanceOperation:Operation, @unchecked Sendable {
 
     /// The claimable balance id to be claimed.
     public let balanceId:String

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum SCMetaKind: Int32 {
+public enum SCMetaKind: Int32, Sendable {
     case v0 = 0
 }
 

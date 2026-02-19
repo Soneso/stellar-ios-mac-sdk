@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a Stellar clawback operation allowing asset issuers to burn assets from accounts.
-public class ClawbackOperation:Operation {
+public class ClawbackOperation:Operation, @unchecked Sendable {
 
     /// The asset to be clawed back.
     public let asset:Asset

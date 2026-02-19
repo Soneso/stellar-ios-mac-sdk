@@ -1,7 +1,7 @@
 import Foundation
 
 /// Streams orderbook data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class OrderbookStreamItem: @unchecked Sendable {
+public final class OrderbookStreamItem: Sendable {
     private let streamingHelper: StreamingHelper
     private let requestUrl: String
 

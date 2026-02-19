@@ -53,7 +53,7 @@ import Foundation
 /// - [Network] for network passphrase configuration
 /// - [Stellar developer docs](https://developers.stellar.org)
 /// - Individual service classes for specific operations
-public class StellarSDK: NSObject {
+public final class StellarSDK: Sendable {
     
     /// Default Horizon URL for Stellar's public network.
     public static let publicNetUrl = "https://horizon.stellar.org"
@@ -65,61 +65,61 @@ public class StellarSDK: NSObject {
     public static let futureNetUrl = "https://horizon-futurenet.stellar.org"
 
     /// The Horizon server URL this SDK instance is connected to.
-    public var horizonURL: String
+    public let horizonURL: String
 
     /// Service for querying and managing account information.
-    public var accounts: AccountService
+    public let accounts: AccountService
 
     /// Service for querying asset information and statistics.
-    public var assets: AssetsService
+    public let assets: AssetsService
 
     /// Service for querying network fee statistics.
-    public var feeStats: FeeStatsService
+    public let feeStats: FeeStatsService
 
     /// Service for querying effects (results of operations).
-    public var effects: EffectsService
+    public let effects: EffectsService
 
     /// Service for checking Horizon server health status.
-    public var health: HealthService
+    public let health: HealthService
 
     /// Service for querying ledger information.
-    public var ledgers: LedgersService
+    public let ledgers: LedgersService
 
     /// Service for querying operations.
-    public var operations: OperationsService
+    public let operations: OperationsService
 
     /// Service for querying payments and payment paths.
-    public var payments: PaymentsService
+    public let payments: PaymentsService
 
     /// Service for querying and submitting transactions.
-    public var transactions: TransactionsService
+    public let transactions: TransactionsService
 
     /// Service for querying individual trades.
-    public var trades: TradesService
+    public let trades: TradesService
 
     /// Service for querying aggregated trade data (OHLC).
-    public var tradeAggregations: TradeAggregationsService
+    public let tradeAggregations: TradeAggregationsService
 
     /// Service for querying offers on the decentralized exchange.
-    public var offers: OffersService
+    public let offers: OffersService
 
     /// Service for querying orderbook data.
-    public var orderbooks: OrderbookService
+    public let orderbooks: OrderbookService
 
     /// Service for finding payment paths between assets.
-    public var paymentPaths: PaymentPathsService
+    public let paymentPaths: PaymentPathsService
 
     /// Service for querying claimable balances.
-    public var claimableBalances: ClaimableBalancesService
+    public let claimableBalances: ClaimableBalancesService
 
     /// Service for querying liquidity pools.
-    public var liquidityPools: LiquidityPoolsService
+    public let liquidityPools: LiquidityPoolsService
 
     /// Creates a new SDK instance connected to the test network.
     ///
     /// This is the default initializer and connects to Stellar's test network
     /// at https://horizon-testnet.stellar.org.
-    public override init() {
+    public init() {
         horizonURL = StellarSDK.testNetUrl
 
         accounts = AccountService(baseURL: horizonURL)

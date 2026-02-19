@@ -44,7 +44,7 @@ import Foundation
 ///
 /// See also:
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class CreateAccountOperation:Operation {
+public class CreateAccountOperation:Operation, @unchecked Sendable {
 
     /// The keypair representing the new account to be created.
     public let destination:KeyPair

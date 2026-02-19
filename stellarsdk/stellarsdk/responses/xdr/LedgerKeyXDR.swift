@@ -9,7 +9,7 @@
 import Foundation
 
 // Identifiers of all the network settings.
-public enum ConfigSettingID: Int32 {
+public enum ConfigSettingID: Int32, Sendable {
     case contractMaxSizeBytes = 0
     case contractComputeV0 = 1
     case contractLedgerCostV0 = 2
