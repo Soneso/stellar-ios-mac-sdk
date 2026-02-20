@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.3 Docs
+          stellarsdk 3.4.4 Docs
         </a>
          (98% documented)
       </p>
@@ -1887,7 +1887,7 @@
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">MuxedAccount</span> <span class="p">:</span> <span class="kt"><a href="../Classes/Account.html">Account</a></span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">MuxedAccount</span> <span class="p">:</span> <span class="kt"><a href="../Classes/Account.html">Account</a></span><span class="p">,</span> <span class="kd">@unchecked</span> <span class="kt">Sendable</span></code></pre>
 
                 </div>
               </div>
@@ -1923,7 +1923,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">id</span><span class="p">:</span> <span class="kt">UInt64</span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">id</span><span class="p">:</span> <span class="kt">UInt64</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>
@@ -1953,7 +1953,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">xdr</span><span class="p">:</span> <span class="kt">MuxedAccountXDR</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">xdr</span><span class="p">:</span> <span class="kt">MuxedAccountXDR</span></code></pre>
 
                         </div>
                       </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.3 Docs
+          stellarsdk 3.4.4 Docs
         </a>
          (98% documented)
       </p>
@@ -1887,7 +1887,7 @@
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">TxRep</span> <span class="p">:</span> <span class="kt">NSObject</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="kt">TxRep</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                 </div>
               </div>
@@ -1913,7 +1913,7 @@ the standard base64-encoded XDR format and a human-readable key-value format.</p
 <p>See: <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md">SEP-0011</a> for the TxRep specification.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L41-L3564">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L41-L3566">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -1922,6 +1922,36 @@ the standard base64-encoded XDR format and a human-readable key-value format.</p
           <div class="section-content">
             <div class="task-group">
               <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk5TxRepCACycfc"></a>
+                    <a name="//apple_ref/swift/Method/init()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk5TxRepCACycfc">init()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">()</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L43">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
                 <li class="item">
                   <div>
                     <code>
@@ -1989,7 +2019,7 @@ TxRep representation. Supports both regular transactions and fee bump transactio
                         <p>Human-readable TxRep string with key-value pairs</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L63-L113">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L65-L115">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2042,7 +2072,7 @@ TxRep representation. Supports both regular transactions and fee bump transactio
                         <p>base64 encoded transaction envelope xdr</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L119-L224">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L121-L226">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

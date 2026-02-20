@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.3 Docs
+          stellarsdk 3.4.4 Docs
         </a>
          (98% documented)
       </p>
@@ -1887,7 +1887,7 @@
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">URIScheme</span> <span class="p">:</span> <span class="kt">NSObject</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="kt">URIScheme</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                 </div>
               </div>
@@ -1922,7 +1922,7 @@ transactions or make payments, and wallets can parse these URIs to fulfill the r
 </ul>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L73-L377">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L73-L379">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -1931,6 +1931,36 @@ transactions or make payments, and wallets can parse these URIs to fulfill the r
           <div class="section-content">
             <div class="task-group">
               <ul class="item-container">
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk9URISchemeCACycfc"></a>
+                    <a name="//apple_ref/swift/Method/init()" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk9URISchemeCACycfc">init()</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">()</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L76">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
                 <li class="item">
                   <div>
                     <code>
@@ -2087,7 +2117,7 @@ transactions or make payments, and wallets can parse these URIs to fulfill the r
                         <p>A SEP-0007 compliant URI string for the transaction signing request</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L92-L150">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L94-L152">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2275,7 +2305,7 @@ the memo is base64-encoded before URL encoding.</p>
                         <p>A SEP-0007 compliant URI string for the payment request</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L171-L250">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L173-L252">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2283,9 +2313,9 @@ the memo is base64-encoded before URL encoding.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk9URISchemeC24signAndSubmitTransaction6forURL13signerKeyPair7network23transactionConfirmationAA0eF4EnumOSS_AA0jK0CAA7NetworkOSbAA0F3XDRVcSgtYaF"></a>
+                    <a name="/s:10stellarsdk9URISchemeC24signAndSubmitTransaction6forURL13signerKeyPair7network23transactionConfirmationAA0eF4EnumOSS_AA0jK0CAA7NetworkOSbAA0F3XDRVYbcSgtYaF"></a>
                     <a name="//apple_ref/swift/Method/signAndSubmitTransaction(forURL:signerKeyPair:network:transactionConfirmation:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk9URISchemeC24signAndSubmitTransaction6forURL13signerKeyPair7network23transactionConfirmationAA0eF4EnumOSS_AA0jK0CAA7NetworkOSbAA0F3XDRVcSgtYaF">signAndSubmitTransaction(forURL:<wbr>signerKeyPair:<wbr>network:<wbr>transactionConfirmation:<wbr>)</a>
+                    <a class="token" href="#/s:10stellarsdk9URISchemeC24signAndSubmitTransaction6forURL13signerKeyPair7network23transactionConfirmationAA0eF4EnumOSS_AA0jK0CAA7NetworkOSbAA0F3XDRVYbcSgtYaF">signAndSubmitTransaction(forURL:<wbr>signerKeyPair:<wbr>network:<wbr>transactionConfirmation:<wbr>)</a>
                     </code>
                       <span class="declaration-note">
                         Asynchronous
@@ -2373,7 +2403,7 @@ signs it with the provided key pair, and submits it to the network or callback U
                         <p>SubmitTransactionEnum indicating success, memo requirement, or failure</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L263-L280">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L265-L282">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2438,7 +2468,7 @@ signs it with the provided key pair, and submits it to the network or callback U
                         <p>The parameter value if found, nil otherwise</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L330-L345">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/uri_scheme/URIScheme.swift#L332-L347">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

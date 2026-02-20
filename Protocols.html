@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.4.3 Docs
+          stellarsdk 3.4.4 Docs
         </a>
          (98% documented)
       </p>
@@ -1912,7 +1912,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">MemoProtocol</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">MemoProtocol</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -1943,7 +1943,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">MemoHashProtocol</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">MemoHashProtocol</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -1974,7 +1974,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">TransactionAccount</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">TransactionAccount</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2039,7 +2039,7 @@ XDR protocol. Common sizes include 4, 12, and 32 bytes for various key types and
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">XDRDecodable</span> <span class="p">:</span> <span class="kt">Decodable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">XDRDecodable</span> <span class="p">:</span> <span class="kt">Decodable</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2070,7 +2070,7 @@ XDR protocol. Common sizes include 4, 12, and 32 bytes for various key types and
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">XDREncodable</span> <span class="p">:</span> <span class="kt">Encodable</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">XDREncodable</span> <span class="p">:</span> <span class="kt">Encodable</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>

@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.4.3 Docs
+          stellarsdk 3.4.4 Docs
         </a>
          (98% documented)
       </p>
@@ -1915,7 +1915,7 @@ related to Ed25519 keypairs used in Stellar.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Ed25519Error</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Ed25519Error</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -1946,7 +1946,7 @@ related to Ed25519 keypairs used in Stellar.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">HorizonRequestError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">HorizonRequestError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -1977,7 +1977,7 @@ related to Ed25519 keypairs used in Stellar.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">StellarSDKError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">StellarSDKError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2008,7 +2008,7 @@ related to Ed25519 keypairs used in Stellar.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Base16EncodingError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Base16EncodingError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2039,7 +2039,7 @@ related to Ed25519 keypairs used in Stellar.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KeyUtilsError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KeyUtilsError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2070,7 +2070,7 @@ related to Ed25519 keypairs used in Stellar.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ResolveResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ResolveResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2101,7 +2101,7 @@ related to Ed25519 keypairs used in Stellar.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">FederationForDomainEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">FederationForDomainEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2135,7 +2135,7 @@ performing reverse lookups, or communicating with federation servers.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">FederationError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">FederationError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2166,7 +2166,7 @@ performing reverse lookups, or communicating with federation servers.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TomlError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TomlError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2197,7 +2197,7 @@ performing reverse lookups, or communicating with federation servers.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">InteractiveServiceForDomainEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">InteractiveServiceForDomainEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2228,7 +2228,7 @@ performing reverse lookups, or communicating with federation servers.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep24InfoResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep24InfoResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2259,7 +2259,7 @@ performing reverse lookups, or communicating with federation servers.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep24FeeResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep24FeeResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2290,7 +2290,7 @@ performing reverse lookups, or communicating with federation servers.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep24InteractiveResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep24InteractiveResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2321,7 +2321,7 @@ performing reverse lookups, or communicating with federation servers.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep24TransactionsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep24TransactionsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2352,7 +2352,7 @@ performing reverse lookups, or communicating with federation servers.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep24TransactionResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep24TransactionResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2393,7 +2393,7 @@ that implement the Hosted Deposit and Withdrawal protocol defined in SEP-0024.</
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">InteractiveServiceError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">InteractiveServiceError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2424,7 +2424,7 @@ These keys are used to identify customer data fields in SEP-0012 KYC requests.</
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KYCNaturalPersonFieldKey</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KYCNaturalPersonFieldKey</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2488,7 +2488,7 @@ These keys are used to identify banking and financial account data fields in SEP
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KYCFinancialAccountFieldKey</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KYCFinancialAccountFieldKey</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2553,7 +2553,7 @@ All keys use the &ldquo;organization.&rdquo; prefix to distinguish them from nat
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KYCOrganizationFieldKey</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KYCOrganizationFieldKey</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2618,7 +2618,7 @@ All keys use the &ldquo;card.&rdquo; prefix to distinguish them from other field
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KYCCardFieldKey</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KYCCardFieldKey</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2682,7 +2682,7 @@ for card-based payment methods. Each case contains the field value and converts 
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KycServiceForDomainEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KycServiceForDomainEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2713,7 +2713,7 @@ for card-based payment methods. Each case contains the field value and converts 
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetCustomerInfoResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetCustomerInfoResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2744,7 +2744,7 @@ for card-based payment methods. Each case contains the field value and converts 
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PutCustomerInfoResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PutCustomerInfoResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2775,7 +2775,7 @@ for card-based payment methods. Each case contains the field value and converts 
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">DeleteCustomerResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">DeleteCustomerResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2806,7 +2806,7 @@ for card-based payment methods. Each case contains the field value and converts 
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PutCustomerCallbackResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PutCustomerCallbackResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2837,7 +2837,7 @@ for card-based payment methods. Each case contains the field value and converts 
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PostCustomerFileResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PostCustomerFileResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2868,7 +2868,7 @@ for card-based payment methods. Each case contains the field value and converts 
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetCustomerFilesResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetCustomerFilesResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2901,7 +2901,7 @@ service initialization, authentication, request validation, and data processing.
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KycServiceError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">KycServiceError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2956,7 +2956,7 @@ allowing users to choose their preferred language for mnemonic generation and re
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">WordList</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">WordList</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -2987,7 +2987,7 @@ allowing users to choose their preferred language for mnemonic generation and re
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep38InfoResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep38InfoResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3018,7 +3018,7 @@ allowing users to choose their preferred language for mnemonic generation and re
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep38PricesResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep38PricesResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3049,7 +3049,7 @@ allowing users to choose their preferred language for mnemonic generation and re
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep38PriceResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep38PriceResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3080,7 +3080,7 @@ allowing users to choose their preferred language for mnemonic generation and re
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep38QuoteResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep38QuoteResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3117,7 +3117,7 @@ response parsing failures.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">QuoteServiceError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">QuoteServiceError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3148,7 +3148,7 @@ response parsing failures.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep30AccountResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep30AccountResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3179,7 +3179,7 @@ response parsing failures.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep30SignatureResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep30SignatureResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3210,7 +3210,7 @@ response parsing failures.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep30AccountsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Sep30AccountsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3241,7 +3241,7 @@ response parsing failures.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">RecoveryServiceError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">RecoveryServiceError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3274,7 +3274,7 @@ response parsing failures.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">RegulatedAssetsServiceForDomainEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">RegulatedAssetsServiceForDomainEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3307,7 +3307,7 @@ response parsing failures.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AuthorizationRequiredEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AuthorizationRequiredEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3341,7 +3341,7 @@ the various possible outcomes defined in SEP-08.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PostSep08TransactionEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PostSep08TransactionEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3375,7 +3375,7 @@ to an action_required status.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PostSep08ActionEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PostSep08ActionEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3406,12 +3406,12 @@ to an action_required status.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">RegulatedAssetsServiceError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">RegulatedAssetsServiceError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L347-L362">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/regulated_assets/RegulatedAssetsService.swift#L351-L366">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -3439,7 +3439,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">EffectType</span> <span class="p">:</span> <span class="kt">Int</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">EffectType</span> <span class="p">:</span> <span class="kt">Int</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3471,7 +3471,7 @@ Each operation type corresponds to a specific action that can be performed on th
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OperationType</span> <span class="p">:</span> <span class="kt">Int32</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OperationType</span> <span class="p">:</span> <span class="kt">Int32</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3502,7 +3502,7 @@ Each operation type corresponds to a specific action that can be performed on th
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">FeeBumpTransactionError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">FeeBumpTransactionError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3608,7 +3608,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Network</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Network</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3639,7 +3639,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AccountResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AccountResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3670,7 +3670,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">DataForAccountResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">DataForAccountResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3701,7 +3701,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">CreateTestAccountResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">CreateTestAccountResponseEnum</span> <span class="p">:</span> <span class="kd">@unchecked</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3732,7 +3732,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ClaimableBalanceDetailsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ClaimableBalanceDetailsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3763,7 +3763,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">EffectsChange</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">EffectsChange</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3794,7 +3794,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">FeeStatsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">FeeStatsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3825,7 +3825,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">HealthCheckResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">HealthCheckResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3856,7 +3856,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">LedgerDetailsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">LedgerDetailsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3887,7 +3887,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">LedgersChange</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">LedgersChange</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3918,7 +3918,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">LiquidityPoolDetailsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">LiquidityPoolDetailsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3949,7 +3949,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">LiquidityPoolTradesResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">LiquidityPoolTradesResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -3980,7 +3980,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OffersChange</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OffersChange</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4011,7 +4011,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OfferResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OfferResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4042,7 +4042,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OperationDetailsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OperationDetailsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4073,7 +4073,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OperationsChange</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OperationsChange</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4104,7 +4104,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OrderbookResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OrderbookResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4135,7 +4135,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OrderbookChange</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OrderbookChange</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4166,7 +4166,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PaymentPathsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PaymentPathsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4197,7 +4197,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PaymentsChange</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PaymentsChange</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4259,7 +4259,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TradesChange</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TradesChange</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4290,7 +4290,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TransactionDetailsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TransactionDetailsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4323,7 +4323,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TransactionPostResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TransactionPostResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4356,7 +4356,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TransactionPostAsyncResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TransactionPostAsyncResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4387,7 +4387,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">CheckMemoRequiredResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">CheckMemoRequiredResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4418,7 +4418,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TransactionsChange</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TransactionsChange</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4449,7 +4449,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SorobanContractParserError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SorobanContractParserError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4482,7 +4482,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetHealthResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetHealthResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4515,7 +4515,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetNetworkResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetNetworkResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4548,7 +4548,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetFeeStatsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetFeeStatsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4581,7 +4581,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetVersionInfoResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetVersionInfoResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4614,7 +4614,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetLedgerEntriesResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetLedgerEntriesResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4647,7 +4647,7 @@ wrong network passphrase will result in transaction rejection.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetLatestLedgerResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetLatestLedgerResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4681,7 +4681,7 @@ for a contract invocation without submitting to the network.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SimulateTransactionResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SimulateTransactionResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4715,7 +4715,7 @@ Note that submission does not wait for completion.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SendTransactionResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SendTransactionResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4748,7 +4748,7 @@ Note that submission does not wait for completion.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetTransactionResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetTransactionResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4781,7 +4781,7 @@ Note that submission does not wait for completion.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetTransactionsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetTransactionsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4814,7 +4814,7 @@ Note that submission does not wait for completion.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetEventsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetEventsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4847,7 +4847,7 @@ Note that submission does not wait for completion.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetNonceResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetNonceResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4880,7 +4880,7 @@ Note that submission does not wait for completion.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetLedgersResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetLedgersResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4913,7 +4913,7 @@ Note that submission does not wait for completion.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetContractCodeResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetContractCodeResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4946,7 +4946,7 @@ Note that submission does not wait for completion.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetContractInfoEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetContractInfoEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -4979,7 +4979,7 @@ Note that submission does not wait for completion.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetAccountResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetAccountResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5012,7 +5012,7 @@ Note that submission does not wait for completion.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetContractDataResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetContractDataResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5043,7 +5043,7 @@ Note that submission does not wait for completion.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AssembledTransactionError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AssembledTransactionError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5074,7 +5074,7 @@ Note that submission does not wait for completion.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ContractSpecError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ContractSpecError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5139,7 +5139,7 @@ and invocation operations performed through SorobanClient.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SorobanClientError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SorobanClientError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5236,7 +5236,7 @@ or problems processing RPC responses.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TomlFileError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TomlFileError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5270,7 +5270,7 @@ using toml=&ldquo;<a href="https://DOMAIN/.well-known/CURRENCY.toml">https://DOM
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TomlCurrencyLoadError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TomlCurrencyLoadError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5301,7 +5301,7 @@ using toml=&ldquo;<a href="https://DOMAIN/.well-known/CURRENCY.toml">https://DOM
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TomlForDomainEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TomlForDomainEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5332,7 +5332,7 @@ using toml=&ldquo;<a href="https://DOMAIN/.well-known/CURRENCY.toml">https://DOM
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TomlCurrencyFromUrlEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TomlCurrencyFromUrlEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5363,7 +5363,7 @@ using toml=&ldquo;<a href="https://DOMAIN/.well-known/CURRENCY.toml">https://DOM
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TransferServerServiceForDomainEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TransferServerServiceForDomainEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5394,7 +5394,7 @@ using toml=&ldquo;<a href="https://DOMAIN/.well-known/CURRENCY.toml">https://DOM
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">DepositResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">DepositResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5425,7 +5425,7 @@ using toml=&ldquo;<a href="https://DOMAIN/.well-known/CURRENCY.toml">https://DOM
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">WithdrawResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">WithdrawResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5456,7 +5456,7 @@ using toml=&ldquo;<a href="https://DOMAIN/.well-known/CURRENCY.toml">https://DOM
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AnchorInfoResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AnchorInfoResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5487,7 +5487,7 @@ using toml=&ldquo;<a href="https://DOMAIN/.well-known/CURRENCY.toml">https://DOM
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AnchorTransactionsResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AnchorTransactionsResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5518,7 +5518,7 @@ using toml=&ldquo;<a href="https://DOMAIN/.well-known/CURRENCY.toml">https://DOM
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AnchorTransactionResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AnchorTransactionResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5549,7 +5549,7 @@ using toml=&ldquo;<a href="https://DOMAIN/.well-known/CURRENCY.toml">https://DOM
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AnchorFeeResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">AnchorFeeResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5630,7 +5630,7 @@ a transfer server for deposit and withdrawal operations according to SEP-6.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TransferServerError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TransferServerError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5732,7 +5732,7 @@ including various pending states that require action from different parties.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TxRepError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">TxRepError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5763,7 +5763,7 @@ including various pending states that require action from different parties.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SetupTransactionXDREnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SetupTransactionXDREnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5794,7 +5794,7 @@ including various pending states that require action from different parties.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SubmitTransactionEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SubmitTransactionEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5825,7 +5825,7 @@ including various pending states that require action from different parties.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SignTransactionParams</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SignTransactionParams</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5856,7 +5856,7 @@ including various pending states that require action from different parties.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PayOperationParams</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PayOperationParams</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5887,7 +5887,7 @@ including various pending states that require action from different parties.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">URISchemeErrors</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">URISchemeErrors</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5918,7 +5918,7 @@ including various pending states that require action from different parties.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SignURLEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SignURLEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5949,7 +5949,7 @@ including various pending states that require action from different parties.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">URISchemeIsValidEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">URISchemeIsValidEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -5983,7 +5983,7 @@ through active streaming to final closure.</p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">EventSourceState</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">EventSourceState</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -6024,7 +6024,7 @@ whether results should be returned in chronological or reverse chronological ord
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Order</span> <span class="p">:</span> <span class="kt">String</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">Order</span> <span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -6055,7 +6055,7 @@ whether results should be returned in chronological or reverse chronological ord
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">WebAuthenticatorError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">WebAuthenticatorError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -6086,7 +6086,7 @@ whether results should be returned in chronological or reverse chronological ord
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ChallengeValidationError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ChallengeValidationError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -6117,7 +6117,7 @@ whether results should be returned in chronological or reverse chronological ord
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetJWTTokenError</span> <span class="p">:</span> <span class="kt">Error</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">GetJWTTokenError</span> <span class="p">:</span> <span class="kt">Error</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -6148,7 +6148,7 @@ whether results should be returned in chronological or reverse chronological ord
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">WebAuthenticatorForDomainEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">WebAuthenticatorForDomainEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -6179,7 +6179,7 @@ whether results should be returned in chronological or reverse chronological ord
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ChallengeResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ChallengeResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -6210,7 +6210,7 @@ whether results should be returned in chronological or reverse chronological ord
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SendChallengeResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">SendChallengeResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>
@@ -6272,7 +6272,7 @@ whether results should be returned in chronological or reverse chronological ord
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ChallengeValidationResponseEnum</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ChallengeValidationResponseEnum</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>

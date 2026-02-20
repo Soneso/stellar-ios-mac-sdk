@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.3 Docs
+          stellarsdk 3.4.4 Docs
         </a>
          (98% documented)
       </p>
@@ -1887,7 +1887,7 @@
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">Transaction</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">Transaction</span> <span class="p">:</span> <span class="kd">@unchecked</span> <span class="kt">Sendable</span></code></pre>
 
                 </div>
               </div>
@@ -1895,7 +1895,7 @@
 See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L13-L242">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L13-L295">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -1954,12 +1954,12 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">fee</span><span class="p">:</span> <span class="kt">UInt32</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">fee</span><span class="p">:</span> <span class="kt">UInt32</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L18">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L18-L22">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1989,7 +1989,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L20">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L24">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2014,12 +2014,12 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">operations</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Classes/Operation.html">Operation</a></span><span class="p">]</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">operations</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Classes/Operation.html">Operation</a></span><span class="p">]</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L22">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L26-L30">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2044,12 +2044,12 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">memo</span><span class="p">:</span> <span class="kt"><a href="../Enums/Memo.html">Memo</a></span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">memo</span><span class="p">:</span> <span class="kt"><a href="../Enums/Memo.html">Memo</a></span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L24">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L32-L36">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2074,12 +2074,12 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">preconditions</span><span class="p">:</span> <span class="kt"><a href="../Classes/TransactionPreconditions.html">TransactionPreconditions</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">preconditions</span><span class="p">:</span> <span class="kt"><a href="../Classes/TransactionPreconditions.html">TransactionPreconditions</a></span><span class="p">?</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L26">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L38-L42">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2104,12 +2104,12 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">transactionXDR</span><span class="p">:</span> <span class="kt">TransactionXDR</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">transactionXDR</span><span class="p">:</span> <span class="kt">TransactionXDR</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L28">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L44-L48">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2139,7 +2139,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L31-L35">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L51-L57">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2192,7 +2192,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                               </td>
                               <td>
                                 <div>
-                                  <p>Transactions contain an arbitrary list of operations inside them. Typically there is just one operation, but it’s possible to have multiple. Operations are executed in order as one ACID transaction, meaning that either all operations are applied or none are.</p>
+                                  <p>Transactions contain an arbitrary list of operations inside them. Typically there is just one operation, but it&rsquo;s possible to have multiple. Operations are executed in order as one ACID transaction, meaning that either all operations are applied or none are.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2248,7 +2248,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L46-L92">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L75-L121">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2279,7 +2279,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L96-L99">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L125-L128">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2328,7 +2328,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L105-L121">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L134-L150">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2377,7 +2377,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L127-L148">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L156-L177">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2438,7 +2438,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L155-L162">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L184-L193">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2468,7 +2468,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L165-L167">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L196-L200">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2498,7 +2498,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L170-L172">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L203-L207">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2528,7 +2528,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L175-L179">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L210-L216">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2558,7 +2558,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L182-L186">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L219-L225">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2588,7 +2588,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L189-L192">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L228-L233">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2618,7 +2618,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L195-L198">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L236-L241">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2648,7 +2648,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L201-L213">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L244-L258">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2678,7 +2678,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L216-L219">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L261-L266">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2708,7 +2708,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L222-L229">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L269-L278">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2738,7 +2738,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L232-L235">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L281-L286">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2768,7 +2768,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L238-L241">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/Transaction.swift#L289-L294">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

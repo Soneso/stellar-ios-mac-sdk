@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.3 Docs
+          stellarsdk 3.4.4 Docs
         </a>
          (98% documented)
       </p>
@@ -1887,7 +1887,7 @@
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">FeeBumpTransaction</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">FeeBumpTransaction</span> <span class="p">:</span> <span class="kd">@unchecked</span> <span class="kt">Sendable</span></code></pre>
 
                 </div>
               </div>
@@ -1895,7 +1895,7 @@
 See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md">https://github.com/stellar/stellar-protocol/blob/master/core/cap-0015.md</a></p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L21-L113">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L21-L132">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -2044,12 +2044,12 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">feeBumpTransactionXDR</span><span class="p">:</span> <span class="kt">FeeBumpTransactionXDR</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">feeBumpTransactionXDR</span><span class="p">:</span> <span class="kt">FeeBumpTransactionXDR</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L32">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L32-L36">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2074,12 +2074,12 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">innerTransactionXDR</span><span class="p">:</span> <span class="kt">FeeBumpTransactionXDR</span><span class="o">.</span><span class="kt">InnerTransactionXDR</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">innerTransactionXDR</span><span class="p">:</span> <span class="kt">FeeBumpTransactionXDR</span><span class="o">.</span><span class="kt">InnerTransactionXDR</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L34">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L38">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2109,7 +2109,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L37-L41">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L41-L47">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2182,7 +2182,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L49-L74">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L58-L83">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2243,7 +2243,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L81-L88">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L90-L99">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2273,7 +2273,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L91-L93">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L102-L106">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2303,7 +2303,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L96-L98">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L109-L113">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2333,7 +2333,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L101-L105">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L116-L122">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2363,7 +2363,7 @@ See <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-00
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L108-L112">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/FeeBumpTransaction.swift#L125-L131">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

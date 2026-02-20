@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.3 Docs
+          stellarsdk 3.4.4 Docs
         </a>
          (98% documented)
       </p>
@@ -1909,9 +1909,9 @@ is authenticated as this identity.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk21SEP30ResponseIdentityV4roleSSvp"></a>
+                    <a name="/s:10stellarsdk21SEP30ResponseIdentityV4roleSSSgvp"></a>
                     <a name="//apple_ref/swift/Property/role" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk21SEP30ResponseIdentityV4roleSSvp">role</a>
+                    <a class="token" href="#/s:10stellarsdk21SEP30ResponseIdentityV4roleSSSgvp">role</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1919,15 +1919,15 @@ is authenticated as this identity.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Role of this identity in relation to the account.
-Common values: &ldquo;owner&rdquo;, &ldquo;sender&rdquo;, &ldquo;receiver&rdquo;.</p>
+                        <p>Role of this identity in relation to the account, if provided by the server.
+Common values: &ldquo;owner&rdquo;, &ldquo;sender&rdquo;, &ldquo;receiver&rdquo;. For GET /accounts, this may be absent.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">role</span><span class="p">:</span> <span class="kt">String</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">role</span><span class="p">:</span> <span class="kt">String</span><span class="p">?</span></code></pre>
 
                         </div>
                       </div>

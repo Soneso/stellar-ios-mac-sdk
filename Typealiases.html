@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.4.3 Docs
+          stellarsdk 3.4.4 Docs
         </a>
          (98% documented)
       </p>
@@ -2083,7 +2083,7 @@ It contains all transaction details including the result, operations, fees, and 
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">typealias</span> <span class="kt">TransactionConfirmationClosure</span> <span class="o">=</span> <span class="p">((</span><span class="kt">TransactionXDR</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="kt">Bool</span><span class="p">))</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">typealias</span> <span class="kt">TransactionConfirmationClosure</span> <span class="o">=</span> <span class="kd">@Sendable</span> <span class="p">(</span><span class="kt">TransactionXDR</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="kt">Bool</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
