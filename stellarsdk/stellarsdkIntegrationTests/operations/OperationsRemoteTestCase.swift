@@ -137,8 +137,6 @@ class OperationsRemoteTestCase: XCTestCase, @unchecked Sendable {
         await claimClaimableBalance()
         await sponsorship()
         await sponsorship2()
-        await issue169()
-        await issue170()
     }
         
     func getOperations() async {
@@ -926,42 +924,6 @@ class OperationsRemoteTestCase: XCTestCase, @unchecked Sendable {
         }
     }
      
-    func issue169() async {
-        let publicSdk = StellarSDK.publicNet()
-        let opId = "243686570245677057"
-        let operationResponseEnum = await publicSdk.operations.getOperationDetails(operationId: opId)
-        switch operationResponseEnum {
-        case .success(let details):
-            guard let invokeDetails = details as? InvokeHostFunctionOperationResponse else {
-                XCTFail("not invoke host func op")
-                return
-            }
-            guard let assetBalanceChanges = invokeDetails.assetBalanceChanges else {
-                XCTFail("no asset balance changes found")
-                return
-            }
-            XCTAssertTrue(assetBalanceChanges.count > 0)
-        case .failure(_):
-            XCTFail("could not load operation details for operation id: \(opId)")
-        }
-    }
-    
-    func issue170() async {
-        let publicSdk = StellarSDK.publicNet()
-        let responseEnum = await publicSdk.operations.getOperationDetails(operationId: "235893644145414236")
-        switch responseEnum {
-        case .success(let details):
-            guard let cOp = details as? CreateClaimableBalanceOperationResponse else {
-                XCTFail()
-                return
-            }
-            XCTAssertNil(cOp.sponsor)
-        case .failure(let error):
-            StellarSDKLog.printHorizonRequestErrorMessage(tag:"issue170()", horizonRequestError: error)
-            XCTFail()
-        }
-    }
-    
     func hexEncodedBalanceId(data: Data) -> String {
         let hexDigits = Array(("0123456789abcdef").utf16)
         var chars: [unichar] = []

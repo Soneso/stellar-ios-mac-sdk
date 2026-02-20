@@ -114,15 +114,11 @@ public struct PutCustomerInfoRequest: Sendable {
                     collectedFiles[field.parameter.0] = field.parameter.1
                 case .notaryApprovalOfPhotoId(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
-                case .ipAddress(_):
-                    collectedFiles[field.parameter.0] = field.parameter.1
                 case .photoProofResidence(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
                 case .proofOfIncome(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
                 case .proofOfLiveness(_):
-                    collectedFiles[field.parameter.0] = field.parameter.1
-                case .referralId(_):
                     collectedFiles[field.parameter.0] = field.parameter.1
                 default:
                     parameters[field.parameter.0] = field.parameter.1

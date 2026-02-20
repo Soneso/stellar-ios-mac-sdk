@@ -90,7 +90,7 @@ public enum TomlCurrencyFromUrlEnum: Sendable {
 /// See also:
 /// - [SEP-0001 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 /// - Supported version: 2.7.0
-public final class StellarToml: @unchecked Sendable {
+public final class StellarToml: Sendable {
 
     /// Service endpoints and signing keys from the stellar.toml ACCOUNT section.
     public let accountInformation: AccountInformation
