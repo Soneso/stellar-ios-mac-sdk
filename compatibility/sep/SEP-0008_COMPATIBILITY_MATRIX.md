@@ -1,8 +1,8 @@
 # SEP-0008 (Regulated Assets) Compatibility Matrix
 
-**Generated:** 2026-02-10
+**Generated:** 2026-02-20
 
-**SDK Version:** 3.4.3
+**SDK Version:** 3.4.4
 
 **SEP Version:** 1.7.4
 
