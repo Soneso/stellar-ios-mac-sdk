@@ -73,8 +73,36 @@ class RegulatedAssetsTestCase: XCTestCase {
         sep08FollowNextMock = Sep08FollowNextMock(host: host)
         sep08ActionDoneMock = Sep08ActionDoneMock(host: host)
         
-        self.stellarToml.currenciesDocumentation.first?.issuer = asset1IssuerKp.accountId
-        self.stellarToml.currenciesDocumentation.last?.issuer = asset2IssuerKp.accountId
+        self.stellarToml = try! StellarToml(fromString: """
+            # Sample stellar.toml
+            VERSION="2.0.0"
+
+            NETWORK_PASSPHRASE="Test SDF Network ; September 2015"
+            WEB_AUTH_ENDPOINT="https://api.anchor.org/auth"
+            TRANSFER_SERVER_SEP0024="http://api.stellar.org/transfer-sep24/"
+            ANCHOR_QUOTE_SERVER="http://api.stellar.org/quotes-sep38/"
+            SIGNING_KEY="GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP"
+
+            [[CURRENCIES]]
+            code="GOAT"
+            issuer="\(asset1IssuerKp.accountId)"
+            regulated=true
+            approval_server="http://goat.io/tx_approve"
+            approval_criteria="The goat approval server will ensure that transactions are compliant with NFO regulation"
+
+            [[CURRENCIES]]
+            code="NOP"
+            issuer="GBWMCCC3NHSKLAOJDBKKYW7SSH2PFTTNVFKWSGLWGDLEBKLOVP5JLBBP"
+            display_decimals=2
+
+            [[CURRENCIES]]
+            code="JACK"
+            issuer="\(asset2IssuerKp.accountId)"
+            regulated=true
+            approval_server="https://jack.io/tx_approve"
+            approval_criteria="The jack approval server will ensure that transactions are compliant with NFO regulation"
+
+            """)
         service = try! RegulatedAssetsService(tomlData: self.stellarToml)
         let goatAsset = service.regulatedAssets.first!
         let authOp = SetTrustlineFlagsOperation(sourceAccountId: goatAsset.issuerId,

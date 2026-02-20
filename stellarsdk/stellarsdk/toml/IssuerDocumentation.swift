@@ -25,7 +25,7 @@ import Foundation
 /// See also:
 /// - [StellarToml] for the main stellar.toml parser
 /// - [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
-public class IssuerDocumentation {
+public final class IssuerDocumentation: Sendable {
 
     private enum Keys: String {
         case orgName = "ORG_NAME"
@@ -48,58 +48,58 @@ public class IssuerDocumentation {
     }
 
     /// Legal name of the organization
-    public var orgName: String?
+    public let orgName: String?
     
     /// (may not apply) DBA of the organization
-    public var orgDBA: String?
+    public let orgDBA: String?
     
     /// uses https:
     /// The organization's official URL. Your stellar.toml must be hosted on the same domain.
-    public var orgURL: String?
+    public let orgURL: String?
     
     /// The organization's logo
-    public var orgLogo: String?
+    public let orgLogo: String?
     
     /// Short description of the organization
-    public var orgDescription: String?
+    public let orgDescription: String?
     
     /// Physical address of the organization
-    public var orgPhysicalAddress: String?
+    public let orgPhysicalAddress: String?
     
     /// https:// url
     /// URL on the same domain as your ORG_URL that contains an image or pdf official document attesting to your physical address. It must list your ORG_NAME or ORG_DBA as the party at the address. Only documents from an official third party are acceptable. E.g. a utility bill, mail from a financial institution, or business license.
-    public var orgPhysicalAddressAttestation: String?
+    public let orgPhysicalAddressAttestation: String?
     
     /// The organization's phone number
-    public var orgPhoneNumber: String?
+    public let orgPhoneNumber: String?
     
     /// https:// url
     /// URL on the same domain as your ORG_URL that contains an image or pdf of a phone bill showing both the phone number and your organization's name.
-    public var orgPhoneNumberAttestation: String?
+    public let orgPhoneNumberAttestation: String?
     
     /// A Keybase account name of the organization. Should contain proof of ownership of any public online accounts you list here, including your organization's domain.
-    public var orgKeybase: String?
+    public let orgKeybase: String?
     
     /// The organization's Twitter account
-    public var orgTwitter: String?
+    public let orgTwitter: String?
     
     /// The organization's Github account
-    public var orgGithub: String?
+    public let orgGithub: String?
     
     /// An email where clients can contact the organization. Must be hosted at your ORG_URL domain.
-    public var orgOfficialEmail: String?
+    public let orgOfficialEmail: String?
     
     /// An email that users can use to request support regarding the organizations Stellar assets or applications.
-    public var orgSupportEmail: String?
+    public let orgSupportEmail: String?
     
     /// Name of the authority or agency that licensed the organization, if applicable
-    public var orgLicensingAuthority: String?
+    public let orgLicensingAuthority: String?
     
     /// Type of financial or other license the organization holds, if applicable
-    public var orgLicenseType: String?
+    public let orgLicenseType: String?
     
     /// Official license number of the organization, if applicable
-    public var orgLicenseNumber: String?
+    public let orgLicenseNumber: String?
 
     /// Initializes issuer documentation from a parsed TOML document.
     ///

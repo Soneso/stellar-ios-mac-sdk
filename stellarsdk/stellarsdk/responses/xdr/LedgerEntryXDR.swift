@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum LedgerEntryType: Int32 {
+public enum LedgerEntryType: Int32, Sendable {
     case account = 0
     case trustline = 1
     case offer = 2

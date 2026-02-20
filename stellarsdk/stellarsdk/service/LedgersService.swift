@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for ledger details requests.
-public enum LedgerDetailsResponseEnum {
+public enum LedgerDetailsResponseEnum: Sendable {
     /// Success case containing ledger details.
     case success(details: LedgerResponse)
     /// Failure case containing error information.
@@ -17,7 +17,7 @@ public enum LedgerDetailsResponseEnum {
 }
 
 /// Defines ledger stream filter options for real-time ledger updates.
-public enum LedgersChange {
+public enum LedgersChange: Sendable {
     /// Streams all ledgers as they close on the network
     case allLedgers(cursor:String?)
 }

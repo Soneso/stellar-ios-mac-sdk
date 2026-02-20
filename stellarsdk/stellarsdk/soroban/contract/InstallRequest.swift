@@ -39,7 +39,7 @@ import Foundation
 /// See also:
 /// - [SorobanClient.install] for installing contracts
 /// - [DeployRequest] for deploying contract instances
-public class InstallRequest {
+public final class InstallRequest: Sendable {
     
     /// The URL of the RPC instance that will be used to install the contract.
     public let rpcUrl:String

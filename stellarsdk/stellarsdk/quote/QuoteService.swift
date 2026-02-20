@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for SEP-38 info endpoint requests.
-public enum Sep38InfoResponseEnum {
+public enum Sep38InfoResponseEnum: Sendable {
     /// Successfully retrieved supported assets and delivery methods.
     case success(response: Sep38InfoResponse)
     /// Request failed with quote service error.
@@ -17,7 +17,7 @@ public enum Sep38InfoResponseEnum {
 }
 
 /// Result enum for SEP-38 prices endpoint requests.
-public enum Sep38PricesResponseEnum {
+public enum Sep38PricesResponseEnum: Sendable {
     /// Successfully retrieved indicative prices for multiple assets.
     case success(response: Sep38PricesResponse)
     /// Request failed with quote service error.
@@ -25,7 +25,7 @@ public enum Sep38PricesResponseEnum {
 }
 
 /// Result enum for SEP-38 price endpoint requests.
-public enum Sep38PriceResponseEnum {
+public enum Sep38PriceResponseEnum: Sendable {
     /// Successfully retrieved indicative price for asset exchange.
     case success(response: Sep38PriceResponse)
     /// Request failed with quote service error.
@@ -33,7 +33,7 @@ public enum Sep38PriceResponseEnum {
 }
 
 /// Result enum for SEP-38 quote requests (create and retrieve).
-public enum Sep38QuoteResponseEnum {
+public enum Sep38QuoteResponseEnum: Sendable {
     /// Successfully created or retrieved firm quote.
     case success(response: Sep38QuoteResponse)
     /// Request failed with quote service error.
@@ -87,10 +87,10 @@ public enum Sep38QuoteResponseEnum {
 /// - [SEP-0038 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md)
 /// - [TransferServerService] for SEP-6 integration
 /// - [InteractiveService] for SEP-24 integration
-public class QuoteService: NSObject {
+public final class QuoteService: @unchecked Sendable {
 
     /// The base URL of the SEP-38 quote service endpoint for price discovery and firm quotes.
-    public var serviceAddress: String
+    public let serviceAddress: String
     private let serviceHelper: ServiceHelper
     private let jsonDecoder = JSONDecoder()
 

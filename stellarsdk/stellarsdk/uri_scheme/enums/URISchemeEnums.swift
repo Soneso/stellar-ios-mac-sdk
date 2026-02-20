@@ -9,7 +9,7 @@
 import Foundation
 
 /// An enum used for the sign transaction parameters for URIScheme creation.
-public enum SignTransactionParams {
+public enum SignTransactionParams: Sendable {
     /// The base64-encoded transaction envelope XDR to be signed.
     case xdr
     /// Fields to be replaced in the XDR using Txrep (SEP-0011) representation.
@@ -31,7 +31,7 @@ public enum SignTransactionParams {
 }
 
 /// An enum used for the pay operation parameters for URIScheme creation.
-public enum PayOperationParams {
+public enum PayOperationParams: Sendable {
     /// Valid account ID or payment address that will receive the payment.
     case destination
     /// Amount that the destination will receive.

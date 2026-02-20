@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a Stellar liquidity pool deposit operation for adding liquidity to AMM pools.
-public class LiquidityPoolDepositOperation:Operation {
+public class LiquidityPoolDepositOperation:Operation, @unchecked Sendable {
 
     /// The liquidity pool ID.
     public let liquidityPoolId:String

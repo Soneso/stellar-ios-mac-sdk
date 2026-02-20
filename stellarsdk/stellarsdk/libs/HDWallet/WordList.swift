@@ -25,7 +25,7 @@
 ///
 /// See also:
 /// - [BIP-39 Word Lists](https://github.com/bitcoin/bips/blob/master/bip-0039/bip-0039-wordlists.md)
-public enum WordList {
+public enum WordList: Sendable {
     /// English word list (2048 words)
     case english
 

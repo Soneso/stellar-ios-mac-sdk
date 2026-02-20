@@ -9,7 +9,7 @@
 import Foundation
 
 /// Streams effect data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class EffectsStreamItem: @unchecked Sendable {
+public final class EffectsStreamItem: Sendable {
     private let streamingHelper: StreamingHelper
     private let requestUrl: String
     let effectsFactory = EffectsFactory()

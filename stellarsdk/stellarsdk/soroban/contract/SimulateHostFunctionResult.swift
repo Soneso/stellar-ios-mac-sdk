@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result of simulating a Soroban host function invocation containing auth entries and return values.
-public class SimulateHostFunctionResult {
+public final class SimulateHostFunctionResult: Sendable {
 
     /// Authorization entries required for multi-party transaction signing.
     public let auth:[SorobanAuthorizationEntryXDR]?

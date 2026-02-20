@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum SCValType: Int32 {
+public enum SCValType: Int32, Sendable {
     case bool = 0
     case void = 1
     case error = 2
@@ -33,7 +33,7 @@ public enum SCValType: Int32 {
     case ledgerKeyNonce = 21
 }
 
-public enum SCErrorType: Int32 {
+public enum SCErrorType: Int32, Sendable {
     case contract = 0
     case wasmVm = 1
     case context = 2
@@ -46,7 +46,7 @@ public enum SCErrorType: Int32 {
     case auth = 9
 }
 
-public enum SCErrorCode: Int32 {
+public enum SCErrorCode: Int32, Sendable {
     case arithDomain = 0
     case indexBounds = 1
     case invalidInput = 2
@@ -59,7 +59,7 @@ public enum SCErrorCode: Int32 {
     case unexpectedSize = 9
 }
 
-public enum ContractCostType: Int32 {
+public enum ContractCostType: Int32, Sendable {
     case wasmInsnExec = 0
     case memAlloc = 1
     case memCpy = 2
@@ -271,7 +271,7 @@ public enum SCErrorXDR: XDRCodable, Sendable {
     }
 }
 
-public enum SCAddressType: Int32 {
+public enum SCAddressType: Int32, Sendable {
     case account = 0
     case contract = 1
     case muxedAccount = 2
@@ -974,7 +974,7 @@ public struct SCMapEntryXDR: XDRCodable, Sendable {
     }
 }
 
-public enum ContractExecutableType: Int32 {
+public enum ContractExecutableType: Int32, Sendable {
     case wasm = 0
     case stellarAsset = 1
 }

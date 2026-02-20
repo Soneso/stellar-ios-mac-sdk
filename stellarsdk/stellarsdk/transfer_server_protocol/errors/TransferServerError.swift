@@ -37,7 +37,7 @@ public enum InformationNeededEnum: Sendable {
 /// See also:
 /// - [SEP-0006 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
 /// - [TransferServerService] for SEP-6 implementation
-public enum TransferServerError: Error {
+public enum TransferServerError: Error, Sendable {
     /// The provided domain is invalid or malformed.
     ///
     /// Occurs when attempting to resolve a transfer server from an invalid domain name.

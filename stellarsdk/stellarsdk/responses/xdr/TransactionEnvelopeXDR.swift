@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct EnvelopeType {
+public struct EnvelopeType: Sendable {
     static let ENVELOPE_TYPE_TX_V0: Int32 = 0
     static let ENVELOPE_TYPE_SCP: Int32 = 1
     static let ENVELOPE_TYPE_TX: Int32 = 2
@@ -277,13 +277,13 @@ public enum TransactionEnvelopeXDR: XDRCodable, Sendable {
     public func appendSignature(signature:DecoratedSignatureXDR) {
         switch self {
         case .v0(let tev0):
-            tev0.signatures.append(signature)
+            tev0.appendSignature(signature)
         case .v1(let tev1):
-            tev1.signatures.append(signature)
+            tev1.appendSignature(signature)
         case .feeBump(let tevf):
             switch tevf.tx.innerTx {
             case .v1(let tev1):
-                tev1.signatures.append(signature)
+                tev1.appendSignature(signature)
             }
         }
     }

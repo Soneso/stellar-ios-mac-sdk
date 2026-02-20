@@ -22,13 +22,13 @@ import Foundation
 ///
 /// See also:
 /// - [BIP-39 Specification](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki)
-public final class Mnemonic {
+public final class Mnemonic: Sendable {
 
     /// The strength of the mnemonic, determining the number of words generated.
     ///
     /// - normal: 128 bits of entropy, generates a 12-word mnemonic
     /// - high: 256 bits of entropy, generates a 24-word mnemonic
-    public enum Strength: Int {
+    public enum Strength: Int, Sendable {
         /// Normal strength with 128-bit entropy producing a 12-word mnemonic.
         case normal = 128
         /// High strength with 256-bit entropy producing a 24-word mnemonic.

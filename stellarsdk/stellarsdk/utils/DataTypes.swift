@@ -31,7 +31,7 @@ private func decodeData(from decoder: XDRDecoder, capacity: Int) throws -> Data 
 ///
 /// WrappedData provides a type-safe way to handle fixed-size byte arrays in Stellar's
 /// XDR protocol. Common sizes include 4, 12, and 32 bytes for various key types and hashes.
-public protocol WrappedData: XDRCodable, Equatable {
+public protocol WrappedData: XDRCodable, Equatable, Sendable {
     /// Fixed capacity in bytes for this data type.
     static var capacity: Int { get }
 

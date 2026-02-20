@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum ClaimantType: Int32 {
+public enum ClaimantType: Int32, Sendable {
     case claimantTypeV0 = 0
 }
 

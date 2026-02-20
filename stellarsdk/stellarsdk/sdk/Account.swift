@@ -9,13 +9,19 @@
 import Foundation
 
 /// Represents an account in Stellar network with it's sequence number.
-public class Account: TransactionAccount
+public class Account: TransactionAccount, @unchecked Sendable
 {
     /// The keypair associated with this account.
-    public private(set) var keyPair: KeyPair
+    public let keyPair: KeyPair
     /// The current sequence number of the account.
-    public private(set) var sequenceNumber: Int64
-    
+    public var sequenceNumber: Int64 {
+        lock.lock()
+        defer { lock.unlock() }
+        return _sequenceNumber
+    }
+    private var _sequenceNumber: Int64
+    private let lock = NSLock()
+
     /// Creates a new Account object.
     ///
     /// - Parameter keyPair: KeyPair associated with this Account.
@@ -23,28 +29,34 @@ public class Account: TransactionAccount
     ///
     public init(keyPair: KeyPair, sequenceNumber: Int64) {
         self.keyPair = keyPair
-        self.sequenceNumber = sequenceNumber
+        self._sequenceNumber = sequenceNumber
     }
 
     /// Creates an Account from account ID string and sequence number.
     public init(accountId: String, sequenceNumber: Int64) throws {
         self.keyPair = try KeyPair(accountId: accountId)
-        self.sequenceNumber = sequenceNumber
+        self._sequenceNumber = sequenceNumber
     }
-    
+
     ///  Returns sequence number incremented by one, but does not increment internal counter.
     public func incrementedSequenceNumber() -> Int64 {
-        return sequenceNumber + 1
+        lock.lock()
+        defer { lock.unlock() }
+        return _sequenceNumber + 1
     }
-    
+
     /// Increments sequence number in this object by one.
     public func incrementSequenceNumber() {
-        sequenceNumber += 1
+        lock.lock()
+        defer { lock.unlock() }
+        _sequenceNumber += 1
     }
-    
+
     /// Decrements sequence number in this object by one.
     public func decrementSequenceNumber() {
-        sequenceNumber -= 1
+        lock.lock()
+        defer { lock.unlock() }
+        _sequenceNumber -= 1
     }
 
     /// The Stellar account ID for this account.

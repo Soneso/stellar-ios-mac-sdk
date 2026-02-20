@@ -9,7 +9,7 @@
 import Foundation
 
 /// TimeBounds represents the time interval that a transaction is valid.
-final public class TimeBounds {
+final public class TimeBounds: Sendable {
     
     /// minTime - 64bit Unix timestamp
     final public let minTime:UInt64

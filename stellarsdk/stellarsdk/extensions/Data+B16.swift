@@ -9,7 +9,7 @@
 import Foundation
 
 /// Errors that can occur during base16 encoding or decoding.
-public enum Base16EncodingError: Error {
+public enum Base16EncodingError: Error, Sendable {
     /// The input string has an odd number of characters.
     case invalidLength
 

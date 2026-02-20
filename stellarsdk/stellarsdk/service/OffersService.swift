@@ -9,7 +9,7 @@
 import Foundation
 
 /// Defines offer stream filter options for real-time DEX offer updates.
-public enum OffersChange {
+public enum OffersChange: Sendable {
     /// Streams all offers filtered by asset pair, seller, or sponsor
     case allOffers(seller:String?,
                    sellingAssetType:String,
@@ -27,7 +27,7 @@ public enum OffersChange {
 }
 
 /// Result enum for offer details requests.
-public enum OfferResponseEnum {
+public enum OfferResponseEnum: Sendable {
     /// Successfully retrieved offer details
     case success(details: OfferResponse)
     /// Failed to retrieve offer, contains error details

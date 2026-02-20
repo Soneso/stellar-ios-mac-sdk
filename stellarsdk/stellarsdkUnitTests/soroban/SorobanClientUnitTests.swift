@@ -251,19 +251,6 @@ final class SorobanClientUnitTests: XCTestCase {
         XCTAssertFalse(options.enableServerLogging)
     }
 
-    func testClientOptionsContractIdMutability() {
-        let options = ClientOptions(
-            sourceAccountKeyPair: keyPair,
-            contractId: mockContractId,
-            network: Network.testnet,
-            rpcUrl: mockRpcUrl
-        )
-
-        let newContractId = "CBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBC2QWO"
-        options.contractId = newContractId
-        XCTAssertEqual(options.contractId, newContractId)
-    }
-
     // MARK: - MethodOptions Tests
 
     func testMethodOptionsDefaultInitialization() {
@@ -869,64 +856,6 @@ final class SorobanClientUnitTests: XCTestCase {
         XCTAssertEqual(request.methodOptions.timeoutInSeconds, NetworkConstants.DEFAULT_TIMEOUT_SECONDS)
         XCTAssertTrue(request.methodOptions.simulate)
         XCTAssertFalse(request.methodOptions.restore)
-    }
-
-    // MARK: - ClientOptions Property Mutation Tests
-
-    func testClientOptionsNetworkMutability() {
-        let options = ClientOptions(
-            sourceAccountKeyPair: keyPair,
-            contractId: mockContractId,
-            network: Network.testnet,
-            rpcUrl: mockRpcUrl
-        )
-
-        XCTAssertEqual(options.network.passphrase, Network.testnet.passphrase)
-
-        options.network = Network.public
-        XCTAssertEqual(options.network.passphrase, Network.public.passphrase)
-    }
-
-    func testClientOptionsRpcUrlMutability() {
-        let options = ClientOptions(
-            sourceAccountKeyPair: keyPair,
-            contractId: mockContractId,
-            network: Network.testnet,
-            rpcUrl: mockRpcUrl
-        )
-
-        XCTAssertEqual(options.rpcUrl, mockRpcUrl)
-
-        let newUrl = "https://custom-rpc.example.com"
-        options.rpcUrl = newUrl
-        XCTAssertEqual(options.rpcUrl, newUrl)
-    }
-
-    func testClientOptionsSourceAccountKeyPairMutability() {
-        let options = ClientOptions(
-            sourceAccountKeyPair: keyPair,
-            contractId: mockContractId,
-            network: Network.testnet,
-            rpcUrl: mockRpcUrl
-        )
-
-        let originalAccountId = keyPair.accountId
-        XCTAssertEqual(options.sourceAccountKeyPair.accountId, originalAccountId)
-
-        let newKeyPair = try! KeyPair.generateRandomKeyPair()
-        options.sourceAccountKeyPair = newKeyPair
-        XCTAssertEqual(options.sourceAccountKeyPair.accountId, newKeyPair.accountId)
-        XCTAssertNotEqual(options.sourceAccountKeyPair.accountId, originalAccountId)
-    }
-
-    // MARK: - MethodOptions Fee Mutation Tests
-
-    func testMethodOptionsFeeMutability() {
-        let options = MethodOptions(fee: 100)
-        XCTAssertEqual(options.fee, 100)
-
-        options.fee = 5000
-        XCTAssertEqual(options.fee, 5000)
     }
 
     func testMethodOptionsLargeFee() {

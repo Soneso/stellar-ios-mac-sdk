@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum ClaimAtomType: Int32 {
+public enum ClaimAtomType: Int32, Sendable {
     case v0 = 0
     case orderBook = 1
     case liquidityPool = 2

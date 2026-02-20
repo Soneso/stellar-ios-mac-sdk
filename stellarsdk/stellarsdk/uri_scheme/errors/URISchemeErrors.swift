@@ -9,7 +9,7 @@
 import Foundation
 
 /// Errors thrown by the uri scheme
-public enum URISchemeErrors {
+public enum URISchemeErrors: Sendable {
     /// The signature provided in the URI is invalid or cannot be verified.
     case invalidSignature
     /// The origin domain format is invalid or not a fully qualified domain name.

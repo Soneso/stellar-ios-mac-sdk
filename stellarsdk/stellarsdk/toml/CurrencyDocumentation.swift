@@ -27,7 +27,7 @@ import Foundation
 /// - [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 /// - [SEP-0008](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md) for regulated assets
 /// - [SEP-0041](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0041.md) for Soroban token metadata
-public class CurrencyDocumentation {
+public final class CurrencyDocumentation: Sendable {
 
     private enum Keys: String {
         case code = "code"
@@ -59,87 +59,87 @@ public class CurrencyDocumentation {
 
     /// string (<= 12 char)
     /// Token code
-    public var code: String?
+    public let code: String?
     
     /// string (<= 12 char)
     /// A pattern with ? as a single character wildcard. Allows a [[CURRENCIES]] entry to apply to multiple assets that share the same info. An example is futures, where the only difference between issues is the date of the contract. E.g. CORN???????? to match codes such as CORN20180604.
-    public var codeTemplate: String?
+    public let codeTemplate: String?
     
     /// G... string
     /// Token issuer Stellar public key
-    public var issuer: String?
+    public let issuer: String?
 
     /// C... string
     /// Contract ID of the token contract (REQUIRED for Soroban tokens per SEP-41)
-    public var contract: String?
+    public let contract: String?
 
     /// Alternately, stellar.toml can link out to a separate TOML file for each currency by specifying toml="https://DOMAIN/.well-known/CURRENCY.toml" as the currency's only field.
-    public var toml: String?
+    public let toml: String?
     
     /// Status of token. One of live, dead, test, or private. Allows issuer to mark whether token is dead/for testing/for private use or is live and should be listed in live exchanges.
-    public var status: String?
+    public let status: String?
     
     /// int (0 to 7)
     /// Preference for number of decimals to show when a client displays currency balance
-    public var displayDecimals: Int?
+    public let displayDecimals: Int?
     
     /// string (<= 20 char)
     /// A short name for the token
-    public var name: String?
+    public let name: String?
     
     /// Description of token and what it represents
-    public var desc: String?
+    public let desc: String?
     
     /// Conditions on token
-    public var conditions: String?
+    public let conditions: String?
     
     /// URL to image representing token
-    public var image: String?
+    public let image: String?
     
     /// Fixed number of tokens, if the number of tokens issued will never change
-    public var fixedNumber: Int?
+    public let fixedNumber: Int?
     
     /// Max number of tokens, if there will never be more than max_number tokens
-    public var maxNumber: Int?
+    public let maxNumber: Int?
     
     /// The number of tokens is dilutable at the issuer's discretion
-    public var isUnlimited: Bool?
+    public let isUnlimited: Bool?
     
     /// true if token can be redeemed for underlying asset, otherwise false
-    public var isAssetAnchored: Bool?
+    public let isAssetAnchored: Bool?
     
     /// Type of asset anchored. Can be fiat, crypto, nft, stock, bond, commodity, realestate, or other.
-    public var anchorAssetType: String?
+    public let anchorAssetType: String?
     
     /// If anchored token, asset that token is anchored to. E.g. USD, BTC, SBUX, Address of real-estate investment property.
-    public var anchorAsset: String?
+    public let anchorAsset: String?
     
     /// URL to attestation or other proof, evidence, or verification of reserves, such as third-party audits.
-    public var attestationOfReserve: String?
+    public let attestationOfReserve: String?
     
     /// If anchored token, these are instructions to redeem the underlying asset from tokens.
-    public var redemptionInstructions: String?
+    public let redemptionInstructions: String?
     
     /// list of crypto address strings
     /// If this is an anchored crypto token, list of one or more public addresses that hold the assets for which you are issuing tokens.
-    public var collateralAddresses: [String]
+    public let collateralAddresses: [String]
     
     /// list of message strings
     /// Messages stating that funds in the collateral_addresses list are reserved to back the issued asset. See below for details.
-    public var collateralAddressMessages: [String]
+    public let collateralAddressMessages: [String]
     
     /// list of signature strings
     /// These prove you control the collateral_addresses. For each address you list, sign the entry in collateral_address_messages with the address's private key and add the resulting string to this list as a base64-encoded raw signature.
-    public var collateralAddressSignatures: [String]
+    public let collateralAddressSignatures: [String]
     
     /// indicates whether or not this is a sep0008 regulated asset. If missing, false is assumed.
-    public var regulated: Bool?
+    public let regulated: Bool?
     
     /// url of a sep0008 compliant approval service that signs validated transactions.
-    public var approvalServer: String?
+    public let approvalServer: String?
     
     /// a human readable string that explains the issuer's requirements for approving transactions.
-    public var approvalCriteria: String?
+    public let approvalCriteria: String?
 
     /// Initializes currency documentation from a parsed TOML document.
     ///

@@ -66,7 +66,13 @@ public class AccountResponse: Decodable, TransactionAccount, @unchecked Sendable
     public let keyPair: KeyPair
 
     /// Current sequence number. Must be incremented for each transaction from this account.
-    public private(set) var sequenceNumber: Int64
+    public var sequenceNumber: Int64 {
+        lock.lock()
+        defer { lock.unlock() }
+        return _sequenceNumber
+    }
+    private var _sequenceNumber: Int64
+    private let lock = NSLock()
 
     /// Number of subentries (trustlines, offers, data entries, etc.) owned by this account.
     /// Affects the minimum balance requirement.
@@ -154,7 +160,7 @@ public class AccountResponse: Decodable, TransactionAccount, @unchecked Sendable
         guard let seqNum = Int64(sequenceNumberString) else {
             throw HorizonRequestError.parsingResponseFailed(message: "Invalid sequence number format")
         }
-        sequenceNumber = seqNum
+        _sequenceNumber = seqNum
         pagingToken = try values.decode(String.self, forKey: .pagingToken)
         subentryCount = try values.decode(UInt.self, forKey: .subentryCount)
         thresholds = try values.decode(AccountThresholdsResponse.self, forKey: .thresholds)
@@ -184,15 +190,21 @@ public class AccountResponse: Decodable, TransactionAccount, @unchecked Sendable
     
     ///  Returns sequence number incremented by one, but does not increment internal counter.
     public func incrementedSequenceNumber() -> Int64 {
-        return sequenceNumber + 1
+        lock.lock()
+        defer { lock.unlock() }
+        return _sequenceNumber + 1
     }
-    
+
     /// Increments sequence number in this object by one.
     public func incrementSequenceNumber() {
-        sequenceNumber += 1
+        lock.lock()
+        defer { lock.unlock() }
+        _sequenceNumber += 1
     }
-    
+
     public func decrementSequenceNumber() {
-        sequenceNumber -= 1
+        lock.lock()
+        defer { lock.unlock() }
+        _sequenceNumber -= 1
     }
 }

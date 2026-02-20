@@ -9,7 +9,7 @@
 import Foundation
 
 /// Errors that can occur during Stellar key decoding.
-public enum KeyUtilsError: Error {
+public enum KeyUtilsError: Error, Sendable {
     /// The encoded string is invalid or malformed.
     case invalidEncodedString
 

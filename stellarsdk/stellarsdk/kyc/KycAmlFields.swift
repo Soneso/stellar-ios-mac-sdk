@@ -10,7 +10,7 @@ import Foundation
 
 /// Field keys for natural person KYC information as defined in SEP-0009.
 /// These keys are used to identify customer data fields in SEP-0012 KYC requests.
-public enum KYCNaturalPersonFieldKey {
+public enum KYCNaturalPersonFieldKey: Sendable {
     static let lastName = "last_name"
     static let firstName = "first_name"
     static let additionalName = "additional_name"
@@ -198,7 +198,7 @@ public enum KYCNaturalPersonFieldsEnum: Sendable {
 
 /// Field keys for financial account information as defined in SEP-0009.
 /// These keys are used to identify banking and financial account data fields in SEP-0012 KYC requests.
-public enum KYCFinancialAccountFieldKey {
+public enum KYCFinancialAccountFieldKey: Sendable {
     static let bankName = "bank_name"
     static let bankAccountType = "bank_account_type"
     static let bankAccountNumber = "bank_account_number"
@@ -288,7 +288,7 @@ public enum KYCFinancialAccountFieldsEnum: Sendable {
 /// Field keys for organization KYC information as defined in SEP-0009.
 /// These keys are used to identify corporate/business customer data fields in SEP-0012 KYC requests.
 /// All keys use the "organization." prefix to distinguish them from natural person fields.
-public enum KYCOrganizationFieldKey {
+public enum KYCOrganizationFieldKey: Sendable {
     static let name = "organization.name"
     static let VATNumber = "organization.VAT_number"
     static let registrationNumber = "organization.registration_number"
@@ -392,7 +392,7 @@ public enum KYCOrganizationFieldsEnum: Sendable {
 /// Field keys for payment card information as defined in SEP-0009.
 /// These keys are used to identify credit/debit card data fields in SEP-0012 KYC requests.
 /// All keys use the "card." prefix to distinguish them from other field types.
-public enum KYCCardFieldKey {
+public enum KYCCardFieldKey: Sendable {
     static let number = "card.number"
     static let expirationDate = "card.expiration_date"
     static let cvc = "card.cvc"

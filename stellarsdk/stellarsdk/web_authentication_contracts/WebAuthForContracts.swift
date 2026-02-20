@@ -96,7 +96,7 @@ import Foundation
 /// - [SEP-0045 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md)
 /// - [StellarToml] for discovering authentication endpoints
 /// - [WebAuthenticator] for traditional account (G... and M...) authentication
-public class WebAuthForContracts: @unchecked Sendable {
+public final class WebAuthForContracts: @unchecked Sendable {
 
     // MARK: - Public Properties
 

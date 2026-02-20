@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum SignerKeyType: Int32 {
+public enum SignerKeyType: Int32, Sendable {
     case ed25519 = 0
     case preAuthTx = 1
     case hashX = 2

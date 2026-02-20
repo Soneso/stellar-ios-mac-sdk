@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum SCSpecType: Int32 {
+public enum SCSpecType: Int32, Sendable {
     case val = 0
     case bool = 1
     case void = 2
@@ -441,7 +441,7 @@ public struct SCSpecUDTUnionCaseTupleV0XDR: XDRCodable, Sendable {
     }
 }
 
-public enum SCSpecUDTUnionCaseV0Kind: Int32 {
+public enum SCSpecUDTUnionCaseV0Kind: Int32, Sendable {
     case voidV0 = 0
     case tupleV0 = 1
 }
@@ -749,7 +749,7 @@ public struct SCSpecEventParamV0XDR: XDRCodable, Sendable {
     }
 }
 
-public enum SCSpecEntryKind: Int32 {
+public enum SCSpecEntryKind: Int32, Sendable {
     case functionV0 = 0
     case structV0 = 1
     case unionV0 = 2

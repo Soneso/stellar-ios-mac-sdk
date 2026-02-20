@@ -9,17 +9,30 @@
 import Foundation
 
 /// Invokes Soroban host functions for smart contract deployment, creation, and invocation operations.
-public class InvokeHostFunctionOperation:Operation {
+public class InvokeHostFunctionOperation:Operation, @unchecked Sendable {
 
     /// The host function to invoke.
     public let hostFunction:HostFunctionXDR
     /// The authorizations required to execute the host function.
-    public var auth:[SorobanAuthorizationEntryXDR] = []
+    public var auth:[SorobanAuthorizationEntryXDR] {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return _auth
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            _auth = newValue
+        }
+    }
+    private var _auth:[SorobanAuthorizationEntryXDR] = []
+    private let lock = NSLock()
 
     /// Creates a new invoke host function operation with specified parameters.
     public init(hostFunction:HostFunctionXDR, auth:[SorobanAuthorizationEntryXDR] = [], sourceAccountId:String? = nil) {
         self.hostFunction = hostFunction;
-        self.auth = auth;
+        self._auth = auth;
         super.init(sourceAccountId: sourceAccountId)
     }
 
@@ -88,12 +101,15 @@ public class InvokeHostFunctionOperation:Operation {
     /// - Parameter sourceAccountId: (optional) source account Id, must be valid, otherwise it will be ignored.
     public init(fromXDR:InvokeHostFunctionOpXDR, sourceAccountId:String?) throws {
         self.hostFunction = fromXDR.hostFunction
-        self.auth = fromXDR.auth
+        self._auth = fromXDR.auth
         super.init(sourceAccountId: sourceAccountId)
     }
-    
+
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
-        let xdrOp = InvokeHostFunctionOpXDR(hostFunction: hostFunction, auth: auth)
+        lock.lock()
+        let currentAuth = _auth
+        lock.unlock()
+        let xdrOp = InvokeHostFunctionOpXDR(hostFunction: hostFunction, auth: currentAuth)
         return OperationBodyXDR.invokeHostFunction(xdrOp)
     }
 }

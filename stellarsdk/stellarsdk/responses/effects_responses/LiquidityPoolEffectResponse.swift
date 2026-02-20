@@ -15,22 +15,22 @@ import Foundation
 public struct LiquidityPoolEffectResponse: Decodable, Sendable {
 
     /// The unique identifier of the liquidity pool.
-    public var poolId:String
+    public let poolId:String
 
     /// The fee charged for trades against this pool, in basis points.
-    public var fee:Int64
+    public let fee:Int64
 
     /// The type of liquidity pool (e.g., constant_product).
-    public var type:String
+    public let type:String
 
     /// The total number of trustlines established to this pool.
-    public var totalTrustlines:String
+    public let totalTrustlines:String
 
     /// The total number of pool shares issued.
-    public var totalShares:String
+    public let totalShares:String
 
     /// The asset reserves held by the pool.
-    public var reserves:[ReserveResponse]
+    public let reserves:[ReserveResponse]
     
     // Properties to encode and decode
     private enum CodingKeys: String, CodingKey {

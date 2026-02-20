@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for creating a TransferServerService instance from a domain's stellar.toml file.
-public enum TransferServerServiceForDomainEnum {
+public enum TransferServerServiceForDomainEnum: Sendable {
     /// Successfully created TransferServerService instance with endpoint from stellar.toml.
     case success(response: TransferServerService)
     /// Failed to create service due to invalid domain, malformed TOML, or missing TRANSFER_SERVER.
@@ -17,7 +17,7 @@ public enum TransferServerServiceForDomainEnum {
 }
 
 /// Result enum for SEP-6 deposit requests.
-public enum DepositResponseEnum {
+public enum DepositResponseEnum: Sendable {
     /// Successfully initiated deposit with instructions for transferring external assets to anchor.
     case success(response: DepositResponse)
     /// Failed to initiate deposit due to authentication, validation, or anchor service error.
@@ -25,7 +25,7 @@ public enum DepositResponseEnum {
 }
 
 /// Result enum for SEP-6 withdrawal requests.
-public enum WithdrawResponseEnum {
+public enum WithdrawResponseEnum: Sendable {
     /// Successfully initiated withdrawal with instructions for receiving off-chain assets from anchor.
     case success(response: WithdrawResponse)
     /// Failed to initiate withdrawal due to authentication, validation, or anchor service error.
@@ -33,7 +33,7 @@ public enum WithdrawResponseEnum {
 }
 
 /// Result enum for SEP-6 anchor information requests.
-public enum AnchorInfoResponseEnum {
+public enum AnchorInfoResponseEnum: Sendable {
     /// Successfully retrieved anchor capabilities including supported assets and operations.
     case success(response: AnchorInfoResponse)
     /// Failed to retrieve anchor info due to network or anchor service error.
@@ -41,7 +41,7 @@ public enum AnchorInfoResponseEnum {
 }
 
 /// Result enum for SEP-6 transaction history requests.
-public enum AnchorTransactionsResponseEnum {
+public enum AnchorTransactionsResponseEnum: Sendable {
     /// Successfully retrieved list of deposit and withdrawal transactions with current status.
     case success(response: AnchorTransactionsResponse)
     /// Failed to retrieve transaction history due to authentication or anchor service error.
@@ -49,7 +49,7 @@ public enum AnchorTransactionsResponseEnum {
 }
 
 /// Result enum for SEP-6 individual transaction requests.
-public enum AnchorTransactionResponseEnum {
+public enum AnchorTransactionResponseEnum: Sendable {
     /// Successfully retrieved detailed status and information for the requested transaction.
     case success(response: AnchorTransactionResponse)
     /// Failed to retrieve transaction details due to authentication or anchor service error.
@@ -57,7 +57,7 @@ public enum AnchorTransactionResponseEnum {
 }
 
 /// Result enum for SEP-6 fee calculation requests (deprecated, use SEP-38 /price endpoint).
-public enum AnchorFeeResponseEnum {
+public enum AnchorFeeResponseEnum: Sendable {
     /// Successfully retrieved calculated fee for the specified deposit or withdrawal operation.
     case success(response: AnchorFeeResponse)
     /// Failed to calculate fee due to invalid parameters or anchor service error.
@@ -124,10 +124,10 @@ public enum AnchorFeeResponseEnum {
 /// - [SEP-0006 Specification](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md)
 /// - [InteractiveService] for SEP-24 (interactive flows)
 /// - [WebAuthenticator] for SEP-10 authentication
-public class TransferServerService: NSObject {
+public final class TransferServerService: @unchecked Sendable {
 
     /// The base URL of the SEP-6 transfer server endpoint for programmatic deposit and withdrawal.
-    public var transferServiceAddress: String
+    public let transferServiceAddress: String
     private let serviceHelper: ServiceHelper
     private let jsonDecoder = JSONDecoder()
 

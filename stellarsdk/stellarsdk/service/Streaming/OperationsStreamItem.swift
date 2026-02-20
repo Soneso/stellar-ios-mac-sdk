@@ -9,7 +9,7 @@
 import Foundation
 
 /// Streams operation data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class OperationsStreamItem: @unchecked Sendable {
+public final class OperationsStreamItem: Sendable {
     private let streamingHelper: StreamingHelper
     private let requestUrl: String
     let operationsFactory = OperationsFactory()

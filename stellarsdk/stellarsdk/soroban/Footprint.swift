@@ -42,7 +42,7 @@ import Foundation
 /// - [SimulateTransactionResponse] for simulation results
 /// - SorobanTransactionDataXDR for transaction resource configuration
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class Footprint {
+public final class Footprint: Sendable {
 
     /// The underlying XDR footprint containing read-only and read-write ledger keys.
     public let xdrFootprint:LedgerFootprintXDR

@@ -9,7 +9,7 @@
 import Foundation
 
 /// Errors that can occur when interacting with a SEP-30 account recovery service.
-public enum RecoveryServiceError: Error {
+public enum RecoveryServiceError: Error, Sendable {
     /// The request is invalid. Returned when request parameters are malformed or missing required fields.
     case badRequest(message:String)
 

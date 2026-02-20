@@ -10,7 +10,7 @@ import Foundation
 
 /// Represents a create passive offer operation. A passive offer is an offer that does not act on and take a reverse offer of equal price. Instead, they only take offers of lesser price.
 /// See [Stellar developer docs](https://developers.stellar.org)
-public class CreatePassiveOfferOperation:Operation {
+public class CreatePassiveOfferOperation:Operation, @unchecked Sendable {
 
     /// The asset being sold.
     public let selling:Asset

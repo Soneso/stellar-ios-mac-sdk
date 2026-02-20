@@ -10,7 +10,7 @@ import Foundation
 
 /// Terminates the current is-sponsoring-future-reserves-for relationship in which the source account is sponsored.
 /// See [Stellar developer docs](https://developers.stellar.org).
-public class EndSponsoringFutureReservesOperation:Operation {
+public class EndSponsoringFutureReservesOperation:Operation, @unchecked Sendable {
     
     /// Creates a new EndSponsoringFutureReservesOperation object.
     ///

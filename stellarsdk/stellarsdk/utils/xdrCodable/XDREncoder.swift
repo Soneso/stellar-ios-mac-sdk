@@ -11,7 +11,7 @@
 import Foundation
 
 /// A protocol for types which can be encoded to binary.
-public protocol XDREncodable: Encodable {
+public protocol XDREncodable: Encodable, Sendable {
     func xdrEncode(to encoder: XDREncoder) throws
 }
 
@@ -37,7 +37,8 @@ public extension XDREncodable {
 }
 
 /// The actual binary encoder class.
-public class XDREncoder {
+// @unchecked Sendable: Mutable data buffer used during encoding. Single-owner, not shared across threads.
+public class XDREncoder: @unchecked Sendable {
     public var data: [UInt8] = []
 
     public init() {}
@@ -56,7 +57,7 @@ public extension XDREncoder {
 /// The error type.
 public extension XDREncoder {
     /// All errors which `XDREncoder` itself can throw.
-    enum Error: Swift.Error {
+    enum Error: Swift.Error, @unchecked Sendable {
         /// Attempted to encode a type which is `Encodable`, but not `XDREncodable`. (We
         /// require `XDREncodable` because `XDREncoder` doesn't support full keyed
         /// coding functionality.)

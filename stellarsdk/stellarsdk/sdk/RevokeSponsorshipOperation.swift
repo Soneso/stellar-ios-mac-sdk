@@ -11,7 +11,7 @@ import Foundation
 /// The logic of this operation depends on the state of the source account.
 /// If the source account is not sponsored or is sponsored by the owner of the specified entry or sub-entry, then attempt to revoke the sponsorship. If the source account is sponsored, the next step depends on whether the entry is sponsored or not. If it is sponsored, attempt to transfer the sponsorship to the sponsor of the source account. If the entry is not sponsored, then establish the sponsorship.
 /// See [Stellar developer docs](https://developers.stellar.org).
-public class RevokeSponsorshipOperation:Operation {
+public class RevokeSponsorshipOperation:Operation, @unchecked Sendable {
 
     /// The ledger key identifying the ledger entry whose sponsorship is being modified.
     public let ledgerKey:LedgerKeyXDR?

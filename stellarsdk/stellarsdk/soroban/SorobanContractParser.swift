@@ -10,7 +10,7 @@ import Foundation
 
 /// Parses a soroban contract byte code to get Environment Meta, Contract Spec and Contract Meta.
 /// see: [Stellar developer docs](https://developers.stellar.org)
-public class SorobanContractParser {
+public final class SorobanContractParser: Sendable {
     
     /// Parses a soroban contract byteCode to get Environment Meta, Contract Spec and Contract Meta.
     /// see: [Stellar developer docs](https://developers.stellar.org)
@@ -150,7 +150,7 @@ public class SorobanContractParser {
 /// Stores information parsed from a soroban contract byte code such as
 /// Environment Meta, Contract Spec Entries and Contract Meta Entries.
 /// See also: [Stellar developer docs](https://developers.stellar.org)
-public class SorobanContractInfo {
+public final class SorobanContractInfo: Sendable {
 
     /// Environment interface version the contract was compiled against.
     public let envInterfaceVersion:UInt64
@@ -282,7 +282,7 @@ public class SorobanContractInfo {
 }
 
 /// Thrown if the SorobanContractParser failed parsing the given byte code.
-public enum SorobanContractParserError: Error {
+public enum SorobanContractParserError: Error, Sendable {
     /// The provided byte code is invalid or corrupted.
     case invalidByteCode
     /// The contract environment metadata section could not be found in the byte code.

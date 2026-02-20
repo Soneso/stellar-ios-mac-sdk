@@ -26,7 +26,7 @@ import Foundation
 /// - [StellarToml] for the main stellar.toml parser
 /// - [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class ValidatorInformation {
+public final class ValidatorInformation: Sendable {
 
     private enum Keys: String {
         case alias = "ALIAS"
@@ -38,23 +38,23 @@ public class ValidatorInformation {
     
     /// string
     /// A name for display in stellar-core configs that conforms to ^[a-z0-9-]{2,16}$
-    public var alias: String?
-    
+    public let alias: String?
+
     /// string
     /// A human-readable name for display in quorum explorers and other interfaces
-    public var displayName: String?
-    
+    public let displayName: String?
+
     /// G... string
     /// The Stellar account associated with the node
-    public var publicKey: String?
-    
+    public let publicKey: String?
+
     /// G... string
     /// The IP:port or domain:port peers can use to connect to the node
-    public var host: String?
-    
+    public let host: String?
+
     /// uri
     /// The location of the history archive published by this validator
-    public var history: String?
+    public let history: String?
 
     /// Initializes validator information from a parsed TOML document.
     ///

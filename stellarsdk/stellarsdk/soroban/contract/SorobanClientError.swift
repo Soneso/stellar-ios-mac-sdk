@@ -38,7 +38,7 @@ import Foundation
 ///
 /// See also:
 /// - [SorobanClient] for operations that may throw these errors
-public enum SorobanClientError: Error {
+public enum SorobanClientError: Error, Sendable {
     /// Contract deployment operation failed with the specified error details.
     case deployFailed(message: String)
     /// Contract WASM installation operation failed with the specified error details.

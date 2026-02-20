@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for fee statistics requests.
-public enum FeeStatsResponseEnum {
+public enum FeeStatsResponseEnum: Sendable {
     /// Successfully retrieved fee statistics from Horizon.
     case success(details: FeeStatsResponse)
     /// Failed to retrieve fee statistics due to a network or server error.

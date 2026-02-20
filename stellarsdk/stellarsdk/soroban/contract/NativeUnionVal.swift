@@ -10,7 +10,8 @@ import Foundation
 
 /// This class is used in ContractSpec to represent native union values
 /// that need to be converted to XdrSCVal for Soroban contract invocation.
-public class NativeUnionVal {
+// @unchecked Sendable: All properties are let. @unchecked required because [Any] is not Sendable.
+public final class NativeUnionVal: @unchecked Sendable {
     
     /// The tag identifying which union case is being used
     public let tag: String

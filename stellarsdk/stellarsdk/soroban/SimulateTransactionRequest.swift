@@ -37,17 +37,17 @@ import Foundation
 /// - [SorobanServer.simulateTransaction] for running simulations
 /// - [SimulateTransactionResponse] for simulation results
 /// - [ResourceConfig] for resource configuration
-public class SimulateTransactionRequest {
+public final class SimulateTransactionRequest: @unchecked Sendable {
 
     /// Transaction to simulate (must contain InvokeHostFunction operation).
-    public var transaction: Transaction
+    public let transaction: Transaction
 
     /// Resource limits for simulation (instruction leeway, memory bounds).
-    public var resourceConfig: ResourceConfig?
-    
+    public let resourceConfig: ResourceConfig?
+
     /// Support for non-root authorization. Only available for protocol >= 23
     /// Possible values: "enforce" | "record" | "record_allow_nonroot"
-    public var authMode:String?
+    public let authMode:String?
 
     
     /// Creates a request for simulating Soroban transaction execution.

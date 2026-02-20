@@ -26,7 +26,7 @@ import Foundation
 /// See also:
 /// - [StellarToml] for the main stellar.toml parser
 /// - [SEP-0001](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md)
-public class PointOfContactDocumentation {
+public final class PointOfContactDocumentation: Sendable {
 
     private enum Keys: String {
         case name = "name"
@@ -40,28 +40,28 @@ public class PointOfContactDocumentation {
     }
     
     /// Full legal name
-    public var name: String?
+    public let name: String?
     
     /// Business email address for the principal
-    public var email: String?
+    public let email: String?
     
     /// Personal Keybase account. Should include proof of ownership for other online accounts, as well as the organization's domain.
-    public var keybase: String?
+    public let keybase: String?
     
     /// Personal Telegram account
-    public var telegram: String?
+    public let telegram: String?
     
     /// Personal Twitter account
-    public var twitter: String?
+    public let twitter: String?
     
     /// Personal Github account
-    public var github: String?
+    public let github: String?
     
     /// SHA-256 hash of a photo of the principal's government-issued photo ID
-    public var idPhotoHash: String?
+    public let idPhotoHash: String?
     
     /// SHA-256 hash of a verification photo of principal. Should be well-lit and contain: principal holding ID card and signed, dated, hand-written message stating I, $NAME, am a principal of $ORG_NAME, a Stellar token issuer with address $ISSUER_ADDRESS.
-    public var verificationPhotoHash: String?
+    public let verificationPhotoHash: String?
 
     /// Initializes point of contact documentation from a parsed TOML document.
     ///

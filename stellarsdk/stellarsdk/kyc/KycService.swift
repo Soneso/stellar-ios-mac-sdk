@@ -10,7 +10,7 @@ import Foundation
 
 
 /// Result enum for initializing KYC service from a domain.
-public enum KycServiceForDomainEnum {
+public enum KycServiceForDomainEnum: Sendable {
     /// Successfully created KYC service instance.
     case success(response: KycService)
     /// Failed to initialize service from domain.
@@ -18,7 +18,7 @@ public enum KycServiceForDomainEnum {
 }
 
 /// Result enum for SEP-12 get customer info requests.
-public enum GetCustomerInfoResponseEnum {
+public enum GetCustomerInfoResponseEnum: Sendable {
     /// Successfully retrieved customer information and KYC status.
     case success(response: GetCustomerInfoResponse)
     /// Request failed with KYC service error.
@@ -26,7 +26,7 @@ public enum GetCustomerInfoResponseEnum {
 }
 
 /// Result enum for SEP-12 put customer info requests.
-public enum PutCustomerInfoResponseEnum {
+public enum PutCustomerInfoResponseEnum: Sendable {
     /// Successfully uploaded or updated customer information.
     case success(response: PutCustomerInfoResponse)
     /// Request failed with KYC service error.
@@ -34,7 +34,7 @@ public enum PutCustomerInfoResponseEnum {
 }
 
 /// Result enum for SEP-12 delete customer requests.
-public enum DeleteCustomerResponseEnum {
+public enum DeleteCustomerResponseEnum: Sendable {
     /// Successfully deleted customer record.
     case success
     /// Request failed with KYC service error.
@@ -42,7 +42,7 @@ public enum DeleteCustomerResponseEnum {
 }
 
 /// Result enum for SEP-12 put customer callback requests.
-public enum PutCustomerCallbackResponseEnum {
+public enum PutCustomerCallbackResponseEnum: Sendable {
     /// Successfully registered customer callback URL.
     case success
     /// Request failed with KYC service error.
@@ -50,7 +50,7 @@ public enum PutCustomerCallbackResponseEnum {
 }
 
 /// Result enum for SEP-12 post customer file requests.
-public enum PostCustomerFileResponseEnum {
+public enum PostCustomerFileResponseEnum: Sendable {
     /// Successfully uploaded customer verification file.
     case success(response: CustomerFileResponse)
     /// Request failed with KYC service error.
@@ -58,7 +58,7 @@ public enum PostCustomerFileResponseEnum {
 }
 
 /// Result enum for SEP-12 get customer files requests.
-public enum GetCustomerFilesResponseEnum {
+public enum GetCustomerFilesResponseEnum: Sendable {
     /// Successfully retrieved list of customer verification files.
     case success(response: GetCustomerFilesResponse)
     /// Request failed with KYC service error.
@@ -267,10 +267,10 @@ public enum GetCustomerFilesResponseEnum {
 /// - [WebAuthenticator] for SEP-0010 authentication
 /// - [TransferServerService] for SEP-6 integration
 /// - [InteractiveService] for SEP-24 integration
-public class KycService: NSObject {
+public final class KycService: @unchecked Sendable {
 
     /// The base URL of the SEP-12 KYC service endpoint for customer information management.
-    public var kycServiceAddress: String
+    public let kycServiceAddress: String
     private let serviceHelper: ServiceHelper
     private let jsonDecoder = JSONDecoder()
 

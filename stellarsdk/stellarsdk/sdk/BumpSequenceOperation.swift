@@ -9,7 +9,7 @@
 import Foundation
 
 /// Represents a Stellar bump sequence operation which increases an account's sequence number.
-public class BumpSequenceOperation: Operation {
+public class BumpSequenceOperation: Operation, @unchecked Sendable {
 
     /// The new sequence number to bump to.
     public let bumpTo:Int64

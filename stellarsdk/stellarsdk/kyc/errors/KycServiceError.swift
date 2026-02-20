@@ -11,7 +11,7 @@ import Foundation
 /// Errors that can occur when interacting with SEP-0012 KYC service endpoints.
 /// These errors represent various failure conditions during KYC operations including
 /// service initialization, authentication, request validation, and data processing.
-public enum KycServiceError: Error {
+public enum KycServiceError: Error, Sendable {
     /// The provided domain is not a valid URL format. Occurs when constructing KycService from an invalid domain string.
     case invalidDomain
     /// The stellar.toml file at the domain could not be parsed or is malformed. Occurs when the TOML structure is invalid.

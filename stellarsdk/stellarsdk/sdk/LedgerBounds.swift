@@ -11,7 +11,7 @@ import Foundation
 /**
  * LedgerBounds are Preconditions of a transaction per <a href="https://github.com/stellar/stellar-protocol/blob/master/core/cap-0021.md#specification">CAP-21<a/>
  */
-final public class LedgerBounds {
+final public class LedgerBounds: Sendable {
 
     /// The minimum ledger number (inclusive) for transaction validity.
     final public let minLedger:UInt32

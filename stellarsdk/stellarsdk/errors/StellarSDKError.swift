@@ -9,7 +9,7 @@
 import Foundation
 
 /// General errors that can occur during Stellar SDK operations.
-public enum StellarSDKError: Error {
+public enum StellarSDKError: Error, Sendable {
     /// An invalid argument was provided to an SDK function.
     case invalidArgument(message: String)
     /// XDR decoding failed when parsing binary Stellar protocol data.

@@ -9,7 +9,7 @@
 import Foundation
 
 /// An enum used to differentiate between successful and failed URL signing operations.
-public enum SignURLEnum {
+public enum SignURLEnum: Sendable {
     /// URL signing succeeded with the signed URL.
     case success(signedURL: String)
     /// URL signing failed with the specified error.
@@ -17,7 +17,7 @@ public enum SignURLEnum {
 }
 
 /// An enum used to differentiate between successful and failed URIScheme validity checks.
-public enum URISchemeIsValidEnum {
+public enum URISchemeIsValidEnum: Sendable {
     /// URI scheme validation succeeded.
     case success
     /// URI scheme validation failed with the specified error.
@@ -31,9 +31,11 @@ public enum URISchemeIsValidEnum {
 /// It ensures URI requests come from legitimate sources by checking cryptographic signatures.
 ///
 /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md
-public class URISchemeValidator: NSObject {
+public final class URISchemeValidator: Sendable {
     /// The predefined URIScheme prefix
     private let URISchemePrefix = "stellar.sep.7 - URI Scheme"
+
+    public init() {}
 
     /// Signs a SEP-0007 compliant URL with the signer's key pair.
     ///

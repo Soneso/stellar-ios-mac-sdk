@@ -8,7 +8,7 @@ import Foundation
 /// See also:
 /// - [InteractiveService] for the main interactive service implementation
 /// - [SEP-0024](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md)
-public enum InteractiveServiceError: Error {
+public enum InteractiveServiceError: Error, Sendable {
     /// The provided domain is invalid or malformed.
     case invalidDomain
 

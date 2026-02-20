@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum ManageOfferEffect: Int32 {
+public enum ManageOfferEffect: Int32, Sendable {
     case created = 0
     case updated = 1
     case deleted = 2

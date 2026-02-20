@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for claimable balance details requests.
-public enum ClaimableBalanceDetailsResponseEnum {
+public enum ClaimableBalanceDetailsResponseEnum: Sendable {
     /// Success case containing claimable balance details.
     case success(details: ClaimableBalanceResponse)
     /// Failure case containing error information.

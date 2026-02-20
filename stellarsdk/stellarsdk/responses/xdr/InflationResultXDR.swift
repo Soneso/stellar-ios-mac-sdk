@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum InflationResultCode: Int32 {
+public enum InflationResultCode: Int32, Sendable {
     // codes considered as "success" for the operation
     case success = 0
     // codes considered as "failure" for the operation

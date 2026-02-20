@@ -9,7 +9,7 @@
 import Foundation
 
 /// Result enum for liquidity pool details requests.
-public enum LiquidityPoolDetailsResponseEnum {
+public enum LiquidityPoolDetailsResponseEnum: Sendable {
     /// Successfully retrieved liquidity pool details from Horizon
     case success(details: LiquidityPoolResponse)
     /// Failed to retrieve liquidity pool details, contains error information
@@ -17,7 +17,7 @@ public enum LiquidityPoolDetailsResponseEnum {
 }
 
 /// Result enum for liquidity pool trades requests.
-public enum LiquidityPoolTradesResponseEnum {
+public enum LiquidityPoolTradesResponseEnum: Sendable {
     /// Successfully retrieved liquidity pool trade history
     case success(details: LiquidityPoolTradesResponse)
     /// Failed to retrieve liquidity pool trades, contains error information

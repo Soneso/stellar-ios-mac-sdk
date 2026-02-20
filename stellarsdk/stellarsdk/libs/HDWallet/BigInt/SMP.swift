@@ -169,7 +169,8 @@ infix operator ** : ExponentiationPrecedence
 public struct BInt:
 	SignedNumeric, // Implies Numeric, Equatable, ExpressibleByIntegerLiteral
 	BinaryInteger, // Implies Hashable, CustomStringConvertible, Strideable, Comparable
-	ExpressibleByFloatLiteral
+	ExpressibleByFloatLiteral,
+	Sendable
 {
 	//
 	//
@@ -1941,7 +1942,7 @@ fileprivate extension Array where Element == Limb
 //
 //
 //
-public class BIntMath
+public final class BIntMath: Sendable
 {
 	/// Returns true iff (2 ** exp) - 1 is a mersenne prime.
 	static func isMersenne(_ exp: Int) -> Bool
@@ -2202,7 +2203,8 @@ public struct BDouble:
 	CustomStringConvertible,
 	SignedNumeric,
 	Comparable,
-	Hashable
+	Hashable,
+	Sendable
 {
 	//
 	//

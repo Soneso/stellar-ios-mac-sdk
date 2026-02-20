@@ -17,7 +17,7 @@
 import Foundation
 
 /// Errors that occur when parsing TOML documents.
-public enum TomlError: Error {
+public enum TomlError: Error, Sendable {
     /// TOML document contains a duplicate key definition.
     case DuplicateKey(String)
     /// Date string does not conform to RFC 3339 or supported TOML date formats.
@@ -39,7 +39,8 @@ protocol SetValueProtocol {
 /**
     Data parsed from a TOML document
 */
-public class Toml: CustomStringConvertible, SetValueProtocol {
+// @unchecked Sendable: Mutable state used during parsing. Single-owner, not shared across threads.
+public class Toml: CustomStringConvertible, SetValueProtocol, @unchecked Sendable {
     private var data: [Path: Any]
     /// Set of all key paths in the TOML document.
     private(set) public var keyNames: Set<Path>

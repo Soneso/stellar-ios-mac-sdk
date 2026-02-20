@@ -9,7 +9,7 @@
 import Foundation
 
 /// Extends the time-to-live of contract state entries in Soroban by the specified number of ledgers.
-public class ExtendFootprintTTLOperation:Operation {
+public class ExtendFootprintTTLOperation:Operation, @unchecked Sendable {
 
     /// The number of ledgers past the LCL by which to extend the validity of the ledger keys in this transaction.
     public let extendTo:UInt32

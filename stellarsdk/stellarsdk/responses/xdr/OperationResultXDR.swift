@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum OperationResultCode: Int32 {
+public enum OperationResultCode: Int32, Sendable {
     case inner = 0 // inner object result is valid
     case badAuth = -1  // too few valid signatures / wrong network
     case noAccount = -2 // source account was not found

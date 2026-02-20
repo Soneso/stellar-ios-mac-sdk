@@ -37,7 +37,7 @@ import Foundation
 /// - [EventFilter] for complete event filtering
 /// - [SorobanServer.getEvents] for querying events
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class TopicFilter {
+public final class TopicFilter: Sendable {
 
     /// Topic segment matching patterns using exact values or wildcards for event filtering.
     public let segmentMatchers: [String]

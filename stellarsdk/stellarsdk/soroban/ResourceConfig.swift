@@ -41,7 +41,7 @@ import Foundation
 /// - [SimulateTransactionRequest] for simulation configuration
 /// - [SorobanServer.simulateTransaction] for running simulations
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class ResourceConfig {
+public final class ResourceConfig: Sendable {
 
     /// Instruction budget leeway used in preflight calculations.
     ///

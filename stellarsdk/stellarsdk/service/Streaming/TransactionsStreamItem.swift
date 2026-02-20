@@ -22,7 +22,7 @@ public enum StreamResponseEnum<Data:Decodable>: Sendable where Data: Sendable {
 }
 
 /// Streams transaction data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class TransactionsStreamItem: @unchecked Sendable {
+public final class TransactionsStreamItem: Sendable {
     private let streamingHelper: StreamingHelper
     private let requestUrl: String
 

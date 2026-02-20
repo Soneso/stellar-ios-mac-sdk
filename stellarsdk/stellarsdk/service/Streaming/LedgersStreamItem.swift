@@ -9,7 +9,7 @@
 import Foundation
 
 /// Streams ledger data from the Horizon API using Server-Sent Events (SSE) for real-time updates.
-public class LedgersStreamItem: @unchecked Sendable {
+public final class LedgersStreamItem: Sendable {
     private let streamingHelper: StreamingHelper
     private let requestUrl: String
 

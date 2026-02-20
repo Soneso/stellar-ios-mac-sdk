@@ -54,34 +54,36 @@ import Foundation
 /// - [AssembledTransaction] for lower-level transaction control
 /// - [ContractSpec] for contract interface parsing
 /// - [Stellar developer docs](https://developers.stellar.org)
-public class SorobanClient {
+public final class SorobanClient: Sendable {
 
     private static let constructorFunc = "__constructor"
-    
+
     /// spec entries of the contract represented by this client.
     public let specEntries:[SCSpecEntryXDR]
-    
+
     /// client options for interacting with soroban.
     private let clientOptions:ClientOptions
-    
+
     /// method names of the represented contract.
-    public private(set) var methodNames:[String] = []
-    
+    public let methodNames:[String]
+
     /// Internal constructor. Use `SorobanClient.forClientOptions` or `SorobanClient.deploy` to construct a SorobanClient.
     internal init(specEntries: [SCSpecEntryXDR] = [], clientOptions: ClientOptions) {
         self.specEntries = specEntries
         self.clientOptions = clientOptions
-        
+
+        var names:[String] = []
         for entry in specEntries {
             switch entry {
             case .functionV0(let function):
                 if function.name != SorobanClient.constructorFunc {
-                    self.methodNames.append(function.name)
+                    names.append(function.name)
                 }
             default:
                 break
             }
         }
+        self.methodNames = names
     }
     
     /// Loads the contract info for the contractId provided by the options, and the constructs a SorobanClient by using the loaded contract info.
@@ -159,8 +161,12 @@ public class SorobanClient {
         guard let contractId = response.createdContractId else {
             throw SorobanClientError.deployFailed(message: "Could not get contract id for deployed contract.")
         }
-        clientOptions.contractId = try contractId.encodeContractIdHex()
-        return try await SorobanClient.forClientOptions(options: clientOptions)
+        let finalOptions = ClientOptions(sourceAccountKeyPair: deployRequest.sourceAccountKeyPair,
+                                          contractId: try contractId.encodeContractIdHex(),
+                                          network: deployRequest.network,
+                                          rpcUrl: deployRequest.rpcUrl,
+                                          enableServerLogging: deployRequest.enableServerLogging)
+        return try await SorobanClient.forClientOptions(options: finalOptions)
         
     }
     

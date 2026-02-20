@@ -11,7 +11,7 @@
 import Foundation
 
 /// A protocol for types which can be decoded from binary.
-public protocol XDRDecodable: Decodable {
+public protocol XDRDecodable: Decodable, Sendable {
     init(fromBinary decoder: XDRDecoder) throws
     init(fromBinary decoder: XDRDecoder, count: Int) throws
 }
@@ -35,7 +35,8 @@ public extension XDRDecodable {
 }
 
 /// The actual binary decoder class.
-public class XDRDecoder {
+// @unchecked Sendable: Mutable cursor used during decoding. Single-owner, not shared across threads.
+public class XDRDecoder: @unchecked Sendable {
     fileprivate let data: [UInt8]
     fileprivate var cursor = 0
     
@@ -63,7 +64,7 @@ public extension XDRDecoder {
 /// The error type.
 public extension XDRDecoder {
     /// All errors which `XDRDecoder` itself can throw.
-    enum Error: Swift.Error {
+    enum Error: Swift.Error, @unchecked Sendable {
         /// The decoder hit the end of the data while the values it was decoding expected
         /// more.
         case prematureEndOfData

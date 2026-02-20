@@ -12,7 +12,7 @@ import Foundation
 ///
 /// Tracks the lifecycle of the Server-Sent Events connection from initial connection
 /// through active streaming to final closure.
-public enum EventSourceState {
+public enum EventSourceState: Sendable {
     /// Initial state when establishing connection to the server.
     case connecting
     /// Connection is established and ready to receive events.
