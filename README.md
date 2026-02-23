@@ -620,6 +620,10 @@ let isValid = try keyPair.verifyMessage("Hello, Stellar!", signature: signature)
 
 See [SEP-0053 SDK documentation](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0053.md) for details.
 
+## Agent Skill
+
+This repository includes an [Agent Skill](https://agentskills.io) that teaches AI coding agents how to use this SDK. See [skills/](skills/) for installation instructions.
+
 ## Documentation and Examples
 
 You can find more documentation and examples in the [docs](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs) folder.

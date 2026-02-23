@@ -1,0 +1,23 @@
+{
+  "name": "soneso-stellar-ios-mac-sdk",
+  "owner": {
+    "name": "Soneso"
+  },
+  "metadata": {
+    "description": "Agent skills for the Stellar iOS/macOS SDK"
+  },
+  "plugins": [
+    {
+      "name": "stellar-ios-mac-sdk",
+      "source": "./skills",
+      "description": "Teaches AI coding agents how to build Stellar blockchain applications using stellar-ios-mac-sdk. Covers transactions, operations, Horizon API, Soroban smart contracts, XDR encoding, and SEP protocols.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Soneso"
+      },
+      "homepage": "https://github.com/Soneso/stellar-ios-mac-sdk",
+      "license": "Apache-2.0",
+      "keywords": ["stellar", "blockchain", "ios", "macos", "swift", "sdk", "agent-skill"]
+    }
+  ]
+}
