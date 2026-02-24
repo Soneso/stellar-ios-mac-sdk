@@ -35,6 +35,8 @@ class Generator < Xdrgen::Generators::Base
   # in the SDK, implemented as NSObject classes, contain SDK-specific convenience
   # methods, or are custom types with no direct .x file counterpart.
   SKIP_TYPES = %w[
+    SCEnvMetaEntryXDR
+    SCSpecUDTErrorEnumV0XDR
     PublicKey
     OperationType
     AssetType
@@ -98,21 +100,8 @@ class Generator < Xdrgen::Generators::Base
     InnerTransactionResultXDR
     TransactionMetaV1XDR
 
-    SCValType
-    SCErrorType
-    SCErrorCode
-    ContractCostType
-    SCAddressType
     SCAddressXDR
-    SCNonceKeyXDR
-    SCMapEntryXDR
-    ContractExecutableType
     ContractExecutableXDR
-    Int128PartsXDR
-    UInt128PartsXDR
-    Int256PartsXDR
-    UInt256PartsXDR
-    SCContractInstanceXDR
 
     TransactionResultCode
     TransactionResultBodyXDR
@@ -146,60 +135,8 @@ class Generator < Xdrgen::Generators::Base
 
     LedgerEntryDataXDR
     ContractDataEntryXDR
-    ContractCodeEntryXDR
-    ContractCodeCostInputsXDR
-    ContractCodeEntryExtV1
-    ContractCodeEntryExt
-    ConfigSettingContractBandwidthV0XDR
-    ConfigSettingContractComputeV0XDR
-    ConfigSettingContractHistoricalDataV0XDR
-    ConfigSettingContractLedgerCostV0XDR
-    ConfigSettingContractEventsV0XDR
-    ContractCostParamEntryXDR
-    ContractCostParamsXDR
-    EvictionIteratorXDR
-    ConfigSettingContractParallelComputeV0
-    ConfigSettingContractLedgerCostExtV0
-    ConfigSettingSCPTiming
     ConfigSettingEntryXDR
-    StateArchivalSettingsXDR
-    ConfigSettingContractExecutionLanesV0XDR
-    ConfigUpgradeSetKeyXDR
 
-    SCSpecType
-    SCSpecTypeOptionXDR
-    SCSpecTypeResultXDR
-    SCSpecTypeVecXDR
-    SCSpecTypeMapXDR
-    SCSpecTypeBytesNXDR
-    SCSpecTypeTupleXDR
-    SCSpecTypeUDTXDR
-    SCSpecUDTStructFieldV0XDR
-    SCSpecUDTStructV0XDR
-    SCSpecUDTUnionCaseVoidV0XDR
-    SCSpecUDTUnionCaseTupleV0XDR
-    SCSpecUDTUnionCaseV0Kind
-    SCSpecUDTUnionCaseV0XDR
-    SCSpecUDTUnionV0XDR
-    SCSpecUDTEnumCaseV0XDR
-    SCSpecUDTEnumV0XDR
-    SCSpecUDTErrorEnumV0XDR
-    SCSpecFunctionInputV0XDR
-    SCSpecFunctionV0XDR
-    SCSpecEventV0XDR
-    SCSpecEventDataFormat
-    SCSpecEventParamLocationV0
-    SCSpecEventParamV0XDR
-    SCSpecTypeDefXDR
-    SCSpecEntryKind
-    SCSpecEntryXDR
-
-    SCEnvMetaKind
-    SCEnvMetaEntryXDR
-
-    SCMetaKind
-    SCMetaV0XDR
-    SCMetaEntryXDR
 
     ManageOfferEffect
     ManageOfferSuccessResultOfferXDR
@@ -502,12 +439,17 @@ class Generator < Xdrgen::Generators::Base
     else
       if is_optional
         # Optional: XDR optional uses explicit flag + value pattern.
-        # decodeArray(...).first won't work for types like WrappedData32 or Data
-        # that lack an explicit init(from:) compatible with the XDR wire format.
         out.puts "let #{field}Present = try container.decode(UInt32.self)"
         out.puts "if #{field}Present != 0 {"
         out.indent do
-          out.puts "#{field} = try container.decode(#{base}.self)"
+          # When the override type is an array (e.g. [SCMapEntryXDR]),
+          # use decodeArray to read the count prefix correctly.
+          if base =~ /^\[(.+)\]$/
+            inner = $1
+            out.puts "#{field} = try decodeArray(type: #{inner}.self, dec: decoder)"
+          else
+            out.puts "#{field} = try container.decode(#{base}.self)"
+          end
         end
         out.puts "} else {"
         out.indent do
@@ -537,6 +479,9 @@ class Generator < Xdrgen::Generators::Base
   def render_encode_field(out, field, member)
     decl = member.declaration
     is_optional = member.type.sub_type == :optional
+    unless is_optional
+      is_optional = typedef_is_optional?(decl.type)
+    end
 
     case decl
     when AST::Declarations::Array
@@ -548,9 +493,23 @@ class Generator < Xdrgen::Generators::Base
         out.puts "try container.encode(#{field})"
       end
     else
-      # For optional fields, the Optional XDREncodable extension handles
-      # the 0/1 prefix automatically.
-      out.puts "try container.encode(#{field})"
+      if is_optional
+        # Optional fields must be encoded explicitly: the XDREncoder's generic
+        # Optional path calls xdrEncode on the unwrapped value, which bypasses
+        # the array count prefix when the underlying type is an array.
+        out.puts "if let val = #{field} {"
+        out.indent do
+          out.puts "try container.encode(UInt32(1))"
+          out.puts "try container.encode(val)"
+        end
+        out.puts "} else {"
+        out.indent do
+          out.puts "try container.encode(UInt32(0))"
+        end
+        out.puts "}"
+      else
+        out.puts "try container.encode(#{field})"
+      end
     end
   end
 

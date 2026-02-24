@@ -27,6 +27,11 @@ FIELD_TYPE_OVERRIDES = {
   "LedgerKeyXDRConfigSettingXDR" => {
     "configSettingID" => "Int32",
   },
+  # SCMap is typedef SCMapEntry<>. The generated code resolves it as SCMapXDR
+  # but the SDK uses [SCMapEntryXDR] directly.
+  "SCContractInstanceXDR" => {
+    "storage" => "[SCMapEntryXDR]",
+  },
   # SponsorshipDescriptor = typedef AccountID* (optional PublicKey).
   # The typedef_is_optional? check in the generator detects the optional
   # semantics and adds "?" to the type and uses the optional decode pattern.

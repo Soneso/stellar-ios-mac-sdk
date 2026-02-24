@@ -541,8 +541,8 @@ NAME_OVERRIDES = {
   # LedgerEntryData union (the data field of LedgerEntry)
   "LedgerEntryData"                    => "LedgerEntryDataXDR",
 
-  # ContractCodeEntryExtV1 struct (no XDR suffix)
-  "ContractCodeEntryExtV1"             => "ContractCodeEntryExtV1",
+  # ContractCodeEntryV1 (xdrgen name for inline struct inside ContractCodeEntry.ext union arm v1)
+  "ContractCodeEntryV1"                => "ContractCodeEntryExtV1",
 
   # AccountEntryExt (extension union inside AccountEntry)
   "AccountEntryExt"                    => "AccountEntryExtXDR",
