@@ -3,24 +3,24 @@
 
 import Foundation
 
-public struct TransactionEventXDR: XDRCodable, Sendable {
-  public let stage: TransactionEventStage
+public struct DiagnosticEventXDR: XDRCodable, Sendable {
+  public let inSuccessfulContractCall: Bool
   public let event: ContractEventXDR
 
-  public init(stage: TransactionEventStage, event: ContractEventXDR) {
-    self.stage = stage
+  public init(inSuccessfulContractCall: Bool, event: ContractEventXDR) {
+    self.inSuccessfulContractCall = inSuccessfulContractCall
     self.event = event
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    stage = try container.decode(TransactionEventStage.self)
+    inSuccessfulContractCall = try container.decode(Bool.self)
     event = try container.decode(ContractEventXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(stage)
+    try container.encode(inSuccessfulContractCall)
     try container.encode(event)
   }
 }

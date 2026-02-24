@@ -83,3 +83,9 @@ api-docs-publishing.md
 # Coverage
 coverage/
 *.xcresult
+
+# Claude Code
+.claude/
+
+# XDR generator vendor bundle
+xdr-generator/vendor/

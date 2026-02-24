@@ -8,16 +8,6 @@
 
 import Foundation
 
-public enum OperationResultCode: Int32, Sendable {
-    case inner = 0 // inner object result is valid
-    case badAuth = -1  // too few valid signatures / wrong network
-    case noAccount = -2 // source account was not found
-    case notSupported = -3 // operation not supported at this time
-    case tooManySubentries = -4 // max number of subentries already reached
-    case exceededWorkLimit = -5 // operation did too much work
-    case tooManySponsoring = -6 // account is sponsoring too many entries
-}
-
 public enum OperationResultXDR: XDRCodable, Sendable {
     case createAccount(Int32, CreateAccountResultXDR)
     case payment(Int32, PaymentResultXDR)

@@ -3,11 +3,10 @@
 
 import Foundation
 
-public enum TrustlineAssetXDR: XDRCodable, Sendable {
+public enum AssetXDR: XDRCodable, Sendable {
   case native
   case alphanum4(Alpha4XDR)
   case alphanum12(Alpha12XDR)
-  case poolShare(WrappedData32)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -22,11 +21,8 @@ public enum TrustlineAssetXDR: XDRCodable, Sendable {
     case AssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
       let val = try container.decode(Alpha12XDR.self)
       self = .alphanum12(val)
-    case AssetType.ASSET_TYPE_POOL_SHARE:
-      let val = try container.decode(WrappedData32.self)
-      self = .poolShare(val)
     default:
-      throw StellarSDKError.xdrDecodingError(message: "Unknown TrustlineAssetXDR discriminant: \(discriminant)")
+      throw StellarSDKError.xdrDecodingError(message: "Unknown AssetXDR discriminant: \(discriminant)")
     }
   }
 
@@ -35,7 +31,6 @@ public enum TrustlineAssetXDR: XDRCodable, Sendable {
     case .native: return AssetType.ASSET_TYPE_NATIVE
     case .alphanum4: return AssetType.ASSET_TYPE_CREDIT_ALPHANUM4
     case .alphanum12: return AssetType.ASSET_TYPE_CREDIT_ALPHANUM12
-    case .poolShare: return AssetType.ASSET_TYPE_POOL_SHARE
     }
   }
 
@@ -49,8 +44,6 @@ public enum TrustlineAssetXDR: XDRCodable, Sendable {
     case .alphanum4(let val):
       try container.encode(val)
     case .alphanum12(let val):
-      try container.encode(val)
-    case .poolShare(let val):
       try container.encode(val)
     }
   }

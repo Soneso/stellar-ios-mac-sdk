@@ -3,29 +3,35 @@
 
 import Foundation
 
-public struct ManageDataOperationXDR: XDRCodable, Sendable {
+public struct DataEntryXDR: XDRCodable, Sendable {
+  public let accountID: PublicKey
   public let dataName: String
-  public let dataValue: Data?
+  public let dataValue: Data
+  public let reserved: Int32 = 0
 
-  public init(dataName: String, dataValue: Data? = nil) {
+  public init(
+    accountID: PublicKey,
+    dataName: String,
+    dataValue: Data
+  ) {
+    self.accountID = accountID
     self.dataName = dataName
     self.dataValue = dataValue
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
+    accountID = try container.decode(PublicKey.self)
     dataName = try container.decode(String.self)
-    let dataValuePresent = try container.decode(UInt32.self)
-    if dataValuePresent != 0 {
-      dataValue = try container.decode(Data.self)
-    } else {
-      dataValue = nil
-    }
+    dataValue = try container.decode(Data.self)
+    _ = try container.decode(Int32.self)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
+    try container.encode(accountID)
     try container.encode(dataName)
     try container.encode(dataValue)
+    try container.encode(reserved)
   }
 }

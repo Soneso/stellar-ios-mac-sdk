@@ -21,29 +21,6 @@ public enum LedgerEntryType: Int32, Sendable {
     case ttl = 9
 }
 
-public struct TTLEntryXDR: XDRCodable, Sendable {
-    public let keyHash: WrappedData32;
-    public let liveUntilLedgerSeq: UInt32;
-    
-    
-    public init(keyHash: WrappedData32, liveUntilLedgerSeq:UInt32) {
-        self.keyHash = keyHash
-        self.liveUntilLedgerSeq = liveUntilLedgerSeq
-    }
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        keyHash = try container.decode(WrappedData32.self)
-        liveUntilLedgerSeq = try container.decode(UInt32.self)
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        try container.encode(keyHash)
-        try container.encode(liveUntilLedgerSeq)
-    }
-}
-
 public struct LedgerEntryXDR: XDRCodable, Sendable {
     public let lastModifiedLedgerSeq: UInt32;
     public let data: LedgerEntryDataXDR
@@ -117,26 +94,5 @@ public enum LedgerEntryExtXDR: XDRCodable, Sendable {
         case .ledgerEntryExtensionV1(let ledgerEntryExtV1):
             try container.encode(ledgerEntryExtV1)
         }
-    }
-}
-
-public struct LedgerEntryExtensionV1: XDRCodable, Sendable {
-    public let signerSponsoringID:PublicKey?
-    public let reserved: Int32 = 0
-    
-    public init(signerSponsoringID: PublicKey) {
-        self.signerSponsoringID = signerSponsoringID
-    }
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        signerSponsoringID = try decodeArray(type: PublicKey.self, dec: decoder).first
-        _ = try container.decode(Int32.self)
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        try container.encode(signerSponsoringID)
-        try container.encode(reserved)
     }
 }
