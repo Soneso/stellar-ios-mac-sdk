@@ -84,7 +84,7 @@ class OperationsRemoteTestCase: XCTestCase, @unchecked Sendable {
                         switch opResult {
                         case .createClaimableBalance(_, let createClaimableBalanceResultXDR):
                             switch createClaimableBalanceResultXDR {
-                            case .success(_, let claimableBalanceIDXDR):
+                            case .balanceID(let claimableBalanceIDXDR):
                                 switch claimableBalanceIDXDR {
                                 case .claimableBalanceIDTypeV0(let data):
                                     self.claimableBalanceId = self.hexEncodedBalanceId(data: data.wrapped)
@@ -685,7 +685,7 @@ class OperationsRemoteTestCase: XCTestCase, @unchecked Sendable {
                         switch opResult {
                         case .createClaimableBalance(_, let createClaimableBalanceResultXDR):
                             switch createClaimableBalanceResultXDR {
-                            case .success(_, let claimableBalanceIDXDR):
+                            case .balanceID(let claimableBalanceIDXDR):
                                 switch claimableBalanceIDXDR {
                                 case .claimableBalanceIDTypeV0(let data):
                                     balanceId = self.hexEncodedBalanceId(data: data.wrapped)

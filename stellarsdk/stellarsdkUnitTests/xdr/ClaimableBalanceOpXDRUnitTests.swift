@@ -299,64 +299,60 @@ class ClaimableBalanceOpXDRUnitTests: XCTestCase {
 
     func testCreateClaimableBalanceResultXDRSuccess() throws {
         let balanceId = try ClaimableBalanceIDXDR(claimableBalanceId: testBalanceIdHex)
-        let result = CreateClaimableBalanceResultXDR.success(
-            CreateClaimableBalanceResultCode.success.rawValue,
-            balanceId
-        )
+        let result = CreateClaimableBalanceResultXDR.balanceID(balanceId)
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(CreateClaimableBalanceResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success(let code, let decodedBalanceId):
-            XCTAssertEqual(code, CreateClaimableBalanceResultCode.success.rawValue)
+        case .balanceID(let decodedBalanceId):
             XCTAssertEqual(decodedBalanceId.claimableBalanceIdString, balanceId.claimableBalanceIdString)
-        case .empty:
-            XCTFail("Expected success case, got empty")
+        default:
+            XCTFail("Expected balanceID case")
         }
     }
 
     func testCreateClaimableBalanceResultXDRMalformed() throws {
-        let result = CreateClaimableBalanceResultXDR.empty(CreateClaimableBalanceResultCode.malformed.rawValue)
+        let result = CreateClaimableBalanceResultXDR.malformed
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(CreateClaimableBalanceResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty case, got success")
-        case .empty(let code):
-            XCTAssertEqual(code, CreateClaimableBalanceResultCode.malformed.rawValue)
+        case .malformed:
+            break
+        default:
+            XCTFail("Expected malformed case")
         }
     }
 
     // MARK: - ClaimClaimableBalanceResultXDR Tests
 
     func testClaimClaimableBalanceResultXDRSuccess() throws {
-        let result = ClaimClaimableBalanceResultXDR.success(ClaimClaimableBalanceResultCode.success.rawValue)
-
-        let encoded = try XDREncoder.encode(result)
-        let decoded = try XDRDecoder.decode(ClaimClaimableBalanceResultXDR.self, data: encoded)
-
-        switch decoded {
-        case .success(let code):
-            XCTAssertEqual(code, ClaimClaimableBalanceResultCode.success.rawValue)
-        case .empty:
-            XCTFail("Expected success case, got empty")
-        }
-    }
-
-    func testClaimClaimableBalanceResultXDRDoesNotExist() throws {
-        let result = ClaimClaimableBalanceResultXDR.empty(ClaimClaimableBalanceResultCode.doesNotExist.rawValue)
+        let result = ClaimClaimableBalanceResultXDR.success
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ClaimClaimableBalanceResultXDR.self, data: encoded)
 
         switch decoded {
         case .success:
-            XCTFail("Expected empty case, got success")
-        case .empty(let code):
-            XCTAssertEqual(code, ClaimClaimableBalanceResultCode.doesNotExist.rawValue)
+            break
+        default:
+            XCTFail("Expected success case")
+        }
+    }
+
+    func testClaimClaimableBalanceResultXDRDoesNotExist() throws {
+        let result = ClaimClaimableBalanceResultXDR.doesNotExist
+
+        let encoded = try XDREncoder.encode(result)
+        let decoded = try XDRDecoder.decode(ClaimClaimableBalanceResultXDR.self, data: encoded)
+
+        switch decoded {
+        case .doesNotExist:
+            break
+        default:
+            XCTFail("Expected doesNotExist case")
         }
     }
 

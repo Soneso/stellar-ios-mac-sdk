@@ -425,7 +425,7 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
     // MARK: - RevokeSponsorshipResultXDR Tests
 
     func testRevokeSponsorshipResultXDRSuccess() throws {
-        let result = RevokeSponsorshipResultXDR.success(RevokeSponsorshipResultCode.success.rawValue)
+        let result = RevokeSponsorshipResultXDR.success
 
         let encoded = try XDREncoder.encode(result)
         XCTAssertFalse(encoded.isEmpty)
@@ -433,16 +433,15 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
         let decoded = try XDRDecoder.decode(RevokeSponsorshipResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success(let code):
-            XCTAssertEqual(code, RevokeSponsorshipResultCode.success.rawValue)
-            XCTAssertEqual(code, 0)
-        case .empty:
-            XCTFail("Expected success result, got empty")
+        case .success:
+            XCTAssertEqual(decoded.type(), 0)
+        default:
+            XCTFail("Expected success result")
         }
     }
 
     func testRevokeSponsorshipResultXDRDoesNotExist() throws {
-        let result = RevokeSponsorshipResultXDR.empty(RevokeSponsorshipResultCode.doesNotExist.rawValue)
+        let result = RevokeSponsorshipResultXDR.doesNotExist
 
         let encoded = try XDREncoder.encode(result)
         XCTAssertFalse(encoded.isEmpty)
@@ -450,16 +449,15 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
         let decoded = try XDRDecoder.decode(RevokeSponsorshipResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty result for doesNotExist error")
-        case .empty(let code):
-            XCTAssertEqual(code, RevokeSponsorshipResultCode.doesNotExist.rawValue)
-            XCTAssertEqual(code, -1)
+        case .doesNotExist:
+            XCTAssertEqual(decoded.type(), -1)
+        default:
+            XCTFail("Expected doesNotExist result")
         }
     }
 
     func testRevokeSponsorshipResultXDRNotSponsor() throws {
-        let result = RevokeSponsorshipResultXDR.empty(RevokeSponsorshipResultCode.notSponsored.rawValue)
+        let result = RevokeSponsorshipResultXDR.notSponsor
 
         let encoded = try XDREncoder.encode(result)
         XCTAssertFalse(encoded.isEmpty)
@@ -467,16 +465,15 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
         let decoded = try XDRDecoder.decode(RevokeSponsorshipResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty result for notSponsored error")
-        case .empty(let code):
-            XCTAssertEqual(code, RevokeSponsorshipResultCode.notSponsored.rawValue)
-            XCTAssertEqual(code, -2)
+        case .notSponsor:
+            XCTAssertEqual(decoded.type(), -2)
+        default:
+            XCTFail("Expected notSponsor result")
         }
     }
 
     func testRevokeSponsorshipResultXDRLowReserve() throws {
-        let result = RevokeSponsorshipResultXDR.empty(RevokeSponsorshipResultCode.lowReserve.rawValue)
+        let result = RevokeSponsorshipResultXDR.lowReserve
 
         let encoded = try XDREncoder.encode(result)
         XCTAssertFalse(encoded.isEmpty)
@@ -484,16 +481,15 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
         let decoded = try XDRDecoder.decode(RevokeSponsorshipResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty result for lowReserve error")
-        case .empty(let code):
-            XCTAssertEqual(code, RevokeSponsorshipResultCode.lowReserve.rawValue)
-            XCTAssertEqual(code, -3)
+        case .lowReserve:
+            XCTAssertEqual(decoded.type(), -3)
+        default:
+            XCTFail("Expected lowReserve result")
         }
     }
 
     func testRevokeSponsorshipResultXDROnlyTransferable() throws {
-        let result = RevokeSponsorshipResultXDR.empty(RevokeSponsorshipResultCode.onlyTransferabel.rawValue)
+        let result = RevokeSponsorshipResultXDR.onlyTransferable
 
         let encoded = try XDREncoder.encode(result)
         XCTAssertFalse(encoded.isEmpty)
@@ -501,16 +497,15 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
         let decoded = try XDRDecoder.decode(RevokeSponsorshipResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty result for onlyTransferable error")
-        case .empty(let code):
-            XCTAssertEqual(code, RevokeSponsorshipResultCode.onlyTransferabel.rawValue)
-            XCTAssertEqual(code, -4)
+        case .onlyTransferable:
+            XCTAssertEqual(decoded.type(), -4)
+        default:
+            XCTFail("Expected onlyTransferable result")
         }
     }
 
     func testRevokeSponsorshipResultXDRMalformed() throws {
-        let result = RevokeSponsorshipResultXDR.empty(RevokeSponsorshipResultCode.malformed.rawValue)
+        let result = RevokeSponsorshipResultXDR.malformed
 
         let encoded = try XDREncoder.encode(result)
         XCTAssertFalse(encoded.isEmpty)
@@ -518,17 +513,16 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
         let decoded = try XDRDecoder.decode(RevokeSponsorshipResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty result for malformed error")
-        case .empty(let code):
-            XCTAssertEqual(code, RevokeSponsorshipResultCode.malformed.rawValue)
-            XCTAssertEqual(code, -5)
+        case .malformed:
+            XCTAssertEqual(decoded.type(), -5)
+        default:
+            XCTFail("Expected malformed result")
         }
     }
 
     func testRevokeSponsorshipResultXDRRoundTrip() throws {
         // Test success round-trip via base64
-        let successResult = RevokeSponsorshipResultXDR.success(RevokeSponsorshipResultCode.success.rawValue)
+        let successResult = RevokeSponsorshipResultXDR.success
         let successEncoded = try XDREncoder.encode(successResult)
         let successBase64 = Data(successEncoded).base64EncodedString()
         XCTAssertFalse(successBase64.isEmpty)
@@ -540,14 +534,14 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
         let successDecoded = try XDRDecoder.decode(RevokeSponsorshipResultXDR.self, data: [UInt8](successDecodedData))
 
         switch successDecoded {
-        case .success(let code):
-            XCTAssertEqual(code, 0)
-        case .empty:
+        case .success:
+            XCTAssertEqual(successDecoded.type(), 0)
+        default:
             XCTFail("Expected success result after round-trip")
         }
 
         // Test error round-trip via base64
-        let errorResult = RevokeSponsorshipResultXDR.empty(RevokeSponsorshipResultCode.notSponsored.rawValue)
+        let errorResult = RevokeSponsorshipResultXDR.notSponsor
         let errorEncoded = try XDREncoder.encode(errorResult)
         let errorBase64 = Data(errorEncoded).base64EncodedString()
         XCTAssertFalse(errorBase64.isEmpty)
@@ -559,10 +553,10 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
         let errorDecoded = try XDRDecoder.decode(RevokeSponsorshipResultXDR.self, data: [UInt8](errorDecodedData))
 
         switch errorDecoded {
-        case .success:
-            XCTFail("Expected empty result after round-trip")
-        case .empty(let code):
-            XCTAssertEqual(code, -2)
+        case .notSponsor:
+            XCTAssertEqual(errorDecoded.type(), -2)
+        default:
+            XCTFail("Expected notSponsor result after round-trip")
         }
     }
 }

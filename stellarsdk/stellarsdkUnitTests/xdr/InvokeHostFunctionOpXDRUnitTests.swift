@@ -347,18 +347,18 @@ class InvokeHostFunctionOpXDRUnitTests: XCTestCase {
         }
     }
 
-    func testInvokeHostFunctionResultXDREntryExpired() throws {
-        let result = InvokeHostFunctionResultXDR.entryExpired
+    func testInvokeHostFunctionResultXDREntryArchived() throws {
+        let result = InvokeHostFunctionResultXDR.entryArchived
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(InvokeHostFunctionResultXDR.self, data: encoded)
 
-        if case .entryExpired = decoded {
+        if case .entryArchived = decoded {
             // Verify roundtrip produces identical bytes
             let reEncoded = try XDREncoder.encode(decoded)
             XCTAssertEqual(encoded, reEncoded)
         } else {
-            XCTFail("Expected entryExpired case but got \(decoded)")
+            XCTFail("Expected entryArchived case but got \(decoded)")
         }
     }
 }

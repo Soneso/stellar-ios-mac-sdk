@@ -180,54 +180,8 @@ class Generator < Xdrgen::Generators::Base
     ClaimantXDR
     ClaimantV0XDR
 
-    AccountMergeResultCode
-    AccountMergeResultXDR
-    AllowTrustResultCode
-    AllowTrustResultXDR
-    BeginSponsoringFutureReservesResultCode
-    BeginSponsoringFutureReservesResultXDR
-    BumpSequenceResultCode
-    BumpSequenceResultXDR
-    ChangeTrustResultCode
-    ChangeTrustResultXDR
-    ClaimClaimableBalanceResultCode
-    ClaimClaimableBalanceResultXDR
-    ClawbackClaimableBalanceResultCode
-    ClawbackClaimableBalanceResultXDR
-    ClawbackResultCode
-    ClawbackResultXDR
-    CreateAccountResultCode
-    CreateAccountResultXDR
-    CreateClaimableBalanceResultCode
-    CreateClaimableBalanceResultXDR
-    EndSponsoringFutureReservesResultCode
-    EndSponsoringFutureReservesResultXDR
-    ExtendFootprintTTLResultCode
-    ExtendFootprintTTLResultXDR
-    InflationResultCode
-    InflationResultXDR
-    InvokeHostFunctionResultCode
-    InvokeHostFunctionResultXDR
-    LiquidityPoolDepositResulCode
-    LiquidityPoolDepositResultXDR
-    LiquidityPoolWithdrawResulCode
-    LiquidityPoolWithdrawResultXDR
-    ManageDataResultCode
-    ManageDataResultXDR
     ManageOfferResultCode
     ManageOfferResultXDR
-    PathPaymentResultCode
-    PathPaymentResultXDR
-    PaymentResultCode
-    PaymentResultXDR
-    RestoreFootprintResultCode
-    RestoreFootprintResultXDR
-    RevokeSponsorshipResultCode
-    RevokeSponsorshipResultXDR
-    SetOptionsResultCode
-    SetOptionsResultXDR
-    SetTrustLineFlagsResultCode
-    SetTrustLineFlagsResultXDR
   ].freeze
 
   # ---------------------------------------------------------------------------
