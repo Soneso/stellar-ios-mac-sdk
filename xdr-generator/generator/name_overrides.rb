@@ -549,7 +549,10 @@ NAME_OVERRIDES = {
 
   # TrustLineEntryExt (extension union inside TrustLineEntry, note casing)
   "TrustLineEntryExt"                  => "TrustlineEntryExtXDR",
-  # TrustLineEntryExtensionV1 (note casing)
+  # TrustLineEntryV1 (anonymous struct in v1 arm of TrustLineEntry.ext union)
+  # raw_xdr_qualified_name: TrustLineEntryV1 (parent: TrustLineEntry, local: V1)
+  "TrustLineEntryV1"                   => "TrustlineEntryExtensionV1",
+  # TrustLineEntryExtensionV1 (bare name override kept for reference)
   "TrustLineEntryExtensionV1"          => "TrustlineEntryExtensionV1",
 
   # LedgerEntryExt (extension union inside LedgerEntry)
@@ -593,11 +596,16 @@ NAME_OVERRIDES = {
   "ManageOfferSuccessResultOffer"      => "ManageOfferSuccessResultOfferXDR",
 
   # AccountEntryExtV1 (extension union for AccountEntryExtensionV1)
+  # raw_xdr_qualified_name: AccountEntryExtensionV1Ext (parent chain: AccountEntryExtensionV1 + Ext)
   "AccountEntryExtV1"                  => "AccountEntryExtV1XDR",
+  "AccountEntryExtensionV1Ext"         => "AccountEntryExtV1XDR",
   # AccountEntryExtV2 (extension union for AccountEntryExtensionV2)
+  # raw_xdr_qualified_name: AccountEntryExtensionV2Ext
   "AccountEntryExtV2"                  => "AccountEntryExtV2XDR",
-  # TrustlineEntryExtV1 (extension union for TrustlineEntryExtensionV1, note casing)
-  "TrustLineEntryExtV1"               => "TrustlineEntryExtV1XDR",
+  "AccountEntryExtensionV2Ext"         => "AccountEntryExtV2XDR",
+  # TrustlineEntryExtV1XDR (extension union inside the V1 struct of TrustLineEntry)
+  # raw_xdr_qualified_name: TrustLineEntryV1Ext (parent chain: TrustLineEntry > V1 > Ext)
+  "TrustLineEntryV1Ext"               => "TrustlineEntryExtV1XDR",
 
   # LedgerEntryChanges typedef
   "LedgerEntryChanges"                 => "LedgerEntryChangesXDR",

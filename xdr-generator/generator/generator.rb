@@ -80,21 +80,13 @@ class Generator < Xdrgen::Generators::Base
     MuxedAccountXDR
     MuxedAccountMed25519XDR
     AccountEntryXDR
-    AccountEntryExtXDR
     AccountEntryExtensionV1
-    AccountEntryExtV1XDR
     AccountEntryExtensionV2
-    AccountEntryExtV2XDR
     AccountEntryExtensionV3
     TrustlineEntryXDR
-    TrustlineEntryExtXDR
-    TrustlineEntryExtensionV1
-    TrustlineEntryExtV1XDR
     TrustlineEntryExtensionV2
     ClaimableBalanceEntryXDR
-    ClaimableBalanceEntryExtXDR
     ClaimableBalanceEntryExtensionV1
-    ClaimableBalanceIDType
     ClaimableBalanceIDXDR
     TransactionResultXDR
     InnerTransactionResultXDR

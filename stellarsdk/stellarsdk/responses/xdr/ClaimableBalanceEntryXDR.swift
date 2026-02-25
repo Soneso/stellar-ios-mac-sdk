@@ -8,10 +8,6 @@
 
 import Foundation
 
-public enum ClaimableBalanceIDType: Int32, Sendable {
-    case claimableBalanceIDTypeV0 = 0
-}
-
 public struct ClaimableBalanceFlags: Sendable {
     
     // If set, the issuer account of the asset held by the claimable balance may
@@ -110,45 +106,6 @@ public struct ClaimableBalanceEntryXDR: XDRCodable, Sendable {
         try container.encode(asset)
         try container.encode(amount)
         try container.encode(ext)
-    }
-}
-
-public enum ClaimableBalanceEntryExtXDR: XDRCodable, Sendable {
-    case void
-    case claimableBalanceEntryExtensionV1 (ClaimableBalanceEntryExtensionV1)
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        let code = try container.decode(Int32.self)
-        
-        switch code {
-        case 0:
-            self = .void
-        case 1:
-            self = .claimableBalanceEntryExtensionV1(try ClaimableBalanceEntryExtensionV1(from: decoder))
-        default:
-            self = .void
-        }
-    }
-    
-    private func type() -> Int32 {
-        switch self {
-        case .void: return 0
-        case .claimableBalanceEntryExtensionV1: return 1
-        }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        
-        try container.encode(type())
-        
-        switch self {
-        case .void:
-            return
-        case .claimableBalanceEntryExtensionV1(let claimableBalnceEntryExtV1):
-            try container.encode(claimableBalnceEntryExtV1)
-        }
     }
 }
 

@@ -79,46 +79,6 @@ public struct AccountEntryXDR: XDRCodable, Sendable {
     }
 }
 
-public enum AccountEntryExtXDR: XDRCodable, Sendable {
-    case void
-    case accountEntryExtensionV1 (AccountEntryExtensionV1)
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        let code = try container.decode(Int32.self)
-        
-        switch code {
-        case 0:
-            self = .void
-        case 1:
-            self = .accountEntryExtensionV1(try AccountEntryExtensionV1(from: decoder))
-        default:
-            self = .void
-        }
-    }
-    
-    private func type() -> Int32 {
-        switch self {
-        case .void: return 0
-        case .accountEntryExtensionV1: return 1
-        }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        
-        try container.encode(type())
-        
-        switch self {
-        case .void:
-            return
-        case .accountEntryExtensionV1(let accountEntryExtV1):
-            try container.encode(accountEntryExtV1)
-        }
-    }
-    
-}
-
 public struct AccountEntryExtensionV1: XDRCodable, Sendable {
     public let liabilities: LiabilitiesXDR
     public let reserved: AccountEntryExtV1XDR
@@ -140,46 +100,6 @@ public struct AccountEntryExtensionV1: XDRCodable, Sendable {
         try container.encode(liabilities)
         try container.encode(reserved)
     }
-}
-
-public enum AccountEntryExtV1XDR: XDRCodable, Sendable {
-    case void
-    case accountEntryExtensionV2 (AccountEntryExtensionV2)
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        let code = try container.decode(Int32.self)
-        
-        switch code {
-        case 0:
-            self = .void
-        case 2:
-            self = .accountEntryExtensionV2(try AccountEntryExtensionV2(from: decoder))
-        default:
-            self = .void
-        }
-    }
-    
-    private func type() -> Int32 {
-        switch self {
-        case .void: return 0
-        case .accountEntryExtensionV2: return 2
-        }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        
-        try container.encode(type())
-        
-        switch self {
-        case .void:
-            return
-        case .accountEntryExtensionV2(let accountEntryV2):
-            try container.encode(accountEntryV2)
-        }
-    }
-    
 }
 
 public struct AccountEntryExtensionV2: XDRCodable, Sendable {
@@ -231,45 +151,6 @@ public struct AccountEntryExtensionV2: XDRCodable, Sendable {
             }
         }
         try container.encode(reserved)
-    }
-}
-
-public enum AccountEntryExtV2XDR : XDRCodable, Sendable {
-    case void
-    case accountEntryExtensionV3 (AccountEntryExtensionV3)
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        let code = try container.decode(Int32.self)
-        
-        switch code {
-        case 0:
-            self = .void
-        case 3:
-            self = .accountEntryExtensionV3(try AccountEntryExtensionV3(from: decoder))
-        default:
-            self = .void
-        }
-    }
-    
-    private func type() -> Int32 {
-        switch self {
-        case .void: return 0
-        case .accountEntryExtensionV3: return 3
-        }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        
-        try container.encode(type())
-        
-        switch self {
-        case .void:
-            return
-        case .accountEntryExtensionV3(let accountEntryV3):
-            try container.encode(accountEntryV3)
-        }
     }
 }
 

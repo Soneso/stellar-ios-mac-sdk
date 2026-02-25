@@ -263,15 +263,13 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
     }
 
     func testClaimableBalanceEntryExtDefaultDiscriminant() throws {
-        // Test that unknown discriminant defaults to void
-        let xdrData: [UInt8] = [0x00, 0x00, 0x00, 0x99] // Unknown discriminant 99
-        let decoded = try XDRDecoder.decode(ClaimableBalanceEntryExtXDR.self, data: xdrData)
-
-        switch decoded {
-        case .void:
-            XCTAssertTrue(true) // Expected default behavior
-        case .claimableBalanceEntryExtensionV1:
-            XCTFail("Expected void as default for unknown discriminant")
+        // Test that unknown discriminant throws a decoding error
+        let xdrData: [UInt8] = [0x00, 0x00, 0x00, 0x99] // Unknown discriminant 153
+        XCTAssertThrowsError(try XDRDecoder.decode(ClaimableBalanceEntryExtXDR.self, data: xdrData)) { error in
+            guard case StellarSDKError.xdrDecodingError = error else {
+                XCTFail("Expected xdrDecodingError for unknown discriminant")
+                return
+            }
         }
     }
 
