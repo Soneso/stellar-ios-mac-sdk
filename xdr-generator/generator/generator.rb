@@ -80,7 +80,6 @@ class Generator < Xdrgen::Generators::Base
     MuxedAccountXDR
     MuxedAccountMed25519XDR
     TrustlineEntryExtensionV2
-    ClaimableBalanceIDXDR
     TransactionResultXDR
     InnerTransactionResultXDR
     TransactionMetaV1XDR
