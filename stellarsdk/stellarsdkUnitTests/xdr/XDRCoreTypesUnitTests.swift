@@ -230,10 +230,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 2000000,
             sequenceNumber: 50,
             numSubEntries: 1,
-            homeDomain: "stellar.org",
             flags: 0,
+            homeDomain: "stellar.org",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -259,10 +260,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 3000000,
             sequenceNumber: 75,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -343,10 +345,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 1000000,
             sequenceNumber: 1,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -378,10 +381,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 2000000,
             sequenceNumber: 2,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -413,10 +417,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 3000000,
             sequenceNumber: 3,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -531,10 +536,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 10000000,
             sequenceNumber: 123,
             numSubEntries: 5,
-            homeDomain: "stellar.org",
             flags: AccountFlags.AUTH_REQUIRED_FLAG,
+            homeDomain: "stellar.org",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let encoded = try XDREncoder.encode(accountEntry)
@@ -557,11 +563,12 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 5000000,
             sequenceNumber: 456,
             numSubEntries: 2,
-            homeDomain: "",
             inflationDest: publicKey,
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let encoded = try XDREncoder.encode(accountEntry)
@@ -586,10 +593,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 1000000,
             sequenceNumber: 1,
             numSubEntries: 0,
-            homeDomain: "",
             flags: allFlags,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let encoded = try XDREncoder.encode(accountEntry)
@@ -616,7 +624,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
     func testAccountEntryExtXDRWithExtensionV1() throws {
         let liabilities = LiabilitiesXDR(buying: 1000, selling: 2000)
-        let extV1 = AccountEntryExtensionV1(liabilities: liabilities)
+        let extV1 = AccountEntryExtensionV1(liabilities: liabilities, reserved: .void)
         let ext = AccountEntryExtXDR.accountEntryExtensionV1(extV1)
 
         let encoded = try XDREncoder.encode(ext)
@@ -761,10 +769,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 1000000,
             sequenceNumber: 1,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -797,7 +806,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
     }
 
     func testAccountEntryExtensionV3() throws {
-        let extV3 = AccountEntryExtensionV3(seqLedger: 12345, seqTime: 1234567890)
+        let extV3 = AccountEntryExtensionV3(ext: .void, seqLedger: 12345, seqTime: 1234567890)
 
         let encoded = try XDREncoder.encode(extV3)
         let decoded = try XDRDecoder.decode(AccountEntryExtensionV3.self, data: encoded)

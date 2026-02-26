@@ -8,6 +8,7 @@
 TYPE_OVERRIDES = {
   "AccountIDXDR"                     => "PublicKey",
   "PoolIDXDR"                        => "WrappedData32",
+  "DurationXDR"                      => "UInt64",
   "TimePointXDR"                     => "UInt64",
   "SequenceNumberXDR"                => "Int64",
   "ContractIDXDR"                    => "WrappedData32",
@@ -54,6 +55,7 @@ FIELD_TYPE_OVERRIDES = {
 #   - Decode: `_ = try container.decode(Int32.self)` (value discarded)
 #   - Encode: `try container.encode(reserved)` (always encodes 0)
 EXTENSION_POINT_FIELDS = {
+  "ClaimableBalanceEntryExtensionV1" => ["reserved"],
   "DataEntryXDR"            => ["reserved"],
   "LedgerEntryExtensionV1"  => ["reserved"],
   "OfferEntryXDR"           => ["reserved"],
@@ -62,11 +64,13 @@ EXTENSION_POINT_FIELDS = {
 # Struct names that should use `let` instead of `var` for properties.
 # This matches the immutability pattern of the original hand-written SDK types.
 LET_TYPES = Set.new(%w[
+  AccountEntryExtensionV1
   AllowTrustOperationXDR
   BeginSponsoringFutureReservesOpXDR
   BumpSequenceOperationXDR
   ChangeTrustOperationXDR
   ClaimClaimableBalanceOpXDR
+  ClaimableBalanceEntryXDR
   ClawbackClaimableBalanceOpXDR
   ClawbackOpXDR
   ConstantProductXDR
@@ -93,6 +97,7 @@ LET_TYPES = Set.new(%w[
   OperationMetaXDR
   PathPaymentOperationXDR
   PaymentOperationXDR
+  PreconditionsV2XDR
   PriceXDR
   SetOptionsOperationXDR
   SetTrustLineFlagsOpXDR
@@ -100,6 +105,7 @@ LET_TYPES = Set.new(%w[
   SimplePaymentResultXDR
   TimeBoundsXDR
   TransactionEventXDR
+  TrustlineEntryXDR
   TTLEntryXDR
   LedgerEntryExtensionV1
 ]).freeze

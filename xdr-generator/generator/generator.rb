@@ -79,14 +79,8 @@ class Generator < Xdrgen::Generators::Base
     AllowTrustOpAssetXDR
     MuxedAccountXDR
     MuxedAccountMed25519XDR
-    AccountEntryXDR
-    AccountEntryExtensionV1
     AccountEntryExtensionV2
-    AccountEntryExtensionV3
-    TrustlineEntryXDR
     TrustlineEntryExtensionV2
-    ClaimableBalanceEntryXDR
-    ClaimableBalanceEntryExtensionV1
     ClaimableBalanceIDXDR
     TransactionResultXDR
     InnerTransactionResultXDR
@@ -119,7 +113,6 @@ class Generator < Xdrgen::Generators::Base
     SorobanCredentialsXDR
     LedgerFootprintXDR
     InvokeHostFunctionSuccessPreImageXDR
-    SorobanResourcesXDR
     SorobanResourcesExtV0
     SorobanResourcesExt
     SorobanTransactionDataXDR
@@ -153,7 +146,6 @@ class Generator < Xdrgen::Generators::Base
     TransactionMetaXDR
     PreconditionType
     PreconditionsXDR
-    PreconditionsV2XDR
     LedgerBoundsXDR
     HashIDPreimageXDR
     HashIDPreimageContractIDXDR

@@ -428,7 +428,7 @@ class SorobanTest: XCTestCase {
         let ledgerKeyContractCode = LedgerKeyContractCodeXDR(wasmId:wasmId)
         let codeKey = LedgerKeyXDR.contractCode(ledgerKeyContractCode)
         let footprint = LedgerFootprintXDR(readOnly: [codeKey], readWrite: [])
-        let ressources = SorobanResourcesXDR(footprint: footprint)
+        let ressources = SorobanResourcesXDR(footprint: footprint, instructions: 0, diskReadBytes: 0, writeBytes: 0)
         let transactionData = SorobanTransactionDataXDR(resources: ressources)
         
         transaction.setSorobanTransactionData(data: transactionData)

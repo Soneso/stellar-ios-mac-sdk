@@ -51,6 +51,18 @@ FIELD_OVERRIDES = {
     "destination" => "accountID",
   },
 
+  # XDR: ClaimableBalanceEntryXDR.balanceID
+  # SDK renames to "claimableBalanceID" for clarity
+  "ClaimableBalanceEntryXDR" => {
+    "balanceID" => "claimableBalanceID",
+  },
+
+  # XDR: ClaimableBalanceEntryExtensionV1.ext (extension point)
+  # SDK renames extension fields to "reserved"
+  "ClaimableBalanceEntryExtensionV1" => {
+    "ext" => "reserved",
+  },
+
   # XDR: ClawbackClaimableBalanceOp.balanceID
   # SDK renames to "claimableBalanceID" for clarity
   "ClawbackClaimableBalanceOpXDR" => {
@@ -71,6 +83,18 @@ FIELD_OVERRIDES = {
 
   # --- Stellar-ledger-entries.x ---
 
+  # XDR: AccountEntryExtensionV1.ext (extension union)
+  # SDK renames extension fields to "reserved"
+  "AccountEntryExtensionV1" => {
+    "ext" => "reserved",
+  },
+
+  # XDR: AccountEntry.seqNum
+  # SDK uses "sequenceNumber" instead of "seqNum"
+  "AccountEntryXDR" => {
+    "seqNum" => "sequenceNumber",
+  },
+
   # XDR: DataEntry.ext (extension union)
   # SDK renames extension fields to "reserved"
   "DataEntryXDR" => {
@@ -81,6 +105,12 @@ FIELD_OVERRIDES = {
   # SDK shortens to "hash"
   "InnerTransactionResultPair" => {
     "transactionHash" => "hash",
+  },
+
+  # XDR: TrustlineEntryXDR.ext (extension union)
+  # SDK renames extension fields to "reserved"
+  "TrustlineEntryXDR" => {
+    "ext" => "reserved",
   },
 
   # XDR: Int256Parts uses underscore-separated field names (hi_hi, hi_lo, etc.)

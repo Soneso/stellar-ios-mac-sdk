@@ -692,48 +692,6 @@ public struct InvokeHostFunctionSuccessPreImageXDR: XDRCodable, Sendable {
     }
 }
 
-// Resource limits for a Soroban transaction.
-// The transaction will fail if it exceeds any of these limits.
-public struct SorobanResourcesXDR: XDRCodable, Sendable {
-    
-    // The ledger footprint of the transaction.
-    public var footprint: LedgerFootprintXDR;
-    
-    // The maximum number of instructions this transaction can use
-    public var instructions: UInt32
-    
-    // The maximum number of bytes this transaction can read from disk backed entries
-    public var diskReadBytes: UInt32
-    
-    // The maximum number of bytes this transaction can write to ledger
-    public var writeBytes: UInt32
-    
-    public init(footprint: LedgerFootprintXDR, instructions: UInt32 = 0, diskReadBytes: UInt32 = 0, writeBytes: UInt32 = 0) {
-        self.footprint = footprint
-        self.instructions = instructions
-        self.diskReadBytes = diskReadBytes
-        self.writeBytes = writeBytes
-    }
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        
-        footprint = try container.decode(LedgerFootprintXDR.self)
-        instructions = try container.decode(UInt32.self)
-        diskReadBytes = try container.decode(UInt32.self)
-        writeBytes = try container.decode(UInt32.self)
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        
-        try container.encode(footprint)
-        try container.encode(instructions)
-        try container.encode(diskReadBytes)
-        try container.encode(writeBytes)
-    }
-}
-
 public struct SorobanResourcesExtV0: XDRCodable, Sendable {
     
     // Vector of indices representing what Soroban
