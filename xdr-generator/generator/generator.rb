@@ -79,7 +79,6 @@ class Generator < Xdrgen::Generators::Base
     AllowTrustOpAssetXDR
     MuxedAccountXDR
     MuxedAccountMed25519XDR
-    AccountEntryExtensionV2
     TrustlineEntryExtensionV2
     ClaimableBalanceIDXDR
     TransactionResultXDR
@@ -166,6 +165,8 @@ class Generator < Xdrgen::Generators::Base
 
     ManageOfferResultCode
     ManageOfferResultXDR
+
+    SponsorshipDescriptorXDR
   ].freeze
 
   # ---------------------------------------------------------------------------
@@ -1301,10 +1302,19 @@ class Generator < Xdrgen::Generators::Base
   # Check if a typespec resolves to a typedef whose underlying type is optional.
   # This handles typedefs like `typedef AccountID* SponsorshipDescriptor` where
   # the optionality is baked into the typedef, not at the field level.
+  #
+  # When a typedef has a TYPE_OVERRIDES entry (e.g. SponsorshipDescriptorXDR),
+  # the wrapper type handles optionality internally, so we return false to
+  # prevent the generator from adding optional decode/encode at the field level.
   def typedef_is_optional?(type)
     return false unless type.is_a?(AST::Typespecs::Simple)
     resolved = type.resolved_type
     return false unless resolved.is_a?(AST::Definitions::Typedef)
+    # If the typedef is resolved via TYPE_OVERRIDES to a wrapper type,
+    # the wrapper handles optionality internally -- don't add optional
+    # decode at the field level.
+    resolved_name = name(resolved)
+    return false if TYPE_OVERRIDES.key?(resolved_name)
     resolved.declaration.type.sub_type == :optional
   rescue
     false

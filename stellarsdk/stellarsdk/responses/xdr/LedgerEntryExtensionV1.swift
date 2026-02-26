@@ -4,21 +4,16 @@
 import Foundation
 
 public struct LedgerEntryExtensionV1: XDRCodable, Sendable {
-  public let signerSponsoringID: PublicKey?
+  public let signerSponsoringID: SponsorshipDescriptorXDR
   public let reserved: Int32 = 0
 
-  public init(signerSponsoringID: PublicKey? = nil) {
+  public init(signerSponsoringID: SponsorshipDescriptorXDR) {
     self.signerSponsoringID = signerSponsoringID
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    let signerSponsoringIDPresent = try container.decode(UInt32.self)
-    if signerSponsoringIDPresent != 0 {
-      signerSponsoringID = try container.decode(PublicKey.self)
-    } else {
-      signerSponsoringID = nil
-    }
+    signerSponsoringID = try container.decode(SponsorshipDescriptorXDR.self)
     _ = try container.decode(Int32.self)
   }
 

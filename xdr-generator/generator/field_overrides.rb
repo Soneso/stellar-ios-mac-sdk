@@ -89,6 +89,12 @@ FIELD_OVERRIDES = {
     "ext" => "reserved",
   },
 
+  # XDR: AccountEntryExtensionV2.ext (extension union)
+  # SDK renames extension fields to "reserved"
+  "AccountEntryExtensionV2" => {
+    "ext" => "reserved",
+  },
+
   # XDR: AccountEntry.seqNum
   # SDK uses "sequenceNumber" instead of "seqNum"
   "AccountEntryXDR" => {

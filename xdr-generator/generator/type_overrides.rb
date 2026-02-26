@@ -15,6 +15,10 @@ TYPE_OVERRIDES = {
   "AssetCodeXDR"                     => "AllowTrustOpAssetXDR",
   "LiquidityPoolEntryXDRBodyXDR"     => "LiquidityPoolBodyXDR",
   "ContractEventType"                => "Int32",
+  # SponsorshipDescriptor is typedef AccountID* (optional pointer).
+  # The hand-written SponsorshipDescriptorXDR wrapper handles per-element
+  # optional encode/decode internally, so arrays of it work with standard decode.
+  "SponsorshipDescriptorXDR"          => "SponsorshipDescriptorXDR",
 }.freeze
 
 # Per-field type overrides. When the generator resolves a field's type to
@@ -32,13 +36,6 @@ FIELD_TYPE_OVERRIDES = {
   # but the SDK uses [SCMapEntryXDR] directly.
   "SCContractInstanceXDR" => {
     "storage" => "[SCMapEntryXDR]",
-  },
-  # SponsorshipDescriptor = typedef AccountID* (optional PublicKey).
-  # The typedef_is_optional? check in the generator detects the optional
-  # semantics and adds "?" to the type and uses the optional decode pattern.
-  # This override ensures the field uses PublicKey instead of SponsorshipDescriptorXDR.
-  "LedgerEntryExtensionV1" => {
-    "signerSponsoringID" => "PublicKey",
   },
 }.freeze
 

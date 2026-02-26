@@ -24,58 +24,6 @@ public struct AccountFlags: Sendable {
     public static let AUTH_CLAWBACK_ENABLED_FLAG: UInt32 = 8
 }
 
-public struct AccountEntryExtensionV2: XDRCodable, Sendable {
-    public var numSponsored: UInt32 = 0
-    public var numSponsoring: UInt32 = 0
-    public var signerSponsoringIDs: [PublicKey?]
-    public let reserved: AccountEntryExtV2XDR
-    
-    public init(numSponsored: UInt32, numSponsoring: UInt32, signerSponsoringIDs:[PublicKey?]) {
-        self.numSponsored = numSponsored
-        self.numSponsoring = numSponsoring
-        self.signerSponsoringIDs = signerSponsoringIDs
-        self.reserved = .void
-    }
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        
-        numSponsored = try container.decode(UInt32.self)
-        numSponsoring = try container.decode(UInt32.self)
-        signerSponsoringIDs = [PublicKey?]()
-        let count = try container.decode(Int32.self)
-        for _ in stride(from: count, to: 0, by: -1) { 
-            let present = try container.decode(Int32.self) == 1
-            if (present) {
-                signerSponsoringIDs.append(try container.decode(PublicKey.self))
-            } else {
-                signerSponsoringIDs.append(nil)
-            }
-        }
-        reserved = try container.decode(AccountEntryExtV2XDR.self)
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        
-        try container.encode(numSponsored)
-        try container.encode(numSponsoring)
-        let count = signerSponsoringIDs.count
-        try container.encode(Int32(count))
-        if (count > 0) {
-            for i in 0 ... count - 1 {
-                if let next = signerSponsoringIDs[i] {
-                    try container.encode(Int32(1))
-                    try container.encode(next)
-                } else {
-                    try container.encode(Int32(0))
-                }
-            }
-        }
-        try container.encode(reserved)
-    }
-}
-
 public enum ExtensionPoint : XDRCodable, Sendable {
     case void
     

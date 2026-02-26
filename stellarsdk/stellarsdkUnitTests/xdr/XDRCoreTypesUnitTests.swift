@@ -672,7 +672,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
         let accountIdString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
         let publicKey = try PublicKey(accountId: accountIdString)
 
-        let extV1 = LedgerEntryExtensionV1(signerSponsoringID: publicKey)
+        let extV1 = LedgerEntryExtensionV1(signerSponsoringID: SponsorshipDescriptorXDR(publicKey))
         let ext = LedgerEntryExtXDR.ledgerEntryExtensionV1(extV1)
 
         let encoded = try XDREncoder.encode(ext)
@@ -680,7 +680,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
         switch decoded {
         case .ledgerEntryExtensionV1(let decodedExtV1):
-            XCTAssertNotNil(decodedExtV1.signerSponsoringID)
+            XCTAssertNotNil(decodedExtV1.signerSponsoringID.value)
         default:
             XCTFail("Expected ledgerEntryExtensionV1 case")
         }
@@ -791,7 +791,8 @@ class XDRCoreTypesUnitTests: XCTestCase {
         let extV2 = AccountEntryExtensionV2(
             numSponsored: 3,
             numSponsoring: 2,
-            signerSponsoringIDs: [publicKey, nil, publicKey]
+            signerSponsoringIDs: [SponsorshipDescriptorXDR(publicKey), SponsorshipDescriptorXDR(nil), SponsorshipDescriptorXDR(publicKey)],
+            reserved: .void
         )
 
         let encoded = try XDREncoder.encode(extV2)
@@ -800,9 +801,9 @@ class XDRCoreTypesUnitTests: XCTestCase {
         XCTAssertEqual(decoded.numSponsored, 3)
         XCTAssertEqual(decoded.numSponsoring, 2)
         XCTAssertEqual(decoded.signerSponsoringIDs.count, 3)
-        XCTAssertNotNil(decoded.signerSponsoringIDs[0])
-        XCTAssertNil(decoded.signerSponsoringIDs[1])
-        XCTAssertNotNil(decoded.signerSponsoringIDs[2])
+        XCTAssertNotNil(decoded.signerSponsoringIDs[0].value)
+        XCTAssertNil(decoded.signerSponsoringIDs[1].value)
+        XCTAssertNotNil(decoded.signerSponsoringIDs[2].value)
     }
 
     func testAccountEntryExtensionV3() throws {
