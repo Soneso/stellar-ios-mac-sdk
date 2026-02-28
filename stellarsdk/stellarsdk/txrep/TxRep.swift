@@ -2824,7 +2824,7 @@ public final class TxRep: Sendable {
             addLine(key: prefix + "claimableBalanceId.balanceID.v0", value: claimableBalanceId.claimableBalanceIdString, lines: &lines)
         case .liquidityPoolId(let poolId):
             addLine(key: prefix + "type", value: "SC_ADDRESS_TYPE_LIQUIDITY_POOL", lines: &lines)
-            addLine(key: prefix + "liquidityPoolId", value: poolId.poolIDString, lines: &lines)
+            addLine(key: prefix + "liquidityPoolId", value: poolId.wrapped.base16EncodedString(), lines: &lines)
         }
     }
     

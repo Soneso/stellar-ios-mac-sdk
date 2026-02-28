@@ -64,6 +64,8 @@ EXTENSION_POINT_FIELDS = {
 LET_TYPES = Set.new(%w[
   AccountEntryExtensionV1
   AllowTrustOperationXDR
+  Alpha4XDR
+  Alpha12XDR
   BeginSponsoringFutureReservesOpXDR
   BumpSequenceOperationXDR
   ChangeTrustOperationXDR
@@ -82,6 +84,7 @@ LET_TYPES = Set.new(%w[
   DataEntryXDR
   DecoratedSignatureXDR
   DiagnosticEventXDR
+  Ed25519SignedPayload
   ExtendFootprintTTLOpXDR
   InflationPayoutXDR
   LedgerEntryChangesXDR

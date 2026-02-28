@@ -70,9 +70,6 @@ class Generator < Xdrgen::Generators::Base
     MuxedAccountMed25519XDR
     TransactionResultXDR
     InnerTransactionResultXDR
-    SCAddressXDR
-    ContractExecutableXDR
-
     TransactionResultCode
     TransactionResultBodyXDR
     InnerTransactionResultPair
@@ -91,13 +88,6 @@ class Generator < Xdrgen::Generators::Base
     ManageOfferSuccessResultOfferXDR
     ManageOfferSuccessResultXDR
 
-    Alpha4XDR
-    Alpha12XDR
-    AssetXDR
-    ChangeTrustAssetXDR
-    SignerKeyType
-    SignerKeyXDR
-    Ed25519SignedPayload
     LedgerEntryType
     LedgerEntryXDR
     LedgerEntryExtXDR

@@ -529,6 +529,8 @@ NAME_OVERRIDES = {
   # It is a struct nested inside the SignerKey union in XDR
   # but a standalone struct in Swift
   "Ed25519SignedPayload"               => "Ed25519SignedPayload",
+  # raw_xdr_qualified_name for the nested struct (parent: SignerKey)
+  "SignerKeyEd25519SignedPayload"      => "Ed25519SignedPayload",
 
   # --- Custom SDK types with no direct XDR counterpart ---
   # RevokeSponsorshipSigner struct (part of RevokeSponsorshipOp in XDR)
