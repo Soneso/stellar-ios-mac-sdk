@@ -23,37 +23,3 @@ public struct AccountFlags: Sendable {
     // with clawback enabled set to "true"
     public static let AUTH_CLAWBACK_ENABLED_FLAG: UInt32 = 8
 }
-
-public enum ExtensionPoint : XDRCodable, Sendable {
-    case void
-    
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        let code = try container.decode(Int32.self)
-        
-        switch code {
-        case 0:
-            self = .void
-        default:
-            self = .void
-        }
-    }
-    
-    private func type() -> Int32 {
-        switch self {
-        case .void: return 0
-        }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        
-        try container.encode(type())
-        
-        switch self {
-        case .void:
-            return
-        }
-    }
-}
-

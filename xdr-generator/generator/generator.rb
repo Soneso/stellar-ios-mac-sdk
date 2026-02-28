@@ -68,7 +68,6 @@ class Generator < Xdrgen::Generators::Base
     UploadContractWasmArgsXDR
     FromEd25519PublicKeyXDR
     InvokeHostFunctionOpXDR
-    ExtensionPoint
     LedgerKeyXDR
     LedgerKeyContractDataXDR
     LedgerKeyContractCodeXDR
