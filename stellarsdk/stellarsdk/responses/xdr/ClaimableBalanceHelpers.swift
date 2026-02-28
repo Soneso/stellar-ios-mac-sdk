@@ -8,13 +8,6 @@
 
 import Foundation
 
-public struct ClaimableBalanceFlags: Sendable {
-
-    // If set, the issuer account of the asset held by the claimable balance may
-    // clawback the claimable balance
-    public static let CLAIMABLE_BALANCE_CLAWBACK_ENABLED_FLAG: UInt32 = 1
-}
-
 extension ClaimableBalanceIDXDR {
     public init(claimableBalanceId: String) throws {
         var claimableBalanceIdHex = claimableBalanceId

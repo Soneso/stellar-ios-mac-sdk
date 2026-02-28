@@ -4,22 +4,32 @@
 import Foundation
 
 public struct LedgerEntryExtensionV1: XDRCodable, Sendable {
-  public let signerSponsoringID: SponsorshipDescriptorXDR
+  public let signerSponsoringID: PublicKey?
   public let reserved: Int32 = 0
 
-  public init(signerSponsoringID: SponsorshipDescriptorXDR) {
+  public init(signerSponsoringID: PublicKey? = nil) {
     self.signerSponsoringID = signerSponsoringID
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    signerSponsoringID = try container.decode(SponsorshipDescriptorXDR.self)
+    let signerSponsoringIDPresent = try container.decode(UInt32.self)
+    if signerSponsoringIDPresent != 0 {
+      signerSponsoringID = try container.decode(PublicKey.self)
+    } else {
+      signerSponsoringID = nil
+    }
     _ = try container.decode(Int32.self)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
-    try container.encode(signerSponsoringID)
+    if let val = signerSponsoringID {
+      try container.encode(UInt32(1))
+      try container.encode(val)
+    } else {
+      try container.encode(UInt32(0))
+    }
     try container.encode(reserved)
   }
 }

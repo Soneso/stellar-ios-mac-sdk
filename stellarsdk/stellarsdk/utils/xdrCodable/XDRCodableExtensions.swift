@@ -45,7 +45,7 @@ func decodeArrayOpt<T: Codable>(type:T.Type, dec:Decoder) throws -> [T] {
     guard let decoder = dec as? XDRDecoder else {
         throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
     }
-    
+
     let count = try decoder.decode(UInt32.self)
     var array = [T]()
     for _ in 0 ..< count {
@@ -53,8 +53,61 @@ func decodeArrayOpt<T: Codable>(type:T.Type, dec:Decoder) throws -> [T] {
             array.append(decoded)
         }
     }
-    
+
     return array
+}
+
+/// Decodes an array where each element is XDR-optional (UInt32 present flag + value).
+///
+/// Used for arrays of optional typedef types like `SponsorshipDescriptor`
+/// (`typedef AccountID* SponsorshipDescriptor`), where each array element
+/// is preceded by a 32-bit present/absent flag.
+///
+/// - Parameter type: The wrapped (non-optional) element type to decode
+/// - Parameter dec: Decoder to read from
+/// - Returns: Array of optional elements
+/// - Throws: XDRDecoder.Error if decoding fails
+func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder) throws -> [T?] {
+    guard let decoder = dec as? XDRDecoder else {
+        throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
+    }
+
+    let count = try decoder.decode(UInt32.self)
+    var array = [T?]()
+    array.reserveCapacity(Int(count))
+    for _ in 0..<count {
+        let present = try decoder.decode(UInt32.self)
+        if present != 0 {
+            array.append(try type.init(from: decoder))
+        } else {
+            array.append(nil)
+        }
+    }
+    return array
+}
+
+/// Encodes an array where each element is XDR-optional (UInt32 present flag + value).
+///
+/// Used for arrays of optional typedef types like `SponsorshipDescriptor`,
+/// where each array element is preceded by a 32-bit present/absent flag.
+///
+/// - Parameter array: Array of optional elements to encode
+/// - Parameter enc: Encoder to write to
+/// - Throws: XDREncoder.Error if encoding fails
+func encodeArrayOfOptional<T: Encodable>(_ array: [T?], enc: Encoder) throws {
+    guard let encoder = enc as? XDREncoder else {
+        throw XDREncoder.Error.typeNotConformingToXDREncodable(type(of: enc))
+    }
+
+    try encoder.encode(UInt32(array.count))
+    for element in array {
+        if let value = element {
+            try encoder.encode(UInt32(1))
+            try value.encode(to: encoder)
+        } else {
+            try encoder.encode(UInt32(0))
+        }
+    }
 }
 
 /// Checks if a value is an Optional type.

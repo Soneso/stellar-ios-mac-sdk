@@ -6,13 +6,13 @@ import Foundation
 public struct AccountEntryExtensionV2: XDRCodable, Sendable {
   public var numSponsored: UInt32
   public var numSponsoring: UInt32
-  public var signerSponsoringIDs: [SponsorshipDescriptorXDR]
+  public var signerSponsoringIDs: [PublicKey?]
   public var reserved: AccountEntryExtV2XDR
 
   public init(
     numSponsored: UInt32,
     numSponsoring: UInt32,
-    signerSponsoringIDs: [SponsorshipDescriptorXDR],
+    signerSponsoringIDs: [PublicKey?],
     reserved: AccountEntryExtV2XDR
   ) {
     self.numSponsored = numSponsored
@@ -25,7 +25,7 @@ public struct AccountEntryExtensionV2: XDRCodable, Sendable {
     var container = try decoder.unkeyedContainer()
     numSponsored = try container.decode(UInt32.self)
     numSponsoring = try container.decode(UInt32.self)
-    signerSponsoringIDs = try decodeArray(type: SponsorshipDescriptorXDR.self, dec: decoder)
+    signerSponsoringIDs = try decodeArrayOfOptional(type: PublicKey.self, dec: decoder)
     reserved = try container.decode(AccountEntryExtV2XDR.self)
   }
 
@@ -33,7 +33,7 @@ public struct AccountEntryExtensionV2: XDRCodable, Sendable {
     var container = encoder.unkeyedContainer()
     try container.encode(numSponsored)
     try container.encode(numSponsoring)
-    try container.encode(signerSponsoringIDs)
+    try encodeArrayOfOptional(signerSponsoringIDs, enc: encoder)
     try container.encode(reserved)
   }
 }

@@ -15,10 +15,6 @@ TYPE_OVERRIDES = {
   # AssetCode is now mapped to AllowTrustOpAssetXDR via NAME_OVERRIDES
   "LiquidityPoolEntryXDRBodyXDR"     => "LiquidityPoolBodyXDR",
   "ContractEventType"                => "Int32",
-  # SponsorshipDescriptor is typedef AccountID* (optional pointer).
-  # The hand-written SponsorshipDescriptorXDR wrapper handles per-element
-  # optional encode/decode internally, so arrays of it work with standard decode.
-  "SponsorshipDescriptorXDR"          => "SponsorshipDescriptorXDR",
   # SCVec is typedef SCVal SCVec<> (variable-length array of SCVal).
   # Map to the raw array type so union arms use [SCValXDR] directly.
   "SCVecXDR"                          => "[SCValXDR]",

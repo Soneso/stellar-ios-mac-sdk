@@ -38,13 +38,6 @@ class Generator < Xdrgen::Generators::Base
     SCEnvMetaEntryXDR
     SCSpecUDTErrorEnumV0XDR
     PublicKey
-    OperationType
-    AssetType
-    EnvelopeType
-    CryptoKeyType
-    AccountFlags
-    TrustLineFlags
-    ClaimableBalanceFlags
     MuxedAccountMed25519XDRInverted
     TransactionSignaturePayload
     TaggedTransaction
@@ -214,7 +207,10 @@ class Generator < Xdrgen::Generators::Base
     # Build parameter strings.
     params = init_fields.map do |f|
       is_opt = f[:member].type.sub_type == :optional || typedef_is_optional?(f[:member].declaration.type)
-      if is_opt
+      # For arrays of optional elements (e.g. [PublicKey?]), the array itself
+      # is not optional -- only the elements are. Don't add `= nil` default.
+      is_array = f[:member].declaration.is_a?(AST::Declarations::Array)
+      if is_opt && !is_array
         "#{f[:param]}: #{f[:type]} = nil"
       else
         "#{f[:param]}: #{f[:type]}"
@@ -298,6 +294,10 @@ class Generator < Xdrgen::Generators::Base
         size = resolve_size(decl)
         inner_type = base
         out.puts "#{field} = try (0..<#{size}).map { _ in try container.decode(#{inner_type}.self) }"
+      elsif is_optional
+        # Variable-length array of optional elements (e.g. SponsorshipDescriptor[]):
+        # each element has its own UInt32 present flag + value.
+        out.puts "#{field} = try decodeArrayOfOptional(type: #{base}.self, dec: decoder)"
       else
         # Variable-length array: use decodeArray helper.
         out.puts "#{field} = try decodeArray(type: #{base}.self, dec: decoder)"
@@ -362,6 +362,10 @@ class Generator < Xdrgen::Generators::Base
       if decl.fixed?
         # Fixed-length array: encode each element individually.
         out.puts "for element in #{field} { try container.encode(element) }"
+      elsif is_optional
+        # Variable-length array of optional elements (e.g. SponsorshipDescriptor[]):
+        # each element has its own UInt32 present flag + value.
+        out.puts "try encodeArrayOfOptional(#{field}, enc: encoder)"
       else
         # Variable-length array: the Array XDREncodable extension handles the count prefix.
         out.puts "try container.encode(#{field})"
@@ -977,6 +981,13 @@ class Generator < Xdrgen::Generators::Base
       if resolved.is_a?(AST::Definitions::Typedef)
         underlying = resolved.declaration.type
         if is_base_type?(underlying)
+          return type_string(underlying)
+        end
+        # Optional typedefs (e.g. typedef AccountID* SponsorshipDescriptor):
+        # resolve through to the base type so callers get e.g. "PublicKey"
+        # rather than the typedef wrapper name. The optional wrapping ("?")
+        # is added separately by swift_type_string / typedef_is_optional?.
+        if underlying.sub_type == :optional
           return type_string(underlying)
         end
       end

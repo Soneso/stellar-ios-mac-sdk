@@ -46,7 +46,7 @@ NAME_OVERRIDES = {
   # Liabilities struct
   "Liabilities"                        => "LiabilitiesXDR",
   # ThresholdIndexes: not in SDK
-  # AccountFlags is a struct-with-constants in Swift
+  # AccountFlags enum (auto-generated)
   "AccountFlags"                       => "AccountFlags",
   # AccountEntry struct
   "AccountEntry"                       => "AccountEntryXDR",
@@ -56,7 +56,7 @@ NAME_OVERRIDES = {
   "AccountEntryExtensionV2"            => "AccountEntryExtensionV2",
   # AccountEntryExtensionV3 struct
   "AccountEntryExtensionV3"            => "AccountEntryExtensionV3",
-  # TrustLineFlags is a struct-with-constants
+  # TrustLineFlags enum (auto-generated)
   "TrustLineFlags"                     => "TrustLineFlags",
   # TrustLineEntry struct (note: Trustline vs TrustLine casing)
   "TrustLineEntry"                     => "TrustlineEntryXDR",
@@ -78,7 +78,7 @@ NAME_OVERRIDES = {
   "Claimant"                           => "ClaimantXDR",
   # ClaimableBalanceIDType enum (no XDR suffix)
   "ClaimableBalanceIDType"             => "ClaimableBalanceIDType",
-  # ClaimableBalanceFlags is a struct-with-constants
+  # ClaimableBalanceFlags enum (auto-generated)
   "ClaimableBalanceFlags"              => "ClaimableBalanceFlags",
   # ClaimableBalanceEntry struct
   "ClaimableBalanceEntry"              => "ClaimableBalanceEntryXDR",

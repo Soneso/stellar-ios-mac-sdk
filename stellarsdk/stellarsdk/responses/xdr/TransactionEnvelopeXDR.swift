@@ -8,19 +8,6 @@
 
 import Foundation
 
-public struct EnvelopeType: Sendable {
-    static let ENVELOPE_TYPE_TX_V0: Int32 = 0
-    static let ENVELOPE_TYPE_SCP: Int32 = 1
-    static let ENVELOPE_TYPE_TX: Int32 = 2
-    static let ENVELOPE_TYPE_AUTH: Int32 = 3
-    static let ENVELOPE_TYPE_SCPVALUE: Int32 = 4
-    static let ENVELOPE_TYPE_TX_FEE_BUMP: Int32 = 5
-    static let ENVELOPE_TYPE_OP_ID: Int32 = 6
-    static let ENVELOPE_TYPE_POOL_REVOKE_OP_ID: Int32 = 7
-    static let ENVELOPE_TYPE_CONTRACT_ID: Int32 = 8
-    static let ENVELOPE_TYPE_SOROBAN_AUTHORIZATION: Int32 = 9
-}
-
 public enum TransactionEnvelopeXDR: XDRCodable, Sendable {
     case v0 (TransactionV0EnvelopeXDR)
     case v1 (TransactionV1EnvelopeXDR)
