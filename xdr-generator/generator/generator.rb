@@ -70,8 +70,6 @@ class Generator < Xdrgen::Generators::Base
     MuxedAccountMed25519XDR
     TransactionResultXDR
     InnerTransactionResultXDR
-    TransactionMetaV1XDR
-
     SCAddressXDR
     ContractExecutableXDR
 
@@ -103,10 +101,6 @@ class Generator < Xdrgen::Generators::Base
     LedgerEntryType
     LedgerEntryXDR
     LedgerEntryExtXDR
-    LedgerEntryChangeType
-    LedgerEntryChangeXDR
-    TransactionMetaType
-    TransactionMetaXDR
 
     ManageOfferResultCode
     ManageOfferResultXDR

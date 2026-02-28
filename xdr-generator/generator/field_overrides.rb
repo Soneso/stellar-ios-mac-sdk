@@ -215,8 +215,6 @@ FIELD_OVERRIDES = {
 #   Same pattern as TransactionResultXDR.
 #
 # TransactionMetaV1XDR:
-#   Generated (2 fields): txChanges, operations (public)
-#   SDK (1 public + 1 private): txChanges (public), operations (private)
-#   The SDK keeps "operations" as a private field. The field names match
-#   but the visibility differs.
+#   Now auto-generated. The SDK previously kept "operations" as private,
+#   but the generated code makes it public. This is intentional.
 # ===========================================================================
