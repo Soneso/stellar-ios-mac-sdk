@@ -67,7 +67,6 @@ class Generator < Xdrgen::Generators::Base
     TransactionResultXDRResultXDR
     InnerTransactionResultXDRResultXDR
 
-    ConfigSettingEntryXDR
 
 
     ManageOfferEffect
