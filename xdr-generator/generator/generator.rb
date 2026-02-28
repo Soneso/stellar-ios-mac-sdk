@@ -133,11 +133,6 @@ class Generator < Xdrgen::Generators::Base
     LedgerEntryChangeXDR
     TransactionMetaType
     TransactionMetaXDR
-    HashIDPreimageXDR
-    HashIDPreimageContractIDXDR
-    HashIDPreimageSorobanAuthorizationXDR
-    OperationID
-    RevokeID
     ClaimAtomType
     ClaimAtomXDR
     ClaimOfferAtomXDR

@@ -140,9 +140,8 @@ class XDROperationAndMetaResultsUnitTests: XCTestCase {
     func testHashIDPreimageXDROperationId() throws {
         let accountIdString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
         let publicKey = try PublicKey(accountId: accountIdString)
-        let muxedAccount = MuxedAccountXDR.ed25519(publicKey.bytes)
 
-        let operationId = OperationID(sourceAccount: muxedAccount, seqNum: 123456789, opNum: 1)
+        let operationId = OperationID(sourceAccount: publicKey, seqNum: 123456789, opNum: 1)
         let result = HashIDPreimageXDR.operationId(operationId)
 
         let encoded = try XDREncoder.encode(result)
@@ -160,13 +159,12 @@ class XDROperationAndMetaResultsUnitTests: XCTestCase {
     func testHashIDPreimageXDRRevokeId() throws {
         let accountIdString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
         let publicKey = try PublicKey(accountId: accountIdString)
-        let muxedAccount = MuxedAccountXDR.ed25519(publicKey.bytes)
 
         let poolIdData = Data(repeating: 0xAB, count: 32)
         let poolId = WrappedData32(poolIdData)
         let asset = AssetXDR.native
 
-        let revokeId = RevokeID(sourceAccount: muxedAccount, seqNum: 987654321, opNum: 2, liquidityPoolID: poolId, asset: asset)
+        let revokeId = RevokeID(sourceAccount: publicKey, seqNum: 987654321, opNum: 2, liquidityPoolID: poolId, asset: asset)
         let result = HashIDPreimageXDR.revokeId(revokeId)
 
         let encoded = try XDREncoder.encode(result)
@@ -207,9 +205,8 @@ class XDROperationAndMetaResultsUnitTests: XCTestCase {
     func testHashIDPreimageXDRRoundTripBase64() throws {
         let accountIdString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
         let publicKey = try PublicKey(accountId: accountIdString)
-        let muxedAccount = MuxedAccountXDR.ed25519(publicKey.bytes)
 
-        let operationId = OperationID(sourceAccount: muxedAccount, seqNum: 123456, opNum: 5)
+        let operationId = OperationID(sourceAccount: publicKey, seqNum: 123456, opNum: 5)
         let result = HashIDPreimageXDR.operationId(operationId)
 
         guard let base64 = result.xdrEncoded else {
@@ -1620,9 +1617,7 @@ class XDROperationAndMetaResultsUnitTests: XCTestCase {
         XCTAssertEqual(decodedZero.amount, 0)
 
         // Test boundary values in sequence numbers
-        let muxedAccount = MuxedAccountXDR.ed25519(publicKey.bytes)
-
-        let opIdMin = OperationID(sourceAccount: muxedAccount, seqNum: Int64.min, opNum: 1)
+        let opIdMin = OperationID(sourceAccount: publicKey, seqNum: Int64.min, opNum: 1)
         let resultMin = HashIDPreimageXDR.operationId(opIdMin)
         let encodedResultMin = try XDREncoder.encode(resultMin)
         let decodedResultMin = try XDRDecoder.decode(HashIDPreimageXDR.self, data: encodedResultMin)
@@ -1632,7 +1627,7 @@ class XDROperationAndMetaResultsUnitTests: XCTestCase {
             XCTFail("Expected operationId case")
         }
 
-        let opIdMax = OperationID(sourceAccount: muxedAccount, seqNum: Int64.max, opNum: 1)
+        let opIdMax = OperationID(sourceAccount: publicKey, seqNum: Int64.max, opNum: 1)
         let resultMax = HashIDPreimageXDR.operationId(opIdMax)
         let encodedResultMax = try XDREncoder.encode(resultMax)
         let decodedResultMax = try XDRDecoder.decode(HashIDPreimageXDR.self, data: encodedResultMax)
