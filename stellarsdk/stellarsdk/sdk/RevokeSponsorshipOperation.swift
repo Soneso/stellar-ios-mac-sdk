@@ -55,7 +55,7 @@ public class RevokeSponsorshipOperation:Operation, @unchecked Sendable {
     /// - Returns: A ledger key identifying the data entry.
     public static func revokeDataSponsorshipLedgerKey(accountId:String, dataName:String) throws -> LedgerKeyXDR {
         let pk = try PublicKey(accountId: accountId)
-        let value = LedgerKeyDataXDR(accountId: pk, dataName: dataName)
+        let value = LedgerKeyDataXDR(accountID: pk, dataName: dataName)
         return LedgerKeyXDR.data(value)
     }
     
@@ -85,7 +85,7 @@ public class RevokeSponsorshipOperation:Operation, @unchecked Sendable {
     /// - Returns: A ledger key identifying the offer entry.
     public static func revokeOfferSponsorshipLedgerKey(sellerAccountId:String, offerId:UInt64) throws -> LedgerKeyXDR {
         let pk = try PublicKey(accountId: sellerAccountId)
-        let value = LedgerKeyOfferXDR(sellerId: pk, offerId: offerId)
+        let value = LedgerKeyOfferXDR(sellerID: pk, offerID: Int64(offerId))
         return LedgerKeyXDR.offer(value)
     }
     

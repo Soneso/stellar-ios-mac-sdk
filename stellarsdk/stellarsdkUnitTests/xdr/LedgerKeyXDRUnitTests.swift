@@ -63,9 +63,9 @@ class LedgerKeyXDRUnitTests: XCTestCase {
     func testLedgerKeyXDROffer() throws {
         let sellerString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
         let sellerPublicKey = try PublicKey(accountId: sellerString)
-        let offerId: UInt64 = 123456789
+        let offerId: Int64 = 123456789
 
-        let offerKey = LedgerKeyOfferXDR(sellerId: sellerPublicKey, offerId: offerId)
+        let offerKey = LedgerKeyOfferXDR(sellerID: sellerPublicKey, offerID: offerId)
         let ledgerKey = LedgerKeyXDR.offer(offerKey)
 
         XCTAssertEqual(ledgerKey.type(), LedgerEntryType.offer.rawValue)
@@ -77,8 +77,8 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
         switch decoded {
         case .offer(let decodedOfferKey):
-            XCTAssertEqual(decodedOfferKey.sellerId.accountId, sellerString)
-            XCTAssertEqual(decodedOfferKey.offerId, offerId)
+            XCTAssertEqual(decodedOfferKey.sellerID.accountId, sellerString)
+            XCTAssertEqual(decodedOfferKey.offerID, offerId)
         default:
             XCTFail("Expected offer ledger key")
         }
@@ -89,7 +89,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
         let publicKey = try PublicKey(accountId: accountIdString)
         let dataName = "test_data_entry"
 
-        let dataKey = LedgerKeyDataXDR(accountId: publicKey, dataName: dataName)
+        let dataKey = LedgerKeyDataXDR(accountID: publicKey, dataName: dataName)
         let ledgerKey = LedgerKeyXDR.data(dataKey)
 
         XCTAssertEqual(ledgerKey.type(), LedgerEntryType.data.rawValue)
@@ -101,7 +101,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
         switch decoded {
         case .data(let decodedDataKey):
-            XCTAssertEqual(decodedDataKey.accountId.accountId, accountIdString)
+            XCTAssertEqual(decodedDataKey.accountID.accountId, accountIdString)
             XCTAssertEqual(decodedDataKey.dataName, dataName)
         default:
             XCTFail("Expected data ledger key")
@@ -164,14 +164,14 @@ class LedgerKeyXDRUnitTests: XCTestCase {
         XCTAssertEqual(accountDecoded.type(), LedgerEntryType.account.rawValue)
 
         // Data key
-        let dataKey = LedgerKeyDataXDR(accountId: publicKey, dataName: "mydata")
+        let dataKey = LedgerKeyDataXDR(accountID: publicKey, dataName: "mydata")
         let dataLedgerKey = LedgerKeyXDR.data(dataKey)
         let dataEncoded = try XDREncoder.encode(dataLedgerKey)
         let dataDecoded = try XDRDecoder.decode(LedgerKeyXDR.self, data: dataEncoded)
         XCTAssertEqual(dataDecoded.type(), LedgerEntryType.data.rawValue)
 
         // Offer key
-        let offerKey = LedgerKeyOfferXDR(sellerId: publicKey, offerId: 999)
+        let offerKey = LedgerKeyOfferXDR(sellerID: publicKey, offerID: 999)
         let offerLedgerKey = LedgerKeyXDR.offer(offerKey)
         let offerEncoded = try XDREncoder.encode(offerLedgerKey)
         let offerDecoded = try XDRDecoder.decode(LedgerKeyXDR.self, data: offerEncoded)
@@ -209,9 +209,9 @@ class LedgerKeyXDRUnitTests: XCTestCase {
         // Create an offer key and encode it to base64
         let sellerString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
         let sellerPublicKey = try PublicKey(accountId: sellerString)
-        let offerId: UInt64 = 12345678901234
+        let offerId: Int64 = 12345678901234
 
-        let offerKey = LedgerKeyOfferXDR(sellerId: sellerPublicKey, offerId: offerId)
+        let offerKey = LedgerKeyOfferXDR(sellerID: sellerPublicKey, offerID: offerId)
         let ledgerKey = LedgerKeyXDR.offer(offerKey)
 
         let encoded = try XDREncoder.encode(ledgerKey)
@@ -224,8 +224,8 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
         switch decoded {
         case .offer(let decodedOfferKey):
-            XCTAssertEqual(decodedOfferKey.offerId, offerId)
-            XCTAssertEqual(decodedOfferKey.sellerId.accountId, sellerString)
+            XCTAssertEqual(decodedOfferKey.offerID, offerId)
+            XCTAssertEqual(decodedOfferKey.sellerID.accountId, sellerString)
         default:
             XCTFail("Expected offer ledger key from base64")
         }
@@ -490,15 +490,15 @@ class LedgerKeyXDRUnitTests: XCTestCase {
     func testLedgerKeyOfferXDRFields() throws {
         let sellerString = "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ"
         let sellerPublicKey = try PublicKey(accountId: sellerString)
-        let offerId: UInt64 = 9876543210
+        let offerId: Int64 = 9876543210
 
-        let offerKey = LedgerKeyOfferXDR(sellerId: sellerPublicKey, offerId: offerId)
+        let offerKey = LedgerKeyOfferXDR(sellerID: sellerPublicKey, offerID: offerId)
 
         // Verify sellerID field
-        XCTAssertEqual(offerKey.sellerId.accountId, sellerString)
+        XCTAssertEqual(offerKey.sellerID.accountId, sellerString)
 
         // Verify offerID field
-        XCTAssertEqual(offerKey.offerId, offerId)
+        XCTAssertEqual(offerKey.offerID, offerId)
 
         // Encode and decode to verify field preservation
         let ledgerKey = LedgerKeyXDR.offer(offerKey)
@@ -507,8 +507,8 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
         switch decoded {
         case .offer(let decodedKey):
-            XCTAssertEqual(decodedKey.sellerId.accountId, sellerString)
-            XCTAssertEqual(decodedKey.offerId, offerId)
+            XCTAssertEqual(decodedKey.sellerID.accountId, sellerString)
+            XCTAssertEqual(decodedKey.offerID, offerId)
         default:
             XCTFail("Expected offer ledger key")
         }
@@ -519,10 +519,10 @@ class LedgerKeyXDRUnitTests: XCTestCase {
         let publicKey = try PublicKey(accountId: accountIdString)
         let dataName = "user_preference_setting"
 
-        let dataKey = LedgerKeyDataXDR(accountId: publicKey, dataName: dataName)
+        let dataKey = LedgerKeyDataXDR(accountID: publicKey, dataName: dataName)
 
-        // Verify accountId field
-        XCTAssertEqual(dataKey.accountId.accountId, accountIdString)
+        // Verify accountID field
+        XCTAssertEqual(dataKey.accountID.accountId, accountIdString)
 
         // Verify dataName field
         XCTAssertEqual(dataKey.dataName, dataName)
@@ -534,7 +534,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
         switch decoded {
         case .data(let decodedKey):
-            XCTAssertEqual(decodedKey.accountId.accountId, accountIdString)
+            XCTAssertEqual(decodedKey.accountID.accountId, accountIdString)
             XCTAssertEqual(decodedKey.dataName, dataName)
         default:
             XCTFail("Expected data ledger key")
@@ -665,7 +665,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
         let publicKey = try PublicKey(accountId: accountIdString)
         let emptyDataName = ""
 
-        let dataKey = LedgerKeyDataXDR(accountId: publicKey, dataName: emptyDataName)
+        let dataKey = LedgerKeyDataXDR(accountID: publicKey, dataName: emptyDataName)
 
         // Verify empty data name is preserved
         XCTAssertEqual(dataKey.dataName, "")
@@ -679,7 +679,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
         switch decoded {
         case .data(let decodedKey):
             XCTAssertEqual(decodedKey.dataName, "")
-            XCTAssertEqual(decodedKey.accountId.accountId, accountIdString)
+            XCTAssertEqual(decodedKey.accountID.accountId, accountIdString)
         default:
             XCTFail("Expected data ledger key")
         }

@@ -54,8 +54,6 @@ class Generator < Xdrgen::Generators::Base
     OperationXDR
     OperationBodyXDR
     SCErrorXDR
-    LedgerKeyOfferXDR
-    LedgerKeyDataXDR
     MuxedAccountXDR
     MuxedAccountMed25519XDR
     TransactionResultXDR

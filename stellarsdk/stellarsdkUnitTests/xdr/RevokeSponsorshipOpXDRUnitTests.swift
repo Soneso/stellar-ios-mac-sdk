@@ -82,8 +82,8 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
 
     func testRevokeSponsorshipOpXDRLedgerKeyOffer() throws {
         let publicKey = try PublicKey(accountId: testAccountId1)
-        let offerId: UInt64 = 123456789
-        let ledgerKeyOffer = LedgerKeyOfferXDR(sellerId: publicKey, offerId: offerId)
+        let offerId: Int64 = 123456789
+        let ledgerKeyOffer = LedgerKeyOfferXDR(sellerID: publicKey, offerID: offerId)
         let ledgerKey = LedgerKeyXDR.offer(ledgerKeyOffer)
         let op = RevokeSponsorshipOpXDR.revokeSponsorshipLedgerEntry(ledgerKey)
 
@@ -97,8 +97,8 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
             XCTAssertEqual(decodedLedgerKey.type(), LedgerEntryType.offer.rawValue)
             switch decodedLedgerKey {
             case .offer(let offerKey):
-                XCTAssertEqual(offerKey.sellerId.accountId, testAccountId1)
-                XCTAssertEqual(offerKey.offerId, offerId)
+                XCTAssertEqual(offerKey.sellerID.accountId, testAccountId1)
+                XCTAssertEqual(offerKey.offerID, offerId)
             default:
                 XCTFail("Expected offer ledger key")
             }
@@ -112,7 +112,7 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
     func testRevokeSponsorshipOpXDRLedgerKeyData() throws {
         let publicKey = try PublicKey(accountId: testAccountId1)
         let dataName = "testDataEntry"
-        let ledgerKeyData = LedgerKeyDataXDR(accountId: publicKey, dataName: dataName)
+        let ledgerKeyData = LedgerKeyDataXDR(accountID: publicKey, dataName: dataName)
         let ledgerKey = LedgerKeyXDR.data(ledgerKeyData)
         let op = RevokeSponsorshipOpXDR.revokeSponsorshipLedgerEntry(ledgerKey)
 
@@ -126,7 +126,7 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
             XCTAssertEqual(decodedLedgerKey.type(), LedgerEntryType.data.rawValue)
             switch decodedLedgerKey {
             case .data(let dataKey):
-                XCTAssertEqual(dataKey.accountId.accountId, testAccountId1)
+                XCTAssertEqual(dataKey.accountID.accountId, testAccountId1)
                 XCTAssertEqual(dataKey.dataName, dataName)
             default:
                 XCTFail("Expected data ledger key")

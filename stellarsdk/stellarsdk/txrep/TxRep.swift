@@ -1092,8 +1092,8 @@ public final class TxRep: Sendable {
             }
             key = prefix + "offer.offerID"
             let offerIdStr = try getString(dic: dic, key: key)
-            if let offerId = UInt64(offerIdStr) {
-                let value = LedgerKeyOfferXDR(sellerId: pk, offerId: offerId)
+            if let offerId = Int64(offerIdStr) {
+                let value = LedgerKeyOfferXDR(sellerID: pk, offerID: offerId)
                 return LedgerKeyXDR.offer(value)
             } else {
                 throw TxRepError.invalidValue(key: key)
@@ -1120,7 +1120,7 @@ public final class TxRep: Sendable {
             } catch {
                 throw TxRepError.invalidValue(key: key)
             }
-            let value = LedgerKeyDataXDR(accountId: pk, dataName: dataName)
+            let value = LedgerKeyDataXDR(accountID: pk, dataName: dataName)
             return LedgerKeyXDR.data(value)
         } else if (ledgerKeyType == "CLAIMABLE_BALANCE") {
             let key = prefix + "claimableBalance.balanceID.v0"
@@ -3149,11 +3149,11 @@ public final class TxRep: Sendable {
             addLine(key: prefix + "trustLine.asset", value: encodeTrustlineAsset(asset: ledgerKeyTrustLineXDR.asset), lines: &lines)
         case .offer(let ledgerKeyOfferXDR):
             addLine(key: prefix + "type", value: "OFFER", lines: &lines)
-            addLine(key: prefix + "offer.sellerID", value: ledgerKeyOfferXDR.sellerId.accountId, lines: &lines)
-            addLine(key: prefix + "offer.offerID", value: String(ledgerKeyOfferXDR.offerId), lines: &lines)
+            addLine(key: prefix + "offer.sellerID", value: ledgerKeyOfferXDR.sellerID.accountId, lines: &lines)
+            addLine(key: prefix + "offer.offerID", value: String(ledgerKeyOfferXDR.offerID), lines: &lines)
         case .data(let ledgerKeyDataXDR):
             addLine(key: prefix + "type", value: "DATA", lines: &lines)
-            addLine(key: prefix + "data.accountID", value: ledgerKeyDataXDR.accountId.accountId, lines: &lines)
+            addLine(key: prefix + "data.accountID", value: ledgerKeyDataXDR.accountID.accountId, lines: &lines)
             addLine(key: prefix + "data.dataName", value: "\"" + ledgerKeyDataXDR.dataName + "\"", lines: &lines)
         case .claimableBalance(let xdr):
             addLine(key: prefix + "type", value: "CLAIMABLE_BALANCE", lines: &lines)
