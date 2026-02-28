@@ -42,7 +42,6 @@ class Generator < Xdrgen::Generators::Base
     AssetType
     EnvelopeType
     CryptoKeyType
-    MemoType
     AccountFlags
     TrustLineFlags
     ClaimableBalanceFlags
@@ -73,9 +72,6 @@ class Generator < Xdrgen::Generators::Base
     LedgerKeyContractCodeXDR
     LedgerKeyTTLXDR
     LiquidityPoolIDXDR
-    ConfigSettingID
-    ContractDataDurability
-    AllowTrustOpAssetXDR
     MuxedAccountXDR
     MuxedAccountMed25519XDR
     TransactionResultXDR
@@ -127,8 +123,6 @@ class Generator < Xdrgen::Generators::Base
     Alpha12XDR
     AssetXDR
     ChangeTrustAssetXDR
-    LiquidityPoolParametersXDR
-    MemoXDR
     SignerKeyType
     SignerKeyXDR
     Ed25519SignedPayload
@@ -137,20 +131,13 @@ class Generator < Xdrgen::Generators::Base
     LedgerEntryExtXDR
     LedgerEntryChangeType
     LedgerEntryChangeXDR
-    ContractEventType
     TransactionMetaType
     TransactionMetaXDR
-    PreconditionType
-    PreconditionsXDR
-    LedgerBoundsXDR
     HashIDPreimageXDR
     HashIDPreimageContractIDXDR
     HashIDPreimageSorobanAuthorizationXDR
     OperationID
     RevokeID
-    RevokeSponsorshipType
-    RevokeSponsorshipOpXDR
-    RevokeSponsorshipSignerXDR
     ClaimAtomType
     ClaimAtomXDR
     ClaimOfferAtomXDR

@@ -431,10 +431,10 @@ public final class WebAuthenticator: Sendable {
                 return .failure(error: .sequenceNumberNot0)
             }
             
-            if transactionEnvelopeXDR.txMemo.type() != MemoType.MEMO_TYPE_NONE {
+            if transactionEnvelopeXDR.txMemo.type() != MemoType.MEMO_TYPE_NONE.rawValue {
                 if userAccountId.starts(with: "M") {
                     return .failure(error: .memoAndMuxedSourceAccountFound)
-                } else if transactionEnvelopeXDR.txMemo.type() != MemoType.MEMO_TYPE_ID {
+                } else if transactionEnvelopeXDR.txMemo.type() != MemoType.MEMO_TYPE_ID.rawValue {
                     return .failure(error: .invalidMemoType)
                 } else if let mval = memo {
                     switch transactionEnvelopeXDR.txMemo {

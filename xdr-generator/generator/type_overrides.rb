@@ -12,7 +12,7 @@ TYPE_OVERRIDES = {
   "TimePointXDR"                     => "UInt64",
   "SequenceNumberXDR"                => "Int64",
   "ContractIDXDR"                    => "WrappedData32",
-  "AssetCodeXDR"                     => "AllowTrustOpAssetXDR",
+  # AssetCode is now mapped to AllowTrustOpAssetXDR via NAME_OVERRIDES
   "LiquidityPoolEntryXDRBodyXDR"     => "LiquidityPoolBodyXDR",
   "ContractEventType"                => "Int32",
   # SponsorshipDescriptor is typedef AccountID* (optional pointer).

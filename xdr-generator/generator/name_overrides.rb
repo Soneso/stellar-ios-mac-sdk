@@ -532,7 +532,10 @@ NAME_OVERRIDES = {
 
   # --- Custom SDK types with no direct XDR counterpart ---
   # RevokeSponsorshipSigner struct (part of RevokeSponsorshipOp in XDR)
+  # The inline struct inside RevokeSponsorshipOp has xdrgen qualified name
+  # "RevokeSponsorshipOpSigner"; must override to avoid collision with top-level Signer.
   "RevokeSponsorshipSigner"            => "RevokeSponsorshipSignerXDR",
+  "RevokeSponsorshipOpSigner"          => "RevokeSponsorshipSignerXDR",
 
   # --- Additional struct types used in the SDK ---
   # ClaimantV0 struct (nested in Claimant union in XDR)
@@ -631,6 +634,8 @@ NAME_OVERRIDES = {
   # RevokeID struct (nested in HashIDPreimage)
   "RevokeID"                           => "RevokeID",
 
+  # AssetCode union (used as AllowTrustOpAssetXDR in the SDK)
+  "AssetCode"                          => "AllowTrustOpAssetXDR",
   # AllowTrustOpAsset union (inline in XDR but standalone in Swift)
   "AllowTrustOpAsset"                  => "AllowTrustOpAssetXDR",
 

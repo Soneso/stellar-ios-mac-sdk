@@ -526,6 +526,12 @@ MEMBER_OVERRIDES = {
   # deriving Swift case names for non-void union arms.
   # =========================================================================
 
+  # AllowTrustOpAssetXDR -- SDK uses "alphanum4/alphanum12" instead of "assetCode4/assetCode12"
+  "AllowTrustOpAssetXDR" => {
+    "assetCode4"  => "alphanum4",
+    "assetCode12" => "alphanum12",
+  },
+
   # ClaimPredicateXDR -- SDK uses discriminant-style names, not arm var names
   "ClaimPredicateXDR" => {
     "andPredicates" => "claimPredicateAnd",

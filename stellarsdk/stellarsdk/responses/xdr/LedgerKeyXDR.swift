@@ -8,27 +8,6 @@
 
 import Foundation
 
-// Identifiers of all the network settings.
-public enum ConfigSettingID: Int32, Sendable {
-    case contractMaxSizeBytes = 0
-    case contractComputeV0 = 1
-    case contractLedgerCostV0 = 2
-    case contractHistoricalDataV0 = 3
-    case contractEventsV0 = 4
-    case contractBandwidthV0 = 5
-    case contractCostParamsCpuInstructions = 6
-    case contractCostParamsMemoryBytes = 7
-    case contractDataKeySizeBytes = 8
-    case contractDataEntrySizeBytes = 9
-    case stateArchival = 10
-    case contractExecutionLanes = 11
-    case liveSorobanStateSizeWindow = 12
-    case evictionIterator = 13
-    case contractParallelComputeV0 = 14
-    case contractLedgerCostExtV0 = 15
-    case scpTiming = 16
-}
-
 public enum LedgerKeyXDR: XDRCodable, Sendable {
     case account (LedgerKeyAccountXDR)
     case trustline (LedgerKeyTrustLineXDR)
@@ -154,12 +133,6 @@ public struct LiquidityPoolIDXDR: XDRCodable, Sendable {
         return liquidityPoolID.wrapped.base16EncodedString()
     }
 }
-
-public enum ContractDataDurability: Int32, Sendable {
-    case temporary = 0
-    case persistent = 1
-}
-
 
 public struct LedgerKeyContractDataXDR: XDRCodable, Sendable {
     public let contract: SCAddressXDR
