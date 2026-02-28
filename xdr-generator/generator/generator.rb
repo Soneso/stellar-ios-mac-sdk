@@ -60,7 +60,6 @@ class Generator < Xdrgen::Generators::Base
     TransactionEnvelopeXDR
     OperationXDR
     OperationBodyXDR
-    SCValXDR
     SCErrorXDR
     LedgerKeyAccountXDR
     LedgerKeyTrustLineXDR
@@ -436,7 +435,7 @@ class Generator < Xdrgen::Generators::Base
 
   # Types that require `indirect enum` because they reference themselves
   # recursively in their arm types.
-  INDIRECT_UNION_TYPES = %w[ClaimPredicateXDR SCSpecTypeDefXDR].freeze
+  INDIRECT_UNION_TYPES = %w[ClaimPredicateXDR SCSpecTypeDefXDR SCValXDR].freeze
 
   def render_union(union)
     union_name = name(union)
@@ -786,6 +785,23 @@ class Generator < Xdrgen::Generators::Base
           out.puts "case .#{case_name}:"
           out.indent do
             out.puts "break"
+          end
+        elsif entry[:decode_style] == :optional
+          # Optional union arm: encode explicit presence flag before the value.
+          # The XDR encoder's default optional handling doesn't work for optional
+          # arrays because [Any] pattern matching takes precedence over isOptional.
+          out.puts "case .#{case_name}(let val):"
+          out.indent do
+            out.puts "if let val = val {"
+            out.indent do
+              out.puts "try container.encode(Int32(1))"
+              out.puts "try container.encode(val)"
+            end
+            out.puts "} else {"
+            out.indent do
+              out.puts "try container.encode(Int32(0))"
+            end
+            out.puts "}"
           end
         else
           out.puts "case .#{case_name}(let val):"

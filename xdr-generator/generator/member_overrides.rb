@@ -707,4 +707,13 @@ MEMBER_OVERRIDES = {
     "v1" => "ledgerEntryExtensionV1",
   },
 
+  # SCValXDR -- several arm variable names differ from SDK case names
+  "SCValXDR" => {
+    "b"        => "bool",
+    "str"      => "string",
+    "sym"      => "symbol",
+    "instance" => "contractInstance",
+    "nonceKey" => "ledgerKeyNonce",
+  },
+
 }.freeze

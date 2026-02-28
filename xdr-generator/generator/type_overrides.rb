@@ -19,6 +19,12 @@ TYPE_OVERRIDES = {
   # The hand-written SponsorshipDescriptorXDR wrapper handles per-element
   # optional encode/decode internally, so arrays of it work with standard decode.
   "SponsorshipDescriptorXDR"          => "SponsorshipDescriptorXDR",
+  # SCVec is typedef SCVal SCVec<> (variable-length array of SCVal).
+  # Map to the raw array type so union arms use [SCValXDR] directly.
+  "SCVecXDR"                          => "[SCValXDR]",
+  # SCMap is typedef SCMapEntry SCMap<> (variable-length array of SCMapEntry).
+  # Map to the raw array type so union arms use [SCMapEntryXDR] directly.
+  "SCMapXDR"                          => "[SCMapEntryXDR]",
 }.freeze
 
 # Per-field type overrides. When the generator resolves a field's type to
