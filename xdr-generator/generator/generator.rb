@@ -107,14 +107,6 @@ class Generator < Xdrgen::Generators::Base
     LedgerEntryChangeXDR
     TransactionMetaType
     TransactionMetaXDR
-    ClaimAtomType
-    ClaimAtomXDR
-    ClaimOfferAtomXDR
-    ClaimOfferAtomV0XDR
-    ClaimLiquidityAtomXDR
-    ClaimantType
-    ClaimantXDR
-    ClaimantV0XDR
 
     ManageOfferResultCode
     ManageOfferResultXDR

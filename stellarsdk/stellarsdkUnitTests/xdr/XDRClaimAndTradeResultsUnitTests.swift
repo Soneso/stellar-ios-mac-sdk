@@ -443,11 +443,11 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
         XCTAssertEqual(liquidityPoolAtom.type(), ClaimAtomType.liquidityPool.rawValue)
     }
 
-    func testClaimAtomXDRDefaultToV0() throws {
-        // Test that unknown type defaults to v0
+    func testClaimAtomXDRUnknownDiscriminantThrows() throws {
+        // Test that unknown type discriminant throws a decoding error
         var xdrData = [UInt8]()
 
-        // Unknown type discriminant (99)
+        // Unknown type discriminant (153)
         xdrData.append(contentsOf: [0x00, 0x00, 0x00, 0x99])
 
         // sellerEd25519 (32 bytes)
@@ -468,13 +468,11 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
         // amountBought
         xdrData.append(contentsOf: [0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0xA1, 0x20])
 
-        let decoded = try XDRDecoder.decode(ClaimAtomXDR.self, data: xdrData)
-
-        switch decoded {
-        case .v0:
-            XCTAssertTrue(true) // Expected default behavior
-        default:
-            XCTFail("Expected v0 as default for unknown type")
+        XCTAssertThrowsError(try XDRDecoder.decode(ClaimAtomXDR.self, data: xdrData)) { error in
+            guard case StellarSDKError.xdrDecodingError = error else {
+                XCTFail("Expected xdrDecodingError for unknown discriminant")
+                return
+            }
         }
     }
 

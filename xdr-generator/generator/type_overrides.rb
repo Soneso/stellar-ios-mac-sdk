@@ -67,7 +67,11 @@ LET_TYPES = Set.new(%w[
   BeginSponsoringFutureReservesOpXDR
   BumpSequenceOperationXDR
   ChangeTrustOperationXDR
+  ClaimantV0XDR
   ClaimClaimableBalanceOpXDR
+  ClaimLiquidityAtomXDR
+  ClaimOfferAtomV0XDR
+  ClaimOfferAtomXDR
   ClaimableBalanceEntryXDR
   ClawbackClaimableBalanceOpXDR
   ClawbackOpXDR
