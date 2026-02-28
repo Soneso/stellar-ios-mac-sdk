@@ -29,19 +29,19 @@ public struct PreconditionsV2XDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    let timeBoundsPresent = try container.decode(UInt32.self)
+    let timeBoundsPresent = try container.decode(Int32.self)
     if timeBoundsPresent != 0 {
       timeBounds = try container.decode(TimeBoundsXDR.self)
     } else {
       timeBounds = nil
     }
-    let ledgerBoundsPresent = try container.decode(UInt32.self)
+    let ledgerBoundsPresent = try container.decode(Int32.self)
     if ledgerBoundsPresent != 0 {
       ledgerBounds = try container.decode(LedgerBoundsXDR.self)
     } else {
       ledgerBounds = nil
     }
-    let sequenceNumberPresent = try container.decode(UInt32.self)
+    let sequenceNumberPresent = try container.decode(Int32.self)
     if sequenceNumberPresent != 0 {
       sequenceNumber = try container.decode(Int64.self)
     } else {
@@ -55,22 +55,22 @@ public struct PreconditionsV2XDR: XDRCodable, Sendable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     if let val = timeBounds {
-      try container.encode(UInt32(1))
+      try container.encode(Int32(1))
       try container.encode(val)
     } else {
-      try container.encode(UInt32(0))
+      try container.encode(Int32(0))
     }
     if let val = ledgerBounds {
-      try container.encode(UInt32(1))
+      try container.encode(Int32(1))
       try container.encode(val)
     } else {
-      try container.encode(UInt32(0))
+      try container.encode(Int32(0))
     }
     if let val = sequenceNumber {
-      try container.encode(UInt32(1))
+      try container.encode(Int32(1))
       try container.encode(val)
     } else {
-      try container.encode(UInt32(0))
+      try container.encode(Int32(0))
     }
     try container.encode(minSeqAge)
     try container.encode(minSeqLedgerGap)

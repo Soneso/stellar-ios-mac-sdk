@@ -14,16 +14,16 @@ public enum HashIDPreimageXDR: XDRCodable, Sendable {
     let discriminant = try container.decode(Int32.self)
 
     switch discriminant {
-    case EnvelopeType.ENVELOPE_TYPE_OP_ID:
+    case EnvelopeType.opId.rawValue:
       let val = try container.decode(OperationID.self)
       self = .operationId(val)
-    case EnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID:
+    case EnvelopeType.poolRevokeOpId.rawValue:
       let val = try container.decode(RevokeID.self)
       self = .revokeId(val)
-    case EnvelopeType.ENVELOPE_TYPE_CONTRACT_ID:
+    case EnvelopeType.contractId.rawValue:
       let val = try container.decode(HashIDPreimageContractIDXDR.self)
       self = .contractID(val)
-    case EnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION:
+    case EnvelopeType.sorobanAuthorization.rawValue:
       let val = try container.decode(HashIDPreimageSorobanAuthorizationXDR.self)
       self = .sorobanAuthorization(val)
     default:
@@ -33,10 +33,10 @@ public enum HashIDPreimageXDR: XDRCodable, Sendable {
 
   public func type() -> Int32 {
     switch self {
-    case .operationId: return EnvelopeType.ENVELOPE_TYPE_OP_ID
-    case .revokeId: return EnvelopeType.ENVELOPE_TYPE_POOL_REVOKE_OP_ID
-    case .contractID: return EnvelopeType.ENVELOPE_TYPE_CONTRACT_ID
-    case .sorobanAuthorization: return EnvelopeType.ENVELOPE_TYPE_SOROBAN_AUTHORIZATION
+    case .operationId: return EnvelopeType.opId.rawValue
+    case .revokeId: return EnvelopeType.poolRevokeOpId.rawValue
+    case .contractID: return EnvelopeType.contractId.rawValue
+    case .sorobanAuthorization: return EnvelopeType.sorobanAuthorization.rawValue
     }
   }
 

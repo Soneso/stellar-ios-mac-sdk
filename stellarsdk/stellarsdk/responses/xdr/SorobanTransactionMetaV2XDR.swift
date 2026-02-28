@@ -15,7 +15,7 @@ public struct SorobanTransactionMetaV2XDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     ext = try container.decode(SorobanTransactionMetaExt.self)
-    let returnValuePresent = try container.decode(UInt32.self)
+    let returnValuePresent = try container.decode(Int32.self)
     if returnValuePresent != 0 {
       returnValue = try container.decode(SCValXDR.self)
     } else {
@@ -26,6 +26,11 @@ public struct SorobanTransactionMetaV2XDR: XDRCodable, Sendable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(ext)
-    try container.encode(returnValue)
+    if let val = returnValue {
+      try container.encode(Int32(1))
+      try container.encode(val)
+    } else {
+      try container.encode(Int32(0))
+    }
   }
 }

@@ -13,7 +13,7 @@ public struct LedgerEntryExtensionV1: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    let signerSponsoringIDPresent = try container.decode(UInt32.self)
+    let signerSponsoringIDPresent = try container.decode(Int32.self)
     if signerSponsoringIDPresent != 0 {
       signerSponsoringID = try container.decode(PublicKey.self)
     } else {
@@ -25,10 +25,10 @@ public struct LedgerEntryExtensionV1: XDRCodable, Sendable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     if let val = signerSponsoringID {
-      try container.encode(UInt32(1))
+      try container.encode(Int32(1))
       try container.encode(val)
     } else {
-      try container.encode(UInt32(0))
+      try container.encode(Int32(0))
     }
     try container.encode(reserved)
   }

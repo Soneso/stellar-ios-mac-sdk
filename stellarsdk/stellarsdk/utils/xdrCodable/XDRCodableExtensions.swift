@@ -57,11 +57,11 @@ func decodeArrayOpt<T: Codable>(type:T.Type, dec:Decoder) throws -> [T] {
     return array
 }
 
-/// Decodes an array where each element is XDR-optional (UInt32 present flag + value).
+/// Decodes an array where each element is XDR-optional (Int32 present flag + value).
 ///
 /// Used for arrays of optional typedef types like `SponsorshipDescriptor`
 /// (`typedef AccountID* SponsorshipDescriptor`), where each array element
-/// is preceded by a 32-bit present/absent flag.
+/// is preceded by a 32-bit present/absent flag (RFC 4506 boolean).
 ///
 /// - Parameter type: The wrapped (non-optional) element type to decode
 /// - Parameter dec: Decoder to read from
@@ -76,7 +76,7 @@ func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder) throws -> [T?
     var array = [T?]()
     array.reserveCapacity(Int(count))
     for _ in 0..<count {
-        let present = try decoder.decode(UInt32.self)
+        let present = try decoder.decode(Int32.self)
         if present != 0 {
             array.append(try type.init(from: decoder))
         } else {
@@ -86,10 +86,10 @@ func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder) throws -> [T?
     return array
 }
 
-/// Encodes an array where each element is XDR-optional (UInt32 present flag + value).
+/// Encodes an array where each element is XDR-optional (Int32 present flag + value).
 ///
 /// Used for arrays of optional typedef types like `SponsorshipDescriptor`,
-/// where each array element is preceded by a 32-bit present/absent flag.
+/// where each array element is preceded by a 32-bit present/absent flag (RFC 4506 boolean).
 ///
 /// - Parameter array: Array of optional elements to encode
 /// - Parameter enc: Encoder to write to
@@ -102,10 +102,10 @@ func encodeArrayOfOptional<T: Encodable>(_ array: [T?], enc: Encoder) throws {
     try encoder.encode(UInt32(array.count))
     for element in array {
         if let value = element {
-            try encoder.encode(UInt32(1))
+            try encoder.encode(Int32(1))
             try value.encode(to: encoder)
         } else {
-            try encoder.encode(UInt32(0))
+            try encoder.encode(Int32(0))
         }
     }
 }

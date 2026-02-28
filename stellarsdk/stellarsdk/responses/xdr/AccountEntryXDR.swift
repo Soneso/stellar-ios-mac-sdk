@@ -45,7 +45,7 @@ public struct AccountEntryXDR: XDRCodable, Sendable {
     balance = try container.decode(Int64.self)
     sequenceNumber = try container.decode(Int64.self)
     numSubEntries = try container.decode(UInt32.self)
-    let inflationDestPresent = try container.decode(UInt32.self)
+    let inflationDestPresent = try container.decode(Int32.self)
     if inflationDestPresent != 0 {
       inflationDest = try container.decode(PublicKey.self)
     } else {
@@ -65,10 +65,10 @@ public struct AccountEntryXDR: XDRCodable, Sendable {
     try container.encode(sequenceNumber)
     try container.encode(numSubEntries)
     if let val = inflationDest {
-      try container.encode(UInt32(1))
+      try container.encode(Int32(1))
       try container.encode(val)
     } else {
-      try container.encode(UInt32(0))
+      try container.encode(Int32(0))
     }
     try container.encode(flags)
     try container.encode(homeDomain)

@@ -25,7 +25,7 @@ public indirect enum ClaimPredicateXDR: XDRCodable, Sendable {
       let val = try decodeArray(type: ClaimPredicateXDR.self, dec: decoder)
       self = .claimPredicateOr(val)
     case ClaimPredicateType.claimPredicateNot.rawValue:
-      let claimPredicateNotPresent = try container.decode(UInt32.self)
+      let claimPredicateNotPresent = try container.decode(Int32.self)
       if claimPredicateNotPresent != 0 {
         self = .claimPredicateNot(try container.decode(ClaimPredicateXDR.self))
       } else {

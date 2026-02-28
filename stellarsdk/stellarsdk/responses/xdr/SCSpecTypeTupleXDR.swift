@@ -11,7 +11,6 @@ public struct SCSpecTypeTupleXDR: XDRCodable, Sendable {
   }
 
   public init(from decoder: Decoder) throws {
-    var container = try decoder.unkeyedContainer()
     valueTypes = try decodeArray(type: SCSpecTypeDefXDR.self, dec: decoder)
   }
 

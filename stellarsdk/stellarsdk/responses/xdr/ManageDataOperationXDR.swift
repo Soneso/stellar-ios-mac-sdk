@@ -15,7 +15,7 @@ public struct ManageDataOperationXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     dataName = try container.decode(String.self)
-    let dataValuePresent = try container.decode(UInt32.self)
+    let dataValuePresent = try container.decode(Int32.self)
     if dataValuePresent != 0 {
       dataValue = try container.decode(Data.self)
     } else {
@@ -26,6 +26,11 @@ public struct ManageDataOperationXDR: XDRCodable, Sendable {
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(dataName)
-    try container.encode(dataValue)
+    if let val = dataValue {
+      try container.encode(Int32(1))
+      try container.encode(val)
+    } else {
+      try container.encode(Int32(0))
+    }
   }
 }
