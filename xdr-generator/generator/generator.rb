@@ -79,18 +79,12 @@ class Generator < Xdrgen::Generators::Base
     TransactionResultXDRResultXDR
     InnerTransactionResultXDRResultXDR
 
-    LedgerEntryDataXDR
-    ContractDataEntryXDR
     ConfigSettingEntryXDR
 
 
     ManageOfferEffect
     ManageOfferSuccessResultOfferXDR
     ManageOfferSuccessResultXDR
-
-    LedgerEntryType
-    LedgerEntryXDR
-    LedgerEntryExtXDR
 
     ManageOfferResultCode
     ManageOfferResultXDR

@@ -111,18 +111,8 @@ MEMBER_OVERRIDES = {
   # pattern (TypeName.CONSTANT). These overrides append .rawValue so generated unions
   # using this discriminant produce correct enum access (TypeName.case.rawValue).
   # =========================================================================
-  "LedgerEntryType" => {
-    "ACCOUNT"           => "account.rawValue",
-    "TRUSTLINE"         => "trustline.rawValue",
-    "OFFER"             => "offer.rawValue",
-    "DATA"              => "data.rawValue",
-    "CLAIMABLE_BALANCE" => "claimableBalance.rawValue",
-    "LIQUIDITY_POOL"    => "liquidityPool.rawValue",
-    "CONTRACT_DATA"     => "contractData.rawValue",
-    "CONTRACT_CODE"     => "contractCode.rawValue",
-    "CONFIG_SETTING"    => "configSetting.rawValue",
-    "TTL"               => "ttl.rawValue",
-  },
+  # LedgerEntryType: all case names match mechanical conversion
+  # (no common prefix, single-word names). No overrides needed.
 
   # =========================================================================
   # ClaimPredicateType -- Swift uses abbreviated names

@@ -78,6 +78,7 @@ LET_TYPES = Set.new(%w[
   ClawbackClaimableBalanceOpXDR
   ClawbackOpXDR
   ConstantProductXDR
+  ContractDataEntryXDR
   CreateAccountOperationXDR
   CreateClaimableBalanceOpXDR
   CreatePassiveOfferOperationXDR
