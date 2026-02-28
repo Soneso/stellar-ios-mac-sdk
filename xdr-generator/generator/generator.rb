@@ -54,8 +54,6 @@ class Generator < Xdrgen::Generators::Base
     OperationXDR
     OperationBodyXDR
     SCErrorXDR
-    LedgerKeyAccountXDR
-    LedgerKeyTrustLineXDR
     LedgerKeyOfferXDR
     LedgerKeyDataXDR
     MuxedAccountXDR
@@ -80,8 +78,6 @@ class Generator < Xdrgen::Generators::Base
 
     ManageOfferResultCode
     ManageOfferResultXDR
-
-    SponsorshipDescriptorXDR
   ].freeze
 
   # ---------------------------------------------------------------------------
