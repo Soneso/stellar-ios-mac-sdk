@@ -570,7 +570,9 @@ NAME_OVERRIDES = {
   # TransactionExt (extension union inside Transaction)
   "TransactionExt"                     => "TransactionExtXDR",
 
-  # SorobanResourcesExt (extension union inside SorobanResources)
+  # SorobanResourcesExt (extension union inside SorobanTransactionData)
+  # xdrgen raw qualified name is SorobanTransactionDataExt (parent: SorobanTransactionData, field: ext)
+  "SorobanTransactionDataExt"         => "SorobanResourcesExt",
   "SorobanResourcesExt"               => "SorobanResourcesExt",
 
   # LiquidityPoolBody (body union inside LiquidityPoolEntry)

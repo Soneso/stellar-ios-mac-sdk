@@ -80,7 +80,6 @@ LET_TYPES = Set.new(%w[
   DiagnosticEventXDR
   ExtendFootprintTTLOpXDR
   InflationPayoutXDR
-  InvokeHostFunctionOpXDR
   LedgerEntryChangesXDR
   LedgerEntryXDR
   LiabilitiesXDR

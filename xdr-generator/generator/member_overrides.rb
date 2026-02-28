@@ -637,6 +637,11 @@ MEMBER_OVERRIDES = {
     "signer"    => "revokeSponsorshipSignerEntry",
   },
 
+  # TransactionExtXDR -- SDK uses "sorobanTransactionData" instead of "sorobanData"
+  "TransactionExtXDR" => {
+    "sorobanData" => "sorobanTransactionData",
+  },
+
   # BinaryFuseFilterType -- Swift can't have case names starting with digits
   "BinaryFuseFilterType" => {
     "BINARY_FUSE_FILTER_8_BIT"  => "eightBit",

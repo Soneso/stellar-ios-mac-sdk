@@ -62,11 +62,6 @@ class Generator < Xdrgen::Generators::Base
     OperationBodyXDR
     SCValXDR
     SCErrorXDR
-    SorobanAuthorizationEntryXDR
-    SorobanAddressCredentialsXDR
-    UploadContractWasmArgsXDR
-    FromEd25519PublicKeyXDR
-    InvokeHostFunctionOpXDR
     LedgerKeyAccountXDR
     LedgerKeyTrustLineXDR
     LedgerKeyOfferXDR
@@ -88,26 +83,6 @@ class Generator < Xdrgen::Generators::Base
     OperationResultXDRTrXDR
     TransactionResultXDRResultXDR
     InnerTransactionResultXDRResultXDR
-
-    ContractIDPreimageType
-    ContractIDPreimageFromAddressXDR
-    ContractIDPreimageXDR
-    InvokeContractArgsXDR
-    CreateContractArgsXDR
-    CreateContractV2ArgsXDR
-    HostFunctionType
-    HostFunctionXDR
-    SorobanAuthorizedFunctionType
-    SorobanAuthorizedFunctionXDR
-    SorobanAuthorizedInvocationXDR
-    SorobanCredentialsType
-    SorobanCredentialsXDR
-    LedgerFootprintXDR
-    InvokeHostFunctionSuccessPreImageXDR
-    SorobanResourcesExtV0
-    SorobanResourcesExt
-    SorobanTransactionDataXDR
-    TransactionExtXDR
 
     LedgerEntryDataXDR
     ContractDataEntryXDR
@@ -301,9 +276,22 @@ class Generator < Xdrgen::Generators::Base
   def render_struct_decode(out, struct, struct_name)
     out.puts "public init(from decoder: Decoder) throws {"
     out.indent do
-      # We always declare the container even if some fields use decodeArray,
-      # because at least one field likely needs it.
-      out.puts "var container = try decoder.unkeyedContainer()"
+      # Check whether any field actually reads from the container directly.
+      # Variable-length arrays use decodeArray(dec: decoder) which bypasses
+      # the container, so if ALL fields are variable-length arrays the
+      # container variable would be unused.
+      needs_container = struct.members.any? do |m|
+        field = resolve_field_name(struct_name, m.name)
+        if is_extension_point_field?(struct_name, field)
+          true
+        else
+          decl = m.declaration
+          !(decl.is_a?(AST::Declarations::Array) && !decl.fixed?)
+        end
+      end
+      if needs_container
+        out.puts "var container = try decoder.unkeyedContainer()"
+      end
       struct.members.each do |m|
         field = resolve_field_name(struct_name, m.name)
         if is_extension_point_field?(struct_name, field)
