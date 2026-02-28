@@ -78,7 +78,6 @@ class Generator < Xdrgen::Generators::Base
     AllowTrustOpAssetXDR
     MuxedAccountXDR
     MuxedAccountMed25519XDR
-    TrustlineEntryExtensionV2
     TransactionResultXDR
     InnerTransactionResultXDR
     TransactionMetaV1XDR

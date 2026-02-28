@@ -18,24 +18,3 @@ public struct TrustLineFlags: Sendable {
     // balances created with its credit may also be clawed back
     public static let TRUSTLINE_CLAWBACK_ENABLED_FLAG: UInt32 = 4
 }
-
-public struct TrustlineEntryExtensionV2: XDRCodable, Sendable {
-    public let liquidityPoolUseCount: Int32 = 0
-    public let reserved: Int32 = 0
-
-    public init() {
-        // Default initializer with constant values
-    }
-
-    public init(from decoder: Decoder) throws {
-        var container = try decoder.unkeyedContainer()
-        _ = try container.decode(Int32.self)
-        _ = try container.decode(Int32.self)
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.unkeyedContainer()
-        try container.encode(liquidityPoolUseCount)
-        try container.encode(reserved)
-    }
-}

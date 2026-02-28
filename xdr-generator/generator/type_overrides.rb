@@ -56,6 +56,7 @@ EXTENSION_POINT_FIELDS = {
   "DataEntryXDR"            => ["reserved"],
   "LedgerEntryExtensionV1"  => ["reserved"],
   "OfferEntryXDR"           => ["reserved"],
+  "TrustlineEntryExtensionV2" => ["ext"],
 }.freeze
 
 # Struct names that should use `let` instead of `var` for properties.

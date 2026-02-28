@@ -829,13 +829,13 @@ class XDRCoreTypesUnitTests: XCTestCase {
     }
 
     func testTrustlineEntryExtensionV2() throws {
-        let extV2 = TrustlineEntryExtensionV2()
+        let extV2 = TrustlineEntryExtensionV2(liquidityPoolUseCount: 0)
 
         let encoded = try XDREncoder.encode(extV2)
         let decoded = try XDRDecoder.decode(TrustlineEntryExtensionV2.self, data: encoded)
 
         XCTAssertEqual(decoded.liquidityPoolUseCount, 0)
-        XCTAssertEqual(decoded.reserved, 0)
+        XCTAssertEqual(decoded.ext, 0)
     }
 
     // MARK: - InvokeHostFunctionOpXDR Tests
