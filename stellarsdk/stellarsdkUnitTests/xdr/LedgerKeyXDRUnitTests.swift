@@ -111,7 +111,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
     func testLedgerKeyXDRClaimableBalance() throws {
         let balanceIdHex = "00000000c582697b67cbec7f9ce64f4dc67bfb2bfd26318bb9f964f4d70e3f41f650b1e6"
         let claimableBalanceId = try ClaimableBalanceIDXDR(claimableBalanceId: balanceIdHex)
-        let ledgerKey = LedgerKeyXDR.claimableBalance(claimableBalanceId)
+        let ledgerKey = LedgerKeyXDR.claimableBalance(LedgerKeyClaimableBalanceXDR(balanceID: claimableBalanceId))
 
         XCTAssertEqual(ledgerKey.type(), LedgerEntryType.claimableBalance.rawValue)
 
@@ -121,9 +121,9 @@ class LedgerKeyXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), LedgerEntryType.claimableBalance.rawValue)
 
         switch decoded {
-        case .claimableBalance(let decodedBalanceId):
-            XCTAssertEqual(decodedBalanceId.type(), ClaimableBalanceIDType.claimableBalanceIDTypeV0.rawValue)
-            XCTAssertNotNil(decodedBalanceId.claimableBalanceIdString)
+        case .claimableBalance(let decodedKey):
+            XCTAssertEqual(decodedKey.balanceID.type(), ClaimableBalanceIDType.claimableBalanceIDTypeV0.rawValue)
+            XCTAssertNotNil(decodedKey.balanceID.claimableBalanceIdString)
         default:
             XCTFail("Expected claimable balance ledger key")
         }
@@ -132,8 +132,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
     func testLedgerKeyXDRLiquidityPool() throws {
         let poolIdHex = "dd7b1ab831c273310ddbec6f97870aa83c2fbd78ce22aded37ecbf4f3380fac7"
         let poolIdData = WrappedData32(poolIdHex.wrappedData32FromHex().wrapped)
-        let liquidityPoolId = LiquidityPoolIDXDR(id: poolIdData)
-        let ledgerKey = LedgerKeyXDR.liquidityPool(liquidityPoolId)
+        let ledgerKey = LedgerKeyXDR.liquidityPool(LedgerKeyLiquidityPoolXDR(liquidityPoolID: poolIdData))
 
         XCTAssertEqual(ledgerKey.type(), LedgerEntryType.liquidityPool.rawValue)
 
@@ -305,7 +304,7 @@ class LedgerKeyXDRUnitTests: XCTestCase {
 
     func testLedgerKeyXDRConfigSetting() throws {
         let configSettingId = ConfigSettingID.contractMaxSizeBytes.rawValue
-        let ledgerKey = LedgerKeyXDR.configSetting(configSettingId)
+        let ledgerKey = LedgerKeyXDR.configSetting(LedgerKeyConfigSettingXDR(configSettingID: configSettingId))
 
         XCTAssertEqual(ledgerKey.type(), LedgerEntryType.configSetting.rawValue)
 
@@ -315,8 +314,8 @@ class LedgerKeyXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), LedgerEntryType.configSetting.rawValue)
 
         switch decoded {
-        case .configSetting(let decodedConfigSettingId):
-            XCTAssertEqual(decodedConfigSettingId, ConfigSettingID.contractMaxSizeBytes.rawValue)
+        case .configSetting(let decodedConfigSetting):
+            XCTAssertEqual(decodedConfigSetting.configSettingID, ConfigSettingID.contractMaxSizeBytes.rawValue)
         default:
             XCTFail("Expected config setting ledger key")
         }

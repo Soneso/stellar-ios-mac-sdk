@@ -102,14 +102,27 @@ MEMBER_OVERRIDES = {
   },
 
   # =========================================================================
-  # LedgerEntryType -- Swift enum strips LEDGER_ENTRY_TYPE_ or just uses short names
+  # LedgerEntryType -- hand-written Swift enum (in SKIP_TYPES)
   # XDR: ACCOUNT=0, TRUSTLINE=1, OFFER=2, DATA=3, CLAIMABLE_BALANCE=4,
   #      LIQUIDITY_POOL=5, CONTRACT_DATA=6, CONTRACT_CODE=7, CONFIG_SETTING=8, TTL=9
   # Swift: .account, .trustline, .offer, .data, .claimableBalance,
   #        .liquidityPool, .contractData, .contractCode, .configSetting, .ttl
-  # Mechanical: strip no prefix (already short), just camelCase.
-  # All match mechanical conversion.
+  # Since LedgerEntryType is in SKIP_TYPES, the generator uses struct-with-constants
+  # pattern (TypeName.CONSTANT). These overrides append .rawValue so generated unions
+  # using this discriminant produce correct enum access (TypeName.case.rawValue).
   # =========================================================================
+  "LedgerEntryType" => {
+    "ACCOUNT"           => "account.rawValue",
+    "TRUSTLINE"         => "trustline.rawValue",
+    "OFFER"             => "offer.rawValue",
+    "DATA"              => "data.rawValue",
+    "CLAIMABLE_BALANCE" => "claimableBalance.rawValue",
+    "LIQUIDITY_POOL"    => "liquidityPool.rawValue",
+    "CONTRACT_DATA"     => "contractData.rawValue",
+    "CONTRACT_CODE"     => "contractCode.rawValue",
+    "CONFIG_SETTING"    => "configSetting.rawValue",
+    "TTL"               => "ttl.rawValue",
+  },
 
   # =========================================================================
   # ClaimPredicateType -- Swift uses abbreviated names

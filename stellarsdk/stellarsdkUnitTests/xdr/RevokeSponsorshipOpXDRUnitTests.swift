@@ -140,7 +140,7 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
 
     func testRevokeSponsorshipOpXDRLedgerKeyClaimableBalance() throws {
         let balanceId = try ClaimableBalanceIDXDR(claimableBalanceId: testBalanceIdHex)
-        let ledgerKey = LedgerKeyXDR.claimableBalance(balanceId)
+        let ledgerKey = LedgerKeyXDR.claimableBalance(LedgerKeyClaimableBalanceXDR(balanceID: balanceId))
         let op = RevokeSponsorshipOpXDR.revokeSponsorshipLedgerEntry(ledgerKey)
 
         let encoded = try XDREncoder.encode(op)
@@ -152,8 +152,8 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
         case .revokeSponsorshipLedgerEntry(let decodedLedgerKey):
             XCTAssertEqual(decodedLedgerKey.type(), LedgerEntryType.claimableBalance.rawValue)
             switch decodedLedgerKey {
-            case .claimableBalance(let claimableBalanceId):
-                XCTAssertEqual(claimableBalanceId.type(), ClaimableBalanceIDType.claimableBalanceIDTypeV0.rawValue)
+            case .claimableBalance(let claimableBalanceKey):
+                XCTAssertEqual(claimableBalanceKey.balanceID.type(), ClaimableBalanceIDType.claimableBalanceIDTypeV0.rawValue)
             default:
                 XCTFail("Expected claimableBalance ledger key")
             }
@@ -166,8 +166,7 @@ class RevokeSponsorshipOpXDRUnitTests: XCTestCase {
 
     func testRevokeSponsorshipOpXDRLedgerKeyLiquidityPool() throws {
         let poolIdData = testPoolIdHex.wrappedData32FromHex()
-        let liquidityPoolId = LiquidityPoolIDXDR(id: poolIdData)
-        let ledgerKey = LedgerKeyXDR.liquidityPool(liquidityPoolId)
+        let ledgerKey = LedgerKeyXDR.liquidityPool(LedgerKeyLiquidityPoolXDR(liquidityPoolID: poolIdData))
         let op = RevokeSponsorshipOpXDR.revokeSponsorshipLedgerEntry(ledgerKey)
 
         let encoded = try XDREncoder.encode(op)

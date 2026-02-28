@@ -1125,8 +1125,8 @@ public final class TxRep: Sendable {
         } else if (ledgerKeyType == "CLAIMABLE_BALANCE") {
             let key = prefix + "claimableBalance.balanceID.v0"
             let balanceId = try getString(dic: dic, key: key)
-            let value = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(balanceId.wrappedData32FromHex())
-            return LedgerKeyXDR.claimableBalance(value)
+            let balanceIdXDR = ClaimableBalanceIDXDR.claimableBalanceIDTypeV0(balanceId.wrappedData32FromHex())
+            return LedgerKeyXDR.claimableBalance(LedgerKeyClaimableBalanceXDR(balanceID: balanceIdXDR))
         } else if (ledgerKeyType == "LIQUIDITY_POOL") {
             let key = prefix + "liquidityPool.liquidityPoolID"
             let liquidityPoolId = try getString(dic: dic, key: key)
@@ -1134,7 +1134,7 @@ public final class TxRep: Sendable {
             if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
                 lidHex = idHex
             }
-            let value = LiquidityPoolIDXDR(id: lidHex.wrappedData32FromHex())
+            let value = LedgerKeyLiquidityPoolXDR(liquidityPoolID: lidHex.wrappedData32FromHex())
             return LedgerKeyXDR.liquidityPool(value)
         } else if (ledgerKeyType == "CONTRACT_DATA") {
             let address = try getSCAddress(dic: dic, prefix: prefix + "contractData.contract.")
@@ -1155,7 +1155,7 @@ public final class TxRep: Sendable {
             return LedgerKeyXDR.contractCode(value)
         } else if (ledgerKeyType == "CONFIG_SETTING") {
             let id = try getConfigSettingID(dic: dic, key: prefix + "configSetting.configSettingID")
-            return LedgerKeyXDR.configSetting(id.rawValue)
+            return LedgerKeyXDR.configSetting(LedgerKeyConfigSettingXDR(configSettingID: id.rawValue))
         } else if (ledgerKeyType == "TTL") {
             let hashStr = try getString(dic: dic, key: prefix + "ttl.keyHash")
             let value = LedgerKeyTTLXDR(keyHash: hashStr.wrappedData32FromHex())
@@ -3155,10 +3155,10 @@ public final class TxRep: Sendable {
             addLine(key: prefix + "type", value: "DATA", lines: &lines)
             addLine(key: prefix + "data.accountID", value: ledgerKeyDataXDR.accountId.accountId, lines: &lines)
             addLine(key: prefix + "data.dataName", value: "\"" + ledgerKeyDataXDR.dataName + "\"", lines: &lines)
-        case .claimableBalance(let claimableBalanceIDXDR):
+        case .claimableBalance(let xdr):
             addLine(key: prefix + "type", value: "CLAIMABLE_BALANCE", lines: &lines)
             addLine(key: prefix + "claimableBalance.balanceID.type", value: "CLAIMABLE_BALANCE_ID_TYPE_V0", lines: &lines)
-            switch claimableBalanceIDXDR {
+            switch xdr.balanceID {
             case .claimableBalanceIDTypeV0(let wrappedData32):
                 let balanceId = wrappedData32.wrapped.base16EncodedString()
                 addLine(key: prefix + "claimableBalance.balanceID.v0", value: balanceId, lines: &lines)
@@ -3179,9 +3179,9 @@ public final class TxRep: Sendable {
         case .contractCode(let xdr):
             addLine(key: prefix + "type", value: "CONTRACT_CODE", lines: &lines)
             addLine(key: prefix + "contractCode.hash", value: xdr.hash.wrapped.base16EncodedString(), lines: &lines)
-        case .configSetting(let id):
+        case .configSetting(let xdr):
             addLine(key: prefix + "type", value: "CONFIG_SETTING", lines: &lines)
-            addConfigSettingID(id: id, prefix: prefix + "configSetting.configSettingID", lines: &lines)
+            addConfigSettingID(id: xdr.configSettingID, prefix: prefix + "configSetting.configSettingID", lines: &lines)
         case .ttl(let xdr):
             addLine(key: prefix + "type", value: "TTL", lines: &lines)
             addLine(key: prefix + "ttl.keyHash", value: xdr.keyHash.wrapped.base16EncodedString(), lines: &lines)

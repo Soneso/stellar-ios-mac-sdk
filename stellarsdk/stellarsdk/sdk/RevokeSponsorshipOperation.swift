@@ -74,8 +74,8 @@ public class RevokeSponsorshipOperation:Operation, @unchecked Sendable {
     /// - Parameter balanceId: The claimable balance ID whose sponsorship will be revoked.
     /// - Returns: A ledger key identifying the claimable balance entry.
     public static func revokeClaimableBalanceSponsorshipLedgerKey(balanceId:String) throws -> LedgerKeyXDR {
-        let value = try ClaimableBalanceIDXDR(claimableBalanceId: balanceId)
-        return LedgerKeyXDR.claimableBalance(value)
+        let balanceIdXDR = try ClaimableBalanceIDXDR(claimableBalanceId: balanceId)
+        return LedgerKeyXDR.claimableBalance(LedgerKeyClaimableBalanceXDR(balanceID: balanceIdXDR))
     }
     
     /// Creates a ledger key for revoking sponsorship of an offer entry.

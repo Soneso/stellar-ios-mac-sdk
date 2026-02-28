@@ -67,11 +67,10 @@ class Generator < Xdrgen::Generators::Base
     UploadContractWasmArgsXDR
     FromEd25519PublicKeyXDR
     InvokeHostFunctionOpXDR
-    LedgerKeyXDR
-    LedgerKeyContractDataXDR
-    LedgerKeyContractCodeXDR
-    LedgerKeyTTLXDR
-    LiquidityPoolIDXDR
+    LedgerKeyAccountXDR
+    LedgerKeyTrustLineXDR
+    LedgerKeyOfferXDR
+    LedgerKeyDataXDR
     MuxedAccountXDR
     MuxedAccountMed25519XDR
     TransactionResultXDR

@@ -616,13 +616,18 @@ NAME_OVERRIDES = {
   # ContractCostParams typedef
   "ContractCostParams"                 => "ContractCostParamsXDR",
 
-  # LedgerKeyContractData struct (SDK-specific helper)
+  # LedgerKey union inline arm structs
+  "LedgerKeyAccount"                   => "LedgerKeyAccountXDR",
+  "LedgerKeyTrustLine"                 => "LedgerKeyTrustLineXDR",
+  "LedgerKeyOffer"                     => "LedgerKeyOfferXDR",
+  "LedgerKeyData"                      => "LedgerKeyDataXDR",
+  "LedgerKeyClaimableBalance"          => "LedgerKeyClaimableBalanceXDR",
+  "LedgerKeyLiquidityPool"             => "LedgerKeyLiquidityPoolXDR",
   "LedgerKeyContractData"              => "LedgerKeyContractDataXDR",
-  # LedgerKeyContractCode struct (SDK-specific helper)
   "LedgerKeyContractCode"              => "LedgerKeyContractCodeXDR",
-  # LedgerKeyTTL struct (SDK-specific helper)
-  "LedgerKeyTTL"                       => "LedgerKeyTTLXDR",
-  # LiquidityPoolID struct (SDK-specific helper wrapping PoolID)
+  "LedgerKeyConfigSetting"             => "LedgerKeyConfigSettingXDR",
+  "LedgerKeyTtl"                       => "LedgerKeyTTLXDR",
+  # LiquidityPoolID typedef (unused, PoolID resolves to WrappedData32)
   "LiquidityPoolID"                    => "LiquidityPoolIDXDR",
 
   # HashIDPreimageContractID struct

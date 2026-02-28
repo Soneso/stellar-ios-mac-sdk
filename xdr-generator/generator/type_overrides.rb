@@ -29,7 +29,7 @@ FIELD_TYPE_OVERRIDES = {
   "OfferEntryXDR" => {
     "offerID" => "UInt64",
   },
-  "LedgerKeyXDRConfigSettingXDR" => {
+  "LedgerKeyConfigSettingXDR" => {
     "configSettingID" => "Int32",
   },
   # SCMap is typedef SCMapEntry<>. The generated code resolves it as SCMapXDR
