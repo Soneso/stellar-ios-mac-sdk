@@ -41,8 +41,6 @@ class Generator < Xdrgen::Generators::Base
     MuxedAccountMed25519XDRInverted
     TransactionSignaturePayload
     TaggedTransaction
-    AlphaATO4XDR
-    AlphaATO12XDR
     TransactionV0EnvelopeXDR
     TransactionV1EnvelopeXDR
     FeeBumpTransactionEnvelopeXDR
@@ -66,13 +64,9 @@ class Generator < Xdrgen::Generators::Base
     OperationResultXDRTrXDR
     TransactionResultXDRResultXDR
     InnerTransactionResultXDRResultXDR
-
-
-
     ManageOfferEffect
     ManageOfferSuccessResultOfferXDR
     ManageOfferSuccessResultXDR
-
     ManageOfferResultCode
     ManageOfferResultXDR
   ].freeze
