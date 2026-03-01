@@ -46,7 +46,6 @@ class Generator < Xdrgen::Generators::Base
     TransactionV0XDR
     FeeBumpTransactionXDR
     InnerTransactionXDR
-    TransactionEnvelopeXDR
     MuxedAccountXDR
     MuxedAccountMed25519XDR
   ].freeze
