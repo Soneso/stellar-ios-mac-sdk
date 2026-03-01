@@ -3,15 +3,15 @@
 
 import Foundation
 
-public struct TransactionResultXDR: XDRCodable, Sendable {
+public struct InnerTransactionResultXDR: XDRCodable, Sendable {
   public var feeCharged: Int64
-  public var result: TransactionResultBodyXDR
-  public var ext: TransactionResultXDRExtXDR
+  public var result: InnerTransactionResultBodyXDR
+  public var ext: InnerTransactionResultXDRExtXDR
 
   public init(
     feeCharged: Int64,
-    result: TransactionResultBodyXDR,
-    ext: TransactionResultXDRExtXDR
+    result: InnerTransactionResultBodyXDR,
+    ext: InnerTransactionResultXDRExtXDR
   ) {
     self.feeCharged = feeCharged
     self.result = result
@@ -21,8 +21,8 @@ public struct TransactionResultXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     feeCharged = try container.decode(Int64.self)
-    result = try container.decode(TransactionResultBodyXDR.self)
-    ext = try container.decode(TransactionResultXDRExtXDR.self)
+    result = try container.decode(InnerTransactionResultBodyXDR.self)
+    ext = try container.decode(InnerTransactionResultXDRExtXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

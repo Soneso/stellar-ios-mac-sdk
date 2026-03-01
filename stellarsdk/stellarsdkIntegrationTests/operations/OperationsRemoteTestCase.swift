@@ -78,7 +78,7 @@ class OperationsRemoteTestCase: XCTestCase, @unchecked Sendable {
                 XCTAssert(response.operationCount > 0)
                 self.transactionId = response.transactionHash
                 self.ledger = response.ledger
-                switch response.transactionResult.resultBody {
+                switch response.transactionResult.result {
                 case .success(let array):
                     for opResult in array {
                         switch opResult {
@@ -679,7 +679,7 @@ class OperationsRemoteTestCase: XCTestCase, @unchecked Sendable {
             switch submitTxResultEnum {
             case .success(let submitTransactionResponse):
                 XCTAssertTrue(submitTransactionResponse.operationCount > 0)
-                switch submitTransactionResponse.transactionResult.resultBody {
+                switch submitTransactionResponse.transactionResult.result {
                 case .success(let array):
                     for opResult in array {
                         switch opResult {

@@ -17,11 +17,7 @@ class OperationXDRRemoteTestCase: XCTestCase {
         switch responseEnum {
         case .success(let transactionsResponse):
             if let response = transactionsResponse.records.first {
-                guard let resultBody = response.transactionResult.resultBody else {
-                    XCTFail()
-                    return
-                }
-                switch resultBody {
+                switch response.transactionResult.result {
                 case .success(let operations):
                     self.validateOperation(operationXDR: operations.first!)
                 default:

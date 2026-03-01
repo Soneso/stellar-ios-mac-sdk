@@ -594,10 +594,10 @@ NAME_OVERRIDES = {
   # OperationBody union (inside Operation)
   "OperationBody"                      => "OperationBodyXDR",
 
-  # TransactionResultBody union (inside TransactionResult)
-  "TransactionResultBody"              => "TransactionResultBodyXDR",
-  # InnerTransactionResultBody union
-  "InnerTransactionResultBody"         => "InnerTransactionResultBodyXDR",
+  # TransactionResult.result union (raw xdrgen name: TransactionResultResult)
+  "TransactionResultResult"            => "TransactionResultBodyXDR",
+  # InnerTransactionResult.result union (raw xdrgen name: InnerTransactionResultResult)
+  "InnerTransactionResultResult"       => "InnerTransactionResultBodyXDR",
 
   # ManageOfferSuccessResultOffer union
   "ManageOfferSuccessResultOffer"      => "ManageOfferSuccessResultOfferXDR",

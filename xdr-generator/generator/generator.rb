@@ -51,16 +51,8 @@ class Generator < Xdrgen::Generators::Base
     OperationBodyXDR
     MuxedAccountXDR
     MuxedAccountMed25519XDR
-    TransactionResultXDR
-    InnerTransactionResultXDR
-    TransactionResultCode
-    TransactionResultBodyXDR
-    InnerTransactionResultPair
-    InnerTransactionResultBodyXDR
     OperationResultXDR
     OperationResultXDRTrXDR
-    TransactionResultXDRResultXDR
-    InnerTransactionResultXDRResultXDR
   ].freeze
 
   # ---------------------------------------------------------------------------

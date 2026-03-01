@@ -16,8 +16,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
     func testTransactionResultXDRSuccess() throws {
         let result = TransactionResultXDR(
             feeCharged: 100,
-            resultBody: .success([]),
-            code: .success
+            result: .success([])
         )
 
         let encoded = try XDREncoder.encode(result)
@@ -25,14 +24,12 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
         XCTAssertEqual(decoded.feeCharged, 100)
         XCTAssertEqual(decoded.code, .success)
-        XCTAssertNotNil(decoded.resultBody)
     }
 
     func testTransactionResultXDRFailed() throws {
         let result = TransactionResultXDR(
             feeCharged: 200,
-            resultBody: .failed([]),
-            code: .failed
+            result: .failed([])
         )
 
         let encoded = try XDREncoder.encode(result)
@@ -45,8 +42,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
     func testTransactionResultXDRTooEarly() throws {
         let result = TransactionResultXDR(
             feeCharged: 50,
-            resultBody: .tooEarly,
-            code: .tooEarly
+            result: .tooEarly
         )
 
         let encoded = try XDREncoder.encode(result)
@@ -59,8 +55,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
     func testTransactionResultXDRFromXdr() throws {
         let result = TransactionResultXDR(
             feeCharged: 300,
-            resultBody: .success([]),
-            code: .success
+            result: .success([])
         )
 
         let encoded = try XDREncoder.encode(result)
@@ -93,8 +88,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
         for (code, body) in errorCodes {
             let result = TransactionResultXDR(
                 feeCharged: 100,
-                resultBody: body,
-                code: code
+                result: body
             )
 
             let encoded = try XDREncoder.encode(result)
@@ -110,8 +104,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
         let innerResult = InnerTransactionResultXDR(
             feeCharged: 150,
-            resultBody: .success([]),
-            code: .success
+            result: .success([])
         )
 
         let pair = InnerTransactionResultPair(hash: hash, result: innerResult)
@@ -1284,8 +1277,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
     func testInnerTransactionResultXDR() throws {
         let innerResult = InnerTransactionResultXDR(
             feeCharged: 500,
-            resultBody: .success([]),
-            code: .success
+            result: .success([])
         )
 
         let encoded = try XDREncoder.encode(innerResult)
@@ -1293,6 +1285,5 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
         XCTAssertEqual(decoded.feeCharged, 500)
         XCTAssertEqual(decoded.code, .success)
-        XCTAssertEqual(decoded.reserved, 0)
     }
 }

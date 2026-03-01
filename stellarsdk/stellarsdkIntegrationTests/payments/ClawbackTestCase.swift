@@ -444,7 +444,7 @@ class ClawbackTestCase: XCTestCase, @unchecked Sendable {
             let submitTxResultEnum = await sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
             case .success(let submitTransactionResponse):
-                switch submitTransactionResponse.transactionResult.resultBody {
+                switch submitTransactionResponse.transactionResult.result {
                 case .success(let array):
                     if let opResult = array.first {
                         switch opResult {
