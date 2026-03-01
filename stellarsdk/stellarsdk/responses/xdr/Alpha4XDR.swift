@@ -4,17 +4,17 @@
 import Foundation
 
 public struct Alpha4XDR: XDRCodable, Sendable {
-  public let assetCode: WrappedData4
+  public let assetCode: AssetCode4XDR
   public let issuer: PublicKey
 
-  public init(assetCode: WrappedData4, issuer: PublicKey) {
+  public init(assetCode: AssetCode4XDR, issuer: PublicKey) {
     self.assetCode = assetCode
     self.issuer = issuer
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    assetCode = try container.decode(WrappedData4.self)
+    assetCode = try container.decode(AssetCode4XDR.self)
     issuer = try container.decode(PublicKey.self)
   }
 

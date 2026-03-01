@@ -5,9 +5,9 @@ import Foundation
 
 public struct ContractIDPreimageFromAddressXDR: XDRCodable, Sendable {
   public var address: SCAddressXDR
-  public var salt: WrappedData32
+  public var salt: Uint256XDR
 
-  public init(address: SCAddressXDR, salt: WrappedData32) {
+  public init(address: SCAddressXDR, salt: Uint256XDR) {
     self.address = address
     self.salt = salt
   }
@@ -15,7 +15,7 @@ public struct ContractIDPreimageFromAddressXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     address = try container.decode(SCAddressXDR.self)
-    salt = try container.decode(WrappedData32.self)
+    salt = try container.decode(Uint256XDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

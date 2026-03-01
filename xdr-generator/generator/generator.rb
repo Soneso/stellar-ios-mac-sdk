@@ -1198,7 +1198,6 @@ class Generator < Xdrgen::Generators::Base
          AST::Typespecs::Float,
          AST::Typespecs::Hyper,
          AST::Typespecs::Int,
-         AST::Typespecs::Opaque,
          AST::Typespecs::String,
          AST::Typespecs::UnsignedHyper,
          AST::Typespecs::UnsignedInt

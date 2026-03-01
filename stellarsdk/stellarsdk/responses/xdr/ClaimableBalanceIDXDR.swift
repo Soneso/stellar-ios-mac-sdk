@@ -4,7 +4,7 @@
 import Foundation
 
 public enum ClaimableBalanceIDXDR: XDRCodable, Sendable {
-  case claimableBalanceIDTypeV0(WrappedData32)
+  case claimableBalanceIDTypeV0(HashXDR)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -12,7 +12,7 @@ public enum ClaimableBalanceIDXDR: XDRCodable, Sendable {
 
     switch discriminant {
     case ClaimableBalanceIDType.claimableBalanceIDTypeV0.rawValue:
-      let val = try container.decode(WrappedData32.self)
+      let val = try container.decode(HashXDR.self)
       self = .claimableBalanceIDTypeV0(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown ClaimableBalanceIDXDR discriminant: \(discriminant)")

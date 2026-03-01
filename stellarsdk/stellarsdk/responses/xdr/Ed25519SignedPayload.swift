@@ -4,17 +4,17 @@
 import Foundation
 
 public struct Ed25519SignedPayload: XDRCodable, Sendable {
-  public let ed25519: WrappedData32
+  public let ed25519: Uint256XDR
   public let payload: Data
 
-  public init(ed25519: WrappedData32, payload: Data) {
+  public init(ed25519: Uint256XDR, payload: Data) {
     self.ed25519 = ed25519
     self.payload = payload
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    ed25519 = try container.decode(WrappedData32.self)
+    ed25519 = try container.decode(Uint256XDR.self)
     payload = try container.decode(Data.self)
   }
 

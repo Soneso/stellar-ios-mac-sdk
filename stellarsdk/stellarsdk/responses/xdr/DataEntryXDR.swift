@@ -6,13 +6,13 @@ import Foundation
 public struct DataEntryXDR: XDRCodable, Sendable {
   public let accountID: PublicKey
   public let dataName: String
-  public let dataValue: Data
+  public let dataValue: DataValueXDR
   public let reserved: Int32 = 0
 
   public init(
     accountID: PublicKey,
     dataName: String,
-    dataValue: Data
+    dataValue: DataValueXDR
   ) {
     self.accountID = accountID
     self.dataName = dataName
@@ -23,7 +23,7 @@ public struct DataEntryXDR: XDRCodable, Sendable {
     var container = try decoder.unkeyedContainer()
     accountID = try container.decode(PublicKey.self)
     dataName = try container.decode(String.self)
-    dataValue = try container.decode(Data.self)
+    dataValue = try container.decode(DataValueXDR.self)
     _ = try container.decode(Int32.self)
   }
 

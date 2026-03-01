@@ -4,7 +4,7 @@
 import Foundation
 
 public enum ContractExecutableXDR: XDRCodable, Sendable {
-  case wasm(WrappedData32)
+  case wasm(HashXDR)
   case token
 
   public init(from decoder: Decoder) throws {
@@ -13,7 +13,7 @@ public enum ContractExecutableXDR: XDRCodable, Sendable {
 
     switch discriminant {
     case ContractExecutableType.wasm.rawValue:
-      let val = try container.decode(WrappedData32.self)
+      let val = try container.decode(HashXDR.self)
       self = .wasm(val)
     case ContractExecutableType.stellarAsset.rawValue:
       self = .token

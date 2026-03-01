@@ -4,8 +4,8 @@
 import Foundation
 
 public enum AllowTrustOpAssetXDR: XDRCodable, Sendable {
-  case alphanum4(WrappedData4)
-  case alphanum12(WrappedData12)
+  case alphanum4(AssetCode4XDR)
+  case alphanum12(AssetCode12XDR)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -13,10 +13,10 @@ public enum AllowTrustOpAssetXDR: XDRCodable, Sendable {
 
     switch discriminant {
     case AssetType.creditAlphanum4.rawValue:
-      let val = try container.decode(WrappedData4.self)
+      let val = try container.decode(AssetCode4XDR.self)
       self = .alphanum4(val)
     case AssetType.creditAlphanum12.rawValue:
-      let val = try container.decode(WrappedData12.self)
+      let val = try container.decode(AssetCode12XDR.self)
       self = .alphanum12(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown AllowTrustOpAssetXDR discriminant: \(discriminant)")

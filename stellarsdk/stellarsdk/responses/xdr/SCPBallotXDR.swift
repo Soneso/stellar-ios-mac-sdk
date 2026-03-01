@@ -5,9 +5,9 @@ import Foundation
 
 public struct SCPBallotXDR: XDRCodable, Sendable {
   public var counter: UInt32
-  public var value: Data
+  public var value: ValueXDR
 
-  public init(counter: UInt32, value: Data) {
+  public init(counter: UInt32, value: ValueXDR) {
     self.counter = counter
     self.value = value
   }
@@ -15,7 +15,7 @@ public struct SCPBallotXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     counter = try container.decode(UInt32.self)
-    value = try container.decode(Data.self)
+    value = try container.decode(ValueXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

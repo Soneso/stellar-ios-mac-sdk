@@ -5,9 +5,9 @@ import Foundation
 
 public struct SCPEnvelopeXDR: XDRCodable, Sendable {
   public var statement: SCPStatementXDR
-  public var signature: Data
+  public var signature: SignatureXDR
 
-  public init(statement: SCPStatementXDR, signature: Data) {
+  public init(statement: SCPStatementXDR, signature: SignatureXDR) {
     self.statement = statement
     self.signature = signature
   }
@@ -15,7 +15,7 @@ public struct SCPEnvelopeXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     statement = try container.decode(SCPStatementXDR.self)
-    signature = try container.decode(Data.self)
+    signature = try container.decode(SignatureXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

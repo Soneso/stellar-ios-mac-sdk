@@ -8,14 +8,14 @@ public struct SurveyResponseMessageXDR: XDRCodable, Sendable {
   public var surveyedPeerID: NodeIDXDR
   public var ledgerNum: UInt32
   public var commandType: SurveyMessageCommandTypeXDR
-  public var encryptedBody: Data
+  public var encryptedBody: EncryptedBodyXDR
 
   public init(
     surveyorPeerID: NodeIDXDR,
     surveyedPeerID: NodeIDXDR,
     ledgerNum: UInt32,
     commandType: SurveyMessageCommandTypeXDR,
-    encryptedBody: Data
+    encryptedBody: EncryptedBodyXDR
   ) {
     self.surveyorPeerID = surveyorPeerID
     self.surveyedPeerID = surveyedPeerID
@@ -30,7 +30,7 @@ public struct SurveyResponseMessageXDR: XDRCodable, Sendable {
     surveyedPeerID = try container.decode(NodeIDXDR.self)
     ledgerNum = try container.decode(UInt32.self)
     commandType = try container.decode(SurveyMessageCommandTypeXDR.self)
-    encryptedBody = try container.decode(Data.self)
+    encryptedBody = try container.decode(EncryptedBodyXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

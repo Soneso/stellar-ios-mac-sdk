@@ -5,9 +5,9 @@ import Foundation
 
 public struct ManageDataOperationXDR: XDRCodable, Sendable {
   public let dataName: String
-  public let dataValue: Data?
+  public let dataValue: DataValueXDR?
 
-  public init(dataName: String, dataValue: Data? = nil) {
+  public init(dataName: String, dataValue: DataValueXDR? = nil) {
     self.dataName = dataName
     self.dataValue = dataValue
   }
@@ -17,7 +17,7 @@ public struct ManageDataOperationXDR: XDRCodable, Sendable {
     dataName = try container.decode(String.self)
     let dataValuePresent = try container.decode(Int32.self)
     if dataValuePresent != 0 {
-      dataValue = try container.decode(Data.self)
+      dataValue = try container.decode(DataValueXDR.self)
     } else {
       dataValue = nil
     }

@@ -13,12 +13,12 @@ public enum AssetXDR: XDRCodable, Sendable {
     let discriminant = try container.decode(Int32.self)
 
     switch discriminant {
-    case AssetType.ASSET_TYPE_NATIVE:
+    case AssetType.native.rawValue:
       self = .native
-    case AssetType.ASSET_TYPE_CREDIT_ALPHANUM4:
+    case AssetType.creditAlphanum4.rawValue:
       let val = try container.decode(Alpha4XDR.self)
       self = .alphanum4(val)
-    case AssetType.ASSET_TYPE_CREDIT_ALPHANUM12:
+    case AssetType.creditAlphanum12.rawValue:
       let val = try container.decode(Alpha12XDR.self)
       self = .alphanum12(val)
     default:
@@ -28,9 +28,9 @@ public enum AssetXDR: XDRCodable, Sendable {
 
   public func type() -> Int32 {
     switch self {
-    case .native: return AssetType.ASSET_TYPE_NATIVE
-    case .alphanum4: return AssetType.ASSET_TYPE_CREDIT_ALPHANUM4
-    case .alphanum12: return AssetType.ASSET_TYPE_CREDIT_ALPHANUM12
+    case .native: return AssetType.native.rawValue
+    case .alphanum4: return AssetType.creditAlphanum4.rawValue
+    case .alphanum12: return AssetType.creditAlphanum12.rawValue
     }
   }
 

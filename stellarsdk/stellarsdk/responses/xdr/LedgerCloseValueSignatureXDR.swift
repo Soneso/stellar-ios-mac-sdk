@@ -5,9 +5,9 @@ import Foundation
 
 public struct LedgerCloseValueSignatureXDR: XDRCodable, Sendable {
   public var nodeID: NodeIDXDR
-  public var signature: Data
+  public var signature: SignatureXDR
 
-  public init(nodeID: NodeIDXDR, signature: Data) {
+  public init(nodeID: NodeIDXDR, signature: SignatureXDR) {
     self.nodeID = nodeID
     self.signature = signature
   }
@@ -15,7 +15,7 @@ public struct LedgerCloseValueSignatureXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     nodeID = try container.decode(NodeIDXDR.self)
-    signature = try container.decode(Data.self)
+    signature = try container.decode(SignatureXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

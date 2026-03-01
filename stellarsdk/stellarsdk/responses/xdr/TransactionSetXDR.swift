@@ -4,17 +4,17 @@
 import Foundation
 
 public struct TransactionSetXDR: XDRCodable, Sendable {
-  public var previousLedgerHash: WrappedData32
+  public var previousLedgerHash: HashXDR
   public var txs: [TransactionEnvelopeXDR]
 
-  public init(previousLedgerHash: WrappedData32, txs: [TransactionEnvelopeXDR]) {
+  public init(previousLedgerHash: HashXDR, txs: [TransactionEnvelopeXDR]) {
     self.previousLedgerHash = previousLedgerHash
     self.txs = txs
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    previousLedgerHash = try container.decode(WrappedData32.self)
+    previousLedgerHash = try container.decode(HashXDR.self)
     txs = try decodeArray(type: TransactionEnvelopeXDR.self, dec: decoder)
   }
 

@@ -7,27 +7,27 @@ public enum MemoXDR: XDRCodable, Sendable {
   case none
   case text(String)
   case id(UInt64)
-  case hash(WrappedData32)
-  case returnHash(WrappedData32)
+  case hash(HashXDR)
+  case returnHash(HashXDR)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     let discriminant = try container.decode(Int32.self)
 
     switch discriminant {
-    case MemoType.MEMO_TYPE_NONE:
+    case MemoType.MEMO_TYPE_NONE.rawValue:
       self = .none
-    case MemoType.MEMO_TYPE_TEXT:
+    case MemoType.MEMO_TYPE_TEXT.rawValue:
       let val = try container.decode(String.self)
       self = .text(val)
-    case MemoType.MEMO_TYPE_ID:
+    case MemoType.MEMO_TYPE_ID.rawValue:
       let val = try container.decode(UInt64.self)
       self = .id(val)
-    case MemoType.MEMO_TYPE_HASH:
-      let val = try container.decode(WrappedData32.self)
+    case MemoType.MEMO_TYPE_HASH.rawValue:
+      let val = try container.decode(HashXDR.self)
       self = .hash(val)
-    case MemoType.MEMO_TYPE_RETURN:
-      let val = try container.decode(WrappedData32.self)
+    case MemoType.MEMO_TYPE_RETURN.rawValue:
+      let val = try container.decode(HashXDR.self)
       self = .returnHash(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown MemoXDR discriminant: \(discriminant)")
@@ -36,11 +36,11 @@ public enum MemoXDR: XDRCodable, Sendable {
 
   public func type() -> Int32 {
     switch self {
-    case .none: return MemoType.MEMO_TYPE_NONE
-    case .text: return MemoType.MEMO_TYPE_TEXT
-    case .id: return MemoType.MEMO_TYPE_ID
-    case .hash: return MemoType.MEMO_TYPE_HASH
-    case .returnHash: return MemoType.MEMO_TYPE_RETURN
+    case .none: return MemoType.MEMO_TYPE_NONE.rawValue
+    case .text: return MemoType.MEMO_TYPE_TEXT.rawValue
+    case .id: return MemoType.MEMO_TYPE_ID.rawValue
+    case .hash: return MemoType.MEMO_TYPE_HASH.rawValue
+    case .returnHash: return MemoType.MEMO_TYPE_RETURN.rawValue
     }
   }
 

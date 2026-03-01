@@ -5,9 +5,9 @@ import Foundation
 
 public struct ConfigUpgradeSetKeyXDR: XDRCodable, Sendable {
   public var contractID: WrappedData32
-  public var contentHash: WrappedData32
+  public var contentHash: HashXDR
 
-  public init(contractID: WrappedData32, contentHash: WrappedData32) {
+  public init(contractID: WrappedData32, contentHash: HashXDR) {
     self.contractID = contractID
     self.contentHash = contentHash
   }
@@ -15,7 +15,7 @@ public struct ConfigUpgradeSetKeyXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     contractID = try container.decode(WrappedData32.self)
-    contentHash = try container.decode(WrappedData32.self)
+    contentHash = try container.decode(HashXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

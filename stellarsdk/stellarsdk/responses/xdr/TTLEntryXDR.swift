@@ -4,17 +4,17 @@
 import Foundation
 
 public struct TTLEntryXDR: XDRCodable, Sendable {
-  public let keyHash: WrappedData32
+  public let keyHash: HashXDR
   public let liveUntilLedgerSeq: UInt32
 
-  public init(keyHash: WrappedData32, liveUntilLedgerSeq: UInt32) {
+  public init(keyHash: HashXDR, liveUntilLedgerSeq: UInt32) {
     self.keyHash = keyHash
     self.liveUntilLedgerSeq = liveUntilLedgerSeq
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    keyHash = try container.decode(WrappedData32.self)
+    keyHash = try container.decode(HashXDR.self)
     liveUntilLedgerSeq = try container.decode(UInt32.self)
   }
 

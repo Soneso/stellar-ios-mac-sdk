@@ -4,17 +4,17 @@
 import Foundation
 
 public struct TransactionResultPairXDR: XDRCodable, Sendable {
-  public var transactionHash: WrappedData32
+  public var transactionHash: HashXDR
   public var result: TransactionResultXDR
 
-  public init(transactionHash: WrappedData32, result: TransactionResultXDR) {
+  public init(transactionHash: HashXDR, result: TransactionResultXDR) {
     self.transactionHash = transactionHash
     self.result = result
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    transactionHash = try container.decode(WrappedData32.self)
+    transactionHash = try container.decode(HashXDR.self)
     result = try container.decode(TransactionResultXDR.self)
   }
 

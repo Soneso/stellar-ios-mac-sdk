@@ -4,14 +4,14 @@
 import Foundation
 
 public struct SCPNominationXDR: XDRCodable, Sendable {
-  public var quorumSetHash: WrappedData32
-  public var votes: [Data]
-  public var accepted: [Data]
+  public var quorumSetHash: HashXDR
+  public var votes: [ValueXDR]
+  public var accepted: [ValueXDR]
 
   public init(
-    quorumSetHash: WrappedData32,
-    votes: [Data],
-    accepted: [Data]
+    quorumSetHash: HashXDR,
+    votes: [ValueXDR],
+    accepted: [ValueXDR]
   ) {
     self.quorumSetHash = quorumSetHash
     self.votes = votes
@@ -20,9 +20,9 @@ public struct SCPNominationXDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    quorumSetHash = try container.decode(WrappedData32.self)
-    votes = try decodeArray(type: Data.self, dec: decoder)
-    accepted = try decodeArray(type: Data.self, dec: decoder)
+    quorumSetHash = try container.decode(HashXDR.self)
+    votes = try decodeArray(type: ValueXDR.self, dec: decoder)
+    accepted = try decodeArray(type: ValueXDR.self, dec: decoder)
   }
 
   public func encode(to encoder: Encoder) throws {

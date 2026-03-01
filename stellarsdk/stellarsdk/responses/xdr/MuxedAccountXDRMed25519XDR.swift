@@ -5,9 +5,9 @@ import Foundation
 
 public struct MuxedAccountXDRMed25519XDR: XDRCodable, Sendable {
   public var id: UInt64
-  public var ed25519: WrappedData32
+  public var ed25519: Uint256XDR
 
-  public init(id: UInt64, ed25519: WrappedData32) {
+  public init(id: UInt64, ed25519: Uint256XDR) {
     self.id = id
     self.ed25519 = ed25519
   }
@@ -15,7 +15,7 @@ public struct MuxedAccountXDRMed25519XDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     id = try container.decode(UInt64.self)
-    ed25519 = try container.decode(WrappedData32.self)
+    ed25519 = try container.decode(Uint256XDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

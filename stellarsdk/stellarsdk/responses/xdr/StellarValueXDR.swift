@@ -4,15 +4,15 @@
 import Foundation
 
 public struct StellarValueXDR: XDRCodable, Sendable {
-  public var txSetHash: WrappedData32
+  public var txSetHash: HashXDR
   public var closeTime: UInt64
-  public var upgrades: [Data]
+  public var upgrades: [UpgradeTypeXDR]
   public var ext: StellarValueXDRExtXDR
 
   public init(
-    txSetHash: WrappedData32,
+    txSetHash: HashXDR,
     closeTime: UInt64,
-    upgrades: [Data],
+    upgrades: [UpgradeTypeXDR],
     ext: StellarValueXDRExtXDR
   ) {
     self.txSetHash = txSetHash
@@ -23,9 +23,9 @@ public struct StellarValueXDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    txSetHash = try container.decode(WrappedData32.self)
+    txSetHash = try container.decode(HashXDR.self)
     closeTime = try container.decode(UInt64.self)
-    upgrades = try decodeArray(type: Data.self, dec: decoder)
+    upgrades = try decodeArray(type: UpgradeTypeXDR.self, dec: decoder)
     ext = try container.decode(StellarValueXDRExtXDR.self)
   }
 

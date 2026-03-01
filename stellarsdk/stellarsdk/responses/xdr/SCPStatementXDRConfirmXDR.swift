@@ -8,14 +8,14 @@ public struct SCPStatementXDRConfirmXDR: XDRCodable, Sendable {
   public var nPrepared: UInt32
   public var nCommit: UInt32
   public var nH: UInt32
-  public var quorumSetHash: WrappedData32
+  public var quorumSetHash: HashXDR
 
   public init(
     ballot: SCPBallotXDR,
     nPrepared: UInt32,
     nCommit: UInt32,
     nH: UInt32,
-    quorumSetHash: WrappedData32
+    quorumSetHash: HashXDR
   ) {
     self.ballot = ballot
     self.nPrepared = nPrepared
@@ -30,7 +30,7 @@ public struct SCPStatementXDRConfirmXDR: XDRCodable, Sendable {
     nPrepared = try container.decode(UInt32.self)
     nCommit = try container.decode(UInt32.self)
     nH = try container.decode(UInt32.self)
-    quorumSetHash = try container.decode(WrappedData32.self)
+    quorumSetHash = try container.decode(HashXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

@@ -5,9 +5,9 @@ import Foundation
 
 public struct DontHaveXDR: XDRCodable, Sendable {
   public var type: MessageTypeXDR
-  public var reqHash: WrappedData32
+  public var reqHash: Uint256XDR
 
-  public init(type: MessageTypeXDR, reqHash: WrappedData32) {
+  public init(type: MessageTypeXDR, reqHash: Uint256XDR) {
     self.type = type
     self.reqHash = reqHash
   }
@@ -15,7 +15,7 @@ public struct DontHaveXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     type = try container.decode(MessageTypeXDR.self)
-    reqHash = try container.decode(WrappedData32.self)
+    reqHash = try container.decode(Uint256XDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

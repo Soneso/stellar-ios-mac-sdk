@@ -9,7 +9,7 @@ public enum StellarMessageXDR: XDRCodable, Sendable {
   case auth(AuthXDR)
   case dontHave(DontHaveXDR)
   case peers([PeerAddressXDR])
-  case txSetHash(WrappedData32)
+  case txSetHash(Uint256XDR)
   case txSet(TransactionSetXDR)
   case generalizedTxSet(GeneralizedTransactionSetXDR)
   case transaction(TransactionEnvelopeXDR)
@@ -17,7 +17,7 @@ public enum StellarMessageXDR: XDRCodable, Sendable {
   case signedTimeSlicedSurveyResponseMessage(SignedTimeSlicedSurveyResponseMessageXDR)
   case signedTimeSlicedSurveyStartCollectingMessage(SignedTimeSlicedSurveyStartCollectingMessageXDR)
   case signedTimeSlicedSurveyStopCollectingMessage(SignedTimeSlicedSurveyStopCollectingMessageXDR)
-  case qSetHash(WrappedData32)
+  case qSetHash(Uint256XDR)
   case qSet(SCPQuorumSetXDR)
   case envelope(SCPEnvelopeXDR)
   case getSCPLedgerSeq(UInt32)
@@ -47,7 +47,7 @@ public enum StellarMessageXDR: XDRCodable, Sendable {
       let val = try decodeArray(type: PeerAddressXDR.self, dec: decoder)
       self = .peers(val)
     case MessageTypeXDR.getTxSet.rawValue:
-      let val = try container.decode(WrappedData32.self)
+      let val = try container.decode(Uint256XDR.self)
       self = .txSetHash(val)
     case MessageTypeXDR.txSet.rawValue:
       let val = try container.decode(TransactionSetXDR.self)
@@ -71,7 +71,7 @@ public enum StellarMessageXDR: XDRCodable, Sendable {
       let val = try container.decode(SignedTimeSlicedSurveyStopCollectingMessageXDR.self)
       self = .signedTimeSlicedSurveyStopCollectingMessage(val)
     case MessageTypeXDR.getScpQuorumset.rawValue:
-      let val = try container.decode(WrappedData32.self)
+      let val = try container.decode(Uint256XDR.self)
       self = .qSetHash(val)
     case MessageTypeXDR.scpQuorumset.rawValue:
       let val = try container.decode(SCPQuorumSetXDR.self)

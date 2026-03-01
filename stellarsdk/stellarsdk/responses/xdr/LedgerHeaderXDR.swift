@@ -5,10 +5,10 @@ import Foundation
 
 public struct LedgerHeaderXDR: XDRCodable, Sendable {
   public var ledgerVersion: UInt32
-  public var previousLedgerHash: WrappedData32
+  public var previousLedgerHash: HashXDR
   public var scpValue: StellarValueXDR
-  public var txSetResultHash: WrappedData32
-  public var bucketListHash: WrappedData32
+  public var txSetResultHash: HashXDR
+  public var bucketListHash: HashXDR
   public var ledgerSeq: UInt32
   public var totalCoins: Int64
   public var feePool: Int64
@@ -17,15 +17,15 @@ public struct LedgerHeaderXDR: XDRCodable, Sendable {
   public var baseFee: UInt32
   public var baseReserve: UInt32
   public var maxTxSetSize: UInt32
-  public var skipList: [WrappedData32]
+  public var skipList: [HashXDR]
   public var ext: LedgerHeaderXDRExtXDR
 
   public init(
     ledgerVersion: UInt32,
-    previousLedgerHash: WrappedData32,
+    previousLedgerHash: HashXDR,
     scpValue: StellarValueXDR,
-    txSetResultHash: WrappedData32,
-    bucketListHash: WrappedData32,
+    txSetResultHash: HashXDR,
+    bucketListHash: HashXDR,
     ledgerSeq: UInt32,
     totalCoins: Int64,
     feePool: Int64,
@@ -34,7 +34,7 @@ public struct LedgerHeaderXDR: XDRCodable, Sendable {
     baseFee: UInt32,
     baseReserve: UInt32,
     maxTxSetSize: UInt32,
-    skipList: [WrappedData32],
+    skipList: [HashXDR],
     ext: LedgerHeaderXDRExtXDR
   ) {
     self.ledgerVersion = ledgerVersion
@@ -57,10 +57,10 @@ public struct LedgerHeaderXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     ledgerVersion = try container.decode(UInt32.self)
-    previousLedgerHash = try container.decode(WrappedData32.self)
+    previousLedgerHash = try container.decode(HashXDR.self)
     scpValue = try container.decode(StellarValueXDR.self)
-    txSetResultHash = try container.decode(WrappedData32.self)
-    bucketListHash = try container.decode(WrappedData32.self)
+    txSetResultHash = try container.decode(HashXDR.self)
+    bucketListHash = try container.decode(HashXDR.self)
     ledgerSeq = try container.decode(UInt32.self)
     totalCoins = try container.decode(Int64.self)
     feePool = try container.decode(Int64.self)
@@ -69,7 +69,7 @@ public struct LedgerHeaderXDR: XDRCodable, Sendable {
     baseFee = try container.decode(UInt32.self)
     baseReserve = try container.decode(UInt32.self)
     maxTxSetSize = try container.decode(UInt32.self)
-    skipList = try (0..<4).map { _ in try container.decode(WrappedData32.self) }
+    skipList = try (0..<4).map { _ in try container.decode(HashXDR.self) }
     ext = try container.decode(LedgerHeaderXDRExtXDR.self)
   }
 

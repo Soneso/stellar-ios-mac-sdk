@@ -3,4 +3,4 @@
 
 import Foundation
 
-public typealias PoolIDXDR = WrappedData32
+public typealias PoolIDXDR = HashXDR

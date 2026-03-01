@@ -3,4 +3,4 @@
 
 import Foundation
 
-public typealias ContractIDXDR = WrappedData32
+public typealias ContractIDXDR = HashXDR

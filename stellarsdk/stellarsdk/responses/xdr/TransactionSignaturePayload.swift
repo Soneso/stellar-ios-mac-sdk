@@ -4,17 +4,17 @@
 import Foundation
 
 public struct TransactionSignaturePayload: XDRCodable, Sendable {
-  public var networkId: WrappedData32
+  public var networkId: HashXDR
   public var taggedTransaction: TransactionSignaturePayloadTaggedTransactionXDR
 
-  public init(networkId: WrappedData32, taggedTransaction: TransactionSignaturePayloadTaggedTransactionXDR) {
+  public init(networkId: HashXDR, taggedTransaction: TransactionSignaturePayloadTaggedTransactionXDR) {
     self.networkId = networkId
     self.taggedTransaction = taggedTransaction
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    networkId = try container.decode(WrappedData32.self)
+    networkId = try container.decode(HashXDR.self)
     taggedTransaction = try container.decode(TransactionSignaturePayloadTaggedTransactionXDR.self)
   }
 

@@ -4,15 +4,15 @@
 import Foundation
 
 public struct LedgerKeyTTLXDR: XDRCodable, Sendable {
-  public var keyHash: WrappedData32
+  public var keyHash: HashXDR
 
-  public init(keyHash: WrappedData32) {
+  public init(keyHash: HashXDR) {
     self.keyHash = keyHash
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    keyHash = try container.decode(WrappedData32.self)
+    keyHash = try container.decode(HashXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

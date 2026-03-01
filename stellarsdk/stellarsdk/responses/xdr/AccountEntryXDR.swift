@@ -11,7 +11,7 @@ public struct AccountEntryXDR: XDRCodable, Sendable {
   public var inflationDest: PublicKey?
   public var flags: UInt32
   public var homeDomain: String
-  public var thresholds: WrappedData4
+  public var thresholds: ThresholdsXDR
   public var signers: [SignerXDR]
   public var ext: AccountEntryExtXDR
 
@@ -23,7 +23,7 @@ public struct AccountEntryXDR: XDRCodable, Sendable {
     inflationDest: PublicKey? = nil,
     flags: UInt32,
     homeDomain: String,
-    thresholds: WrappedData4,
+    thresholds: ThresholdsXDR,
     signers: [SignerXDR],
     ext: AccountEntryExtXDR
   ) {
@@ -53,7 +53,7 @@ public struct AccountEntryXDR: XDRCodable, Sendable {
     }
     flags = try container.decode(UInt32.self)
     homeDomain = try container.decode(String.self)
-    thresholds = try container.decode(WrappedData4.self)
+    thresholds = try container.decode(ThresholdsXDR.self)
     signers = try decodeArray(type: SignerXDR.self, dec: decoder)
     ext = try container.decode(AccountEntryExtXDR.self)
   }

@@ -7,23 +7,23 @@ public struct HelloXDR: XDRCodable, Sendable {
   public var ledgerVersion: UInt32
   public var overlayVersion: UInt32
   public var overlayMinVersion: UInt32
-  public var networkID: WrappedData32
+  public var networkID: HashXDR
   public var versionStr: String
   public var listeningPort: Int32
   public var peerID: NodeIDXDR
   public var cert: AuthCertXDR
-  public var nonce: WrappedData32
+  public var nonce: Uint256XDR
 
   public init(
     ledgerVersion: UInt32,
     overlayVersion: UInt32,
     overlayMinVersion: UInt32,
-    networkID: WrappedData32,
+    networkID: HashXDR,
     versionStr: String,
     listeningPort: Int32,
     peerID: NodeIDXDR,
     cert: AuthCertXDR,
-    nonce: WrappedData32
+    nonce: Uint256XDR
   ) {
     self.ledgerVersion = ledgerVersion
     self.overlayVersion = overlayVersion
@@ -41,12 +41,12 @@ public struct HelloXDR: XDRCodable, Sendable {
     ledgerVersion = try container.decode(UInt32.self)
     overlayVersion = try container.decode(UInt32.self)
     overlayMinVersion = try container.decode(UInt32.self)
-    networkID = try container.decode(WrappedData32.self)
+    networkID = try container.decode(HashXDR.self)
     versionStr = try container.decode(String.self)
     listeningPort = try container.decode(Int32.self)
     peerID = try container.decode(NodeIDXDR.self)
     cert = try container.decode(AuthCertXDR.self)
-    nonce = try container.decode(WrappedData32.self)
+    nonce = try container.decode(Uint256XDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

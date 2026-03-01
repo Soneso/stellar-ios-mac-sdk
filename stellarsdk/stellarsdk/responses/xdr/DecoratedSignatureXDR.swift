@@ -4,18 +4,18 @@
 import Foundation
 
 public struct DecoratedSignatureXDR: XDRCodable, Sendable {
-  public let hint: WrappedData4
-  public let signature: Data
+  public let hint: SignatureHintXDR
+  public let signature: SignatureXDR
 
-  public init(hint: WrappedData4, signature: Data) {
+  public init(hint: SignatureHintXDR, signature: SignatureXDR) {
     self.hint = hint
     self.signature = signature
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    hint = try container.decode(WrappedData4.self)
-    signature = try container.decode(Data.self)
+    hint = try container.decode(SignatureHintXDR.self)
+    signature = try container.decode(SignatureXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

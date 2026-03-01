@@ -4,7 +4,7 @@
 import Foundation
 
 public struct ClaimOfferAtomV0XDR: XDRCodable, Sendable {
-  public let sellerEd25519: WrappedData32
+  public let sellerEd25519: Uint256XDR
   public let offerId: Int64
   public let assetSold: AssetXDR
   public let amountSold: Int64
@@ -12,7 +12,7 @@ public struct ClaimOfferAtomV0XDR: XDRCodable, Sendable {
   public let amountBought: Int64
 
   public init(
-    sellerEd25519: WrappedData32,
+    sellerEd25519: Uint256XDR,
     offerId: Int64,
     assetSold: AssetXDR,
     amountSold: Int64,
@@ -29,7 +29,7 @@ public struct ClaimOfferAtomV0XDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    sellerEd25519 = try container.decode(WrappedData32.self)
+    sellerEd25519 = try container.decode(Uint256XDR.self)
     offerId = try container.decode(Int64.self)
     assetSold = try container.decode(AssetXDR.self)
     amountSold = try container.decode(Int64.self)

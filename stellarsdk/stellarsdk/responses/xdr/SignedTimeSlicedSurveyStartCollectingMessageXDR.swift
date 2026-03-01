@@ -4,17 +4,17 @@
 import Foundation
 
 public struct SignedTimeSlicedSurveyStartCollectingMessageXDR: XDRCodable, Sendable {
-  public var signature: Data
+  public var signature: SignatureXDR
   public var startCollecting: TimeSlicedSurveyStartCollectingMessageXDR
 
-  public init(signature: Data, startCollecting: TimeSlicedSurveyStartCollectingMessageXDR) {
+  public init(signature: SignatureXDR, startCollecting: TimeSlicedSurveyStartCollectingMessageXDR) {
     self.signature = signature
     self.startCollecting = startCollecting
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    signature = try container.decode(Data.self)
+    signature = try container.decode(SignatureXDR.self)
     startCollecting = try container.decode(TimeSlicedSurveyStartCollectingMessageXDR.self)
   }
 

@@ -4,9 +4,9 @@
 import Foundation
 
 public enum SignerKeyXDR: XDRCodable, Sendable {
-  case ed25519(WrappedData32)
-  case preAuthTx(WrappedData32)
-  case hashX(WrappedData32)
+  case ed25519(Uint256XDR)
+  case preAuthTx(Uint256XDR)
+  case hashX(Uint256XDR)
   case signedPayload(Ed25519SignedPayload)
 
   public init(from decoder: Decoder) throws {
@@ -15,13 +15,13 @@ public enum SignerKeyXDR: XDRCodable, Sendable {
 
     switch discriminant {
     case SignerKeyType.ed25519.rawValue:
-      let val = try container.decode(WrappedData32.self)
+      let val = try container.decode(Uint256XDR.self)
       self = .ed25519(val)
     case SignerKeyType.preAuthTx.rawValue:
-      let val = try container.decode(WrappedData32.self)
+      let val = try container.decode(Uint256XDR.self)
       self = .preAuthTx(val)
     case SignerKeyType.hashX.rawValue:
-      let val = try container.decode(WrappedData32.self)
+      let val = try container.decode(Uint256XDR.self)
       self = .hashX(val)
     case SignerKeyType.signedPayload.rawValue:
       let val = try container.decode(Ed25519SignedPayload.self)

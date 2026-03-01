@@ -4,7 +4,7 @@
 import Foundation
 
 public enum InvokeHostFunctionResultXDR: XDRCodable, Sendable {
-  case success(WrappedData32)
+  case success(HashXDR)
   case malformed
   case trapped
   case resourceLimitExceeded
@@ -17,7 +17,7 @@ public enum InvokeHostFunctionResultXDR: XDRCodable, Sendable {
 
     switch discriminant {
     case InvokeHostFunctionResultCode.success.rawValue:
-      let val = try container.decode(WrappedData32.self)
+      let val = try container.decode(HashXDR.self)
       self = .success(val)
     case InvokeHostFunctionResultCode.malformed.rawValue:
       self = .malformed

@@ -4,13 +4,13 @@
 import Foundation
 
 public struct HashIDPreimageSorobanAuthorizationXDR: XDRCodable, Sendable {
-  public var networkID: WrappedData32
+  public var networkID: HashXDR
   public var nonce: Int64
   public var signatureExpirationLedger: UInt32
   public var invocation: SorobanAuthorizedInvocationXDR
 
   public init(
-    networkID: WrappedData32,
+    networkID: HashXDR,
     nonce: Int64,
     signatureExpirationLedger: UInt32,
     invocation: SorobanAuthorizedInvocationXDR
@@ -23,7 +23,7 @@ public struct HashIDPreimageSorobanAuthorizationXDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    networkID = try container.decode(WrappedData32.self)
+    networkID = try container.decode(HashXDR.self)
     nonce = try container.decode(Int64.self)
     signatureExpirationLedger = try container.decode(UInt32.self)
     invocation = try container.decode(SorobanAuthorizedInvocationXDR.self)

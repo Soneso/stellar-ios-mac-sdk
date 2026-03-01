@@ -4,7 +4,7 @@
 import Foundation
 
 public struct SCPStatementXDRPrepareXDR: XDRCodable, Sendable {
-  public var quorumSetHash: WrappedData32
+  public var quorumSetHash: HashXDR
   public var ballot: SCPBallotXDR
   public var prepared: SCPBallotXDR?
   public var preparedPrime: SCPBallotXDR?
@@ -12,7 +12,7 @@ public struct SCPStatementXDRPrepareXDR: XDRCodable, Sendable {
   public var nH: UInt32
 
   public init(
-    quorumSetHash: WrappedData32,
+    quorumSetHash: HashXDR,
     ballot: SCPBallotXDR,
     prepared: SCPBallotXDR? = nil,
     preparedPrime: SCPBallotXDR? = nil,
@@ -29,7 +29,7 @@ public struct SCPStatementXDRPrepareXDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    quorumSetHash = try container.decode(WrappedData32.self)
+    quorumSetHash = try container.decode(HashXDR.self)
     ballot = try container.decode(SCPBallotXDR.self)
     let preparedPresent = try container.decode(Int32.self)
     if preparedPresent != 0 {

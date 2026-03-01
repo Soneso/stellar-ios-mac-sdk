@@ -24,7 +24,7 @@ class GeneratorSnapshotTest < Minitest::Test
   end
 
   def test_skip_types_populated
-    %w[PublicKey TransactionXDR SCValXDR OperationXDR MuxedAccountXDR].each do |t|
+    %w[PublicKey TransactionXDR MuxedAccountXDR FeeBumpTransactionXDR TransactionV0XDR].each do |t|
       assert Generator::SKIP_TYPES.include?(t), "SKIP_TYPES should include #{t}"
     end
   end

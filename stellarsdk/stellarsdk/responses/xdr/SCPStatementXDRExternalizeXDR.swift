@@ -6,12 +6,12 @@ import Foundation
 public struct SCPStatementXDRExternalizeXDR: XDRCodable, Sendable {
   public var commit: SCPBallotXDR
   public var nH: UInt32
-  public var commitQuorumSetHash: WrappedData32
+  public var commitQuorumSetHash: HashXDR
 
   public init(
     commit: SCPBallotXDR,
     nH: UInt32,
-    commitQuorumSetHash: WrappedData32
+    commitQuorumSetHash: HashXDR
   ) {
     self.commit = commit
     self.nH = nH
@@ -22,7 +22,7 @@ public struct SCPStatementXDRExternalizeXDR: XDRCodable, Sendable {
     var container = try decoder.unkeyedContainer()
     commit = try container.decode(SCPBallotXDR.self)
     nH = try container.decode(UInt32.self)
-    commitQuorumSetHash = try container.decode(WrappedData32.self)
+    commitQuorumSetHash = try container.decode(HashXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

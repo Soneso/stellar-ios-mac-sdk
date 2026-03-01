@@ -5,12 +5,12 @@ import Foundation
 
 public struct ContractCodeEntryXDR: XDRCodable, Sendable {
   public var ext: ContractCodeEntryExt
-  public var hash: WrappedData32
+  public var hash: HashXDR
   public var code: Data
 
   public init(
     ext: ContractCodeEntryExt,
-    hash: WrappedData32,
+    hash: HashXDR,
     code: Data
   ) {
     self.ext = ext
@@ -21,7 +21,7 @@ public struct ContractCodeEntryXDR: XDRCodable, Sendable {
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     ext = try container.decode(ContractCodeEntryExt.self)
-    hash = try container.decode(WrappedData32.self)
+    hash = try container.decode(HashXDR.self)
     code = try container.decode(Data.self)
   }
 

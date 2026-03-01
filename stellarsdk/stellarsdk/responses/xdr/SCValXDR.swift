@@ -17,7 +17,7 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
   case i128(Int128PartsXDR)
   case u256(UInt256PartsXDR)
   case i256(Int256PartsXDR)
-  case bytes(Data)
+  case bytes(SCBytesXDR)
   case string(String)
   case symbol(String)
   case vec([SCValXDR]?)
@@ -71,7 +71,7 @@ public indirect enum SCValXDR: XDRCodable, Sendable {
       let val = try container.decode(Int256PartsXDR.self)
       self = .i256(val)
     case SCValType.bytes.rawValue:
-      let val = try container.decode(Data.self)
+      let val = try container.decode(SCBytesXDR.self)
       self = .bytes(val)
     case SCValType.string.rawValue:
       let val = try container.decode(String.self)

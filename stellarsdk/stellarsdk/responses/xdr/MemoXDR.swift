@@ -7,8 +7,8 @@ public enum MemoXDR: XDRCodable, Sendable {
   case none
   case text(String)
   case id(UInt64)
-  case hash(WrappedData32)
-  case returnHash(WrappedData32)
+  case hash(HashXDR)
+  case returnHash(HashXDR)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -24,10 +24,10 @@ public enum MemoXDR: XDRCodable, Sendable {
       let val = try container.decode(UInt64.self)
       self = .id(val)
     case MemoType.MEMO_TYPE_HASH.rawValue:
-      let val = try container.decode(WrappedData32.self)
+      let val = try container.decode(HashXDR.self)
       self = .hash(val)
     case MemoType.MEMO_TYPE_RETURN.rawValue:
-      let val = try container.decode(WrappedData32.self)
+      let val = try container.decode(HashXDR.self)
       self = .returnHash(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown MemoXDR discriminant: \(discriminant)")

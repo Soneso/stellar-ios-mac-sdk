@@ -4,12 +4,12 @@
 import Foundation
 
 public struct LedgerHeaderHistoryEntryXDR: XDRCodable, Sendable {
-  public var hash: WrappedData32
+  public var hash: HashXDR
   public var header: LedgerHeaderXDR
   public var ext: LedgerHeaderHistoryEntryXDRExtXDR
 
   public init(
-    hash: WrappedData32,
+    hash: HashXDR,
     header: LedgerHeaderXDR,
     ext: LedgerHeaderHistoryEntryXDRExtXDR
   ) {
@@ -20,7 +20,7 @@ public struct LedgerHeaderHistoryEntryXDR: XDRCodable, Sendable {
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    hash = try container.decode(WrappedData32.self)
+    hash = try container.decode(HashXDR.self)
     header = try container.decode(LedgerHeaderXDR.self)
     ext = try container.decode(LedgerHeaderHistoryEntryXDRExtXDR.self)
   }

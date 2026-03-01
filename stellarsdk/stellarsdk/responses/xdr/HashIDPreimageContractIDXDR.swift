@@ -4,17 +4,17 @@
 import Foundation
 
 public struct HashIDPreimageContractIDXDR: XDRCodable, Sendable {
-  public var networkID: WrappedData32
+  public var networkID: HashXDR
   public var contractIDPreimage: ContractIDPreimageXDR
 
-  public init(networkID: WrappedData32, contractIDPreimage: ContractIDPreimageXDR) {
+  public init(networkID: HashXDR, contractIDPreimage: ContractIDPreimageXDR) {
     self.networkID = networkID
     self.contractIDPreimage = contractIDPreimage
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    networkID = try container.decode(WrappedData32.self)
+    networkID = try container.decode(HashXDR.self)
     contractIDPreimage = try container.decode(ContractIDPreimageXDR.self)
   }
 

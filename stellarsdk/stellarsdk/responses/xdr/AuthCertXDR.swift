@@ -6,12 +6,12 @@ import Foundation
 public struct AuthCertXDR: XDRCodable, Sendable {
   public var pubkey: Curve25519PublicXDR
   public var expiration: UInt64
-  public var sig: Data
+  public var sig: SignatureXDR
 
   public init(
     pubkey: Curve25519PublicXDR,
     expiration: UInt64,
-    sig: Data
+    sig: SignatureXDR
   ) {
     self.pubkey = pubkey
     self.expiration = expiration
@@ -22,7 +22,7 @@ public struct AuthCertXDR: XDRCodable, Sendable {
     var container = try decoder.unkeyedContainer()
     pubkey = try container.decode(Curve25519PublicXDR.self)
     expiration = try container.decode(UInt64.self)
-    sig = try container.decode(Data.self)
+    sig = try container.decode(SignatureXDR.self)
   }
 
   public func encode(to encoder: Encoder) throws {

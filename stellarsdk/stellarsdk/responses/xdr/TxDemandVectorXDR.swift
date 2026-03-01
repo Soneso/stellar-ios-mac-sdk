@@ -4,14 +4,14 @@
 import Foundation
 
 public struct TxDemandVectorXDR: XDRCodable, Sendable {
-  public var wrapped: [WrappedData32]
+  public var wrapped: [HashXDR]
 
-  public init(wrapped: [WrappedData32]) {
+  public init(wrapped: [HashXDR]) {
     self.wrapped = wrapped
   }
 
   public init(from decoder: Decoder) throws {
-    wrapped = try decodeArray(type: WrappedData32.self, dec: decoder)
+    wrapped = try decodeArray(type: HashXDR.self, dec: decoder)
   }
 
   public func encode(to encoder: Encoder) throws {
