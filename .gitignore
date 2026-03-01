@@ -87,5 +87,6 @@ coverage/
 # Claude Code
 .claude/
 
-# XDR generator vendor bundle
+# XDR generator
+xdr-generator/.bundle/
 xdr-generator/vendor/
