@@ -49,7 +49,6 @@ class Generator < Xdrgen::Generators::Base
     TransactionEnvelopeXDR
     OperationXDR
     OperationBodyXDR
-    SCErrorXDR
     MuxedAccountXDR
     MuxedAccountMed25519XDR
     TransactionResultXDR
@@ -530,31 +529,49 @@ class Generator < Xdrgen::Generators::Base
           }
         end
       else
-        # Non-void arm: use the XDR arm variable name as the Swift case name.
-        case_name = swift_safe_name(arm.name.to_s.camelize(:lower))
-        # Apply union-level arm name override if present (e.g. AssetXDR "alphaNum4" => "alphanum4").
-        if MEMBER_OVERRIDES.key?(union_name) && MEMBER_OVERRIDES[union_name].key?(case_name)
-          case_name = MEMBER_OVERRIDES[union_name][case_name]
-        end
-        # Avoid duplicate case names (multi-case arms share the same arm name).
-        next if seen_case_names.include?(case_name)
-        seen_case_names.add(case_name)
-
-        # Collect all discriminant case expressions for this arm.
-        disc_expressions = arm.cases.map { |c| disc_match_expression(c.value, disc_info) }
-        disc_return = disc_return_expression(arm.cases.first.value, disc_info)
-
-        # Determine the associated type and decode style.
+        # Determine the associated type and decode style (shared by all cases in this arm).
         assoc_type, decode_style = resolve_arm_type(arm)
+        decode_type = resolve_arm_decode_type(arm)
 
-        entries << {
-          case_name: case_name,
-          associated_type: assoc_type,
-          disc_expressions: disc_expressions,
-          disc_return: disc_return,
-          decode_style: decode_style,
-          decode_type: resolve_arm_decode_type(arm),
-        }
+        if arm.cases.length > 1
+          # Multi-case non-void arm (fallthrough): expand into separate Swift enum cases
+          # to preserve each discriminant. Case names derived from discriminant values.
+          arm.cases.each do |c|
+            case_name = swift_case_name_for_discriminant_value(c.value, disc_info)
+            if MEMBER_OVERRIDES.key?(union_name) && MEMBER_OVERRIDES[union_name].key?(case_name)
+              case_name = MEMBER_OVERRIDES[union_name][case_name]
+            end
+            next if seen_case_names.include?(case_name)
+            seen_case_names.add(case_name)
+
+            entries << {
+              case_name: case_name,
+              associated_type: assoc_type,
+              disc_expressions: [disc_match_expression(c.value, disc_info)],
+              disc_return: disc_return_expression(c.value, disc_info),
+              decode_style: decode_style,
+              decode_type: decode_type,
+            }
+          end
+        else
+          # Single-case non-void arm: use the XDR arm variable name as the Swift case name.
+          case_name = swift_safe_name(arm.name.to_s.camelize(:lower))
+          # Apply union-level arm name override if present.
+          if MEMBER_OVERRIDES.key?(union_name) && MEMBER_OVERRIDES[union_name].key?(case_name)
+            case_name = MEMBER_OVERRIDES[union_name][case_name]
+          end
+          next if seen_case_names.include?(case_name)
+          seen_case_names.add(case_name)
+
+          entries << {
+            case_name: case_name,
+            associated_type: assoc_type,
+            disc_expressions: arm.cases.map { |c| disc_match_expression(c.value, disc_info) },
+            disc_return: disc_return_expression(arm.cases.first.value, disc_info),
+            decode_style: decode_style,
+            decode_type: decode_type,
+          }
+        end
       end
     end
 

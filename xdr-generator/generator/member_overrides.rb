@@ -193,6 +193,14 @@ MEMBER_OVERRIDES = {
   # =========================================================================
 
   # =========================================================================
+  # SCErrorXDR (union)
+  # XDR arm name "contractCode" -> Swift case name "contract"
+  "SCErrorXDR" => {
+    "contractCode" => "contract",
+  },
+  # =========================================================================
+
+  # =========================================================================
   # SCErrorType
   # XDR: SCE_CONTRACT=0, SCE_WASM_VM=1, SCE_CONTEXT=2, SCE_STORAGE=3,
   #      SCE_OBJECT=4, SCE_CRYPTO=5, SCE_EVENTS=6, SCE_BUDGET=7,

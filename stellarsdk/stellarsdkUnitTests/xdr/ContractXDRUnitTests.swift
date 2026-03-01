@@ -26,9 +26,11 @@ class ContractXDRUnitTests: XCTestCase {
         }
     }
 
-    func testSCErrorXDRAllSimpleTypes() throws {
+    func testSCErrorXDRAllCodeTypes() throws {
         let errors: [SCErrorXDR] = [
-            .wasmVm, .context, .storage, .object, .crypto, .events, .budget, .value
+            .wasmVm(.arithDomain), .context(.indexBounds), .storage(.invalidInput),
+            .object(.missingValue), .crypto(.existingValue), .events(.exceededLimit),
+            .budget(.invalidAction), .value(.internalError)
         ]
 
         for error in errors {
@@ -39,13 +41,13 @@ class ContractXDRUnitTests: XCTestCase {
     }
 
     func testSCErrorXDRAuth() throws {
-        let error = SCErrorXDR.auth(SCErrorCode.invalidInput.rawValue)
+        let error = SCErrorXDR.auth(.invalidInput)
         let encoded = try XDREncoder.encode(error)
         let decoded = try XDRDecoder.decode(SCErrorXDR.self, data: encoded)
 
         switch decoded {
         case .auth(let code):
-            XCTAssertEqual(code, SCErrorCode.invalidInput.rawValue)
+            XCTAssertEqual(code, .invalidInput)
         default:
             XCTFail("Expected auth error")
         }
@@ -53,15 +55,15 @@ class ContractXDRUnitTests: XCTestCase {
 
     func testSCErrorXDRTypeDiscriminants() {
         XCTAssertEqual(SCErrorXDR.contract(0).type(), SCErrorType.contract.rawValue)
-        XCTAssertEqual(SCErrorXDR.wasmVm.type(), SCErrorType.wasmVm.rawValue)
-        XCTAssertEqual(SCErrorXDR.context.type(), SCErrorType.context.rawValue)
-        XCTAssertEqual(SCErrorXDR.storage.type(), SCErrorType.storage.rawValue)
-        XCTAssertEqual(SCErrorXDR.object.type(), SCErrorType.object.rawValue)
-        XCTAssertEqual(SCErrorXDR.crypto.type(), SCErrorType.crypto.rawValue)
-        XCTAssertEqual(SCErrorXDR.events.type(), SCErrorType.events.rawValue)
-        XCTAssertEqual(SCErrorXDR.budget.type(), SCErrorType.budget.rawValue)
-        XCTAssertEqual(SCErrorXDR.value.type(), SCErrorType.value.rawValue)
-        XCTAssertEqual(SCErrorXDR.auth(0).type(), SCErrorType.auth.rawValue)
+        XCTAssertEqual(SCErrorXDR.wasmVm(.arithDomain).type(), SCErrorType.wasmVm.rawValue)
+        XCTAssertEqual(SCErrorXDR.context(.arithDomain).type(), SCErrorType.context.rawValue)
+        XCTAssertEqual(SCErrorXDR.storage(.arithDomain).type(), SCErrorType.storage.rawValue)
+        XCTAssertEqual(SCErrorXDR.object(.arithDomain).type(), SCErrorType.object.rawValue)
+        XCTAssertEqual(SCErrorXDR.crypto(.arithDomain).type(), SCErrorType.crypto.rawValue)
+        XCTAssertEqual(SCErrorXDR.events(.arithDomain).type(), SCErrorType.events.rawValue)
+        XCTAssertEqual(SCErrorXDR.budget(.arithDomain).type(), SCErrorType.budget.rawValue)
+        XCTAssertEqual(SCErrorXDR.value(.arithDomain).type(), SCErrorType.value.rawValue)
+        XCTAssertEqual(SCErrorXDR.auth(.arithDomain).type(), SCErrorType.auth.rawValue)
     }
 
     // MARK: - SCAddressXDR Tests
@@ -509,7 +511,7 @@ class ContractXDRUnitTests: XCTestCase {
     }
 
     func testSCValXDRError() throws {
-        let error = SCErrorXDR.budget
+        let error = SCErrorXDR.budget(.arithDomain)
         let val = SCValXDR.error(error)
         let encoded = try XDREncoder.encode(val)
         let decoded = try XDRDecoder.decode(SCValXDR.self, data: encoded)

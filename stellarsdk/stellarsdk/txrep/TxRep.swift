@@ -559,48 +559,52 @@ public final class TxRep: Sendable {
                 throw TxRepError.invalidValue(key: key)
             }
         case "SCE_WASM_VM":
-            return SCErrorXDR.wasmVm
+            return SCErrorXDR.wasmVm(try getSCErrorCode(dic: dic, prefix: prefix))
         case "SCE_CONTEXT":
-            return SCErrorXDR.context
+            return SCErrorXDR.context(try getSCErrorCode(dic: dic, prefix: prefix))
         case "SCE_STORAGE":
-            return SCErrorXDR.storage
+            return SCErrorXDR.storage(try getSCErrorCode(dic: dic, prefix: prefix))
         case "SCE_OBJECT":
-            return SCErrorXDR.object
+            return SCErrorXDR.object(try getSCErrorCode(dic: dic, prefix: prefix))
         case "SCE_CRYPTO":
-            return SCErrorXDR.crypto
+            return SCErrorXDR.crypto(try getSCErrorCode(dic: dic, prefix: prefix))
         case "SCE_EVENTS":
-            return SCErrorXDR.events
+            return SCErrorXDR.events(try getSCErrorCode(dic: dic, prefix: prefix))
         case "SCE_BUDGET":
-            return SCErrorXDR.budget
+            return SCErrorXDR.budget(try getSCErrorCode(dic: dic, prefix: prefix))
         case "SCE_VALUE":
-            return SCErrorXDR.value
+            return SCErrorXDR.value(try getSCErrorCode(dic: dic, prefix: prefix))
         case "SCE_AUTH":
-            key = prefix + "code"
-            let code = try getString(dic: dic, key: key)
-            switch code {
-            case "SCEC_ARITH_DOMAIN":
-                return SCErrorXDR.auth(0)
-            case "SCEC_INDEX_BOUNDS":
-                return SCErrorXDR.auth(1)
-            case "SCEC_INVALID_INPUT":
-                return SCErrorXDR.auth(2)
-            case "SCEC_MISSING_VALUE":
-                return SCErrorXDR.auth(3)
-            case "SCEC_EXISTING_VALUE":
-                return SCErrorXDR.auth(4)
-            case "SCEC_EXCEEDED_LIMIT":
-                return SCErrorXDR.auth(5)
-            case "SCEC_INVALID_ACTION":
-                return SCErrorXDR.auth(6)
-            case "SCEC_INTERNAL_ERROR":
-                return SCErrorXDR.auth(7)
-            case "SCEC_UNEXPECTED_TYPE":
-                return SCErrorXDR.auth(8)
-            case "SCEC_UNEXPECTED_SIZE":
-                return SCErrorXDR.auth(9)
-            default:
-                throw TxRepError.invalidValue(key: key)
-            }
+            return SCErrorXDR.auth(try getSCErrorCode(dic: dic, prefix: prefix))
+        default:
+            throw TxRepError.invalidValue(key: key)
+        }
+    }
+
+    private static func getSCErrorCode(dic:Dictionary<String,String>, prefix:String) throws -> SCErrorCode {
+        let key = prefix + "code"
+        let code = try getString(dic: dic, key: key)
+        switch code {
+        case "SCEC_ARITH_DOMAIN":
+            return .arithDomain
+        case "SCEC_INDEX_BOUNDS":
+            return .indexBounds
+        case "SCEC_INVALID_INPUT":
+            return .invalidInput
+        case "SCEC_MISSING_VALUE":
+            return .missingValue
+        case "SCEC_EXISTING_VALUE":
+            return .existingValue
+        case "SCEC_EXCEEDED_LIMIT":
+            return .exceededLimit
+        case "SCEC_INVALID_ACTION":
+            return .invalidAction
+        case "SCEC_INTERNAL_ERROR":
+            return .internalError
+        case "SCEC_UNEXPECTED_TYPE":
+            return .unexpectedType
+        case "SCEC_UNEXPECTED_SIZE":
+            return .unexpectedSize
         default:
             throw TxRepError.invalidValue(key: key)
         }
@@ -2831,50 +2835,60 @@ public final class TxRep: Sendable {
     private static func addSCError(val:SCErrorXDR, prefix:String, lines: inout [String]) -> Void {
         switch val {
         case .contract(let contractCode):
-            addLine(key: prefix + "type" , value: "SCE_CONTRACT", lines: &lines)
-            addLine(key: prefix + "contractCode" , value: String(contractCode), lines: &lines)
-        case .wasmVm:
-            addLine(key: prefix + "type" , value: "SCE_WASM_VM", lines: &lines)
-        case .context:
-            addLine(key: prefix + "type" , value: "SCE_CONTEXT", lines: &lines)
-        case .storage:
-            addLine(key: prefix + "type" , value: "SCE_STORAGE", lines: &lines)
-        case .object:
-            addLine(key: prefix + "type" , value: "SCE_OBJECT", lines: &lines)
-        case .crypto:
-            addLine(key: prefix + "type" , value: "SCE_CRYPTO", lines: &lines)
-        case .events:
-            addLine(key: prefix + "type" , value: "SCE_EVENTS", lines: &lines)
-        case .budget:
-            addLine(key: prefix + "type" , value: "SCE_BUDGET", lines: &lines)
-        case .value:
-            addLine(key: prefix + "type" , value: "SCE_VALUE", lines: &lines)
-        case .auth(let errorCode):
-            addLine(key: prefix + "type" , value: "SCE_AUTH", lines: &lines)
-            switch errorCode {
-            case 0:
-                addLine(key: prefix + "code" , value: "SCEC_ARITH_DOMAIN", lines: &lines)
-            case 1:
-                addLine(key: prefix + "code" , value: "SCEC_INDEX_BOUNDS", lines: &lines)
-            case 2:
-                addLine(key: prefix + "code" , value: "SCEC_INVALID_INPUT", lines: &lines)
-            case 3:
-                addLine(key: prefix + "code" , value: "SCEC_MISSING_VALUE", lines: &lines)
-            case 4:
-                addLine(key: prefix + "code" , value: "SCEC_EXISTING_VALUE", lines: &lines)
-            case 5:
-                addLine(key: prefix + "code" , value: "SCEC_EXCEEDED_LIMIT", lines: &lines)
-            case 6:
-                addLine(key: prefix + "code" , value: "SCEC_INVALID_ACTION", lines: &lines)
-            case 7:
-                addLine(key: prefix + "code" , value: "SCEC_INTERNAL_ERROR", lines: &lines)
-            case 8:
-                addLine(key: prefix + "code" , value: "SCEC_UNEXPECTED_TYPE", lines: &lines)
-            case 9:
-                addLine(key: prefix + "code" , value: "SCEC_UNEXPECTED_SIZE", lines: &lines)
-            default:
-                break
-            }
+            addLine(key: prefix + "type", value: "SCE_CONTRACT", lines: &lines)
+            addLine(key: prefix + "contractCode", value: String(contractCode), lines: &lines)
+        case .wasmVm(let code):
+            addLine(key: prefix + "type", value: "SCE_WASM_VM", lines: &lines)
+            addSCErrorCode(code: code, prefix: prefix, lines: &lines)
+        case .context(let code):
+            addLine(key: prefix + "type", value: "SCE_CONTEXT", lines: &lines)
+            addSCErrorCode(code: code, prefix: prefix, lines: &lines)
+        case .storage(let code):
+            addLine(key: prefix + "type", value: "SCE_STORAGE", lines: &lines)
+            addSCErrorCode(code: code, prefix: prefix, lines: &lines)
+        case .object(let code):
+            addLine(key: prefix + "type", value: "SCE_OBJECT", lines: &lines)
+            addSCErrorCode(code: code, prefix: prefix, lines: &lines)
+        case .crypto(let code):
+            addLine(key: prefix + "type", value: "SCE_CRYPTO", lines: &lines)
+            addSCErrorCode(code: code, prefix: prefix, lines: &lines)
+        case .events(let code):
+            addLine(key: prefix + "type", value: "SCE_EVENTS", lines: &lines)
+            addSCErrorCode(code: code, prefix: prefix, lines: &lines)
+        case .budget(let code):
+            addLine(key: prefix + "type", value: "SCE_BUDGET", lines: &lines)
+            addSCErrorCode(code: code, prefix: prefix, lines: &lines)
+        case .value(let code):
+            addLine(key: prefix + "type", value: "SCE_VALUE", lines: &lines)
+            addSCErrorCode(code: code, prefix: prefix, lines: &lines)
+        case .auth(let code):
+            addLine(key: prefix + "type", value: "SCE_AUTH", lines: &lines)
+            addSCErrorCode(code: code, prefix: prefix, lines: &lines)
+        }
+    }
+
+    private static func addSCErrorCode(code:SCErrorCode, prefix:String, lines: inout [String]) -> Void {
+        switch code {
+        case .arithDomain:
+            addLine(key: prefix + "code", value: "SCEC_ARITH_DOMAIN", lines: &lines)
+        case .indexBounds:
+            addLine(key: prefix + "code", value: "SCEC_INDEX_BOUNDS", lines: &lines)
+        case .invalidInput:
+            addLine(key: prefix + "code", value: "SCEC_INVALID_INPUT", lines: &lines)
+        case .missingValue:
+            addLine(key: prefix + "code", value: "SCEC_MISSING_VALUE", lines: &lines)
+        case .existingValue:
+            addLine(key: prefix + "code", value: "SCEC_EXISTING_VALUE", lines: &lines)
+        case .exceededLimit:
+            addLine(key: prefix + "code", value: "SCEC_EXCEEDED_LIMIT", lines: &lines)
+        case .invalidAction:
+            addLine(key: prefix + "code", value: "SCEC_INVALID_ACTION", lines: &lines)
+        case .internalError:
+            addLine(key: prefix + "code", value: "SCEC_INTERNAL_ERROR", lines: &lines)
+        case .unexpectedType:
+            addLine(key: prefix + "code", value: "SCEC_UNEXPECTED_TYPE", lines: &lines)
+        case .unexpectedSize:
+            addLine(key: prefix + "code", value: "SCEC_UNEXPECTED_SIZE", lines: &lines)
         }
     }
     
