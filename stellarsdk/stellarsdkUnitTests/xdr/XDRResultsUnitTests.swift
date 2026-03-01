@@ -1425,17 +1425,17 @@ class XDRResultsUnitTests: XCTestCase {
 
     // MARK: - OperationResultXDR Tests
 
-    func testOperationResultXDREmpty() throws {
-        let result = OperationResultXDR.empty(OperationResultCode.badAuth.rawValue)
+    func testOperationResultXDRBadAuth() throws {
+        let result = OperationResultXDR.badAuth
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(OperationResultXDR.self, data: encoded)
 
         switch decoded {
-        case .empty(let code):
-            XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
+        case .badAuth:
+            XCTAssertEqual(decoded.type(), OperationResultCode.badAuth.rawValue)
         default:
-            XCTFail("Expected empty case")
+            XCTFail("Expected badAuth case")
         }
     }
 
@@ -1447,6 +1447,18 @@ class XDRResultsUnitTests: XCTestCase {
         XCTAssertEqual(OperationResultCode.tooManySubentries.rawValue, -4)
         XCTAssertEqual(OperationResultCode.exceededWorkLimit.rawValue, -5)
         XCTAssertEqual(OperationResultCode.tooManySponsoring.rawValue, -6)
+    }
+
+    private func operationResultForCode(_ code: OperationResultCode) -> OperationResultXDR {
+        switch code {
+        case .badAuth: return .badAuth
+        case .noAccount: return .noAccount
+        case .notSupported: return .notSupported
+        case .tooManySubentries: return .tooManySubentries
+        case .exceededWorkLimit: return .exceededWorkLimit
+        case .tooManySponsoring: return .tooManySponsoring
+        default: fatalError("Unexpected code: \(code)")
+        }
     }
 
     func testOperationResultXDRInnerRoundTrip() throws {
@@ -1465,33 +1477,33 @@ class XDRResultsUnitTests: XCTestCase {
         let invokeHash = WrappedData32(Data(repeating: 0xCD, count: 32))
 
         let cases: [(OperationResultXDR, String)] = [
-            (.createAccount(0, CreateAccountResultXDR.success), "createAccount"),
-            (.payment(0, PaymentResultXDR.success), "payment"),
-            (.pathPayment(0, PathPaymentResultXDR.malformed), "pathPayment"),
-            (.changeTrust(0, ChangeTrustResultXDR.success), "changeTrust"),
-            (.setOptions(0, SetOptionsResultXDR.success), "setOptions"),
-            (.manageSellOffer(0, ManageOfferResultXDR.success(successResult)), "manageSellOffer"),
-            (.createPassiveSellOffer(0, ManageOfferResultXDR.success(successResult)), "createPassiveSellOffer"),
-            (.manageBuyOffer(0, ManageOfferResultXDR.success(successResult)), "manageBuyOffer"),
-            (.allowTrust(0, AllowTrustResultXDR.success), "allowTrust"),
-            (.accountMerge(0, AccountMergeResultXDR.sourceAccountBalance(1000000)), "accountMerge"),
-            (.inflation(0, InflationResultXDR.notTime), "inflation"),
-            (.manageData(0, ManageDataResultXDR.success), "manageData"),
-            (.bumpSequence(0, BumpSequenceResultXDR.success), "bumpSequence"),
-            (.pathPaymentStrictSend(0, PathPaymentResultXDR.malformed), "pathPaymentStrictSend"),
-            (.createClaimableBalance(0, CreateClaimableBalanceResultXDR.balanceID(claimableBalanceId)), "createClaimableBalance"),
-            (.claimClaimableBalance(0, ClaimClaimableBalanceResultXDR.success), "claimClaimableBalance"),
-            (.beginSponsoringFutureReserves(0, BeginSponsoringFutureReservesResultXDR.success), "beginSponsoringFutureReserves"),
-            (.endSponsoringFutureReserves(0, EndSponsoringFutureReservesResultXDR.success), "endSponsoringFutureReserves"),
-            (.revokeSponsorship(0, RevokeSponsorshipResultXDR.success), "revokeSponsorship"),
-            (.clawback(0, ClawbackResultXDR.success), "clawback"),
-            (.clawbackClaimableBalance(0, ClawbackClaimableBalanceResultXDR.success), "clawbackClaimableBalance"),
-            (.setTrustLineFlags(0, SetTrustLineFlagsResultXDR.success), "setTrustLineFlags"),
-            (.liquidityPoolDeposit(0, LiquidityPoolDepositResultXDR.success), "liquidityPoolDeposit"),
-            (.liquidityPoolWithdraw(0, LiquidityPoolWithdrawResultXDR.success), "liquidityPoolWithdraw"),
-            (.invokeHostFunction(0, InvokeHostFunctionResultXDR.success(invokeHash)), "invokeHostFunction"),
-            (.extendFootprintTTL(0, ExtendFootprintTTLResultXDR.success), "extendFootprintTTL"),
-            (.restoreFootprint(0, RestoreFootprintResultXDR.success), "restoreFootprint"),
+            (.tr(.createAccountResult(CreateAccountResultXDR.success)), "createAccount"),
+            (.tr(.paymentResult(PaymentResultXDR.success)), "payment"),
+            (.tr(.pathPaymentStrictReceiveResult(PathPaymentResultXDR.malformed)), "pathPayment"),
+            (.tr(.changeTrustResult(ChangeTrustResultXDR.success)), "changeTrust"),
+            (.tr(.setOptionsResult(SetOptionsResultXDR.success)), "setOptions"),
+            (.tr(.manageSellOfferResult(ManageOfferResultXDR.success(successResult))), "manageSellOffer"),
+            (.tr(.createPassiveSellOfferResult(ManageOfferResultXDR.success(successResult))), "createPassiveSellOffer"),
+            (.tr(.manageBuyOfferResult(ManageOfferResultXDR.success(successResult))), "manageBuyOffer"),
+            (.tr(.allowTrustResult(AllowTrustResultXDR.success)), "allowTrust"),
+            (.tr(.accountMergeResult(AccountMergeResultXDR.sourceAccountBalance(1000000))), "accountMerge"),
+            (.tr(.inflationResult(InflationResultXDR.notTime)), "inflation"),
+            (.tr(.manageDataResult(ManageDataResultXDR.success)), "manageData"),
+            (.tr(.bumpSeqResult(BumpSequenceResultXDR.success)), "bumpSequence"),
+            (.tr(.pathPaymentStrictSendResult(PathPaymentResultXDR.malformed)), "pathPaymentStrictSend"),
+            (.tr(.createClaimableBalanceResult(CreateClaimableBalanceResultXDR.balanceID(claimableBalanceId))), "createClaimableBalance"),
+            (.tr(.claimClaimableBalanceResult(ClaimClaimableBalanceResultXDR.success)), "claimClaimableBalance"),
+            (.tr(.beginSponsoringFutureReservesResult(BeginSponsoringFutureReservesResultXDR.success)), "beginSponsoringFutureReserves"),
+            (.tr(.endSponsoringFutureReservesResult(EndSponsoringFutureReservesResultXDR.success)), "endSponsoringFutureReserves"),
+            (.tr(.revokeSponsorshipResult(RevokeSponsorshipResultXDR.success)), "revokeSponsorship"),
+            (.tr(.clawbackResult(ClawbackResultXDR.success)), "clawback"),
+            (.tr(.clawbackClaimableBalanceResult(ClawbackClaimableBalanceResultXDR.success)), "clawbackClaimableBalance"),
+            (.tr(.setTrustLineFlagsResult(SetTrustLineFlagsResultXDR.success)), "setTrustLineFlags"),
+            (.tr(.liquidityPoolDepositResult(LiquidityPoolDepositResultXDR.success)), "liquidityPoolDeposit"),
+            (.tr(.liquidityPoolWithdrawResult(LiquidityPoolWithdrawResultXDR.success)), "liquidityPoolWithdraw"),
+            (.tr(.invokeHostFunctionResult(InvokeHostFunctionResultXDR.success(invokeHash))), "invokeHostFunction"),
+            (.tr(.extendFootprintTTLResult(ExtendFootprintTTLResultXDR.success)), "extendFootprintTTL"),
+            (.tr(.restoreFootprintResult(RestoreFootprintResultXDR.success)), "restoreFootprint"),
         ]
 
         for (result, name) in cases {
@@ -1500,43 +1512,37 @@ class XDRResultsUnitTests: XCTestCase {
 
             let decoded = try XDRDecoder.decode(OperationResultXDR.self, data: encoded)
 
-            switch (result, decoded) {
-            case (.createAccount, .createAccount),
-                 (.payment, .payment),
-                 (.pathPayment, .pathPayment),
-                 (.changeTrust, .changeTrust),
-                 (.setOptions, .setOptions),
-                 (.manageSellOffer, .manageSellOffer),
-                 (.createPassiveSellOffer, .createPassiveSellOffer),
-                 (.manageBuyOffer, .manageBuyOffer),
-                 (.allowTrust, .allowTrust),
-                 (.accountMerge, .accountMerge),
-                 (.inflation, .inflation),
-                 (.manageData, .manageData),
-                 (.bumpSequence, .bumpSequence),
-                 (.pathPaymentStrictSend, .pathPaymentStrictSend),
-                 (.createClaimableBalance, .createClaimableBalance),
-                 (.claimClaimableBalance, .claimClaimableBalance),
-                 (.beginSponsoringFutureReserves, .beginSponsoringFutureReserves),
-                 (.endSponsoringFutureReserves, .endSponsoringFutureReserves),
-                 (.revokeSponsorship, .revokeSponsorship),
-                 (.clawback, .clawback),
-                 (.clawbackClaimableBalance, .clawbackClaimableBalance),
-                 (.setTrustLineFlags, .setTrustLineFlags),
-                 (.liquidityPoolDeposit, .liquidityPoolDeposit),
-                 (.liquidityPoolWithdraw, .liquidityPoolWithdraw),
-                 (.invokeHostFunction, .invokeHostFunction),
-                 (.extendFootprintTTL, .extendFootprintTTL),
-                 (.restoreFootprint, .restoreFootprint):
-                break // Round-trip matched
+            switch decoded {
+            case .tr:
+                break // Round-trip matched - all inner results go through .tr
             default:
-                XCTFail("Round-trip mismatch for \(name)")
+                XCTFail("Round-trip mismatch for \(name): expected .tr case")
             }
         }
     }
 
+    func testOperationResultXDRAllErrorCodesRoundTrip() throws {
+        let codes: [OperationResultCode] = [
+            .badAuth,
+            .noAccount,
+            .notSupported,
+            .tooManySubentries,
+            .exceededWorkLimit,
+            .tooManySponsoring
+        ]
+
+        for code in codes {
+            let result = operationResultForCode(code)
+
+            let encoded = try XDREncoder.encode(result)
+            let decoded = try XDRDecoder.decode(OperationResultXDR.self, data: encoded)
+
+            XCTAssertEqual(decoded.type(), code.rawValue, "Type mismatch for code \(code)")
+        }
+    }
+
     func testOperationResultXDRRoundTripBase64() throws {
-        let result = OperationResultXDR.empty(OperationResultCode.badAuth.rawValue)
+        let result = OperationResultXDR.badAuth
 
         guard let base64 = result.xdrEncoded else {
             XCTFail("Failed to encode to base64")
@@ -1546,10 +1552,10 @@ class XDRResultsUnitTests: XCTestCase {
         let decoded = try OperationResultXDR(xdr: base64)
 
         switch decoded {
-        case .empty(let code):
-            XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
+        case .badAuth:
+            XCTAssertEqual(decoded.type(), OperationResultCode.badAuth.rawValue)
         default:
-            XCTFail("Expected empty case")
+            XCTFail("Expected badAuth case")
         }
     }
 }

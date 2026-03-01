@@ -448,7 +448,7 @@ class ClawbackTestCase: XCTestCase, @unchecked Sendable {
                 case .success(let array):
                     if let opResult = array.first {
                         switch opResult {
-                        case .createClaimableBalance(_, let createClaimableBalanceResultXDR):
+                        case .tr(.createClaimableBalanceResult(let createClaimableBalanceResultXDR)):
                             switch createClaimableBalanceResultXDR {
                             case .balanceID(let claimableBalanceIDXDR):
                                 switch claimableBalanceIDXDR {

@@ -276,21 +276,33 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
     // MARK: - OperationResultXDR Tests
 
-    func testOperationResultXDREmpty() throws {
-        let result = OperationResultXDR.empty(OperationResultCode.badAuth.rawValue)
+    func testOperationResultXDRBadAuth() throws {
+        let result = OperationResultXDR.badAuth
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(OperationResultXDR.self, data: encoded)
 
         switch decoded {
-        case .empty(let code):
-            XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
+        case .badAuth:
+            XCTAssertEqual(decoded.type(), OperationResultCode.badAuth.rawValue)
         default:
-            XCTFail("Expected empty case")
+            XCTFail("Expected badAuth case")
         }
     }
 
-    func testOperationResultXDRAllEmptyCodes() throws {
+    private func operationResultForCode(_ code: OperationResultCode) -> OperationResultXDR {
+        switch code {
+        case .badAuth: return .badAuth
+        case .noAccount: return .noAccount
+        case .notSupported: return .notSupported
+        case .tooManySubentries: return .tooManySubentries
+        case .exceededWorkLimit: return .exceededWorkLimit
+        case .tooManySponsoring: return .tooManySponsoring
+        default: fatalError("Unexpected code: \(code)")
+        }
+    }
+
+    func testOperationResultXDRAllErrorCodes() throws {
         let codes: [OperationResultCode] = [
             .badAuth,
             .noAccount,
@@ -301,17 +313,12 @@ class XDRCoreTypesUnitTests: XCTestCase {
         ]
 
         for code in codes {
-            let result = OperationResultXDR.empty(code.rawValue)
+            let result = operationResultForCode(code)
 
             let encoded = try XDREncoder.encode(result)
             let decoded = try XDRDecoder.decode(OperationResultXDR.self, data: encoded)
 
-            switch decoded {
-            case .empty(let decodedCode):
-                XCTAssertEqual(decodedCode, code.rawValue)
-            default:
-                XCTFail("Expected empty case for code \(code.rawValue)")
-            }
+            XCTAssertEqual(decoded.type(), code.rawValue, "Type mismatch for code \(code)")
         }
     }
 

@@ -82,7 +82,7 @@ class OperationsRemoteTestCase: XCTestCase, @unchecked Sendable {
                 case .success(let array):
                     for opResult in array {
                         switch opResult {
-                        case .createClaimableBalance(_, let createClaimableBalanceResultXDR):
+                        case .tr(.createClaimableBalanceResult(let createClaimableBalanceResultXDR)):
                             switch createClaimableBalanceResultXDR {
                             case .balanceID(let claimableBalanceIDXDR):
                                 switch claimableBalanceIDXDR {
@@ -683,7 +683,7 @@ class OperationsRemoteTestCase: XCTestCase, @unchecked Sendable {
                 case .success(let array):
                     for opResult in array {
                         switch opResult {
-                        case .createClaimableBalance(_, let createClaimableBalanceResultXDR):
+                        case .tr(.createClaimableBalanceResult(let createClaimableBalanceResultXDR)):
                             switch createClaimableBalanceResultXDR {
                             case .balanceID(let claimableBalanceIDXDR):
                                 switch claimableBalanceIDXDR {

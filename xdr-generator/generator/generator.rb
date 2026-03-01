@@ -51,8 +51,6 @@ class Generator < Xdrgen::Generators::Base
     OperationBodyXDR
     MuxedAccountXDR
     MuxedAccountMed25519XDR
-    OperationResultXDR
-    OperationResultXDRTrXDR
   ].freeze
 
   # ---------------------------------------------------------------------------
