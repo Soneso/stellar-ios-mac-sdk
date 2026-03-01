@@ -17,6 +17,24 @@ class XDRResultsUnitTests: XCTestCase {
         return try PublicKey(accountId: "GCEZWKCA5VLDNRLN3RPRJMRZOX3Z6G5CHCGSNFHEYVXM3XOJMDS674JZ")
     }
 
+    private func manageOfferResult(for code: ManageOfferResultCode) -> ManageOfferResultXDR {
+        switch code {
+        case .success: fatalError("Use .success case directly")
+        case .malformed: return .malformed
+        case .sellNoTrust: return .sellNoTrust
+        case .buyNoTrust: return .buyNoTrust
+        case .sellNotAuthorized: return .sellNotAuthorized
+        case .buyNotAuthorized: return .buyNotAuthorized
+        case .lineFull: return .lineFull
+        case .underfunded: return .underfunded
+        case .crossSelf: return .crossSelf
+        case .sellNoIssuer: return .sellNoIssuer
+        case .buyNoIssuer: return .buyNoIssuer
+        case .notFound: return .notFound
+        case .lowReserve: return .lowReserve
+        }
+    }
+
     // MARK: - AccountMergeResultXDR Tests
 
     func testAccountMergeResultXDRSuccess() throws {
@@ -1229,19 +1247,14 @@ class XDRResultsUnitTests: XCTestCase {
         ]
 
         for (errorCode, name) in errorCases {
-            let result = ManageOfferResultXDR.empty(errorCode.rawValue)
+            let result = manageOfferResult(for: errorCode)
 
             let encoded = try XDREncoder.encode(result)
             XCTAssertFalse(encoded.isEmpty, "Encoding failed for \(name)")
 
             let decoded = try XDRDecoder.decode(ManageOfferResultXDR.self, data: encoded)
 
-            switch decoded {
-            case .success:
-                XCTFail("Expected empty case for \(name), got success")
-            case .empty(let code):
-                XCTAssertEqual(code, errorCode.rawValue, "Error code mismatch for \(name)")
-            }
+            XCTAssertEqual(decoded.type(), errorCode.rawValue, "Error code mismatch for \(name)")
         }
     }
 
@@ -1263,19 +1276,14 @@ class XDRResultsUnitTests: XCTestCase {
         ]
 
         for (errorCode, name) in errorCases {
-            let result = ManageOfferResultXDR.empty(errorCode.rawValue)
+            let result = manageOfferResult(for: errorCode)
 
             let encoded = try XDREncoder.encode(result)
             XCTAssertFalse(encoded.isEmpty, "Encoding failed for \(name)")
 
             let decoded = try XDRDecoder.decode(ManageOfferResultXDR.self, data: encoded)
 
-            switch decoded {
-            case .success:
-                XCTFail("Expected empty case for \(name), got success")
-            case .empty(let code):
-                XCTAssertEqual(code, errorCode.rawValue, "Error code mismatch for \(name)")
-            }
+            XCTAssertEqual(decoded.type(), errorCode.rawValue, "Error code mismatch for \(name)")
         }
     }
 
@@ -1462,9 +1470,9 @@ class XDRResultsUnitTests: XCTestCase {
             (.pathPayment(0, PathPaymentResultXDR.malformed), "pathPayment"),
             (.changeTrust(0, ChangeTrustResultXDR.success), "changeTrust"),
             (.setOptions(0, SetOptionsResultXDR.success), "setOptions"),
-            (.manageSellOffer(0, ManageOfferResultXDR.success(0, successResult)), "manageSellOffer"),
-            (.createPassiveSellOffer(0, ManageOfferResultXDR.success(0, successResult)), "createPassiveSellOffer"),
-            (.manageBuyOffer(0, ManageOfferResultXDR.success(0, successResult)), "manageBuyOffer"),
+            (.manageSellOffer(0, ManageOfferResultXDR.success(successResult)), "manageSellOffer"),
+            (.createPassiveSellOffer(0, ManageOfferResultXDR.success(successResult)), "createPassiveSellOffer"),
+            (.manageBuyOffer(0, ManageOfferResultXDR.success(successResult)), "manageBuyOffer"),
             (.allowTrust(0, AllowTrustResultXDR.success), "allowTrust"),
             (.accountMerge(0, AccountMergeResultXDR.sourceAccountBalance(1000000)), "accountMerge"),
             (.inflation(0, InflationResultXDR.notTime), "inflation"),

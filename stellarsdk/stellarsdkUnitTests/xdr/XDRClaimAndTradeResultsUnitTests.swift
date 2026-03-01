@@ -624,46 +624,35 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
             offer: .created(offerEntry)
         )
 
-        let result = ManageOfferResultXDR.success(ManageOfferResultCode.success.rawValue, successResult)
+        let result = ManageOfferResultXDR.success(successResult)
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ManageOfferResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success(let code, let successRes):
-            XCTAssertEqual(code, ManageOfferResultCode.success.rawValue)
+        case .success(let successRes):
             XCTAssertNotNil(successRes.offer)
-        case .empty:
+        default:
             XCTFail("Expected success case")
         }
     }
 
     func testManageOfferResultXDRMalformed() throws {
-        let result = ManageOfferResultXDR.empty(ManageOfferResultCode.malformed.rawValue)
+        let result = ManageOfferResultXDR.malformed
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ManageOfferResultXDR.self, data: encoded)
 
-        switch decoded {
-        case .success:
-            XCTFail("Expected empty case")
-        case .empty(let code):
-            XCTAssertEqual(code, ManageOfferResultCode.malformed.rawValue)
-        }
+        XCTAssertEqual(decoded.type(), ManageOfferResultCode.malformed.rawValue)
     }
 
     func testManageOfferResultXDRSellNoTrust() throws {
-        let result = ManageOfferResultXDR.empty(ManageOfferResultCode.sellNoTrust.rawValue)
+        let result = ManageOfferResultXDR.sellNoTrust
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ManageOfferResultXDR.self, data: encoded)
 
-        switch decoded {
-        case .success:
-            XCTFail("Expected empty case")
-        case .empty(let code):
-            XCTAssertEqual(code, ManageOfferResultCode.sellNoTrust.rawValue)
-        }
+        XCTAssertEqual(decoded.type(), ManageOfferResultCode.sellNoTrust.rawValue)
     }
 
     func testManageOfferResultXDRAllErrorCodes() {
@@ -683,7 +672,7 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
     }
 
     func testManageOfferResultXDRRoundTripBase64() throws {
-        let result = ManageOfferResultXDR.empty(ManageOfferResultCode.malformed.rawValue)
+        let result = ManageOfferResultXDR.malformed
 
         guard let base64 = result.xdrEncoded else {
             XCTFail("Failed to encode to base64")
@@ -692,12 +681,7 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
 
         let decoded = try ManageOfferResultXDR(xdr: base64)
 
-        switch decoded {
-        case .success:
-            XCTFail("Expected empty case")
-        case .empty(let code):
-            XCTAssertEqual(code, ManageOfferResultCode.malformed.rawValue)
-        }
+        XCTAssertEqual(decoded.type(), ManageOfferResultCode.malformed.rawValue)
     }
 
     func testManageOfferSuccessResultXDRWithClaimedOffers() throws {
