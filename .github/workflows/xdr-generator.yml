@@ -1,0 +1,42 @@
+name: XDR Generator
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'tools/xdr-generator/**'
+      - 'xdr/*.x'
+      - 'stellarsdk/stellarsdk/responses/xdr/**'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'tools/xdr-generator/**'
+      - 'xdr/*.x'
+      - 'stellarsdk/stellarsdk/responses/xdr/**'
+
+jobs:
+  snapshot-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run generator snapshot tests
+        run: make xdr-generator-test
+
+  generated-files-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Regenerate XDR files
+        run: make xdr-generate
+
+      - name: Check for uncommitted changes
+        run: |
+          if ! git diff --quiet stellarsdk/stellarsdk/responses/xdr/; then
+            echo "Generated XDR files are out of date. Run 'make xdr-generate' and commit the results."
+            git diff --stat stellarsdk/stellarsdk/responses/xdr/
+            exit 1
+          fi
