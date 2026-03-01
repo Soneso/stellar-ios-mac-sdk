@@ -631,7 +631,12 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
 
         switch decoded {
         case .success(let successRes):
-            XCTAssertNotNil(successRes.offer)
+            switch successRes.offer {
+            case .created(let decodedOffer):
+                XCTAssertEqual(decodedOffer.offerID, 12345)
+            default:
+                XCTFail("Expected created offer")
+            }
         default:
             XCTFail("Expected success case")
         }
@@ -698,6 +703,7 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
 
         // Test that it decoded successfully
         XCTAssertEqual(successResult.offersClaimed.count, 0)
+        XCTAssertEqual(successResult.offer.type(), ManageOfferEffect.deleted.rawValue)
     }
 
     func testManageOfferEffectEnumValues() {

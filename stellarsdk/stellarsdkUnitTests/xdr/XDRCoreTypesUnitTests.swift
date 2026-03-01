@@ -990,7 +990,6 @@ class XDRCoreTypesUnitTests: XCTestCase {
         let decoded = try XDRDecoder.decode(ManageOfferSuccessResultXDR.self, data: encoded)
 
         XCTAssertEqual(decoded.offersClaimed.count, 0)
-        XCTAssertNotNil(decoded.offer)
 
         switch decoded.offer {
         case .created(let decodedOffer):
@@ -1016,16 +1015,20 @@ class XDRCoreTypesUnitTests: XCTestCase {
             flags: 0
         )
 
-        // Both created and updated use the same ManageOfferSuccessResultOfferXDR.created case
         let result = ManageOfferSuccessResultXDR(
             offersClaimed: [],
-            offer: .created(offer)
+            offer: .updated(offer)
         )
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ManageOfferSuccessResultXDR.self, data: encoded)
 
-        XCTAssertNotNil(decoded.offer)
+        switch decoded.offer {
+        case .updated(let decodedOffer):
+            XCTAssertEqual(decodedOffer.offerID, 222)
+        default:
+            XCTFail("Expected updated offer")
+        }
     }
 
     func testManageOfferEffectRawValues() {
