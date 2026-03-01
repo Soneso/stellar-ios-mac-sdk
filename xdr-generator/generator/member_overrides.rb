@@ -724,4 +724,10 @@ MEMBER_OVERRIDES = {
     "nonceKey" => "ledgerKeyNonce",
   },
 
+  # OperationBodyXDR -- the ACCOUNT_MERGE arm variable is "destination" (the MuxedAccount
+  # parameter), but the case name should reflect the operation type.
+  "OperationBodyXDR" => {
+    "destination" => "accountMerge",
+  },
+
 }.freeze

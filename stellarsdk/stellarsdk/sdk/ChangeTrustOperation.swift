@@ -49,7 +49,7 @@ public class ChangeTrustOperation:Operation, @unchecked Sendable {
             limitXDR = Int64.max
         }
 
-        return OperationBodyXDR.changeTrust(ChangeTrustOperationXDR(asset:assetXDR,
+        return OperationBodyXDR.changeTrustOp(ChangeTrustOperationXDR(asset:assetXDR,
                                                                     limit:limitXDR))
     }
 }

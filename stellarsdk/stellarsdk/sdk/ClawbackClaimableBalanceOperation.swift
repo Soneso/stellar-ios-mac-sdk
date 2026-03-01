@@ -38,6 +38,6 @@ public class ClawbackClaimableBalanceOperation:Operation, @unchecked Sendable {
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let cIDXDR = try ClaimableBalanceIDXDR(claimableBalanceId: claimableBalanceID)
         let cbXDR = ClawbackClaimableBalanceOpXDR(claimableBalanceID: cIDXDR)
-        return OperationBodyXDR.clawbackClaimableBalance(cbXDR)
+        return OperationBodyXDR.clawbackClaimableBalanceOp(cbXDR)
     }
 }

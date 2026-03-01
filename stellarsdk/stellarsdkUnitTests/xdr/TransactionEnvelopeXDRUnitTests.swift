@@ -16,7 +16,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
     private func createBumpSequenceOperation(bumpTo: Int64 = 1000000) -> OperationXDR {
         let bumpSeqOp = BumpSequenceOperationXDR(bumpTo: bumpTo)
         let muxedAccount: MuxedAccountXDR? = nil
-        return OperationXDR(sourceAccount: muxedAccount, body: .bumpSequence(bumpSeqOp))
+        return OperationXDR(sourceAccount: muxedAccount, body: .bumpSequenceOp(bumpSeqOp))
     }
 
     private func createTestSignature(hint: [UInt8] = [0x01, 0x02, 0x03, 0x04],

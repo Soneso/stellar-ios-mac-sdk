@@ -42,7 +42,7 @@ public class ManageDataOperation:Operation, @unchecked Sendable {
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
 
-        return OperationBodyXDR.manageData(ManageDataOperationXDR(dataName: name,
+        return OperationBodyXDR.manageDataOp(ManageDataOperationXDR(dataName: name,
                                                                   dataValue: data))
     }
 }

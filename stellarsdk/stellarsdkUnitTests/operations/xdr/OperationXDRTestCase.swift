@@ -24,7 +24,7 @@ class OperationXDRTestCase: XCTestCase {
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! CreateAccountOperation
             
             switch operationXdr.body {
-            case .createAccount(let createAccountXdr):
+            case .createAccountOp(let createAccountXdr):
                 XCTAssertEqual(10000000000, createAccountXdr.startingBalance)
             default:
                 break
@@ -55,7 +55,7 @@ class OperationXDRTestCase: XCTestCase {
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! PaymentOperation
             
             switch operationXdr.body {
-            case .payment(let paymentXdr):
+            case .paymentOp(let paymentXdr):
                 XCTAssertEqual(10000000000, paymentXdr.amount)
             default:
                 break
@@ -98,7 +98,7 @@ class OperationXDRTestCase: XCTestCase {
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! PathPaymentOperation
             
             switch operationXdr.body {
-            case .pathPayment(let pathPaymentXdr):
+            case .pathPaymentStrictReceiveOp(let pathPaymentXdr):
                 XCTAssertEqual(1000, pathPaymentXdr.sendMax)
                 XCTAssertEqual(1000, pathPaymentXdr.destinationAmount)
             default:
@@ -140,7 +140,7 @@ class OperationXDRTestCase: XCTestCase {
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! PathPaymentOperation
             
             switch operationXdr.body {
-            case .pathPayment(let pathPaymentXdr):
+            case .pathPaymentStrictReceiveOp(let pathPaymentXdr):
                 XCTAssertEqual(1000, pathPaymentXdr.sendMax)
                 XCTAssertEqual(1000, pathPaymentXdr.destinationAmount)
             default:
@@ -178,7 +178,7 @@ class OperationXDRTestCase: XCTestCase {
        
 
             switch operationXdr.body {
-            case .changeTrust(let changeTrustXdr):
+            case .changeTrustOp(let changeTrustXdr):
                 var decimalXDRLimit = Decimal(changeTrustXdr.limit)
                 decimalXDRLimit = decimalXDRLimit / 10000000
                 XCTAssertEqual(limit, decimalXDRLimit)
@@ -199,7 +199,7 @@ class OperationXDRTestCase: XCTestCase {
             
             
             switch operationXdr.body {
-            case .changeTrust(let changeTrustXdr):
+            case .changeTrustOp(let changeTrustXdr):
                 var decimalXDRLimit = Decimal(changeTrustXdr.limit)
                 decimalXDRLimit = decimalXDRLimit / 10000000
                 XCTAssertEqual(limit, decimalXDRLimit)
@@ -233,7 +233,7 @@ class OperationXDRTestCase: XCTestCase {
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! AllowTrustOperation
             
             switch operationXdr.body {
-            case .allowTrust(let allowTrustXdr):
+            case .allowTrustOp(let allowTrustXdr):
                 XCTAssertEqual(allowTrustXdr.authorize, TrustLineFlags.AUTHORIZED_FLAG)
             default:
                 break
@@ -426,7 +426,7 @@ class OperationXDRTestCase: XCTestCase {
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! ManageSellOfferOperation
             
             switch operationXdr.body {
-            case .manageSellOffer(let manageOfferXdr):
+            case .manageSellOfferOp(let manageOfferXdr):
                 XCTAssertEqual(100, manageOfferXdr.amount)
             default:
                 break
@@ -467,7 +467,7 @@ class OperationXDRTestCase: XCTestCase {
             let parsedOperation = try Operation.fromXDR(operationXDR: operationXdr) as! CreatePassiveSellOfferOperation
             
             switch operationXdr.body {
-            case .createPassiveSellOffer(let offerXdr):
+            case .createPassiveSellOfferOp(let offerXdr):
                 XCTAssertEqual(100, offerXdr.amount)
             default:
                 break

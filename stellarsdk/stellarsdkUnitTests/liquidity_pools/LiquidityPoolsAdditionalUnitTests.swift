@@ -155,7 +155,7 @@ class LiquidityPoolsAdditionalUnitTests: XCTestCase {
             let operationXDR = try operation.toXDR()
 
             switch operationXDR.body {
-            case .liquidityPoolDeposit(let depositXDR):
+            case .liquidityPoolDepositOp(let depositXDR):
                 XCTAssertEqual(depositXDR.liquidityPoolID.wrapped.base16EncodedString(), poolId)
                 XCTAssertEqual(depositXDR.maxAmountA, 1000000000)
                 XCTAssertEqual(depositXDR.maxAmountB, 2000000000)
@@ -164,7 +164,7 @@ class LiquidityPoolsAdditionalUnitTests: XCTestCase {
                 XCTAssertEqual(depositXDR.maxPrice.n, 2)
                 XCTAssertEqual(depositXDR.maxPrice.d, 1)
             default:
-                XCTFail("Expected liquidityPoolDeposit operation body")
+                XCTFail("Expected liquidityPoolDepositOp operation body")
             }
         } catch {
             XCTFail("Error converting operation to XDR: \(error)")
@@ -277,13 +277,13 @@ class LiquidityPoolsAdditionalUnitTests: XCTestCase {
             let operationXDR = try operation.toXDR()
 
             switch operationXDR.body {
-            case .liquidityPoolWithdraw(let withdrawXDR):
+            case .liquidityPoolWithdrawOp(let withdrawXDR):
                 XCTAssertEqual(withdrawXDR.liquidityPoolID.wrapped.base16EncodedString(), poolId)
                 XCTAssertEqual(withdrawXDR.amount, 5000000000)
                 XCTAssertEqual(withdrawXDR.minAmountA, 1000000000)
                 XCTAssertEqual(withdrawXDR.minAmountB, 2000000000)
             default:
-                XCTFail("Expected liquidityPoolWithdraw operation body")
+                XCTFail("Expected liquidityPoolWithdrawOp operation body")
             }
         } catch {
             XCTFail("Error converting operation to XDR: \(error)")
@@ -365,11 +365,11 @@ class LiquidityPoolsAdditionalUnitTests: XCTestCase {
             let operationXDR = try operation.toXDR()
 
             switch operationXDR.body {
-            case .liquidityPoolWithdraw(let withdrawXDR):
+            case .liquidityPoolWithdrawOp(let withdrawXDR):
                 XCTAssertEqual(withdrawXDR.minAmountA, 0)
                 XCTAssertEqual(withdrawXDR.minAmountB, 0)
             default:
-                XCTFail("Expected liquidityPoolWithdraw operation body")
+                XCTFail("Expected liquidityPoolWithdrawOp operation body")
             }
         } catch {
             XCTFail("Error with zero amounts: \(error)")

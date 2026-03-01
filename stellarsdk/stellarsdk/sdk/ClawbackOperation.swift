@@ -51,6 +51,6 @@ public class ClawbackOperation:Operation, @unchecked Sendable {
         let amountXDR = Operation.toXDRAmount(amount: amount)
         let fromXDR = try fromAccountId.decodeMuxedAccount()
     
-        return OperationBodyXDR.clawback(ClawbackOpXDR(asset: assetXDR, from: fromXDR, amount: amountXDR))
+        return OperationBodyXDR.clawbackOp(ClawbackOpXDR(asset: assetXDR, from: fromXDR, amount: amountXDR))
     }
 }

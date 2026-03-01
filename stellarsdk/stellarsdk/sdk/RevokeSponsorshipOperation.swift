@@ -112,12 +112,12 @@ public class RevokeSponsorshipOperation:Operation, @unchecked Sendable {
         
         if let lk = ledgerKey {
             let operation = RevokeSponsorshipOpXDR.revokeSponsorshipLedgerEntry(lk)
-            return OperationBodyXDR.revokeSponsorship(operation)
+            return OperationBodyXDR.revokeSponsorshipOp(operation)
         } else if let sid = signerAccountId, let sk = signerKey{
             let pk = try PublicKey(accountId: sid)
             let rsxdr = RevokeSponsorshipSignerXDR(accountID: pk, signerKey: sk)
             let operation = RevokeSponsorshipOpXDR.revokeSponsorshipSignerEntry(rsxdr)
-            return OperationBodyXDR.revokeSponsorship(operation)
+            return OperationBodyXDR.revokeSponsorshipOp(operation)
         } else {
             throw StellarSDKError.encodingError(message: "error xdr encoding revoke sponsorship operation, incomplete data")
         }

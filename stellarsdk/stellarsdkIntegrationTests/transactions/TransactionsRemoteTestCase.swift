@@ -373,10 +373,10 @@ class TransactionsRemoteTestCase: XCTestCase, @unchecked Sendable {
         let accDetailsEnum = await sdk.accounts.getAccountDetails(accountId: keyPair.accountId)
         switch accDetailsEnum {
         case .success(let data):
-            let operationBody0 = OperationBodyXDR.manageData(ManageDataOperationXDR(dataName: "kop", dataValue: "api.stellar.org".data(using: .utf8)))
+            let operationBody0 = OperationBodyXDR.manageDataOp(ManageDataOperationXDR(dataName: "kop", dataValue: "api.stellar.org".data(using: .utf8)))
             let mux = MuxedAccountXDR.ed25519(keyPair.publicKey.bytes)
             let operation0 = OperationXDR(sourceAccount: mux, body: operationBody0)
-            let operationBody = OperationBodyXDR.bumpSequence(BumpSequenceOperationXDR(bumpTo: data.sequenceNumber + 10))
+            let operationBody = OperationBodyXDR.bumpSequenceOp(BumpSequenceOperationXDR(bumpTo: data.sequenceNumber + 10))
             let operation = OperationXDR(sourceAccount: mux, body: operationBody)
             var transaction = TransactionXDR(sourceAccount: keyPair.publicKey, seqNum: data.sequenceNumber + 1, cond: PreconditionsXDR.none, memo: .none, operations: [operation0, operation], maxOperationFee: 190)
             

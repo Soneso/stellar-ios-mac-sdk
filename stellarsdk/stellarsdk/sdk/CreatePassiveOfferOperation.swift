@@ -57,7 +57,7 @@ public class CreatePassiveOfferOperation:Operation, @unchecked Sendable {
         let amountXDR = Operation.toXDRAmount(amount: amount)
         let priceXDR = price.toXdr()
         
-        return OperationBodyXDR.createPassiveSellOffer(CreatePassiveOfferOperationXDR(selling: sellingXDR,
+        return OperationBodyXDR.createPassiveSellOfferOp(CreatePassiveOfferOperationXDR(selling: sellingXDR,
                                                                                   buying: buyingXDR,
                                                                                   amount: amountXDR,
                                                                                   price: priceXDR))

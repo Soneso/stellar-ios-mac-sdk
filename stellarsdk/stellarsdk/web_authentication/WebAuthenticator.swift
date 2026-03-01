@@ -463,7 +463,7 @@ public final class WebAuthenticator: Sendable {
                     if (index > 0 && operationSourceAccount.accountId != serverSigningKey) {
                         let operationBodyXDR = operationXDR.body
                         switch operationBodyXDR {
-                        case .manageData(let manageDataOperation):
+                        case .manageDataOp(let manageDataOperation):
                             if (manageDataOperation.dataName != "client_domain") {
                                 return .failure(error: .invalidSourceAccount)
                             } else if (operationSourceAccount.accountId != clientDomainAccount) {
@@ -481,7 +481,7 @@ public final class WebAuthenticator: Sendable {
                 //all operations must be manage data operations
                 let operationBodyXDR = operationXDR.body
                 switch operationBodyXDR {
-                case .manageData(let manageDataOperation):
+                case .manageDataOp(let manageDataOperation):
                     if (index == 0 && manageDataOperation.dataName != (self.serverHomeDomain + " auth")) {
                         return .failure(error: .invalidHomeDomain)
                     } else if (manageDataOperation.dataName == "web_auth_domain") {

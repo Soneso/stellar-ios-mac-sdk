@@ -104,7 +104,7 @@ public class SetOptionsOperation:Operation, @unchecked Sendable {
             signerXDR = SignerXDR(key: signer, weight: signerWeight)
         }
 
-        return OperationBodyXDR.setOptions(SetOptionsOperationXDR(inflationDestination: inflationDestination?.publicKey,
+        return OperationBodyXDR.setOptionsOp(SetOptionsOperationXDR(inflationDestination: inflationDestination?.publicKey,
                                                                   clearFlags: clearFlags,
                                                                   setFlags: setFlags,
                                                                   masterWeight: masterKeyWeight,

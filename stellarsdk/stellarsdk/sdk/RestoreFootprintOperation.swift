@@ -21,6 +21,6 @@ public class RestoreFootprintOperation:Operation, @unchecked Sendable {
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
-        return OperationBodyXDR.restoreFootprint(RestoreFootprintOpXDR(ext: ExtensionPoint.void))
+        return OperationBodyXDR.restoreFootprintOp(RestoreFootprintOpXDR(ext: ExtensionPoint.void))
     }
 }

@@ -37,6 +37,6 @@ public class BeginSponsoringFutureReservesOperation:Operation, @unchecked Sendab
         
         let pk = try PublicKey(accountId: sponsoredId)
         let op = BeginSponsoringFutureReservesOpXDR(sponsoredId: pk)
-        return OperationBodyXDR.beginSponsoringFutureReserves(op)
+        return OperationBodyXDR.beginSponsoringFutureReservesOp(op)
     }
 }

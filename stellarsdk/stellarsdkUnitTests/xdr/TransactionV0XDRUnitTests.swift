@@ -15,7 +15,7 @@ class TransactionV0XDRUnitTests: XCTestCase {
     private func createBumpSequenceOperation(bumpTo: Int64 = 1000000) -> OperationXDR {
         let bumpSeqOp = BumpSequenceOperationXDR(bumpTo: bumpTo)
         let muxedAccount: MuxedAccountXDR? = nil
-        return OperationXDR(sourceAccount: muxedAccount, body: .bumpSequence(bumpSeqOp))
+        return OperationXDR(sourceAccount: muxedAccount, body: .bumpSequenceOp(bumpSeqOp))
     }
 
     // MARK: - TransactionV0XDR Tests

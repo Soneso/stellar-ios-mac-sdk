@@ -39,6 +39,6 @@ public class ClaimClaimableBalanceOperation:Operation, @unchecked Sendable {
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let cIDXDR = try ClaimableBalanceIDXDR(claimableBalanceId: balanceId)
         let cbXDR = ClaimClaimableBalanceOpXDR(balanceID: cIDXDR)
-        return OperationBodyXDR.claimClaimableBalance(cbXDR)
+        return OperationBodyXDR.claimClaimableBalanceOp(cbXDR)
     }
 }

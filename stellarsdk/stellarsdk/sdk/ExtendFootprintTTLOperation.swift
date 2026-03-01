@@ -28,6 +28,6 @@ public class ExtendFootprintTTLOperation:Operation, @unchecked Sendable {
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
-        return OperationBodyXDR.extendFootprintTTL(ExtendFootprintTTLOpXDR(ext: ExtensionPoint.void, extendTo: extendTo))
+        return OperationBodyXDR.extendFootprintTTLOp(ExtendFootprintTTLOpXDR(ext: ExtensionPoint.void, extendTo: extendTo))
     }
 }

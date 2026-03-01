@@ -2504,16 +2504,16 @@ public final class TxRep: Sendable {
         operationPrefix = operationPrefix + "body." + txRepOpType(operation: operation) + "."
         
         switch operation.body {
-        case .createAccount(let createAccountOp):
+        case .createAccountOp(let createAccountOp):
             addLine(key: operationPrefix + "destination", value: createAccountOp.destination.accountId, lines: &lines)
             addLine(key: operationPrefix + "startingBalance", value: String(createAccountOp.startingBalance), lines: &lines)
             break
-        case .payment(let paymentOperation):
+        case .paymentOp(let paymentOperation):
             addLine(key: operationPrefix + "destination", value: paymentOperation.destination.accountId, lines: &lines)
             addLine(key: operationPrefix + "asset", value: encodeAsset(asset: paymentOperation.asset), lines: &lines)
             addLine(key: operationPrefix + "amount", value: String(paymentOperation.amount), lines: &lines)
             break
-        case .pathPayment(let pathPaymentStrictReceiveOp):
+        case .pathPaymentStrictReceiveOp(let pathPaymentStrictReceiveOp):
             addLine(key: operationPrefix + "sendAsset", value: encodeAsset(asset: pathPaymentStrictReceiveOp.sendAsset), lines: &lines)
             addLine(key: operationPrefix + "sendMax", value: String(pathPaymentStrictReceiveOp.sendMax), lines: &lines)
             addLine(key: operationPrefix + "destination", value: pathPaymentStrictReceiveOp.destination.accountId, lines: &lines)
@@ -2527,7 +2527,7 @@ public final class TxRep: Sendable {
                 assetIndex += 1
             }
             break
-        case .pathPaymentStrictSend(let pathPaymentStrictSendOp):
+        case .pathPaymentStrictSendOp(let pathPaymentStrictSendOp):
             addLine(key: operationPrefix + "sendAsset", value: encodeAsset(asset: pathPaymentStrictSendOp.sendAsset), lines: &lines)
             addLine(key: operationPrefix + "sendAmount", value: String(pathPaymentStrictSendOp.sendMax), lines: &lines)
             addLine(key: operationPrefix + "destination", value: pathPaymentStrictSendOp.destination.accountId, lines: &lines)
@@ -2540,7 +2540,7 @@ public final class TxRep: Sendable {
                 assetIndex += 1
             }
             break
-        case .manageSellOffer(let manageSellOfferOp):
+        case .manageSellOfferOp(let manageSellOfferOp):
             addLine(key: operationPrefix + "selling", value: encodeAsset(asset: manageSellOfferOp.selling), lines: &lines)
             addLine(key: operationPrefix + "buying", value: encodeAsset(asset: manageSellOfferOp.buying), lines: &lines)
             addLine(key: operationPrefix + "amount", value: String(manageSellOfferOp.amount), lines: &lines)
@@ -2548,7 +2548,7 @@ public final class TxRep: Sendable {
             addLine(key: operationPrefix + "price.d", value: String(manageSellOfferOp.price.d), lines: &lines)
             addLine(key: operationPrefix + "offerID", value: String(manageSellOfferOp.offerID), lines: &lines)
             break
-        case .manageBuyOffer(let manageBuyOfferOp):
+        case .manageBuyOfferOp(let manageBuyOfferOp):
             addLine(key: operationPrefix + "selling", value: encodeAsset(asset: manageBuyOfferOp.selling), lines: &lines)
             addLine(key: operationPrefix + "buying", value: encodeAsset(asset: manageBuyOfferOp.buying), lines: &lines)
             addLine(key: operationPrefix + "buyAmount", value: String(manageBuyOfferOp.amount), lines: &lines)
@@ -2556,14 +2556,14 @@ public final class TxRep: Sendable {
             addLine(key: operationPrefix + "price.d", value: String(manageBuyOfferOp.price.d), lines: &lines)
             addLine(key: operationPrefix + "offerID", value: String(manageBuyOfferOp.offerID), lines: &lines)
             break
-        case .createPassiveSellOffer(let createPassiveSellOfferOp):
+        case .createPassiveSellOfferOp(let createPassiveSellOfferOp):
             addLine(key: operationPrefix + "selling", value: encodeAsset(asset: createPassiveSellOfferOp.selling), lines: &lines)
             addLine(key: operationPrefix + "buying", value: encodeAsset(asset: createPassiveSellOfferOp.buying), lines: &lines)
             addLine(key: operationPrefix + "amount", value: String(createPassiveSellOfferOp.amount), lines: &lines)
             addLine(key: operationPrefix + "price.n", value: String(createPassiveSellOfferOp.price.n), lines: &lines)
             addLine(key: operationPrefix + "price.d", value: String(createPassiveSellOfferOp.price.d), lines: &lines)
             break
-        case .setOptions(let setOptionOp):
+        case .setOptionsOp(let setOptionOp):
             if let inflationDest = setOptionOp.inflationDestination {
                 addLine(key: operationPrefix + "inflationDest._present", value: "true", lines: &lines)
                 addLine(key: operationPrefix + "inflationDest", value: inflationDest.accountId, lines: &lines)
@@ -2638,11 +2638,11 @@ public final class TxRep: Sendable {
                 addLine(key: operationPrefix + "signer._present", value: "false", lines: &lines)
             }
             break
-        case .changeTrust(let changeTrustOp):
+        case .changeTrustOp(let changeTrustOp):
             addLine(key: operationPrefix + "line", value: encodeChangeTrustAsset(asset: changeTrustOp.asset), lines: &lines)
             addLine(key: operationPrefix + "limit", value: String(changeTrustOp.limit), lines: &lines)
             break
-        case .allowTrust(let allowTrustOp):
+        case .allowTrustOp(let allowTrustOp):
             addLine(key: operationPrefix + "trustor", value: allowTrustOp.trustor.accountId, lines: &lines)
             addLine(key: operationPrefix + "asset", value: allowTrustOp.asset.assetCode, lines: &lines)
             addLine(key: operationPrefix + "authorize", value: String(allowTrustOp.authorize), lines: &lines)
@@ -2652,7 +2652,7 @@ public final class TxRep: Sendable {
             let amKey = prefix + "operations[" + String(index) + "].body.destination"
             addLine(key: amKey, value: accountMergeOp.accountId, lines: &lines)
             break
-        case .manageData(let manageDataOp):
+        case .manageDataOp(let manageDataOp):
             let jsonEncoder = JSONEncoder()
             if let textData = try? jsonEncoder.encode(manageDataOp.dataName), let textVal = String(data:textData, encoding: .utf8) {
                 addLine(key: operationPrefix + "dataName", value: textVal, lines: &lines)
@@ -2666,10 +2666,10 @@ public final class TxRep: Sendable {
                 addLine(key: operationPrefix + "dataValue._present", value: "false", lines: &lines)
             }
             break
-        case .bumpSequence(let bumpOp):
+        case .bumpSequenceOp(let bumpOp):
             addLine(key: operationPrefix + "bumpTo", value: String(bumpOp.bumpTo), lines: &lines)
             break
-        case .createClaimableBalance(let createOp):
+        case .createClaimableBalanceOp(let createOp):
             addLine(key: operationPrefix + "asset", value: encodeAsset(asset: createOp.asset), lines: &lines)
             addLine(key: operationPrefix + "amount", value: String(createOp.amount), lines: &lines)
             addLine(key: operationPrefix + "claimants.len", value: String(createOp.claimants.count), lines: &lines)
@@ -2685,7 +2685,7 @@ public final class TxRep: Sendable {
                 index += 1;
             }
             break;
-        case .claimClaimableBalance(let claimOp):
+        case .claimClaimableBalanceOp(let claimOp):
             addLine(key: operationPrefix + "balanceID.type", value: "CLAIMABLE_BALANCE_ID_TYPE_V0", lines: &lines)
             switch claimOp.balanceID {
             case .claimableBalanceIDTypeV0(let data):
@@ -2693,10 +2693,10 @@ public final class TxRep: Sendable {
                 addLine(key: operationPrefix + "balanceID.v0", value: balanceId, lines: &lines)
             }
             break
-        case .beginSponsoringFutureReserves(let begOp):
+        case .beginSponsoringFutureReservesOp(let begOp):
             addLine(key: operationPrefix + "sponsoredID", value: begOp.sponsoredId.accountId, lines: &lines)
             break
-        case .revokeSponsorship(let revokeOp):
+        case .revokeSponsorshipOp(let revokeOp):
             switch revokeOp {
             case .revokeSponsorshipLedgerEntry(let ledgerKeyXDR):
                 addLine(key: operationPrefix + "type", value: "REVOKE_SPONSORSHIP_LEDGER_ENTRY", lines: &lines)
@@ -2723,12 +2723,12 @@ public final class TxRep: Sendable {
                 break
             }
             break
-        case .clawback(let clawbackOp):
+        case .clawbackOp(let clawbackOp):
             addLine(key: operationPrefix + "asset", value: encodeAsset(asset: clawbackOp.asset), lines: &lines)
             addLine(key: operationPrefix + "from", value: clawbackOp.from.accountId, lines: &lines)
             addLine(key: operationPrefix + "amount", value: String(clawbackOp.amount), lines: &lines)
             break
-        case .clawbackClaimableBalance(let cOp):
+        case .clawbackClaimableBalanceOp(let cOp):
             addLine(key: operationPrefix + "balanceID.type", value: "CLAIMABLE_BALANCE_ID_TYPE_V0", lines: &lines)
             let claimableBalanceIDXDR = cOp.claimableBalanceID
             switch claimableBalanceIDXDR {
@@ -2738,13 +2738,13 @@ public final class TxRep: Sendable {
                 break
             }
             break
-        case .setTrustLineFlags(let sOp):
+        case .setTrustLineFlagsOp(let sOp):
             addLine(key: operationPrefix + "trustor", value: sOp.accountID.accountId, lines: &lines)
             addLine(key: operationPrefix + "asset", value: encodeAsset(asset: sOp.asset), lines: &lines)
             addLine(key: operationPrefix + "clearFlags", value: String(sOp.clearFlags), lines: &lines)
             addLine(key: operationPrefix + "setFlags", value: String(sOp.setFlags), lines: &lines)
             break
-        case .liquidityPoolDeposit(let lOp):
+        case .liquidityPoolDepositOp(let lOp):
             addLine(key: operationPrefix + "liquidityPoolID", value: lOp.liquidityPoolID.wrapped.base16EncodedString(), lines: &lines)
             addLine(key: operationPrefix + "maxAmountA", value: String(lOp.maxAmountA), lines: &lines)
             addLine(key: operationPrefix + "maxAmountB", value: String(lOp.maxAmountB), lines: &lines)
@@ -2753,13 +2753,13 @@ public final class TxRep: Sendable {
             addLine(key: operationPrefix + "maxPrice.n", value: String(lOp.maxPrice.n), lines: &lines)
             addLine(key: operationPrefix + "maxPrice.d", value: String(lOp.maxPrice.d), lines: &lines)
             break
-        case .liquidityPoolWithdraw(let lOp):
+        case .liquidityPoolWithdrawOp(let lOp):
             addLine(key: operationPrefix + "liquidityPoolID", value: lOp.liquidityPoolID.wrapped.base16EncodedString(), lines: &lines)
             addLine(key: operationPrefix + "amount", value: String(lOp.amount), lines: &lines)
             addLine(key: operationPrefix + "minAmountA", value: String(lOp.minAmountA), lines: &lines)
             addLine(key: operationPrefix + "minAmountB", value: String(lOp.minAmountB), lines: &lines)
             break
-        case .invokeHostFunction(let iOp):
+        case .invokeHostFunctionOp(let iOp):
             let fcPrefix = operationPrefix + "hostFunction.";
             let function = iOp.hostFunction;
             addLine(key: fcPrefix + "type" , value: txRepHostFuncType(function: function), lines: &lines)
@@ -2784,10 +2784,10 @@ public final class TxRep: Sendable {
                 addSorobanAuthorizationEntry(auth: val, prefix: operationPrefix + "auth[\(index)].", lines: &lines)
                 index += 1
             }
-        case .extendFootprintTTL(let eOp):
+        case .extendFootprintTTLOp(let eOp):
             addLine(key: operationPrefix + "ext.v", value: "0", lines: &lines)
             addLine(key: operationPrefix + "extendTo", value: String(eOp.extendTo), lines: &lines)
-        case.restoreFootprint(_):
+        case.restoreFootprintOp(_):
             addLine(key: operationPrefix + "ext.v", value: "0", lines: &lines)
         default:
             break
@@ -3359,117 +3359,117 @@ public final class TxRep: Sendable {
     
     private static func txRepOpType(operation: OperationXDR) -> String {
         switch operation.body {
-        case .createAccount(_):
+        case .createAccountOp(_):
             return "createAccountOp"
-        case .payment(_):
+        case .paymentOp(_):
             return "paymentOp"
-        case .pathPayment(_):
+        case .pathPaymentStrictReceiveOp(_):
             return "pathPaymentStrictReceiveOp"
-        case .manageSellOffer(_):
+        case .manageSellOfferOp(_):
             return "manageSellOfferOp"
-        case .createPassiveSellOffer(_):
+        case .createPassiveSellOfferOp(_):
             return "createPassiveSellOfferOp"
-        case .setOptions(_):
+        case .setOptionsOp(_):
             return "setOptionsOp"
-        case .changeTrust(_):
+        case .changeTrustOp(_):
             return "changeTrustOp"
-        case .allowTrust(_):
+        case .allowTrustOp(_):
             return "allowTrustOp"
         case .accountMerge(_):
             return "accountMergeOp"
         case .inflation:
             return "inflationOp"
-        case .manageData(_):
+        case .manageDataOp(_):
             return "manageDataOp"
-        case .bumpSequence(_):
+        case .bumpSequenceOp(_):
             return "bumpSequenceOp"
-        case .manageBuyOffer(_):
+        case .manageBuyOfferOp(_):
             return "manageBuyOfferOp"
-        case .pathPaymentStrictSend(_):
+        case .pathPaymentStrictSendOp(_):
             return "pathPaymentStrictSendOp"
-        case .createClaimableBalance(_):
+        case .createClaimableBalanceOp(_):
             return "createClaimableBalanceOp"
-        case .claimClaimableBalance(_):
+        case .claimClaimableBalanceOp(_):
             return "claimClaimableBalanceOp"
-        case .beginSponsoringFutureReserves(_):
+        case .beginSponsoringFutureReservesOp(_):
             return "beginSponsoringFutureReservesOp"
         case .endSponsoringFutureReserves:
             return "endSponsoringFutureReservesOp"
-        case .revokeSponsorship(_):
+        case .revokeSponsorshipOp(_):
             return "revokeSponsorshipOp"
-        case .clawback(_):
+        case .clawbackOp(_):
             return "clawbackOp"
-        case .clawbackClaimableBalance(_):
+        case .clawbackClaimableBalanceOp(_):
             return "clawbackClaimableBalanceOp"
-        case .setTrustLineFlags(_):
+        case .setTrustLineFlagsOp(_):
             return "setTrustLineFlagsOp"
-        case .liquidityPoolDeposit(_):
+        case .liquidityPoolDepositOp(_):
             return "liquidityPoolDepositOp"
-        case .liquidityPoolWithdraw(_):
+        case .liquidityPoolWithdrawOp(_):
             return "liquidityPoolWithdrawOp"
-        case .invokeHostFunction(_):
+        case .invokeHostFunctionOp(_):
             return "invokeHostFunctionOp"
-        case .extendFootprintTTL(_):
+        case .extendFootprintTTLOp(_):
             return "extendFootprintTTLOp"
-        case .restoreFootprint(_):
+        case .restoreFootprintOp(_):
             return "restoreFootprintOp"
         }
     }
     private static func txRepOpTypeUpperCase(operation: OperationXDR) -> String {
         switch operation.body {
-        case .createAccount(_):
+        case .createAccountOp(_):
             return "CREATE_ACCOUNT"
-        case .payment(_):
+        case .paymentOp(_):
             return "PAYMENT"
-        case .pathPayment(_):
+        case .pathPaymentStrictReceiveOp(_):
             return "PATH_PAYMENT_STRICT_RECEIVE"
-        case .manageSellOffer(_):
+        case .manageSellOfferOp(_):
             return "MANAGE_SELL_OFFER"
-        case .createPassiveSellOffer(_):
+        case .createPassiveSellOfferOp(_):
             return "CREATE_PASSIVE_SELL_OFFER"
-        case .setOptions(_):
+        case .setOptionsOp(_):
             return "SET_OPTIONS"
-        case .changeTrust(_):
+        case .changeTrustOp(_):
             return "CHANGE_TRUST"
-        case .allowTrust(_):
+        case .allowTrustOp(_):
             return "ALLOW_TRUST"
         case .accountMerge(_):
             return "ACCOUNT_MERGE"
         case .inflation:
             return "INFLATION"
-        case .manageData(_):
+        case .manageDataOp(_):
             return "MANAGE_DATA"
-        case .bumpSequence(_):
+        case .bumpSequenceOp(_):
             return "BUMP_SEQUENCE"
-        case .manageBuyOffer(_):
+        case .manageBuyOfferOp(_):
             return "MANAGE_BUY_OFFER"
-        case .pathPaymentStrictSend(_):
+        case .pathPaymentStrictSendOp(_):
             return "PATH_PAYMENT_STRICT_SEND"
-        case .createClaimableBalance(_):
+        case .createClaimableBalanceOp(_):
             return "CREATE_CLAIMABLE_BALANCE"
-        case .claimClaimableBalance(_):
+        case .claimClaimableBalanceOp(_):
             return "CLAIM_CLAIMABLE_BALANCE"
-        case .beginSponsoringFutureReserves(_):
+        case .beginSponsoringFutureReservesOp(_):
             return "BEGIN_SPONSORING_FUTURE_RESERVES"
         case .endSponsoringFutureReserves:
             return "END_SPONSORING_FUTURE_RESERVES"
-        case .revokeSponsorship(_):
+        case .revokeSponsorshipOp(_):
             return "REVOKE_SPONSORSHIP"
-        case .clawback(_):
+        case .clawbackOp(_):
             return "CLAWBACK"
-        case .clawbackClaimableBalance(_):
+        case .clawbackClaimableBalanceOp(_):
             return "CLAWBACK_CLAIMABLE_BALANCE"
-        case .setTrustLineFlags(_):
+        case .setTrustLineFlagsOp(_):
             return "SET_TRUST_LINE_FLAGS"
-        case .liquidityPoolDeposit(_):
+        case .liquidityPoolDepositOp(_):
             return "LIQUIDITY_POOL_DEPOSIT"
-        case .liquidityPoolWithdraw(_):
+        case .liquidityPoolWithdrawOp(_):
             return "LIQUIDITY_POOL_WITHDRAW"
-        case .invokeHostFunction(_):
+        case .invokeHostFunctionOp(_):
             return "INVOKE_HOST_FUNCTION"
-        case .extendFootprintTTL(_):
+        case .extendFootprintTTLOp(_):
             return "EXTEND_FOOTPRINT_TTL"
-        case .restoreFootprint(_):
+        case .restoreFootprintOp(_):
             return "RESTORE_FOOTPRINT"
         }
     }

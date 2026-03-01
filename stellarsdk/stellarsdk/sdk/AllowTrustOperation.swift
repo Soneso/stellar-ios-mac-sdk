@@ -86,7 +86,7 @@ public class AllowTrustOperation:Operation, @unchecked Sendable {
             allowTrustOpAsset = AllowTrustOpAssetXDR.alphanum12(WrappedData12(assetCodeData))
         }
 
-        return OperationBodyXDR.allowTrust(AllowTrustOperationXDR(trustor: trustor.publicKey,
+        return OperationBodyXDR.allowTrustOp(AllowTrustOperationXDR(trustor: trustor.publicKey,
                                                                   asset: allowTrustOpAsset,
                                                                   authorize: authorize))
     }
