@@ -71,7 +71,7 @@ public struct TransactionXDR: XDRCodable, Sendable {
     }
     
     private func signatureBase(network:Network) throws -> Data {
-        let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .typeTX(self))
+        let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .tx(self))
         return try Data(XDREncoder.encode(payload))
     }
     

@@ -37,8 +37,6 @@ class Generator < Xdrgen::Generators::Base
   SKIP_TYPES = %w[
     PublicKey
     MuxedAccountMed25519XDRInverted
-    TransactionSignaturePayload
-    TaggedTransaction
     TransactionV0EnvelopeXDR
     TransactionV1EnvelopeXDR
     FeeBumpTransactionEnvelopeXDR

@@ -87,7 +87,7 @@ public struct FeeBumpTransactionXDR: XDRCodable, Sendable {
     }
     
     private func signatureBase(network:Network) throws -> Data {
-        let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .typeFeeBump(self))
+        let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .feeBump(self))
         
         return try Data(XDREncoder.encode(payload))
     }
