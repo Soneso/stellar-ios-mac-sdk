@@ -35,7 +35,6 @@ class Generator < Xdrgen::Generators::Base
   # in the SDK, implemented as NSObject classes, contain SDK-specific convenience
   # methods, or are custom types with no direct .x file counterpart.
   SKIP_TYPES = %w[
-    SCEnvMetaEntryXDR
     SCSpecUDTErrorEnumV0XDR
     PublicKey
     MuxedAccountMed25519XDRInverted

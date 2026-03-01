@@ -21,10 +21,10 @@ public final class SorobanContractParser: Sendable {
             if let bytesString = String(data: byteCode, encoding: .isoLatin1) {
                 if let xdrEnvMeta = parseEnvironmentMeta(bytesString: bytesString) {
                     switch xdrEnvMeta {
-                    case .interfaceVersion(let uInt64):
+                    case .interfaceVersion(let iv):
                         if let specEntries = parseContractSpec(bytesString: bytesString) {
                             let metaEntries = parseMeta(bytesString: bytesString)
-                            return SorobanContractInfo(envInterfaceVersion: uInt64,
+                            return SorobanContractInfo(interfaceVersion: iv,
                                                        specEntries: specEntries,
                                                        metaEntries: metaEntries)
                         } else {
@@ -152,8 +152,11 @@ public final class SorobanContractParser: Sendable {
 /// See also: [Stellar developer docs](https://developers.stellar.org)
 public final class SorobanContractInfo: Sendable {
 
-    /// Environment interface version the contract was compiled against.
-    public let envInterfaceVersion:UInt64
+    /// Protocol version the contract was compiled against.
+    public let envProtocolVersion:UInt32
+
+    /// Pre-release version (0 for stable releases).
+    public let envPreReleaseVersion:UInt32
 
     /// Raw contract specification entries defining types, functions, and events.
     public let specEntries:[SCSpecEntryXDR]
@@ -189,9 +192,10 @@ public final class SorobanContractInfo: Sendable {
     /// Contains all event specifications exported by the contract.
     public let events: [SCSpecEventV0XDR]
 
-    /// Creates contract info from environment interface version, spec entries, and metadata entries.
-    public init(envInterfaceVersion:UInt64, specEntries:[SCSpecEntryXDR], metaEntries: [String: String]) {
-        self.envInterfaceVersion = envInterfaceVersion
+    /// Creates contract info from the parsed interface version, spec entries, and metadata entries.
+    public init(interfaceVersion:SCEnvMetaEntryXDRInterfaceVersionXDR, specEntries:[SCSpecEntryXDR], metaEntries: [String: String]) {
+        self.envProtocolVersion = interfaceVersion.`protocol`
+        self.envPreReleaseVersion = interfaceVersion.preRelease
         self.specEntries = specEntries
         self.metaEntries = metaEntries
         self.supportedSeps = SorobanContractInfo.parseSupportedSeps(metaEntries: metaEntries)

@@ -1230,7 +1230,8 @@ class XDRCoreTypesUnitTests: XCTestCase {
     // MARK: - ContractEnvMetaXDR Tests
 
     func testSCEnvMetaEntryXDRInterfaceVersion() throws {
-        let entry = SCEnvMetaEntryXDR.interfaceVersion(12345)
+        let iv = SCEnvMetaEntryXDRInterfaceVersionXDR(protocol: 21, preRelease: 0)
+        let entry = SCEnvMetaEntryXDR.interfaceVersion(iv)
 
         let encoded = try XDREncoder.encode(entry)
         let decoded = try XDRDecoder.decode(SCEnvMetaEntryXDR.self, data: encoded)
@@ -1238,8 +1239,9 @@ class XDRCoreTypesUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), SCEnvMetaKind.interfaceVersion.rawValue)
 
         switch decoded {
-        case .interfaceVersion(let version):
-            XCTAssertEqual(version, 12345)
+        case .interfaceVersion(let decodedIv):
+            XCTAssertEqual(decodedIv.`protocol`, 21)
+            XCTAssertEqual(decodedIv.preRelease, 0)
         }
     }
 
