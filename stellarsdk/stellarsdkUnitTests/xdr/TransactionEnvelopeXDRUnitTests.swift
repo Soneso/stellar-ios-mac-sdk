@@ -111,7 +111,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
                                         maxOperationFee: 100)
 
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let feeBumpTx = FeeBumpTransactionXDR(sourceAccount: feeSourceMuxed,
@@ -157,7 +157,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
 
         // Fee bump envelope should return type 5
         let feeSourceKeyPair = try KeyPair.generateRandomKeyPair()
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(v1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(v1Envelope)
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let feeBumpTx = FeeBumpTransactionXDR(sourceAccount: feeSourceMuxed,
                                               innerTx: innerTx,
@@ -368,7 +368,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
         // Test fee bump envelope source account (should return inner tx source)
         let feeSourceKeyPair = try KeyPair.generateRandomKeyPair()
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: txV1, signatures: [])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let feeBumpTx = FeeBumpTransactionXDR(sourceAccount: feeSourceMuxed,
                                               innerTx: innerTx,
@@ -413,7 +413,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
                                        operations: [createBumpSequenceOperation()],
                                        maxOperationFee: 300)
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxV1, signatures: [])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let feeBumpTx = FeeBumpTransactionXDR(sourceAccount: feeSourceMuxed,
                                               innerTx: innerTx,
@@ -470,7 +470,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
                                         maxOperationFee: 100)
 
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let feeBumpFee: UInt64 = 500
@@ -517,7 +517,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
 
         let innerSignature = createTestSignature(hint: [0x01, 0x02, 0x03, 0x04])
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [innerSignature])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let feeBumpTx = FeeBumpTransactionXDR(sourceAccount: feeSourceMuxed,
@@ -558,7 +558,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
                                         maxOperationFee: 100)
 
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         // Fee bump fee must be higher than inner fee
         let feeBumpFee: UInt64 = 500 // 5x the inner fee
@@ -598,7 +598,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
                                         maxOperationFee: 200)
 
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let originalFeeBumpTx = FeeBumpTransactionXDR(sourceAccount: feeSourceMuxed,
@@ -647,7 +647,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
                                         maxOperationFee: 100)
 
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         // Create muxed fee source account
         let muxedAccountMed = MuxedAccountMed25519XDR(id: muxedId, sourceAccountEd25519: feeSourceKeyPair.publicKey.bytes)
@@ -686,7 +686,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
                                         maxOperationFee: 100)
 
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let feeBumpTx = FeeBumpTransactionXDR(sourceAccount: feeSourceMuxed,
@@ -724,7 +724,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
         // Inner transaction with its own signature
         let innerSignature = createTestSignature(hint: [0xAA, 0xBB, 0xCC, 0xDD])
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [innerSignature])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let feeBumpTx = FeeBumpTransactionXDR(sourceAccount: feeSourceMuxed,
@@ -770,7 +770,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
 
         let innerSig = createTestSignature(hint: [0xDE, 0xAD, 0xBE, 0xEF])
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [innerSig])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let feeBumpTx = FeeBumpTransactionXDR(sourceAccount: feeSourceMuxed,
@@ -827,7 +827,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [innerSig])
 
         // Create inner transaction XDR
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         // Access the tx property
         let extractedV1 = innerTx.tx
@@ -844,7 +844,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
 
         // Verify encode/decode of inner transaction
         let encoded = try XDREncoder.encode(innerTx)
-        let decoded = try XDRDecoder.decode(FeeBumpTransactionXDR.InnerTransactionXDR.self, data: encoded)
+        let decoded = try XDRDecoder.decode(FeeBumpTransactionXDRInnerTxXDR.self, data: encoded)
 
         XCTAssertEqual(decoded.tx.tx.seqNum, seqNum)
         XCTAssertEqual(decoded.tx.signatures.count, 1)
@@ -865,7 +865,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
                                         maxOperationFee: 100)
 
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         // Encode inner transaction
         let encoded = try XDREncoder.encode(innerTx)
@@ -1260,7 +1260,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
 
         // Fee bump envelope type should be 5 (ENVELOPE_TYPE_TX_FEE_BUMP)
         let feeSourceKeyPair = try KeyPair.generateRandomKeyPair()
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(v1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(v1Envelope)
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let feeBumpTx = FeeBumpTransactionXDR(sourceAccount: feeSourceMuxed,
                                               innerTx: innerTx,
@@ -1337,7 +1337,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
                                         maxOperationFee: 100)
 
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let feeBumpTx = FeeBumpTransactionXDR(sourceAccount: feeSourceMuxed,
@@ -1369,7 +1369,7 @@ class TransactionEnvelopeXDRUnitTests: XCTestCase {
                                         maxOperationFee: 100)
 
         let innerV1Envelope = TransactionV1EnvelopeXDR(tx: innerTxXDR, signatures: [])
-        let innerTx = FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerV1Envelope)
+        let innerTx = FeeBumpTransactionXDRInnerTxXDR.v1(innerV1Envelope)
 
         let feeSourceMuxed = MuxedAccountXDR.ed25519(feeSourceKeyPair.publicKey.bytes)
         let feeBumpTx = FeeBumpTransactionXDR(sourceAccount: feeSourceMuxed,

@@ -35,7 +35,7 @@ public class FeeBumpTransaction: @unchecked Sendable {
         return _feeBumpTransactionXDR
     }
     /// The XDR representation of the inner transaction.
-    public let innerTransactionXDR:FeeBumpTransactionXDR.InnerTransactionXDR
+    public let innerTransactionXDR:FeeBumpTransactionXDRInnerTxXDR
 
     /// The base64-encoded XDR string of this fee bump transaction.
     public var xdrEncoded: String? {
@@ -74,7 +74,7 @@ public class FeeBumpTransaction: @unchecked Sendable {
         self.sourceAccountId = sourceAccount.accountId
         self.fee = fee
         self.innerTransaction = innerTransaction
-        self.innerTransactionXDR = try FeeBumpTransactionXDR.InnerTransactionXDR.v1(innerTransaction.transactionXDR.toEnvelopeV1XDR())
+        self.innerTransactionXDR = try FeeBumpTransactionXDRInnerTxXDR.v1(innerTransaction.transactionXDR.toEnvelopeV1XDR())
 
         self._feeBumpTransactionXDR = FeeBumpTransactionXDR(sourceAccount: sourceAccount.xdr, innerTx: self.innerTransactionXDR, fee: self.fee)
 
