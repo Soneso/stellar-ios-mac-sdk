@@ -61,10 +61,8 @@ class Generator < Xdrgen::Generators::Base
     OperationResultXDRTrXDR
     TransactionResultXDRResultXDR
     InnerTransactionResultXDRResultXDR
-    ManageOfferEffect
     ManageOfferSuccessResultOfferXDR
     ManageOfferSuccessResultXDR
-    ManageOfferResultCode
     ManageOfferResultXDR
   ].freeze
 
