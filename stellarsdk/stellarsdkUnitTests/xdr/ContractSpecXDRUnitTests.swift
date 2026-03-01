@@ -347,8 +347,8 @@ class ContractSpecXDRUnitTests: XCTestCase {
     // MARK: - SCSpecUDTErrorEnumV0XDR Tests
 
     func testSCSpecUDTErrorEnumV0XDR() throws {
-        let error1 = SCSpecUDTEnumCaseV0XDR(doc: "Invalid input", name: "InvalidInput", value: 1)
-        let error2 = SCSpecUDTEnumCaseV0XDR(doc: "Not found", name: "NotFound", value: 2)
+        let error1 = SCSpecUDTErrorEnumCaseV0XDR(doc: "Invalid input", name: "InvalidInput", value: 1)
+        let error2 = SCSpecUDTErrorEnumCaseV0XDR(doc: "Not found", name: "NotFound", value: 2)
         let errorEnum = SCSpecUDTErrorEnumV0XDR(doc: "Error codes", lib: "errors", name: "ErrorCode", cases: [error1, error2])
 
         let encoded = try XDREncoder.encode(errorEnum)

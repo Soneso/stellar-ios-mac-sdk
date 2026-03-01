@@ -3,37 +3,32 @@
 
 import Foundation
 
-public struct SCSpecUDTErrorEnumV0XDR: XDRCodable, Sendable {
+public struct SCSpecUDTErrorEnumCaseV0XDR: XDRCodable, Sendable {
   public var doc: String
-  public var lib: String
   public var name: String
-  public var cases: [SCSpecUDTErrorEnumCaseV0XDR]
+  public var value: UInt32
 
   public init(
     doc: String,
-    lib: String,
     name: String,
-    cases: [SCSpecUDTErrorEnumCaseV0XDR]
+    value: UInt32
   ) {
     self.doc = doc
-    self.lib = lib
     self.name = name
-    self.cases = cases
+    self.value = value
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     doc = try container.decode(String.self)
-    lib = try container.decode(String.self)
     name = try container.decode(String.self)
-    cases = try decodeArray(type: SCSpecUDTErrorEnumCaseV0XDR.self, dec: decoder)
+    value = try container.decode(UInt32.self)
   }
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     try container.encode(doc)
-    try container.encode(lib)
     try container.encode(name)
-    try container.encode(cases)
+    try container.encode(value)
   }
 }
