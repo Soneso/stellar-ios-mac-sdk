@@ -23,7 +23,7 @@ xdr/%.x:
 
 xdr-generate: $(XDRS)
 	docker run --rm -v $(PWD):/wd -w /wd ruby:3.4 /bin/bash -c '\
-		cd xdr-generator && \
+		cd tools/xdr-generator && \
 		bundle install --quiet && \
 		bundle exec ruby generate.rb'
 
@@ -39,12 +39,12 @@ xdr-update: xdr-clean-generated xdr-generate
 
 xdr-generator-test:
 	docker run --rm -v $(PWD):/wd -w /wd ruby:3.4 /bin/bash -c '\
-		cd xdr-generator && \
+		cd tools/xdr-generator && \
 		bundle install --quiet && \
 		bundle exec ruby test/generator_snapshot_test.rb'
 
 xdr-generator-update-snapshots:
 	docker run --rm -v $(PWD):/wd -w /wd ruby:3.4 /bin/bash -c '\
-		cd xdr-generator && \
+		cd tools/xdr-generator && \
 		bundle install --quiet && \
 		UPDATE_SNAPSHOTS=1 bundle exec ruby test/generator_snapshot_test.rb'

@@ -88,5 +88,5 @@ coverage/
 .claude/
 
 # XDR generator
-xdr-generator/.bundle/
-xdr-generator/vendor/
+tools/xdr-generator/.bundle/
+tools/xdr-generator/vendor/

@@ -3,7 +3,7 @@ require_relative 'generator/generator'
 
 puts "Generating Swift XDR classes..."
 
-Dir.chdir("..")
+Dir.chdir("../..")
 
 Xdrgen::Compilation.new(
   Dir.glob("xdr/*.x"),

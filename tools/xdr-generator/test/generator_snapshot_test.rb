@@ -5,7 +5,7 @@ require_relative '../generator/generator'
 
 class GeneratorSnapshotTest < Minitest::Test
   SNAPSHOT_DIR = File.expand_path("snapshots", __dir__)
-  XDR_DIR      = File.expand_path("../../xdr", __dir__)
+  XDR_DIR      = File.expand_path("../../../xdr", __dir__)
 
   def setup
     @output_dir = Dir.mktmpdir("xdr_gen_test_")
@@ -113,7 +113,7 @@ class GeneratorSnapshotTest < Minitest::Test
 
   def generate_all
     return if @generated
-    Dir.chdir(File.expand_path("../..", __dir__))
+    Dir.chdir(File.expand_path("../../..", __dir__))
     Xdrgen::Compilation.new(
       Dir.glob("xdr/*.x"),
       output_dir: @output_dir + "/",

@@ -10,7 +10,7 @@ Generates Swift XDR types from Stellar's `.x` definition files using the [xdrgen
 ## Setup
 
 ```bash
-cd xdr-generator
+cd tools/xdr-generator
 bundle install --path vendor/bundle
 ```
 
@@ -19,7 +19,7 @@ bundle install --path vendor/bundle
 ### Generate XDR files
 
 ```bash
-cd xdr-generator
+cd tools/xdr-generator
 bundle exec ruby generate.rb
 ```
 
@@ -37,7 +37,7 @@ To update to a new version of the Stellar XDR spec:
 ### Run tests
 
 ```bash
-cd xdr-generator
+cd tools/xdr-generator
 bundle exec ruby test/generator_snapshot_test.rb
 ```
 

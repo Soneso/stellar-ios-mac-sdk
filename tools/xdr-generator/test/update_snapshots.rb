@@ -1,5 +1,5 @@
 # Regenerates snapshot files used by generator_snapshot_test.rb.
-# Run from the xdr-generator directory:
+# Run from the tools/xdr-generator directory:
 #   bundle exec ruby test/update_snapshots.rb
 
 require 'fileutils'
@@ -9,7 +9,7 @@ require_relative '../generator/generator'
 
 SNAPSHOT_DIR = File.expand_path("snapshots", __dir__)
 
-Dir.chdir(File.expand_path("../..", __dir__))
+Dir.chdir(File.expand_path("../../..", __dir__))
 output = Dir.mktmpdir("xdr_snapshots_")
 
 Xdrgen::Compilation.new(
