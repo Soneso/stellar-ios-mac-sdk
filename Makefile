@@ -47,4 +47,4 @@ xdr-generator-update-snapshots:
 	docker run --rm -v $(PWD):/wd -w /wd ruby:3.4 /bin/bash -c '\
 		cd tools/xdr-generator && \
 		bundle install --quiet && \
-		UPDATE_SNAPSHOTS=1 bundle exec ruby test/generator_snapshot_test.rb'
+		bundle exec ruby test/update_snapshots.rb'
