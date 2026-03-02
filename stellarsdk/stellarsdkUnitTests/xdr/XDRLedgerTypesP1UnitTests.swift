@@ -145,6 +145,25 @@ class XDRLedgerTypesP1UnitTests: XCTestCase {
         XCTAssertEqual(decoded.ext.type(), StellarValueTypeXDR.basic.rawValue)
     }
 
+    func testStellarValueWithUpgradesRoundTrip() throws {
+        let hash = XDRTestHelpers.wrappedData32()
+        let upgrade1 = Data([0x01, 0x02, 0x03])
+        let upgrade2 = Data([0xAA, 0xBB, 0xCC, 0xDD])
+        let original = StellarValueXDR(
+            txSetHash: hash,
+            closeTime: 1700000000,
+            upgrades: [upgrade1, upgrade2],
+            ext: .basic
+        )
+
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(StellarValueXDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.upgrades.count, 2)
+        XCTAssertEqual(decoded.upgrades[0], upgrade1)
+        XCTAssertEqual(decoded.upgrades[1], upgrade2)
+    }
+
     func testStellarValueWithSignedExtRoundTrip() throws {
         let hash = XDRTestHelpers.wrappedData32()
         let lcSig = LedgerCloseValueSignatureXDR(

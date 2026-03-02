@@ -441,6 +441,17 @@ final class XDROverlayP1UnitTests: XCTestCase {
         XCTAssertEqual(decoded.wrapped.count, 0)
     }
 
+    func testTxAdvertVectorNonEmptyRoundTrip() throws {
+        let h1 = WrappedData32(Data(repeating: 0xAA, count: 32))
+        let h2 = WrappedData32(Data(repeating: 0xBB, count: 32))
+        let original = TxAdvertVectorXDR(wrapped: [h1, h2])
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(TxAdvertVectorXDR.self, data: encoded)
+        XCTAssertEqual(decoded.wrapped.count, 2)
+        XCTAssertEqual(decoded.wrapped[0], h1)
+        XCTAssertEqual(decoded.wrapped[1], h2)
+    }
+
     // MARK: - TxDemandVectorXDR (typedef wrapper, no Equatable)
 
     func testTxDemandVectorEmptyRoundTrip() throws {
@@ -448,6 +459,15 @@ final class XDROverlayP1UnitTests: XCTestCase {
         let encoded = try XDREncoder.encode(original)
         let decoded = try XDRDecoder.decode(TxDemandVectorXDR.self, data: encoded)
         XCTAssertEqual(decoded.wrapped.count, 0)
+    }
+
+    func testTxDemandVectorNonEmptyRoundTrip() throws {
+        let h1 = WrappedData32(Data(repeating: 0xCC, count: 32))
+        let original = TxDemandVectorXDR(wrapped: [h1])
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(TxDemandVectorXDR.self, data: encoded)
+        XCTAssertEqual(decoded.wrapped.count, 1)
+        XCTAssertEqual(decoded.wrapped[0], h1)
     }
 
     // MARK: - FloodAdvertXDR (struct, no Equatable)
@@ -459,6 +479,15 @@ final class XDROverlayP1UnitTests: XCTestCase {
         XCTAssertEqual(decoded.txHashes.wrapped.count, 0)
     }
 
+    func testFloodAdvertNonEmptyRoundTrip() throws {
+        let h1 = WrappedData32(Data(repeating: 0xDD, count: 32))
+        let original = FloodAdvertXDR(txHashes: TxAdvertVectorXDR(wrapped: [h1]))
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(FloodAdvertXDR.self, data: encoded)
+        XCTAssertEqual(decoded.txHashes.wrapped.count, 1)
+        XCTAssertEqual(decoded.txHashes.wrapped[0], h1)
+    }
+
     // MARK: - FloodDemandXDR (struct, no Equatable)
 
     func testFloodDemandEmptyRoundTrip() throws {
@@ -468,6 +497,16 @@ final class XDROverlayP1UnitTests: XCTestCase {
         XCTAssertEqual(decoded.txHashes.wrapped.count, 0)
     }
 
+    func testFloodDemandNonEmptyRoundTrip() throws {
+        let h1 = WrappedData32(Data(repeating: 0xEE, count: 32))
+        let h2 = WrappedData32(Data(repeating: 0xFF, count: 32))
+        let original = FloodDemandXDR(txHashes: TxDemandVectorXDR(wrapped: [h1, h2]))
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(FloodDemandXDR.self, data: encoded)
+        XCTAssertEqual(decoded.txHashes.wrapped.count, 2)
+        XCTAssertEqual(decoded.txHashes.wrapped[0], h1)
+        XCTAssertEqual(decoded.txHashes.wrapped[1], h2)
+    }
 
     // MARK: - SurveyMessageCommandTypeXDR (simple enum, Equatable)
 

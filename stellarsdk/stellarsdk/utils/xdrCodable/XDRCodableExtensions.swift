@@ -30,7 +30,7 @@ func decodeArray<T: Codable>(type:T.Type, dec:Decoder, maxCount: UInt32 = UInt32
     var array = [T]()
     array.reserveCapacity(Int(count))
     for _ in 0 ..< count {
-        let decoded = try type.init(from: decoder)
+        let decoded = try decoder.decode(type)
         array.append(decoded)
     }
 
@@ -85,7 +85,7 @@ func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder, maxCount: UIn
     for _ in 0..<count {
         let present = try decoder.decode(Int32.self)
         if present != 0 {
-            array.append(try type.init(from: decoder))
+            array.append(try decoder.decode(type))
         } else {
             array.append(nil)
         }
@@ -169,7 +169,7 @@ extension Array: XDRCodable where Element: XDRCodable {
         self.init()
         self.reserveCapacity(Int(count))
         for _ in 0 ..< count {
-            let decoded = try binaryElement.init(from: decoder)
+            let decoded = try decoder.decode(binaryElement)
             self.append(decoded)
         }
     }
