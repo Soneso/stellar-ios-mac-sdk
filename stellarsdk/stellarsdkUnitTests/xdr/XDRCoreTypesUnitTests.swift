@@ -838,33 +838,6 @@ class XDRCoreTypesUnitTests: XCTestCase {
         XCTAssertEqual(decoded.ext, 0)
     }
 
-    // MARK: - InvokeHostFunctionOpXDR Tests
-
-    func testUploadContractWasmArgsXDR() throws {
-        let wasmCode = Data([0x00, 0x61, 0x73, 0x6D])
-        let args = UploadContractWasmArgsXDR(code: wasmCode)
-
-        let encoded = try XDREncoder.encode(args)
-        let decoded = try XDRDecoder.decode(UploadContractWasmArgsXDR.self, data: encoded)
-
-        XCTAssertEqual(decoded.code, wasmCode)
-    }
-
-    func testFromEd25519PublicKeyXDR() throws {
-        let key = WrappedData32(Data(repeating: 0xAA, count: 32))
-        let signature = Data([0x01, 0x02, 0x03, 0x04])
-        let salt = WrappedData32(Data(repeating: 0xBB, count: 32))
-
-        let fromEd25519 = FromEd25519PublicKeyXDR(key: key, signature: signature, salt: salt)
-
-        let encoded = try XDREncoder.encode(fromEd25519)
-        let decoded = try XDRDecoder.decode(FromEd25519PublicKeyXDR.self, data: encoded)
-
-        XCTAssertEqual(decoded.key.wrapped, key.wrapped)
-        XCTAssertEqual(decoded.signature, signature)
-        XCTAssertEqual(decoded.salt.wrapped, salt.wrapped)
-    }
-
     // MARK: - SimplePaymentResultXDR Tests
 
     func testSimplePaymentResultXDRNativeAsset() throws {

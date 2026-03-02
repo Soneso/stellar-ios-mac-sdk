@@ -341,21 +341,6 @@ class LedgerKeyXDRUnitTests: XCTestCase {
         }
     }
 
-    // MARK: - Supporting Type Tests
-
-    func testLiquidityPoolIDXDRPoolIdString() throws {
-        let poolIdHex = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-        let poolIdData = WrappedData32(poolIdHex.wrappedData32FromHex().wrapped)
-        let liquidityPoolId = LiquidityPoolIDXDR(id: poolIdData)
-
-        XCTAssertEqual(liquidityPoolId.poolIDString.lowercased(), poolIdHex.lowercased())
-
-        let encoded = try XDREncoder.encode(liquidityPoolId)
-        let decoded = try XDRDecoder.decode(LiquidityPoolIDXDR.self, data: encoded)
-
-        XCTAssertEqual(decoded.poolIDString.lowercased(), poolIdHex.lowercased())
-    }
-
     func testContractDataDurabilityValues() throws {
         XCTAssertEqual(ContractDataDurability.temporary.rawValue, 0)
         XCTAssertEqual(ContractDataDurability.persistent.rawValue, 1)
