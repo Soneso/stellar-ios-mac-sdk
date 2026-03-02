@@ -18,18 +18,22 @@ import Foundation
 /// - Parameter dec: Decoder to read from
 /// - Returns: Decoded array of elements
 /// - Throws: XDRDecoder.Error if decoding fails
-func decodeArray<T: Codable>(type:T.Type, dec:Decoder) throws -> [T] {
+func decodeArray<T: Codable>(type:T.Type, dec:Decoder, maxCount: UInt32 = UInt32.max) throws -> [T] {
     guard let decoder = dec as? XDRDecoder else {
         throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
     }
-    
+
     let count = try decoder.decode(UInt32.self)
+    guard count <= maxCount else {
+        throw StellarSDKError.xdrDecodingError(message: "Array count \(count) exceeds maximum \(maxCount)")
+    }
     var array = [T]()
+    array.reserveCapacity(Int(count))
     for _ in 0 ..< count {
         let decoded = try type.init(from: decoder)
         array.append(decoded)
     }
-    
+
     return array
 }
 
@@ -67,12 +71,15 @@ func decodeArrayOpt<T: Codable>(type:T.Type, dec:Decoder) throws -> [T] {
 /// - Parameter dec: Decoder to read from
 /// - Returns: Array of optional elements
 /// - Throws: XDRDecoder.Error if decoding fails
-func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder) throws -> [T?] {
+func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder, maxCount: UInt32 = UInt32.max) throws -> [T?] {
     guard let decoder = dec as? XDRDecoder else {
         throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
     }
 
     let count = try decoder.decode(UInt32.self)
+    guard count <= maxCount else {
+        throw StellarSDKError.xdrDecodingError(message: "Array count \(count) exceeds maximum \(maxCount)")
+    }
     var array = [T?]()
     array.reserveCapacity(Int(count))
     for _ in 0..<count {
