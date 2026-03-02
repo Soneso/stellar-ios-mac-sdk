@@ -5,7 +5,7 @@ import Foundation
 
 public enum PeerAddressXDRIpXDR: XDRCodable, Sendable {
   case ipv4(WrappedData4)
-  case ipv6(Data)
+  case ipv6(WrappedData16)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -16,7 +16,7 @@ public enum PeerAddressXDRIpXDR: XDRCodable, Sendable {
       let val = try container.decode(WrappedData4.self)
       self = .ipv4(val)
     case IPAddrTypeXDR.pv6.rawValue:
-      let val = try container.decode(Data.self)
+      let val = try container.decode(WrappedData16.self)
       self = .ipv6(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown PeerAddressXDRIpXDR discriminant: \(discriminant)")

@@ -960,6 +960,45 @@ class XDREncoderDecoderDeepUnitTests: XCTestCase {
         }
     }
 
+    // MARK: - WrappedData16 Tests
+
+    func testWrappedData16RoundTrip() throws {
+        let bytes = Data([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                          0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F])
+        let original = WrappedData16(bytes)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(WrappedData16.self, data: encoded)
+        XCTAssertEqual(original, decoded)
+        XCTAssertEqual(decoded.wrapped, bytes)
+    }
+
+    func testWrappedData16PadsShortInput() throws {
+        let shortData = Data([0x01, 0x02, 0x03])
+        let wrapped = WrappedData16(shortData)
+        XCTAssertEqual(wrapped.wrapped.count, 16)
+        XCTAssertEqual(wrapped.wrapped.prefix(3), shortData)
+    }
+
+    func testWrappedData16InStruct() throws {
+        let seed = WrappedData16(Data(repeating: 0xAB, count: 16))
+        let original = ShortHashSeedXDR(seed: seed)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(ShortHashSeedXDR.self, data: encoded)
+        XCTAssertEqual(decoded.seed, seed)
+    }
+
+    func testWrappedData16InUnion() throws {
+        let ipv6 = WrappedData16(Data(repeating: 0xFF, count: 16))
+        let original = PeerAddressXDRIpXDR.ipv6(ipv6)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(PeerAddressXDRIpXDR.self, data: encoded)
+        if case .ipv6(let decodedIpv6) = decoded {
+            XCTAssertEqual(decodedIpv6, ipv6)
+        } else {
+            XCTFail("Expected .ipv6 case")
+        }
+    }
+
     // MARK: - Helper Types
 
     private enum TestCodingKeys: String, CodingKey {

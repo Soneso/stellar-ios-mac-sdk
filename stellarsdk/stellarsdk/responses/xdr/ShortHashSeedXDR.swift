@@ -4,15 +4,15 @@
 import Foundation
 
 public struct ShortHashSeedXDR: XDRCodable, Sendable {
-  public var seed: Data
+  public var seed: WrappedData16
 
-  public init(seed: Data) {
+  public init(seed: WrappedData16) {
     self.seed = seed
   }
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
-    seed = try container.decode(Data.self)
+    seed = try container.decode(WrappedData16.self)
   }
 
   public func encode(to encoder: Encoder) throws {

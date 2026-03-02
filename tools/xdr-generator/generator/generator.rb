@@ -949,7 +949,7 @@ class Generator < Xdrgen::Generators::Base
     when AST::Typespecs::String
       "String"
     when AST::Typespecs::Opaque
-      if type.fixed? && [4, 12, 32].include?(type.size.to_i)
+      if type.fixed? && [4, 12, 16, 32].include?(type.size.to_i)
         "WrappedData#{type.size.to_i}"
       else
         "Data"
