@@ -49,38 +49,6 @@ $ pod repo update
 $ pod install
 ```
 
-### Carthage
-
-[Carthage](https://github.com/Carthage/Carthage) is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks.
-
-You can install Carthage with [Homebrew](https://brew.sh/) using the following command:
-
-```bash
-$ brew update
-$ brew install carthage
-```
-
-To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify it in your `Cartfile`:
-
-#### Last stable release:
-
-```ogdl
-github "soneso/stellar-ios-mac-sdk" ~> 3.4.4
-```
-
-Run `carthage update` to build the framework and drag the build `stellar-ios-mac-sdk.framework` into your Xcode project.
-
-
-### Manual
-
-Add the SDK project as a subproject, and having the SDK as a target dependencies. Here is a step by step that we recommend:
-
-1. Clone this repo (as a submodule or in a different directory, it's up to you);
-2. Drag `stellarsdk.xcodeproj` as a subproject;
-3. In your main `.xcodeproj` file, select the desired target(s);
-4. Go to **Build Phases**, expand Target Dependencies, and add `stellarsdk` for iOS and `stellarsdk-macOS` for OSX;
-5. In Swift, `import stellarsdk` and you are good to go! 
-
 
 ## Quick Start
 
@@ -619,6 +587,10 @@ let isValid = try keyPair.verifyMessage("Hello, Stellar!", signature: signature)
 ```
 
 See [SEP-0053 SDK documentation](https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0053.md) for details.
+
+## Agent Skill
+
+This repository includes an [Agent Skill](https://agentskills.io) that teaches AI coding agents how to use this SDK. See [skills/](skills/) for installation instructions.
 
 ## Documentation and Examples
 
