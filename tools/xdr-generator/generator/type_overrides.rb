@@ -152,18 +152,3 @@ INIT_PARAM_ORDER = {
 TYPEDEF_INIT_LABEL = {
   "LedgerEntryChangesXDR" => "LedgerEntryChanges",
 }.freeze
-
-# Additional types to add to SKIP_TYPES.
-# These types have structural differences too complex for simple overrides.
-ADDITIONAL_SKIP_TYPES = %w[
-].freeze
-
-# Types that should omit the explicit encode method.
-# The original SDK relies on auto-synthesized Codable conformance for these.
-# BumpSequenceOperationXDR and ChangeTrustOperationXDR have no explicit encode
-# in the original, but they still work because XDRCodable can auto-synthesize.
-# However, since we always emit encode for correctness, we just note this here.
-OMIT_ENCODE_TYPES = Set.new(%w[
-  BumpSequenceOperationXDR
-  ChangeTrustOperationXDR
-]).freeze

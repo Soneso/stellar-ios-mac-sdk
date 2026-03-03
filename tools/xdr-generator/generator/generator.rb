@@ -6,7 +6,7 @@
 # Usage:
 #   ruby generate.rb
 #
-# The generated files are placed into stellarsdk/stellarsdk/xdr/.
+# The generated files are placed into stellarsdk/stellarsdk/responses/xdr/.
 
 require 'set'
 require 'xdrgen'
@@ -80,7 +80,6 @@ class Generator < Xdrgen::Generators::Base
     # Resolve the Swift type name and check the skip list.
     defn_name = name(defn)
     return if SKIP_TYPES.include?(defn_name)
-    return if ADDITIONAL_SKIP_TYPES.include?(defn_name)
 
     # Avoid generating the same file twice (e.g. when two XDR types map to
     # the same Swift name via NAME_OVERRIDES).

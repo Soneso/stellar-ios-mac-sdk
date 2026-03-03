@@ -193,28 +193,3 @@ FIELD_OVERRIDES = {
     "lo_lo" => "loLo",
   },
 }.freeze
-
-# ===========================================================================
-# STRUCTURAL DIFFERENCES (not field name overrides)
-#
-# These types have different field counts between generated and SDK.
-# They cannot be handled by simple field renaming and require either
-# SKIP_TYPES or custom generation logic.
-#
-# TransactionResultXDR:
-#   Generated (3 fields): feeCharged, result, ext
-#   SDK (4 fields): feeCharged, resultBody, code, reserved
-#   The SDK manually decodes the result union discriminant into separate
-#   "resultBody" (TransactionResultBodyXDR?) and "code" (TransactionResultCode)
-#   properties, plus a "reserved" extension field.
-#   Already in SKIP_TYPES? No. Should be added or handled with custom logic.
-#
-# InnerTransactionResultXDR:
-#   Generated (3 fields): feeCharged, result, ext
-#   SDK (4 fields): feeCharged, resultBody, code, reserved
-#   Same pattern as TransactionResultXDR.
-#
-# TransactionMetaV1XDR:
-#   Now auto-generated. The SDK previously kept "operations" as private,
-#   but the generated code makes it public. This is intentional.
-# ===========================================================================
