@@ -36,7 +36,7 @@ public class BumpSequenceOperation: Operation, @unchecked Sendable {
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         
-        return OperationBodyXDR.bumpSequence(BumpSequenceOperationXDR(bumpTo: bumpTo))
+        return OperationBodyXDR.bumpSequenceOp(BumpSequenceOperationXDR(bumpTo: bumpTo))
     }
     
 }

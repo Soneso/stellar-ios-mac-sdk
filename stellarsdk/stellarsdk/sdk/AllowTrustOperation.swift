@@ -78,19 +78,15 @@ public class AllowTrustOperation:Operation, @unchecked Sendable {
             guard let assetCodeData = self.assetCode.data(using: .utf8) else {
                 throw StellarSDKError.xdrEncodingError(message: "Unable to encode asset code as UTF-8")
             }
-            let assetCodeXDR = WrappedData4(assetCodeData)
-            let ato4XDR = AllowTrustOpAssetXDR.AlphaATO4XDR(assetCode: assetCodeXDR)
-            allowTrustOpAsset = AllowTrustOpAssetXDR.alphanum4(ato4XDR)
+            allowTrustOpAsset = AllowTrustOpAssetXDR.alphanum4(WrappedData4(assetCodeData))
         } else {
             guard let assetCodeData = self.assetCode.data(using: .utf8) else {
                 throw StellarSDKError.xdrEncodingError(message: "Unable to encode asset code as UTF-8")
             }
-            let assetCodeXDR = WrappedData12(assetCodeData)
-            let ato12XDR = AllowTrustOpAssetXDR.AlphaATO12XDR(assetCode: assetCodeXDR)
-            allowTrustOpAsset = AllowTrustOpAssetXDR.alphanum12(ato12XDR)
+            allowTrustOpAsset = AllowTrustOpAssetXDR.alphanum12(WrappedData12(assetCodeData))
         }
 
-        return OperationBodyXDR.allowTrust(AllowTrustOperationXDR(trustor: trustor.publicKey,
+        return OperationBodyXDR.allowTrustOp(AllowTrustOperationXDR(trustor: trustor.publicKey,
                                                                   asset: allowTrustOpAsset,
                                                                   authorize: authorize))
     }

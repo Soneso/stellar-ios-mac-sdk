@@ -1514,10 +1514,11 @@ final class AssembledTransactionDeepUnitTests: XCTestCase {
             balance: 100_000_000_0,
             sequenceNumber: 12345,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: WrappedData4(Data([1, 0, 0, 0])),
-            signers: []
+            signers: [],
+            ext: .void
         )
         let ledgerEntryData = LedgerEntryDataXDR.account(accountEntry)
         let xdrBase64 = ledgerEntryData.xdrEncoded!

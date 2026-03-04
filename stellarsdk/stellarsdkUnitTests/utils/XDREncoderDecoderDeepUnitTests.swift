@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import stellarsdk
+@testable import stellarsdk
 
 class XDREncoderDecoderDeepUnitTests: XCTestCase {
 
@@ -881,6 +881,122 @@ class XDREncoderDecoderDeepUnitTests: XCTestCase {
         var container = encoder.unkeyedContainer()
         let nested = container.nestedUnkeyedContainer()
         XCTAssertNotNil(nested)
+    }
+
+    // MARK: - decodeArray Size Validation Tests
+
+    func testDecodeArrayWithCustomMaxCount() throws {
+        // Encode an array of 5 elements
+        let array: [UInt32] = [10, 20, 30, 40, 50]
+        let encoded = try XDREncoder.encode(array)
+        let decoder = XDRDecoder(data: encoded)
+
+        // maxCount=5 should succeed
+        let decoded = try decodeArray(type: UInt32.self, dec: decoder, maxCount: 5)
+        XCTAssertEqual(decoded, array)
+    }
+
+    func testDecodeArrayExceedsMaxCount() throws {
+        // Encode an array of 5 elements
+        let array: [UInt32] = [10, 20, 30, 40, 50]
+        let encoded = try XDREncoder.encode(array)
+        let decoder = XDRDecoder(data: encoded)
+
+        // maxCount=3 should reject an array of 5
+        XCTAssertThrowsError(try decodeArray(type: UInt32.self, dec: decoder, maxCount: 3)) { error in
+            guard case StellarSDKError.xdrDecodingError(let message) = error else {
+                XCTFail("Expected xdrDecodingError, got \(error)")
+                return
+            }
+            XCTAssertTrue(message.contains("5"), "Error should mention actual count")
+            XCTAssertTrue(message.contains("3"), "Error should mention maximum")
+        }
+    }
+
+    func testDecodeArrayDefaultMaxCountAcceptsLargeArray() throws {
+        // Encode an array of 100 elements
+        let array: [UInt32] = Array(0..<100)
+        let encoded = try XDREncoder.encode(array)
+        let decoder = XDRDecoder(data: encoded)
+
+        // Default maxCount (UInt32.max) should accept any valid array
+        let decoded = try decodeArray(type: UInt32.self, dec: decoder)
+        XCTAssertEqual(decoded, array)
+    }
+
+    func testDecodeArrayOfOptionalExceedsMaxCount() throws {
+        // Manually encode count=10 followed by garbage — the guard should reject before reading elements
+        var bytes: [UInt8] = []
+        // count = 10 (big-endian UInt32)
+        bytes.append(contentsOf: [0x00, 0x00, 0x00, 0x0A])
+        let decoder = XDRDecoder(data: bytes)
+
+        XCTAssertThrowsError(try decodeArrayOfOptional(type: UInt32.self, dec: decoder, maxCount: 5)) { error in
+            guard case StellarSDKError.xdrDecodingError(let message) = error else {
+                XCTFail("Expected xdrDecodingError, got \(error)")
+                return
+            }
+            XCTAssertTrue(message.contains("10"), "Error should mention actual count")
+            XCTAssertTrue(message.contains("5"), "Error should mention maximum")
+        }
+    }
+
+    func testDecodeArrayCorruptCountCausesBufferExhaustion() throws {
+        // Craft bytes with a huge count (1 million) but only 4 bytes of payload
+        // The guard won't catch it (default max is UInt32.max), but buffer exhaustion will
+        var bytes: [UInt8] = []
+        // count = 1,000,000 (big-endian UInt32)
+        bytes.append(contentsOf: [0x00, 0x0F, 0x42, 0x40])
+        // Only 4 bytes of data (enough for 1 UInt32, not 1 million)
+        bytes.append(contentsOf: [0x00, 0x00, 0x00, 0x01])
+        let decoder = XDRDecoder(data: bytes)
+
+        XCTAssertThrowsError(try decodeArray(type: UInt32.self, dec: decoder)) { error in
+            // Should hit prematureEndOfData, not an infinite loop
+            guard case XDRDecoder.Error.prematureEndOfData = error else {
+                XCTFail("Expected prematureEndOfData, got \(error)")
+                return
+            }
+        }
+    }
+
+    // MARK: - WrappedData16 Tests
+
+    func testWrappedData16RoundTrip() throws {
+        let bytes = Data([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                          0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F])
+        let original = WrappedData16(bytes)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(WrappedData16.self, data: encoded)
+        XCTAssertEqual(original, decoded)
+        XCTAssertEqual(decoded.wrapped, bytes)
+    }
+
+    func testWrappedData16PadsShortInput() throws {
+        let shortData = Data([0x01, 0x02, 0x03])
+        let wrapped = WrappedData16(shortData)
+        XCTAssertEqual(wrapped.wrapped.count, 16)
+        XCTAssertEqual(wrapped.wrapped.prefix(3), shortData)
+    }
+
+    func testWrappedData16InStruct() throws {
+        let seed = WrappedData16(Data(repeating: 0xAB, count: 16))
+        let original = ShortHashSeedXDR(seed: seed)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(ShortHashSeedXDR.self, data: encoded)
+        XCTAssertEqual(decoded.seed, seed)
+    }
+
+    func testWrappedData16InUnion() throws {
+        let ipv6 = WrappedData16(Data(repeating: 0xFF, count: 16))
+        let original = PeerAddressXDRIpXDR.ipv6(ipv6)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(PeerAddressXDRIpXDR.self, data: encoded)
+        if case .ipv6(let decodedIpv6) = decoded {
+            XCTAssertEqual(decodedIpv6, ipv6)
+        } else {
+            XCTFail("Expected .ipv6 case")
+        }
     }
 
     // MARK: - Helper Types

@@ -16,8 +16,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
     func testTransactionResultXDRSuccess() throws {
         let result = TransactionResultXDR(
             feeCharged: 100,
-            resultBody: .success([]),
-            code: .success
+            result: .success([])
         )
 
         let encoded = try XDREncoder.encode(result)
@@ -25,14 +24,12 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
         XCTAssertEqual(decoded.feeCharged, 100)
         XCTAssertEqual(decoded.code, .success)
-        XCTAssertNotNil(decoded.resultBody)
     }
 
     func testTransactionResultXDRFailed() throws {
         let result = TransactionResultXDR(
             feeCharged: 200,
-            resultBody: .failed([]),
-            code: .failed
+            result: .failed([])
         )
 
         let encoded = try XDREncoder.encode(result)
@@ -45,8 +42,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
     func testTransactionResultXDRTooEarly() throws {
         let result = TransactionResultXDR(
             feeCharged: 50,
-            resultBody: .tooEarly,
-            code: .tooEarly
+            result: .tooEarly
         )
 
         let encoded = try XDREncoder.encode(result)
@@ -59,8 +55,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
     func testTransactionResultXDRFromXdr() throws {
         let result = TransactionResultXDR(
             feeCharged: 300,
-            resultBody: .success([]),
-            code: .success
+            result: .success([])
         )
 
         let encoded = try XDREncoder.encode(result)
@@ -93,8 +88,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
         for (code, body) in errorCodes {
             let result = TransactionResultXDR(
                 feeCharged: 100,
-                resultBody: body,
-                code: code
+                result: body
             )
 
             let encoded = try XDREncoder.encode(result)
@@ -110,8 +104,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
         let innerResult = InnerTransactionResultXDR(
             feeCharged: 150,
-            resultBody: .success([]),
-            code: .success
+            result: .success([])
         )
 
         let pair = InnerTransactionResultPair(hash: hash, result: innerResult)
@@ -230,10 +223,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 2000000,
             sequenceNumber: 50,
             numSubEntries: 1,
-            homeDomain: "stellar.org",
             flags: 0,
+            homeDomain: "stellar.org",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -259,10 +253,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 3000000,
             sequenceNumber: 75,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -281,21 +276,33 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
     // MARK: - OperationResultXDR Tests
 
-    func testOperationResultXDREmpty() throws {
-        let result = OperationResultXDR.empty(OperationResultCode.badAuth.rawValue)
+    func testOperationResultXDRBadAuth() throws {
+        let result = OperationResultXDR.badAuth
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(OperationResultXDR.self, data: encoded)
 
         switch decoded {
-        case .empty(let code):
-            XCTAssertEqual(code, OperationResultCode.badAuth.rawValue)
+        case .badAuth:
+            XCTAssertEqual(decoded.type(), OperationResultCode.badAuth.rawValue)
         default:
-            XCTFail("Expected empty case")
+            XCTFail("Expected badAuth case")
         }
     }
 
-    func testOperationResultXDRAllEmptyCodes() throws {
+    private func operationResultForCode(_ code: OperationResultCode) -> OperationResultXDR {
+        switch code {
+        case .badAuth: return .badAuth
+        case .noAccount: return .noAccount
+        case .notSupported: return .notSupported
+        case .tooManySubentries: return .tooManySubentries
+        case .exceededWorkLimit: return .exceededWorkLimit
+        case .tooManySponsoring: return .tooManySponsoring
+        default: fatalError("Unexpected code: \(code)")
+        }
+    }
+
+    func testOperationResultXDRAllErrorCodes() throws {
         let codes: [OperationResultCode] = [
             .badAuth,
             .noAccount,
@@ -306,17 +313,12 @@ class XDRCoreTypesUnitTests: XCTestCase {
         ]
 
         for code in codes {
-            let result = OperationResultXDR.empty(code.rawValue)
+            let result = operationResultForCode(code)
 
             let encoded = try XDREncoder.encode(result)
             let decoded = try XDRDecoder.decode(OperationResultXDR.self, data: encoded)
 
-            switch decoded {
-            case .empty(let decodedCode):
-                XCTAssertEqual(decodedCode, code.rawValue)
-            default:
-                XCTFail("Expected empty case for code \(code.rawValue)")
-            }
+            XCTAssertEqual(decoded.type(), code.rawValue, "Type mismatch for code \(code)")
         }
     }
 
@@ -343,10 +345,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 1000000,
             sequenceNumber: 1,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -378,10 +381,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 2000000,
             sequenceNumber: 2,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -413,10 +417,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 3000000,
             sequenceNumber: 3,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -531,10 +536,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 10000000,
             sequenceNumber: 123,
             numSubEntries: 5,
-            homeDomain: "stellar.org",
             flags: AccountFlags.AUTH_REQUIRED_FLAG,
+            homeDomain: "stellar.org",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let encoded = try XDREncoder.encode(accountEntry)
@@ -557,11 +563,12 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 5000000,
             sequenceNumber: 456,
             numSubEntries: 2,
-            homeDomain: "",
             inflationDest: publicKey,
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let encoded = try XDREncoder.encode(accountEntry)
@@ -586,10 +593,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 1000000,
             sequenceNumber: 1,
             numSubEntries: 0,
-            homeDomain: "",
             flags: allFlags,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let encoded = try XDREncoder.encode(accountEntry)
@@ -616,7 +624,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
     func testAccountEntryExtXDRWithExtensionV1() throws {
         let liabilities = LiabilitiesXDR(buying: 1000, selling: 2000)
-        let extV1 = AccountEntryExtensionV1(liabilities: liabilities)
+        let extV1 = AccountEntryExtensionV1(liabilities: liabilities, reserved: .void)
         let ext = AccountEntryExtXDR.accountEntryExtensionV1(extV1)
 
         let encoded = try XDREncoder.encode(ext)
@@ -761,10 +769,11 @@ class XDRCoreTypesUnitTests: XCTestCase {
             balance: 1000000,
             sequenceNumber: 1,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -782,7 +791,8 @@ class XDRCoreTypesUnitTests: XCTestCase {
         let extV2 = AccountEntryExtensionV2(
             numSponsored: 3,
             numSponsoring: 2,
-            signerSponsoringIDs: [publicKey, nil, publicKey]
+            signerSponsoringIDs: [publicKey, nil, publicKey],
+            reserved: .void
         )
 
         let encoded = try XDREncoder.encode(extV2)
@@ -797,7 +807,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
     }
 
     func testAccountEntryExtensionV3() throws {
-        let extV3 = AccountEntryExtensionV3(seqLedger: 12345, seqTime: 1234567890)
+        let extV3 = AccountEntryExtensionV3(ext: .void, seqLedger: 12345, seqTime: 1234567890)
 
         let encoded = try XDREncoder.encode(extV3)
         let decoded = try XDRDecoder.decode(AccountEntryExtensionV3.self, data: encoded)
@@ -819,40 +829,13 @@ class XDRCoreTypesUnitTests: XCTestCase {
     }
 
     func testTrustlineEntryExtensionV2() throws {
-        let extV2 = TrustlineEntryExtensionV2()
+        let extV2 = TrustlineEntryExtensionV2(liquidityPoolUseCount: 0)
 
         let encoded = try XDREncoder.encode(extV2)
         let decoded = try XDRDecoder.decode(TrustlineEntryExtensionV2.self, data: encoded)
 
         XCTAssertEqual(decoded.liquidityPoolUseCount, 0)
-        XCTAssertEqual(decoded.reserved, 0)
-    }
-
-    // MARK: - InvokeHostFunctionOpXDR Tests
-
-    func testUploadContractWasmArgsXDR() throws {
-        let wasmCode = Data([0x00, 0x61, 0x73, 0x6D])
-        let args = UploadContractWasmArgsXDR(code: wasmCode)
-
-        let encoded = try XDREncoder.encode(args)
-        let decoded = try XDRDecoder.decode(UploadContractWasmArgsXDR.self, data: encoded)
-
-        XCTAssertEqual(decoded.code, wasmCode)
-    }
-
-    func testFromEd25519PublicKeyXDR() throws {
-        let key = WrappedData32(Data(repeating: 0xAA, count: 32))
-        let signature = Data([0x01, 0x02, 0x03, 0x04])
-        let salt = WrappedData32(Data(repeating: 0xBB, count: 32))
-
-        let fromEd25519 = FromEd25519PublicKeyXDR(key: key, signature: signature, salt: salt)
-
-        let encoded = try XDREncoder.encode(fromEd25519)
-        let decoded = try XDRDecoder.decode(FromEd25519PublicKeyXDR.self, data: encoded)
-
-        XCTAssertEqual(decoded.key.wrapped, key.wrapped)
-        XCTAssertEqual(decoded.signature, signature)
-        XCTAssertEqual(decoded.salt.wrapped, salt.wrapped)
+        XCTAssertEqual(decoded.ext, 0)
     }
 
     // MARK: - SimplePaymentResultXDR Tests
@@ -980,7 +963,6 @@ class XDRCoreTypesUnitTests: XCTestCase {
         let decoded = try XDRDecoder.decode(ManageOfferSuccessResultXDR.self, data: encoded)
 
         XCTAssertEqual(decoded.offersClaimed.count, 0)
-        XCTAssertNotNil(decoded.offer)
 
         switch decoded.offer {
         case .created(let decodedOffer):
@@ -1006,16 +988,20 @@ class XDRCoreTypesUnitTests: XCTestCase {
             flags: 0
         )
 
-        // Both created and updated use the same ManageOfferSuccessResultOfferXDR.created case
         let result = ManageOfferSuccessResultXDR(
             offersClaimed: [],
-            offer: .created(offer)
+            offer: .updated(offer)
         )
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ManageOfferSuccessResultXDR.self, data: encoded)
 
-        XCTAssertNotNil(decoded.offer)
+        switch decoded.offer {
+        case .updated(let decodedOffer):
+            XCTAssertEqual(decodedOffer.offerID, 222)
+        default:
+            XCTFail("Expected updated offer")
+        }
     }
 
     func testManageOfferEffectRawValues() {
@@ -1220,7 +1206,8 @@ class XDRCoreTypesUnitTests: XCTestCase {
     // MARK: - ContractEnvMetaXDR Tests
 
     func testSCEnvMetaEntryXDRInterfaceVersion() throws {
-        let entry = SCEnvMetaEntryXDR.interfaceVersion(12345)
+        let iv = SCEnvMetaEntryXDRInterfaceVersionXDR(protocol: 21, preRelease: 0)
+        let entry = SCEnvMetaEntryXDR.interfaceVersion(iv)
 
         let encoded = try XDREncoder.encode(entry)
         let decoded = try XDRDecoder.decode(SCEnvMetaEntryXDR.self, data: encoded)
@@ -1228,8 +1215,9 @@ class XDRCoreTypesUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), SCEnvMetaKind.interfaceVersion.rawValue)
 
         switch decoded {
-        case .interfaceVersion(let version):
-            XCTAssertEqual(version, 12345)
+        case .interfaceVersion(let decodedIv):
+            XCTAssertEqual(decodedIv.`protocol`, 21)
+            XCTAssertEqual(decodedIv.preRelease, 0)
         }
     }
 
@@ -1269,8 +1257,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
     func testInnerTransactionResultXDR() throws {
         let innerResult = InnerTransactionResultXDR(
             feeCharged: 500,
-            resultBody: .success([]),
-            code: .success
+            result: .success([])
         )
 
         let encoded = try XDREncoder.encode(innerResult)
@@ -1278,6 +1265,5 @@ class XDRCoreTypesUnitTests: XCTestCase {
 
         XCTAssertEqual(decoded.feeCharged, 500)
         XCTAssertEqual(decoded.code, .success)
-        XCTAssertEqual(decoded.reserved, 0)
     }
 }

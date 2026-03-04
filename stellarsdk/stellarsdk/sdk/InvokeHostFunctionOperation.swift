@@ -110,6 +110,6 @@ public class InvokeHostFunctionOperation:Operation, @unchecked Sendable {
         let currentAuth = _auth
         lock.unlock()
         let xdrOp = InvokeHostFunctionOpXDR(hostFunction: hostFunction, auth: currentAuth)
-        return OperationBodyXDR.invokeHostFunction(xdrOp)
+        return OperationBodyXDR.invokeHostFunctionOp(xdrOp)
     }
 }

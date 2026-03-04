@@ -60,7 +60,7 @@ public class ManageOfferOperation:Operation, @unchecked Sendable {
         let amountXDR = Operation.toXDRAmount(amount: amount)
         let priceXDR = price.toXdr()
         
-        return OperationBodyXDR.manageSellOffer(ManageOfferOperationXDR(selling: sellingXDR,
+        return OperationBodyXDR.manageSellOfferOp(ManageOfferOperationXDR(selling: sellingXDR,
                                                                     buying: buyingXDR,
                                                                     amount: amountXDR,
                                                                     price: priceXDR,

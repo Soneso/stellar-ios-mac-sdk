@@ -94,57 +94,57 @@ public class Operation: @unchecked Sendable {
             mSourceAccountId = mux.accountId
         }
         switch operationXDR.body {
-        case .createAccount(let account):
+        case .createAccountOp(let account):
             return CreateAccountOperation(fromXDR: account, sourceAccountId: mSourceAccountId)
-        case .payment(let payment):
+        case .paymentOp(let payment):
             return PaymentOperation(fromXDR: payment, sourceAccountId: mSourceAccountId)
-        case .pathPayment(let pathPaymentStrictReceive):
+        case .pathPaymentStrictReceiveOp(let pathPaymentStrictReceive):
             return PathPaymentStrictReceiveOperation(fromXDR: pathPaymentStrictReceive, sourceAccountId: mSourceAccountId)
-        case .pathPaymentStrictSend(let pathPaymentStrictSend):
+        case .pathPaymentStrictSendOp(let pathPaymentStrictSend):
             return PathPaymentStrictSendOperation(fromXDR: pathPaymentStrictSend, sourceAccountId: mSourceAccountId)
-        case .manageSellOffer(let manageOffer):
+        case .manageSellOfferOp(let manageOffer):
             return ManageSellOfferOperation(fromXDR: manageOffer, sourceAccountId: mSourceAccountId)
-        case .manageBuyOffer(let manageOffer):
+        case .manageBuyOfferOp(let manageOffer):
             return ManageBuyOfferOperation(fromXDR: manageOffer, sourceAccountId: mSourceAccountId)
-        case .createPassiveSellOffer(let passiveOffer):
+        case .createPassiveSellOfferOp(let passiveOffer):
             return CreatePassiveSellOfferOperation(fromXDR: passiveOffer, sourceAccountId: mSourceAccountId)
-        case .setOptions(let setOptions):
+        case .setOptionsOp(let setOptions):
             return SetOptionsOperation(fromXDR: setOptions, sourceAccountId: mSourceAccountId)
-        case .changeTrust(let changeTrust):
+        case .changeTrustOp(let changeTrust):
             return try ChangeTrustOperation(fromXDR: changeTrust, sourceAccountId: mSourceAccountId)
-        case .allowTrust(let allowTrust):
+        case .allowTrustOp(let allowTrust):
             return AllowTrustOperation(fromXDR: allowTrust, sourceAccountId: mSourceAccountId)
         case .accountMerge(let destination):
             return try AccountMergeOperation(destinationAccountId: destination.accountId, sourceAccountId: mSourceAccountId)
-        case .manageData(let manageData):
+        case .manageDataOp(let manageData):
             return ManageDataOperation(fromXDR: manageData, sourceAccountId: mSourceAccountId)
-        case .bumpSequence(let bumpSequenceData):
+        case .bumpSequenceOp(let bumpSequenceData):
             return BumpSequenceOperation(fromXDR: bumpSequenceData, sourceAccountId: mSourceAccountId)
-        case .createClaimableBalance(let data):
+        case .createClaimableBalanceOp(let data):
             return try CreateClaimableBalanceOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
-        case .claimClaimableBalance(let data):
+        case .claimClaimableBalanceOp(let data):
             return try ClaimClaimableBalanceOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
-        case .beginSponsoringFutureReserves(let data):
+        case .beginSponsoringFutureReservesOp(let data):
             return try BeginSponsoringFutureReservesOperation(fromXDR: data, sponsoringAccountId: mSourceAccountId)
         case .endSponsoringFutureReserves:
             return EndSponsoringFutureReservesOperation(sponsoredAccountId: mSourceAccountId)
-        case .revokeSponsorship(let data):
+        case .revokeSponsorshipOp(let data):
             return try RevokeSponsorshipOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
-        case .clawback(let data):
+        case .clawbackOp(let data):
             return ClawbackOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
-        case .clawbackClaimableBalance(let data):
+        case .clawbackClaimableBalanceOp(let data):
             return try ClawbackClaimableBalanceOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
-        case .setTrustLineFlags(let data):
+        case .setTrustLineFlagsOp(let data):
             return SetTrustlineFlagsOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
-        case .liquidityPoolDeposit(let data):
+        case .liquidityPoolDepositOp(let data):
             return LiquidityPoolDepositOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
-        case .liquidityPoolWithdraw(let data):
+        case .liquidityPoolWithdrawOp(let data):
             return LiquidityPoolWithdrawOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
-        case .invokeHostFunction(let data):
+        case .invokeHostFunctionOp(let data):
             return try InvokeHostFunctionOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
-        case .extendFootprintTTL(let data):
+        case .extendFootprintTTLOp(let data):
             return ExtendFootprintTTLOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
-        case .restoreFootprint(let data):
+        case .restoreFootprintOp(let data):
             return RestoreFootprintOperation(fromXDR: data, sourceAccountId: mSourceAccountId)
         default:
             throw StellarSDKError.invalidArgument(message: "Unknown operation body \(operationXDR.body)")

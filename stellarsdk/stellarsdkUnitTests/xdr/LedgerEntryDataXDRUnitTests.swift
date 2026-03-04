@@ -23,10 +23,11 @@ class LedgerEntryDataXDRUnitTests: XCTestCase {
             balance: 1000000,
             sequenceNumber: 1,
             numSubEntries: 0,
-            homeDomain: "example.com",
             flags: 0,
+            homeDomain: "example.com",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -188,10 +189,11 @@ class LedgerEntryDataXDRUnitTests: XCTestCase {
             balance: 5000000,
             sequenceNumber: 100,
             numSubEntries: 2,
-            homeDomain: "test.org",
             flags: 1,
+            homeDomain: "test.org",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -215,10 +217,11 @@ class LedgerEntryDataXDRUnitTests: XCTestCase {
             balance: 1000000,
             sequenceNumber: 1,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerData = LedgerEntryDataXDR.account(accountEntry)
@@ -1180,10 +1183,11 @@ class LedgerEntryDataXDRUnitTests: XCTestCase {
             balance: 1000000,
             sequenceNumber: 1,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
         let accountData = LedgerEntryDataXDR.account(accountEntry)
         XCTAssertEqual(accountData.type(), LedgerEntryType.account.rawValue)

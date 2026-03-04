@@ -13,45 +13,12 @@ import Foundation
 public struct FeeBumpTransactionXDR: XDRCodable, Sendable {
     public let sourceAccount: MuxedAccountXDR
     public let fee: UInt64
-    public let innerTx:InnerTransactionXDR
+    public let innerTx: FeeBumpTransactionXDRInnerTxXDR
     public let reserved: Int32
-    
+
     private var signatures = [DecoratedSignatureXDR]()
-    
-    public enum InnerTransactionXDR: XDRCodable, Sendable {
-        case v1 (TransactionV1EnvelopeXDR)
-        
-        public init(from decoder: Decoder) throws {
-            var container = try decoder.unkeyedContainer()
-            
-            let type = try container.decode(Int32.self)
-            
-            switch type {
-            default:
-                let tv1 = try container.decode(TransactionV1EnvelopeXDR.self)
-                self = .v1(tv1)
-            }
-        }
-        
-        public var tx: TransactionV1EnvelopeXDR {
-            switch self {
-            case .v1(let txv1):
-                return txv1
-            }
-        }
-        
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.unkeyedContainer()
-            
-            try container.encode(EnvelopeType.ENVELOPE_TYPE_TX)
-            
-            switch self {
-            case .v1 (let tx): try container.encode(tx)
-            }
-        }
-    }
-    
-    public init(sourceAccount: MuxedAccountXDR, innerTx:InnerTransactionXDR, fee:UInt64) {
+
+    public init(sourceAccount: MuxedAccountXDR, innerTx: FeeBumpTransactionXDRInnerTxXDR, fee: UInt64) {
         self.sourceAccount = sourceAccount
         self.innerTx = innerTx
         self.fee = fee
@@ -63,7 +30,7 @@ public struct FeeBumpTransactionXDR: XDRCodable, Sendable {
         
         sourceAccount = try container.decode(MuxedAccountXDR.self)
         fee = try container.decode(UInt64.self)
-        innerTx = try container.decode(InnerTransactionXDR.self)
+        innerTx = try container.decode(FeeBumpTransactionXDRInnerTxXDR.self)
         reserved = try container.decode(Int32.self)
     }
     
@@ -87,7 +54,7 @@ public struct FeeBumpTransactionXDR: XDRCodable, Sendable {
     }
     
     private func signatureBase(network:Network) throws -> Data {
-        let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .typeFeeBump(self))
+        let payload = TransactionSignaturePayload(networkId: WrappedData32(network.networkId), taggedTransaction: .feeBump(self))
         
         return try Data(XDREncoder.encode(payload))
     }

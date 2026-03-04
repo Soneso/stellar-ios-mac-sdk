@@ -55,7 +55,7 @@ public class RevokeSponsorshipOperation:Operation, @unchecked Sendable {
     /// - Returns: A ledger key identifying the data entry.
     public static func revokeDataSponsorshipLedgerKey(accountId:String, dataName:String) throws -> LedgerKeyXDR {
         let pk = try PublicKey(accountId: accountId)
-        let value = LedgerKeyDataXDR(accountId: pk, dataName: dataName)
+        let value = LedgerKeyDataXDR(accountID: pk, dataName: dataName)
         return LedgerKeyXDR.data(value)
     }
     
@@ -74,8 +74,8 @@ public class RevokeSponsorshipOperation:Operation, @unchecked Sendable {
     /// - Parameter balanceId: The claimable balance ID whose sponsorship will be revoked.
     /// - Returns: A ledger key identifying the claimable balance entry.
     public static func revokeClaimableBalanceSponsorshipLedgerKey(balanceId:String) throws -> LedgerKeyXDR {
-        let value = try ClaimableBalanceIDXDR(claimableBalanceId: balanceId)
-        return LedgerKeyXDR.claimableBalance(value)
+        let balanceIdXDR = try ClaimableBalanceIDXDR(claimableBalanceId: balanceId)
+        return LedgerKeyXDR.claimableBalance(LedgerKeyClaimableBalanceXDR(balanceID: balanceIdXDR))
     }
     
     /// Creates a ledger key for revoking sponsorship of an offer entry.
@@ -85,7 +85,7 @@ public class RevokeSponsorshipOperation:Operation, @unchecked Sendable {
     /// - Returns: A ledger key identifying the offer entry.
     public static func revokeOfferSponsorshipLedgerKey(sellerAccountId:String, offerId:UInt64) throws -> LedgerKeyXDR {
         let pk = try PublicKey(accountId: sellerAccountId)
-        let value = LedgerKeyOfferXDR(sellerId: pk, offerId: offerId)
+        let value = LedgerKeyOfferXDR(sellerID: pk, offerID: Int64(offerId))
         return LedgerKeyXDR.offer(value)
     }
     
@@ -112,12 +112,12 @@ public class RevokeSponsorshipOperation:Operation, @unchecked Sendable {
         
         if let lk = ledgerKey {
             let operation = RevokeSponsorshipOpXDR.revokeSponsorshipLedgerEntry(lk)
-            return OperationBodyXDR.revokeSponsorship(operation)
+            return OperationBodyXDR.revokeSponsorshipOp(operation)
         } else if let sid = signerAccountId, let sk = signerKey{
             let pk = try PublicKey(accountId: sid)
             let rsxdr = RevokeSponsorshipSignerXDR(accountID: pk, signerKey: sk)
             let operation = RevokeSponsorshipOpXDR.revokeSponsorshipSignerEntry(rsxdr)
-            return OperationBodyXDR.revokeSponsorship(operation)
+            return OperationBodyXDR.revokeSponsorshipOp(operation)
         } else {
             throw StellarSDKError.encodingError(message: "error xdr encoding revoke sponsorship operation, incomplete data")
         }

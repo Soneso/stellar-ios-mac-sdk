@@ -444,13 +444,13 @@ class ClawbackTestCase: XCTestCase, @unchecked Sendable {
             let submitTxResultEnum = await sdk.transactions.submitTransaction(transaction: transaction)
             switch submitTxResultEnum {
             case .success(let submitTransactionResponse):
-                switch submitTransactionResponse.transactionResult.resultBody {
+                switch submitTransactionResponse.transactionResult.result {
                 case .success(let array):
                     if let opResult = array.first {
                         switch opResult {
-                        case .createClaimableBalance(_, let createClaimableBalanceResultXDR):
+                        case .tr(.createClaimableBalanceResult(let createClaimableBalanceResultXDR)):
                             switch createClaimableBalanceResultXDR {
-                            case .success(_, let claimableBalanceIDXDR):
+                            case .balanceID(let claimableBalanceIDXDR):
                                 switch claimableBalanceIDXDR {
                                 case .claimableBalanceIDTypeV0(let data):
                                     self.claimableBalanceId = self.hexEncodedBalanceId(data: data.wrapped)

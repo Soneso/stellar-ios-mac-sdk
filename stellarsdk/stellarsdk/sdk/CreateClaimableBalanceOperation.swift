@@ -55,6 +55,6 @@ public class CreateClaimableBalanceOperation:Operation, @unchecked Sendable {
         }
         let amountXDR = Operation.toXDRAmount(amount: amount)
         let cbXDR = CreateClaimableBalanceOpXDR(asset: assetXDR, amount: amountXDR, claimants: claimantsXDRArray)
-        return OperationBodyXDR.createClaimableBalance(cbXDR)
+        return OperationBodyXDR.createClaimableBalanceOp(cbXDR)
     }
 }

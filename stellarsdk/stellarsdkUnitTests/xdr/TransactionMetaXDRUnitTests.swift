@@ -29,10 +29,11 @@ class TransactionMetaXDRUnitTests: XCTestCase {
             balance: 10000000000,
             sequenceNumber: 1,
             numSubEntries: 0,
-            homeDomain: "",
             flags: 0,
+            homeDomain: "",
             thresholds: thresholds,
-            signers: []
+            signers: [],
+            ext: .void
         )
 
         let ledgerEntry = LedgerEntryXDR(

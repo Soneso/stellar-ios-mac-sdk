@@ -15,7 +15,7 @@ class TransactionV0XDRUnitTests: XCTestCase {
     private func createBumpSequenceOperation(bumpTo: Int64 = 1000000) -> OperationXDR {
         let bumpSeqOp = BumpSequenceOperationXDR(bumpTo: bumpTo)
         let muxedAccount: MuxedAccountXDR? = nil
-        return OperationXDR(sourceAccount: muxedAccount, body: .bumpSequence(bumpSeqOp))
+        return OperationXDR(sourceAccount: muxedAccount, body: .bumpSequenceOp(bumpSeqOp))
     }
 
     // MARK: - TransactionV0XDR Tests
@@ -458,7 +458,19 @@ class TransactionV0XDRUnitTests: XCTestCase {
 
     // MARK: - OperationResultXDR Tests
 
-    func testOperationResultXDREmpty() throws {
+    private func operationResultForCode(_ code: OperationResultCode) -> OperationResultXDR {
+        switch code {
+        case .badAuth: return .badAuth
+        case .noAccount: return .noAccount
+        case .notSupported: return .notSupported
+        case .tooManySubentries: return .tooManySubentries
+        case .exceededWorkLimit: return .exceededWorkLimit
+        case .tooManySponsoring: return .tooManySponsoring
+        default: fatalError("Unexpected code: \(code)")
+        }
+    }
+
+    func testOperationResultXDRErrorCodes() throws {
         let errorCodes: [OperationResultCode] = [
             .badAuth,
             .noAccount,
@@ -469,17 +481,12 @@ class TransactionV0XDRUnitTests: XCTestCase {
         ]
 
         for errorCode in errorCodes {
-            let opResult = OperationResultXDR.empty(errorCode.rawValue)
+            let opResult = operationResultForCode(errorCode)
 
             let encoded = try XDREncoder.encode(opResult)
             let decoded = try XDRDecoder.decode(OperationResultXDR.self, data: encoded)
 
-            switch decoded {
-            case .empty(let code):
-                XCTAssertEqual(code, errorCode.rawValue)
-            default:
-                XCTFail("Expected empty result for code \(errorCode.rawValue)")
-            }
+            XCTAssertEqual(decoded.type(), errorCode.rawValue, "Type mismatch for code \(errorCode)")
         }
     }
 

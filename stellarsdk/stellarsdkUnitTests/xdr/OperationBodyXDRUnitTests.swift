@@ -44,11 +44,11 @@ class OperationBodyXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), OperationType.accountCreated.rawValue)
 
         // Verify decoded values
-        if case .createAccount(let decodedOp) = decoded {
+        if case .createAccountOp(let decodedOp) = decoded {
             XCTAssertEqual(decodedOp.startingBalance, 10000000000) // 1000 XLM in stroops
             XCTAssertEqual(decodedOp.destination.accountId, destination.accountId)
         } else {
-            XCTFail("Expected createAccount operation body")
+            XCTFail("Expected createAccountOp operation body")
         }
     }
 
@@ -79,12 +79,12 @@ class OperationBodyXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), OperationType.payment.rawValue)
 
         // Verify decoded values
-        if case .payment(let decodedOp) = decoded {
+        if case .paymentOp(let decodedOp) = decoded {
             XCTAssertEqual(decodedOp.amount, 10000000000) // 1000 in stroops
             XCTAssertEqual(decodedOp.destination.ed25519AccountId, destination.accountId)
             XCTAssertEqual(decodedOp.asset.type(), AssetType.ASSET_TYPE_NATIVE)
         } else {
-            XCTFail("Expected payment operation body")
+            XCTFail("Expected paymentOp operation body")
         }
     }
 
@@ -122,13 +122,13 @@ class OperationBodyXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), OperationType.pathPayment.rawValue)
 
         // Verify decoded values
-        if case .pathPayment(let decodedOp) = decoded {
+        if case .pathPaymentStrictReceiveOp(let decodedOp) = decoded {
             XCTAssertEqual(decodedOp.sendMax, 1000) // 0.0001 in stroops
             XCTAssertEqual(decodedOp.destinationAmount, 1000)
             XCTAssertEqual(decodedOp.destination.ed25519AccountId, destination.accountId)
             XCTAssertEqual(decodedOp.destinationAsset.assetCode, "USD")
         } else {
-            XCTFail("Expected pathPayment operation body")
+            XCTFail("Expected pathPaymentStrictReceiveOp operation body")
         }
     }
 
@@ -169,13 +169,13 @@ class OperationBodyXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), OperationType.pathPaymentStrictSend.rawValue)
 
         // Verify decoded values
-        if case .pathPaymentStrictSend(let decodedOp) = decoded {
+        if case .pathPaymentStrictSendOp(let decodedOp) = decoded {
             XCTAssertEqual(decodedOp.sendMax, 1000) // sendAmount in stroops
             XCTAssertEqual(decodedOp.destinationAmount, 500) // destMin in stroops
             XCTAssertEqual(decodedOp.destination.ed25519AccountId, destination.accountId)
             XCTAssertEqual(decodedOp.destinationAsset.assetCode, "EUR")
         } else {
-            XCTFail("Expected pathPaymentStrictSend operation body")
+            XCTFail("Expected pathPaymentStrictSendOp operation body")
         }
     }
 
@@ -212,7 +212,7 @@ class OperationBodyXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), OperationType.manageSellOffer.rawValue)
 
         // Verify decoded values
-        if case .manageSellOffer(let decodedOp) = decoded {
+        if case .manageSellOfferOp(let decodedOp) = decoded {
             XCTAssertEqual(decodedOp.amount, 100) // 0.00001 in stroops
             XCTAssertEqual(decodedOp.offerID, offerId)
             XCTAssertEqual(decodedOp.price.n, 5333399)
@@ -220,7 +220,7 @@ class OperationBodyXDRUnitTests: XCTestCase {
             XCTAssertEqual(decodedOp.selling.type(), AssetType.ASSET_TYPE_NATIVE)
             XCTAssertEqual(decodedOp.buying.assetCode, "USD")
         } else {
-            XCTFail("Expected manageSellOffer operation body")
+            XCTFail("Expected manageSellOfferOp operation body")
         }
     }
 
@@ -257,7 +257,7 @@ class OperationBodyXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), OperationType.manageBuyOffer.rawValue)
 
         // Verify decoded values
-        if case .manageBuyOffer(let decodedOp) = decoded {
+        if case .manageBuyOfferOp(let decodedOp) = decoded {
             XCTAssertEqual(decodedOp.amount, 200) // 0.00002 in stroops
             XCTAssertEqual(decodedOp.offerID, offerId)
             XCTAssertEqual(decodedOp.price.n, 3)
@@ -265,7 +265,7 @@ class OperationBodyXDRUnitTests: XCTestCase {
             XCTAssertEqual(decodedOp.selling.type(), AssetType.ASSET_TYPE_NATIVE)
             XCTAssertEqual(decodedOp.buying.assetCode, "EUR")
         } else {
-            XCTFail("Expected manageBuyOffer operation body")
+            XCTFail("Expected manageBuyOfferOp operation body")
         }
     }
 
@@ -300,14 +300,14 @@ class OperationBodyXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), OperationType.createPassiveSellOffer.rawValue)
 
         // Verify decoded values
-        if case .createPassiveSellOffer(let decodedOp) = decoded {
+        if case .createPassiveSellOfferOp(let decodedOp) = decoded {
             XCTAssertEqual(decodedOp.amount, 100) // 0.00001 in stroops
             XCTAssertEqual(decodedOp.price.n, 36731261)
             XCTAssertEqual(decodedOp.price.d, 12500000)
             XCTAssertEqual(decodedOp.selling.type(), AssetType.ASSET_TYPE_NATIVE)
             XCTAssertEqual(decodedOp.buying.assetCode, "USD")
         } else {
-            XCTFail("Expected createPassiveSellOffer operation body")
+            XCTFail("Expected createPassiveSellOfferOp operation body")
         }
     }
 
@@ -342,7 +342,7 @@ class OperationBodyXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), OperationType.setOptions.rawValue)
 
         // Verify decoded values
-        if case .setOptions(let decodedOp) = decoded {
+        if case .setOptionsOp(let decodedOp) = decoded {
             XCTAssertEqual(decodedOp.inflationDestination?.accountId, inflationDestination.accountId)
             XCTAssertEqual(decodedOp.homeDomain, homeDomain)
             XCTAssertEqual(decodedOp.masterWeight, 1)
@@ -352,7 +352,7 @@ class OperationBodyXDRUnitTests: XCTestCase {
             XCTAssertEqual(decodedOp.clearFlags, 1)
             XCTAssertEqual(decodedOp.setFlags, 1)
         } else {
-            XCTFail("Expected setOptions operation body")
+            XCTFail("Expected setOptionsOp operation body")
         }
     }
 
@@ -382,14 +382,14 @@ class OperationBodyXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), OperationType.changeTrust.rawValue)
 
         // Verify decoded values
-        if case .changeTrust(let decodedOp) = decoded {
+        if case .changeTrustOp(let decodedOp) = decoded {
             var decimalXDRLimit = Decimal(decodedOp.limit)
             decimalXDRLimit = decimalXDRLimit / 10000000
             XCTAssertEqual(decimalXDRLimit, limit)
             XCTAssertEqual(decodedOp.asset.assetCode, "USD")
             XCTAssertEqual(decodedOp.asset.issuer?.accountId, issuer.accountId)
         } else {
-            XCTFail("Expected changeTrust operation body")
+            XCTFail("Expected changeTrustOp operation body")
         }
     }
 
@@ -420,12 +420,12 @@ class OperationBodyXDRUnitTests: XCTestCase {
         XCTAssertEqual(decoded.type(), OperationType.allowTrust.rawValue)
 
         // Verify decoded values
-        if case .allowTrust(let decodedOp) = decoded {
+        if case .allowTrustOp(let decodedOp) = decoded {
             XCTAssertEqual(decodedOp.trustor.accountId, trustor.accountId)
             XCTAssertEqual(decodedOp.authorize, TrustLineFlags.AUTHORIZED_FLAG)
             XCTAssertEqual(decodedOp.asset.assetCode, assetCode)
         } else {
-            XCTFail("Expected allowTrust operation body")
+            XCTFail("Expected allowTrustOp operation body")
         }
     }
 

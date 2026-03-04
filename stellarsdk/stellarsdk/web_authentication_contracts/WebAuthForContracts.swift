@@ -919,7 +919,7 @@ public final class WebAuthForContracts: @unchecked Sendable {
                 return try data.wrapped.encodeClaimableBalanceId()
             }
         case .liquidityPoolId(let poolId):
-            return try poolId.liquidityPoolID.wrapped.encodeLiquidityPoolId()
+            return try poolId.wrapped.encodeLiquidityPoolId()
         }
     }
 
@@ -941,7 +941,7 @@ public final class WebAuthForContracts: @unchecked Sendable {
                 return data.wrapped.base16EncodedString()
             }
         case .liquidityPoolId(let poolId):
-            return poolId.liquidityPoolID.wrapped.base16EncodedString()
+            return poolId.wrapped.base16EncodedString()
         }
     }
 }

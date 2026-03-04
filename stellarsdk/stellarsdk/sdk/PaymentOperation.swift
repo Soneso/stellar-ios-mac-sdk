@@ -89,7 +89,7 @@ public class PaymentOperation:Operation, @unchecked Sendable {
         let assetXDR = try asset.toXDR()
         let xdrAmount = Operation.toXDRAmount(amount: amount)
         let mDestination = try destinationAccountId.decodeMuxedAccount()
-        return OperationBodyXDR.payment(PaymentOperationXDR(destination: mDestination,
+        return OperationBodyXDR.paymentOp(PaymentOperationXDR(destination: mDestination,
                                                             asset:assetXDR,
                                                             amount: xdrAmount))
     }

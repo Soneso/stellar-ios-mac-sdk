@@ -18,18 +18,22 @@ import Foundation
 /// - Parameter dec: Decoder to read from
 /// - Returns: Decoded array of elements
 /// - Throws: XDRDecoder.Error if decoding fails
-func decodeArray<T: Codable>(type:T.Type, dec:Decoder) throws -> [T] {
+func decodeArray<T: Codable>(type:T.Type, dec:Decoder, maxCount: UInt32 = UInt32.max) throws -> [T] {
     guard let decoder = dec as? XDRDecoder else {
         throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
     }
-    
+
     let count = try decoder.decode(UInt32.self)
+    guard count <= maxCount else {
+        throw StellarSDKError.xdrDecodingError(message: "Array count \(count) exceeds maximum \(maxCount)")
+    }
     var array = [T]()
+    array.reserveCapacity(Int(count))
     for _ in 0 ..< count {
-        let decoded = try type.init(from: decoder)
+        let decoded = try decoder.decode(type)
         array.append(decoded)
     }
-    
+
     return array
 }
 
@@ -45,7 +49,7 @@ func decodeArrayOpt<T: Codable>(type:T.Type, dec:Decoder) throws -> [T] {
     guard let decoder = dec as? XDRDecoder else {
         throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
     }
-    
+
     let count = try decoder.decode(UInt32.self)
     var array = [T]()
     for _ in 0 ..< count {
@@ -53,8 +57,64 @@ func decodeArrayOpt<T: Codable>(type:T.Type, dec:Decoder) throws -> [T] {
             array.append(decoded)
         }
     }
-    
+
     return array
+}
+
+/// Decodes an array where each element is XDR-optional (Int32 present flag + value).
+///
+/// Used for arrays of optional typedef types like `SponsorshipDescriptor`
+/// (`typedef AccountID* SponsorshipDescriptor`), where each array element
+/// is preceded by a 32-bit present/absent flag (RFC 4506 boolean).
+///
+/// - Parameter type: The wrapped (non-optional) element type to decode
+/// - Parameter dec: Decoder to read from
+/// - Returns: Array of optional elements
+/// - Throws: XDRDecoder.Error if decoding fails
+func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder, maxCount: UInt32 = UInt32.max) throws -> [T?] {
+    guard let decoder = dec as? XDRDecoder else {
+        throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
+    }
+
+    let count = try decoder.decode(UInt32.self)
+    guard count <= maxCount else {
+        throw StellarSDKError.xdrDecodingError(message: "Array count \(count) exceeds maximum \(maxCount)")
+    }
+    var array = [T?]()
+    array.reserveCapacity(Int(count))
+    for _ in 0..<count {
+        let present = try decoder.decode(Int32.self)
+        if present != 0 {
+            array.append(try decoder.decode(type))
+        } else {
+            array.append(nil)
+        }
+    }
+    return array
+}
+
+/// Encodes an array where each element is XDR-optional (Int32 present flag + value).
+///
+/// Used for arrays of optional typedef types like `SponsorshipDescriptor`,
+/// where each array element is preceded by a 32-bit present/absent flag (RFC 4506 boolean).
+///
+/// - Parameter array: Array of optional elements to encode
+/// - Parameter enc: Encoder to write to
+/// - Throws: XDREncoder.Error if encoding fails
+func encodeArrayOfOptional<T: Encodable>(_ array: [T?], enc: Encoder) throws {
+    guard let encoder = enc as? XDREncoder else {
+        throw XDREncoder.Error.typeNotConformingToXDREncodable(type(of: enc))
+    }
+
+    try encoder.encode(UInt32(array.count))
+    for element in array {
+        if let value = element {
+            try encoder.encode(Int32(1))
+            try value.encode(to: encoder)
+        } else {
+            try encoder.encode(Int32(0))
+        }
+    }
 }
 
 /// Checks if a value is an Optional type.
@@ -109,7 +169,7 @@ extension Array: XDRCodable where Element: XDRCodable {
         self.init()
         self.reserveCapacity(Int(count))
         for _ in 0 ..< count {
-            let decoded = try binaryElement.init(from: decoder)
+            let decoded = try decoder.decode(binaryElement)
             self.append(decoded)
         }
     }

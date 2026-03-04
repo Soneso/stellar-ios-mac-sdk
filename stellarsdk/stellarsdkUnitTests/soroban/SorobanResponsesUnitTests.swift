@@ -68,7 +68,7 @@ final class SorobanResponsesUnitTests: XCTestCase {
         {
             "latestLedger": 1000000,
             "restorePreamble": {
-                "transactionData": "AAAAAAAAAAIAAAAGAAAAAem354u9STQWq5b3Ed1j9tOemvL7xV0NPwhn4gXg0AP8AAAAFAAAAAEAAAAHAAAADwAAAAZiYWxhbmNlAAAAAAAAAwAAAA8AAAAHQWNjb3VudAAAAAASAAAAAAAAAABwObhqbB4sb7x85bKvHu+HYcS90oEqq8+D1qOEePUDqgAAABIAAAAAAAAAAHd8xI5yy+IWVmP0sKL23wd9Z7RGN0Qdb7JUbvRIQw8rAAAAEgAAAAAAAAAAYmfUF6Yqc+fH7X4vUt9WiTL4Vz9Rl5Ivc+bWxe2c0vk=",
+                "transactionData": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
                 "minResourceFee": "invalid"
             }
         }

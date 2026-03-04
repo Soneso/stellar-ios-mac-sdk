@@ -248,93 +248,93 @@ class TrustLineFlagsOpXDRUnitTests: XCTestCase {
     // MARK: - SetTrustLineFlagsResultXDR Tests
 
     func testSetTrustLineFlagsResultXDRSuccess() throws {
-        let result = SetTrustLineFlagsResultXDR.success(SetTrustLineFlagsResultCode.success.rawValue)
+        let result = SetTrustLineFlagsResultXDR.success
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(SetTrustLineFlagsResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success(let code):
-            XCTAssertEqual(code, SetTrustLineFlagsResultCode.success.rawValue)
-        case .empty:
-            XCTFail("Expected success case, got empty")
+        case .success:
+            break
+        default:
+            XCTFail("Expected success case")
         }
     }
 
     func testSetTrustLineFlagsResultXDRMalformed() throws {
-        let result = SetTrustLineFlagsResultXDR.empty(SetTrustLineFlagsResultCode.malformed.rawValue)
+        let result = SetTrustLineFlagsResultXDR.malformed
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(SetTrustLineFlagsResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty case, got success")
-        case .empty(let code):
-            XCTAssertEqual(code, SetTrustLineFlagsResultCode.malformed.rawValue)
+        case .malformed:
+            break
+        default:
+            XCTFail("Expected malformed case")
         }
     }
 
     func testSetTrustLineFlagsResultXDRNoTrustLine() throws {
-        let result = SetTrustLineFlagsResultXDR.empty(SetTrustLineFlagsResultCode.noTrustLine.rawValue)
+        let result = SetTrustLineFlagsResultXDR.noTrustLine
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(SetTrustLineFlagsResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty case, got success")
-        case .empty(let code):
-            XCTAssertEqual(code, SetTrustLineFlagsResultCode.noTrustLine.rawValue)
+        case .noTrustLine:
+            break
+        default:
+            XCTFail("Expected noTrustLine case")
         }
     }
 
     func testSetTrustLineFlagsResultXDRCantRevoke() throws {
-        let result = SetTrustLineFlagsResultXDR.empty(SetTrustLineFlagsResultCode.cantRevoke.rawValue)
+        let result = SetTrustLineFlagsResultXDR.cantRevoke
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(SetTrustLineFlagsResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty case, got success")
-        case .empty(let code):
-            XCTAssertEqual(code, SetTrustLineFlagsResultCode.cantRevoke.rawValue)
+        case .cantRevoke:
+            break
+        default:
+            XCTFail("Expected cantRevoke case")
         }
     }
 
     // MARK: - Additional Result Code Tests
 
     func testSetTrustLineFlagsResultXDRInvalidState() throws {
-        let result = SetTrustLineFlagsResultXDR.empty(SetTrustLineFlagsResultCode.invalidState.rawValue)
+        let result = SetTrustLineFlagsResultXDR.invalidState
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(SetTrustLineFlagsResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty case, got success")
-        case .empty(let code):
-            XCTAssertEqual(code, SetTrustLineFlagsResultCode.invalidState.rawValue)
+        case .invalidState:
+            break
+        default:
+            XCTFail("Expected invalidState case")
         }
     }
 
     func testSetTrustLineFlagsResultXDRLowReserve() throws {
-        let result = SetTrustLineFlagsResultXDR.empty(SetTrustLineFlagsResultCode.lowReserve.rawValue)
+        let result = SetTrustLineFlagsResultXDR.lowReserve
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(SetTrustLineFlagsResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty case, got success")
-        case .empty(let code):
-            XCTAssertEqual(code, SetTrustLineFlagsResultCode.lowReserve.rawValue)
+        case .lowReserve:
+            break
+        default:
+            XCTFail("Expected lowReserve case")
         }
     }
 
     func testSetTrustLineFlagsResultXDRRoundTripBase64() throws {
-        let result = SetTrustLineFlagsResultXDR.success(SetTrustLineFlagsResultCode.success.rawValue)
+        let result = SetTrustLineFlagsResultXDR.success
 
         guard let base64 = result.xdrEncoded else {
             XCTFail("Failed to encode to base64")
@@ -344,9 +344,9 @@ class TrustLineFlagsOpXDRUnitTests: XCTestCase {
         let decoded = try SetTrustLineFlagsResultXDR(xdr: base64)
 
         switch decoded {
-        case .success(let code):
-            XCTAssertEqual(code, SetTrustLineFlagsResultCode.success.rawValue)
-        case .empty:
+        case .success:
+            break
+        default:
             XCTFail("Expected success case")
         }
     }

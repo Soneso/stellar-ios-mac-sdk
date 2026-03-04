@@ -22,7 +22,7 @@ final class SorobanParserUnitTests: XCTestCase {
         let contractInfo = try SorobanContractParser.parseContractByteCode(byteCode: byteCode!)
         XCTAssertEqual(contractInfo.specEntries.count, 25)
         XCTAssertEqual(contractInfo.metaEntries.count, 2)
-        XCTAssertGreaterThan(contractInfo.envInterfaceVersion, 0)
+        XCTAssertGreaterThan(contractInfo.envProtocolVersion, 0)
     }
     
     func getSpecTypeInfo(specType: SCSpecTypeDefXDR) -> String {
@@ -94,42 +94,44 @@ final class SorobanParserUnitTests: XCTestCase {
     }
 
     func testSorobanContractInfoSupportedSepsParsing() {
+        let iv = SCEnvMetaEntryXDRInterfaceVersionXDR(protocol: 0, preRelease: 1)
+
         // Test with multiple SEPs
         let metaWithMultipleSeps = [
             "sep": "1, 10, 24",
             "other": "value"
         ]
-        let info1 = SorobanContractInfo(envInterfaceVersion: 1, specEntries: [], metaEntries: metaWithMultipleSeps)
+        let info1 = SorobanContractInfo(interfaceVersion: iv, specEntries: [], metaEntries: metaWithMultipleSeps)
         XCTAssertEqual(info1.supportedSeps, ["1", "10", "24"])
 
         // Test with single SEP
         let metaWithSingleSep = ["sep": "47"]
-        let info2 = SorobanContractInfo(envInterfaceVersion: 1, specEntries: [], metaEntries: metaWithSingleSep)
+        let info2 = SorobanContractInfo(interfaceVersion: iv, specEntries: [], metaEntries: metaWithSingleSep)
         XCTAssertEqual(info2.supportedSeps, ["47"])
 
         // Test with no SEP meta entry
         let metaWithoutSep = ["other": "value"]
-        let info3 = SorobanContractInfo(envInterfaceVersion: 1, specEntries: [], metaEntries: metaWithoutSep)
+        let info3 = SorobanContractInfo(interfaceVersion: iv, specEntries: [], metaEntries: metaWithoutSep)
         XCTAssertTrue(info3.supportedSeps.isEmpty)
 
         // Test with empty SEP value
         let metaWithEmptySep = ["sep": ""]
-        let info4 = SorobanContractInfo(envInterfaceVersion: 1, specEntries: [], metaEntries: metaWithEmptySep)
+        let info4 = SorobanContractInfo(interfaceVersion: iv, specEntries: [], metaEntries: metaWithEmptySep)
         XCTAssertTrue(info4.supportedSeps.isEmpty)
 
         // Test with SEPs containing extra spaces
         let metaWithSpaces = ["sep": "  1  ,  2  ,  3  "]
-        let info5 = SorobanContractInfo(envInterfaceVersion: 1, specEntries: [], metaEntries: metaWithSpaces)
+        let info5 = SorobanContractInfo(interfaceVersion: iv, specEntries: [], metaEntries: metaWithSpaces)
         XCTAssertEqual(info5.supportedSeps, ["1", "2", "3"])
 
         // Test with trailing/leading commas
         let metaWithCommas = ["sep": ",1,2,"]
-        let info6 = SorobanContractInfo(envInterfaceVersion: 1, specEntries: [], metaEntries: metaWithCommas)
+        let info6 = SorobanContractInfo(interfaceVersion: iv, specEntries: [], metaEntries: metaWithCommas)
         XCTAssertEqual(info6.supportedSeps, ["1", "2"])
 
         // Test with duplicate SEPs (should be deduplicated, preserving first occurrence)
         let metaWithDuplicates = ["sep": "1, 10, 1, 24, 10"]
-        let info7 = SorobanContractInfo(envInterfaceVersion: 1, specEntries: [], metaEntries: metaWithDuplicates)
+        let info7 = SorobanContractInfo(interfaceVersion: iv, specEntries: [], metaEntries: metaWithDuplicates)
         XCTAssertEqual(info7.supportedSeps, ["1", "10", "24"])
     }
 
@@ -146,8 +148,8 @@ final class SorobanParserUnitTests: XCTestCase {
         let contractInfo = try SorobanContractParser.parseContractByteCode(byteCode: contractCode)
 
         // Validate environment interface version
-        XCTAssertGreaterThan(contractInfo.envInterfaceVersion, 0,
-                             "Environment interface version should be greater than 0")
+        XCTAssertGreaterThan(contractInfo.envProtocolVersion, 0,
+                             "Environment protocol version should be greater than 0")
 
         // Validate meta entries
         XCTAssertEqual(contractInfo.metaEntries.count, 2,

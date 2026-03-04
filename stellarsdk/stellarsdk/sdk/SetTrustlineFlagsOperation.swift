@@ -53,6 +53,6 @@ public class SetTrustlineFlagsOperation:Operation, @unchecked Sendable {
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let assetXDR = try asset.toXDR()
         let pk = try PublicKey(accountId: trustorAccountId)
-        return OperationBodyXDR.setTrustLineFlags(SetTrustLineFlagsOpXDR(accountID: pk, asset: assetXDR, setFlags: setFlags, clearFlags: clearFlags))
+        return OperationBodyXDR.setTrustLineFlagsOp(SetTrustLineFlagsOpXDR(accountID: pk, asset: assetXDR, setFlags: setFlags, clearFlags: clearFlags))
     }
 }

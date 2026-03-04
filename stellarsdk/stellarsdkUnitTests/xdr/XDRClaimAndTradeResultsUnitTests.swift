@@ -263,15 +263,13 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
     }
 
     func testClaimableBalanceEntryExtDefaultDiscriminant() throws {
-        // Test that unknown discriminant defaults to void
-        let xdrData: [UInt8] = [0x00, 0x00, 0x00, 0x99] // Unknown discriminant 99
-        let decoded = try XDRDecoder.decode(ClaimableBalanceEntryExtXDR.self, data: xdrData)
-
-        switch decoded {
-        case .void:
-            XCTAssertTrue(true) // Expected default behavior
-        case .claimableBalanceEntryExtensionV1:
-            XCTFail("Expected void as default for unknown discriminant")
+        // Test that unknown discriminant throws a decoding error
+        let xdrData: [UInt8] = [0x00, 0x00, 0x00, 0x99] // Unknown discriminant 153
+        XCTAssertThrowsError(try XDRDecoder.decode(ClaimableBalanceEntryExtXDR.self, data: xdrData)) { error in
+            guard case StellarSDKError.xdrDecodingError = error else {
+                XCTFail("Expected xdrDecodingError for unknown discriminant")
+                return
+            }
         }
     }
 
@@ -286,16 +284,16 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
             amount: 5000000
         )
 
-        let result = PathPaymentResultXDR.success(PathPaymentResultCode.success.rawValue, claimAtoms, simplePayment)
+        let successData = PathPaymentResultXDRSuccessXDR(offers: claimAtoms, last: simplePayment)
+        let result = PathPaymentResultXDR.success(successData)
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(PathPaymentResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success(let code, let offers, let last):
-            XCTAssertEqual(code, PathPaymentResultCode.success.rawValue)
-            XCTAssertEqual(offers.count, 1)
-            XCTAssertEqual(last.amount, 5000000)
+        case .success(let successResult):
+            XCTAssertEqual(successResult.offers.count, 1)
+            XCTAssertEqual(successResult.last.amount, 5000000)
         default:
             XCTFail("Expected success case")
         }
@@ -303,49 +301,49 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
 
     func testPathPaymentResultXDRNoIssuer() throws {
         let asset = AssetXDR.native
-        let result = PathPaymentResultXDR.noIssuer(PathPaymentResultCode.noIssuer.rawValue, asset)
+        let result = PathPaymentResultXDR.noIssuer(asset)
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(PathPaymentResultXDR.self, data: encoded)
 
         switch decoded {
-        case .noIssuer(let code, _):
-            XCTAssertEqual(code, PathPaymentResultCode.noIssuer.rawValue)
+        case .noIssuer:
+            break // Expected
         default:
             XCTFail("Expected noIssuer case")
         }
     }
 
-    func testPathPaymentResultXDREmptyMalformed() throws {
-        let result = PathPaymentResultXDR.empty(PathPaymentResultCode.malformed.rawValue)
+    func testPathPaymentResultXDRMalformed() throws {
+        let result = PathPaymentResultXDR.malformed
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(PathPaymentResultXDR.self, data: encoded)
 
         switch decoded {
-        case .empty(let code):
-            XCTAssertEqual(code, PathPaymentResultCode.malformed.rawValue)
+        case .malformed:
+            break // Expected
         default:
-            XCTFail("Expected empty case")
+            XCTFail("Expected malformed case")
         }
     }
 
-    func testPathPaymentResultXDREmptyUnderfounded() throws {
-        let result = PathPaymentResultXDR.empty(PathPaymentResultCode.underfounded.rawValue)
+    func testPathPaymentResultXDRUnderfunded() throws {
+        let result = PathPaymentResultXDR.underfunded
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(PathPaymentResultXDR.self, data: encoded)
 
         switch decoded {
-        case .empty(let code):
-            XCTAssertEqual(code, PathPaymentResultCode.underfounded.rawValue)
+        case .underfunded:
+            break // Expected
         default:
-            XCTFail("Expected empty case")
+            XCTFail("Expected underfunded case")
         }
     }
 
     func testPathPaymentResultXDRAllErrorCodes() {
         XCTAssertEqual(PathPaymentResultCode.success.rawValue, 0)
         XCTAssertEqual(PathPaymentResultCode.malformed.rawValue, -1)
-        XCTAssertEqual(PathPaymentResultCode.underfounded.rawValue, -2)
+        XCTAssertEqual(PathPaymentResultCode.underfunded.rawValue, -2)
         XCTAssertEqual(PathPaymentResultCode.srcNoTrust.rawValue, -3)
         XCTAssertEqual(PathPaymentResultCode.srcNotAuthorized.rawValue, -4)
         XCTAssertEqual(PathPaymentResultCode.noDestination.rawValue, -5)
@@ -355,7 +353,7 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
         XCTAssertEqual(PathPaymentResultCode.noIssuer.rawValue, -9)
         XCTAssertEqual(PathPaymentResultCode.tooFewOffers.rawValue, -10)
         XCTAssertEqual(PathPaymentResultCode.offerCrossSelf.rawValue, -11)
-        XCTAssertEqual(PathPaymentResultCode.overSendMax.rawValue, -12)
+        XCTAssertEqual(PathPaymentResultCode.overSendmax.rawValue, -12)
     }
 
     func testPathPaymentResultXDRRoundTripBase64() throws {
@@ -366,7 +364,8 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
             amount: 1000000
         )
 
-        let result = PathPaymentResultXDR.success(PathPaymentResultCode.success.rawValue, [], simplePayment)
+        let successData = PathPaymentResultXDRSuccessXDR(offers: [], last: simplePayment)
+        let result = PathPaymentResultXDR.success(successData)
 
         guard let base64 = result.xdrEncoded else {
             XCTFail("Failed to encode to base64")
@@ -376,10 +375,9 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
         let decoded = try PathPaymentResultXDR(xdr: base64)
 
         switch decoded {
-        case .success(let code, let offers, let last):
-            XCTAssertEqual(code, PathPaymentResultCode.success.rawValue)
-            XCTAssertEqual(offers.count, 0)
-            XCTAssertEqual(last.amount, 1000000)
+        case .success(let successResult):
+            XCTAssertEqual(successResult.offers.count, 0)
+            XCTAssertEqual(successResult.last.amount, 1000000)
         default:
             XCTFail("Expected success case")
         }
@@ -445,11 +443,11 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
         XCTAssertEqual(liquidityPoolAtom.type(), ClaimAtomType.liquidityPool.rawValue)
     }
 
-    func testClaimAtomXDRDefaultToV0() throws {
-        // Test that unknown type defaults to v0
+    func testClaimAtomXDRUnknownDiscriminantThrows() throws {
+        // Test that unknown type discriminant throws a decoding error
         var xdrData = [UInt8]()
 
-        // Unknown type discriminant (99)
+        // Unknown type discriminant (153)
         xdrData.append(contentsOf: [0x00, 0x00, 0x00, 0x99])
 
         // sellerEd25519 (32 bytes)
@@ -470,13 +468,11 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
         // amountBought
         xdrData.append(contentsOf: [0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0xA1, 0x20])
 
-        let decoded = try XDRDecoder.decode(ClaimAtomXDR.self, data: xdrData)
-
-        switch decoded {
-        case .v0:
-            XCTAssertTrue(true) // Expected default behavior
-        default:
-            XCTFail("Expected v0 as default for unknown type")
+        XCTAssertThrowsError(try XDRDecoder.decode(ClaimAtomXDR.self, data: xdrData)) { error in
+            guard case StellarSDKError.xdrDecodingError = error else {
+                XCTFail("Expected xdrDecodingError for unknown discriminant")
+                return
+            }
         }
     }
 
@@ -538,61 +534,61 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
     // MARK: - ChangeTrustResultXDR Tests
 
     func testChangeTrustResultXDRSuccess() throws {
-        let result = ChangeTrustResultXDR.success(ChangeTrustResultCode.success.rawValue)
+        let result = ChangeTrustResultXDR.success
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ChangeTrustResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success(let code):
-            XCTAssertEqual(code, ChangeTrustResultCode.success.rawValue)
-        case .empty:
+        case .success:
+            break // Expected
+        default:
             XCTFail("Expected success case")
         }
     }
 
-    func testChangeTrustResultXDRTrustMalformed() throws {
-        let result = ChangeTrustResultXDR.empty(ChangeTrustResultCode.trustMalformed.rawValue)
+    func testChangeTrustResultXDRMalformed() throws {
+        let result = ChangeTrustResultXDR.malformed
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ChangeTrustResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty case")
-        case .empty(let code):
-            XCTAssertEqual(code, ChangeTrustResultCode.trustMalformed.rawValue)
+        case .malformed:
+            break // Expected
+        default:
+            XCTFail("Expected malformed case")
         }
     }
 
     func testChangeTrustResultXDRNoIssuer() throws {
-        let result = ChangeTrustResultXDR.empty(ChangeTrustResultCode.noIssuer.rawValue)
+        let result = ChangeTrustResultXDR.noIssuer
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ChangeTrustResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty case")
-        case .empty(let code):
-            XCTAssertEqual(code, ChangeTrustResultCode.noIssuer.rawValue)
+        case .noIssuer:
+            break // Expected
+        default:
+            XCTFail("Expected noIssuer case")
         }
     }
 
     func testChangeTrustResultXDRAllErrorCodes() {
         XCTAssertEqual(ChangeTrustResultCode.success.rawValue, 0)
-        XCTAssertEqual(ChangeTrustResultCode.trustMalformed.rawValue, -1)
+        XCTAssertEqual(ChangeTrustResultCode.malformed.rawValue, -1)
         XCTAssertEqual(ChangeTrustResultCode.noIssuer.rawValue, -2)
-        XCTAssertEqual(ChangeTrustResultCode.trustInvalidLimit.rawValue, -3)
-        XCTAssertEqual(ChangeTrustResultCode.changeTrustLowReserve.rawValue, -4)
-        XCTAssertEqual(ChangeTrustResultCode.changeTrustSelfNotAllowed.rawValue, -5)
-        XCTAssertEqual(ChangeTrustResultCode.trustlineMissing.rawValue, -6)
+        XCTAssertEqual(ChangeTrustResultCode.invalidLimit.rawValue, -3)
+        XCTAssertEqual(ChangeTrustResultCode.lowReserve.rawValue, -4)
+        XCTAssertEqual(ChangeTrustResultCode.selfNotAllowed.rawValue, -5)
+        XCTAssertEqual(ChangeTrustResultCode.trustLineMissing.rawValue, -6)
         XCTAssertEqual(ChangeTrustResultCode.cannotDelete.rawValue, -7)
         XCTAssertEqual(ChangeTrustResultCode.notAuthMaintainLiabilities.rawValue, -8)
     }
 
     func testChangeTrustResultXDRRoundTripBase64() throws {
-        let result = ChangeTrustResultXDR.success(ChangeTrustResultCode.success.rawValue)
+        let result = ChangeTrustResultXDR.success
 
         guard let base64 = result.xdrEncoded else {
             XCTFail("Failed to encode to base64")
@@ -602,9 +598,9 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
         let decoded = try ChangeTrustResultXDR(xdr: base64)
 
         switch decoded {
-        case .success(let code):
-            XCTAssertEqual(code, ChangeTrustResultCode.success.rawValue)
-        case .empty:
+        case .success:
+            break // Expected
+        default:
             XCTFail("Expected success case")
         }
     }
@@ -628,46 +624,40 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
             offer: .created(offerEntry)
         )
 
-        let result = ManageOfferResultXDR.success(ManageOfferResultCode.success.rawValue, successResult)
+        let result = ManageOfferResultXDR.success(successResult)
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ManageOfferResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success(let code, let successRes):
-            XCTAssertEqual(code, ManageOfferResultCode.success.rawValue)
-            XCTAssertNotNil(successRes.offer)
-        case .empty:
+        case .success(let successRes):
+            switch successRes.offer {
+            case .created(let decodedOffer):
+                XCTAssertEqual(decodedOffer.offerID, 12345)
+            default:
+                XCTFail("Expected created offer")
+            }
+        default:
             XCTFail("Expected success case")
         }
     }
 
     func testManageOfferResultXDRMalformed() throws {
-        let result = ManageOfferResultXDR.empty(ManageOfferResultCode.malformed.rawValue)
+        let result = ManageOfferResultXDR.malformed
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ManageOfferResultXDR.self, data: encoded)
 
-        switch decoded {
-        case .success:
-            XCTFail("Expected empty case")
-        case .empty(let code):
-            XCTAssertEqual(code, ManageOfferResultCode.malformed.rawValue)
-        }
+        XCTAssertEqual(decoded.type(), ManageOfferResultCode.malformed.rawValue)
     }
 
     func testManageOfferResultXDRSellNoTrust() throws {
-        let result = ManageOfferResultXDR.empty(ManageOfferResultCode.sellNoTrust.rawValue)
+        let result = ManageOfferResultXDR.sellNoTrust
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ManageOfferResultXDR.self, data: encoded)
 
-        switch decoded {
-        case .success:
-            XCTFail("Expected empty case")
-        case .empty(let code):
-            XCTAssertEqual(code, ManageOfferResultCode.sellNoTrust.rawValue)
-        }
+        XCTAssertEqual(decoded.type(), ManageOfferResultCode.sellNoTrust.rawValue)
     }
 
     func testManageOfferResultXDRAllErrorCodes() {
@@ -687,7 +677,7 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
     }
 
     func testManageOfferResultXDRRoundTripBase64() throws {
-        let result = ManageOfferResultXDR.empty(ManageOfferResultCode.malformed.rawValue)
+        let result = ManageOfferResultXDR.malformed
 
         guard let base64 = result.xdrEncoded else {
             XCTFail("Failed to encode to base64")
@@ -696,12 +686,7 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
 
         let decoded = try ManageOfferResultXDR(xdr: base64)
 
-        switch decoded {
-        case .success:
-            XCTFail("Expected empty case")
-        case .empty(let code):
-            XCTAssertEqual(code, ManageOfferResultCode.malformed.rawValue)
-        }
+        XCTAssertEqual(decoded.type(), ManageOfferResultCode.malformed.rawValue)
     }
 
     func testManageOfferSuccessResultXDRWithClaimedOffers() throws {
@@ -718,6 +703,7 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
 
         // Test that it decoded successfully
         XCTAssertEqual(successResult.offersClaimed.count, 0)
+        XCTAssertEqual(successResult.offer.type(), ManageOfferEffect.deleted.rawValue)
     }
 
     func testManageOfferEffectEnumValues() {
@@ -729,44 +715,44 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
     // MARK: - SetOptionsResultXDR Tests
 
     func testSetOptionsResultXDRSuccess() throws {
-        let result = SetOptionsResultXDR.success(SetOptionsResultCode.success.rawValue)
+        let result = SetOptionsResultXDR.success
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(SetOptionsResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success(let code):
-            XCTAssertEqual(code, SetOptionsResultCode.success.rawValue)
-        case .empty:
+        case .success:
+            break // Expected
+        default:
             XCTFail("Expected success case")
         }
     }
 
     func testSetOptionsResultXDRLowReserve() throws {
-        let result = SetOptionsResultXDR.empty(SetOptionsResultCode.lowReserve.rawValue)
+        let result = SetOptionsResultXDR.lowReserve
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(SetOptionsResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty case")
-        case .empty(let code):
-            XCTAssertEqual(code, SetOptionsResultCode.lowReserve.rawValue)
+        case .lowReserve:
+            break // Expected
+        default:
+            XCTFail("Expected lowReserve case")
         }
     }
 
     func testSetOptionsResultXDRTooManySigners() throws {
-        let result = SetOptionsResultXDR.empty(SetOptionsResultCode.tooManySigners.rawValue)
+        let result = SetOptionsResultXDR.tooManySigners
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(SetOptionsResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty case")
-        case .empty(let code):
-            XCTAssertEqual(code, SetOptionsResultCode.tooManySigners.rawValue)
+        case .tooManySigners:
+            break // Expected
+        default:
+            XCTFail("Expected tooManySigners case")
         }
     }
 
@@ -784,7 +770,7 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
     }
 
     func testSetOptionsResultXDRRoundTripBase64() throws {
-        let result = SetOptionsResultXDR.success(SetOptionsResultCode.success.rawValue)
+        let result = SetOptionsResultXDR.success
 
         guard let base64 = result.xdrEncoded else {
             XCTFail("Failed to encode to base64")
@@ -794,9 +780,9 @@ class XDRClaimAndTradeResultsUnitTests: XCTestCase {
         let decoded = try SetOptionsResultXDR(xdr: base64)
 
         switch decoded {
-        case .success(let code):
-            XCTAssertEqual(code, SetOptionsResultCode.success.rawValue)
-        case .empty:
+        case .success:
+            break // Expected
+        default:
             XCTFail("Expected success case")
         }
     }

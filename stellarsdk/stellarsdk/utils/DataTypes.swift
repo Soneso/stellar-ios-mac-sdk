@@ -118,3 +118,16 @@ public struct WrappedData12: WrappedData , Sendable {
         wrapped = Data()
     }
 }
+
+/// Fixed-size 16-byte data wrapper.
+///
+/// Used for 128-bit values such as IPv6 addresses and short hash seeds in Stellar protocol.
+public struct WrappedData16: WrappedData , Sendable {
+    public static let capacity: Int = 16
+
+    public var wrapped: Data
+
+    public init() {
+        wrapped = Data()
+    }
+}

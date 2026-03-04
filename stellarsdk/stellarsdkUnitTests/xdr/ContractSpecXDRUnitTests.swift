@@ -347,8 +347,8 @@ class ContractSpecXDRUnitTests: XCTestCase {
     // MARK: - SCSpecUDTErrorEnumV0XDR Tests
 
     func testSCSpecUDTErrorEnumV0XDR() throws {
-        let error1 = SCSpecUDTEnumCaseV0XDR(doc: "Invalid input", name: "InvalidInput", value: 1)
-        let error2 = SCSpecUDTEnumCaseV0XDR(doc: "Not found", name: "NotFound", value: 2)
+        let error1 = SCSpecUDTErrorEnumCaseV0XDR(doc: "Invalid input", name: "InvalidInput", value: 1)
+        let error2 = SCSpecUDTErrorEnumCaseV0XDR(doc: "Not found", name: "NotFound", value: 2)
         let errorEnum = SCSpecUDTErrorEnumV0XDR(doc: "Error codes", lib: "errors", name: "ErrorCode", cases: [error1, error2])
 
         let encoded = try XDREncoder.encode(errorEnum)
@@ -618,5 +618,566 @@ class ContractSpecXDRUnitTests: XCTestCase {
         XCTAssertEqual(SCSpecEntryKind.enumV0.rawValue, 3)
         XCTAssertEqual(SCSpecEntryKind.errorEnumV0.rawValue, 4)
         XCTAssertEqual(SCSpecEntryKind.entryEventV0.rawValue, 5)
+    }
+
+    // MARK: - SCMetaV0XDR Tests (from Stellar-contract-meta.x)
+
+    func testSCMetaV0XDRRoundTrip() throws {
+        let original = SCMetaV0XDR(key: "version", value: "1.2.3")
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCMetaV0XDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.key, "version")
+        XCTAssertEqual(decoded.value, "1.2.3")
+    }
+
+    func testSCMetaV0XDREmptyStrings() throws {
+        let original = SCMetaV0XDR(key: "", value: "")
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCMetaV0XDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.key, "")
+        XCTAssertEqual(decoded.value, "")
+    }
+
+    func testSCMetaV0XDRLongValues() throws {
+        let longKey = "contract_description_key"
+        let longValue = "This is a longer metadata value that describes the contract behavior in detail"
+        let original = SCMetaV0XDR(key: longKey, value: longValue)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCMetaV0XDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.key, longKey)
+        XCTAssertEqual(decoded.value, longValue)
+    }
+
+    // MARK: - SCMetaKind Tests (from Stellar-contract-meta.x)
+
+    func testSCMetaKindRoundTrip() throws {
+        let original = SCMetaKind.v0
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCMetaKind.self, data: encoded)
+        XCTAssertEqual(original, decoded)
+    }
+
+    func testSCMetaKindRawValues() {
+        XCTAssertEqual(SCMetaKind.v0.rawValue, 0)
+    }
+
+    // MARK: - SCMetaEntryXDR Tests (from Stellar-contract-meta.x)
+
+    func testSCMetaEntryXDRV0RoundTrip() throws {
+        let meta = SCMetaV0XDR(key: "author", value: "stellar-team")
+        let original = SCMetaEntryXDR.v0(meta)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCMetaEntryXDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.type(), SCMetaKind.v0.rawValue)
+        if case .v0(let decodedMeta) = decoded {
+            XCTAssertEqual(decodedMeta.key, "author")
+            XCTAssertEqual(decodedMeta.value, "stellar-team")
+        } else {
+            XCTFail("Expected .v0 case")
+        }
+    }
+
+    func testSCMetaEntryXDRV0EmptyMeta() throws {
+        let meta = SCMetaV0XDR(key: "", value: "")
+        let original = SCMetaEntryXDR.v0(meta)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCMetaEntryXDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.type(), SCMetaKind.v0.rawValue)
+        if case .v0(let decodedMeta) = decoded {
+            XCTAssertEqual(decodedMeta.key, "")
+            XCTAssertEqual(decodedMeta.value, "")
+        } else {
+            XCTFail("Expected .v0 case")
+        }
+    }
+
+    // MARK: - SCEnvMetaEntryXDRInterfaceVersionXDR Tests (from Stellar-contract-env-meta.x)
+
+    func testSCEnvMetaEntryXDRInterfaceVersionXDRRoundTrip() throws {
+        let original = SCEnvMetaEntryXDRInterfaceVersionXDR(protocol: 22, preRelease: 3)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCEnvMetaEntryXDRInterfaceVersionXDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.protocol, 22)
+        XCTAssertEqual(decoded.preRelease, 3)
+    }
+
+    func testSCEnvMetaEntryXDRInterfaceVersionXDRZeroPreRelease() throws {
+        let original = SCEnvMetaEntryXDRInterfaceVersionXDR(protocol: 21, preRelease: 0)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCEnvMetaEntryXDRInterfaceVersionXDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.protocol, 21)
+        XCTAssertEqual(decoded.preRelease, 0)
+    }
+
+    func testSCEnvMetaEntryXDRInterfaceVersionXDRMaxValues() throws {
+        let original = SCEnvMetaEntryXDRInterfaceVersionXDR(protocol: UInt32.max, preRelease: UInt32.max)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCEnvMetaEntryXDRInterfaceVersionXDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.protocol, UInt32.max)
+        XCTAssertEqual(decoded.preRelease, UInt32.max)
+    }
+
+    // MARK: - SCEnvMetaKind Tests (from Stellar-contract-env-meta.x)
+
+    func testSCEnvMetaKindRoundTrip() throws {
+        let original = SCEnvMetaKind.interfaceVersion
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCEnvMetaKind.self, data: encoded)
+        XCTAssertEqual(original, decoded)
+    }
+
+    // MARK: - SCEnvMetaEntryXDR Tests (from Stellar-contract-env-meta.x)
+
+    func testSCEnvMetaEntryXDRRoundTrip() throws {
+        let iv = SCEnvMetaEntryXDRInterfaceVersionXDR(protocol: 22, preRelease: 1)
+        let original = SCEnvMetaEntryXDR.interfaceVersion(iv)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCEnvMetaEntryXDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.type(), SCEnvMetaKind.interfaceVersion.rawValue)
+        if case .interfaceVersion(let decodedIV) = decoded {
+            XCTAssertEqual(decodedIV.protocol, 22)
+            XCTAssertEqual(decodedIV.preRelease, 1)
+        } else {
+            XCTFail("Expected .interfaceVersion case")
+        }
+    }
+
+    // MARK: - SCSpecType Enum Round-Trip Tests
+
+    func testSCSpecTypeEnumRoundTrip() throws {
+        let allCases: [SCSpecType] = [
+            .val, .bool, .void, .error, .u32, .i32, .u64, .i64,
+            .timepoint, .duration, .u128, .i128, .u256, .i256,
+            .bytes, .string, .symbol, .address, .muxedAddress,
+            .option, .result, .vec, .map, .tuple, .bytesN, .udt
+        ]
+
+        for original in allCases {
+            let encoded = try XDREncoder.encode(original)
+            let decoded = try XDRDecoder.decode(SCSpecType.self, data: encoded)
+            XCTAssertEqual(original, decoded, "Round-trip failed for SCSpecType.\(original)")
+        }
+    }
+
+    // MARK: - SCSpecUDTUnionCaseV0Kind Tests
+
+    func testSCSpecUDTUnionCaseV0KindRoundTrip() throws {
+        let voidCase = SCSpecUDTUnionCaseV0Kind.voidV0
+        let encoded1 = try XDREncoder.encode(voidCase)
+        let decoded1 = try XDRDecoder.decode(SCSpecUDTUnionCaseV0Kind.self, data: encoded1)
+        XCTAssertEqual(voidCase, decoded1)
+
+        let tupleCase = SCSpecUDTUnionCaseV0Kind.tupleV0
+        let encoded2 = try XDREncoder.encode(tupleCase)
+        let decoded2 = try XDRDecoder.decode(SCSpecUDTUnionCaseV0Kind.self, data: encoded2)
+        XCTAssertEqual(tupleCase, decoded2)
+    }
+
+    func testSCSpecUDTUnionCaseV0KindRawValues() {
+        XCTAssertEqual(SCSpecUDTUnionCaseV0Kind.voidV0.rawValue, 0)
+        XCTAssertEqual(SCSpecUDTUnionCaseV0Kind.tupleV0.rawValue, 1)
+    }
+
+    // MARK: - SCSpecUDTErrorEnumCaseV0XDR Standalone Tests
+
+    func testSCSpecUDTErrorEnumCaseV0XDRStandalone() throws {
+        let original = SCSpecUDTErrorEnumCaseV0XDR(doc: "Unauthorized access attempt", name: "Unauthorized", value: 403)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCSpecUDTErrorEnumCaseV0XDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.doc, "Unauthorized access attempt")
+        XCTAssertEqual(decoded.name, "Unauthorized")
+        XCTAssertEqual(decoded.value, 403)
+    }
+
+    func testSCSpecUDTErrorEnumCaseV0XDRZeroValue() throws {
+        let original = SCSpecUDTErrorEnumCaseV0XDR(doc: "", name: "OK", value: 0)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCSpecUDTErrorEnumCaseV0XDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.doc, "")
+        XCTAssertEqual(decoded.name, "OK")
+        XCTAssertEqual(decoded.value, 0)
+    }
+
+    func testSCSpecUDTErrorEnumCaseV0XDRMaxValue() throws {
+        let original = SCSpecUDTErrorEnumCaseV0XDR(doc: "Max error", name: "MaxError", value: UInt32.max)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCSpecUDTErrorEnumCaseV0XDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.value, UInt32.max)
+    }
+
+    // MARK: - SCSpecEventDataFormat Enum Round-Trip Tests
+
+    func testSCSpecEventDataFormatRoundTrip() throws {
+        let allCases: [SCSpecEventDataFormat] = [.singleValue, .vec, .map]
+        for original in allCases {
+            let encoded = try XDREncoder.encode(original)
+            let decoded = try XDRDecoder.decode(SCSpecEventDataFormat.self, data: encoded)
+            XCTAssertEqual(original, decoded, "Round-trip failed for SCSpecEventDataFormat.\(original)")
+        }
+    }
+
+    // MARK: - SCSpecEventParamLocationV0 Enum Round-Trip Tests
+
+    func testSCSpecEventParamLocationV0RoundTrip() throws {
+        let allCases: [SCSpecEventParamLocationV0] = [.data, .topicList]
+        for original in allCases {
+            let encoded = try XDREncoder.encode(original)
+            let decoded = try XDRDecoder.decode(SCSpecEventParamLocationV0.self, data: encoded)
+            XCTAssertEqual(original, decoded, "Round-trip failed for SCSpecEventParamLocationV0.\(original)")
+        }
+    }
+
+    // MARK: - SCSpecEntryKind Enum Round-Trip Tests
+
+    func testSCSpecEntryKindRoundTrip() throws {
+        let allCases: [SCSpecEntryKind] = [.functionV0, .structV0, .unionV0, .enumV0, .errorEnumV0, .entryEventV0]
+        for original in allCases {
+            let encoded = try XDREncoder.encode(original)
+            let decoded = try XDRDecoder.decode(SCSpecEntryKind.self, data: encoded)
+            XCTAssertEqual(original, decoded, "Round-trip failed for SCSpecEntryKind.\(original)")
+        }
+    }
+
+    // MARK: - SCSpecTypeDefXDR Additional Tests (nested/complex)
+
+    func testSCSpecTypeDefXDRNestedOption() throws {
+        // Option containing a Vec of u32
+        let innerVec = SCSpecTypeVecXDR(elementType: .u32)
+        let vecDef = SCSpecTypeDefXDR.vec(innerVec)
+        let option = SCSpecTypeOptionXDR(valueType: vecDef)
+        let typeDef = SCSpecTypeDefXDR.option(option)
+
+        let encoded = try XDREncoder.encode(typeDef)
+        let decoded = try XDRDecoder.decode(SCSpecTypeDefXDR.self, data: encoded)
+
+        if case .option(let decodedOption) = decoded {
+            if case .vec(let decodedVec) = decodedOption.valueType {
+                XCTAssertEqual(decodedVec.elementType.type(), SCSpecType.u32.rawValue)
+            } else {
+                XCTFail("Expected vec inside option")
+            }
+        } else {
+            XCTFail("Expected option type")
+        }
+    }
+
+    func testSCSpecTypeDefXDRNestedMap() throws {
+        // Map from symbol to Option<u64>
+        let innerOption = SCSpecTypeOptionXDR(valueType: .u64)
+        let mapDef = SCSpecTypeMapXDR(keyType: .symbol, valueType: .option(innerOption))
+        let typeDef = SCSpecTypeDefXDR.map(mapDef)
+
+        let encoded = try XDREncoder.encode(typeDef)
+        let decoded = try XDRDecoder.decode(SCSpecTypeDefXDR.self, data: encoded)
+
+        if case .map(let decodedMap) = decoded {
+            XCTAssertEqual(decodedMap.keyType.type(), SCSpecType.symbol.rawValue)
+            if case .option(let decodedOption) = decodedMap.valueType {
+                XCTAssertEqual(decodedOption.valueType.type(), SCSpecType.u64.rawValue)
+            } else {
+                XCTFail("Expected option as map value type")
+            }
+        } else {
+            XCTFail("Expected map type")
+        }
+    }
+
+    func testSCSpecTypeDefXDRResultWithUDT() throws {
+        // Result<UDT, error>
+        let udt = SCSpecTypeUDTXDR(name: "MyToken")
+        let result = SCSpecTypeResultXDR(okType: .udt(udt), errorType: .error)
+        let typeDef = SCSpecTypeDefXDR.result(result)
+
+        let encoded = try XDREncoder.encode(typeDef)
+        let decoded = try XDRDecoder.decode(SCSpecTypeDefXDR.self, data: encoded)
+
+        if case .result(let decodedResult) = decoded {
+            if case .udt(let decodedUDT) = decodedResult.okType {
+                XCTAssertEqual(decodedUDT.name, "MyToken")
+            } else {
+                XCTFail("Expected udt as ok type")
+            }
+            XCTAssertEqual(decodedResult.errorType.type(), SCSpecType.error.rawValue)
+        } else {
+            XCTFail("Expected result type")
+        }
+    }
+
+    func testSCSpecTypeTupleXDRMaxElements() throws {
+        // Tuple with 12 elements (max per spec)
+        let types: [SCSpecTypeDefXDR] = [
+            .u32, .i32, .u64, .i64, .bool, .string,
+            .symbol, .bytes, .address, .u128, .i128, .u256
+        ]
+        let tuple = SCSpecTypeTupleXDR(valueTypes: types)
+        let encoded = try XDREncoder.encode(tuple)
+        let decoded = try XDRDecoder.decode(SCSpecTypeTupleXDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.valueTypes.count, 12)
+        XCTAssertEqual(decoded.valueTypes[0].type(), SCSpecType.u32.rawValue)
+        XCTAssertEqual(decoded.valueTypes[11].type(), SCSpecType.u256.rawValue)
+    }
+
+    // MARK: - SCSpecUDTUnionCaseVoidV0XDR Standalone Tests
+
+    func testSCSpecUDTUnionCaseVoidV0XDRStandalone() throws {
+        let original = SCSpecUDTUnionCaseVoidV0XDR(doc: "Represents absence of value", name: "Nothing")
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCSpecUDTUnionCaseVoidV0XDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.doc, "Represents absence of value")
+        XCTAssertEqual(decoded.name, "Nothing")
+    }
+
+    // MARK: - SCSpecUDTUnionCaseTupleV0XDR Standalone Tests
+
+    func testSCSpecUDTUnionCaseTupleV0XDRMultipleTypes() throws {
+        let types: [SCSpecTypeDefXDR] = [.address, .u64, .symbol]
+        let original = SCSpecUDTUnionCaseTupleV0XDR(doc: "Transfer case", name: "Transfer", type: types)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCSpecUDTUnionCaseTupleV0XDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.doc, "Transfer case")
+        XCTAssertEqual(decoded.name, "Transfer")
+        XCTAssertEqual(decoded.type.count, 3)
+        XCTAssertEqual(decoded.type[0].type(), SCSpecType.address.rawValue)
+        XCTAssertEqual(decoded.type[1].type(), SCSpecType.u64.rawValue)
+        XCTAssertEqual(decoded.type[2].type(), SCSpecType.symbol.rawValue)
+    }
+
+    // MARK: - SCSpecFunctionV0XDR Complex Tests
+
+    func testSCSpecFunctionV0XDRComplexFunction() throws {
+        let input1 = SCSpecFunctionInputV0XDR(doc: "Source address", name: "from", type: .address)
+        let input2 = SCSpecFunctionInputV0XDR(doc: "Destination address", name: "to", type: .address)
+        let input3 = SCSpecFunctionInputV0XDR(doc: "Amount to transfer", name: "amount", type: .i128)
+        let outputOption = SCSpecTypeOptionXDR(valueType: .u64)
+        let function = SCSpecFunctionV0XDR(
+            doc: "Transfer tokens between accounts",
+            name: "transfer",
+            inputs: [input1, input2, input3],
+            outputs: [.option(outputOption)]
+        )
+
+        let encoded = try XDREncoder.encode(function)
+        let decoded = try XDRDecoder.decode(SCSpecFunctionV0XDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.doc, "Transfer tokens between accounts")
+        XCTAssertEqual(decoded.name, "transfer")
+        XCTAssertEqual(decoded.inputs.count, 3)
+        XCTAssertEqual(decoded.inputs[0].name, "from")
+        XCTAssertEqual(decoded.inputs[1].name, "to")
+        XCTAssertEqual(decoded.inputs[2].name, "amount")
+        XCTAssertEqual(decoded.inputs[2].type.type(), SCSpecType.i128.rawValue)
+        XCTAssertEqual(decoded.outputs.count, 1)
+        if case .option(let decodedOutput) = decoded.outputs[0] {
+            XCTAssertEqual(decodedOutput.valueType.type(), SCSpecType.u64.rawValue)
+        } else {
+            XCTFail("Expected option output type")
+        }
+    }
+
+    // MARK: - SCSpecEventV0XDR Complex Tests
+
+    func testSCSpecEventV0XDRMultipleParamsAndTopics() throws {
+        let param1 = SCSpecEventParamV0XDR(doc: "Sender", name: "from", type: .address, location: .topicList)
+        let param2 = SCSpecEventParamV0XDR(doc: "Receiver", name: "to", type: .address, location: .topicList)
+        let param3 = SCSpecEventParamV0XDR(doc: "Amount", name: "amount", type: .i128, location: .data)
+        let event = SCSpecEventV0XDR(
+            doc: "Token transfer event",
+            lib: "token",
+            name: "transfer",
+            prefixTopics: ["transfer", "token"],
+            params: [param1, param2, param3],
+            dataFormat: .singleValue
+        )
+
+        let encoded = try XDREncoder.encode(event)
+        let decoded = try XDRDecoder.decode(SCSpecEventV0XDR.self, data: encoded)
+
+        XCTAssertEqual(decoded.doc, "Token transfer event")
+        XCTAssertEqual(decoded.lib, "token")
+        XCTAssertEqual(decoded.name, "transfer")
+        XCTAssertEqual(decoded.prefixTopics.count, 2)
+        XCTAssertEqual(decoded.prefixTopics[0], "transfer")
+        XCTAssertEqual(decoded.prefixTopics[1], "token")
+        XCTAssertEqual(decoded.params.count, 3)
+        XCTAssertEqual(decoded.params[0].location, .topicList)
+        XCTAssertEqual(decoded.params[1].location, .topicList)
+        XCTAssertEqual(decoded.params[2].location, .data)
+        XCTAssertEqual(decoded.dataFormat, .singleValue)
+    }
+
+    // MARK: - SCSpecEntryXDR Complex Tests
+
+    func testSCSpecEntryXDRFunctionWithComplexSpec() throws {
+        // Full realistic function spec entry
+        let input = SCSpecFunctionInputV0XDR(doc: "Token amount", name: "amount", type: .i128)
+        let function = SCSpecFunctionV0XDR(doc: "Mint tokens", name: "mint", inputs: [input], outputs: [.bool])
+        let entry = SCSpecEntryXDR.functionV0(function)
+
+        let encoded = try XDREncoder.encode(entry)
+        let decoded = try XDRDecoder.decode(SCSpecEntryXDR.self, data: encoded)
+
+        if case .functionV0(let fn) = decoded {
+            XCTAssertEqual(fn.doc, "Mint tokens")
+            XCTAssertEqual(fn.name, "mint")
+            XCTAssertEqual(fn.inputs.count, 1)
+            XCTAssertEqual(fn.inputs[0].name, "amount")
+            XCTAssertEqual(fn.outputs.count, 1)
+        } else {
+            XCTFail("Expected functionV0")
+        }
+    }
+
+    func testSCSpecEntryXDRStructWithFields() throws {
+        let field1 = SCSpecUDTStructFieldV0XDR(doc: "Token name", name: "name", type: .string)
+        let field2 = SCSpecUDTStructFieldV0XDR(doc: "Token symbol", name: "symbol", type: .symbol)
+        let field3 = SCSpecUDTStructFieldV0XDR(doc: "Decimals", name: "decimals", type: .u32)
+        let structDef = SCSpecUDTStructV0XDR(doc: "Token metadata", lib: "token", name: "TokenInfo", fields: [field1, field2, field3])
+        let entry = SCSpecEntryXDR.structV0(structDef)
+
+        let encoded = try XDREncoder.encode(entry)
+        let decoded = try XDRDecoder.decode(SCSpecEntryXDR.self, data: encoded)
+
+        if case .structV0(let s) = decoded {
+            XCTAssertEqual(s.name, "TokenInfo")
+            XCTAssertEqual(s.fields.count, 3)
+            XCTAssertEqual(s.fields[0].name, "name")
+            XCTAssertEqual(s.fields[0].type.type(), SCSpecType.string.rawValue)
+            XCTAssertEqual(s.fields[1].name, "symbol")
+            XCTAssertEqual(s.fields[2].name, "decimals")
+        } else {
+            XCTFail("Expected structV0")
+        }
+    }
+
+    func testSCSpecEntryXDRUnionWithMixedCases() throws {
+        let voidCase = SCSpecUDTUnionCaseVoidV0XDR(doc: "No value", name: "None")
+        let tupleCase = SCSpecUDTUnionCaseTupleV0XDR(doc: "Has value", name: "Some", type: [.u64, .address])
+        let cases = [SCSpecUDTUnionCaseV0XDR.voidV0(voidCase), SCSpecUDTUnionCaseV0XDR.tupleV0(tupleCase)]
+        let unionDef = SCSpecUDTUnionV0XDR(doc: "Optional value", lib: "core", name: "OptionalVal", cases: cases)
+        let entry = SCSpecEntryXDR.unionV0(unionDef)
+
+        let encoded = try XDREncoder.encode(entry)
+        let decoded = try XDRDecoder.decode(SCSpecEntryXDR.self, data: encoded)
+
+        if case .unionV0(let u) = decoded {
+            XCTAssertEqual(u.name, "OptionalVal")
+            XCTAssertEqual(u.lib, "core")
+            XCTAssertEqual(u.cases.count, 2)
+            if case .voidV0(let vc) = u.cases[0] {
+                XCTAssertEqual(vc.name, "None")
+            } else {
+                XCTFail("Expected voidV0 for first case")
+            }
+            if case .tupleV0(let tc) = u.cases[1] {
+                XCTAssertEqual(tc.name, "Some")
+                XCTAssertEqual(tc.type.count, 2)
+            } else {
+                XCTFail("Expected tupleV0 for second case")
+            }
+        } else {
+            XCTFail("Expected unionV0")
+        }
+    }
+
+    func testSCSpecEntryXDREnumWithMultipleCases() throws {
+        let case1 = SCSpecUDTEnumCaseV0XDR(doc: "Active status", name: "Active", value: 0)
+        let case2 = SCSpecUDTEnumCaseV0XDR(doc: "Paused status", name: "Paused", value: 1)
+        let case3 = SCSpecUDTEnumCaseV0XDR(doc: "Frozen status", name: "Frozen", value: 2)
+        let enumDef = SCSpecUDTEnumV0XDR(doc: "Contract status", lib: "admin", name: "ContractStatus", cases: [case1, case2, case3])
+        let entry = SCSpecEntryXDR.enumV0(enumDef)
+
+        let encoded = try XDREncoder.encode(entry)
+        let decoded = try XDRDecoder.decode(SCSpecEntryXDR.self, data: encoded)
+
+        if case .enumV0(let e) = decoded {
+            XCTAssertEqual(e.name, "ContractStatus")
+            XCTAssertEqual(e.cases.count, 3)
+            XCTAssertEqual(e.cases[0].name, "Active")
+            XCTAssertEqual(e.cases[0].value, 0)
+            XCTAssertEqual(e.cases[1].name, "Paused")
+            XCTAssertEqual(e.cases[1].value, 1)
+            XCTAssertEqual(e.cases[2].name, "Frozen")
+            XCTAssertEqual(e.cases[2].value, 2)
+        } else {
+            XCTFail("Expected enumV0")
+        }
+    }
+
+    func testSCSpecEntryXDRErrorEnumWithMultipleCases() throws {
+        let err1 = SCSpecUDTErrorEnumCaseV0XDR(doc: "Balance too low", name: "InsufficientBalance", value: 1)
+        let err2 = SCSpecUDTErrorEnumCaseV0XDR(doc: "Not authorized", name: "Unauthorized", value: 2)
+        let err3 = SCSpecUDTErrorEnumCaseV0XDR(doc: "Contract is paused", name: "ContractPaused", value: 3)
+        let errorEnum = SCSpecUDTErrorEnumV0XDR(doc: "Token errors", lib: "token", name: "TokenError", cases: [err1, err2, err3])
+        let entry = SCSpecEntryXDR.errorEnumV0(errorEnum)
+
+        let encoded = try XDREncoder.encode(entry)
+        let decoded = try XDRDecoder.decode(SCSpecEntryXDR.self, data: encoded)
+
+        if case .errorEnumV0(let ee) = decoded {
+            XCTAssertEqual(ee.name, "TokenError")
+            XCTAssertEqual(ee.cases.count, 3)
+            XCTAssertEqual(ee.cases[0].name, "InsufficientBalance")
+            XCTAssertEqual(ee.cases[0].value, 1)
+            XCTAssertEqual(ee.cases[2].name, "ContractPaused")
+            XCTAssertEqual(ee.cases[2].value, 3)
+        } else {
+            XCTFail("Expected errorEnumV0")
+        }
+    }
+
+    func testSCSpecEntryXDREventWithParams() throws {
+        let param = SCSpecEventParamV0XDR(doc: "Amount burned", name: "amount", type: .i128, location: .data)
+        let event = SCSpecEventV0XDR(doc: "Burn event", lib: "token", name: "burn", prefixTopics: ["burn"], params: [param], dataFormat: .singleValue)
+        let entry = SCSpecEntryXDR.eventV0(event)
+
+        let encoded = try XDREncoder.encode(entry)
+        let decoded = try XDRDecoder.decode(SCSpecEntryXDR.self, data: encoded)
+
+        if case .eventV0(let ev) = decoded {
+            XCTAssertEqual(ev.name, "burn")
+            XCTAssertEqual(ev.params.count, 1)
+            XCTAssertEqual(ev.params[0].name, "amount")
+            XCTAssertEqual(ev.params[0].type.type(), SCSpecType.i128.rawValue)
+            XCTAssertEqual(ev.prefixTopics.count, 1)
+        } else {
+            XCTFail("Expected eventV0")
+        }
+    }
+
+    // MARK: - SCSpecType muxedAddress Test
+
+    func testSCSpecTypeMuxedAddressRawValue() {
+        XCTAssertEqual(SCSpecType.muxedAddress.rawValue, 20)
+    }
+
+    func testSCSpecTypeMuxedAddressRoundTrip() throws {
+        let original = SCSpecType.muxedAddress
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(SCSpecType.self, data: encoded)
+        XCTAssertEqual(original, decoded)
+    }
+
+    // MARK: - SCSpecTypeDefXDR muxedAddress Test
+
+    func testSCSpecTypeDefXDRMuxedAddress() throws {
+        let typeDef = SCSpecTypeDefXDR.muxedAddress
+        let encoded = try XDREncoder.encode(typeDef)
+        let decoded = try XDRDecoder.decode(SCSpecTypeDefXDR.self, data: encoded)
+        XCTAssertEqual(decoded.type(), SCSpecType.muxedAddress.rawValue)
     }
 }

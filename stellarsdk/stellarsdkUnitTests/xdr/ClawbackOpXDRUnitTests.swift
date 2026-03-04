@@ -198,74 +198,74 @@ class ClawbackOpXDRUnitTests: XCTestCase {
     // MARK: - ClawbackResultXDR Tests
 
     func testClawbackResultXDRSuccess() throws {
-        let result = ClawbackResultXDR.success(ClawbackResultCode.success.rawValue)
+        let result = ClawbackResultXDR.success
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ClawbackResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success(let code):
-            XCTAssertEqual(code, ClawbackResultCode.success.rawValue)
-        case .empty:
-            XCTFail("Expected success case, got empty")
+        case .success:
+            break
+        default:
+            XCTFail("Expected success case")
         }
     }
 
     func testClawbackResultXDRMalformed() throws {
-        let result = ClawbackResultXDR.empty(ClawbackResultCode.malformed.rawValue)
+        let result = ClawbackResultXDR.malformed
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ClawbackResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty case, got success")
-        case .empty(let code):
-            XCTAssertEqual(code, ClawbackResultCode.malformed.rawValue)
+        case .malformed:
+            break
+        default:
+            XCTFail("Expected malformed case")
         }
     }
 
     func testClawbackResultXDRNotClawbackEnabled() throws {
-        let result = ClawbackResultXDR.empty(ClawbackResultCode.notClawbackEnabled.rawValue)
+        let result = ClawbackResultXDR.notClawbackEnabled
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ClawbackResultXDR.self, data: encoded)
 
         switch decoded {
-        case .success:
-            XCTFail("Expected empty case, got success")
-        case .empty(let code):
-            XCTAssertEqual(code, ClawbackResultCode.notClawbackEnabled.rawValue)
+        case .notClawbackEnabled:
+            break
+        default:
+            XCTFail("Expected notClawbackEnabled case")
         }
     }
 
     // MARK: - ClawbackClaimableBalanceResultXDR Tests
 
     func testClawbackClaimableBalanceResultXDRSuccess() throws {
-        let result = ClawbackClaimableBalanceResultXDR.success(ClawbackClaimableBalanceResultCode.success.rawValue)
-
-        let encoded = try XDREncoder.encode(result)
-        let decoded = try XDRDecoder.decode(ClawbackClaimableBalanceResultXDR.self, data: encoded)
-
-        switch decoded {
-        case .success(let code):
-            XCTAssertEqual(code, ClawbackClaimableBalanceResultCode.success.rawValue)
-        case .empty:
-            XCTFail("Expected success case, got empty")
-        }
-    }
-
-    func testClawbackClaimableBalanceResultXDRDoesNotExist() throws {
-        let result = ClawbackClaimableBalanceResultXDR.empty(ClawbackClaimableBalanceResultCode.doesNotExist.rawValue)
+        let result = ClawbackClaimableBalanceResultXDR.success
 
         let encoded = try XDREncoder.encode(result)
         let decoded = try XDRDecoder.decode(ClawbackClaimableBalanceResultXDR.self, data: encoded)
 
         switch decoded {
         case .success:
-            XCTFail("Expected empty case, got success")
-        case .empty(let code):
-            XCTAssertEqual(code, ClawbackClaimableBalanceResultCode.doesNotExist.rawValue)
+            break
+        default:
+            XCTFail("Expected success case")
+        }
+    }
+
+    func testClawbackClaimableBalanceResultXDRDoesNotExist() throws {
+        let result = ClawbackClaimableBalanceResultXDR.doesNotExist
+
+        let encoded = try XDREncoder.encode(result)
+        let decoded = try XDRDecoder.decode(ClawbackClaimableBalanceResultXDR.self, data: encoded)
+
+        switch decoded {
+        case .doesNotExist:
+            break
+        default:
+            XCTFail("Expected doesNotExist case")
         }
     }
 }
