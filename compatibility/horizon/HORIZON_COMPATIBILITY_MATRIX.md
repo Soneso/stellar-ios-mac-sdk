@@ -2,8 +2,8 @@
 
 **Horizon Version:** v25.0.1 (released 2026-02-06)  
 **Horizon Source:** [v25.0.1](https://github.com/stellar/stellar-horizon/releases/tag/v25.0.1)  
-**SDK Version:** 3.4.4  
-**Generated:** 2026-02-20 21:05:43
+**SDK Version:** 3.4.5  
+**Generated:** 2026-03-10 14:58:58
 
 **Horizon Endpoints Discovered:** 52  
 **Public API Endpoints (in matrix):** 50
@@ -19,7 +19,6 @@
 - **Fully Supported:** 50/50
 - **Partially Supported:** 0/50
 - **Not Supported:** 0/50
-- **Deprecated:** 0/50
 
 ## Coverage by Category
 
@@ -190,4 +189,3 @@
 - **Full** - Complete implementation with all features
 - **Partial** - Basic functionality with some limitations
 - **Missing** - Endpoint not implemented
-- **Deprecated** - Deprecated endpoint with alternative available

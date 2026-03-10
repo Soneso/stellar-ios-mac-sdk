@@ -1,8 +1,8 @@
 # SEP-0048 (Contract Interface Specification) Compatibility Matrix
 
-**Generated:** 2026-02-20
+**Generated:** 2026-03-10
 
-**SDK Version:** 3.4.4
+**SDK Version:** 3.4.5
 
 **SEP Version:** 1.1.0
 
@@ -32,7 +32,6 @@ A standard for contracts to self-describe their exported interface.
 ### Implementation Files
 
 - `stellarsdk/stellarsdk/soroban/SorobanContractParser.swift`
-- `stellarsdk/stellarsdk/responses/xdr/ContractSpecXDR.swift`
 - `stellarsdk/stellarsdk/soroban/contract/ContractSpec.swift`
 
 ### Key Classes

@@ -9,13 +9,13 @@ Build and sign Stellar transactions, query [Horizon](https://developers.stellar.
 ### Swift Package Manager
 
 ```swift
-.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.4.4"),
+.package(name: "stellarsdk", url: "git@github.com:Soneso/stellar-ios-mac-sdk.git", from: "3.4.5"),
 ```
 
 ### CocoaPods
 
 ```ruby
-pod 'stellar-ios-mac-sdk', '~> 3.4.4'
+pod 'stellar-ios-mac-sdk', '~> 3.4.5'
 ```
 
 Requires iOS 13+, macOS 10.15+, Swift 5.7+.

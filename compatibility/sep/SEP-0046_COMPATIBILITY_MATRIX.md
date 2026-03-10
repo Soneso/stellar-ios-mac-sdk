@@ -1,8 +1,8 @@
 # SEP-0046 (Contract Meta) Compatibility Matrix
 
-**Generated:** 2026-02-20
+**Generated:** 2026-03-10
 
-**SDK Version:** 3.4.4
+**SDK Version:** 3.4.5
 
 **SEP Version:** 1.0.0
 
@@ -32,7 +32,6 @@ A standard for the storage of metadata in contract Wasm files.
 ### Implementation Files
 
 - `stellarsdk/stellarsdk/soroban/SorobanContractParser.swift`
-- `stellarsdk/stellarsdk/responses/xdr/ContractMetaXDR.swift`
 
 ### Key Classes
 

@@ -65,6 +65,8 @@ guard case .success(let info2) = infoEnum2 else { /* handle error */ return }
 
 | Property | Type | Description |
 |----------|------|-------------|
+| `envProtocolVersion` | `UInt32` | Environment protocol version |
+| `envPreReleaseVersion` | `UInt32` | Environment pre-release version |
 | `specEntries` | `[SCSpecEntryXDR]` | All spec entries (raw) |
 | `funcs` | `[SCSpecFunctionV0XDR]` | Contract functions |
 | `udtStructs` | `[SCSpecUDTStructV0XDR]` | Struct definitions |

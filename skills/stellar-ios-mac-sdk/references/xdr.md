@@ -2,7 +2,7 @@
 
 ## Overview
 
-XDR (External Data Representation) is the binary format Stellar uses for all on-wire data. The SDK provides 107 XDR types in `stellarsdk/responses/xdr/`. All XDR types conform to the `XDRCodable` protocol and support encoding to base64 via the `xdrEncoded` property and decoding from base64 via `init(fromBase64:)` initializers.
+XDR (External Data Representation) is the binary format Stellar uses for all on-wire data. The SDK provides 456 XDR types in `stellarsdk/responses/xdr/`. All XDR types conform to the `XDRCodable` protocol and support encoding to base64 via the `xdrEncoded` property and decoding from base64 via `init(fromBase64:)` initializers.
 
 ## Transaction Envelope Encoding
 
@@ -69,9 +69,9 @@ print("Signatures: \(envelopeXDR.txSignatures.count)")
 // Inspect operations at XDR level
 for opXDR in envelopeXDR.txOperations {
     switch opXDR.body {
-    case .payment(let paymentOp):
+    case .paymentOp(let paymentOp):
         print("Payment to: \(paymentOp.destination)")
-    case .invokeHostFunction(let invokeOp):
+    case .invokeHostFunctionOp(let invokeOp):
         print("Soroban invocation")
     default:
         print("Other operation type")

@@ -1,0 +1,98 @@
+{
+  "sep_number": "0046",
+  "preamble": {
+    "sep": "0046",
+    "title": "Contract Meta",
+    "author": "Leigh McCulloch",
+    "status": "Active",
+    "created": "2025-02-13",
+    "updated": "2025-04-16",
+    "version": "1.0.0"
+  },
+  "summary": "A standard for the storage of metadata in contract Wasm files.",
+  "sections": [
+    {
+      "title": "Contract Metadata Storage",
+      "key": "metadata_storage",
+      "content": "Features for storing metadata in Wasm custom sections",
+      "contract_meta_features": [
+        {
+          "name": "contractmetav0_section",
+          "description": "Support for storing metadata in \"contractmetav0\" Wasm custom sections",
+          "required": true,
+          "category": "Metadata Storage"
+        },
+        {
+          "name": "multiple_entries_single_section",
+          "description": "Support for multiple metadata entries in a single custom section",
+          "required": true,
+          "category": "Metadata Storage"
+        },
+        {
+          "name": "multiple_sections",
+          "description": "Support for multiple \"contractmetav0\" sections interpreted sequentially",
+          "required": true,
+          "category": "Metadata Storage"
+        }
+      ],
+      "feature_count": 3
+    },
+    {
+      "title": "Encoding Format",
+      "key": "encoding_format",
+      "content": "XDR encoding format for metadata entries",
+      "contract_meta_features": [
+        {
+          "name": "scmetaentry_xdr",
+          "description": "Use SCMetaEntry XDR type for structuring metadata",
+          "required": true,
+          "category": "Encoding Format"
+        },
+        {
+          "name": "binary_stream_encoding",
+          "description": "Encode entries as a stream of binary values",
+          "required": true,
+          "category": "Encoding Format"
+        },
+        {
+          "name": "key_value_pairs",
+          "description": "Store metadata as key-value string pairs",
+          "required": true,
+          "category": "Encoding Format"
+        }
+      ],
+      "feature_count": 3
+    },
+    {
+      "title": "Implementation Support",
+      "key": "implementation_support",
+      "content": "SDK support for parsing and extracting contract metadata",
+      "contract_meta_features": [
+        {
+          "name": "parse_contract_meta",
+          "description": "Parse contract metadata from contract bytecode",
+          "required": true,
+          "category": "Implementation Support"
+        },
+        {
+          "name": "extract_meta_entries",
+          "description": "Extract meta entries as key-value pairs from contract",
+          "required": true,
+          "category": "Implementation Support"
+        },
+        {
+          "name": "decode_scmetaentry",
+          "description": "Decode SCMetaEntry XDR structures",
+          "required": true,
+          "category": "Implementation Support"
+        }
+      ],
+      "feature_count": 3
+    }
+  ],
+  "metadata": {
+    "parsed_at": "2025-10-15T12:15:53.381280",
+    "source_url": "https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0046.md",
+    "content_length": 5575
+  }
+}

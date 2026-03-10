@@ -251,7 +251,7 @@ class Sep12DocTest: XCTestCase {
 
         let kycService = KycService(kycServiceAddress: kycServiceAddress)
 
-        var request = GetCustomerInfoRequest(jwt: jwtToken)
+        let request = GetCustomerInfoRequest(jwt: jwtToken)
         let getResult = await kycService.getCustomerInfo(request: request)
         withExtendedLifetime(getMock) {}
 

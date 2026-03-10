@@ -379,7 +379,7 @@ class Sep24DocTest: XCTestCase {
 
     func testQuickExample() async {
         let jwtToken = "test-jwt"
-        var request = Sep24DepositRequest(jwt: jwtToken, assetCode: "USD")
+        let request = Sep24DepositRequest(jwt: jwtToken, assetCode: "USD")
 
         let result = await interactiveService.deposit(request: request)
         switch result {
@@ -450,7 +450,7 @@ class Sep24DocTest: XCTestCase {
 
     func testBasicDeposit() async {
         let jwtToken = "test-jwt"
-        var request = Sep24DepositRequest(jwt: jwtToken, assetCode: "USD")
+        let request = Sep24DepositRequest(jwt: jwtToken, assetCode: "USD")
 
         let result = await interactiveService.deposit(request: request)
         switch result {
@@ -602,7 +602,7 @@ class Sep24DocTest: XCTestCase {
 
     func testDepositNativeXlm() async {
         let jwtToken = "test-jwt"
-        var request = Sep24DepositRequest(jwt: jwtToken, assetCode: "native")
+        let request = Sep24DepositRequest(jwt: jwtToken, assetCode: "native")
         // Do not set assetIssuer for native assets
 
         let result = await interactiveService.deposit(request: request)
@@ -618,7 +618,7 @@ class Sep24DocTest: XCTestCase {
 
     func testBasicWithdrawal() async {
         let jwtToken = "test-jwt"
-        var request = Sep24WithdrawRequest(jwt: jwtToken, assetCode: "USD")
+        let request = Sep24WithdrawRequest(jwt: jwtToken, assetCode: "USD")
 
         let result = await interactiveService.withdraw(request: request)
         switch result {
@@ -925,7 +925,7 @@ class Sep24DocTest: XCTestCase {
 
     func testErrorHandlingDeposit() async {
         let jwtToken = "test-jwt"
-        var depositRequest = Sep24DepositRequest(jwt: jwtToken, assetCode: "USD")
+        let depositRequest = Sep24DepositRequest(jwt: jwtToken, assetCode: "USD")
 
         let result = await interactiveService.deposit(request: depositRequest)
         switch result {

@@ -2539,7 +2539,8 @@ func getSpecEntries() -> [SCSpecEntryXDR]
 func getContractSpec() -> ContractSpec
 ## enum SorobanClientError: Error, Sendable
 ## final class SorobanContractInfo: Sendable
-var envInterfaceVersion: UInt64
+var envProtocolVersion: UInt32
+var envPreReleaseVersion: UInt32
 var specEntries: [SCSpecEntryXDR]
 var metaEntries: [String: String]
 var supportedSeps: [String]
@@ -2549,7 +2550,7 @@ var udtUnions: [SCSpecUDTUnionV0XDR]
 var udtEnums: [SCSpecUDTEnumV0XDR]
 var udtErrorEnums: [SCSpecUDTErrorEnumV0XDR]
 var events: [SCSpecEventV0XDR]
-init(envInterfaceVersion:UInt64, specEntries:[SCSpecEntryXDR], metaEntries: [String: String])
+// Construct via SorobanContractParser.parseContractByteCode(byteCode:)
 ## final class SorobanContractParser: Sendable
 static func parseContractByteCode(byteCode:Data) throws -> SorobanContractInfo
 ## enum SorobanContractParserError: Error, Sendable
