@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>OperationType Enumeration Reference</title>
+    <title>CustomerInformationNeededInteractive Structure Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset="utf-8">
@@ -14,16 +14,16 @@
   </head>
   <body>
 
-    <a name="//apple_ref/swift/Enum/OperationType" class="dashAnchor"></a>
+    <a name="//apple_ref/swift/Struct/CustomerInformationNeededInteractive" class="dashAnchor"></a>
 
-    <a title="OperationType Enumeration Reference"></a>
+    <a title="CustomerInformationNeededInteractive Structure Reference"></a>
 
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.4 Docs
+          stellarsdk 3.4.5 Docs
         </a>
-         (98% documented)
+         (97% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -50,9 +50,9 @@
     <p class="breadcrumbs">
       <a class="breadcrumb" href="../index.html">stellarsdk</a>
       <img class="carat" src="../img/carat.png" alt=""/>
-      <a class="breadcrumb" href="../Enums.html">Enumerations</a>
+      <a class="breadcrumb" href="../Structs.html">Structures</a>
       <img class="carat" src="../img/carat.png" alt=""/>
-      OperationType Enumeration Reference
+      CustomerInformationNeededInteractive Structure Reference
     </p>
 
     <div class="content-wrapper">
@@ -572,6 +572,9 @@
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SegmentFilter.html">SegmentFilter</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/SequenceBumpedEffectResponse.html">SequenceBumpedEffectResponse</a>
               </li>
               <li class="nav-group-task">
@@ -999,9 +1002,6 @@
                 <a class="nav-group-task-link" href="../Enums/OperationDetailsResponseEnum.html">OperationDetailsResponseEnum</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Enums/OperationType.html">OperationType</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/OperationsChange.html">OperationsChange</a>
               </li>
               <li class="nav-group-task">
@@ -1147,6 +1147,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/TransactionDetailsResponseEnum.html">TransactionDetailsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TransactionMetaType.html">TransactionMetaType</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/TransactionPostAsyncResponseEnum.html">TransactionPostAsyncResponseEnum</a>
@@ -1401,6 +1404,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/CustomerFileResponse.html">CustomerFileResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CustomerInformationNeededInteractive.html">CustomerInformationNeededInteractive</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/CustomerInformationNeededNonInteractive.html">CustomerInformationNeededNonInteractive</a>
@@ -1844,6 +1850,9 @@
                 <a class="nav-group-task-link" href="../Structs/WrappedData12.html">WrappedData12</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WrappedData16.html">WrappedData16</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/WrappedData32.html">WrappedData32</a>
               </li>
               <li class="nav-group-task">
@@ -1883,19 +1892,26 @@
 
         <section class="section">
           <div class="section-content top-matter">
-            <h1>OperationType</h1>
+            <h1>CustomerInformationNeededInteractive</h1>
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">OperationType</span> <span class="p">:</span> <span class="kt">Int32</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CustomerInformationNeededInteractive</span> <span class="p">:</span> <span class="kt">Decodable</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
 
                 </div>
               </div>
-            <p>Enumeration of all Stellar operation types.
-Each operation type corresponds to a specific action that can be performed on the Stellar network.</p>
+            <p>Response indicating that customer information is needed through an interactive flow.</p>
+
+<p>This response is returned by GET /deposit or GET /withdraw requests in SEP-6 when
+the anchor needs to collect KYC information from the user through a web interface.
+The wallet should display the provided URL in a popup or iframe.</p>
+
+<p>Note: Interactive components of SEP-6 are deprecated in favor of SEP-24.</p>
+
+<p>See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#response-3">SEP-6 Customer Information Needed</a></p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L13-L68">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/CustomerInformationNeededInteractive.swift#L20-L45">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -1907,9 +1923,9 @@ Each operation type corresponds to a specific action that can be performed on th
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk13OperationTypeO14accountCreatedyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/accountCreated" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO14accountCreatedyA2CmF">accountCreated</a>
+                    <a name="/s:10stellarsdk36CustomerInformationNeededInteractiveV4typeSSvp"></a>
+                    <a name="//apple_ref/swift/Property/type" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk36CustomerInformationNeededInteractiveV4typeSSvp">type</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1917,19 +1933,19 @@ Each operation type corresponds to a specific action that can be performed on th
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Creates and funds a new account with a starting balance.</p>
+                        <p>Always set to interactive_customer_info_needed</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">accountCreated</span> <span class="o">=</span> <span class="mi">0</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">type</span><span class="p">:</span> <span class="kt">String</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L15">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/CustomerInformationNeededInteractive.swift#L23">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1937,9 +1953,9 @@ Each operation type corresponds to a specific action that can be performed on th
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk13OperationTypeO7paymentyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/payment" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO7paymentyA2CmF">payment</a>
+                    <a name="/s:10stellarsdk36CustomerInformationNeededInteractiveV3urlSSvp"></a>
+                    <a name="//apple_ref/swift/Property/url" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk36CustomerInformationNeededInteractiveV3urlSSvp">url</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1947,19 +1963,19 @@ Each operation type corresponds to a specific action that can be performed on th
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Sends native or non-native assets from source account to destination account.</p>
+                        <p>URL hosted by the anchor. The wallet should show this URL to the user either as a popup or an iframe.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">payment</span> <span class="o">=</span> <span class="mi">1</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">url</span><span class="p">:</span> <span class="kt">String</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L17">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/CustomerInformationNeededInteractive.swift#L26">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1967,9 +1983,9 @@ Each operation type corresponds to a specific action that can be performed on th
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk13OperationTypeO11pathPaymentyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/pathPayment" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO11pathPaymentyA2CmF">pathPayment</a>
+                    <a name="/s:10stellarsdk36CustomerInformationNeededInteractiveV4fromACs7Decoder_p_tKcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(from:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk36CustomerInformationNeededInteractiveV4fromACs7Decoder_p_tKcfc">init(from:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1977,739 +1993,38 @@ Each operation type corresponds to a specific action that can be performed on th
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Sends assets along a path while receiving a specific destination amount (deprecated, use pathPaymentStrictReceive).</p>
+                        <p>Initializer - creates a new instance by decoding from the given decoder.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">pathPayment</span> <span class="o">=</span> <span class="mi">2</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">from</span> <span class="nv">decoder</span><span class="p">:</span> <span class="kt">Decoder</span><span class="p">)</span> <span class="k">throws</span></code></pre>
 
                         </div>
                       </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L19">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO15manageSellOfferyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/manageSellOffer" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO15manageSellOfferyA2CmF">manageSellOffer</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Creates or updates an offer to sell an asset at a specific price.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">manageSellOffer</span> <span class="o">=</span> <span class="mi">3</span></code></pre>
-
-                        </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>decoder</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The decoder containing the data</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L21">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO22createPassiveSellOfferyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/createPassiveSellOffer" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO22createPassiveSellOfferyA2CmF">createPassiveSellOffer</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Creates a passive sell offer that does not take existing offers at the same price.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">createPassiveSellOffer</span> <span class="o">=</span> <span class="mi">4</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L23">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO10setOptionsyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/setOptions" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO10setOptionsyA2CmF">setOptions</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Sets various account options including signers, thresholds, and flags.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">setOptions</span> <span class="o">=</span> <span class="mi">5</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L25">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO11changeTrustyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/changeTrust" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO11changeTrustyA2CmF">changeTrust</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Creates, updates, or deletes a trustline for an asset.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">changeTrust</span> <span class="o">=</span> <span class="mi">6</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L27">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO10allowTrustyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/allowTrust" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO10allowTrustyA2CmF">allowTrust</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Authorizes or deauthorizes another account to hold an asset (deprecated, use setTrustLineFlags).</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">allowTrust</span> <span class="o">=</span> <span class="mi">7</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L29">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO12accountMergeyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/accountMerge" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO12accountMergeyA2CmF">accountMerge</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Merges source account into destination account, transferring all funds.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">accountMerge</span> <span class="o">=</span> <span class="mi">8</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L31">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO9inflationyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/inflation" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO9inflationyA2CmF">inflation</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Runs the weekly inflation process (deprecated and removed from protocol).</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">inflation</span> <span class="o">=</span> <span class="mi">9</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L33">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO10manageDatayA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/manageData" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO10manageDatayA2CmF">manageData</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Sets, modifies, or deletes a key-value data entry on an account.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">manageData</span> <span class="o">=</span> <span class="mi">10</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L35">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO12bumpSequenceyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/bumpSequence" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO12bumpSequenceyA2CmF">bumpSequence</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Bumps forward the sequence number of the source account.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">bumpSequence</span> <span class="o">=</span> <span class="mi">11</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L37">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO14manageBuyOfferyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/manageBuyOffer" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO14manageBuyOfferyA2CmF">manageBuyOffer</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Creates or updates an offer to buy an asset with a specific buying amount.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">manageBuyOffer</span> <span class="o">=</span> <span class="mi">12</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L39">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO21pathPaymentStrictSendyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/pathPaymentStrictSend" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO21pathPaymentStrictSendyA2CmF">pathPaymentStrictSend</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Sends a specific amount of an asset along a path, allowing destination amount to vary.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">pathPaymentStrictSend</span> <span class="o">=</span> <span class="mi">13</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L41">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO22createClaimableBalanceyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/createClaimableBalance" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO22createClaimableBalanceyA2CmF">createClaimableBalance</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Creates a claimable balance entry that can be claimed by specified claimants.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">createClaimableBalance</span> <span class="o">=</span> <span class="mi">14</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L43">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO21claimClaimableBalanceyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/claimClaimableBalance" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO21claimClaimableBalanceyA2CmF">claimClaimableBalance</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Claims a claimable balance, transferring funds to the claiming account.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">claimClaimableBalance</span> <span class="o">=</span> <span class="mi">15</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L45">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO29beginSponsoringFutureReservesyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/beginSponsoringFutureReserves" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO29beginSponsoringFutureReservesyA2CmF">beginSponsoringFutureReserves</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Begins sponsoring the reserves of operations in a transaction.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">beginSponsoringFutureReserves</span> <span class="o">=</span> <span class="mi">16</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L47">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO27endSponsoringFutureReservesyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/endSponsoringFutureReserves" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO27endSponsoringFutureReservesyA2CmF">endSponsoringFutureReserves</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Ends the sponsorship context started by beginSponsoringFutureReserves.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">endSponsoringFutureReserves</span> <span class="o">=</span> <span class="mi">17</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L49">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO17revokeSponsorshipyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/revokeSponsorship" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO17revokeSponsorshipyA2CmF">revokeSponsorship</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Revokes sponsorship of a ledger entry or signer, transferring reserve responsibility.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">revokeSponsorship</span> <span class="o">=</span> <span class="mi">18</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L51">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO8clawbackyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/clawback" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO8clawbackyA2CmF">clawback</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Claws back a specified amount of an asset from a holding account.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">clawback</span> <span class="o">=</span> <span class="mi">19</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L53">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO24clawbackClaimableBalanceyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/clawbackClaimableBalance" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO24clawbackClaimableBalanceyA2CmF">clawbackClaimableBalance</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Claws back a claimable balance, returning funds to the asset issuer.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">clawbackClaimableBalance</span> <span class="o">=</span> <span class="mi">20</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L55">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO17setTrustLineFlagsyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/setTrustLineFlags" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO17setTrustLineFlagsyA2CmF">setTrustLineFlags</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Sets flags on a trustline including authorized, authorized to maintain liabilities, and clawback enabled.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">setTrustLineFlags</span> <span class="o">=</span> <span class="mi">21</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L57">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO20liquidityPoolDeposityA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/liquidityPoolDeposit" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO20liquidityPoolDeposityA2CmF">liquidityPoolDeposit</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Deposits assets into a liquidity pool in exchange for pool shares.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">liquidityPoolDeposit</span> <span class="o">=</span> <span class="mi">22</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L59">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO21liquidityPoolWithdrawyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/liquidityPoolWithdraw" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO21liquidityPoolWithdrawyA2CmF">liquidityPoolWithdraw</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Withdraws assets from a liquidity pool by redeeming pool shares.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">liquidityPoolWithdraw</span> <span class="o">=</span> <span class="mi">23</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L61">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO18invokeHostFunctionyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/invokeHostFunction" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO18invokeHostFunctionyA2CmF">invokeHostFunction</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Invokes a smart contract function on the Soroban runtime.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">invokeHostFunction</span> <span class="o">=</span> <span class="mi">24</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L63">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO18extendFootprintTTLyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/extendFootprintTTL" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO18extendFootprintTTLyA2CmF">extendFootprintTTL</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Extends the time-to-live of Soroban contract data or code entries.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">extendFootprintTTL</span> <span class="o">=</span> <span class="mi">25</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L65">Show on GitHub</a>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:10stellarsdk13OperationTypeO16restoreFootprintyA2CmF"></a>
-                    <a name="//apple_ref/swift/Element/restoreFootprint" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk13OperationTypeO16restoreFootprintyA2CmF">restoreFootprint</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>Restores archived Soroban contract data or code entries.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">restoreFootprint</span> <span class="o">=</span> <span class="mi">26</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L67">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/CustomerInformationNeededInteractive.swift#L39-L43">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

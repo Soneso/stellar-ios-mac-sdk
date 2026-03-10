@@ -21,9 +21,9 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.4.4 Docs
+          stellarsdk 3.4.5 Docs
         </a>
-         (98% documented)
+         (97% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -570,6 +570,9 @@
                 <a class="nav-group-task-link" href="Classes/Seed.html">Seed</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/SegmentFilter.html">SegmentFilter</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/SequenceBumpedEffectResponse.html">SequenceBumpedEffectResponse</a>
               </li>
               <li class="nav-group-task">
@@ -997,9 +1000,6 @@
                 <a class="nav-group-task-link" href="Enums/OperationDetailsResponseEnum.html">OperationDetailsResponseEnum</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Enums/OperationType.html">OperationType</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/OperationsChange.html">OperationsChange</a>
               </li>
               <li class="nav-group-task">
@@ -1145,6 +1145,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/TransactionDetailsResponseEnum.html">TransactionDetailsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/TransactionMetaType.html">TransactionMetaType</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/TransactionPostAsyncResponseEnum.html">TransactionPostAsyncResponseEnum</a>
@@ -1399,6 +1402,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/CustomerFileResponse.html">CustomerFileResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CustomerInformationNeededInteractive.html">CustomerInformationNeededInteractive</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/CustomerInformationNeededNonInteractive.html">CustomerInformationNeededNonInteractive</a>
@@ -1840,6 +1846,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/WrappedData12.html">WrappedData12</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/WrappedData16.html">WrappedData16</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/WrappedData32.html">WrappedData32</a>
@@ -8462,6 +8471,45 @@ via Stellar or off-chain through an external payment system.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk36CustomerInformationNeededInteractiveV"></a>
+                    <a name="//apple_ref/swift/Struct/CustomerInformationNeededInteractive" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk36CustomerInformationNeededInteractiveV">CustomerInformationNeededInteractive</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Response indicating that customer information is needed through an interactive flow.</p>
+
+<p>This response is returned by GET /deposit or GET /withdraw requests in SEP-6 when
+the anchor needs to collect KYC information from the user through a web interface.
+The wallet should display the provided URL in a popup or iframe.</p>
+
+<p>Note: Interactive components of SEP-6 are deprecated in favor of SEP-24.</p>
+
+<p>See <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md#response-3">SEP-6 Customer Information Needed</a></p>
+
+                        <a href="Structs/CustomerInformationNeededInteractive.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">CustomerInformationNeededInteractive</span> <span class="p">:</span> <span class="kt">Decodable</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/transfer_server_protocol/responses/CustomerInformationNeededInteractive.swift#L20-L45">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk39CustomerInformationNeededNonInteractiveV"></a>
                     <a name="//apple_ref/swift/Struct/CustomerInformationNeededNonInteractive" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk39CustomerInformationNeededNonInteractiveV">CustomerInformationNeededNonInteractive</a>
@@ -8899,6 +8947,39 @@ Examples: SHA-256 hashes, Ed25519 public keys, transaction hashes.</p>
                       </div>
                       <div class="slightly-smaller">
                         <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/DataTypes.swift#L112-L120">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk13WrappedData16V"></a>
+                    <a name="//apple_ref/swift/Struct/WrappedData16" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk13WrappedData16V">WrappedData16</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Fixed-size 16-byte data wrapper.</p>
+
+<p>Used for 128-bit values such as IPv6 addresses and short hash seeds in Stellar protocol.</p>
+
+                        <a href="Structs/WrappedData16.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">WrappedData16</span> <span class="p">:</span> <span class="kt"><a href="Protocols/WrappedData.html">WrappedData</a></span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/utils/DataTypes.swift#L125-L133">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

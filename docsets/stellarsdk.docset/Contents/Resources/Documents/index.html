@@ -20,9 +20,9 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.4.4 Docs
+          stellarsdk 3.4.5 Docs
         </a>
-         (98% documented)
+         (97% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -567,6 +567,9 @@
                 <a class="nav-group-task-link" href="Classes/Seed.html">Seed</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/SegmentFilter.html">SegmentFilter</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/SequenceBumpedEffectResponse.html">SequenceBumpedEffectResponse</a>
               </li>
               <li class="nav-group-task">
@@ -994,9 +997,6 @@
                 <a class="nav-group-task-link" href="Enums/OperationDetailsResponseEnum.html">OperationDetailsResponseEnum</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Enums/OperationType.html">OperationType</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/OperationsChange.html">OperationsChange</a>
               </li>
               <li class="nav-group-task">
@@ -1142,6 +1142,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/TransactionDetailsResponseEnum.html">TransactionDetailsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/TransactionMetaType.html">TransactionMetaType</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/TransactionPostAsyncResponseEnum.html">TransactionPostAsyncResponseEnum</a>
@@ -1396,6 +1399,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/CustomerFileResponse.html">CustomerFileResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CustomerInformationNeededInteractive.html">CustomerInformationNeededInteractive</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/CustomerInformationNeededNonInteractive.html">CustomerInformationNeededNonInteractive</a>
@@ -1839,6 +1845,9 @@
                 <a class="nav-group-task-link" href="Structs/WrappedData12.html">WrappedData12</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/WrappedData16.html">WrappedData16</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/WrappedData32.html">WrappedData32</a>
               </li>
               <li class="nav-group-task">
@@ -1879,608 +1888,125 @@
         <section class="section">
           <div class="section-content top-matter">
             
-            <h1 id='stellar-ios-mac-sdk' class='heading'>stellar-ios-mac-sdk</h1>
+            <h1 id='a-href-https-github-com-soneso-stellar-ios-mac-sdk-stellar-sdk-for-ios-amp-macos-a' class='heading'><a href="https://github.com/Soneso/stellar-ios-mac-sdk">Stellar SDK for iOS &amp; macOS</a></h1>
 
 <p><a href="https://github.com/Soneso/stellar-ios-mac-sdk/releases"><img src="https://img.shields.io/github/v/release/Soneso/stellar-ios-mac-sdk" alt="GitHub release"></a> <a href="https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml"><img src="https://github.com/Soneso/stellar-ios-mac-sdk/actions/workflows/tests.yml/badge.svg" alt="Tests"></a> <a href="https://codecov.io/gh/Soneso/stellar-ios-mac-sdk"><img src="https://codecov.io/gh/Soneso/stellar-ios-mac-sdk/branch/master/graph/badge.svg" alt="codecov"></a> <a href="https://deepwiki.com/Soneso/stellar-ios-mac-sdk"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a></p>
 
-<p>The Soneso open source Stellar SDK for iOS &amp; Mac provides APIs to query Horizon and Soroban RPC, build, sign and submit transactions to the Stellar Network. It supports different Stellar Ecosystem Proposals and helps developers deploy and invoke Soroban Smart Contracts.</p>
+<p>Build and sign Stellar transactions, query <a href="https://developers.stellar.org/docs/data/apis/horizon">Horizon</a>, and interact with <a href="https://developers.stellar.org/docs/build/smart-contracts/overview">Soroban</a> smart contracts via RPC. Communicate with anchors and external services using built-in support for 17 SEPs.</p>
 <h2 id='installation' class='heading'>Installation</h2>
 <h3 id='swift-package-manager' class='heading'>Swift Package Manager</h3>
-<h4 id='latest-stable-release' class='heading'>Latest stable release:</h4>
-<pre class="highlight swift"><code><span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"stellarsdk"</span><span class="p">,</span> <span class="nv">url</span><span class="p">:</span> <span class="s">"git@github.com:Soneso/stellar-ios-mac-sdk.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"3.4.4"</span><span class="p">),</span>
+<pre class="highlight swift"><code><span class="o">.</span><span class="nf">package</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"stellarsdk"</span><span class="p">,</span> <span class="nv">url</span><span class="p">:</span> <span class="s">"git@github.com:Soneso/stellar-ios-mac-sdk.git"</span><span class="p">,</span> <span class="nv">from</span><span class="p">:</span> <span class="s">"3.4.5"</span><span class="p">),</span>
 </code></pre>
-
-<p>If not loading (err: <code>cannot use bare repository</code>), then remove:</p>
-<pre class="highlight shell"><code><span class="o">[</span>safe]
-    bareRepository <span class="o">=</span> explicit
-</code></pre>
-
-<p>from <code>~/.gitconfig</code>. See also this <a href="https://forums.swift.org/t/fatal-cannot-use-bare-repository/75588">SourceTree issue</a>. </p>
 <h3 id='cocoapods' class='heading'>CocoaPods</h3>
-
-<p><a href="http://cocoapods.org">CocoaPods</a> is a dependency manager for Cocoa projects. You can install it with the following command:</p>
-<pre class="highlight shell"><code><span class="nv">$ </span>gem <span class="nb">install </span>cocoapods
+<pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'stellar-ios-mac-sdk'</span><span class="p">,</span> <span class="s1">'~&gt; 3.4.5'</span>
 </code></pre>
 
-<p>To integrate stellar SDK into your Xcode project using CocoaPods, specify it in your <code>Podfile</code>:</p>
-<h4 id='last-stable-release' class='heading'>Last stable release:</h4>
-<pre class="highlight ruby"><code><span class="n">use_frameworks!</span>
+<p>Requires iOS 13+, macOS 10.15+, Swift 5.7+.</p>
+<h2 id='quick-examples' class='heading'>Quick examples</h2>
+<h3 id='send-a-payment' class='heading'>Send a payment</h3>
 
-<span class="n">target</span> <span class="s1">'&lt;Your Target Name&gt;'</span> <span class="k">do</span>
-    <span class="n">pod</span> <span class="s1">'stellar-ios-mac-sdk'</span><span class="p">,</span> <span class="s1">'~&gt; 3.4.4'</span>
-<span class="k">end</span>
-</code></pre>
-
-<p>Then, run the following command:</p>
-<pre class="highlight shell"><code><span class="nv">$ </span>pod repo update
-<span class="nv">$ </span>pod <span class="nb">install</span>
-</code></pre>
-<h3 id='carthage' class='heading'>Carthage</h3>
-
-<p><a href="https://github.com/Carthage/Carthage">Carthage</a> is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks.</p>
-
-<p>You can install Carthage with <a href="https://brew.sh/">Homebrew</a> using the following command:</p>
-<pre class="highlight shell"><code><span class="nv">$ </span>brew update
-<span class="nv">$ </span>brew <span class="nb">install </span>carthage
-</code></pre>
-
-<p>To integrate stellar-ios-mac-sdk into your Xcode project using Carthage, specify it in your <code>Cartfile</code>:</p>
-<h4 id='last-stable-release' class='heading'>Last stable release:</h4>
-<pre class="highlight plaintext"><code>github "soneso/stellar-ios-mac-sdk" ~&gt; 3.4.4
-</code></pre>
-
-<p>Run <code>carthage update</code> to build the framework and drag the build <code>stellar-ios-mac-sdk.framework</code> into your Xcode project.</p>
-<h3 id='manual' class='heading'>Manual</h3>
-
-<p>Add the SDK project as a subproject, and having the SDK as a target dependencies. Here is a step by step that we recommend:</p>
-
-<ol>
-<li>Clone this repo (as a submodule or in a different directory, it&rsquo;s up to you);</li>
-<li>Drag <code>stellarsdk.xcodeproj</code> as a subproject;</li>
-<li>In your main <code>.xcodeproj</code> file, select the desired target(s);</li>
-<li>Go to <strong>Build Phases</strong>, expand Target Dependencies, and add <code>stellarsdk</code> for iOS and <code>stellarsdk-macOS</code> for OSX;</li>
-<li>In Swift, <code>import stellarsdk</code> and you are good to go!</li>
-</ol>
-<h2 id='quick-start' class='heading'>Quick Start</h2>
-<h3 id='1-create-a-stellar-key-pair' class='heading'>1. Create a Stellar key pair</h3>
-<h4 id='1-1-random-generation' class='heading'>1.1 Random generation</h4>
-<pre class="highlight swift"><code><span class="c1">// create a completely new and unique pair of keys.</span>
-<span class="k">let</span> <span class="nv">keyPair</span> <span class="o">=</span> <span class="k">try!</span> <span class="kt">KeyPair</span><span class="o">.</span><span class="nf">generateRandomKeyPair</span><span class="p">()</span>
-
-<span class="nf">print</span><span class="p">(</span><span class="s">"Account Id: </span><span class="se">\(</span><span class="n">keyPair</span><span class="o">.</span><span class="n">accountId</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-<span class="c1">// GCFXHS4GXL6BVUCXBWXGTITROWLVYXQKQLF4YH5O5JT3YZXCYPAFBJZB</span>
-
-<span class="nf">print</span><span class="p">(</span><span class="s">"Secret Seed: </span><span class="se">\(</span><span class="n">keyPair</span><span class="o">.</span><span class="n">secretSeed</span><span class="o">!</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-<span class="c1">// SAV76USXIJOBMEQXPANUOQM6F5LIOTLPDIDVRJBFFE2MDJXG24TAPUU7</span>
-</code></pre>
-<h4 id='1-2-deterministic-generation' class='heading'>1.2 Deterministic generation</h4>
-
-<p>The Stellar Ecosystem Proposal <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md">SEP-005 Key Derivation Methods for Stellar Accounts</a> describes methods for key derivation for Stellar. This improves key storage and moving keys between wallets and apps.</p>
-
-<p>Generate mnemonic</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">mnemonic</span> <span class="o">=</span> <span class="kt">WalletUtils</span><span class="o">.</span><span class="nf">generate24WordMnemonic</span><span class="p">()</span>
-<span class="nf">print</span><span class="p">(</span><span class="s">"generated 24 words mnemonic: </span><span class="se">\(</span><span class="n">mnemonic</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-<span class="c1">// bench hurt jump file august wise shallow faculty impulse spring exact slush thunder author capable act festival slice deposit sauce coconut afford frown better</span>
-</code></pre>
-
-<p>Generate key pairs</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">keyPair0</span> <span class="o">=</span> <span class="k">try!</span> <span class="kt">WalletUtils</span><span class="o">.</span><span class="nf">createKeyPair</span><span class="p">(</span><span class="nv">mnemonic</span><span class="p">:</span> <span class="n">mnemonic</span><span class="p">,</span> <span class="nv">passphrase</span><span class="p">:</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">index</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">keyPair1</span> <span class="o">=</span> <span class="k">try!</span> <span class="kt">WalletUtils</span><span class="o">.</span><span class="nf">createKeyPair</span><span class="p">(</span><span class="nv">mnemonic</span><span class="p">:</span> <span class="n">mnemonic</span><span class="p">,</span> <span class="nv">passphrase</span><span class="p">:</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">index</span><span class="p">:</span> <span class="mi">1</span><span class="p">)</span>
-
-<span class="nf">print</span><span class="p">(</span><span class="s">"key pair 0 accountId: </span><span class="se">\(</span><span class="n">keyPair0</span><span class="o">.</span><span class="n">accountId</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-<span class="c1">// key pair 0 accountId: GC3MMSXBWHL6CPOAVERSJITX7BH76YU252WGLUOM5CJX3E7UCYZBTPJQ</span>
-
-<span class="nf">print</span><span class="p">(</span><span class="s">"key pair 0 secretSeed: </span><span class="se">\(</span><span class="n">keyPair0</span><span class="o">.</span><span class="n">secretSeed</span><span class="o">!</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-<span class="c1">// key pair 0 secretSeed: SAEWIVK3VLNEJ3WEJRZXQGDAS5NVG2BYSYDFRSH4GKVTS5RXNVED5AX7</span>
-</code></pre>
-
-<p>Generate key pairs with passphrase</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">keyPair0</span> <span class="o">=</span> <span class="k">try!</span> <span class="kt">WalletUtils</span><span class="o">.</span><span class="nf">createKeyPair</span><span class="p">(</span><span class="nv">mnemonic</span><span class="p">:</span> <span class="n">mnemonic</span><span class="p">,</span> <span class="nv">passphrase</span><span class="p">:</span> <span class="s">"p4ssphr4se"</span><span class="p">,</span> <span class="nv">index</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">keyPair1</span> <span class="o">=</span> <span class="k">try!</span> <span class="kt">WalletUtils</span><span class="o">.</span><span class="nf">createKeyPair</span><span class="p">(</span><span class="nv">mnemonic</span><span class="p">:</span> <span class="n">mnemonic</span><span class="p">,</span> <span class="nv">passphrase</span><span class="p">:</span> <span class="s">"p4ssphr4se"</span><span class="p">,</span> <span class="nv">index</span><span class="p">:</span> <span class="mi">1</span><span class="p">)</span>
-</code></pre>
-
-<p>BIP and master key generation</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">bip39Seed</span> <span class="o">=</span> <span class="kt">Mnemonic</span><span class="o">.</span><span class="nf">createSeed</span><span class="p">(</span><span class="nv">mnemonic</span><span class="p">:</span> <span class="n">mnemonic</span><span class="p">)</span>
-
-<span class="k">let</span> <span class="nv">masterPrivateKey</span> <span class="o">=</span> <span class="kt">Ed25519Derivation</span><span class="p">(</span><span class="nv">seed</span><span class="p">:</span> <span class="n">bip39Seed</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">purpose</span> <span class="o">=</span> <span class="n">masterPrivateKey</span><span class="o">.</span><span class="nf">derived</span><span class="p">(</span><span class="nv">at</span><span class="p">:</span> <span class="mi">44</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">coinType</span> <span class="o">=</span> <span class="n">purpose</span><span class="o">.</span><span class="nf">derived</span><span class="p">(</span><span class="nv">at</span><span class="p">:</span> <span class="mi">148</span><span class="p">)</span>
-
-<span class="k">let</span> <span class="nv">account0</span> <span class="o">=</span> <span class="n">coinType</span><span class="o">.</span><span class="nf">derived</span><span class="p">(</span><span class="nv">at</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">keyPair0</span> <span class="o">=</span> <span class="k">try!</span> <span class="kt">KeyPair</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">seed</span><span class="p">:</span> <span class="kt">Seed</span><span class="p">(</span><span class="nv">bytes</span><span class="p">:</span> <span class="n">account0</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">bytes</span><span class="p">))</span>
-
-<span class="k">let</span> <span class="nv">account1</span> <span class="o">=</span> <span class="n">coinType</span><span class="o">.</span><span class="nf">derived</span><span class="p">(</span><span class="nv">at</span><span class="p">:</span> <span class="mi">1</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">keyPair1</span> <span class="o">=</span> <span class="k">try!</span> <span class="kt">KeyPair</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">seed</span><span class="p">:</span> <span class="kt">Seed</span><span class="p">(</span><span class="nv">bytes</span><span class="p">:</span> <span class="n">account1</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">bytes</span><span class="p">))</span>
-</code></pre>
-<h3 id='2-create-an-account' class='heading'>2. Create an account</h3>
-
-<p>After the key pair generation, you have already got the address, but it is not activated until someone transfers at least 1 lumen into it.</p>
-<h4 id='2-1-testnet' class='heading'>2.1 Testnet</h4>
-
-<p>If you want to play in the Stellar test network, the sdk can ask Friendbot to create an account for you as shown below:</p>
-<pre class="highlight swift"><code><span class="c1">// To create a test account, sdk.accounts.createTestAccount will send Friendbot the public key you created</span>
-<span class="k">let</span> <span class="nv">responseEnum</span> <span class="o">=</span> <span class="k">await</span> <span class="n">sdk</span><span class="o">.</span><span class="n">accounts</span><span class="o">.</span><span class="nf">createTestAccount</span><span class="p">(</span><span class="nv">accountId</span><span class="p">:</span> <span class="n">keyPair</span><span class="o">.</span><span class="n">accountId</span><span class="p">)</span>
-<span class="k">switch</span> <span class="n">responseEnum</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">details</span><span class="p">):</span>
-    <span class="nf">print</span><span class="p">(</span><span class="n">details</span><span class="p">)</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
-    <span class="kt">StellarSDKLog</span><span class="o">.</span><span class="nf">printHorizonRequestErrorMessage</span><span class="p">(</span><span class="nv">tag</span><span class="p">:</span><span class="s">"createTestAccount"</span><span class="p">,</span> <span class="nv">horizonRequestError</span><span class="p">:</span> <span class="n">error</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L18">detailed code example</a></p>
-<h4 id='2-2-public-net' class='heading'>2.2 Public net</h4>
-
-<p>On the other hand, if you would like to create an account in the public net, you should buy some Stellar Lumens from an exchange. See <a href="https://www.stellar.org/lumens/exchanges">Stellar&rsquo;s lumen buying guide</a>. When you withdraw the Lumens into your new account, the exchange will automatically create the account for you. However, if you want to create an account from another account of your own, you may run the following code:</p>
-<pre class="highlight swift"><code><span class="c1">// build the operation</span>
-<span class="k">let</span> <span class="nv">createAccount</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">CreateAccountOperation</span><span class="p">(</span><span class="nv">sourceAccountId</span><span class="p">:</span> <span class="kc">nil</span><span class="p">,</span>
-                                           <span class="nv">destinationAccountId</span><span class="p">:</span> <span class="n">destinationAccountId</span><span class="p">,</span>
-                                           <span class="nv">startBalance</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">)</span>
-
-<span class="c1">// build the transaction</span>
-<span class="k">let</span> <span class="nv">transaction</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">Transaction</span><span class="p">(</span><span class="nv">sourceAccount</span><span class="p">:</span> <span class="n">accountResponse</span><span class="p">,</span>
-                                     <span class="nv">operations</span><span class="p">:</span> <span class="p">[</span><span class="n">createAccount</span><span class="p">],</span>
-                                     <span class="nv">memo</span><span class="p">:</span> <span class="kt">Memo</span><span class="o">.</span><span class="k">none</span><span class="p">)</span>
-
-<span class="c1">// sign the transaction</span>
-<span class="k">try</span> <span class="n">transaction</span><span class="o">.</span><span class="nf">sign</span><span class="p">(</span><span class="nv">keyPair</span><span class="p">:</span> <span class="n">sourceAccountKeyPair</span><span class="p">,</span> <span class="nv">network</span><span class="p">:</span> <span class="kt">Network</span><span class="o">.</span><span class="n">testnet</span><span class="p">)</span>
-
-<span class="c1">// submit the transaction</span>
-<span class="k">let</span> <span class="nv">responseEnum</span> <span class="o">=</span> <span class="k">await</span> <span class="n">sdk</span><span class="o">.</span><span class="n">transactions</span><span class="o">.</span><span class="nf">submitTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="n">transaction</span><span class="p">)</span>
-<span class="k">switch</span> <span class="n">responseEnum</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">details</span><span class="p">):</span>
-    <span class="c1">//...</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">destinationRequiresMemo</span><span class="p">(</span><span class="nv">destinationAccountId</span><span class="p">:</span> <span class="k">let</span> <span class="nv">destinationAccountId</span><span class="p">):</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"destination account </span><span class="se">\(</span><span class="n">destinationAccountId</span><span class="se">)</span><span class="s"> requires memo"</span><span class="p">)</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="nv">error</span><span class="p">:</span> <span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
-    <span class="kt">StellarSDKLog</span><span class="o">.</span><span class="nf">printHorizonRequestErrorMessage</span><span class="p">(</span><span class="nv">tag</span><span class="p">:</span><span class="s">"submitTransaction"</span><span class="p">,</span> <span class="nv">horizonRequestError</span><span class="p">:</span> <span class="n">error</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L37">detailed code example</a></p>
-<h3 id='3-check-account' class='heading'>3. Check account</h3>
-<h4 id='3-1-basic-info' class='heading'>3.1 Basic info</h4>
-
-<p>After creating the account, we may check the basic information of the account.</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">responseEnum</span> <span class="o">=</span> <span class="k">await</span> <span class="n">sdk</span><span class="o">.</span><span class="n">accounts</span><span class="o">.</span><span class="nf">getAccountDetails</span><span class="p">(</span><span class="nv">accountId</span><span class="p">:</span> <span class="n">keyPair</span><span class="o">.</span><span class="n">accountId</span><span class="p">)</span>
-
-<span class="k">switch</span> <span class="n">responseEnum</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">accountDetails</span><span class="p">):</span>
-    <span class="c1">// You can check the `balance`, `sequence`, `flags`, `signers`, `data` etc.</span>
-
-    <span class="k">for</span> <span class="n">balance</span> <span class="k">in</span> <span class="n">accountDetails</span><span class="o">.</span><span class="n">balances</span> <span class="p">{</span>
-        <span class="k">switch</span> <span class="n">balance</span><span class="o">.</span><span class="n">assetType</span> <span class="p">{</span>
-        <span class="k">case</span> <span class="kt">AssetTypeAsString</span><span class="o">.</span><span class="kt">NATIVE</span><span class="p">:</span>
-            <span class="nf">print</span><span class="p">(</span><span class="s">"balance: </span><span class="se">\(</span><span class="n">balance</span><span class="o">.</span><span class="n">balance</span><span class="se">)</span><span class="s"> XLM"</span><span class="p">)</span>
-        <span class="k">default</span><span class="p">:</span>
-            <span class="nf">print</span><span class="p">(</span><span class="s">"balance: </span><span class="se">\(</span><span class="n">balance</span><span class="o">.</span><span class="n">balance</span><span class="se">)</span><span class="s"> </span><span class="se">\(</span><span class="n">balance</span><span class="o">.</span><span class="n">assetCode</span><span class="o">!</span><span class="se">)</span><span class="s"> issuer: </span><span class="se">\(</span><span class="n">balance</span><span class="o">.</span><span class="n">assetIssuer</span><span class="o">!</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="nf">print</span><span class="p">(</span><span class="s">"sequence number: </span><span class="se">\(</span><span class="n">accountDetails</span><span class="o">.</span><span class="n">sequenceNumber</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">signer</span> <span class="k">in</span> <span class="n">accountDetails</span><span class="o">.</span><span class="n">signers</span> <span class="p">{</span>
-        <span class="nf">print</span><span class="p">(</span><span class="s">"signer public key: </span><span class="se">\(</span><span class="n">signer</span><span class="o">.</span><span class="n">key</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-    <span class="p">}</span>
-
-    <span class="nf">print</span><span class="p">(</span><span class="s">"auth required: </span><span class="se">\(</span><span class="n">accountDetails</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">authRequired</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"auth revocable: </span><span class="se">\(</span><span class="n">accountDetails</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">authRevocable</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">in</span> <span class="n">accountDetails</span><span class="o">.</span><span class="n">data</span> <span class="p">{</span>
-        <span class="nf">print</span><span class="p">(</span><span class="s">"data key: </span><span class="se">\(</span><span class="n">key</span><span class="se">)</span><span class="s"> value: </span><span class="se">\(</span><span class="n">value</span><span class="o">.</span><span class="nf">base64Decoded</span><span class="p">()</span> <span class="p">??</span> <span class="s">""</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-    <span class="p">}</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
-    <span class="kt">StellarSDKLog</span><span class="o">.</span><span class="nf">printHorizonRequestErrorMessage</span><span class="p">(</span><span class="nv">tag</span><span class="p">:</span><span class="s">"account details"</span><span class="p">,</span> <span class="nv">horizonRequestError</span><span class="p">:</span> <span class="n">error</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L92">detailed code example</a></p>
-<h4 id='3-2-check-payments' class='heading'>3.2 Check payments</h4>
-
-<p>You can check the most recent payments by:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">responseEnum</span> <span class="o">=</span> <span class="k">await</span> <span class="n">sdk</span><span class="o">.</span><span class="n">payments</span><span class="o">.</span><span class="nf">getPayments</span><span class="p">(</span><span class="nv">order</span><span class="p">:</span><span class="kt">Order</span><span class="o">.</span><span class="n">descending</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span><span class="mi">10</span><span class="p">)</span>
-
-<span class="k">switch</span> <span class="n">responseEnum</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">page</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">payment</span> <span class="k">in</span> <span class="n">page</span><span class="o">.</span><span class="n">records</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="k">let</span> <span class="nv">nextPayment</span> <span class="o">=</span> <span class="n">payment</span> <span class="k">as?</span> <span class="kt">PaymentOperationResponse</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">nextPayment</span><span class="o">.</span><span class="n">assetType</span> <span class="o">==</span> <span class="kt">AssetTypeAsString</span><span class="o">.</span><span class="kt">NATIVE</span><span class="p">)</span> <span class="p">{</span>
-                <span class="nf">print</span><span class="p">(</span><span class="s">"received: </span><span class="se">\(</span><span class="n">nextPayment</span><span class="o">.</span><span class="n">amount</span><span class="se">)</span><span class="s"> lumen"</span> <span class="p">)</span>
-            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-                <span class="nf">print</span><span class="p">(</span><span class="s">"received: </span><span class="se">\(</span><span class="n">nextPayment</span><span class="o">.</span><span class="n">amount</span><span class="se">)</span><span class="s"> </span><span class="se">\(</span><span class="n">nextPayment</span><span class="o">.</span><span class="n">assetCode</span><span class="o">!</span><span class="se">)</span><span class="s">"</span> <span class="p">)</span>
-            <span class="p">}</span>
-            <span class="nf">print</span><span class="p">(</span><span class="s">"from: </span><span class="se">\(</span><span class="n">nextPayment</span><span class="o">.</span><span class="n">from</span><span class="se">)</span><span class="s">"</span> <span class="p">)</span>
-        <span class="p">}</span>
-        <span class="k">else</span> <span class="k">if</span> <span class="k">let</span> <span class="nv">nextPayment</span> <span class="o">=</span> <span class="n">payment</span> <span class="k">as?</span> <span class="kt">AccountCreatedOperationResponse</span> <span class="p">{</span>
-            <span class="c1">//...</span>
-        <span class="p">}</span>
-        <span class="k">else</span> <span class="k">if</span> <span class="k">let</span> <span class="nv">nextPayment</span> <span class="o">=</span> <span class="n">payment</span> <span class="k">as?</span> <span class="kt">PathPaymentStrictSendOperationResponse</span> <span class="p">{</span>
-            <span class="c1">//...</span>
-        <span class="p">}</span>
-        <span class="c1">// ...</span>
-    <span class="p">}</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
-    <span class="c1">// ...</span>
-<span class="p">}</span>
-</code></pre>
-
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L139">detailed code example</a></p>
-
-<p>You can use the parameters:<code>limit</code>, <code>order</code>, and <code>cursor</code> to customize the query. You can also get most recent payments for accounts, ledgers and transactions. </p>
-
-<p>For example get payments for account:</p>
-<pre class="highlight swift"><code><span class="n">sdk</span><span class="o">.</span><span class="n">payments</span><span class="o">.</span><span class="nf">getPayments</span><span class="p">(</span><span class="nv">forAccount</span><span class="p">:</span><span class="n">keyPair</span><span class="o">.</span><span class="n">accountId</span><span class="p">,</span> <span class="nv">order</span><span class="p">:</span><span class="kt">Order</span><span class="o">.</span><span class="n">descending</span><span class="p">,</span> <span class="nv">limit</span><span class="p">:</span><span class="mi">10</span><span class="p">)</span>
-</code></pre>
-
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L171">detailed code example</a></p>
-
-<p>Horizon has SSE support for push data. You can use it like this:</p>
-
-<p>first define your stream item somewhere to be able to hold the reference:</p>
-<pre class="highlight swift"><code><span class="k">var</span> <span class="nv">streamItem</span><span class="p">:</span><span class="kt">OperationsStreamItem</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
-</code></pre>
-
-<p>then create, assign and use it:</p>
-<pre class="highlight swift"><code><span class="n">streamItem</span> <span class="o">=</span> <span class="n">sdk</span><span class="o">.</span><span class="n">payments</span><span class="o">.</span><span class="nf">stream</span><span class="p">(</span><span class="nv">for</span><span class="p">:</span> <span class="o">.</span><span class="nf">paymentsForAccount</span><span class="p">(</span><span class="nv">account</span><span class="p">:</span> <span class="n">destinationAccountId</span><span class="p">,</span> <span class="nv">cursor</span><span class="p">:</span> <span class="kc">nil</span><span class="p">))</span>
-
-<span class="n">streamItem</span><span class="o">.</span><span class="n">onReceive</span> <span class="p">{</span> <span class="p">(</span><span class="n">response</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="kt">Void</span><span class="p">)</span> <span class="k">in</span>
-    <span class="k">switch</span> <span class="n">response</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="o">.</span><span class="nv">open</span><span class="p">:</span>
-        <span class="k">break</span>
-    <span class="k">case</span> <span class="o">.</span><span class="nf">response</span><span class="p">(</span><span class="k">let</span> <span class="nv">id</span><span class="p">,</span> <span class="k">let</span> <span class="nv">operationResponse</span><span class="p">):</span>
-        <span class="k">if</span> <span class="k">let</span> <span class="nv">paymentResponse</span> <span class="o">=</span> <span class="n">operationResponse</span> <span class="k">as?</span> <span class="kt">PaymentOperationResponse</span> <span class="p">{</span>
-            <span class="k">switch</span> <span class="n">paymentResponse</span><span class="o">.</span><span class="n">assetType</span> <span class="p">{</span>
-            <span class="k">case</span> <span class="kt">AssetTypeAsString</span><span class="o">.</span><span class="kt">NATIVE</span><span class="p">:</span>
-                <span class="nf">print</span><span class="p">(</span><span class="s">"Payment of </span><span class="se">\(</span><span class="n">paymentResponse</span><span class="o">.</span><span class="n">amount</span><span class="se">)</span><span class="s"> XLM from </span><span class="se">\(</span><span class="n">paymentResponse</span><span class="o">.</span><span class="n">sourceAccount</span><span class="se">)</span><span class="s"> received -  id </span><span class="se">\(</span><span class="n">id</span><span class="se">)</span><span class="s">"</span> <span class="p">)</span>
-            <span class="k">default</span><span class="p">:</span>
-                <span class="nf">print</span><span class="p">(</span><span class="s">"Payment of </span><span class="se">\(</span><span class="n">paymentResponse</span><span class="o">.</span><span class="n">amount</span><span class="se">)</span><span class="s"> </span><span class="se">\(</span><span class="n">paymentResponse</span><span class="o">.</span><span class="n">assetCode</span><span class="o">!</span><span class="se">)</span><span class="s"> from </span><span class="se">\(</span><span class="n">paymentResponse</span><span class="o">.</span><span class="n">sourceAccount</span><span class="se">)</span><span class="s"> received -  id </span><span class="se">\(</span><span class="n">id</span><span class="se">)</span><span class="s">"</span> <span class="p">)</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="k">case</span> <span class="o">.</span><span class="nf">error</span><span class="p">(</span><span class="k">let</span> <span class="nv">err</span><span class="p">):</span>
-        <span class="nf">print</span><span class="p">(</span><span class="n">err</span><span class="p">?</span><span class="o">.</span><span class="n">localizedDescription</span> <span class="p">??</span> <span class="s">"Error"</span><span class="p">)</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre>
-
-<p>later you can close the stream item:</p>
-<pre class="highlight swift"><code><span class="n">streamItem</span><span class="o">.</span><span class="nf">close</span><span class="p">()</span>
-</code></pre>
-
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L201">detailed code example</a></p>
-<h4 id='3-3-check-others' class='heading'>3.3 Check others</h4>
-
-<p>Just like payments, you can check <code>assets</code>, <code>transactions</code>, <code>effects</code>, <code>offers</code>, <code>operations</code>, <code>ledgers</code> etc.  by:</p>
-<pre class="highlight swift"><code><span class="n">sdk</span><span class="o">.</span><span class="n">assets</span><span class="o">.</span><span class="nf">getAssets</span><span class="p">()</span>
-<span class="n">sdk</span><span class="o">.</span><span class="n">transactions</span><span class="o">.</span><span class="nf">getTransactions</span><span class="p">()</span>
-<span class="n">sdk</span><span class="o">.</span><span class="n">effects</span><span class="o">.</span><span class="nf">getEffects</span><span class="p">()</span>
-<span class="n">sdk</span><span class="o">.</span><span class="n">offers</span><span class="o">.</span><span class="nf">getOffers</span><span class="p">()</span>
-<span class="n">sdk</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="nf">getOperations</span><span class="p">()</span>
-<span class="c1">// add so on ...</span>
-</code></pre>
-<h3 id='4-building-and-submitting-transactions' class='heading'>4. Building and submitting transactions</h3>
-
-<p>Example &ldquo;send payment&rdquo;:</p>
-<pre class="highlight swift"><code><span class="c1">// create the payment operation</span>
-<span class="k">let</span> <span class="nv">paymentOperation</span> <span class="o">=</span> <span class="kt">PaymentOperation</span><span class="p">(</span><span class="nv">sourceAccountId</span><span class="p">:</span> <span class="n">sourceAccountId</span><span class="p">,</span>
-                                        <span class="nv">destinationAccountId</span><span class="p">:</span> <span class="n">destinationAccountId</span><span class="p">,</span>
-                                        <span class="nv">asset</span><span class="p">:</span> <span class="kt">Asset</span><span class="p">(</span><span class="nv">type</span><span class="p">:</span> <span class="kt">AssetType</span><span class="o">.</span><span class="kt">ASSET_TYPE_NATIVE</span><span class="p">)</span><span class="o">!</span><span class="p">,</span>
-                                        <span class="nv">amount</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">)</span>
-
-<span class="c1">// create the transaction containing the payment operation                                        </span>
-<span class="k">let</span> <span class="nv">transaction</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">Transaction</span><span class="p">(</span><span class="nv">sourceAccount</span><span class="p">:</span> <span class="n">accountResponse</span><span class="p">,</span>
-                                  <span class="nv">operations</span><span class="p">:</span> <span class="p">[</span><span class="n">paymentOperation</span><span class="p">],</span>
+<p>Transfer XLM between accounts:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">paymentOp</span> <span class="o">=</span> <span class="kt">PaymentOperation</span><span class="p">(</span><span class="nv">sourceAccountId</span><span class="p">:</span> <span class="kc">nil</span><span class="p">,</span>
+                                 <span class="nv">destinationAccountId</span><span class="p">:</span> <span class="n">receiverId</span><span class="p">,</span>
+                                 <span class="nv">asset</span><span class="p">:</span> <span class="kt">Asset</span><span class="p">(</span><span class="nv">type</span><span class="p">:</span> <span class="kt">AssetType</span><span class="o">.</span><span class="kt">ASSET_TYPE_NATIVE</span><span class="p">)</span><span class="o">!</span><span class="p">,</span>
+                                 <span class="nv">amount</span><span class="p">:</span> <span class="mi">100</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">transaction</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">Transaction</span><span class="p">(</span><span class="nv">sourceAccount</span><span class="p">:</span> <span class="n">senderAccount</span><span class="p">,</span>
+                                  <span class="nv">operations</span><span class="p">:</span> <span class="p">[</span><span class="n">paymentOp</span><span class="p">],</span>
                                   <span class="nv">memo</span><span class="p">:</span> <span class="kt">Memo</span><span class="o">.</span><span class="k">none</span><span class="p">)</span>
-
-<span class="c1">// sign the transaction</span>
-<span class="k">try</span> <span class="n">transaction</span><span class="o">.</span><span class="nf">sign</span><span class="p">(</span><span class="nv">keyPair</span><span class="p">:</span> <span class="n">sourceAccountKeyPair</span><span class="p">,</span> <span class="nv">network</span><span class="p">:</span> <span class="kt">Network</span><span class="o">.</span><span class="n">testnet</span><span class="p">)</span>
-
-<span class="c1">// submit the transaction</span>
-<span class="k">let</span> <span class="nv">responseEnum</span> <span class="o">=</span> <span class="k">await</span> <span class="n">sdk</span><span class="o">.</span><span class="n">transactions</span><span class="o">.</span><span class="nf">submitTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="n">transaction</span><span class="p">)</span>
-<span class="k">switch</span> <span class="n">responseEnum</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">result</span><span class="p">):</span>
-    <span class="c1">// ...</span>
-<span class="k">default</span><span class="p">:</span>
-    <span class="c1">// ...</span>
-<span class="p">}</span>
+<span class="k">try</span> <span class="n">transaction</span><span class="o">.</span><span class="nf">sign</span><span class="p">(</span><span class="nv">keyPair</span><span class="p">:</span> <span class="n">senderKeyPair</span><span class="p">,</span> <span class="nv">network</span><span class="p">:</span> <span class="o">.</span><span class="n">testnet</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">sdk</span><span class="o">.</span><span class="n">transactions</span><span class="o">.</span><span class="nf">submitTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="n">transaction</span><span class="p">)</span>
 </code></pre>
+<h3 id='trust-an-asset' class='heading'>Trust an asset</h3>
 
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L281">detailed code example</a></p>
-
-<p>Get a transaction envelope from an XDR string:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">xdrString</span> <span class="o">=</span> <span class="s">"AAAAAJ/Ax+axve53/7sXfQY0fI6jzBeHEcPl0Vsg1C2tqyRbAAAAZAAAAAAAAAAAAAAAAQAAAABb2L/OAAAAAFvYwPoAAAAAAAAAAQAAAAEAAAAAo7FW8r8Nj+SMwPPeAoL4aUkLob7QU68+9Y8CAia5k78AAAAKAAAAN0NJcDhiSHdnU2hUR042ZDE3bjg1ZlFGRVBKdmNtNFhnSWhVVFBuUUF4cUtORVd4V3JYIGF1dGgAAAAAAQAAAEDh/7kQjZbcXypISjto5NtGLuaDGrfL/F08apZQYp38JNMNQ9p/e1Fy0z23WOg/Ic+e91+hgbdTude6+1+i0V41AAAAAAAAAAGtqyRbAAAAQNeY1rEwPynWnVXaaE/XWeuRnOHS/479J+Eu7s5OplSlF41xB7E8u9WzEItaOs167xuOVcLZUKBCBF1fnfzMEQg="</span>
-<span class="k">do</span> <span class="p">{</span>
-    <span class="k">let</span> <span class="nv">envelope</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">TransactionEnvelopeXDR</span><span class="p">(</span><span class="nv">xdr</span><span class="p">:</span><span class="n">xdrString</span><span class="p">)</span>
-    <span class="k">let</span> <span class="nv">envelopeString</span> <span class="o">=</span> <span class="n">envelope</span><span class="o">.</span><span class="n">xdrEncoded</span>
-<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"Invalid xdr string"</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L342">detailed code example</a></p>
-
-<p>Get a transaction object from an XDR string:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">xdrString</span> <span class="o">=</span> <span class="s">"AAAAAJ/Ax+axve53/7sXfQY0fI6jzBeHEcPl0Vsg1C2tqyRbAAAAZAAAAAAAAAAAAAAAAQAAAABb2L/OAAAAAFvYwPoAAAAAAAAAAQAAAAEAAAAAo7FW8r8Nj+SMwPPeAoL4aUkLob7QU68+9Y8CAia5k78AAAAKAAAAN0NJcDhiSHdnU2hUR042ZDE3bjg1ZlFGRVBKdmNtNFhnSWhVVFBuUUF4cUtORVd4V3JYIGF1dGgAAAAAAQAAAEDh/7kQjZbcXypISjto5NtGLuaDGrfL/F08apZQYp38JNMNQ9p/e1Fy0z23WOg/Ic+e91+hgbdTude6+1+i0V41AAAAAA=="</span>
-<span class="k">do</span> <span class="p">{</span>
-    <span class="c1">// Get the transaction object</span>
-    <span class="k">let</span> <span class="nv">transaction</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">Transaction</span><span class="p">(</span><span class="nv">xdr</span><span class="p">:</span><span class="n">xdrString</span><span class="p">)</span>
-    <span class="c1">// Convert your transaction back to xdr</span>
-    <span class="k">let</span> <span class="nv">transactionString</span> <span class="o">=</span> <span class="n">transaction</span><span class="o">.</span><span class="n">xdrEncoded</span>
-<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"Invalid xdr string"</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-<h3 id='5-using-a-federation-server' class='heading'>5. Using a federation server</h3>
-
-<p>The Stellar federation protocol defined in <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md">SEP-002</a> maps Stellar addresses to more information about a given user. It’s a way for Stellar client software to resolve email-like addresses such as:</p>
-
-<p>name*yourdomain.com </p>
-
-<p>into account IDs like: </p>
-
-<p>GCCVPYFOHY7ZB7557JKENAX62LUAPLMGIWNZJAFV2MITK6T32V37KEJU </p>
-
-<p>Stellar addresses provide an easy way for users to share payment details by using a syntax that interoperates across different domains and providers.</p>
-<h4 id='5-1-get-federation-server-address-for-a-domain' class='heading'>5.1 Get federation server address for a domain</h4>
-
-<p>Get the federation of your domain:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">responseEnum</span> <span class="o">=</span> <span class="k">await</span> <span class="kt">Federation</span><span class="o">.</span><span class="nf">forDomain</span><span class="p">(</span><span class="nv">domain</span><span class="p">:</span> <span class="n">domain</span><span class="p">,</span> <span class="nv">secure</span><span class="p">:</span> <span class="n">secure</span><span class="p">)</span>
-<span class="k">switch</span> <span class="n">responseEnum</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">federation</span><span class="p">):</span>
-    <span class="c1">//use the federation object to map your infos</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
-    <span class="c1">//something went wrong</span>
-<span class="p">}</span>
-</code></pre>
-<h4 id='5-2-resolve-a-federation-address-to-an-account-id' class='heading'>5.2 Resolve a federation address to an account id</h4>
-
-<p>Resolve your addresses:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">federation</span> <span class="o">=</span> <span class="kt">Federation</span><span class="p">(</span><span class="nv">federationAddress</span><span class="p">:</span> <span class="s">"https://YOUR_FEDERATION_SERVER"</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">responseEnum</span> <span class="o">=</span> <span class="k">await</span> <span class="n">federation</span><span class="o">.</span><span class="nf">resolve</span><span class="p">(</span><span class="nv">address</span><span class="p">:</span> <span class="s">"bob*YOUR_DOMAIN"</span><span class="p">)</span>
-<span class="k">switch</span> <span class="n">responseEnum</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">federationResponse</span><span class="p">):</span>
-    <span class="k">if</span> <span class="k">let</span> <span class="nv">accountId</span> <span class="o">=</span> <span class="n">federationResponse</span><span class="o">.</span><span class="n">accountId</span> <span class="p">{</span>
-        <span class="c1">// use the account id</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="c1">// there is no account id corresponding to the given address</span>
-    <span class="p">}</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-    <span class="c1">// something went wrong</span>
-<span class="p">}</span>
-</code></pre>
-<h3 id='6-anchor-client-interoperability' class='heading'>6. Anchor-Client interoperability</h3>
-
-<p>See <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/docs/SEP-0006.md">SDK&rsquo;s SEP-006 docs</a></p>
-<h3 id='7-uri-scheme-to-facilitate-delegated-signing' class='heading'>7. URI Scheme to facilitate delegated signing</h3>
-
-<p>The Stellar Ecosystem Proposal <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md">SEP-007</a> introduces a URI Scheme that can be used to generate a URI that will serve as a request to sign a transaction. The URI (request) will typically be signed by the user’s trusted wallet where she stores her secret key(s).</p>
-<h4 id='7-1-generate-a-uri-for-sign-transaction' class='heading'>7.1 Generate a URI for sign transaction.</h4>
-
-<p>Generate a URI that will serve as a request to sign a transaction. The URI (request) will typically be signed by the user’s trusted wallet where he stores his secret key(s).</p>
-<pre class="highlight swift"><code><span class="c1">// create the payment operation</span>
-<span class="k">let</span> <span class="nv">paymentOperation</span> <span class="o">=</span> <span class="k">try!</span> <span class="kt">PaymentOperation</span><span class="p">(</span><span class="nv">sourceAccountId</span><span class="p">:</span> <span class="n">sourceAccountId</span><span class="p">,</span>
-                                        <span class="nv">destinationAccountId</span><span class="p">:</span> <span class="n">destinationAccountId</span><span class="p">,</span>
-                                        <span class="nv">asset</span><span class="p">:</span> <span class="kt">Asset</span><span class="p">(</span><span class="nv">type</span><span class="p">:</span> <span class="kt">AssetType</span><span class="o">.</span><span class="kt">ASSET_TYPE_NATIVE</span><span class="p">)</span><span class="o">!</span><span class="p">,</span>
-                                        <span class="nv">amount</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">)</span>
-
-<span class="c1">// create the transaction containing the payment operation</span>
-<span class="k">let</span> <span class="nv">transaction</span> <span class="o">=</span> <span class="k">try!</span> <span class="kt">Transaction</span><span class="p">(</span><span class="nv">sourceAccount</span><span class="p">:</span> <span class="n">accountResponse</span><span class="p">,</span>
-                                  <span class="nv">operations</span><span class="p">:</span> <span class="p">[</span><span class="n">paymentOperation</span><span class="p">],</span>
+<p>Enable your account to receive a token (like USDC):</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">usdc</span> <span class="o">=</span> <span class="kt">ChangeTrustAsset</span><span class="p">(</span><span class="nv">canonicalForm</span><span class="p">:</span> <span class="s">"USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"</span><span class="p">)</span><span class="o">!</span>
+<span class="k">let</span> <span class="nv">trustOp</span> <span class="o">=</span> <span class="kt">ChangeTrustOperation</span><span class="p">(</span><span class="nv">sourceAccountId</span><span class="p">:</span> <span class="kc">nil</span><span class="p">,</span>
+                                   <span class="nv">asset</span><span class="p">:</span> <span class="n">usdc</span><span class="p">,</span>
+                                   <span class="nv">limit</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">transaction</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">Transaction</span><span class="p">(</span><span class="nv">sourceAccount</span><span class="p">:</span> <span class="n">account</span><span class="p">,</span>
+                                  <span class="nv">operations</span><span class="p">:</span> <span class="p">[</span><span class="n">trustOp</span><span class="p">],</span>
                                   <span class="nv">memo</span><span class="p">:</span> <span class="kt">Memo</span><span class="o">.</span><span class="k">none</span><span class="p">)</span>
-<span class="c1">// create the URIScheme object</span>
-<span class="k">let</span> <span class="nv">uriSchemeBuilder</span> <span class="o">=</span> <span class="kt">URIScheme</span><span class="p">()</span>
-
-<span class="c1">// get the URI with your transactionXDR</span>
-<span class="c1">// more params can be added to the url, check method definition</span>
-<span class="k">let</span> <span class="nv">uriScheme</span> <span class="o">=</span> <span class="n">uriSchemeBuilder</span><span class="o">.</span><span class="nf">getSignTransactionURI</span><span class="p">(</span><span class="nv">transactionXDR</span><span class="p">:</span> <span class="n">transaction</span><span class="o">.</span><span class="n">transactionXDR</span><span class="p">,</span> <span class="nv">callBack</span><span class="p">:</span> <span class="s">"your_callback_api.com"</span><span class="p">)</span>
-<span class="nf">print</span> <span class="p">(</span><span class="n">uriScheme</span><span class="p">);</span>
+<span class="k">try</span> <span class="n">transaction</span><span class="o">.</span><span class="nf">sign</span><span class="p">(</span><span class="nv">keyPair</span><span class="p">:</span> <span class="n">accountKeyPair</span><span class="p">,</span> <span class="nv">network</span><span class="p">:</span> <span class="o">.</span><span class="n">testnet</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">sdk</span><span class="o">.</span><span class="n">transactions</span><span class="o">.</span><span class="nf">submitTransaction</span><span class="p">(</span><span class="nv">transaction</span><span class="p">:</span> <span class="n">transaction</span><span class="p">)</span>
 </code></pre>
+<h3 id='call-a-smart-contract' class='heading'>Call a smart contract</h3>
 
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L372">detailed code example</a></p>
-<h4 id='7-2-generate-a-uri-for-pay-operation' class='heading'>7.2 Generate a URI for pay operation</h4>
-
-<p>Generate a URI that will serve as a request to pay a specific address with a specific asset, regardless of the source asset used by the payer.</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">uriSchemeBuilder</span> <span class="o">=</span> <span class="kt">URIScheme</span><span class="p">()</span>
-<span class="c1">// more params can be added to the url, check method definition</span>
-<span class="k">let</span> <span class="nv">uriScheme</span> <span class="o">=</span> <span class="n">uriSchemeBuilder</span><span class="o">.</span><span class="nf">getPayOperationURI</span><span class="p">(</span><span class="nv">destination</span><span class="p">:</span> <span class="s">"GAK7I2E6PVBFF27NU5MRY6UXGDWAJT4PF2AH46NUWLFJFFVLOZIEIO4Q"</span><span class="p">,</span> <span class="nv">amount</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="nv">assetCode</span><span class="p">:</span> <span class="s">"BTC"</span><span class="p">,</span> <span class="nv">assetIssuer</span><span class="p">:</span><span class="s">"GC2PIUYXSD23UVLR5LZJPUMDREQ3VTM23XVMERNCHBRTRVFKWJUSRON5"</span><span class="p">,</span> <span class="nv">callBack</span><span class="p">:</span> <span class="s">"your_callback_api.com"</span><span class="p">)</span>
-<span class="nf">print</span> <span class="p">(</span><span class="n">uriScheme</span><span class="p">);</span>
-</code></pre>
-
-<p>See also: <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/stellarsdk/stellarsdkIntegrationTests/docs/QuickStartTest.swift#L424">detailed code example</a></p>
-<h4 id='7-3-sign-a-transaction-from-a-given-uri-and-send-it-to-the-network' class='heading'>7.3 Sign a transaction from a given URI and send it to the network</h4>
-
-<p>Signs a transaction from a URI and sends it to the callback url if present or to the stellar network otherwise.</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">responseEnum</span> <span class="o">=</span> <span class="k">await</span> <span class="n">uriBuilder</span><span class="o">.</span><span class="nf">signAndSubmitTransaction</span><span class="p">(</span><span class="nv">forURL</span><span class="p">:</span> <span class="n">uri</span><span class="p">,</span> <span class="nv">signerKeyPair</span><span class="p">:</span> <span class="n">keyPair</span><span class="p">,</span> <span class="nv">transactionConfirmation</span><span class="p">:</span> <span class="p">{</span> <span class="p">(</span><span class="n">transaction</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="kt">Bool</span><span class="p">)</span> <span class="k">in</span>
-    <span class="c1">// here the transaction from the uri can be checked and confirmed if the signing should continue</span>
-    <span class="k">return</span> <span class="kc">false</span>
-<span class="p">})</span>
-
-<span class="k">switch</span> <span class="n">responseEnum</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nv">success</span><span class="p">:</span>
-    <span class="c1">// the transaction was successfully signed and sent</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="nv">error</span><span class="p">:</span> <span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
-    <span class="c1">// the transaction wasn't valid or it didn't pass the confirmation</span>
-<span class="p">}</span>
-</code></pre>
-<h3 id='8-stellar-web-authentication' class='heading'>8. Stellar Web Authentication</h3>
-
-<p>This SEP defines the standard way for clients such as wallets or exchanges to create authenticated web sessions on behalf of a user who holds a Stellar account. A wallet may want to authenticate with any web service which requires a Stellar account ownership verification, for example, to upload KYC information to an anchor in an authenticated way as described in SEP-6. Stellar Web Authentication is described in <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md">SEP-0010</a>.</p>
-<h4 id='8-1-get-a-jwt-token' class='heading'>8.1 Get a JWT token.</h4>
-
-<p>Authenticate with a server and get a JWT token.</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">authEndpoint</span> <span class="o">=</span> <span class="s">"https://testanchor.stellar.org/auth"</span>
-<span class="k">let</span> <span class="nv">serverSigningKey</span> <span class="o">=</span> <span class="s">"GCUZ6YLL5RQBTYLTTQLPCM73C5XAIUGK2TIMWQH7HPSGWVS2KJ2F3CHS"</span>
-<span class="k">let</span> <span class="nv">serverHomeDomain</span> <span class="o">=</span> <span class="s">"testanchor.stellar.org"</span>
-<span class="k">let</span> <span class="nv">userAccountId</span> <span class="o">=</span> <span class="s">"GB4L7JUU5DENUXYH3ANTLVYQL66KQLDDJTN5SF7MWEDGWSGUA375V44V"</span>
-<span class="k">let</span> <span class="nv">userSeed</span> <span class="o">=</span> <span class="s">"SBAYNYLQFXVLVAHW4BXDQYNJLMDQMZ5NQDDOHVJD3PTBAUIJRNRK5LGX"</span>
-
-<span class="c1">// Hold a strong reference to this to avoid being deallocated</span>
-<span class="k">let</span> <span class="nv">webAuth</span> <span class="o">=</span> <span class="kt">WebAuthenticator</span><span class="p">(</span><span class="nv">authEndpoint</span><span class="p">:</span> <span class="n">authEndpoint</span><span class="p">,</span> <span class="nv">network</span><span class="p">:</span> <span class="o">.</span><span class="n">testnet</span><span class="p">,</span>
-                                <span class="nv">serverSigningKey</span><span class="p">:</span> <span class="n">serverSigningKey</span><span class="p">,</span> <span class="nv">serverHomeDomain</span><span class="p">:</span> <span class="n">serverHomeDomain</span><span class="p">)</span>
-
-<span class="k">let</span> <span class="nv">signers</span> <span class="o">=</span> <span class="p">[</span><span class="k">try!</span> <span class="kt">KeyPair</span><span class="p">(</span><span class="nv">secretSeed</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">userSeed</span><span class="p">)]</span>
-
-<span class="k">let</span> <span class="nv">responseEnum</span> <span class="o">=</span> <span class="k">await</span> <span class="n">webAuth</span><span class="o">.</span><span class="nf">jwtToken</span><span class="p">(</span><span class="nv">forUserAccount</span><span class="p">:</span> <span class="n">userAccountId</span><span class="p">,</span> <span class="nv">signers</span><span class="p">:</span> <span class="n">signers</span><span class="p">)</span>
-<span class="k">switch</span> <span class="n">responseEnum</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">jwtToken</span><span class="p">):</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"JWT received: </span><span class="se">\(</span><span class="n">jwtToken</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
-    <span class="c1">// ...</span>
-<span class="p">}</span>
-</code></pre>
-<h4 id='8-2-create-webauthenticator-from-stellar-toml' class='heading'>8.2 Create WebAuthenticator from stellar.toml</h4>
-
-<p>Creates the WebAuthenticator by loading the web auth endpoint and the server signing key from the stellar.toml file of the given domain.</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">responseEnum</span> <span class="o">=</span> <span class="k">await</span> <span class="kt">WebAuthenticator</span><span class="o">.</span><span class="nf">from</span><span class="p">(</span><span class="nv">domain</span><span class="p">:</span><span class="s">"yourserverhomedomain.com"</span><span class="p">,</span> <span class="nv">network</span><span class="p">:</span> <span class="o">.</span><span class="n">testnet</span><span class="p">)</span>
-<span class="k">switch</span> <span class="n">responseEnum</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">webAuth</span><span class="p">):</span>
-    <span class="c1">// use the web auth object</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
-    <span class="c1">//...</span>
-<span class="p">}</span>
-
-</code></pre>
-
-<p>The Web Authenticator can now be used to get the JWT token (see: 8.1)</p>
-<h3 id='8-3-web-authentication-for-contract-accounts-sep-45' class='heading'>8.3 Web Authentication for Contract Accounts (SEP-45)</h3>
-
-<p>SEP-45 extends SEP-10 to support authentication for Soroban smart contract accounts (C&hellip; addresses).</p>
-<pre class="highlight swift"><code><span class="c1">// Create WebAuthForContracts from domain</span>
-<span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="k">await</span> <span class="kt">WebAuthForContracts</span><span class="o">.</span><span class="nf">from</span><span class="p">(</span>
-    <span class="nv">domain</span><span class="p">:</span> <span class="s">"testanchor.stellar.org"</span><span class="p">,</span>
-    <span class="nv">network</span><span class="p">:</span> <span class="o">.</span><span class="n">testnet</span>
-<span class="p">)</span>
-
-<span class="k">switch</span> <span class="n">result</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">webAuth</span><span class="p">):</span>
-    <span class="c1">// Get JWT token for contract account</span>
-    <span class="k">let</span> <span class="nv">contractId</span> <span class="o">=</span> <span class="s">"CABC..."</span>
-    <span class="k">let</span> <span class="nv">signerKeyPair</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">KeyPair</span><span class="p">(</span><span class="nv">secretSeed</span><span class="p">:</span> <span class="s">"S..."</span><span class="p">)</span>
-    <span class="k">let</span> <span class="nv">jwtResult</span> <span class="o">=</span> <span class="k">await</span> <span class="n">webAuth</span><span class="o">.</span><span class="nf">jwtToken</span><span class="p">(</span>
-        <span class="nv">forContractAccount</span><span class="p">:</span> <span class="n">contractId</span><span class="p">,</span>
-        <span class="nv">signers</span><span class="p">:</span> <span class="p">[</span><span class="n">signerKeyPair</span><span class="p">]</span>
+<p>Invoke a Soroban contract method:</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">client</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="kt">SorobanClient</span><span class="o">.</span><span class="nf">forClientOptions</span><span class="p">(</span>
+    <span class="nv">options</span><span class="p">:</span> <span class="kt">ClientOptions</span><span class="p">(</span>
+        <span class="nv">sourceAccountKeyPair</span><span class="p">:</span> <span class="n">keyPair</span><span class="p">,</span>
+        <span class="nv">contractId</span><span class="p">:</span> <span class="s">"CABC..."</span><span class="p">,</span>
+        <span class="nv">network</span><span class="p">:</span> <span class="o">.</span><span class="n">testnet</span><span class="p">,</span>
+        <span class="nv">rpcUrl</span><span class="p">:</span> <span class="s">"https://soroban-testnet.stellar.org"</span><span class="p">,</span>
+        <span class="nv">enableServerLogging</span><span class="p">:</span> <span class="kc">false</span>
     <span class="p">)</span>
-
-    <span class="k">switch</span> <span class="n">jwtResult</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="k">let</span> <span class="nv">jwtToken</span><span class="p">):</span>
-        <span class="nf">print</span><span class="p">(</span><span class="s">"JWT Token: </span><span class="se">\(</span><span class="n">jwtToken</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-    <span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
-        <span class="nf">print</span><span class="p">(</span><span class="s">"Error: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-    <span class="p">}</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">failure</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"Error: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-<span class="p">}</span>
+<span class="p">)</span>
+<span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="k">try</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="nf">invokeMethod</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"hello"</span><span class="p">,</span> <span class="nv">args</span><span class="p">:</span> <span class="p">[</span><span class="kt">SCValXDR</span><span class="o">.</span><span class="nf">symbol</span><span class="p">(</span><span class="s">"World"</span><span class="p">)])</span>
 </code></pre>
 
-<p>See <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0045.md">SEP-0045 SDK documentation</a> for details.</p>
-<h3 id='9-txrep-human-readable-low-level-representation-of-stellar-transactions' class='heading'>9.  Txrep: human-readable low-level representation of Stellar transactions</h3>
+<p>For complete walkthroughs, see the <a href="docs/">documentation</a>.</p>
+<h2 id='agent-skill' class='heading'>Agent Skill</h2>
 
-<p>Txrep: human-readable low-level representation of Stellar transactions is described in <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md">SEP-0011</a>.</p>
+<p>This repository includes an <a href="https://agentskills.io">Agent Skill</a> that teaches AI coding agents how to use this SDK. See <a href="skills/">skills/</a> for installation instructions.</p>
+<h2 id='documentation' class='heading'>Documentation</h2>
 
-<p>For more details have a look to our <a href="docs/SEP-0011.md">Txrep examples</a></p>
-<h3 id='10-hosted-deposit-and-withdrawal' class='heading'>10. Hosted Deposit and Withdrawal</h3>
+<table><thead>
+<tr>
+<th>Guide</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><a href="docs/quick-start.md">Quick start</a></td>
+<td>Your first transaction in 15 minutes</td>
+</tr>
+<tr>
+<td><a href="docs/getting-started.md">Getting started</a></td>
+<td>Keys, accounts, and fundamentals</td>
+</tr>
+<tr>
+<td><a href="docs/sdk-usage.md">SDK usage</a></td>
+<td>Transactions, operations, Horizon queries, streaming</td>
+</tr>
+<tr>
+<td><a href="docs/soroban.md">Soroban</a></td>
+<td>Smart contract deployment and interaction</td>
+</tr>
+<tr>
+<td><a href="docs/sep/">SEPs</a></td>
+<td>Anchor integration, authentication, KYC, etc.</td>
+</tr>
+</tbody></table>
 
-<p>Helps clients to interact with anchors in a standard way defined by <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md">SEP-0024: Hosted Deposit and Withdrawal</a>.</p>
-
-<p>See <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0024.md">SEP-0024 SDK documentation</a></p>
-<h3 id='11-account-recovery' class='heading'>11. Account recovery</h3>
-
-<p>Enables an individual (e.g., a user or wallet) to regain access to a Stellar account as defined by 
-<a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md">SEP-0030: Account Recovery</a>.</p>
-
-<p>See <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0030.md">SEP-0030: Account Recovery</a></p>
-<h3 id='12-quotes' class='heading'>12. Quotes</h3>
-
-<p>see <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0038.md">SEP-38 - Anchor RFQ API</a></p>
-<h3 id='13-regulated-assets' class='heading'>13. Regulated Assets</h3>
-
-<p>see <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0008.md">SEP-08 - Regulated Assets</a></p>
-<h3 id='14-sign-and-verify-messages' class='heading'>14. Sign and Verify Messages</h3>
-
-<p>Sign and verify arbitrary messages with Stellar keypairs as defined by <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md">SEP-0053</a>.</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">keyPair</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">KeyPair</span><span class="p">(</span><span class="nv">secretSeed</span><span class="p">:</span> <span class="s">"SXXX..."</span><span class="p">)</span>
-
-<span class="c1">// Sign a message</span>
-<span class="k">let</span> <span class="nv">signature</span> <span class="o">=</span> <span class="k">try</span> <span class="n">keyPair</span><span class="o">.</span><span class="nf">signMessage</span><span class="p">(</span><span class="s">"Hello, Stellar!"</span><span class="p">)</span>
-
-<span class="c1">// Verify</span>
-<span class="k">let</span> <span class="nv">isValid</span> <span class="o">=</span> <span class="k">try</span> <span class="n">keyPair</span><span class="o">.</span><span class="nf">verifyMessage</span><span class="p">(</span><span class="s">"Hello, Stellar!"</span><span class="p">,</span> <span class="nv">signature</span><span class="p">:</span> <span class="n">signature</span><span class="p">)</span>
-</code></pre>
-
-<p>See <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs/SEP-0053.md">SEP-0053 SDK documentation</a> for details.</p>
-<h2 id='documentation-and-examples' class='heading'>Documentation and Examples</h2>
-
-<p>You can find more documentation and examples in the <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/docs">docs</a> folder.</p>
-
-<p>API documentation can be found <a href="https://soneso.github.io/stellar-ios-mac-sdk/">here</a>.</p>
-<h2 id='sample' class='heading'>Sample</h2>
-
-<p>Our SDK is used by the open source <a href="https://vault.lobstr.co">LOBSTR Vault</a>. You can find the LOBSTR Vault source code <a href="https://github.com/Lobstrco/Vault-iOS">here</a>.</p>
-
-<p>Our SDK is also used by the <a href="https://lobstr.co">LOBSTR Wallet</a>.</p>
-<h2 id='stellar-ecosystem-proposals-seps-supported' class='heading'>Stellar Ecosystem Proposals (SEPs) supported</h2>
-
-<ul>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md">SEP-0001</a> - Stellar Info File (Toml)</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0002.md">SEP-0002</a> - Federation protocol</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md">SEP-0005</a> - Key Derivation Methods for Stellar Accounts</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0006.md">SEP-0006</a> - Anchor/Client interoperability</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0007.md">SEP-0007</a> - URI Scheme to facilitate delegated signing</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0008.md">SEP-0008</a> - Regulated Assets</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0009.md">SEP-0009</a> - Standard KYC / AML fields</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0010.md">SEP-0010</a> - Stellar Web Authentication</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md">SEP-0011</a> - Txrep</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md">SEP-0012</a> - Anchor/Client customer info transfer</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0024.md">SEP-0024</a> - Hosted Deposit and Withdrawal</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0030.md">SEP-0030</a> - Account Recovery</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md">SEP-0038</a> - Anchor RFQ API</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0045.md">SEP-0045</a> - Web Authentication for Contract Accounts</li>
-<li><a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0053.md">SEP-0053</a> - Sign and Verify Messages</li>
-</ul>
-<h2 id='soroban-support' class='heading'>Soroban support</h2>
-
-<p>This SDK provides <a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/soroban.md">support for Soroban</a>. </p>
+<p><a href="https://soneso.github.io/stellar-ios-mac-sdk/">API reference</a></p>
 <h2 id='soroban-smart-wallets-passkey-support' class='heading'>Soroban Smart Wallets (Passkey) support</h2>
 
-<p>We are working on integrating passkey support for Soroban Smart Wallets into this SDK. In the meantime, we are providing an experimental Passkey Kit for working with Soroban Smart Wallets that you can find here:  <a href="https://github.com/Soneso/SwiftPasskeyKit">SwiftPasskeyKit</a>. </p>
-<h2 id='compatibility-matrices' class='heading'>Compatibility matrices</h2>
+<p>We are working on integrating passkey support for Soroban Smart Wallets into this SDK. In the meantime, we provide an experimental Passkey Kit: <a href="https://github.com/Soneso/SwiftPasskeyKit">SwiftPasskeyKit</a>.</p>
+<h2 id='compatibility' class='heading'>Compatibility</h2>
 
 <ul>
-<li><a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/compatibility/horizon/HORIZON_COMPATIBILITY_MATRIX.md">Horizon API compatibility matrix</a></li>
-<li><a href="https://github.com/Soneso/stellar-ios-mac-sdk/blob/master/compatibility/rpc/RPC_COMPATIBILITY_MATRIX.md">RPC API compatibility matrix</a></li>
-<li><a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/compatibility/sep">SEP support compatibility matrices</a></li>
+<li><a href="compatibility/horizon/HORIZON_COMPATIBILITY_MATRIX.md">Horizon API compatibility matrix</a></li>
+<li><a href="compatibility/rpc/RPC_COMPATIBILITY_MATRIX.md">RPC API compatibility matrix</a></li>
+<li><a href="compatibility/sep/">SEP support matrices</a></li>
 </ul>
-<h2 id='feedback-amp-feature-requests' class='heading'>Feedback &amp; Feature Requests</h2>
+<h2 id='sample' class='heading'>Sample</h2>
 
-<p>We’d love to hear from you! 
-If you’re using this SDK in your project, your feedback is incredibly valuable for helping us improve.  </p>
+<p>This SDK is used by the open source <a href="https://vault.lobstr.co">LOBSTR Vault</a> (<a href="https://github.com/Lobstrco/Vault-iOS">source</a>) and the <a href="https://lobstr.co">LOBSTR Wallet</a>.</p>
+<h2 id='feedback' class='heading'>Feedback</h2>
+
+<p>If you&rsquo;re using this SDK, feedback helps improve it:</p>
 
 <ul>
-<li>✅ What’s working well?<br></li>
-<li>⚡ What could be improved?<br></li>
-<li>🌟 Any features you’d like to see in the future?<br></li>
+<li><a href="https://github.com/Soneso/stellar-ios-mac-sdk/issues/new?template=bug_report.yml">Report a bug</a></li>
+<li><a href="https://github.com/Soneso/stellar-ios-mac-sdk/issues/new?template=feature_request.yml">Request a feature</a></li>
+<li><a href="https://github.com/Soneso/stellar-ios-mac-sdk/discussions">Start a discussion</a></li>
 </ul>
-
-<p>Please share your thoughts in <a href="https://github.com/Soneso/stellar-ios-mac-sdk/discussions">GitHub Discussions</a>,<br>
-or open an issue directly:  </p>
-
-<ul>
-<li><a href="https://github.com/Soneso/stellar-ios-mac-sdk/issues/new?template=bug_report.yml">🐞 Bug Report</a><br></li>
-<li><a href="https://github.com/Soneso/stellar-ios-mac-sdk/issues/new?template=feature_request.yml">🌟 Feature Request</a><br></li>
-</ul>
-
-<p>Even a couple of quick notes go a long way — thank you for helping us make the SDK better for the whole Stellar community! 🙏  </p>
 <h2 id='contributing' class='heading'>Contributing</h2>
 
-<p>Contributions are welcome! There are several ways you can help improve this SDK:</p>
+<p>See <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> for guidelines.</p>
+<h2 id='license' class='heading'>License</h2>
 
-<ul>
-<li>🐞 <a href="https://github.com/Soneso/stellar-ios-mac-sdk/issues/new?template=bug_report.yml">Report bugs</a><br></li>
-<li>🌟 <a href="https://github.com/Soneso/stellar-ios-mac-sdk/issues/new?template=feature_request.yml">Request features</a><br></li>
-<li>💬 Share your ideas in <a href="https://github.com/Soneso/stellar-ios-mac-sdk/discussions">Discussions</a><br></li>
-<li>🔧 Submit a Pull Request with code improvements<br></li>
-</ul>
-
-<p>Please check out our <a href="./CONTRIBUTING.md">Contributing Guide</a> for details. 🙏</p>
+<p>Apache 2.0. See <a href="LICENSE">LICENSE</a>.</p>
 
           </div>
         </section>

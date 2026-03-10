@@ -21,9 +21,9 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.4 Docs
+          stellarsdk 3.4.5 Docs
         </a>
-         (98% documented)
+         (97% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -572,6 +572,9 @@
                 <a class="nav-group-task-link" href="../Classes/Seed.html">Seed</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/SegmentFilter.html">SegmentFilter</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/SequenceBumpedEffectResponse.html">SequenceBumpedEffectResponse</a>
               </li>
               <li class="nav-group-task">
@@ -999,9 +1002,6 @@
                 <a class="nav-group-task-link" href="../Enums/OperationDetailsResponseEnum.html">OperationDetailsResponseEnum</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="../Enums/OperationType.html">OperationType</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/OperationsChange.html">OperationsChange</a>
               </li>
               <li class="nav-group-task">
@@ -1147,6 +1147,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/TransactionDetailsResponseEnum.html">TransactionDetailsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Enums/TransactionMetaType.html">TransactionMetaType</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Enums/TransactionPostAsyncResponseEnum.html">TransactionPostAsyncResponseEnum</a>
@@ -1401,6 +1404,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/CustomerFileResponse.html">CustomerFileResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/CustomerInformationNeededInteractive.html">CustomerInformationNeededInteractive</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/CustomerInformationNeededNonInteractive.html">CustomerInformationNeededNonInteractive</a>
@@ -1844,6 +1850,9 @@
                 <a class="nav-group-task-link" href="../Structs/WrappedData12.html">WrappedData12</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Structs/WrappedData16.html">WrappedData16</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Structs/WrappedData32.html">WrappedData32</a>
               </li>
               <li class="nav-group-task">
@@ -1896,7 +1905,7 @@ Environment Meta, Contract Spec Entries and Contract Meta Entries.
 See also: <a href="https://developers.stellar.org">Stellar developer docs</a></p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L153-L282">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L153-L286">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -1908,9 +1917,9 @@ See also: <a href="https://developers.stellar.org">Stellar developer docs</a></p
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk19SorobanContractInfoC19envInterfaceVersions6UInt64Vvp"></a>
-                    <a name="//apple_ref/swift/Property/envInterfaceVersion" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk19SorobanContractInfoC19envInterfaceVersions6UInt64Vvp">envInterfaceVersion</a>
+                    <a name="/s:10stellarsdk19SorobanContractInfoC18envProtocolVersions6UInt32Vvp"></a>
+                    <a name="//apple_ref/swift/Property/envProtocolVersion" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk19SorobanContractInfoC18envProtocolVersions6UInt32Vvp">envProtocolVersion</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -1918,19 +1927,49 @@ See also: <a href="https://developers.stellar.org">Stellar developer docs</a></p
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Environment interface version the contract was compiled against.</p>
+                        <p>Protocol version the contract was compiled against.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">envInterfaceVersion</span><span class="p">:</span> <span class="kt">UInt64</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">envProtocolVersion</span><span class="p">:</span> <span class="kt">UInt32</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
                         <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L156">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:10stellarsdk19SorobanContractInfoC20envPreReleaseVersions6UInt32Vvp"></a>
+                    <a name="//apple_ref/swift/Property/envPreReleaseVersion" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk19SorobanContractInfoC20envPreReleaseVersions6UInt32Vvp">envPreReleaseVersion</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Pre-release version (0 for stable releases).</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">envPreReleaseVersion</span><span class="p">:</span> <span class="kt">UInt32</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L159">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1960,7 +1999,7 @@ See also: <a href="https://developers.stellar.org">Stellar developer docs</a></p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L159">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L162">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -1990,7 +2029,7 @@ See also: <a href="https://developers.stellar.org">Stellar developer docs</a></p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L162">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L165">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2021,7 +2060,7 @@ Extracted from the &ldquo;sep&rdquo; meta entry as defined in SEP-47.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L166">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L169">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2052,7 +2091,7 @@ Contains all function specifications exported by the contract.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L170">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L173">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2083,7 +2122,7 @@ Contains all UDT struct specifications exported by the contract.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L174">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L177">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2114,7 +2153,7 @@ Contains all UDT union specifications exported by the contract.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L178">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L181">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2145,7 +2184,7 @@ Contains all UDT enum specifications exported by the contract.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L182">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L185">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2176,7 +2215,7 @@ Contains all UDT error enum specifications exported by the contract.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L186">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L189">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2207,7 +2246,7 @@ Contains all event specifications exported by the contract.</p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L190">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L193">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2215,9 +2254,9 @@ Contains all event specifications exported by the contract.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:10stellarsdk19SorobanContractInfoC19envInterfaceVersion11specEntries04metaI0ACs6UInt64V_SayAA14SCSpecEntryXDROGSDyS2SGtcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(envInterfaceVersion:specEntries:metaEntries:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:10stellarsdk19SorobanContractInfoC19envInterfaceVersion11specEntries04metaI0ACs6UInt64V_SayAA14SCSpecEntryXDROGSDyS2SGtcfc">init(envInterfaceVersion:<wbr>specEntries:<wbr>metaEntries:<wbr>)</a>
+                    <a name="/s:10stellarsdk19SorobanContractInfoC16interfaceVersion11specEntries04metaH0AcA026SCEnvMetaEntryXDRInterfaceF3XDRV_SayAA06SCSpeclN0OGSDyS2SGtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(interfaceVersion:specEntries:metaEntries:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk19SorobanContractInfoC16interfaceVersion11specEntries04metaH0AcA026SCEnvMetaEntryXDRInterfaceF3XDRV_SayAA06SCSpeclN0OGSDyS2SGtcfc">init(interfaceVersion:<wbr>specEntries:<wbr>metaEntries:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -2225,19 +2264,19 @@ Contains all event specifications exported by the contract.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>Creates contract info from environment interface version, spec entries, and metadata entries.</p>
+                        <p>Creates contract info from the parsed interface version, spec entries, and metadata entries.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">envInterfaceVersion</span><span class="p">:</span> <span class="kt">UInt64</span><span class="p">,</span> <span class="nv">specEntries</span><span class="p">:</span> <span class="p">[</span><span class="kt">SCSpecEntryXDR</span><span class="p">],</span> <span class="nv">metaEntries</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span> <span class="p">:</span> <span class="kt">String</span><span class="p">])</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">interfaceVersion</span><span class="p">:</span> <span class="kt">SCEnvMetaEntryXDRInterfaceVersionXDR</span><span class="p">,</span> <span class="nv">specEntries</span><span class="p">:</span> <span class="p">[</span><span class="kt">SCSpecEntryXDR</span><span class="p">],</span> <span class="nv">metaEntries</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span> <span class="p">:</span> <span class="kt">String</span><span class="p">])</span></code></pre>
 
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L193-L204">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L196-L208">Show on GitHub</a>
                       </div>
                     </section>
                   </div>

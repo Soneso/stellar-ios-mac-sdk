@@ -338,14 +338,14 @@
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift",
-      "line": 106,
+      "line": 166,
       "symbol": "Array.init(fromBinary:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift",
-      "line": 133,
+      "line": 193,
       "symbol": "String.init(fromBinary:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
@@ -516,6 +516,48 @@
       "line": 83,
       "symbol": "XDREncoder.encode(_:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/xdr_helpers/TransactionMetaXDR+Helpers.swift",
+      "line": 10,
+      "symbol": "TransactionMetaType",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/xdr_helpers/TransactionMetaXDR+Helpers.swift",
+      "line": 11,
+      "symbol": "TransactionMetaType.operations",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/xdr_helpers/TransactionMetaXDR+Helpers.swift",
+      "line": 12,
+      "symbol": "TransactionMetaType.transactionMetaV1",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/xdr_helpers/TransactionMetaXDR+Helpers.swift",
+      "line": 13,
+      "symbol": "TransactionMetaType.transactionMetaV2",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/xdr_helpers/TransactionMetaXDR+Helpers.swift",
+      "line": 14,
+      "symbol": "TransactionMetaType.transactionMetaV3",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/xdr_helpers/TransactionMetaXDR+Helpers.swift",
+      "line": 15,
+      "symbol": "TransactionMetaType.transactionMetaV4",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     }
   ],

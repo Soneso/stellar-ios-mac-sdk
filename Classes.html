@@ -21,9 +21,9 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="index.html">
-          stellarsdk 3.4.4 Docs
+          stellarsdk 3.4.5 Docs
         </a>
-         (98% documented)
+         (97% documented)
       </p>
     
       <div class="header-col--secondary">
@@ -570,6 +570,9 @@
                 <a class="nav-group-task-link" href="Classes/Seed.html">Seed</a>
               </li>
               <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Classes/SegmentFilter.html">SegmentFilter</a>
+              </li>
+              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Classes/SequenceBumpedEffectResponse.html">SequenceBumpedEffectResponse</a>
               </li>
               <li class="nav-group-task">
@@ -997,9 +1000,6 @@
                 <a class="nav-group-task-link" href="Enums/OperationDetailsResponseEnum.html">OperationDetailsResponseEnum</a>
               </li>
               <li class="nav-group-task">
-                <a class="nav-group-task-link" href="Enums/OperationType.html">OperationType</a>
-              </li>
-              <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/OperationsChange.html">OperationsChange</a>
               </li>
               <li class="nav-group-task">
@@ -1145,6 +1145,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/TransactionDetailsResponseEnum.html">TransactionDetailsResponseEnum</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Enums/TransactionMetaType.html">TransactionMetaType</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Enums/TransactionPostAsyncResponseEnum.html">TransactionPostAsyncResponseEnum</a>
@@ -1399,6 +1402,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/CustomerFileResponse.html">CustomerFileResponse</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CustomerInformationNeededInteractive.html">CustomerInformationNeededInteractive</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/CustomerInformationNeededNonInteractive.html">CustomerInformationNeededNonInteractive</a>
@@ -1840,6 +1846,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/WrappedData12.html">WrappedData12</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/WrappedData16.html">WrappedData16</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="Structs/WrappedData32.html">WrappedData32</a>
@@ -6683,7 +6692,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L72-L150">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/responses/operations_responses/OperationResponse.swift#L13-L91">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -7039,7 +7048,7 @@ See <a href="https://developers.stellar.org">Stellar developer docs</a></p>
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/AllowTrustOperation.swift#L13-L97">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/sdk/AllowTrustOperation.swift#L13-L93">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -10151,6 +10160,80 @@ edge cases but increases resource fees.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:10stellarsdk13SegmentFilterC"></a>
+                    <a name="//apple_ref/swift/Class/SegmentFilter" class="dashAnchor"></a>
+                    <a class="token" href="#/s:10stellarsdk13SegmentFilterC">SegmentFilter</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Filter for matching individual segments within contract event topics.</p>
+
+<p>SegmentFilter is used as part of TopicFilter to match specific positions
+in event topic arrays. Each segment can be matched either by:</p>
+
+<ul>
+<li>Wildcard string (e.g., &ldquo;*&rdquo; to match any value)</li>
+<li>Specific SCVal values (exact matches)</li>
+</ul>
+
+<p>Event topics in Soroban are arrays of SCVal values. A SegmentFilter allows
+you to specify matching criteria for a single position in that array.</p>
+
+<p>Matching rules:</p>
+
+<ul>
+<li>If wildcard is set, any value at this position will match</li>
+<li>If scval array is provided, the position must match one of the specified values</li>
+<li>Only one matching mode (wildcard or scval) should be used per segment</li>
+</ul>
+
+<p>Example:</p>
+<pre class="highlight swift"><code><span class="c1">// Match any value at this position</span>
+<span class="k">let</span> <span class="nv">anySegment</span> <span class="o">=</span> <span class="kt">SegmentFilter</span><span class="p">(</span><span class="nv">wildcard</span><span class="p">:</span> <span class="s">"*"</span><span class="p">)</span>
+
+<span class="c1">// Match specific account address</span>
+<span class="k">let</span> <span class="nv">address</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">SCAddressXDR</span><span class="p">(</span><span class="nv">accountId</span><span class="p">:</span> <span class="s">"GADDR..."</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">addressVal</span> <span class="o">=</span> <span class="kt">SCValXDR</span><span class="o">.</span><span class="nf">address</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">specificSegment</span> <span class="o">=</span> <span class="kt">SegmentFilter</span><span class="p">(</span><span class="nv">scval</span><span class="p">:</span> <span class="p">[</span><span class="n">addressVal</span><span class="p">])</span>
+
+<span class="c1">// Use in topic filter</span>
+<span class="k">let</span> <span class="nv">topicFilter</span> <span class="o">=</span> <span class="kt">TopicFilter</span><span class="p">(</span><span class="nv">segmentMatchers</span><span class="p">:</span> <span class="p">[</span>
+    <span class="kt">SegmentFilter</span><span class="p">(</span><span class="nv">wildcard</span><span class="p">:</span> <span class="s">"*"</span><span class="p">),</span>           <span class="c1">// Any event name</span>
+    <span class="kt">SegmentFilter</span><span class="p">(</span><span class="nv">scval</span><span class="p">:</span> <span class="p">[</span><span class="n">addressVal</span><span class="p">])</span>      <span class="c1">// Specific address</span>
+<span class="p">])</span>
+</code></pre>
+
+<p>See also:</p>
+
+<ul>
+<li>[TopicFilter] for combining segment filters</li>
+<li>[EventFilter] for filtering contract events</li>
+<li>[SCValXDR] for Soroban value types</li>
+</ul>
+
+                        <a href="Classes/SegmentFilter.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">final</span> <span class="kd">class</span> <span class="kt">SegmentFilter</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div class="slightly-smaller">
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SegmentFilter.swift#L47-L99">Show on GitHub</a>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:10stellarsdk26SimulateTransactionRequestC"></a>
                     <a name="//apple_ref/swift/Class/SimulateTransactionRequest" class="dashAnchor"></a>
                     <a class="token" href="#/s:10stellarsdk26SimulateTransactionRequestC">SimulateTransactionRequest</a>
@@ -10275,7 +10358,7 @@ See also: <a href="https://developers.stellar.org">Stellar developer docs</a></p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L153-L282">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/soroban/SorobanContractParser.swift#L153-L286">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -11602,7 +11685,7 @@ the standard base64-encoded XDR format and a human-readable key-value format.</p
                         </div>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L41-L3566">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L41-L3580">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
