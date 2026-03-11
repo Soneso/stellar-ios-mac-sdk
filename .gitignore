@@ -83,3 +83,6 @@ coverage/
 # XDR generator
 tools/xdr-generator/.bundle/
 tools/xdr-generator/vendor/
+
+# Scripts
+scripts/

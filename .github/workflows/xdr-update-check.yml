@@ -1,0 +1,151 @@
+name: Check for upstream XDR updates
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: xdr-update-check
+  cancel-in-progress: true
+
+jobs:
+  check-xdr-updates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Clone upstream stellar-xdr (curr branch)
+        id: clone
+        continue-on-error: true
+        run: |
+          git clone --depth 1 --branch curr \
+            https://github.com/stellar/stellar-xdr.git /tmp/stellar-xdr
+
+      - name: Warn if clone failed
+        if: steps.clone.outcome == 'failure'
+        run: |
+          echo "::warning::Failed to clone stellar/stellar-xdr curr branch — skipping update check"
+
+      - name: Compare .x files
+        if: steps.clone.outcome == 'success'
+        id: compare
+        run: |
+          shopt -s nullglob
+          any_changed=false
+
+          : > /tmp/changes_summary.txt
+          : > /tmp/full_diff.txt
+
+          for local_file in xdr/*.x; do
+            filename=$(basename "$local_file")
+            upstream_file="/tmp/stellar-xdr/$filename"
+
+            if [ ! -f "$upstream_file" ]; then
+              echo "::warning::Local file $filename not found upstream — may have been removed or renamed"
+              continue
+            fi
+
+            if ! diff -q "$local_file" "$upstream_file" > /dev/null 2>&1; then
+              any_changed=true
+              added=$(diff "$local_file" "$upstream_file" | grep -c '^>' || true)
+              removed=$(diff "$local_file" "$upstream_file" | grep -c '^<' || true)
+              printf -- '- `%s`: +%s / -%s lines\n' "$filename" "$added" "$removed" >> /tmp/changes_summary.txt
+
+              printf '\n<details>\n<summary>%s</summary>\n\n```diff\n' "$filename" >> /tmp/full_diff.txt
+              diff -u "$local_file" "$upstream_file" \
+                --label "local/$filename" --label "upstream/$filename" >> /tmp/full_diff.txt || true
+              printf '\n```\n\n</details>\n' >> /tmp/full_diff.txt
+            fi
+          done
+
+          # Check for new .x files upstream that we don't have yet
+          for upstream_file in /tmp/stellar-xdr/*.x; do
+            filename=$(basename "$upstream_file")
+            if [ ! -f "xdr/$filename" ]; then
+              any_changed=true
+              lines=$(wc -l < "$upstream_file")
+              printf -- '- `%s`: **new file** (%s lines)\n' "$filename" "$lines" >> /tmp/changes_summary.txt
+              printf '\n<details>\n<summary>%s (new)</summary>\n\nThis is a new XDR definition file not yet present in the SDK.\n\n</details>\n' "$filename" >> /tmp/full_diff.txt
+            fi
+          done
+
+          echo "any_changed=$any_changed" >> "$GITHUB_OUTPUT"
+
+          if [ "$any_changed" = true ]; then
+            upstream_sha=$(git -C /tmp/stellar-xdr rev-parse HEAD)
+            upstream_sha_short=$(git -C /tmp/stellar-xdr rev-parse --short HEAD)
+            echo "$upstream_sha" > /tmp/upstream_sha.txt
+            echo "$upstream_sha_short" > /tmp/upstream_sha_short.txt
+          fi
+
+      - name: Check for existing open issue
+        if: steps.compare.outputs.any_changed == 'true'
+        id: existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          count=$(gh issue list \
+            --label "xdr-update" \
+            --state open \
+            --json number \
+            --jq 'length')
+          echo "open_issues=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure xdr-update label exists
+        if: steps.compare.outputs.any_changed == 'true' && steps.existing.outputs.open_issues == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create "xdr-update" \
+            --description "Upstream XDR definition changes detected" \
+            --color "1d76db" \
+            2>/dev/null || true
+
+      - name: Build issue body
+        if: steps.compare.outputs.any_changed == 'true' && steps.existing.outputs.open_issues == '0'
+        run: |
+          upstream_sha=$(cat /tmp/upstream_sha.txt)
+          upstream_sha_short=$(cat /tmp/upstream_sha_short.txt)
+
+          printf '%s\n' 'The upstream [`stellar/stellar-xdr`](https://github.com/stellar/stellar-xdr) `curr` branch has changes that are not yet reflected in this SDK.' > /tmp/issue_body.md
+          printf '\n**Upstream commit:** [`%s`](https://github.com/stellar/stellar-xdr/commit/%s)\n' "$upstream_sha_short" "$upstream_sha" >> /tmp/issue_body.md
+          printf '\n## Changed files\n\n' >> /tmp/issue_body.md
+          cat /tmp/changes_summary.txt >> /tmp/issue_body.md
+          printf '\n## Diffs\n' >> /tmp/issue_body.md
+          # Truncate diffs to stay under GitHub's 65536-char issue body limit
+          max_diff_size=50000
+          diff_size=$(wc -c < /tmp/full_diff.txt)
+          if [ "$diff_size" -gt "$max_diff_size" ]; then
+            head -c "$max_diff_size" /tmp/full_diff.txt >> /tmp/issue_body.md
+            printf '\n```\n\n</details>\n\n' >> /tmp/issue_body.md
+            printf '> **Note:** Diffs truncated (%s bytes total). See the [upstream commit](https://github.com/stellar/stellar-xdr/commit/%s) for the full changeset.\n' "$diff_size" "$upstream_sha" >> /tmp/issue_body.md
+          else
+            cat /tmp/full_diff.txt >> /tmp/issue_body.md
+          fi
+          printf '\n## Required actions\n\n' >> /tmp/issue_body.md
+          printf '%s\n' \
+            '1. Copy the updated `.x` files into `xdr/`' \
+            '2. Run `make xdr-generate` to regenerate the Swift XDR types' \
+            '3. Build the SDK and fix any compile errors in the SDK layer (operation builders, TxRep, SEP implementations, etc.)' \
+            '4. Run `swift test --filter stellarsdkUnitTests` and fix any test failures' \
+            '5. If the XDR changes introduce new types or extend existing ones (e.g. new operations, transaction fields, or protocol features), evaluate whether the SDK needs new or updated high-level APIs to support them (e.g. operation builders, TxRep, service classes)' \
+            '6. Update the changelog and release notes with any breaking changes or new features' >> /tmp/issue_body.md
+          printf '\nSee the [XDR generator README](tools/xdr-generator/README.md) for detailed instructions.\n' >> /tmp/issue_body.md
+          printf '\n---\n*This issue was created automatically by the [XDR update check workflow](.github/workflows/xdr-update-check.yml).*\n' >> /tmp/issue_body.md
+
+      - name: Create issue
+        if: steps.compare.outputs.any_changed == 'true' && steps.existing.outputs.open_issues == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Update XDR definitions from upstream stellar-xdr" \
+            --label "xdr-update" \
+            --body-file /tmp/issue_body.md

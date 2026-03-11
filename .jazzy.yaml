@@ -5,13 +5,7 @@ github_file_prefix: https://github.com/Soneso/stellar-ios-mac-sdk/tree/master
 root_url: https://soneso.github.io/stellar-ios-mac-sdk/
 output: api-docs
 clean: true
-xcodebuild_arguments:
-  - -project
-  - stellarsdk/stellarsdk.xcodeproj
-  - -scheme
-  - stellarsdk
-  - -destination
-  - platform=macOS
+swift_build_tool: spm
 exclude:
   - stellarsdk/stellarsdk/libs/CryptoSwift/*
   - stellarsdk/stellarsdk/libs/ed25519-C/*
