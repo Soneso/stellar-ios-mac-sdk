@@ -177,11 +177,11 @@ class XDRContractConfigUnitTests: XCTestCase {
     }
 
     func testContractCostTypeLastCase() throws {
-        let original = ContractCostType.bls12381FrInv
+        let original = ContractCostType.bn254G1Msm
         let encoded = try XDREncoder.encode(original)
         let decoded = try XDRDecoder.decode(ContractCostType.self, data: encoded)
         XCTAssertEqual(original, decoded)
-        XCTAssertEqual(decoded.rawValue, 69)
+        XCTAssertEqual(decoded.rawValue, 85)
     }
 
     func testContractCostTypeMiddleCases() throws {
@@ -213,7 +213,14 @@ class XDRContractConfigUnitTests: XCTestCase {
             .bls12381MapFp2ToG2, .bls12381HashToG2,
             .bls12381Pairing,
             .bls12381FrFromU256, .bls12381FrToU256,
-            .bls12381FrAddSub, .bls12381FrMul, .bls12381FrPow
+            .bls12381FrAddSub, .bls12381FrMul, .bls12381FrPow, .bls12381FrInv,
+            .bn254EncodeFp, .bn254DecodeFp,
+            .bn254G1CheckPointOnCurve, .bn254G2CheckPointOnCurve, .bn254G2CheckPointInSubgroup,
+            .bn254G1ProjectiveToAffine,
+            .bn254G1Add, .bn254G1Mul, .bn254Pairing,
+            .bn254FrFromU256, .bn254FrToU256,
+            .bn254FrAddSub, .bn254FrMul, .bn254FrPow, .bn254FrInv,
+            .bn254G1Msm
         ]
         for costType in cases {
             let encoded = try XDREncoder.encode(costType)
@@ -415,6 +422,10 @@ class XDRContractConfigUnitTests: XCTestCase {
             (.contractParallelComputeV0, 14),
             (.contractLedgerCostExtV0, 15),
             (.scpTiming, 16),
+            (.frozenLedgerKeys, 17),
+            (.frozenLedgerKeysDelta, 18),
+            (.freezeBypassTxs, 19),
+            (.freezeBypassTxsDelta, 20),
         ]
         for (settingID, expectedRawValue) in cases {
             let encoded = try XDREncoder.encode(settingID)
@@ -733,6 +744,124 @@ class XDRContractConfigUnitTests: XCTestCase {
             XCTAssertEqual(val.ballotTimeoutIncrementMilliseconds, 750)
         } else {
             XCTFail("Expected .contractSCPTiming")
+        }
+    }
+
+    // MARK: - FrozenLedgerKeysXDR
+
+    func testFrozenLedgerKeysRoundTrip() throws {
+        let key1 = Data([1, 2, 3, 4])
+        let key2 = Data([5, 6, 7, 8])
+        let original = FrozenLedgerKeysXDR(keys: [key1, key2])
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(FrozenLedgerKeysXDR.self, data: encoded)
+        XCTAssertEqual(decoded.keys.count, 2)
+        XCTAssertEqual(decoded.keys[0], key1)
+        XCTAssertEqual(decoded.keys[1], key2)
+    }
+
+    func testFrozenLedgerKeysEmpty() throws {
+        let original = FrozenLedgerKeysXDR(keys: [])
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(FrozenLedgerKeysXDR.self, data: encoded)
+        XCTAssertEqual(decoded.keys.count, 0)
+    }
+
+    // MARK: - FrozenLedgerKeysDeltaXDR
+
+    func testFrozenLedgerKeysDeltaRoundTrip() throws {
+        let freeze = Data([1, 2, 3])
+        let unfreeze = Data([4, 5, 6])
+        let original = FrozenLedgerKeysDeltaXDR(keysToFreeze: [freeze], keysToUnfreeze: [unfreeze])
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(FrozenLedgerKeysDeltaXDR.self, data: encoded)
+        XCTAssertEqual(decoded.keysToFreeze.count, 1)
+        XCTAssertEqual(decoded.keysToFreeze[0], freeze)
+        XCTAssertEqual(decoded.keysToUnfreeze.count, 1)
+        XCTAssertEqual(decoded.keysToUnfreeze[0], unfreeze)
+    }
+
+    // MARK: - FreezeBypassTxsXDR
+
+    func testFreezeBypassTxsRoundTrip() throws {
+        let hash = WrappedData32(Data(repeating: 0xAB, count: 32))
+        let original = FreezeBypassTxsXDR(txHashes: [hash])
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(FreezeBypassTxsXDR.self, data: encoded)
+        XCTAssertEqual(decoded.txHashes.count, 1)
+        XCTAssertEqual(decoded.txHashes[0].wrapped, hash.wrapped)
+    }
+
+    // MARK: - FreezeBypassTxsDeltaXDR
+
+    func testFreezeBypassTxsDeltaRoundTrip() throws {
+        let addHash = WrappedData32(Data(repeating: 0xAA, count: 32))
+        let removeHash = WrappedData32(Data(repeating: 0xBB, count: 32))
+        let original = FreezeBypassTxsDeltaXDR(addTxs: [addHash], removeTxs: [removeHash])
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(FreezeBypassTxsDeltaXDR.self, data: encoded)
+        XCTAssertEqual(decoded.addTxs.count, 1)
+        XCTAssertEqual(decoded.addTxs[0].wrapped, addHash.wrapped)
+        XCTAssertEqual(decoded.removeTxs.count, 1)
+        XCTAssertEqual(decoded.removeTxs[0].wrapped, removeHash.wrapped)
+    }
+
+    // MARK: - ConfigSettingEntryXDR — frozen ledger key arms
+
+    func testConfigSettingEntryFrozenLedgerKeys() throws {
+        let keys = FrozenLedgerKeysXDR(keys: [Data([1, 2, 3])])
+        let original = ConfigSettingEntryXDR.frozenLedgerKeys(keys)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(ConfigSettingEntryXDR.self, data: encoded)
+        XCTAssertEqual(decoded.type(), ConfigSettingID.frozenLedgerKeys.rawValue)
+        if case .frozenLedgerKeys(let val) = decoded {
+            XCTAssertEqual(val.keys.count, 1)
+        } else {
+            XCTFail("Expected .frozenLedgerKeys")
+        }
+    }
+
+    func testConfigSettingEntryFrozenLedgerKeysDelta() throws {
+        let delta = FrozenLedgerKeysDeltaXDR(keysToFreeze: [Data([1])], keysToUnfreeze: [Data([2])])
+        let original = ConfigSettingEntryXDR.frozenLedgerKeysDelta(delta)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(ConfigSettingEntryXDR.self, data: encoded)
+        XCTAssertEqual(decoded.type(), ConfigSettingID.frozenLedgerKeysDelta.rawValue)
+        if case .frozenLedgerKeysDelta(let val) = decoded {
+            XCTAssertEqual(val.keysToFreeze.count, 1)
+            XCTAssertEqual(val.keysToUnfreeze.count, 1)
+        } else {
+            XCTFail("Expected .frozenLedgerKeysDelta")
+        }
+    }
+
+    func testConfigSettingEntryFreezeBypassTxs() throws {
+        let hash = WrappedData32(Data(repeating: 0xAB, count: 32))
+        let txs = FreezeBypassTxsXDR(txHashes: [hash])
+        let original = ConfigSettingEntryXDR.freezeBypassTxs(txs)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(ConfigSettingEntryXDR.self, data: encoded)
+        XCTAssertEqual(decoded.type(), ConfigSettingID.freezeBypassTxs.rawValue)
+        if case .freezeBypassTxs(let val) = decoded {
+            XCTAssertEqual(val.txHashes.count, 1)
+        } else {
+            XCTFail("Expected .freezeBypassTxs")
+        }
+    }
+
+    func testConfigSettingEntryFreezeBypassTxsDelta() throws {
+        let addHash = WrappedData32(Data(repeating: 0xAA, count: 32))
+        let removeHash = WrappedData32(Data(repeating: 0xBB, count: 32))
+        let delta = FreezeBypassTxsDeltaXDR(addTxs: [addHash], removeTxs: [removeHash])
+        let original = ConfigSettingEntryXDR.freezeBypassTxsDelta(delta)
+        let encoded = try XDREncoder.encode(original)
+        let decoded = try XDRDecoder.decode(ConfigSettingEntryXDR.self, data: encoded)
+        XCTAssertEqual(decoded.type(), ConfigSettingID.freezeBypassTxsDelta.rawValue)
+        if case .freezeBypassTxsDelta(let val) = decoded {
+            XCTAssertEqual(val.addTxs.count, 1)
+            XCTAssertEqual(val.removeTxs.count, 1)
+        } else {
+            XCTFail("Expected .freezeBypassTxsDelta")
         }
     }
 }

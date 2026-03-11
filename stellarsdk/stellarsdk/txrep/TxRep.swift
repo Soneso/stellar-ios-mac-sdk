@@ -1208,6 +1208,14 @@ public final class TxRep: Sendable {
             return ConfigSettingID.contractLedgerCostExtV0
         case "CONFIG_SETTING_SCP_TIMING":
             return ConfigSettingID.scpTiming
+        case "CONFIG_SETTING_FROZEN_LEDGER_KEYS":
+            return ConfigSettingID.frozenLedgerKeys
+        case "CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA":
+            return ConfigSettingID.frozenLedgerKeysDelta
+        case "CONFIG_SETTING_FREEZE_BYPASS_TXS":
+            return ConfigSettingID.freezeBypassTxs
+        case "CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA":
+            return ConfigSettingID.freezeBypassTxsDelta
         default:
             throw TxRepError.invalidValue(key: key)
         }
@@ -3238,6 +3246,14 @@ public final class TxRep: Sendable {
             addLine(key: prefix, value: "CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0", lines: &lines)
         case 16:
             addLine(key: prefix, value: "CONFIG_SETTING_SCP_TIMING", lines: &lines)
+        case 17:
+            addLine(key: prefix, value: "CONFIG_SETTING_FROZEN_LEDGER_KEYS", lines: &lines)
+        case 18:
+            addLine(key: prefix, value: "CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA", lines: &lines)
+        case 19:
+            addLine(key: prefix, value: "CONFIG_SETTING_FREEZE_BYPASS_TXS", lines: &lines)
+        case 20:
+            addLine(key: prefix, value: "CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA", lines: &lines)
         default:
             break
         }

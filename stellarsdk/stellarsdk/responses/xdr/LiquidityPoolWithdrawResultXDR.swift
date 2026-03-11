@@ -10,6 +10,7 @@ public enum LiquidityPoolWithdrawResultXDR: XDRCodable, Sendable {
   case underfunded
   case lineFull
   case underMinimum
+  case trustlineFrozen
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -28,6 +29,8 @@ public enum LiquidityPoolWithdrawResultXDR: XDRCodable, Sendable {
       self = .lineFull
     case LiquidityPoolWithdrawResulCode.underMinimum.rawValue:
       self = .underMinimum
+    case LiquidityPoolWithdrawResulCode.trustlineFrozen.rawValue:
+      self = .trustlineFrozen
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown LiquidityPoolWithdrawResultXDR discriminant: \(discriminant)")
     }
@@ -41,6 +44,7 @@ public enum LiquidityPoolWithdrawResultXDR: XDRCodable, Sendable {
     case .underfunded: return LiquidityPoolWithdrawResulCode.underfunded.rawValue
     case .lineFull: return LiquidityPoolWithdrawResulCode.lineFull.rawValue
     case .underMinimum: return LiquidityPoolWithdrawResulCode.underMinimum.rawValue
+    case .trustlineFrozen: return LiquidityPoolWithdrawResulCode.trustlineFrozen.rawValue
     }
   }
 
@@ -60,6 +64,8 @@ public enum LiquidityPoolWithdrawResultXDR: XDRCodable, Sendable {
     case .lineFull:
       break
     case .underMinimum:
+      break
+    case .trustlineFrozen:
       break
     }
   }

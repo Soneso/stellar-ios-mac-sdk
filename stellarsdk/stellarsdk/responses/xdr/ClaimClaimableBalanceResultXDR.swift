@@ -10,6 +10,7 @@ public enum ClaimClaimableBalanceResultXDR: XDRCodable, Sendable {
   case lineFull
   case noTrust
   case notAuthorized
+  case trustlineFrozen
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -28,6 +29,8 @@ public enum ClaimClaimableBalanceResultXDR: XDRCodable, Sendable {
       self = .noTrust
     case ClaimClaimableBalanceResultCode.notAuthorized.rawValue:
       self = .notAuthorized
+    case ClaimClaimableBalanceResultCode.trustlineFrozen.rawValue:
+      self = .trustlineFrozen
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown ClaimClaimableBalanceResultXDR discriminant: \(discriminant)")
     }
@@ -41,6 +44,7 @@ public enum ClaimClaimableBalanceResultXDR: XDRCodable, Sendable {
     case .lineFull: return ClaimClaimableBalanceResultCode.lineFull.rawValue
     case .noTrust: return ClaimClaimableBalanceResultCode.noTrust.rawValue
     case .notAuthorized: return ClaimClaimableBalanceResultCode.notAuthorized.rawValue
+    case .trustlineFrozen: return ClaimClaimableBalanceResultCode.trustlineFrozen.rawValue
     }
   }
 
@@ -60,6 +64,8 @@ public enum ClaimClaimableBalanceResultXDR: XDRCodable, Sendable {
     case .noTrust:
       break
     case .notAuthorized:
+      break
+    case .trustlineFrozen:
       break
     }
   }

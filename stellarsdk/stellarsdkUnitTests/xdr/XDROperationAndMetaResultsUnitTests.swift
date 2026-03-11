@@ -1353,6 +1353,7 @@ class XDROperationAndMetaResultsUnitTests: XCTestCase {
         XCTAssertEqual(LiquidityPoolDepositResulCode.lineFull.rawValue, -5)
         XCTAssertEqual(LiquidityPoolDepositResulCode.badPrice.rawValue, -6)
         XCTAssertEqual(LiquidityPoolDepositResulCode.poolFull.rawValue, -7)
+        XCTAssertEqual(LiquidityPoolDepositResulCode.trustlineFrozen.rawValue, -8)
     }
 
     func testLiquidityPoolWithdrawResulCodeRawValues() {
@@ -1362,6 +1363,7 @@ class XDROperationAndMetaResultsUnitTests: XCTestCase {
         XCTAssertEqual(LiquidityPoolWithdrawResulCode.underfunded.rawValue, -3)
         XCTAssertEqual(LiquidityPoolWithdrawResulCode.lineFull.rawValue, -4)
         XCTAssertEqual(LiquidityPoolWithdrawResulCode.underMinimum.rawValue, -5)
+        XCTAssertEqual(LiquidityPoolWithdrawResulCode.trustlineFrozen.rawValue, -6)
     }
 
     func testManageDataResultCodeRawValues() {
@@ -1550,7 +1552,8 @@ class XDROperationAndMetaResultsUnitTests: XCTestCase {
             .underfunded,
             .lineFull,
             .badPrice,
-            .poolFull
+            .poolFull,
+            .trustlineFrozen
         ]
 
         for errorCase in errorCases {
@@ -1574,7 +1577,8 @@ class XDROperationAndMetaResultsUnitTests: XCTestCase {
             .noTrust,
             .underfunded,
             .lineFull,
-            .underMinimum
+            .underMinimum,
+            .trustlineFrozen
         ]
 
         for errorCase in errorCases {

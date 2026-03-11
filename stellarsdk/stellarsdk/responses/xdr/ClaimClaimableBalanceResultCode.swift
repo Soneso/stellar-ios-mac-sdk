@@ -10,4 +10,5 @@ public enum ClaimClaimableBalanceResultCode: Int32, XDRCodable, Equatable, Senda
   case lineFull = -3
   case noTrust = -4
   case notAuthorized = -5
+  case trustlineFrozen = -6
 }
