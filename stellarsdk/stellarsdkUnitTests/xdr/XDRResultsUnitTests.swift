@@ -430,6 +430,20 @@ class XDRResultsUnitTests: XCTestCase {
         }
     }
 
+    func testClaimClaimableBalanceResultXDRTrustlineFrozen() throws {
+        let result = ClaimClaimableBalanceResultXDR.trustlineFrozen
+
+        let encoded = try XDREncoder.encode(result)
+        let decoded = try XDRDecoder.decode(ClaimClaimableBalanceResultXDR.self, data: encoded)
+
+        switch decoded {
+        case .trustlineFrozen:
+            break
+        default:
+            XCTFail("Expected trustlineFrozen case")
+        }
+    }
+
     // MARK: - ClawbackClaimableBalanceResultXDR Tests
 
     func testClawbackClaimableBalanceResultXDRSuccess() throws {
@@ -847,6 +861,7 @@ class XDRResultsUnitTests: XCTestCase {
         XCTAssertEqual(ClaimClaimableBalanceResultCode.lineFull.rawValue, -3)
         XCTAssertEqual(ClaimClaimableBalanceResultCode.noTrust.rawValue, -4)
         XCTAssertEqual(ClaimClaimableBalanceResultCode.notAuthorized.rawValue, -5)
+        XCTAssertEqual(ClaimClaimableBalanceResultCode.trustlineFrozen.rawValue, -6)
     }
 
     // MARK: - ClawbackClaimableBalanceResultCode Enum Tests

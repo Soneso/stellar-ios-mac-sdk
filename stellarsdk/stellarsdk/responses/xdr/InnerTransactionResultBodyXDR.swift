@@ -21,6 +21,7 @@ public enum InnerTransactionResultBodyXDR: XDRCodable, Sendable {
   case badMinSeqAgeOrGap
   case malformed
   case sorobanInvalid
+  case frozenKeyAccessed
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -63,6 +64,8 @@ public enum InnerTransactionResultBodyXDR: XDRCodable, Sendable {
       self = .malformed
     case TransactionResultCode.sorobanInvalid.rawValue:
       self = .sorobanInvalid
+    case TransactionResultCode.frozenKeyAccessed.rawValue:
+      self = .frozenKeyAccessed
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown InnerTransactionResultBodyXDR discriminant: \(discriminant)")
     }
@@ -87,6 +90,7 @@ public enum InnerTransactionResultBodyXDR: XDRCodable, Sendable {
     case .badMinSeqAgeOrGap: return TransactionResultCode.badMinSeqAgeOrGap.rawValue
     case .malformed: return TransactionResultCode.malformed.rawValue
     case .sorobanInvalid: return TransactionResultCode.sorobanInvalid.rawValue
+    case .frozenKeyAccessed: return TransactionResultCode.frozenKeyAccessed.rawValue
     }
   }
 
@@ -128,6 +132,8 @@ public enum InnerTransactionResultBodyXDR: XDRCodable, Sendable {
     case .malformed:
       break
     case .sorobanInvalid:
+      break
+    case .frozenKeyAccessed:
       break
     }
   }

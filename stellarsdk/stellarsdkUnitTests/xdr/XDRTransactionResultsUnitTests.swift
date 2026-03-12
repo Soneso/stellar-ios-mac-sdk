@@ -86,6 +86,7 @@ class XDRTransactionResultsUnitTests: XCTestCase {
             (.badMinSeqAgeOrGap,     .badMinSeqAgeOrGap,     "badMinSeqAgeOrGap"),
             (.malformed,             .malformed,             "malformed"),
             (.sorobanInvalid,        .sorobanInvalid,        "sorobanInvalid"),
+            (.frozenKeyAccessed,     .frozenKeyAccessed,     "frozenKeyAccessed"),
         ]
 
         for (body, expectedCode, label) in errorCases {
@@ -139,6 +140,7 @@ class XDRTransactionResultsUnitTests: XCTestCase {
             (.insufficientBalance,  "insufficientBalance"),
             (.noAccount,            "noAccount"),
             (.sorobanInvalid,       "sorobanInvalid"),
+            (.frozenKeyAccessed,    "frozenKeyAccessed"),
         ]
 
         for (body, label) in errorBodies {
@@ -829,6 +831,7 @@ class XDRTransactionResultsUnitTests: XCTestCase {
             (.badMinSeqAgeOrGap,   .badMinSeqAgeOrGap,   "badMinSeqAgeOrGap"),
             (.malformed,           .malformed,           "malformed"),
             (.sorobanInvalid,      .sorobanInvalid,      "sorobanInvalid"),
+            (.frozenKeyAccessed,   .frozenKeyAccessed,   "frozenKeyAccessed"),
         ]
 
         for (body, expectedCode, label) in voidCases {

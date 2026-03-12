@@ -74,4 +74,20 @@ public enum ContractCostType: Int32, XDRCodable, Equatable, Sendable {
   case bls12381FrMul = 67
   case bls12381FrPow = 68
   case bls12381FrInv = 69
+  case bn254EncodeFp = 70
+  case bn254DecodeFp = 71
+  case bn254G1CheckPointOnCurve = 72
+  case bn254G2CheckPointOnCurve = 73
+  case bn254G2CheckPointInSubgroup = 74
+  case bn254G1ProjectiveToAffine = 75
+  case bn254G1Add = 76
+  case bn254G1Mul = 77
+  case bn254Pairing = 78
+  case bn254FrFromU256 = 79
+  case bn254FrToU256 = 80
+  case bn254FrAddSub = 81
+  case bn254FrMul = 82
+  case bn254FrPow = 83
+  case bn254FrInv = 84
+  case bn254G1Msm = 85
 }

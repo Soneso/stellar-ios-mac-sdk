@@ -10,4 +10,5 @@ public enum LiquidityPoolWithdrawResulCode: Int32, XDRCodable, Equatable, Sendab
   case underfunded = -3
   case lineFull = -4
   case underMinimum = -5
+  case trustlineFrozen = -6
 }

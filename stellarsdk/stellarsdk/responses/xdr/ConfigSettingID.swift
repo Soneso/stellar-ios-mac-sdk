@@ -21,4 +21,8 @@ public enum ConfigSettingID: Int32, XDRCodable, Equatable, Sendable {
   case contractParallelComputeV0 = 14
   case contractLedgerCostExtV0 = 15
   case scpTiming = 16
+  case frozenLedgerKeys = 17
+  case frozenLedgerKeysDelta = 18
+  case freezeBypassTxs = 19
+  case freezeBypassTxsDelta = 20
 }

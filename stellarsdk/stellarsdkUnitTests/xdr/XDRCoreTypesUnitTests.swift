@@ -82,7 +82,8 @@ class XDRCoreTypesUnitTests: XCTestCase {
             (.badSponsorship, .badSponsorship),
             (.badMinSeqAgeOrGap, .badMinSeqAgeOrGap),
             (.malformed, .malformed),
-            (.sorobanInvalid, .sorobanInvalid)
+            (.sorobanInvalid, .sorobanInvalid),
+            (.frozenKeyAccessed, .frozenKeyAccessed)
         ]
 
         for (code, body) in errorCodes {
@@ -708,6 +709,7 @@ class XDRCoreTypesUnitTests: XCTestCase {
         XCTAssertEqual(TransactionResultCode.badMinSeqAgeOrGap.rawValue, -15)
         XCTAssertEqual(TransactionResultCode.malformed.rawValue, -16)
         XCTAssertEqual(TransactionResultCode.sorobanInvalid.rawValue, -17)
+        XCTAssertEqual(TransactionResultCode.frozenKeyAccessed.rawValue, -18)
     }
 
     // MARK: - OperationResultCode Enum Tests

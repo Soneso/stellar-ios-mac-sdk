@@ -23,4 +23,5 @@ public enum TransactionResultCode: Int32, XDRCodable, Equatable, Sendable {
   case badMinSeqAgeOrGap = -15
   case malformed = -16
   case sorobanInvalid = -17
+  case frozenKeyAccessed = -18
 }

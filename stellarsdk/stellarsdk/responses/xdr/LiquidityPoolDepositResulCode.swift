@@ -12,4 +12,5 @@ public enum LiquidityPoolDepositResulCode: Int32, XDRCodable, Equatable, Sendabl
   case lineFull = -5
   case badPrice = -6
   case poolFull = -7
+  case trustlineFrozen = -8
 }

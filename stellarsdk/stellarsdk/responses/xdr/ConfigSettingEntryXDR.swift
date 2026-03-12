@@ -21,6 +21,10 @@ public enum ConfigSettingEntryXDR: XDRCodable, Sendable {
   case contractParallelCompute(ConfigSettingContractParallelComputeV0)
   case contractLedgerCostExt(ConfigSettingContractLedgerCostExtV0)
   case contractSCPTiming(ConfigSettingSCPTiming)
+  case frozenLedgerKeys(FrozenLedgerKeysXDR)
+  case frozenLedgerKeysDelta(FrozenLedgerKeysDeltaXDR)
+  case freezeBypassTxs(FreezeBypassTxsXDR)
+  case freezeBypassTxsDelta(FreezeBypassTxsDeltaXDR)
 
   public init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
@@ -78,6 +82,18 @@ public enum ConfigSettingEntryXDR: XDRCodable, Sendable {
     case ConfigSettingID.scpTiming.rawValue:
       let val = try container.decode(ConfigSettingSCPTiming.self)
       self = .contractSCPTiming(val)
+    case ConfigSettingID.frozenLedgerKeys.rawValue:
+      let val = try container.decode(FrozenLedgerKeysXDR.self)
+      self = .frozenLedgerKeys(val)
+    case ConfigSettingID.frozenLedgerKeysDelta.rawValue:
+      let val = try container.decode(FrozenLedgerKeysDeltaXDR.self)
+      self = .frozenLedgerKeysDelta(val)
+    case ConfigSettingID.freezeBypassTxs.rawValue:
+      let val = try container.decode(FreezeBypassTxsXDR.self)
+      self = .freezeBypassTxs(val)
+    case ConfigSettingID.freezeBypassTxsDelta.rawValue:
+      let val = try container.decode(FreezeBypassTxsDeltaXDR.self)
+      self = .freezeBypassTxsDelta(val)
     default:
       throw StellarSDKError.xdrDecodingError(message: "Unknown ConfigSettingEntryXDR discriminant: \(discriminant)")
     }
@@ -102,6 +118,10 @@ public enum ConfigSettingEntryXDR: XDRCodable, Sendable {
     case .contractParallelCompute: return ConfigSettingID.contractParallelComputeV0.rawValue
     case .contractLedgerCostExt: return ConfigSettingID.contractLedgerCostExtV0.rawValue
     case .contractSCPTiming: return ConfigSettingID.scpTiming.rawValue
+    case .frozenLedgerKeys: return ConfigSettingID.frozenLedgerKeys.rawValue
+    case .frozenLedgerKeysDelta: return ConfigSettingID.frozenLedgerKeysDelta.rawValue
+    case .freezeBypassTxs: return ConfigSettingID.freezeBypassTxs.rawValue
+    case .freezeBypassTxsDelta: return ConfigSettingID.freezeBypassTxsDelta.rawValue
     }
   }
 
@@ -143,6 +163,14 @@ public enum ConfigSettingEntryXDR: XDRCodable, Sendable {
     case .contractLedgerCostExt(let val):
       try container.encode(val)
     case .contractSCPTiming(let val):
+      try container.encode(val)
+    case .frozenLedgerKeys(let val):
+      try container.encode(val)
+    case .frozenLedgerKeysDelta(let val):
+      try container.encode(val)
+    case .freezeBypassTxs(let val):
+      try container.encode(val)
+    case .freezeBypassTxsDelta(let val):
       try container.encode(val)
     }
   }
