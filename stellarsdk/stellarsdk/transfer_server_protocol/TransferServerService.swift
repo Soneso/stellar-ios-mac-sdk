@@ -179,49 +179,49 @@ public final class TransferServerService: @unchecked Sendable {
     /// - Parameter request: Deposit request containing asset code, destination account, and optional parameters
     /// - Returns: DepositResponseEnum with instructions for transferring external assets to the anchor, or an error
     public func deposit(request: DepositRequest) async -> DepositResponseEnum {
-        var requestPath = "/deposit?asset_code=\(request.assetCode)&account=\(request.account)"
+        var requestPath = "/deposit?asset_code=\(request.assetCode.urlQueryValueEncoded)&account=\(request.account.urlQueryValueEncoded)"
         if let memoType = request.memoType {
-            requestPath += "&memo_type=\(memoType)"
+            requestPath += "&memo_type=\(memoType.urlQueryValueEncoded)"
         }
         if let memo = request.memo {
-            requestPath += "&memo=\(memo)"
+            requestPath += "&memo=\(memo.urlQueryValueEncoded)"
         }
         if let emailAddress = request.emailAddress {
-            requestPath += "&email_address=\(emailAddress)"
+            requestPath += "&email_address=\(emailAddress.urlQueryValueEncoded)"
         }
         if let type = request.type {
-            requestPath += "&type=\(type)"
+            requestPath += "&type=\(type.urlQueryValueEncoded)"
         }
         if let walletName = request.walletName {
-            requestPath += "&wallet_name=\(walletName)"
+            requestPath += "&wallet_name=\(walletName.urlQueryValueEncoded)"
         }
         if let walletUrl = request.walletUrl {
-            requestPath += "&wallet_url=\(walletUrl)"
+            requestPath += "&wallet_url=\(walletUrl.urlQueryValueEncoded)"
         }
         if let lang = request.lang {
-            requestPath += "&lang=\(lang)"
+            requestPath += "&lang=\(lang.urlQueryValueEncoded)"
         }
         if let onChangeCallback = request.onChangeCallback {
-            requestPath += "&on_change_callback=\(onChangeCallback)"
+            requestPath += "&on_change_callback=\(onChangeCallback.urlQueryValueEncoded)"
         }
         if let amount = request.amount {
-            requestPath += "&amount=\(amount)"
+            requestPath += "&amount=\(amount.urlQueryValueEncoded)"
         }
         if let countryCode = request.countryCode {
-            requestPath += "&country_code=\(countryCode)"
+            requestPath += "&country_code=\(countryCode.urlQueryValueEncoded)"
         }
         if let claimableBalanceSupported = request.claimableBalanceSupported {
             requestPath += "&claimable_balance_supported=\(claimableBalanceSupported)"
         }
         if let customerId = request.customerId {
-            requestPath += "&customer_id=\(customerId)"
+            requestPath += "&customer_id=\(customerId.urlQueryValueEncoded)"
         }
         if let locationId = request.locationId {
-            requestPath += "&location_id=\(locationId)"
+            requestPath += "&location_id=\(locationId.urlQueryValueEncoded)"
         }
         if let extraFields = request.extraFields {
             extraFields.forEach {
-                requestPath += "&\($0.key)=\($0.value)"
+                requestPath += "&\($0.key.urlQueryValueEncoded)=\($0.value.urlQueryValueEncoded)"
             }
         }
         
@@ -245,49 +245,49 @@ public final class TransferServerService: @unchecked Sendable {
     /// - Parameter request: Exchange deposit request specifying source asset, destination asset, amount, and account
     /// - Returns: DepositResponseEnum with conversion details and instructions, or an error
     public func depositExchange(request: DepositExchangeRequest) async -> DepositResponseEnum {
-        var requestPath = "/deposit-exchange?destination_asset=\(request.destinationAsset)&source_asset=\(request.sourceAsset)&amount=\(request.amount)&account=\(request.account)"
+        var requestPath = "/deposit-exchange?destination_asset=\(request.destinationAsset.urlQueryValueEncoded)&source_asset=\(request.sourceAsset.urlQueryValueEncoded)&amount=\(request.amount.urlQueryValueEncoded)&account=\(request.account.urlQueryValueEncoded)"
         if let quoteId = request.quoteId {
-            requestPath += "&quote_id=\(quoteId)"
+            requestPath += "&quote_id=\(quoteId.urlQueryValueEncoded)"
         }
         if let memoType = request.memoType {
-            requestPath += "&memo_type=\(memoType)"
+            requestPath += "&memo_type=\(memoType.urlQueryValueEncoded)"
         }
         if let memo = request.memo {
-            requestPath += "&memo=\(memo)"
+            requestPath += "&memo=\(memo.urlQueryValueEncoded)"
         }
         if let emailAddress = request.emailAddress {
-            requestPath += "&email_address=\(emailAddress)"
+            requestPath += "&email_address=\(emailAddress.urlQueryValueEncoded)"
         }
         if let type = request.type {
-            requestPath += "&type=\(type)"
+            requestPath += "&type=\(type.urlQueryValueEncoded)"
         }
         if let walletName = request.walletName {
-            requestPath += "&wallet_name=\(walletName)"
+            requestPath += "&wallet_name=\(walletName.urlQueryValueEncoded)"
         }
         if let walletUrl = request.walletUrl {
-            requestPath += "&wallet_url=\(walletUrl)"
+            requestPath += "&wallet_url=\(walletUrl.urlQueryValueEncoded)"
         }
         if let lang = request.lang {
-            requestPath += "&lang=\(lang)"
+            requestPath += "&lang=\(lang.urlQueryValueEncoded)"
         }
         if let onChangeCallback = request.onChangeCallback {
-            requestPath += "&on_change_callback=\(onChangeCallback)"
+            requestPath += "&on_change_callback=\(onChangeCallback.urlQueryValueEncoded)"
         }
         if let countryCode = request.countryCode {
-            requestPath += "&country_code=\(countryCode)"
+            requestPath += "&country_code=\(countryCode.urlQueryValueEncoded)"
         }
         if let claimableBalanceSupported = request.claimableBalanceSupported {
             requestPath += "&claimable_balance_supported=\(claimableBalanceSupported)"
         }
         if let customerId = request.customerId {
-            requestPath += "&customer_id=\(customerId)"
+            requestPath += "&customer_id=\(customerId.urlQueryValueEncoded)"
         }
         if let locationId = request.locationId {
-            requestPath += "&location_id=\(locationId)"
+            requestPath += "&location_id=\(locationId.urlQueryValueEncoded)"
         }
         if let extraFields = request.extraFields {
             extraFields.forEach {
-                requestPath += "&\($0.key)=\($0.value)"
+                requestPath += "&\($0.key.urlQueryValueEncoded)=\($0.value.urlQueryValueEncoded)"
             }
         }
         
@@ -311,55 +311,55 @@ public final class TransferServerService: @unchecked Sendable {
     /// - Parameter request: Withdrawal request with asset code, withdrawal type, destination, and optional account details
     /// - Returns: WithdrawResponseEnum with instructions for receiving off-chain assets, or an error
     public func withdraw(request: WithdrawRequest) async -> WithdrawResponseEnum {
-        var requestPath = "/withdraw?type=\(request.type)&asset_code=\(request.assetCode)"
+        var requestPath = "/withdraw?type=\(request.type.urlQueryValueEncoded)&asset_code=\(request.assetCode.urlQueryValueEncoded)"
         if let dest = request.dest {
-            requestPath += "&dest=\(dest)"
+            requestPath += "&dest=\(dest.urlQueryValueEncoded)"
         }
         if let destExtra = request.destExtra {
-            requestPath += "&dest_extra=\(destExtra)"
+            requestPath += "&dest_extra=\(destExtra.urlQueryValueEncoded)"
         }
         if let account = request.account {
-            requestPath += "&account=\(account)"
+            requestPath += "&account=\(account.urlQueryValueEncoded)"
         }
         if let memo = request.memo {
-            requestPath += "&memo=\(memo)"
+            requestPath += "&memo=\(memo.urlQueryValueEncoded)"
         }
         if let memoType = request.memoType {
-            requestPath += "&memo_type=\(memoType)"
+            requestPath += "&memo_type=\(memoType.urlQueryValueEncoded)"
         }
         if let walletName = request.walletName {
-            requestPath += "&wallet_name=\(walletName)"
+            requestPath += "&wallet_name=\(walletName.urlQueryValueEncoded)"
         }
         if let walletUrl = request.walletUrl {
-            requestPath += "&wallet_url=\(walletUrl)"
+            requestPath += "&wallet_url=\(walletUrl.urlQueryValueEncoded)"
         }
         if let lang = request.lang {
-            requestPath += "&lang=\(lang)"
+            requestPath += "&lang=\(lang.urlQueryValueEncoded)"
         }
         if let onChangeCallback = request.onChangeCallback {
-            requestPath += "&on_change_callback=\(onChangeCallback)"
+            requestPath += "&on_change_callback=\(onChangeCallback.urlQueryValueEncoded)"
         }
         if let amount = request.amount {
-            requestPath += "&amount=\(amount)"
+            requestPath += "&amount=\(amount.urlQueryValueEncoded)"
         }
         if let countryCode = request.countryCode {
-            requestPath += "&country_code=\(countryCode)"
+            requestPath += "&country_code=\(countryCode.urlQueryValueEncoded)"
         }
         if let refundMemo = request.refundMemo {
-            requestPath += "&refund_memo=\(refundMemo)"
+            requestPath += "&refund_memo=\(refundMemo.urlQueryValueEncoded)"
         }
         if let refundMemoType = request.refundMemoType {
-            requestPath += "&refund_memo_type=\(refundMemoType)"
+            requestPath += "&refund_memo_type=\(refundMemoType.urlQueryValueEncoded)"
         }
         if let customerId = request.customerId {
-            requestPath += "&customer_id=\(customerId)"
+            requestPath += "&customer_id=\(customerId.urlQueryValueEncoded)"
         }
         if let locationId = request.locationId {
-            requestPath += "&location_id=\(locationId)"
+            requestPath += "&location_id=\(locationId.urlQueryValueEncoded)"
         }
         if let extraFields = request.extraFields {
             extraFields.forEach {
-                requestPath += "&\($0.key)=\($0.value)"
+                requestPath += "&\($0.key.urlQueryValueEncoded)=\($0.value.urlQueryValueEncoded)"
             }
         }
         
@@ -383,55 +383,55 @@ public final class TransferServerService: @unchecked Sendable {
     /// - Parameter request: Exchange withdrawal request specifying source asset, destination asset, amount, and withdrawal details
     /// - Returns: WithdrawResponseEnum with conversion details and instructions, or an error
     public func withdrawExchange(request: WithdrawExchangeRequest) async -> WithdrawResponseEnum {
-        var requestPath = "/withdraw-exchange?type=\(request.type)&source_asset=\(request.sourceAsset)&destination_asset=\(request.destinationAsset)&amount=\(request.amount)"
+        var requestPath = "/withdraw-exchange?type=\(request.type.urlQueryValueEncoded)&source_asset=\(request.sourceAsset.urlQueryValueEncoded)&destination_asset=\(request.destinationAsset.urlQueryValueEncoded)&amount=\(request.amount.urlQueryValueEncoded)"
         if let quoteId = request.quoteId {
-            requestPath += "&quote_id=\(quoteId)"
+            requestPath += "&quote_id=\(quoteId.urlQueryValueEncoded)"
         }
         if let dest = request.dest {
-            requestPath += "&dest=\(dest)"
+            requestPath += "&dest=\(dest.urlQueryValueEncoded)"
         }
         if let destExtra = request.destExtra {
-            requestPath += "&dest_extra=\(destExtra)"
+            requestPath += "&dest_extra=\(destExtra.urlQueryValueEncoded)"
         }
         if let account = request.account {
-            requestPath += "&account=\(account)"
+            requestPath += "&account=\(account.urlQueryValueEncoded)"
         }
         if let memo = request.memo {
-            requestPath += "&memo=\(memo)"
+            requestPath += "&memo=\(memo.urlQueryValueEncoded)"
         }
         if let memoType = request.memoType {
-            requestPath += "&memo_type=\(memoType)"
+            requestPath += "&memo_type=\(memoType.urlQueryValueEncoded)"
         }
         if let walletName = request.walletName {
-            requestPath += "&wallet_name=\(walletName)"
+            requestPath += "&wallet_name=\(walletName.urlQueryValueEncoded)"
         }
         if let walletUrl = request.walletUrl {
-            requestPath += "&wallet_url=\(walletUrl)"
+            requestPath += "&wallet_url=\(walletUrl.urlQueryValueEncoded)"
         }
         if let lang = request.lang {
-            requestPath += "&lang=\(lang)"
+            requestPath += "&lang=\(lang.urlQueryValueEncoded)"
         }
         if let onChangeCallback = request.onChangeCallback {
-            requestPath += "&on_change_callback=\(onChangeCallback)"
+            requestPath += "&on_change_callback=\(onChangeCallback.urlQueryValueEncoded)"
         }
         if let countryCode = request.countryCode {
-            requestPath += "&country_code=\(countryCode)"
+            requestPath += "&country_code=\(countryCode.urlQueryValueEncoded)"
         }
         if let refundMemo = request.refundMemo {
-            requestPath += "&refund_memo=\(refundMemo)"
+            requestPath += "&refund_memo=\(refundMemo.urlQueryValueEncoded)"
         }
         if let refundMemoType = request.refundMemoType {
-            requestPath += "&refund_memo_type=\(refundMemoType)"
+            requestPath += "&refund_memo_type=\(refundMemoType.urlQueryValueEncoded)"
         }
         if let customerId = request.customerId {
-            requestPath += "&customer_id=\(customerId)"
+            requestPath += "&customer_id=\(customerId.urlQueryValueEncoded)"
         }
         if let locationId = request.locationId {
-            requestPath += "&location_id=\(locationId)"
+            requestPath += "&location_id=\(locationId.urlQueryValueEncoded)"
         }
         if let extraFields = request.extraFields {
             extraFields.forEach {
-                requestPath += "&\($0.key)=\($0.value)"
+                requestPath += "&\($0.key.urlQueryValueEncoded)=\($0.value.urlQueryValueEncoded)"
             }
         }
         
@@ -458,7 +458,7 @@ public final class TransferServerService: @unchecked Sendable {
     public func info(language: String? = nil, jwtToken:String? = nil) async -> AnchorInfoResponseEnum {
         var requestPath = "/info"
         if let language = language {
-            requestPath += "?lang=\(language)"
+            requestPath += "?lang=\(language.urlQueryValueEncoded)"
         }
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwtToken)
@@ -481,10 +481,10 @@ public final class TransferServerService: @unchecked Sendable {
     /// - Parameter request: Fee request containing operation type, asset code, and transaction amount
     /// - Returns: AnchorFeeResponseEnum with calculated fee details for the specified operation, or an error
     public func fee(request: FeeRequest) async -> AnchorFeeResponseEnum {
-        var requestPath = "/fee?operation=\(request.operation)&asset_code=\(request.assetCode)&amount=\(request.amount)"
-        
+        var requestPath = "/fee?operation=\(request.operation.urlQueryValueEncoded)&asset_code=\(request.assetCode.urlQueryValueEncoded)&amount=\(String(request.amount).urlQueryValueEncoded)"
+
         if let type = request.type {
-            requestPath += "&type=\(type)"
+            requestPath += "&type=\(type.urlQueryValueEncoded)"
         }
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
@@ -507,22 +507,22 @@ public final class TransferServerService: @unchecked Sendable {
     /// - Parameter request: Transaction query request with account, asset code, optional filters, and SEP-10 JWT token
     /// - Returns: AnchorTransactionsResponseEnum with list of deposit and withdrawal transactions, or an error
     public func getTransactions(request: AnchorTransactionsRequest) async -> AnchorTransactionsResponseEnum {
-        var requestPath = "/transactions?asset_code=\(request.assetCode)&account=\(request.account)"
+        var requestPath = "/transactions?asset_code=\(request.assetCode.urlQueryValueEncoded)&account=\(request.account.urlQueryValueEncoded)"
         if let noOlderThanDate = request.noOlderThan {
             let noOlderThan = DateFormatter.iso8601.string(from: noOlderThanDate)
-            requestPath += "&no_older_than=\(noOlderThan)"
+            requestPath += "&no_older_than=\(noOlderThan.urlQueryValueEncoded)"
         }
         if let limit = request.limit {
             requestPath += "&limit=\(limit)"
         }
         if let kind = request.kind {
-            requestPath += "&kind=\(kind)"
+            requestPath += "&kind=\(kind.urlQueryValueEncoded)"
         }
         if let pagingId = request.pagingId {
-            requestPath += "&paging_id=\(pagingId)"
+            requestPath += "&paging_id=\(pagingId.urlQueryValueEncoded)"
         }
         if let lang = request.lang {
-            requestPath += "&lang=\(lang)"
+            requestPath += "&lang=\(lang.urlQueryValueEncoded)"
         }
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
@@ -546,31 +546,31 @@ public final class TransferServerService: @unchecked Sendable {
     /// - Returns: AnchorTransactionResponseEnum with detailed transaction status and processing information, or an error
     public func getTransaction(request: AnchorTransactionRequest) async -> AnchorTransactionResponseEnum {
         var requestPath = "/transaction?"
-        
+
         var first = true
         if let id = request.id {
-            requestPath += "id=\(id)"
+            requestPath += "id=\(id.urlQueryValueEncoded)"
             first = false
         }
         if let stellarTransactionId = request.stellarTransactionId {
             if !first {
                 requestPath += "&"
             }
-            requestPath += "stellar_transaction_id=\(stellarTransactionId)"
+            requestPath += "stellar_transaction_id=\(stellarTransactionId.urlQueryValueEncoded)"
             first = false
         }
         if let externalTransactionId = request.externalTransactionId {
             if !first {
                 requestPath += "&"
             }
-            requestPath += "external_transaction_id=\(externalTransactionId)"
+            requestPath += "external_transaction_id=\(externalTransactionId.urlQueryValueEncoded)"
             first = false
         }
         if let lang = request.lang {
             if !first {
                 requestPath += "&"
             }
-            requestPath += "lang=\(lang)"
+            requestPath += "lang=\(lang.urlQueryValueEncoded)"
         }
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
@@ -596,7 +596,7 @@ public final class TransferServerService: @unchecked Sendable {
     /// - Parameter body: Encoded request data containing the required customer information updates
     /// - Returns: AnchorTransactionResponseEnum with updated transaction details, or an error
     public func patchTransaction(id:String, jwt:String?, contentType:String, body:Data) async -> AnchorTransactionResponseEnum {
-        let requestPath = "/transaction/\(id)"
+        let requestPath = "/transaction/\(id.urlPathEncoded)"
         
         let result = await serviceHelper.PATCHRequestWithPath(path: requestPath, jwtToken: jwt, contentType: contentType, body: body)
         switch result {

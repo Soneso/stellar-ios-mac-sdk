@@ -96,7 +96,7 @@ public class EffectsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getEffects(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<EffectResponse>.ResponseEnum {
-        let path = "/accounts/" + accountId + "/effects"
+        let path = "/accounts/" + accountId.urlPathEncoded + "/effects"
         return await getEffects(onPath: path, from:cursor, order:order, limit:limit)
     }
     
@@ -114,7 +114,7 @@ public class EffectsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getEffects(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<EffectResponse>.ResponseEnum {
-        let path = "/ledgers/" + ledger + "/effects"
+        let path = "/ledgers/" + ledger.urlPathEncoded + "/effects"
         return await getEffects(onPath: path, from:cursor, order:order, limit:limit)
     }
     
@@ -131,7 +131,7 @@ public class EffectsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getEffects(forOperation operation:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<EffectResponse>.ResponseEnum {
-        let path = "/operations/" + operation + "/effects"
+        let path = "/operations/" + operation.urlPathEncoded + "/effects"
         return await getEffects(onPath: path, from:cursor, order:order, limit:limit)
     }
     
@@ -148,7 +148,7 @@ public class EffectsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getEffects(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<EffectResponse>.ResponseEnum {
-        let path = "/transactions/" + hash + "/effects"
+        let path = "/transactions/" + hash.urlPathEncoded + "/effects"
         return await getEffects(onPath: path, from:cursor, order:order, limit:limit)
     }
     
@@ -164,7 +164,7 @@ public class EffectsService: @unchecked Sendable {
         if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
             lidHex = idHex
         }
-        let path = "/liquidity_pools/" + lidHex + "/effects"
+        let path = "/liquidity_pools/" + lidHex.urlPathEncoded + "/effects"
         return await getEffects(onPath: path, from:cursor, order:order, limit:limit)
     }
     
@@ -178,36 +178,36 @@ public class EffectsService: @unchecked Sendable {
         case .allEffects(let cursor):
             subpath = "/effects"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .effectsForAccount(let accountId, let cursor):
-            subpath = "/accounts/" + accountId + "/effects"
+            subpath = "/accounts/" + accountId.urlPathEncoded + "/effects"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .effectsForLedger(let ledger, let cursor):
-            subpath = "/ledgers/" + ledger + "/effects"
+            subpath = "/ledgers/" + ledger.urlPathEncoded + "/effects"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .effectsForOperation(let operation, let cursor):
-            subpath = "/operations/" + operation + "/effects"
+            subpath = "/operations/" + operation.urlPathEncoded + "/effects"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .effectsForTransaction(let transaction, let cursor):
-            subpath = "/transactions/" + transaction + "/effects"
+            subpath = "/transactions/" + transaction.urlPathEncoded + "/effects"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .effectsForLiquidityPool(let liquidityPool, let cursor):
             var lidHex = liquidityPool
             if liquidityPool.hasPrefix("L"), let idHex = try? liquidityPool.decodeLiquidityPoolIdToHex() {
                 lidHex = idHex
             }
-            subpath = "/liquidity_pools/" + lidHex + "/effects"
+            subpath = "/liquidity_pools/" + lidHex.urlPathEncoded + "/effects"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         }
         let streamItem = EffectsStreamItem(requestUrl: serviceHelper.requestUrlWithPath(path: subpath))

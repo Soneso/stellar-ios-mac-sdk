@@ -325,27 +325,27 @@ public final class KycService: @unchecked Sendable {
     /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-get
     public func getCustomerInfo(request: GetCustomerInfoRequest) async -> GetCustomerInfoResponseEnum {
         var requestPath = "/customer"
-        
+
         if let id = request.id {
-            requestPath += "&id=\(id)"
+            requestPath += "&id=\(id.urlQueryValueEncoded)"
         }
         if let account = request.account {
-            requestPath += "&account=\(account)"
+            requestPath += "&account=\(account.urlQueryValueEncoded)"
         }
         if let memo = request.memo {
-            requestPath += "&memo=\(memo)"
+            requestPath += "&memo=\(memo.urlQueryValueEncoded)"
         }
         if let memoType = request.memoType {
-            requestPath += "&memo_type=\(memoType)"
+            requestPath += "&memo_type=\(memoType.urlQueryValueEncoded)"
         }
         if let type = request.type {
-            requestPath += "&type=\(type)"
+            requestPath += "&type=\(type.urlQueryValueEncoded)"
         }
         if let transactionId = request.transactionId {
-            requestPath += "&transaction_id=\(transactionId)"
+            requestPath += "&transaction_id=\(transactionId.urlQueryValueEncoded)"
         }
         if let lang = request.lang {
-            requestPath += "&lang=\(lang)"
+            requestPath += "&lang=\(lang.urlQueryValueEncoded)"
         }
         
         if let range = requestPath.range(of: "&") {
@@ -425,7 +425,7 @@ public final class KycService: @unchecked Sendable {
     /// - Parameter jwt: JWT token from SEP-10 authentication
     /// - Returns: DeleteCustomerResponseEnum indicating success or an error
     public func deleteCustomerInfo(account: String, jwt:String) async -> DeleteCustomerResponseEnum {
-        let requestPath = "/customer/\(account)"
+        let requestPath = "/customer/\(account.urlPathEncoded)"
         
         let result = await serviceHelper.DELETERequestWithPath(path: requestPath, jwtToken: jwt)
         switch result {
@@ -501,12 +501,12 @@ public final class KycService: @unchecked Sendable {
     /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0012.md#customer-files
     public func getCustomerFiles(fileId:String? = nil, customerId:String? = nil, jwtToken: String) async -> GetCustomerFilesResponseEnum {
         var requestPath = "/customer/files"
-        
+
         if let fid = fileId {
-            requestPath += "&file_id=\(fid)"
+            requestPath += "&file_id=\(fid.urlQueryValueEncoded)"
         }
         if let cid = customerId {
-            requestPath += "&customer_id=\(cid)"
+            requestPath += "&customer_id=\(cid.urlQueryValueEncoded)"
         }
         
         if let range = requestPath.range(of: "&") {

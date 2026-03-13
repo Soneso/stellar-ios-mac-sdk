@@ -377,12 +377,12 @@ public final class WebAuthenticator: Sendable {
     /// - Returns: ChallengeResponseEnum with base64-encoded challenge transaction or error
     public func getChallenge(forAccount accountId:String, memo:UInt64? = nil, homeDomain:String? = nil, clientDomain:String? = nil) async -> ChallengeResponseEnum {
         
-        var path = (homeDomain != nil) ? "?account=\(accountId)&home_domain=\(homeDomain!)" : "?account=\(accountId)"
-        
+        var path = (homeDomain != nil) ? "?account=\(accountId.urlQueryValueEncoded)&home_domain=\(homeDomain!.urlQueryValueEncoded)" : "?account=\(accountId.urlQueryValueEncoded)"
+
         if let cd = clientDomain {
-            path.append("&client_domain=\(cd)");
+            path.append("&client_domain=\(cd.urlQueryValueEncoded)");
         }
-        
+
         if let mid = memo {
             if accountId.starts(with: "G") {
                 path.append("&memo=\(mid)");

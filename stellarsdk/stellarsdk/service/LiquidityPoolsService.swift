@@ -74,7 +74,7 @@ public class LiquidityPoolsService: @unchecked Sendable {
         if poolId.hasPrefix("L"), let idHex = try? poolId.decodeLiquidityPoolIdToHex() {
             lidHex = idHex
         }
-        let requestPath = "/liquidity_pools/" + lidHex
+        let requestPath = "/liquidity_pools/" + lidHex.urlPathEncoded
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
         switch result {
         case .success(let data):
@@ -147,7 +147,7 @@ public class LiquidityPoolsService: @unchecked Sendable {
     /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
     /// - Returns: LiquidityPoolTradesResponseEnum with trade history or error
     open func getLiquidityPoolTrades(poolId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> LiquidityPoolTradesResponseEnum {
-        var requestPath = "/liquidity_pools/" + poolId + "/trades"
+        var requestPath = "/liquidity_pools/" + poolId.urlPathEncoded + "/trades"
 
         var params = Dictionary<String,String>()
         params["cursor"] = cursor
@@ -207,7 +207,7 @@ public class LiquidityPoolsService: @unchecked Sendable {
         if poolId.hasPrefix("L"), let idHex = try? poolId.decodeLiquidityPoolIdToHex() {
             lidHex = idHex
         }
-        let requestPath = "/liquidity_pools/" + lidHex + "/trades"
+        let requestPath = "/liquidity_pools/" + lidHex.urlPathEncoded + "/trades"
         let streamUrl = serviceHelper.requestUrlWithPath(path: requestPath)
         return LiquidityPoolTradesStreamItem(requestUrl: streamUrl)
     }

@@ -26,12 +26,16 @@ extension Dictionary {
     ///
     /// See: [RFC 3986](http://www.ietf.org/rfc/rfc3986.txt) for URL encoding specification.
     func stringFromHttpParameters() -> String? {
-        let parameterArray = map { key, value -> String in
-            guard let key = key as? String else { return "" }
-            guard let value = value as? String else { return "" }
-            return "\(key)=\(value)"
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=+")
+        let parameterArray = compactMap { key, value -> String? in
+            guard let key = key as? String, let value = value as? String else { return nil }
+            guard let encodedKey = key.addingPercentEncoding(withAllowedCharacters: allowed),
+                  let encodedValue = value.addingPercentEncoding(withAllowedCharacters: allowed)
+            else { return nil }
+            return "\(encodedKey)=\(encodedValue)"
         }
-        return parameterArray.filter{$0.count > 0}.joined(separator: "&").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        return parameterArray.joined(separator: "&")
     }
     
 }

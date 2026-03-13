@@ -126,7 +126,7 @@ public class TradesService: @unchecked Sendable {
     /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
     /// - Returns: PageResponse containing trade records for the account or error
     open func getTrades(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
-        var requestPath = "/accounts/" + accountId + "/trades"
+        var requestPath = "/accounts/" + accountId.urlPathEncoded + "/trades"
         
         var params = Dictionary<String,String>()
         params["cursor"] = cursor
@@ -198,9 +198,9 @@ public class TradesService: @unchecked Sendable {
             }
             
         case .tradesForAccount(let accountId, let cursor):
-            subpath = "/accounts/" + accountId + "/trades"
+            subpath = "/accounts/" + accountId.urlPathEncoded + "/trades"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         }
     

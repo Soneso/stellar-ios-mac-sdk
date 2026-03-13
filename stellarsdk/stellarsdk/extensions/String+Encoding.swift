@@ -10,6 +10,18 @@ import Foundation
 
 /// Extension providing encoding utilities for String.
 public extension String {
+    var urlPathEncoded: String {
+        var allowed = CharacterSet.urlPathAllowed
+        allowed.remove(charactersIn: "/&=;+")
+        return self.addingPercentEncoding(withAllowedCharacters: allowed) ?? self
+    }
+
+    var urlQueryValueEncoded: String {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=+")
+        return self.addingPercentEncoding(withAllowedCharacters: allowed) ?? self
+    }
+
     /// URL-encodes the string for use in query parameters.
     ///
     /// Encodes characters that are not allowed in URL query parameters and keys.

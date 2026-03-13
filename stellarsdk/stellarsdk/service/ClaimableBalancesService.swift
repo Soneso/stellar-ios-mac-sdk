@@ -68,7 +68,7 @@ public class ClaimableBalancesService: @unchecked Sendable {
             let cid = try? balanceId.decodeClaimableBalanceIdToHex() {
             idHex = cid
         }
-        let requestPath = "/claimable_balances/" + idHex
+        let requestPath = "/claimable_balances/" + idHex.urlPathEncoded
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
         switch result {
         case .success(let data):

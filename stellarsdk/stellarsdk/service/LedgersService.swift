@@ -63,7 +63,7 @@ public class LedgersService: @unchecked Sendable {
     /// - Parameter sequenceNumber: The ledger sequence number as a string
     /// - Returns: LedgerDetailsResponseEnum with ledger details or error
     open func getLedger(sequenceNumber:String) async -> LedgerDetailsResponseEnum {
-        let requestPath = "/ledgers/" + sequenceNumber
+        let requestPath = "/ledgers/" + sequenceNumber.urlPathEncoded
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
         switch result {
         case .success(let data):
@@ -130,7 +130,7 @@ public class LedgersService: @unchecked Sendable {
         case .allLedgers(let cursor):
             subpath = "/ledgers"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         }
         

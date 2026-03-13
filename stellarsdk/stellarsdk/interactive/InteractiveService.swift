@@ -272,7 +272,7 @@ public final class InteractiveService: @unchecked Sendable {
     public func info(language: String? = nil) async -> Sep24InfoResponseEnum {
         var requestPath = "/info"
         if let language = language {
-            requestPath += "?lang=\(language)"
+            requestPath += "?lang=\(language.urlQueryValueEncoded)"
         }
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
@@ -299,10 +299,10 @@ public final class InteractiveService: @unchecked Sendable {
     /// - Parameter request: Sep24FeeRequest containing operation type, asset code, amount, and JWT token
     /// - Returns: Sep24FeeResponseEnum with fee amount, or an error
     public func fee(request: Sep24FeeRequest) async -> Sep24FeeResponseEnum {
-        var requestPath = "/fee?operation=\(request.operation)&asset_code=\(request.assetCode)&amount=\(request.amount)"
-        
+        var requestPath = "/fee?operation=\(request.operation.urlQueryValueEncoded)&asset_code=\(request.assetCode.urlQueryValueEncoded)&amount=\(String(request.amount).urlQueryValueEncoded)"
+
         if let type = request.type {
-            requestPath += "&type=\(type)"
+            requestPath += "&type=\(type.urlQueryValueEncoded)"
         }
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
@@ -373,22 +373,22 @@ public final class InteractiveService: @unchecked Sendable {
     /// - Parameter request: Sep24TransactionsRequest containing asset code, filters, pagination options, and JWT token
     /// - Returns: Sep24TransactionsResponseEnum with list of transactions, or an error
     public func getTransactions(request: Sep24TransactionsRequest) async -> Sep24TransactionsResponseEnum {
-        var requestPath = "/transactions?asset_code=\(request.assetCode)"
+        var requestPath = "/transactions?asset_code=\(request.assetCode.urlQueryValueEncoded)"
         if let noOlderThanDate = request.noOlderThan {
             let noOlderThan = DateFormatter.iso8601.string(from: noOlderThanDate)
-            requestPath += "&no_older_than=\(noOlderThan)"
+            requestPath += "&no_older_than=\(noOlderThan.urlQueryValueEncoded)"
         }
         if let limit = request.limit {
             requestPath += "&limit=\(limit)"
         }
         if let kind = request.kind {
-            requestPath += "&kind=\(kind)"
+            requestPath += "&kind=\(kind.urlQueryValueEncoded)"
         }
         if let pagingId = request.pagingId {
-            requestPath += "&paging_id=\(pagingId)"
+            requestPath += "&paging_id=\(pagingId.urlQueryValueEncoded)"
         }
         if let lang = request.lang {
-            requestPath += "&lang=\(lang)"
+            requestPath += "&lang=\(lang.urlQueryValueEncoded)"
         }
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)
@@ -414,30 +414,30 @@ public final class InteractiveService: @unchecked Sendable {
     /// - Returns: Sep24TransactionResponseEnum with transaction details and status, or an error
     public func getTransaction(request: Sep24TransactionRequest) async -> Sep24TransactionResponseEnum {
         var requestPath = "/transaction?"
-        
+
         var first = true
         if let id = request.id {
-            requestPath += "id=\(id)"
+            requestPath += "id=\(id.urlQueryValueEncoded)"
             first = false
         }
         if let stellarTransactionId = request.stellarTransactionId {
             if !first {
                 requestPath += "&"
             }
-            requestPath += "stellar_transaction_id=\(stellarTransactionId)"
+            requestPath += "stellar_transaction_id=\(stellarTransactionId.urlQueryValueEncoded)"
             first = false
         }
         if let externalTransactionId = request.externalTransactionId {
             if !first {
                 requestPath += "&"
             }
-            requestPath += "external_transaction_id=\(externalTransactionId)"
+            requestPath += "external_transaction_id=\(externalTransactionId.urlQueryValueEncoded)"
         }
         if let lang = request.lang {
             if !first {
                 requestPath += "&"
             }
-            requestPath += "lang=\(lang)"
+            requestPath += "lang=\(lang.urlQueryValueEncoded)"
         }
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: request.jwt)

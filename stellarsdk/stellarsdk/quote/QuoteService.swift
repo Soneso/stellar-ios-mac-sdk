@@ -143,15 +143,15 @@ public final class QuoteService: @unchecked Sendable {
                        countryCode:String? = nil,
                        jwt:String? = nil) async -> Sep38PricesResponseEnum {
         
-        var requestPath = "/prices?sell_asset=\(sellAsset)&sell_amount=\(sellAmount)"
+        var requestPath = "/prices?sell_asset=\(sellAsset.urlQueryValueEncoded)&sell_amount=\(sellAmount.urlQueryValueEncoded)"
         if let value = sellDeliveryMethod {
-            requestPath += "&sell_delivery_method=\(value)"
+            requestPath += "&sell_delivery_method=\(value.urlQueryValueEncoded)"
         }
         if let value = buyDeliveryMethod {
-            requestPath += "&buy_delivery_method=\(value)"
+            requestPath += "&buy_delivery_method=\(value.urlQueryValueEncoded)"
         }
         if let value = countryCode {
-            requestPath += "&country_code=\(value)"
+            requestPath += "&country_code=\(value.urlQueryValueEncoded)"
         }
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwt)
@@ -199,21 +199,21 @@ public final class QuoteService: @unchecked Sendable {
             return .failure(error: .invalidArgument(message: "The caller must provide either sellAmount or buyAmount, but not both"))
         }
         
-        var requestPath = "/price?sell_asset=\(sellAsset)&buy_asset=\(buyAsset)&context=\(context)"
+        var requestPath = "/price?sell_asset=\(sellAsset.urlQueryValueEncoded)&buy_asset=\(buyAsset.urlQueryValueEncoded)&context=\(context.urlQueryValueEncoded)"
         if let value = sellAmount {
-            requestPath += "&sell_amount=\(value)"
+            requestPath += "&sell_amount=\(value.urlQueryValueEncoded)"
         }
         if let value = buyAmount {
-            requestPath += "&buy_amount=\(value)"
+            requestPath += "&buy_amount=\(value.urlQueryValueEncoded)"
         }
         if let value = sellDeliveryMethod {
-            requestPath += "&sell_delivery_method=\(value)"
+            requestPath += "&sell_delivery_method=\(value.urlQueryValueEncoded)"
         }
         if let value = buyDeliveryMethod {
-            requestPath += "&buy_delivery_method=\(value)"
+            requestPath += "&buy_delivery_method=\(value.urlQueryValueEncoded)"
         }
         if let value = countryCode {
-            requestPath += "&country_code=\(value)"
+            requestPath += "&country_code=\(value.urlQueryValueEncoded)"
         }
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwt)
@@ -274,7 +274,7 @@ public final class QuoteService: @unchecked Sendable {
     /// See: https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0038.md#get-quote
     public func getQuote(id:String, jwt:String? = nil) async -> Sep38QuoteResponseEnum {
         
-        let requestPath = "/quote/\(id)"
+        let requestPath = "/quote/\(id.urlPathEncoded)"
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath, jwtToken: jwt)
         switch result {

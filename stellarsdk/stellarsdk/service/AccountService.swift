@@ -102,9 +102,9 @@ open class AccountService: @unchecked Sendable {
     /// See also:
     /// - [Stellar developer docs](https://developers.stellar.org)
     open func getAccountDetails(accountId: String) async -> AccountResponseEnum {
-        var requestPath = "/accounts/\(accountId)"
+        var requestPath = "/accounts/\(accountId.urlPathEncoded)"
         if accountId.hasPrefix("M"), let mux = try? accountId.decodeMuxedAccount() {
-            requestPath = "/accounts/\(mux.ed25519AccountId)"
+            requestPath = "/accounts/\(mux.ed25519AccountId.urlPathEncoded)"
         }
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
         switch result {
@@ -154,7 +154,7 @@ open class AccountService: @unchecked Sendable {
     /// - [Stellar developer docs](https://developers.stellar.org)
     /// - ManageDataOperation for setting account data
     open func getDataForAccount(accountId: String, key: String) async -> DataForAccountResponseEnum {
-        let requestPath = "/accounts/\(accountId)/data/\(key)"
+        let requestPath = "/accounts/\(accountId.urlPathEncoded)/data/\(key.urlPathEncoded)"
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
         switch result {
@@ -412,9 +412,9 @@ open class AccountService: @unchecked Sendable {
     /// - AccountStreamItem for stream control methods
     /// - AccountResponse for the account data structure
     open func streamAccount(accountId: String) -> AccountStreamItem {
-        var requestPath = "/accounts/\(accountId)"
+        var requestPath = "/accounts/\(accountId.urlPathEncoded)"
         if accountId.hasPrefix("M"), let mux = try? accountId.decodeMuxedAccount() {
-            requestPath = "/accounts/\(mux.ed25519AccountId)"
+            requestPath = "/accounts/\(mux.ed25519AccountId.urlPathEncoded)"
         }
         let streamUrl = serviceHelper.requestUrlWithPath(path: requestPath)
         return AccountStreamItem(requestUrl: streamUrl)
@@ -469,7 +469,7 @@ open class AccountService: @unchecked Sendable {
     /// - DataForAccountResponse for the data entry structure
     /// - ManageDataOperation for setting account data
     open func streamAccountData(accountId: String, key: String) -> AccountDataStreamItem {
-        let requestPath = "/accounts/\(accountId)/data/\(key)"
+        let requestPath = "/accounts/\(accountId.urlPathEncoded)/data/\(key.urlPathEncoded)"
         let streamUrl = serviceHelper.requestUrlWithPath(path: requestPath)
         return AccountDataStreamItem(requestUrl: streamUrl)
     }

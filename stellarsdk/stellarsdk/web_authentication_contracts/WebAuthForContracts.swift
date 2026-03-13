@@ -409,10 +409,10 @@ public final class WebAuthForContracts: @unchecked Sendable {
     ) async -> GetContractChallengeResponseEnum {
         let effectiveHomeDomain = homeDomain ?? serverHomeDomain
 
-        var path = "?account=\(clientAccountId)&home_domain=\(effectiveHomeDomain)"
+        var path = "?account=\(clientAccountId.urlQueryValueEncoded)&home_domain=\(effectiveHomeDomain.urlQueryValueEncoded)"
 
         if let cd = clientDomain {
-            path.append("&client_domain=\(cd)")
+            path.append("&client_domain=\(cd.urlQueryValueEncoded)")
         }
 
         let result = await serviceHelper.GETRequestWithPath(path: path)

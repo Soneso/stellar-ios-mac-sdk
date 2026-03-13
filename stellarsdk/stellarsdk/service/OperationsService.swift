@@ -97,7 +97,7 @@ public class OperationsService: @unchecked Sendable {
     /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
     /// - Returns: PageResponse containing operations for the account or error
     open func getOperations(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
-        let path = "/accounts/" + accountId + "/operations"
+        let path = "/accounts/" + accountId.urlPathEncoded + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
 
@@ -118,7 +118,7 @@ public class OperationsService: @unchecked Sendable {
             let cid = try? claimableBalanceId.decodeClaimableBalanceIdToHex() {
             id = cid
         }
-        let path = "/claimable_balances/" + id + "/operations"
+        let path = "/claimable_balances/" + id.urlPathEncoded + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
 
@@ -132,7 +132,7 @@ public class OperationsService: @unchecked Sendable {
     /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
     /// - Returns: PageResponse containing operations for the ledger or error
     open func getOperations(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
-        let path = "/ledgers/" + ledger + "/operations"
+        let path = "/ledgers/" + ledger.urlPathEncoded + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
 
@@ -146,7 +146,7 @@ public class OperationsService: @unchecked Sendable {
     /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
     /// - Returns: PageResponse containing operations for the transaction or error
     open func getOperations(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
-        let path = "/transactions/" + hash + "/operations"
+        let path = "/transactions/" + hash.urlPathEncoded + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
 
@@ -166,7 +166,7 @@ public class OperationsService: @unchecked Sendable {
         if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
             lidHex = idHex
         }
-        let path = "/liquidity_pools/" + lidHex + "/operations"
+        let path = "/liquidity_pools/" + lidHex.urlPathEncoded + "/operations"
         return await getOperations(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
 
@@ -179,7 +179,7 @@ public class OperationsService: @unchecked Sendable {
     /// - Parameter join: Optional. Set to "transactions" to include transaction data in response
     /// - Returns: OperationDetailsResponseEnum with operation details or error
     open func getOperationDetails(operationId:String, includeFailed:Bool? = nil, join:String? = nil) async -> OperationDetailsResponseEnum {
-        var requestPath = "/operations/" + operationId
+        var requestPath = "/operations/" + operationId.urlPathEncoded
         
         var params = Dictionary<String,String>()
         if let isIncludeFailed = includeFailed, isIncludeFailed { params["include_failed"] = "true" }
@@ -216,12 +216,12 @@ public class OperationsService: @unchecked Sendable {
         case .allOperations(let cursor):
             subpath = "/operations"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .operationsForAccount(let accountId, let cursor):
-            subpath = "/accounts/" + accountId + "/operations"
+            subpath = "/accounts/" + accountId.urlPathEncoded + "/operations"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .operationsForClaimableBalance(let claimableBalanceId, let cursor):
             var idHex = claimableBalanceId
@@ -229,28 +229,28 @@ public class OperationsService: @unchecked Sendable {
                 let cid = try? claimableBalanceId.decodeClaimableBalanceIdToHex() {
                 idHex = cid
             }
-            subpath = "/claimable_balances/" + idHex + "/operations"
+            subpath = "/claimable_balances/" + idHex.urlPathEncoded + "/operations"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .operationsForLedger(let ledger, let cursor):
-            subpath = "/ledgers/" + ledger + "/operations"
+            subpath = "/ledgers/" + ledger.urlPathEncoded + "/operations"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .operationsForTransaction(let transaction, let cursor):
-            subpath = "/transactions/" + transaction + "/operations"
+            subpath = "/transactions/" + transaction.urlPathEncoded + "/operations"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .operationsForLiquidityPool(let liquidityPool, let cursor):
             var lidHex = liquidityPool
             if liquidityPool.hasPrefix("L"), let idHex = try? liquidityPool.decodeLiquidityPoolIdToHex() {
                 lidHex = idHex
             }
-            subpath = "/liquidity_pools/" + lidHex + "/operations"
+            subpath = "/liquidity_pools/" + lidHex.urlPathEncoded + "/operations"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         }
         
