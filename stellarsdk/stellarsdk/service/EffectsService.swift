@@ -248,7 +248,7 @@ public class EffectsService: @unchecked Sendable {
                 let effects = try self.effectsFactory.effectsFromResponseData(data: data)
                 return .success(page: effects)
             } catch {
-                return .failure(error: error as! HorizonRequestError)
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
         case .failure(let error):
             return .failure(error:error)

@@ -161,12 +161,19 @@ public class Operation: @unchecked Sendable {
         throw StellarSDKError.invalidArgument(message: "Method must be overridden by subclass")
     }
     
-    static func toXDRAmount(amount:Decimal) -> Int64 {
+    static func toXDRAmount(amount:Decimal) throws -> Int64 {
+        guard amount >= 0 else {
+            throw StellarSDKError.invalidArgument(message: "Amount must be non-negative, got: \(amount)")
+        }
         let multiplied = amount * 10000000
+        let maxStroops = Decimal(Int64.max)
+        guard multiplied <= maxStroops else {
+            throw StellarSDKError.invalidArgument(message: "Amount too large, exceeds Int64 range: \(amount)")
+        }
         let decimalNumber = NSDecimalNumber(decimal: multiplied)
-        let handler = NSDecimalNumberHandler(roundingMode: NSDecimalNumber.RoundingMode.bankers, scale: 0, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
+        let handler = NSDecimalNumberHandler(roundingMode: NSDecimalNumber.RoundingMode.bankers, scale: 0, raiseOnExactness: false, raiseOnOverflow: true, raiseOnUnderflow: false, raiseOnDivideByZero: false)
         let rounded = decimalNumber.rounding(accordingToBehavior: handler)
-        
+
         return rounded.int64Value
     }
     

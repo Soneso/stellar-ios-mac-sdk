@@ -88,6 +88,6 @@ public class CreateAccountOperation:Operation, @unchecked Sendable {
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         return OperationBodyXDR.createAccountOp(CreateAccountOperationXDR(destination: destination.publicKey,
-                                                                        balance: Operation.toXDRAmount(amount: startBalance)))
+                                                                        balance: try Operation.toXDRAmount(amount: startBalance)))
     }
 }

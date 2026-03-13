@@ -60,8 +60,8 @@ public class LiquidityPoolDepositOperation:Operation, @unchecked Sendable {
     }
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
-        let maxAmountAXDR = Operation.toXDRAmount(amount: maxAmountA)
-        let maxAmountBXDR = Operation.toXDRAmount(amount: maxAmountB)
+        let maxAmountAXDR = try Operation.toXDRAmount(amount: maxAmountA)
+        let maxAmountBXDR = try Operation.toXDRAmount(amount: maxAmountB)
         return try OperationBodyXDR.liquidityPoolDepositOp(
             LiquidityPoolDepositOpXDR(liquidityPoolId:liquidityPoolId,
                                       maxAmountA: maxAmountAXDR,

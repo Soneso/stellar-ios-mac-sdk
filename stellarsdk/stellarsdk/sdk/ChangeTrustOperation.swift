@@ -44,7 +44,7 @@ public class ChangeTrustOperation:Operation, @unchecked Sendable {
         let assetXDR = try asset.toChangeTrustAssetXDR()
         let limitXDR: Int64
         if let limit = limit {
-            limitXDR = Operation.toXDRAmount(amount: limit)
+            limitXDR = try Operation.toXDRAmount(amount: limit)
         } else {
             limitXDR = Int64.max
         }

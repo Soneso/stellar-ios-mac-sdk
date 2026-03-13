@@ -48,7 +48,7 @@ public class ClawbackOperation:Operation, @unchecked Sendable {
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let assetXDR = try asset.toXDR()
-        let amountXDR = Operation.toXDRAmount(amount: amount)
+        let amountXDR = try Operation.toXDRAmount(amount: amount)
         let fromXDR = try fromAccountId.decodeMuxedAccount()
     
         return OperationBodyXDR.clawbackOp(ClawbackOpXDR(asset: assetXDR, from: fromXDR, amount: amountXDR))

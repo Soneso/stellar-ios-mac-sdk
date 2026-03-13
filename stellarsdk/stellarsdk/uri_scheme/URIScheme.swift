@@ -272,7 +272,7 @@ public final class URIScheme: Sendable {
                 return .failure(error: HorizonRequestError.requestFailed(message: "Transaction was not confirmed!", horizonErrorResponse: nil))
             }
             var transaction = transactionXDR
-            try? transaction.sign(keyPair: keyPair, network: .testnet)
+            try? transaction.sign(keyPair: keyPair, network: network)
             let callback1 = self.getValue(forParam: .callback, fromURL: url)
             let response = await self.submitTransaction(transactionXDR: transaction, callback: callback1, keyPair: keyPair)
             return response

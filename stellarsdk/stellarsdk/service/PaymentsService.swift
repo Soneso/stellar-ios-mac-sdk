@@ -167,7 +167,7 @@ public class PaymentsService: @unchecked Sendable {
                 let operations = try self.operationsFactory.operationsFromResponseData(data: data)
                 return .success(page: operations)
             } catch {
-                return .failure(error: error as! HorizonRequestError)
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
         case .failure(let error):
             return .failure(error:error)
