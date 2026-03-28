@@ -16,7 +16,7 @@ XDRS = xdr/Stellar-SCP.x \
        xdr/Stellar-contract-config-setting.x \
        xdr/Stellar-exporter.x
 
-XDR_COMMIT = cff714a5ebaaaf2dac343b3546c2df73f0b7a36e
+XDR_COMMIT = 61657d9fa39755d8a30f3ba8e9b9117e7f92df9d
 
 xdr/%.x:
 	curl -Lsf -o $@ https://raw.githubusercontent.com/stellar/stellar-xdr/$(XDR_COMMIT)/$(@F)
@@ -35,7 +35,7 @@ xdr-clean-generated:
 xdr-clean-all: xdr-clean-generated
 	rm -f xdr/*.x
 
-xdr-update: xdr-clean-generated xdr-generate
+xdr-update: xdr-clean-all xdr-generate
 
 xdr-generator-test:
 	docker run --rm -v $(PWD):/wd -w /wd ruby:3.4 /bin/bash -c '\

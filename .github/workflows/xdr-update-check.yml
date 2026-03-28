@@ -131,8 +131,8 @@ jobs:
           fi
           printf '\n## Required actions\n\n' >> /tmp/issue_body.md
           printf '%s\n' \
-            '1. Copy the updated `.x` files into `xdr/`' \
-            '2. Run `make xdr-generate` to regenerate the Swift XDR types' \
+            '1. Update `XDR_COMMIT` in the repo-root `Makefile` to the upstream commit shown above' \
+            '2. Run `make xdr-update` to re-download `.x` files and regenerate the Swift XDR types' \
             '3. Build the SDK and fix any compile errors in the SDK layer (operation builders, TxRep, SEP implementations, etc.)' \
             '4. Run `swift test --filter stellarsdkUnitTests` and fix any test failures' \
             '5. If the XDR changes introduce new types or extend existing ones (e.g. new operations, transaction fields, or protocol features), evaluate whether the SDK needs new or updated high-level APIs to support them (e.g. operation builders, TxRep, service classes)' \

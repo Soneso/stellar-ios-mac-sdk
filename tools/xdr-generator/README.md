@@ -23,7 +23,7 @@ From the repo root using the Makefile:
 
 ```bash
 make xdr-generate         # fetch .x files and generate Swift types
-make xdr-update           # clean generated files, then regenerate
+make xdr-update           # re-download .x files and regenerate
 make xdr-clean-generated  # remove only generated Swift files
 make xdr-clean-all        # remove generated Swift files and .x definitions
 ```
