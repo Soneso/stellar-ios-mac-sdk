@@ -80,6 +80,9 @@ coverage/
 # Claude Code
 .claude/
 
+# Security reports
+sec-report*.md
+
 # XDR generator
 tools/xdr-generator/.bundle/
 tools/xdr-generator/vendor/

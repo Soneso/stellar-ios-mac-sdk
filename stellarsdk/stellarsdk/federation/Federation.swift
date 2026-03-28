@@ -143,7 +143,7 @@ public final class Federation: @unchecked Sendable {
             return .failure(error: .invalidAddress)
         }
         
-        let requestPath = "?q=\(address)&type=name"
+        let requestPath = "?q=\(address.urlQueryValueEncoded)&type=name"
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
         switch result {
@@ -174,7 +174,7 @@ public final class Federation: @unchecked Sendable {
             return .failure(error: .invalidAccountId)
         }
         
-        let requestPath = "?q=\(account_id)&type=id"
+        let requestPath = "?q=\(account_id.urlQueryValueEncoded)&type=id"
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
         switch result {
@@ -198,7 +198,7 @@ public final class Federation: @unchecked Sendable {
     /// - Parameter transaction_id: The transaction hash/ID
     /// - Returns: ResolveResponseEnum with federation data, or an error
     public func resolve(transaction_id: String) async -> ResolveResponseEnum {
-        let requestPath = "?q=\(transaction_id)&type=txid"
+        let requestPath = "?q=\(transaction_id.urlQueryValueEncoded)&type=txid"
         
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
         switch result {

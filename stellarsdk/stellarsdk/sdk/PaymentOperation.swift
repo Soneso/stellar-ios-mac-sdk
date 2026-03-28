@@ -87,7 +87,7 @@ public class PaymentOperation:Operation, @unchecked Sendable {
     
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let assetXDR = try asset.toXDR()
-        let xdrAmount = Operation.toXDRAmount(amount: amount)
+        let xdrAmount = try Operation.toXDRAmount(amount: amount)
         let mDestination = try destinationAccountId.decodeMuxedAccount()
         return OperationBodyXDR.paymentOp(PaymentOperationXDR(destination: mDestination,
                                                             asset:assetXDR,

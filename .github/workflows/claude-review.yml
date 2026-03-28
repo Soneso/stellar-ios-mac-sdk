@@ -9,7 +9,6 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  id-token: write
 
 concurrency:
   group: claude-review-${{ github.event.issue.number || github.event.pull_request.number }}
@@ -30,10 +29,10 @@ jobs:
        contains(fromJSON(vars.CLAUDE_ALLOWED_USERS), github.event.comment.user.login))
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Run Claude Code
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@e7b588b6eaa5263c2e7c6c7b34a29e190d32ee68 # v1.0.81
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

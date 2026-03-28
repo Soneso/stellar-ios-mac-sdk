@@ -50,8 +50,8 @@ extension Memo: MemoProtocol {
     /// - Throws an StellarSDKError.invalidArgument error if the given string is larger than 28 bytes.
     ///
     public init?(text:String) throws {
-        if text.count > StellarProtocolConstants.MEMO_TEXT_MAX_LENGTH {
-            throw StellarSDKError.invalidArgument(message: "text must be <= \(StellarProtocolConstants.MEMO_TEXT_MAX_LENGTH) bytes. length=\(text.count)" )
+        if text.utf8.count > StellarProtocolConstants.MEMO_TEXT_MAX_LENGTH {
+            throw StellarSDKError.invalidArgument(message: "text must be <= \(StellarProtocolConstants.MEMO_TEXT_MAX_LENGTH) bytes. length=\(text.utf8.count)" )
         }
         self = .text(text)
     }

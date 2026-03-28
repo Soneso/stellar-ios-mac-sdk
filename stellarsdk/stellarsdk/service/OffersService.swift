@@ -80,7 +80,7 @@ public class OffersService: @unchecked Sendable {
     /// - Parameter limit: Optional maximum number of records to return. Default: 10, max: 200
     /// - Returns: PageResponse containing offers for the account or error
     open func getOffers(forAccount accountId:String, cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<OfferResponse>.ResponseEnum {
-        var requestPath = "/accounts/" + accountId + "/offers"
+        var requestPath = "/accounts/" + accountId.urlPathEncoded + "/offers"
         
         var params = Dictionary<String,String>()
         params["cursor"] = cursor
@@ -199,9 +199,9 @@ public class OffersService: @unchecked Sendable {
 
         case .offersForAccount(let accountId,
                                let cursor):
-            subpath = "/accounts/" + accountId + "/offers"
+            subpath = "/accounts/" + accountId.urlPathEncoded + "/offers"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         }
 
@@ -217,7 +217,7 @@ public class OffersService: @unchecked Sendable {
     /// - Parameter limit: Optional maximum number of records to return
     /// - Returns: TradesStreamItem for receiving streaming trade updates
     open func streamTrades(forOffer offerId: String, cursor: String? = nil, order: Order? = nil, limit: Int? = nil) -> TradesStreamItem {
-        var requestPath = "/offers/" + offerId + "/trades"
+        var requestPath = "/offers/" + offerId.urlPathEncoded + "/trades"
 
         var params = Dictionary<String,String>()
         params["cursor"] = cursor
@@ -241,7 +241,7 @@ public class OffersService: @unchecked Sendable {
     /// - Returns: OfferResponseEnum with offer details on success or error on failure
     ///
     open func getOfferDetails(offerId: String) async -> OfferResponseEnum {
-        let result = await serviceHelper.GETRequestWithPath(path: "/offers/\(offerId)")
+        let result = await serviceHelper.GETRequestWithPath(path: "/offers/\(offerId.urlPathEncoded)")
         switch result {
         case .success(let data):
             do {
@@ -271,7 +271,7 @@ public class OffersService: @unchecked Sendable {
     /// - Returns: PageResponse containing trades for the offer or error
     ///
     open func getTrades(forOffer offerId: String, cursor: String? = nil, order: Order? = nil, limit: Int? = nil) async -> PageResponse<TradeResponse>.ResponseEnum {
-        var requestPath = "/offers/" + offerId + "/trades"
+        var requestPath = "/offers/" + offerId.urlPathEncoded + "/trades"
 
         var params = Dictionary<String,String>()
         params["cursor"] = cursor

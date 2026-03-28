@@ -57,7 +57,7 @@ public class ManageOfferOperation:Operation, @unchecked Sendable {
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         let sellingXDR = try selling.toXDR()
         let buyingXDR = try buying.toXDR()
-        let amountXDR = Operation.toXDRAmount(amount: amount)
+        let amountXDR = try Operation.toXDRAmount(amount: amount)
         let priceXDR = price.toXdr()
         
         return OperationBodyXDR.manageSellOfferOp(ManageOfferOperationXDR(selling: sellingXDR,

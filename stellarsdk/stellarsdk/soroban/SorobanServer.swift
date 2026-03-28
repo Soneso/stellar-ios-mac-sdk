@@ -1056,7 +1056,9 @@ public class SorobanServer: @unchecked Sendable {
     /// Executes HTTP POST request to Soroban RPC endpoint with JSON-RPC 2.0 protocol.
     /// Handles request headers, response validation, and error mapping for all RPC operations.
     private func request(body: Data?) async -> RpcResult {
-        let url = URL(string: endpoint)!
+        guard let url = URL(string: endpoint) else {
+            return .failure(error: .requestFailed(message: "Invalid Soroban RPC endpoint URL: \(endpoint)"))
+        }
         var urlRequest = URLRequest(url: url)
 
         requestHeaders.forEach {

@@ -127,7 +127,7 @@ public class TransactionsService: @unchecked Sendable {
     /// - Returns: PageResponse containing transaction records or error
     open func getTransactions(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum
     {
-        let path = "/accounts/" + accountId + "/transactions"
+        let path = "/accounts/" + accountId.urlPathEncoded + "/transactions"
         return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
     
@@ -144,7 +144,7 @@ public class TransactionsService: @unchecked Sendable {
             let cid = try? claimableBalanceId.decodeClaimableBalanceIdToHex() {
             id = cid
         }
-        let path = "/claimable_balances/" + id + "/transactions"
+        let path = "/claimable_balances/" + id.urlPathEncoded + "/transactions"
         return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
     
@@ -160,7 +160,7 @@ public class TransactionsService: @unchecked Sendable {
         if liquidityPoolId.hasPrefix("L"), let idHex = try? liquidityPoolId.decodeLiquidityPoolIdToHex() {
             lidHex = idHex
         }
-        let path = "/liquidity_pools/" + lidHex + "/transactions"
+        let path = "/liquidity_pools/" + lidHex.urlPathEncoded + "/transactions"
         return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
     
@@ -172,7 +172,7 @@ public class TransactionsService: @unchecked Sendable {
     /// - Parameter limit: Optional maximum number of records to return (default 10, max 200)
     /// - Returns: PageResponse containing transaction records or error
     open func getTransactions(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil) async -> PageResponse<TransactionResponse>.ResponseEnum {
-        let path = "/ledgers/" + ledger + "/transactions"
+        let path = "/ledgers/" + ledger.urlPathEncoded + "/transactions"
         return await getTransactions(onPath: path, from:cursor, order:order, limit:limit)
     }
     
@@ -181,7 +181,7 @@ public class TransactionsService: @unchecked Sendable {
     /// - Parameter transactionHash: The unique transaction hash identifier (hex-encoded)
     /// - Returns: TransactionDetailsResponseEnum with transaction details or error
     open func getTransactionDetails(transactionHash:String) async -> TransactionDetailsResponseEnum {
-        let requestPath = "/transactions/" + transactionHash
+        let requestPath = "/transactions/" + transactionHash.urlPathEncoded
 
         let result = await serviceHelper.GETRequestWithPath(path: requestPath)
         switch result {
@@ -347,7 +347,7 @@ public class TransactionsService: @unchecked Sendable {
 
         var remainingDestinations = destinations
         if let firstDestination = remainingDestinations.first {
-            let requestPath = "/accounts/\(firstDestination)"
+            let requestPath = "/accounts/\(firstDestination.urlPathEncoded)"
 
             let result = await serviceHelper.GETRequestWithPath(path: requestPath)
             switch result {
@@ -466,12 +466,12 @@ public class TransactionsService: @unchecked Sendable {
         case .allTransactions(let cursor):
             subpath = "/transactions"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .transactionsForAccount(let accountId, let cursor):
-            subpath = "/accounts/" + accountId + "/transactions"
+            subpath = "/accounts/" + accountId.urlPathEncoded + "/transactions"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .transactionsForClaimableBalance(let claimableBalanceId, let cursor):
             var idHex = claimableBalanceId
@@ -479,14 +479,14 @@ public class TransactionsService: @unchecked Sendable {
                 let cid = try? claimableBalanceId.decodeClaimableBalanceIdToHex() {
                 idHex = cid
             }
-            subpath = "/balances/" + idHex + "/transactions"
+            subpath = "/balances/" + idHex.urlPathEncoded + "/transactions"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .transactionsForLedger(let ledger, let cursor):
-            subpath = "/ledgers/" + ledger + "/transactions"
+            subpath = "/ledgers/" + ledger.urlPathEncoded + "/transactions"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         }
 

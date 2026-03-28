@@ -90,7 +90,7 @@ public class PaymentsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getPayments(forAccount accountId:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
-        let path = "/accounts/" + accountId + "/payments"
+        let path = "/accounts/" + accountId.urlPathEncoded + "/payments"
         return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
     
@@ -106,7 +106,7 @@ public class PaymentsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getPayments(forLedger ledger:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
-        let path = "/ledgers/" + ledger + "/payments"
+        let path = "/ledgers/" + ledger.urlPathEncoded + "/payments"
         return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
     
@@ -122,7 +122,7 @@ public class PaymentsService: @unchecked Sendable {
     ///
     /// See: [Stellar developer docs](https://developers.stellar.org)
     open func getPayments(forTransaction hash:String, from cursor:String? = nil, order:Order? = nil, limit:Int? = nil, includeFailed:Bool? = nil, join:String? = nil) async -> PageResponse<OperationResponse>.ResponseEnum {
-        let path = "/transactions/" + hash + "/payments"
+        let path = "/transactions/" + hash.urlPathEncoded + "/payments"
         return await getPayments(onPath: path, from:cursor, order:order, limit:limit, includeFailed:includeFailed, join:join)
     }
 
@@ -167,7 +167,7 @@ public class PaymentsService: @unchecked Sendable {
                 let operations = try self.operationsFactory.operationsFromResponseData(data: data)
                 return .success(page: operations)
             } catch {
-                return .failure(error: error as! HorizonRequestError)
+                return .failure(error: .parsingResponseFailed(message: error.localizedDescription))
             }
         case .failure(let error):
             return .failure(error:error)
@@ -184,22 +184,22 @@ public class PaymentsService: @unchecked Sendable {
         case .allPayments(let cursor):
             subpath = "/payments"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .paymentsForAccount(let accountId, let cursor):
-            subpath = "/accounts/" + accountId + "/payments"
+            subpath = "/accounts/" + accountId.urlPathEncoded + "/payments"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .paymentsForLedger(let ledger, let cursor):
-            subpath = "/ledgers/" + ledger + "/payments"
+            subpath = "/ledgers/" + ledger.urlPathEncoded + "/payments"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         case .paymentsForTransaction(let transaction, let cursor):
-            subpath = "/transactions/" + transaction + "/payments"
+            subpath = "/transactions/" + transaction.urlPathEncoded + "/payments"
             if let cursor = cursor {
-                subpath = subpath + "?cursor=" + cursor
+                subpath = subpath + "?cursor=" + cursor.urlQueryValueEncoded
             }
         }
     

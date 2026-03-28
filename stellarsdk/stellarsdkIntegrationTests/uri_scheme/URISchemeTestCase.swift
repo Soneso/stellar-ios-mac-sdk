@@ -145,7 +145,7 @@ class URISchemeTestCase: XCTestCase {
     func signAndSubmitTransaction() async {
         let uriBuilder = URIScheme()
         let keyPair = try! KeyPair(secretSeed: secretSeed)
-        let responseEnum = await uriBuilder.signAndSubmitTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair)
+        let responseEnum = await uriBuilder.signAndSubmitTransaction(forURL: self.validTestUrl!, signerKeyPair: keyPair, network: .testnet)
         switch responseEnum {
         case .success:
             return
@@ -157,7 +157,7 @@ class URISchemeTestCase: XCTestCase {
             XCTFail()
         }
     }
-    
+
     func generateSignedCallbackTxTestUrl() {
         let keyPair = try! KeyPair(secretSeed: secretSeed)
         let result = uriValidator.signURI(url: self.unsignedTestUrl!, signerKeyPair: keyPair)
@@ -172,7 +172,7 @@ class URISchemeTestCase: XCTestCase {
     func signAndSubmitCallbackTxUrl() async {
         let uriBuilder = URIScheme()
         let keyPair = try! KeyPair(secretSeed: secretSeed)
-        let responseEnum = await uriBuilder.signAndSubmitTransaction(forURL: self.validCallbackTestUrl!, signerKeyPair: keyPair)
+        let responseEnum = await uriBuilder.signAndSubmitTransaction(forURL: self.validCallbackTestUrl!, signerKeyPair: keyPair, network: .testnet)
         switch responseEnum {
         case .success:
             return

@@ -913,6 +913,44 @@ class XDREncoderDecoderDeepUnitTests: XCTestCase {
         }
     }
 
+    func testDecodeArrayMaxCountGuardFiresBeforeRemainingBytesGuard() throws {
+        // Build bytes for count=100 followed by 100 UInt32 elements (400 bytes of payload).
+        // remainingBytes after reading the count will be 400, which is >= count (100),
+        // so the remainingBytes guard would pass on its own.  Only the explicit maxCount
+        // cap should reject the decode.
+        let elementCount: UInt32 = 100
+        var bytes: [UInt8] = []
+
+        // Encode count as big-endian UInt32
+        bytes.append(UInt8((elementCount >> 24) & 0xFF))
+        bytes.append(UInt8((elementCount >> 16) & 0xFF))
+        bytes.append(UInt8((elementCount >>  8) & 0xFF))
+        bytes.append(UInt8( elementCount        & 0xFF))
+
+        // Append 100 valid UInt32 elements (each 4 bytes, big-endian), value = index
+        for i: UInt32 in 0..<elementCount {
+            bytes.append(UInt8((i >> 24) & 0xFF))
+            bytes.append(UInt8((i >> 16) & 0xFF))
+            bytes.append(UInt8((i >>  8) & 0xFF))
+            bytes.append(UInt8( i        & 0xFF))
+        }
+
+        // Confirm the payload is large enough that remainingBytes alone would not block decoding
+        // (400 bytes remaining >= count of 100).
+        XCTAssertEqual(bytes.count, 404) // 4 (count) + 400 (elements)
+
+        let decoder = XDRDecoder(data: bytes)
+
+        XCTAssertThrowsError(try decodeArray(type: UInt32.self, dec: decoder, maxCount: 50)) { error in
+            guard case StellarSDKError.xdrDecodingError(let message) = error else {
+                XCTFail("Expected StellarSDKError.xdrDecodingError, got \(error)")
+                return
+            }
+            XCTAssertTrue(message.contains("100"), "Error message should mention the actual count (100), got: \(message)")
+            XCTAssertTrue(message.contains("50"),  "Error message should mention the maximum (50), got: \(message)")
+        }
+    }
+
     func testDecodeArrayDefaultMaxCountAcceptsLargeArray() throws {
         // Encode an array of 100 elements
         let array: [UInt32] = Array(0..<100)
@@ -953,6 +991,58 @@ class XDREncoderDecoderDeepUnitTests: XCTestCase {
 
         XCTAssertThrowsError(try decodeArray(type: UInt32.self, dec: decoder)) { error in
             // Should hit prematureEndOfData, not an infinite loop
+            guard case XDRDecoder.Error.prematureEndOfData = error else {
+                XCTFail("Expected prematureEndOfData, got \(error)")
+                return
+            }
+        }
+    }
+
+    func testDecodeArrayMaxCountDoesNotOOM() throws {
+        // Craft bytes with count = UInt32.max (0xFFFFFFFF) but only 4 bytes of payload.
+        // Without the reserveCapacity cap, this would attempt a multi-GB allocation.
+        var bytes: [UInt8] = []
+        // count = UInt32.max (big-endian)
+        bytes.append(contentsOf: [0xFF, 0xFF, 0xFF, 0xFF])
+        // Only 4 bytes of actual data
+        bytes.append(contentsOf: [0x00, 0x00, 0x00, 0x01])
+        let decoder = XDRDecoder(data: bytes)
+
+        XCTAssertThrowsError(try decodeArray(type: UInt32.self, dec: decoder)) { error in
+            guard case XDRDecoder.Error.prematureEndOfData = error else {
+                XCTFail("Expected prematureEndOfData, got \(error)")
+                return
+            }
+        }
+    }
+
+    func testDecodeArrayFromBinaryMaxCountDoesNotOOM() throws {
+        // Same test but via Array.init(fromBinary:) which has its own reserveCapacity path.
+        var bytes: [UInt8] = []
+        // count = UInt32.max (big-endian)
+        bytes.append(contentsOf: [0xFF, 0xFF, 0xFF, 0xFF])
+        // Only 4 bytes of actual data
+        bytes.append(contentsOf: [0x00, 0x00, 0x00, 0x01])
+        let decoder = XDRDecoder(data: bytes)
+
+        XCTAssertThrowsError(try [UInt32](fromBinary: decoder)) { error in
+            guard case XDRDecoder.Error.prematureEndOfData = error else {
+                XCTFail("Expected prematureEndOfData, got \(error)")
+                return
+            }
+        }
+    }
+
+    func testDecodeArrayOfOptionalMaxCountDoesNotOOM() throws {
+        // Same test but via decodeArrayOfOptional.
+        var bytes: [UInt8] = []
+        // count = UInt32.max (big-endian)
+        bytes.append(contentsOf: [0xFF, 0xFF, 0xFF, 0xFF])
+        // Only 4 bytes of actual data
+        bytes.append(contentsOf: [0x00, 0x00, 0x00, 0x01])
+        let decoder = XDRDecoder(data: bytes)
+
+        XCTAssertThrowsError(try decodeArrayOfOptional(type: UInt32.self, dec: decoder)) { error in
             guard case XDRDecoder.Error.prematureEndOfData = error else {
                 XCTFail("Expected prematureEndOfData, got \(error)")
                 return

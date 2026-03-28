@@ -27,35 +27,14 @@ func decodeArray<T: Codable>(type:T.Type, dec:Decoder, maxCount: UInt32 = UInt32
     guard count <= maxCount else {
         throw StellarSDKError.xdrDecodingError(message: "Array count \(count) exceeds maximum \(maxCount)")
     }
+    guard count <= decoder.remainingBytes else {
+        throw XDRDecoder.Error.prematureEndOfData
+    }
     var array = [T]()
-    array.reserveCapacity(Int(count))
+    array.reserveCapacity(min(Int(count), decoder.remainingBytes))
     for _ in 0 ..< count {
         let decoded = try decoder.decode(type)
         array.append(decoded)
-    }
-
-    return array
-}
-
-/// Decodes an array of optional XDR-encodable objects from a decoder.
-///
-/// Similar to decodeArray but handles optional elements.
-///
-/// - Parameter type: Type of elements to decode
-/// - Parameter dec: Decoder to read from
-/// - Returns: Decoded array of elements (skipping nil values)
-/// - Throws: XDRDecoder.Error if decoding fails
-func decodeArrayOpt<T: Codable>(type:T.Type, dec:Decoder) throws -> [T] {
-    guard let decoder = dec as? XDRDecoder else {
-        throw XDRDecoder.Error.typeNotConformingToDecodable(Decoder.Type.self)
-    }
-
-    let count = try decoder.decode(UInt32.self)
-    var array = [T]()
-    for _ in 0 ..< count {
-        if let decoded =  try decodeArray(type: type, dec: decoder).first {// try type.init(from: decoder)
-            array.append(decoded)
-        }
     }
 
     return array
@@ -80,8 +59,11 @@ func decodeArrayOfOptional<T: Codable>(type: T.Type, dec: Decoder, maxCount: UIn
     guard count <= maxCount else {
         throw StellarSDKError.xdrDecodingError(message: "Array count \(count) exceeds maximum \(maxCount)")
     }
+    guard count <= decoder.remainingBytes else {
+        throw XDRDecoder.Error.prematureEndOfData
+    }
     var array = [T?]()
-    array.reserveCapacity(Int(count))
+    array.reserveCapacity(min(Int(count), decoder.remainingBytes))
     for _ in 0..<count {
         let present = try decoder.decode(Int32.self)
         if present != 0 {
@@ -166,8 +148,11 @@ extension Array: XDRCodable where Element: XDRCodable {
     public init(fromBinary decoder: XDRDecoder) throws {
         let binaryElement = Element.self
         let count = try decoder.decode(UInt32.self)
+        guard count <= decoder.remainingBytes else {
+            throw XDRDecoder.Error.prematureEndOfData
+        }
         self.init()
-        self.reserveCapacity(Int(count))
+        self.reserveCapacity(Swift.min(Int(count), decoder.remainingBytes))
         for _ in 0 ..< count {
             let decoded = try decoder.decode(binaryElement)
             self.append(decoded)

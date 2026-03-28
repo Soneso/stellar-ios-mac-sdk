@@ -54,8 +54,8 @@ public class LiquidityPoolWithdrawOperation:Operation, @unchecked Sendable {
     override func getOperationBodyXDR() throws -> OperationBodyXDR {
         return try OperationBodyXDR.liquidityPoolWithdrawOp(
             LiquidityPoolWithdrawOpXDR(liquidityPoolId:liquidityPoolId,
-                                       amount: Operation.toXDRAmount(amount:amount),
-                                       minAmountA: Operation.toXDRAmount(amount:minAmountA),
-                                       minAmountB: Operation.toXDRAmount(amount:minAmountB)))
+                                       amount: try Operation.toXDRAmount(amount:amount),
+                                       minAmountA: try Operation.toXDRAmount(amount:minAmountA),
+                                       minAmountB: try Operation.toXDRAmount(amount:minAmountB)))
     }
 }

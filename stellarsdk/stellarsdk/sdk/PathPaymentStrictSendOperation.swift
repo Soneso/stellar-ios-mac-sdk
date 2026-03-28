@@ -32,8 +32,8 @@ public class PathPaymentStrictSendOperation:PathPaymentOperation, @unchecked Sen
             try pathXDR.append(asset.toXDR())
         }
         
-        let sendMaxXDR = Operation.toXDRAmount(amount: sendMax)
-        let destAmountXDR = Operation.toXDRAmount(amount: destAmount)
+        let sendMaxXDR = try Operation.toXDRAmount(amount: sendMax)
+        let destAmountXDR = try Operation.toXDRAmount(amount: destAmount)
         let mDestination = try destinationAccountId.decodeMuxedAccount()
         
         return OperationBodyXDR.pathPaymentStrictSendOp(PathPaymentOperationXDR(sendAsset: sendAssetXDR,
