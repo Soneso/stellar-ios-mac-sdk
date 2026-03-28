@@ -145,6 +145,14 @@ public extension XDRDecoder {
     }
 }
 
+/// Internal methods for reading decoder state.
+extension XDRDecoder {
+    /// The number of bytes remaining in the buffer from the current cursor position.
+    var remainingBytes: Int {
+        return max(data.count - cursor, 0)
+    }
+}
+
 /// Internal methods for decoding raw data.
 private extension XDRDecoder {
     /// Read the given number of bytes into the given pointer, advancing the cursor

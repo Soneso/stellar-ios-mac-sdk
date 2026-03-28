@@ -960,6 +960,58 @@ class XDREncoderDecoderDeepUnitTests: XCTestCase {
         }
     }
 
+    func testDecodeArrayMaxCountDoesNotOOM() throws {
+        // Craft bytes with count = UInt32.max (0xFFFFFFFF) but only 4 bytes of payload.
+        // Without the reserveCapacity cap, this would attempt a multi-GB allocation.
+        var bytes: [UInt8] = []
+        // count = UInt32.max (big-endian)
+        bytes.append(contentsOf: [0xFF, 0xFF, 0xFF, 0xFF])
+        // Only 4 bytes of actual data
+        bytes.append(contentsOf: [0x00, 0x00, 0x00, 0x01])
+        let decoder = XDRDecoder(data: bytes)
+
+        XCTAssertThrowsError(try decodeArray(type: UInt32.self, dec: decoder)) { error in
+            guard case XDRDecoder.Error.prematureEndOfData = error else {
+                XCTFail("Expected prematureEndOfData, got \(error)")
+                return
+            }
+        }
+    }
+
+    func testDecodeArrayFromBinaryMaxCountDoesNotOOM() throws {
+        // Same test but via Array.init(fromBinary:) which has its own reserveCapacity path.
+        var bytes: [UInt8] = []
+        // count = UInt32.max (big-endian)
+        bytes.append(contentsOf: [0xFF, 0xFF, 0xFF, 0xFF])
+        // Only 4 bytes of actual data
+        bytes.append(contentsOf: [0x00, 0x00, 0x00, 0x01])
+        let decoder = XDRDecoder(data: bytes)
+
+        XCTAssertThrowsError(try [UInt32](fromBinary: decoder)) { error in
+            guard case XDRDecoder.Error.prematureEndOfData = error else {
+                XCTFail("Expected prematureEndOfData, got \(error)")
+                return
+            }
+        }
+    }
+
+    func testDecodeArrayOfOptionalMaxCountDoesNotOOM() throws {
+        // Same test but via decodeArrayOfOptional.
+        var bytes: [UInt8] = []
+        // count = UInt32.max (big-endian)
+        bytes.append(contentsOf: [0xFF, 0xFF, 0xFF, 0xFF])
+        // Only 4 bytes of actual data
+        bytes.append(contentsOf: [0x00, 0x00, 0x00, 0x01])
+        let decoder = XDRDecoder(data: bytes)
+
+        XCTAssertThrowsError(try decodeArrayOfOptional(type: UInt32.self, dec: decoder)) { error in
+            guard case XDRDecoder.Error.prematureEndOfData = error else {
+                XCTFail("Expected prematureEndOfData, got \(error)")
+                return
+            }
+        }
+    }
+
     // MARK: - WrappedData16 Tests
 
     func testWrappedData16RoundTrip() throws {
