@@ -1666,6 +1666,131 @@ final class ExtensionsTestCase: XCTestCase {
             XCTAssertEqual(decoded, original, "Base32 round-trip should preserve data of length \(original.count)")
         }
     }
+
+    // MARK: - String+Encoding urlPathEncoded Tests
+
+    func testURLPathEncodedPathTraversal() {
+        // Path traversal sequences must be fully encoded so they cannot escape the intended path segment.
+        let traversal = "../../../etc/passwd"
+        let encoded = traversal.urlPathEncoded
+
+        // Forward slash must be percent-encoded to prevent directory traversal.
+        XCTAssertFalse(encoded.contains("/"), "Forward slash must be percent-encoded in a path segment")
+        XCTAssertTrue(encoded.contains("%2F"), "Forward slash must be encoded as %2F")
+
+        // Dots are safe URL path characters but the entire traversal sequence must not remain intact.
+        // Because slash is encoded, the ".." sequences are rendered harmless even if dots pass through.
+        XCTAssertFalse(encoded.contains("../"), "Path traversal sequence ../ must not appear in encoded output")
+
+        // The literal text of the original value must be preserved semantically via decoding.
+        XCTAssertEqual(encoded.removingPercentEncoding, traversal, "Round-trip must recover original string")
+    }
+
+    func testURLPathEncodedQueryInjectionChars() {
+        // Characters that could inject query parameters or alter URL structure must be encoded.
+        let injectionChars = "&=+;"
+        let encoded = injectionChars.urlPathEncoded
+
+        XCTAssertTrue(encoded.contains("%26"), "& must be encoded as %26")
+        XCTAssertTrue(encoded.contains("%3D"), "= must be encoded as %3D")
+        XCTAssertTrue(encoded.contains("%2B"), "+ must be encoded as %2B")
+        XCTAssertTrue(encoded.contains("%3B"), "; must be encoded as %3B")
+
+        // None of the raw injection characters should survive encoding.
+        XCTAssertFalse(encoded.contains("&"), "Raw & must not appear in path-encoded output")
+        XCTAssertFalse(encoded.contains("="), "Raw = must not appear in path-encoded output")
+        XCTAssertFalse(encoded.contains("+"), "Raw + must not appear in path-encoded output")
+        XCTAssertFalse(encoded.contains(";"), "Raw ; must not appear in path-encoded output")
+    }
+
+    func testURLPathEncodedAlphanumericPassthrough() {
+        // Unreserved characters must not be percent-encoded.
+        let safe = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
+        let encoded = safe.urlPathEncoded
+        XCTAssertEqual(encoded, safe, "Unreserved characters must pass through urlPathEncoded unchanged")
+    }
+
+    func testURLPathEncodedEmptyString() {
+        let encoded = "".urlPathEncoded
+        XCTAssertEqual(encoded, "", "Empty string must encode to empty string")
+    }
+
+    // MARK: - String+Encoding urlQueryValueEncoded Tests
+
+    func testURLQueryValueEncodedParameterInjection() {
+        // A value containing & and = could inject additional query parameters; both must be encoded.
+        let injection = "value&extra_param=injected"
+        let encoded = injection.urlQueryValueEncoded
+
+        XCTAssertTrue(encoded.contains("%26"), "& must be encoded as %26 to prevent parameter injection")
+        XCTAssertTrue(encoded.contains("%3D"), "= must be encoded as %3D to prevent parameter injection")
+
+        XCTAssertFalse(encoded.contains("&"), "Raw & must not appear in query-value-encoded output")
+        XCTAssertFalse(encoded.contains("="), "Raw = must not appear in query-value-encoded output")
+
+        // The safe portion of the value must be preserved.
+        XCTAssertTrue(encoded.hasPrefix("value"), "The leading safe text must be preserved")
+        XCTAssertEqual(encoded.removingPercentEncoding, injection, "Round-trip must recover original string")
+    }
+
+    func testURLQueryValueEncodedPlusSign() {
+        // + must be percent-encoded because it is conventionally interpreted as a space in query strings.
+        let input = "value+with+plus"
+        let encoded = input.urlQueryValueEncoded
+
+        XCTAssertFalse(encoded.contains("+"), "Raw + must not appear in query-value-encoded output")
+        XCTAssertTrue(encoded.contains("%2B"), "+ must be encoded as %2B")
+        XCTAssertEqual(encoded.removingPercentEncoding, input, "Round-trip must recover original string")
+    }
+
+    func testURLQueryValueEncodedNormalString() {
+        // A plain alphanumeric value must pass through without modification.
+        let plain = "stellarAccountId123"
+        let encoded = plain.urlQueryValueEncoded
+        XCTAssertEqual(encoded, plain, "Plain alphanumeric string must pass through urlQueryValueEncoded unchanged")
+    }
+
+    // MARK: - Dictionary+HttpParams Injection Encoding Tests
+
+    func testDictionaryHttpParamsValueAmpersandEncoded() {
+        // A value containing & must be percent-encoded to prevent parameter injection.
+        let params: [String: String] = ["callback": "https://example.com/cb&admin=true"]
+        let query = params.stringFromHttpParameters()
+        XCTAssertNotNil(query, "stringFromHttpParameters must return a non-nil result")
+        XCTAssertFalse(query!.contains("&admin"), "Unencoded & in a value must not create a spurious parameter")
+        XCTAssertTrue(query!.contains("%26"), "& inside a value must be encoded as %26")
+    }
+
+    func testDictionaryHttpParamsValueEqualsEncoded() {
+        // A value containing = must be percent-encoded to prevent parameter injection.
+        let params: [String: String] = ["token": "abc=injected"]
+        let query = params.stringFromHttpParameters()
+        XCTAssertNotNil(query, "stringFromHttpParameters must return a non-nil result")
+        XCTAssertTrue(query!.contains("token="), "The key=value separator must be present")
+        XCTAssertTrue(query!.contains("%3D"), "= inside a value must be encoded as %3D")
+        // The encoded value must not introduce a second bare = after the key separator.
+        let components = query!.components(separatedBy: "=")
+        XCTAssertEqual(components.count, 2, "There must be exactly one bare = acting as key/value separator")
+    }
+
+    func testDictionaryHttpParamsKeyWithSpecialCharsEncoded() {
+        // A key containing special characters must also be percent-encoded.
+        let params: [String: String] = ["field&name": "value"]
+        let query = params.stringFromHttpParameters()
+        XCTAssertNotNil(query, "stringFromHttpParameters must return a non-nil result")
+        XCTAssertTrue(query!.contains("%26"), "& inside a key must be encoded as %26")
+        XCTAssertFalse(query!.contains("field&name="), "Unencoded & in a key must not appear in the query string")
+    }
+
+    func testDictionaryHttpParamsNormalPairUnchanged() {
+        // A simple alphanumeric key-value pair must produce a clean, unencoded query segment.
+        let params: [String: String] = ["cursor": "now", "limit": "20"]
+        let query = params.stringFromHttpParameters()
+        XCTAssertNotNil(query, "stringFromHttpParameters must return a non-nil result")
+        XCTAssertTrue(query!.contains("cursor=now"), "Plain key-value pair must appear unencoded")
+        XCTAssertTrue(query!.contains("limit=20"), "Plain key-value pair must appear unencoded")
+        XCTAssertTrue(query!.contains("&"), "Multiple parameters must be separated by &")
+    }
 }
 
 // MARK: - Test Helper Types for KeyedCoding+Collections
