@@ -292,6 +292,15 @@ public final class URIScheme: Sendable {
         if let transactionEncodedEnvelope = try? transactionXDR?.encodedEnvelope() {
             if var callback = callback, callback.hasPrefix("url:") {
                 callback = String(callback.dropFirst(4))
+                guard let callbackURL = URL(string: callback),
+                      let scheme = callbackURL.scheme?.lowercased(),
+                      let host = callbackURL.host?.lowercased() else {
+                    return .failure(error: HorizonRequestError.requestFailed(message: "Invalid callback URL", horizonErrorResponse: nil))
+                }
+                let isLocalhost = host == "localhost" || host == "127.0.0.1" || host == "::1"
+                if scheme != "https" && !(scheme == "http" && isLocalhost) {
+                    return .failure(error: HorizonRequestError.requestFailed(message: "Callback URL must use HTTPS (HTTP allowed only for localhost)", horizonErrorResponse: nil))
+                }
                 let serviceHelper = ServiceHelper(baseURL: callback)
                 var dataStr = ""
                 if let urlEncodedTransaction = transactionEncodedEnvelope.urlEncoded {

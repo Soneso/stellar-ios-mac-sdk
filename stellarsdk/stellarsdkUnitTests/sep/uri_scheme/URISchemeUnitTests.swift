@@ -1639,4 +1639,157 @@ class URISchemeUnitTests: XCTestCase {
             }
         }
     }
+
+    // MARK: - Callback URL scheme validation tests
+
+    /// Helper to build a SEP-7 URI with an unencoded callback, simulating attacker-crafted input.
+    func buildURIWithRawCallback(_ callback: String) throws -> String {
+        let transactionXDR = try createTestTransactionXDR()
+        let envelope = try transactionXDR.encodedEnvelope()
+        let urlEncodedEnvelope = envelope.urlEncoded!
+        return "web+stellar:tx?xdr=\(urlEncodedEnvelope)&callback=\(callback)"
+    }
+
+    func testCallbackRejectsHTTP() async throws {
+        let uri = try buildURIWithRawCallback("url:http://attacker.com/steal")
+        let keyPair = try KeyPair(secretSeed: testSourceSecretSeed)
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: keyPair, network: .testnet)
+        if case .failure(let error) = result {
+            if case .requestFailed(let message, _) = error {
+                XCTAssertTrue(message.contains("HTTPS"), "Expected HTTPS error, got: \(message)")
+            } else {
+                XCTFail("Expected requestFailed error, got: \(error)")
+            }
+        } else {
+            XCTFail("Expected failure for HTTP callback")
+        }
+    }
+
+    func testCallbackRejectsFileScheme() async throws {
+        let uri = try buildURIWithRawCallback("url:file:///etc/passwd")
+        let keyPair = try KeyPair(secretSeed: testSourceSecretSeed)
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: keyPair, network: .testnet)
+        if case .failure(let error) = result {
+            if case .requestFailed(let message, _) = error {
+                XCTAssertTrue(message.contains("HTTPS") || message.contains("Invalid callback URL"),
+                              "Expected scheme validation error, got: \(message)")
+            } else {
+                XCTFail("Expected requestFailed error, got: \(error)")
+            }
+        } else {
+            XCTFail("Expected failure for file:// callback")
+        }
+    }
+
+    func testCallbackAllowsHTTPS() async throws {
+        let uri = try buildURIWithRawCallback("url:https://example.com/callback")
+        let keyPair = try KeyPair(secretSeed: testSourceSecretSeed)
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: keyPair, network: .testnet)
+        // Must fail with a network error (not scheme validation), proving validation passed
+        if case .failure(let error) = result {
+            if case .requestFailed(let message, _) = error {
+                XCTAssertFalse(message.contains("HTTPS"), "HTTPS callback should not fail scheme validation")
+                XCTAssertFalse(message.contains("Invalid callback URL"), "HTTPS callback should not fail URL validation")
+            }
+        }
+    }
+
+    func testCallbackAllowsHTTPLocalhost() async throws {
+        let uri = try buildURIWithRawCallback("url:http://localhost:8080/callback")
+        let keyPair = try KeyPair(secretSeed: testSourceSecretSeed)
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: keyPair, network: .testnet)
+        if case .failure(let error) = result {
+            if case .requestFailed(let message, _) = error {
+                XCTAssertFalse(message.contains("HTTPS"), "HTTP localhost should not fail scheme validation")
+                XCTAssertFalse(message.contains("Invalid callback URL"), "HTTP localhost should not fail URL validation")
+            }
+        }
+    }
+
+    func testCallbackAllowsHTTPLoopback() async throws {
+        let uri = try buildURIWithRawCallback("url:http://127.0.0.1:8080/callback")
+        let keyPair = try KeyPair(secretSeed: testSourceSecretSeed)
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: keyPair, network: .testnet)
+        if case .failure(let error) = result {
+            if case .requestFailed(let message, _) = error {
+                XCTAssertFalse(message.contains("HTTPS"), "HTTP 127.0.0.1 should not fail scheme validation")
+                XCTAssertFalse(message.contains("Invalid callback URL"), "HTTP 127.0.0.1 should not fail URL validation")
+            }
+        }
+    }
+
+    func testCallbackRejectsUppercaseHTTP() async throws {
+        let uri = try buildURIWithRawCallback("url:HTTP://ATTACKER.COM/steal")
+        let keyPair = try KeyPair(secretSeed: testSourceSecretSeed)
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: keyPair, network: .testnet)
+        if case .failure(let error) = result {
+            if case .requestFailed(let message, _) = error {
+                XCTAssertTrue(message.contains("HTTPS"), "Uppercase HTTP should be rejected, got: \(message)")
+            } else {
+                XCTFail("Expected requestFailed error, got: \(error)")
+            }
+        } else {
+            XCTFail("Expected failure for uppercase HTTP callback")
+        }
+    }
+
+    func testCallbackRejectsLocalhostSubdomain() async throws {
+        let uri = try buildURIWithRawCallback("url:http://localhost.attacker.com/steal")
+        let keyPair = try KeyPair(secretSeed: testSourceSecretSeed)
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: keyPair, network: .testnet)
+        if case .failure(let error) = result {
+            if case .requestFailed(let message, _) = error {
+                XCTAssertTrue(message.contains("HTTPS"), "localhost.attacker.com should be rejected, got: \(message)")
+            } else {
+                XCTFail("Expected requestFailed error, got: \(error)")
+            }
+        } else {
+            XCTFail("Expected failure for localhost subdomain callback")
+        }
+    }
+
+    func testCallbackRejectsUserinfoBypass() async throws {
+        let uri = try buildURIWithRawCallback("url:http://localhost@attacker.com/steal")
+        let keyPair = try KeyPair(secretSeed: testSourceSecretSeed)
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: keyPair, network: .testnet)
+        if case .failure(let error) = result {
+            if case .requestFailed(let message, _) = error {
+                XCTAssertTrue(message.contains("HTTPS"), "userinfo bypass should be rejected, got: \(message)")
+            } else {
+                XCTFail("Expected requestFailed error, got: \(error)")
+            }
+        } else {
+            XCTFail("Expected failure for userinfo bypass callback")
+        }
+    }
+
+    func testCallbackRejectsFTP() async throws {
+        let uri = try buildURIWithRawCallback("url:ftp://attacker.com/file")
+        let keyPair = try KeyPair(secretSeed: testSourceSecretSeed)
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: keyPair, network: .testnet)
+        if case .failure(let error) = result {
+            if case .requestFailed(let message, _) = error {
+                XCTAssertTrue(message.contains("HTTPS"), "FTP should be rejected, got: \(message)")
+            } else {
+                XCTFail("Expected requestFailed error, got: \(error)")
+            }
+        } else {
+            XCTFail("Expected failure for FTP callback")
+        }
+    }
+
+    func testCallbackRejectsInvalidURL() async throws {
+        let uri = try buildURIWithRawCallback("url:")
+        let keyPair = try KeyPair(secretSeed: testSourceSecretSeed)
+        let result = await uriScheme.signAndSubmitTransaction(forURL: uri, signerKeyPair: keyPair, network: .testnet)
+        if case .failure(let error) = result {
+            if case .requestFailed(let message, _) = error {
+                XCTAssertTrue(message.contains("Invalid callback URL"), "Expected invalid URL error, got: \(message)")
+            } else {
+                XCTFail("Expected requestFailed error, got: \(error)")
+            }
+        } else {
+            XCTFail("Expected failure for invalid callback URL")
+        }
+    }
 }
