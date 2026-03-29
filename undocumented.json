@@ -1,6 +1,20 @@
 {
   "warnings": [
     {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/extensions/String+Encoding.swift",
+      "line": 13,
+      "symbol": "String.urlPathEncoded",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/extensions/String+Encoding.swift",
+      "line": 19,
+      "symbol": "String.urlQueryValueEncoded",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/federation/toml/Date.swift",
       "line": 44,
       "symbol": "Date.init(rfc3339String:fractionalSeconds:localTime:)",
@@ -338,14 +352,14 @@
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift",
-      "line": 166,
+      "line": 148,
       "symbol": "Array.init(fromBinary:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/chris/projects/Stellar/stellar-ios-mac-sdk/stellarsdk/stellarsdk/utils/xdrCodable/XDRCodableExtensions.swift",
-      "line": 193,
+      "line": 178,
       "symbol": "String.init(fromBinary:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
