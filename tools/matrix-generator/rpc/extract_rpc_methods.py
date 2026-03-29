@@ -139,19 +139,36 @@ class ResponseStructParser:
 
         return None
 
-    def _parse_struct_fields(self, struct_name: str, struct_body: str) -> dict[str, Any]:
+    def _parse_struct_fields(self, struct_name: str, struct_body: str, _seen: set | None = None) -> dict[str, Any]:
         """
-        Parse fields from a struct body.
+        Parse fields from a struct body, resolving embedded structs.
 
         Args:
             struct_name: Name of the struct
             struct_body: Body content of the struct
+            _seen: Set of already-visited struct names to prevent infinite recursion
 
         Returns:
             Dictionary with fields and nested types
         """
+        if _seen is None:
+            _seen = set()
+        _seen.add(struct_name)
+
         fields = []
         nested_types = {}
+
+        # Resolve embedded structs (lines with just a type name, no field name or json tag)
+        embedded_pattern = r'^\s+(\w+)\s*$'
+        for match in re.finditer(embedded_pattern, struct_body, re.MULTILINE):
+            embedded_type = match.group(1)
+            if embedded_type in _seen:
+                continue
+            embedded_struct = self._find_struct_definition(embedded_type)
+            if embedded_struct:
+                embedded_result = self._parse_struct_fields(embedded_type, embedded_struct, _seen)
+                fields.extend(embedded_result["fields"])
+                nested_types.update(embedded_result.get("nested_types", {}))
 
         # Pattern to match struct fields with json tags
         # Handles: FieldName Type `json:"jsonName,omitempty"`
@@ -179,7 +196,7 @@ class ResponseStructParser:
                     nested_struct = self._find_struct_definition(nested_type_name)
                     if nested_struct:
                         nested_types[nested_type_name] = self._parse_struct_fields(
-                            nested_type_name, nested_struct
+                            nested_type_name, nested_struct, _seen
                         )
 
             fields.append({

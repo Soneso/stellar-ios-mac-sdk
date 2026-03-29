@@ -2,8 +2,8 @@
   "metadata": {
     "source": "stellar-rpc",
     "repository": "https://github.com/stellar/stellar-rpc",
-    "version": "v25.0.0",
-    "extracted_date": "2026-01-07",
+    "version": "v25.1.1",
+    "extracted_date": "2026-03-29",
     "total_methods": 12,
     "protocol": "JSON-RPC 2.0",
     "protocol_definitions": "https://github.com/stellar/go-stellar-sdk/tree/main/protocols/rpc"
@@ -674,7 +674,72 @@
           {
             "name": "status",
             "type": "string",
-            "description": "Transaction status: NOT_FOUND, FAILED, or SUCCESS"
+            "description": "Field: status"
+          },
+          {
+            "name": "txHash",
+            "type": "string",
+            "description": "Field: txHash"
+          },
+          {
+            "name": "applicationOrder",
+            "type": "int32",
+            "description": "Field: applicationOrder"
+          },
+          {
+            "name": "feeBump",
+            "type": "boolean",
+            "description": "Field: feeBump"
+          },
+          {
+            "name": "envelopeXdr",
+            "type": "string",
+            "description": "Field: envelopeXdr"
+          },
+          {
+            "name": "envelopeJson",
+            "type": "object",
+            "description": "Field: envelopeJson"
+          },
+          {
+            "name": "resultXdr",
+            "type": "string",
+            "description": "Field: resultXdr"
+          },
+          {
+            "name": "resultJson",
+            "type": "object",
+            "description": "Field: resultJson"
+          },
+          {
+            "name": "resultMetaXdr",
+            "type": "string",
+            "description": "Field: resultMetaXdr"
+          },
+          {
+            "name": "resultMetaJson",
+            "type": "object",
+            "description": "Field: resultMetaJson"
+          },
+          {
+            "name": "diagnosticEventsXdr",
+            "type": "array[string]",
+            "description": "Field: diagnosticEventsXdr"
+          },
+          {
+            "name": "diagnosticEventsJson",
+            "type": "array[object]",
+            "description": "Field: diagnosticEventsJson"
+          },
+          {
+            "name": "events",
+            "type": "Events",
+            "description": "Field: events"
+          },
+          {
+            "name": "ledger",
+            "type": "uint32",
+            "description": "Field: ledger"
           },
           {
             "name": "latestLedger",
@@ -697,57 +762,39 @@
             "description": "Field: oldestLedgerCloseTime"
           },
           {
-            "name": "ledger",
-            "type": "uint32",
-            "description": "Ledger sequence where transaction was included"
-          },
-          {
             "name": "createdAt",
             "type": "int64",
             "description": "Field: createdAt"
-          },
-          {
-            "name": "applicationOrder",
-            "type": "int32",
-            "description": "Transaction application order within ledger"
-          },
-          {
-            "name": "feeBump",
-            "type": "bool",
-            "description": "Whether this is a fee bump transaction"
-          },
-          {
-            "name": "envelopeXdr",
-            "type": "string",
-            "description": "Base64-encoded transaction envelope XDR"
-          },
-          {
-            "name": "resultXdr",
-            "type": "string",
-            "description": "Base64-encoded transaction result XDR"
-          },
-          {
-            "name": "resultMetaXdr",
-            "type": "string",
-            "description": "Base64-encoded transaction result meta XDR"
-          },
-          {
-            "name": "txHash",
-            "type": "string",
-            "description": "Transaction hash"
-          },
-          {
-            "name": "error",
-            "type": "object",
-            "description": "Error details if transaction failed"
-          },
-          {
-            "name": "events",
-            "type": "array[string]",
-            "description": "Contract events emitted by the transaction (protocol 23+)"
           }
         ],
-        "nested_types": {}
+        "nested_types": {
+          "Events": {
+            "type": "object",
+            "fields": [
+              {
+                "name": "transactionEventsXdr",
+                "type": "array[string]",
+                "description": "Field: transactionEventsXdr"
+              },
+              {
+                "name": "transactionEventsJson",
+                "type": "array[object]",
+                "description": "Field: transactionEventsJson"
+              },
+              {
+                "name": "contractEventsXdr",
+                "type": "array[array[string]]",
+                "description": "Field: contractEventsXdr"
+              },
+              {
+                "name": "contractEventsJson",
+                "type": "array[array[object]]",
+                "description": "Field: contractEventsJson"
+              }
+            ],
+            "nested_types": {}
+          }
+        }
       },
       "introduced_in": "",
       "last_modified": ""
@@ -822,12 +869,109 @@
             "type": "object",
             "fields": [
               {
+                "name": "status",
+                "type": "string",
+                "description": "Field: status"
+              },
+              {
+                "name": "txHash",
+                "type": "string",
+                "description": "Field: txHash"
+              },
+              {
+                "name": "applicationOrder",
+                "type": "int32",
+                "description": "Field: applicationOrder"
+              },
+              {
+                "name": "feeBump",
+                "type": "boolean",
+                "description": "Field: feeBump"
+              },
+              {
+                "name": "envelopeXdr",
+                "type": "string",
+                "description": "Field: envelopeXdr"
+              },
+              {
+                "name": "envelopeJson",
+                "type": "object",
+                "description": "Field: envelopeJson"
+              },
+              {
+                "name": "resultXdr",
+                "type": "string",
+                "description": "Field: resultXdr"
+              },
+              {
+                "name": "resultJson",
+                "type": "object",
+                "description": "Field: resultJson"
+              },
+              {
+                "name": "resultMetaXdr",
+                "type": "string",
+                "description": "Field: resultMetaXdr"
+              },
+              {
+                "name": "resultMetaJson",
+                "type": "object",
+                "description": "Field: resultMetaJson"
+              },
+              {
+                "name": "diagnosticEventsXdr",
+                "type": "array[string]",
+                "description": "Field: diagnosticEventsXdr"
+              },
+              {
+                "name": "diagnosticEventsJson",
+                "type": "array[object]",
+                "description": "Field: diagnosticEventsJson"
+              },
+              {
+                "name": "events",
+                "type": "Events",
+                "description": "Field: events"
+              },
+              {
+                "name": "ledger",
+                "type": "uint32",
+                "description": "Field: ledger"
+              },
+              {
                 "name": "createdAt",
                 "type": "int64",
                 "description": "Field: createdAt"
               }
             ],
-            "nested_types": {}
+            "nested_types": {
+              "Events": {
+                "type": "object",
+                "fields": [
+                  {
+                    "name": "transactionEventsXdr",
+                    "type": "array[string]",
+                    "description": "Field: transactionEventsXdr"
+                  },
+                  {
+                    "name": "transactionEventsJson",
+                    "type": "array[object]",
+                    "description": "Field: transactionEventsJson"
+                  },
+                  {
+                    "name": "contractEventsXdr",
+                    "type": "array[array[string]]",
+                    "description": "Field: contractEventsXdr"
+                  },
+                  {
+                    "name": "contractEventsJson",
+                    "type": "array[array[object]]",
+                    "description": "Field: contractEventsJson"
+                  }
+                ],
+                "nested_types": {}
+              }
+            }
           }
         }
       },
@@ -900,11 +1044,6 @@
             "name": "latestLedgerCloseTime",
             "type": "int64",
             "description": "Field: latestLedgerCloseTime"
-          },
-          {
-            "name": "error",
-            "type": "object",
-            "description": "Error details if transaction was rejected"
           }
         ],
         "nested_types": {}

@@ -358,12 +358,12 @@ final class SorobanDocTest: XCTestCase {
 
         let tx = try await client.buildInvokeMethodTx(
             name: "hello",
-            args: [SCValXDR.symbol("memo")],
+            args: [SCValXDR.symbol("fee")],
             methodOptions: MethodOptions(simulate: false)
         )
 
-        // Modify the raw transaction
-        tx.raw?.setMemo(memo: Memo.text("My memo"))
+        // Modify the raw transaction (e.g. adjust the fee)
+        tx.raw?.setFee(fee: 200_000)
 
         // Now simulate
         try await tx.simulate()

@@ -421,7 +421,7 @@ if try tx.isReadCall() {
 
 ### Modifying Before Submission
 
-Skip automatic simulation to modify the transaction (e.g., add memo) before simulating.
+Skip automatic simulation to modify the transaction (e.g., adjust fees) before simulating.
 
 ```swift
 import stellarsdk
@@ -433,8 +433,8 @@ let tx = try await client.buildInvokeMethodTx(
     methodOptions: MethodOptions(simulate: false)
 )
 
-// Modify the raw transaction
-tx.raw?.setMemo(memo: Memo.text("My memo"))
+// Modify the raw transaction (e.g. adjust the fee)
+tx.raw?.setFee(fee: 200_000)
 
 // Now simulate and submit
 try await tx.simulate()

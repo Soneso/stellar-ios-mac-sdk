@@ -523,8 +523,8 @@ let tx = try await client.buildInvokeMethodTx(
     methodOptions: MethodOptions(fee: 10000, simulate: false)
 )
 
-// Modify before simulation
-tx.raw?.setMemo(memo: Memo.text("payment"))
+// Modify before simulation (e.g. adjust the fee)
+tx.raw?.setFee(fee: 200_000)
 
 // Simulate manually
 try await tx.simulate()

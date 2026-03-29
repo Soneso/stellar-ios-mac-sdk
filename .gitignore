@@ -83,6 +83,9 @@ coverage/
 # Security reports
 sec-report*.md
 
+# Maintenance notes
+maintenance/
+
 # XDR generator
 tools/xdr-generator/.bundle/
 tools/xdr-generator/vendor/

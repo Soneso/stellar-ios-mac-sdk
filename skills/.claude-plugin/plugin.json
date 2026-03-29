@@ -1,7 +1,7 @@
 {
   "name": "stellar-ios-mac-sdk",
   "description": "Teaches AI coding agents how to build Stellar blockchain applications using stellar-ios-mac-sdk.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Soneso"
   },

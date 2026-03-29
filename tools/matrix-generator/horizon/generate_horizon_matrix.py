@@ -786,15 +786,15 @@ class SDKAnalyzer:
         """Extract requestPath from function body"""
         # Pattern 1: String concatenation with + operator (check first, most specific)
         # Matches: let path = "/accounts/" + accountId + "/transactions"
-        # or: let path = "/claimable_balances/" + id + "/transactions"
-        concat_match = re.search(r'(?:var|let)\s+(?:path|requestPath)\s*=\s*"([^"]+)"\s*\+\s*\w+\s*\+\s*"([^"]+)"', func_body)
+        # or: let path = "/accounts/" + accountId.urlPathEncoded + "/transactions"
+        concat_match = re.search(r'(?:var|let)\s+(?:path|requestPath)\s*=\s*"([^"]+)"\s*\+\s*\w+(?:\.\w+)?\s*\+\s*"([^"]+)"', func_body)
         if concat_match:
             # Reconstruct path with placeholder
             path = concat_match.group(1) + '{id}' + concat_match.group(2)
             return self._normalize_path_parameters(path)
 
         # Pattern 2: Simple string concatenation: "/path/" + variable
-        concat_simple = re.search(r'(?:var|let)\s+(?:path|requestPath)\s*=\s*"([^"]+)"\s*\+\s*\w+', func_body)
+        concat_simple = re.search(r'(?:var|let)\s+(?:path|requestPath)\s*=\s*"([^"]+)"\s*\+\s*\w+(?:\.\w+)?', func_body)
         if concat_simple:
             path = concat_simple.group(1) + '{id}'
             return self._normalize_path_parameters(path)

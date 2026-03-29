@@ -53,7 +53,8 @@ class SDKMethod:
 class SDKResponseType:
     """Parsed SDK response type information"""
     name: str
-    fields: List[str]  # JSON field names from CodingKeys
+    fields: List[str]  # JSON field names from direct CodingKeys
+    nested_fields: List[str] = field(default_factory=list)  # Fields from nested types (for matching only)
 
 
 @dataclass
@@ -279,9 +280,36 @@ class SwiftSourceAnalyzer:
                 json_key = raw_value if raw_value else case_name
                 fields.append(json_key)
 
+        # Collect fields from nested types referenced by properties in this struct.
+        # When the upstream Go spec embeds a struct (e.g. TransactionDetails), its fields
+        # appear as top-level in the RPC JSON. The SDK wraps them in a nested object
+        # (e.g. events: TransactionEvents). We track these separately for matching
+        # purposes only — they don't inflate the SDK field count.
+        nested_fields = []
+        nested_type_refs = re.findall(
+            r'public\s+(?:let|var)\s+\w+\s*:\s*(\w+)\??', content
+        )
+        responses_dir = file_path.parent
+        for ref_type in nested_type_refs:
+            nested_file = responses_dir / f"{ref_type}.swift"
+            if not nested_file.exists():
+                continue
+            nested_content = nested_file.read_text()
+            nested_keys_match = re.search(
+                r'private\s+enum\s+CodingKeys\s*:\s*String\s*,\s*CodingKey\s*\{([^}]+)\}',
+                nested_content,
+                re.DOTALL
+            )
+            if nested_keys_match:
+                for case_match in re.finditer(r'case\s+(\w+)(?:\s*=\s*"([^"]+)")?', nested_keys_match.group(1)):
+                    nested_key = case_match.group(2) or case_match.group(1)
+                    if nested_key not in fields and nested_key not in nested_fields:
+                        nested_fields.append(nested_key)
+
         self.response_types[struct_name] = SDKResponseType(
             name=struct_name,
-            fields=fields
+            fields=fields,
+            nested_fields=nested_fields
         )
 
 
@@ -397,10 +425,11 @@ class RPCMatrixGenerator:
                 missing_optional = rpc_optional - sdk_mapped_params
                 missing_params = list(missing_required | missing_optional)
 
-                # Check response fields
+                # Check response fields (include nested type fields for matching)
                 rpc_fields = set(rpc_response_field_names)
                 sdk_field_set = set(sdk_fields)
-                missing_fields = list(rpc_fields - sdk_field_set)
+                sdk_nested_fields = set(sdk_response.nested_fields) if sdk_response else set()
+                missing_fields = list(rpc_fields - sdk_field_set - sdk_nested_fields)
 
                 # Determine status
                 if missing_required:
