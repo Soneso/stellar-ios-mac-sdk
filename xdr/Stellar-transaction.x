@@ -569,6 +569,7 @@ struct SorobanAddressCredentials
     SCVal signature;
 };
 
+
 enum SorobanCredentialsType
 {
     SOROBAN_CREDENTIALS_SOURCE_ACCOUNT = 0,
