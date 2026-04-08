@@ -10,6 +10,7 @@ Welcome to the documentation for the Stellar SDK for iOS and macOS. Whether you'
 
 ### Core Usage
 - **[SDK Usage](sdk-usage.md)** - Transactions, operations, queries, and common patterns
+- **[Error Handling](error-handling.md)** - Error types, result codes, and debugging
 - **[Soroban Guide](soroban.md)** - Smart contract interaction
 
 ### Standards

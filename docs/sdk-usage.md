@@ -2481,69 +2481,7 @@ case .failure(let error):
 
 ### Error Handling
 
-When transactions fail, Horizon returns detailed error information including result codes for the transaction and each operation.
-
-#### Handling Submission Errors
-
-Check the response for success or failure after submitting a transaction.
-
-```swift
-import stellarsdk
-
-let sdk = StellarSDK.testNet()
-
-let submitResponse = await sdk.transactions.submitTransaction(transaction: transaction)
-switch submitResponse {
-case .success(let details):
-    print("Success! Hash: \(details.transactionHash)")
-case .destinationRequiresMemo(let destinationAccountId):
-    print("Destination \(destinationAccountId) requires memo")
-case .failure(let error):
-    // Transaction failed - inspect the error
-    print("Transaction failed: \(error)")
-}
-```
-
-#### Horizon HTTP Errors
-
-Handle HTTP-level errors when querying Horizon.
-
-```swift
-import stellarsdk
-
-let sdk = StellarSDK.testNet()
-
-let response = await sdk.accounts.getAccountDetails(accountId: "GABC...")
-switch response {
-case .success(let account):
-    print("Found account: \(account.accountId)")
-case .failure(let error):
-    switch error {
-    case .notFound(_, _):
-        print("Account not found (404)")
-    case .requestFailed(let message, _):
-        print("Request failed: \(message)")
-    default:
-        print("Horizon error: \(error)")
-    }
-}
-```
-
-#### Common Result Codes
-
-**Transaction-level codes:**
-- `tx_success` -- Transaction succeeded
-- `tx_failed` -- One or more operations failed
-- `tx_bad_seq` -- Sequence number mismatch (reload account and retry)
-- `tx_insufficient_fee` -- Fee too low for current network load
-- `tx_insufficient_balance` -- Not enough XLM to cover fee + reserves
-
-**Operation-level codes:**
-- `op_success` -- Operation succeeded
-- `op_underfunded` -- Not enough balance for payment
-- `op_no_trust` -- Destination missing trustline for asset
-- `op_line_full` -- Destination trustline limit exceeded
-- `op_low_reserve` -- Would leave account below minimum reserve
+For error handling patterns including transaction submission errors, result code extraction, Horizon query errors, Soroban RPC errors, and SDK validation errors, see the [Error Handling Guide](error-handling.md).
 
 ### Message Signing (SEP-53)
 

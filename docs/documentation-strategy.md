@@ -348,6 +348,7 @@ documentation/
 ├── quick-start.md              # 15-minute fast path to first transaction
 ├── getting-started.md          # Fundamentals: installation, keys, accounts
 ├── sdk-usage.md                # All SDK features organized by use case
+├── error-handling.md           # Error types, result codes, and debugging
 ├── soroban.md                  # Soroban smart contract development
 ├── sep/
 │   ├── README.md              # SEP overview and selection guide
