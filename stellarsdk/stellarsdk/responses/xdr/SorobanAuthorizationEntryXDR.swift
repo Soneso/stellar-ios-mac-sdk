@@ -24,3 +24,16 @@ public struct SorobanAuthorizationEntryXDR: XDRCodable, Sendable {
     try container.encode(rootInvocation)
   }
 }
+
+extension SorobanAuthorizationEntryXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.credentials.toTxRep(prefix: "\(prefix).credentials", lines: &lines)
+    try self.rootInvocation.toTxRep(prefix: "\(prefix).rootInvocation", lines: &lines)
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanAuthorizationEntryXDR {
+    let credentials: SorobanCredentialsXDR = try SorobanCredentialsXDR.fromTxRep(map, prefix: "\(prefix).credentials")
+    let rootInvocation: SorobanAuthorizedInvocationXDR = try SorobanAuthorizedInvocationXDR.fromTxRep(map, prefix: "\(prefix).rootInvocation")
+    return SorobanAuthorizationEntryXDR(credentials: credentials, rootInvocation: rootInvocation)
+  }
+}

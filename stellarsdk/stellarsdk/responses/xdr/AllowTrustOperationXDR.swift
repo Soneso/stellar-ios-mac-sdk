@@ -32,3 +32,18 @@ public struct AllowTrustOperationXDR: XDRCodable, Sendable {
     try container.encode(authorize)
   }
 }
+
+extension AllowTrustOperationXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).trustor: \(try TxRepHelper.formatAccountId(self.trustor))")
+    lines.append("\(prefix).asset: \(try TxRepHelper.formatAllowTrustAsset(self.asset))")
+    lines.append("\(prefix).authorize: \(self.authorize)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> AllowTrustOperationXDR {
+    let trustor: PublicKey = try TxRepHelper.requireAccountId(map, "\(prefix).trustor")
+    let asset: AllowTrustOpAssetXDR = try TxRepHelper.requireAllowTrustAsset(map, "\(prefix).asset")
+    let authorize: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).authorize") ?? "0"))
+    return AllowTrustOperationXDR(trustor: trustor, asset: asset, authorize: authorize)
+  }
+}

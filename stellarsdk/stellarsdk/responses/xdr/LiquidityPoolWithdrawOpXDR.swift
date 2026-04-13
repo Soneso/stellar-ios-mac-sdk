@@ -37,3 +37,20 @@ public struct LiquidityPoolWithdrawOpXDR: XDRCodable, Sendable {
     try container.encode(minAmountB)
   }
 }
+
+extension LiquidityPoolWithdrawOpXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).liquidityPoolID: \(TxRepHelper.bytesToHex(self.liquidityPoolID.wrapped))")
+    lines.append("\(prefix).amount: \(self.amount)")
+    lines.append("\(prefix).minAmountA: \(self.minAmountA)")
+    lines.append("\(prefix).minAmountB: \(self.minAmountB)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LiquidityPoolWithdrawOpXDR {
+    let liquidityPoolID: WrappedData32 = try TxRepHelper.requireWrappedData32(map, "\(prefix).liquidityPoolID")
+    let amount: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).amount") ?? "0")
+    let minAmountA: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).minAmountA") ?? "0")
+    let minAmountB: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).minAmountB") ?? "0")
+    return LiquidityPoolWithdrawOpXDR(liquidityPoolID: liquidityPoolID, amount: amount, minAmountA: minAmountA, minAmountB: minAmountB)
+  }
+}

@@ -24,3 +24,16 @@ public struct CreateAccountOperationXDR: XDRCodable, Sendable {
     try container.encode(startingBalance)
   }
 }
+
+extension CreateAccountOperationXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).destination: \(try TxRepHelper.formatAccountId(self.destination))")
+    lines.append("\(prefix).startingBalance: \(self.startingBalance)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> CreateAccountOperationXDR {
+    let destination: PublicKey = try TxRepHelper.requireAccountId(map, "\(prefix).destination")
+    let startingBalance: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).startingBalance") ?? "0")
+    return CreateAccountOperationXDR(destination: destination, balance: startingBalance)
+  }
+}

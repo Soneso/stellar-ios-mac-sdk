@@ -32,3 +32,18 @@ public struct ClawbackOpXDR: XDRCodable, Sendable {
     try container.encode(amount)
   }
 }
+
+extension ClawbackOpXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).asset: \(try TxRepHelper.formatAsset(self.asset))")
+    lines.append("\(prefix).from: \(try TxRepHelper.formatMuxedAccount(self.from))")
+    lines.append("\(prefix).amount: \(self.amount)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ClawbackOpXDR {
+    let asset: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).asset")
+    let from: MuxedAccountXDR = try TxRepHelper.requireMuxedAccount(map, "\(prefix).from")
+    let amount: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).amount") ?? "0")
+    return ClawbackOpXDR(asset: asset, from: from, amount: amount)
+  }
+}

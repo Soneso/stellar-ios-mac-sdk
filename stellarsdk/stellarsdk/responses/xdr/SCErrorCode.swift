@@ -15,3 +15,52 @@ public enum SCErrorCode: Int32, XDRCodable, Equatable, Sendable {
   case unexpectedType = 8
   case unexpectedSize = 9
 }
+
+extension SCErrorCode {
+  public func enumName() -> String {
+    switch self {
+    case .arithDomain: return "SCEC_ARITH_DOMAIN"
+    case .indexBounds: return "SCEC_INDEX_BOUNDS"
+    case .invalidInput: return "SCEC_INVALID_INPUT"
+    case .missingValue: return "SCEC_MISSING_VALUE"
+    case .existingValue: return "SCEC_EXISTING_VALUE"
+    case .exceededLimit: return "SCEC_EXCEEDED_LIMIT"
+    case .invalidAction: return "SCEC_INVALID_ACTION"
+    case .internalError: return "SCEC_INTERNAL_ERROR"
+    case .unexpectedType: return "SCEC_UNEXPECTED_TYPE"
+    case .unexpectedSize: return "SCEC_UNEXPECTED_SIZE"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> SCErrorCode {
+    switch name {
+    case "SCEC_ARITH_DOMAIN": return .arithDomain
+    case "SCEC_INDEX_BOUNDS": return .indexBounds
+    case "SCEC_INVALID_INPUT": return .invalidInput
+    case "SCEC_MISSING_VALUE": return .missingValue
+    case "SCEC_EXISTING_VALUE": return .existingValue
+    case "SCEC_EXCEEDED_LIMIT": return .exceededLimit
+    case "SCEC_INVALID_ACTION": return .invalidAction
+    case "SCEC_INTERNAL_ERROR": return .internalError
+    case "SCEC_UNEXPECTED_TYPE": return .unexpectedType
+    case "SCEC_UNEXPECTED_SIZE": return .unexpectedSize
+    default:
+      let prefix = "SCErrorCode#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = SCErrorCode(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SCErrorCode {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

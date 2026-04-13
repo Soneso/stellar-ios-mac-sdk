@@ -7,3 +7,36 @@ public enum ContractIDPreimageType: Int32, XDRCodable, Equatable, Sendable {
   case fromAddress = 0
   case fromAsset = 1
 }
+
+extension ContractIDPreimageType {
+  public func enumName() -> String {
+    switch self {
+    case .fromAddress: return "CONTRACT_ID_PREIMAGE_FROM_ADDRESS"
+    case .fromAsset: return "CONTRACT_ID_PREIMAGE_FROM_ASSET"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> ContractIDPreimageType {
+    switch name {
+    case "CONTRACT_ID_PREIMAGE_FROM_ADDRESS": return .fromAddress
+    case "CONTRACT_ID_PREIMAGE_FROM_ASSET": return .fromAsset
+    default:
+      let prefix = "ContractIDPreimageType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = ContractIDPreimageType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ContractIDPreimageType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

@@ -24,3 +24,16 @@ public struct ClaimantV0XDR: XDRCodable, Sendable {
     try container.encode(predicate)
   }
 }
+
+extension ClaimantV0XDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).destination: \(try TxRepHelper.formatAccountId(self.accountID))")
+    try self.predicate.toTxRep(prefix: "\(prefix).predicate", lines: &lines)
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ClaimantV0XDR {
+    let accountID: PublicKey = try TxRepHelper.requireAccountId(map, "\(prefix).destination")
+    let predicate: ClaimPredicateXDR = try ClaimPredicateXDR.fromTxRep(map, prefix: "\(prefix).predicate")
+    return ClaimantV0XDR(accountID: accountID, predicate: predicate)
+  }
+}

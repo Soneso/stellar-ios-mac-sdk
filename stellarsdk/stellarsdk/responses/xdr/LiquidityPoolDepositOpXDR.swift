@@ -42,3 +42,22 @@ public struct LiquidityPoolDepositOpXDR: XDRCodable, Sendable {
     try container.encode(maxPrice)
   }
 }
+
+extension LiquidityPoolDepositOpXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).liquidityPoolID: \(TxRepHelper.bytesToHex(self.liquidityPoolID.wrapped))")
+    lines.append("\(prefix).maxAmountA: \(self.maxAmountA)")
+    lines.append("\(prefix).maxAmountB: \(self.maxAmountB)")
+    try self.minPrice.toTxRep(prefix: "\(prefix).minPrice", lines: &lines)
+    try self.maxPrice.toTxRep(prefix: "\(prefix).maxPrice", lines: &lines)
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LiquidityPoolDepositOpXDR {
+    let liquidityPoolID: WrappedData32 = try TxRepHelper.requireWrappedData32(map, "\(prefix).liquidityPoolID")
+    let maxAmountA: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).maxAmountA") ?? "0")
+    let maxAmountB: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).maxAmountB") ?? "0")
+    let minPrice: PriceXDR = try PriceXDR.fromTxRep(map, prefix: "\(prefix).minPrice")
+    let maxPrice: PriceXDR = try PriceXDR.fromTxRep(map, prefix: "\(prefix).maxPrice")
+    return LiquidityPoolDepositOpXDR(liquidityPoolID: liquidityPoolID, maxAmountA: maxAmountA, maxAmountB: maxAmountB, minPrice: minPrice, maxPrice: maxPrice)
+  }
+}

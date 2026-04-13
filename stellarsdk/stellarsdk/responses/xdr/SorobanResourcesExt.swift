@@ -41,3 +41,31 @@ public enum SorobanResourcesExt: XDRCodable, Sendable {
     }
   }
 }
+
+extension SorobanResourcesExt {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .void:
+      lines.append("\(prefix).v: 0")
+    case .resourceExt(let val):
+      lines.append("\(prefix).v: 1")
+      try val.toTxRep(prefix: "\(prefix).resourceExt", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanResourcesExt {
+    let discKey = "\(prefix).v"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "0":
+      return .void
+    case "1":
+      let val = try SorobanResourcesExtV0.fromTxRep(map, prefix: "\(prefix).resourceExt")
+      return .resourceExt(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

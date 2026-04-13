@@ -20,3 +20,14 @@ public struct ClawbackClaimableBalanceOpXDR: XDRCodable, Sendable {
     try container.encode(claimableBalanceID)
   }
 }
+
+extension ClawbackClaimableBalanceOpXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.claimableBalanceID.toTxRep(prefix: "\(prefix).balanceID", lines: &lines)
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ClawbackClaimableBalanceOpXDR {
+    let claimableBalanceID: ClaimableBalanceIDXDR = try ClaimableBalanceIDXDR.fromTxRep(map, prefix: "\(prefix).balanceID")
+    return ClawbackClaimableBalanceOpXDR(claimableBalanceID: claimableBalanceID)
+  }
+}

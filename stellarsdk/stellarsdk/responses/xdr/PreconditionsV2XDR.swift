@@ -77,3 +77,62 @@ public struct PreconditionsV2XDR: XDRCodable, Sendable {
     try container.encode(extraSigners)
   }
 }
+
+extension PreconditionsV2XDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    if let val = self.timeBounds {
+      lines.append("\(prefix).timeBounds._present: true")
+      try val.toTxRep(prefix: "\(prefix).timeBounds", lines: &lines)
+    } else {
+      lines.append("\(prefix).timeBounds._present: false")
+    }
+    if let val = self.ledgerBounds {
+      lines.append("\(prefix).ledgerBounds._present: true")
+      try val.toTxRep(prefix: "\(prefix).ledgerBounds", lines: &lines)
+    } else {
+      lines.append("\(prefix).ledgerBounds._present: false")
+    }
+    if let val = self.sequenceNumber {
+      lines.append("\(prefix).minSeqNum._present: true")
+      lines.append("\(prefix).minSeqNum: \(val)")
+    } else {
+      lines.append("\(prefix).minSeqNum._present: false")
+    }
+    lines.append("\(prefix).minSeqAge: \(self.minSeqAge)")
+    lines.append("\(prefix).minSeqLedgerGap: \(self.minSeqLedgerGap)")
+    lines.append("\(prefix).extraSigners.len: \(self.extraSigners.count)")
+    for (i, item) in self.extraSigners.enumerated() {
+      lines.append("\(prefix).extraSigners[\(i)]: \(try TxRepHelper.formatSignerKey(item))")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> PreconditionsV2XDR {
+    let timeBounds: TimeBoundsXDR?
+    if TxRepHelper.getValue(map, "\(prefix).timeBounds._present") == "true" {
+      timeBounds = try TimeBoundsXDR.fromTxRep(map, prefix: "\(prefix).timeBounds")
+    } else {
+      timeBounds = nil
+    }
+    let ledgerBounds: LedgerBoundsXDR?
+    if TxRepHelper.getValue(map, "\(prefix).ledgerBounds._present") == "true" {
+      ledgerBounds = try LedgerBoundsXDR.fromTxRep(map, prefix: "\(prefix).ledgerBounds")
+    } else {
+      ledgerBounds = nil
+    }
+    let sequenceNumber: Int64?
+    if TxRepHelper.getValue(map, "\(prefix).minSeqNum._present") == "true" {
+      sequenceNumber = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).minSeqNum") ?? "0")
+    } else {
+      sequenceNumber = nil
+    }
+    let minSeqAge: UInt64 = try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).minSeqAge") ?? "0")
+    let minSeqLedgerGap: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).minSeqLedgerGap") ?? "0"))
+    let extraSignersLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).extraSigners.len") ?? "0")
+    var extraSigners = [SignerKeyXDR]()
+    for i in 0..<Int(extraSignersLen) {
+      let item: SignerKeyXDR = try TxRepHelper.parseSignerKey(TxRepHelper.getValue(map, "\(prefix).extraSigners[\(i)]") ?? "")
+      extraSigners.append(item)
+    }
+    return PreconditionsV2XDR(timeBounds: timeBounds, ledgerBounds: ledgerBounds, sequenceNumber: sequenceNumber, minSeqAge: minSeqAge, minSeqLedgerGap: minSeqLedgerGap, extraSigners: extraSigners)
+  }
+}

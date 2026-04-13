@@ -24,3 +24,16 @@ public struct SignerXDR: XDRCodable, Sendable {
     try container.encode(weight)
   }
 }
+
+extension SignerXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).key: \(try TxRepHelper.formatSignerKey(self.key))")
+    lines.append("\(prefix).weight: \(self.weight)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SignerXDR {
+    let key: SignerKeyXDR = try TxRepHelper.requireSignerKey(map, "\(prefix).key")
+    let weight: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).weight") ?? "0"))
+    return SignerXDR(key: key, weight: weight)
+  }
+}

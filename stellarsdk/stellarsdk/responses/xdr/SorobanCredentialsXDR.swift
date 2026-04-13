@@ -41,3 +41,31 @@ public enum SorobanCredentialsXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SorobanCredentialsXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .sourceAccount:
+      lines.append("\(prefix).type: SOROBAN_CREDENTIALS_SOURCE_ACCOUNT")
+    case .address(let val):
+      lines.append("\(prefix).type: SOROBAN_CREDENTIALS_ADDRESS")
+      try val.toTxRep(prefix: "\(prefix).address", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanCredentialsXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "SOROBAN_CREDENTIALS_SOURCE_ACCOUNT":
+      return .sourceAccount
+    case "SOROBAN_CREDENTIALS_ADDRESS":
+      let val = try SorobanAddressCredentialsXDR.fromTxRep(map, prefix: "\(prefix).address")
+      return .address(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

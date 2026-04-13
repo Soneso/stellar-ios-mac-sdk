@@ -34,3 +34,25 @@ public enum FeeBumpTransactionXDRExtXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension FeeBumpTransactionXDRExtXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .void:
+      lines.append("\(prefix).v: 0")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> FeeBumpTransactionXDRExtXDR {
+    let discKey = "\(prefix).v"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "0":
+      return .void
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

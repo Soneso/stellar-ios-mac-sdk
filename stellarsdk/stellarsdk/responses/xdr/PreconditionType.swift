@@ -8,3 +8,38 @@ public enum PreconditionType: Int32, XDRCodable, Equatable, Sendable {
   case time = 1
   case v2 = 2
 }
+
+extension PreconditionType {
+  public func enumName() -> String {
+    switch self {
+    case .none: return "PRECOND_NONE"
+    case .time: return "PRECOND_TIME"
+    case .v2: return "PRECOND_V2"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> PreconditionType {
+    switch name {
+    case "PRECOND_NONE": return .none
+    case "PRECOND_TIME": return .time
+    case "PRECOND_V2": return .v2
+    default:
+      let prefix = "PreconditionType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = PreconditionType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> PreconditionType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

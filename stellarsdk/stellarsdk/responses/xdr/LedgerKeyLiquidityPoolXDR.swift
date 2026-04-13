@@ -20,3 +20,14 @@ public struct LedgerKeyLiquidityPoolXDR: XDRCodable, Sendable {
     try container.encode(liquidityPoolID)
   }
 }
+
+extension LedgerKeyLiquidityPoolXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).liquidityPoolID: \(TxRepHelper.bytesToHex(self.liquidityPoolID.wrapped))")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerKeyLiquidityPoolXDR {
+    let liquidityPoolID: WrappedData32 = try TxRepHelper.requireLiquidityPoolId(map, "\(prefix).liquidityPoolID")
+    return LedgerKeyLiquidityPoolXDR(liquidityPoolID: liquidityPoolID)
+  }
+}

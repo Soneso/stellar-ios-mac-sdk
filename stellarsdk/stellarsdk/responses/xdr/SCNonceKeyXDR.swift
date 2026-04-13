@@ -20,3 +20,14 @@ public struct SCNonceKeyXDR: XDRCodable, Sendable {
     try container.encode(nonce)
   }
 }
+
+extension SCNonceKeyXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).nonce: \(self.nonce)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SCNonceKeyXDR {
+    let nonce: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).nonce") ?? "0")
+    return SCNonceKeyXDR(nonce: nonce)
+  }
+}

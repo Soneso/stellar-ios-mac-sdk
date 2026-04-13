@@ -8,3 +8,38 @@ public enum SorobanAuthorizedFunctionType: Int32, XDRCodable, Equatable, Sendabl
   case createContractHostFn = 1
   case createContractV2HostFn = 2
 }
+
+extension SorobanAuthorizedFunctionType {
+  public func enumName() -> String {
+    switch self {
+    case .contractFn: return "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN"
+    case .createContractHostFn: return "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN"
+    case .createContractV2HostFn: return "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> SorobanAuthorizedFunctionType {
+    switch name {
+    case "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN": return .contractFn
+    case "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN": return .createContractHostFn
+    case "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN": return .createContractV2HostFn
+    default:
+      let prefix = "SorobanAuthorizedFunctionType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = SorobanAuthorizedFunctionType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanAuthorizedFunctionType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

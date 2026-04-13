@@ -32,3 +32,26 @@ public struct CreateClaimableBalanceOpXDR: XDRCodable, Sendable {
     try container.encode(claimants)
   }
 }
+
+extension CreateClaimableBalanceOpXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).asset: \(try TxRepHelper.formatAsset(self.asset))")
+    lines.append("\(prefix).amount: \(self.amount)")
+    lines.append("\(prefix).claimants.len: \(self.claimants.count)")
+    for (i, item) in self.claimants.enumerated() {
+      try item.toTxRep(prefix: "\(prefix).claimants[\(i)]", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> CreateClaimableBalanceOpXDR {
+    let asset: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).asset")
+    let amount: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).amount") ?? "0")
+    let claimantsLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).claimants.len") ?? "0")
+    var claimants = [ClaimantXDR]()
+    for i in 0..<Int(claimantsLen) {
+      let item: ClaimantXDR = try ClaimantXDR.fromTxRep(map, prefix: "\(prefix).claimants[\(i)]")
+      claimants.append(item)
+    }
+    return CreateClaimableBalanceOpXDR(asset: asset, amount: amount, claimants: claimants)
+  }
+}

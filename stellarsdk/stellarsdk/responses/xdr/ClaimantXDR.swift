@@ -35,3 +35,27 @@ public enum ClaimantXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ClaimantXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .claimantTypeV0(let val):
+      lines.append("\(prefix).type: CLAIMANT_TYPE_V0")
+      try val.toTxRep(prefix: "\(prefix).v0", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ClaimantXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "CLAIMANT_TYPE_V0":
+      let val = try ClaimantV0XDR.fromTxRep(map, prefix: "\(prefix).v0")
+      return .claimantTypeV0(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

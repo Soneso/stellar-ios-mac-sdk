@@ -49,3 +49,39 @@ public enum SorobanAuthorizedFunctionXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SorobanAuthorizedFunctionXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .contractFn(let val):
+      lines.append("\(prefix).type: SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN")
+      try val.toTxRep(prefix: "\(prefix).contractFn", lines: &lines)
+    case .createContractHostFn(let val):
+      lines.append("\(prefix).type: SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN")
+      try val.toTxRep(prefix: "\(prefix).createContractHostFn", lines: &lines)
+    case .createContractV2HostFn(let val):
+      lines.append("\(prefix).type: SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN")
+      try val.toTxRep(prefix: "\(prefix).createContractV2HostFn", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanAuthorizedFunctionXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CONTRACT_FN":
+      let val = try InvokeContractArgsXDR.fromTxRep(map, prefix: "\(prefix).contractFn")
+      return .contractFn(val)
+    case "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_HOST_FN":
+      let val = try CreateContractArgsXDR.fromTxRep(map, prefix: "\(prefix).createContractHostFn")
+      return .createContractHostFn(val)
+    case "SOROBAN_AUTHORIZED_FUNCTION_TYPE_CREATE_CONTRACT_V2_HOST_FN":
+      let val = try CreateContractV2ArgsXDR.fromTxRep(map, prefix: "\(prefix).createContractV2HostFn")
+      return .createContractV2HostFn(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

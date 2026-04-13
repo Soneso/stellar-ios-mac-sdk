@@ -42,3 +42,33 @@ public enum ContractIDPreimageXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ContractIDPreimageXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .fromAddress(let val):
+      lines.append("\(prefix).type: CONTRACT_ID_PREIMAGE_FROM_ADDRESS")
+      try val.toTxRep(prefix: "\(prefix).fromAddress", lines: &lines)
+    case .fromAsset(let val):
+      lines.append("\(prefix).type: CONTRACT_ID_PREIMAGE_FROM_ASSET")
+      lines.append("\(prefix).fromAsset: \(try TxRepHelper.formatAsset(val))")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ContractIDPreimageXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "CONTRACT_ID_PREIMAGE_FROM_ADDRESS":
+      let val = try ContractIDPreimageFromAddressXDR.fromTxRep(map, prefix: "\(prefix).fromAddress")
+      return .fromAddress(val)
+    case "CONTRACT_ID_PREIMAGE_FROM_ASSET":
+      let val = try TxRepHelper.requireAsset(map, "\(prefix).fromAsset")
+      return .fromAsset(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

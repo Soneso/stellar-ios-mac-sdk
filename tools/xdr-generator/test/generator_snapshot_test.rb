@@ -73,6 +73,26 @@ class GeneratorSnapshotTest < Minitest::Test
     assert_snapshot "XDRConstants.swift"
   end
 
+  def test_snapshot_operation_body_xdr
+    assert_snapshot "OperationBodyXDR.swift"
+  end
+
+  def test_snapshot_operation_type
+    assert_snapshot "OperationType.swift"
+  end
+
+  def test_snapshot_sc_val_xdr
+    assert_snapshot "SCValXDR.swift"
+  end
+
+  def test_snapshot_ledger_key_xdr
+    assert_snapshot "LedgerKeyXDR.swift"
+  end
+
+  def test_snapshot_soroban_transaction_data_xdr
+    assert_snapshot "SorobanTransactionDataXDR.swift"
+  end
+
   # -- Output sanity checks --
 
   def test_generated_files_count

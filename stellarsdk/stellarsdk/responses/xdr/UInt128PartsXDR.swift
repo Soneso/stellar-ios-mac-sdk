@@ -24,3 +24,16 @@ public struct UInt128PartsXDR: XDRCodable, Sendable {
     try container.encode(lo)
   }
 }
+
+extension UInt128PartsXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).hi: \(self.hi)")
+    lines.append("\(prefix).lo: \(self.lo)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> UInt128PartsXDR {
+    let hi: UInt64 = try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).hi") ?? "0")
+    let lo: UInt64 = try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).lo") ?? "0")
+    return UInt128PartsXDR(hi: hi, lo: lo)
+  }
+}

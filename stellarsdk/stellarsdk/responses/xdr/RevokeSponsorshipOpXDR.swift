@@ -42,3 +42,33 @@ public enum RevokeSponsorshipOpXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension RevokeSponsorshipOpXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .revokeSponsorshipLedgerEntry(let val):
+      lines.append("\(prefix).type: REVOKE_SPONSORSHIP_LEDGER_ENTRY")
+      try val.toTxRep(prefix: "\(prefix).ledgerKey", lines: &lines)
+    case .revokeSponsorshipSignerEntry(let val):
+      lines.append("\(prefix).type: REVOKE_SPONSORSHIP_SIGNER")
+      try val.toTxRep(prefix: "\(prefix).signer", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> RevokeSponsorshipOpXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "REVOKE_SPONSORSHIP_LEDGER_ENTRY":
+      let val = try LedgerKeyXDR.fromTxRep(map, prefix: "\(prefix).ledgerKey")
+      return .revokeSponsorshipLedgerEntry(val)
+    case "REVOKE_SPONSORSHIP_SIGNER":
+      let val = try RevokeSponsorshipSignerXDR.fromTxRep(map, prefix: "\(prefix).signer")
+      return .revokeSponsorshipSignerEntry(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

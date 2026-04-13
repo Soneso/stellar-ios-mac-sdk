@@ -1,5 +1,5 @@
 .PHONY: xdr-generate xdr-clean-generated xdr-clean-all xdr-update \
-       xdr-generator-test xdr-generator-update-snapshots
+       xdr-generator-test xdr-generator-update-snapshots xdr-generate-tests
 
 # XDR definition files fetched from stellar/stellar-xdr
 XDRS = xdr/Stellar-SCP.x \
@@ -25,7 +25,17 @@ xdr-generate: $(XDRS)
 	docker run --rm -v $(PWD):/wd -w /wd ruby:3.4 /bin/bash -c '\
 		cd tools/xdr-generator && \
 		bundle install --quiet && \
-		bundle exec ruby generate.rb'
+		bundle exec ruby generate.rb && \
+		bundle exec ruby test/generate_tests.rb'
+
+# Regenerate only the TxRep roundtrip test harness (no XDR source regen).
+# Emits Swift XCTest files under
+# stellarsdk/stellarsdkUnitTests/sep/txrep/generated/.
+xdr-generate-tests:
+	docker run --rm -v $(PWD):/wd -w /wd ruby:3.4 /bin/bash -c '\
+		cd tools/xdr-generator && \
+		bundle install --quiet && \
+		bundle exec ruby test/generate_tests.rb'
 
 # Remove only generated Swift files (preserves hand-maintained files)
 xdr-clean-generated:

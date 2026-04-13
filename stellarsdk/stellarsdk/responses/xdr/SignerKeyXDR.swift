@@ -56,3 +56,45 @@ public enum SignerKeyXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SignerKeyXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .ed25519(let val):
+      lines.append("\(prefix).type: SIGNER_KEY_TYPE_ED25519")
+      lines.append("\(prefix).ed25519: \(TxRepHelper.bytesToHex(val.wrapped))")
+    case .preAuthTx(let val):
+      lines.append("\(prefix).type: SIGNER_KEY_TYPE_PRE_AUTH_TX")
+      lines.append("\(prefix).preAuthTx: \(TxRepHelper.bytesToHex(val.wrapped))")
+    case .hashX(let val):
+      lines.append("\(prefix).type: SIGNER_KEY_TYPE_HASH_X")
+      lines.append("\(prefix).hashX: \(TxRepHelper.bytesToHex(val.wrapped))")
+    case .signedPayload(let val):
+      lines.append("\(prefix).type: SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD")
+      try val.toTxRep(prefix: "\(prefix).ed25519SignedPayload", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SignerKeyXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "SIGNER_KEY_TYPE_ED25519":
+      let val = try TxRepHelper.requireWrappedData32(map, "\(prefix).ed25519")
+      return .ed25519(val)
+    case "SIGNER_KEY_TYPE_PRE_AUTH_TX":
+      let val = try TxRepHelper.requireWrappedData32(map, "\(prefix).preAuthTx")
+      return .preAuthTx(val)
+    case "SIGNER_KEY_TYPE_HASH_X":
+      let val = try TxRepHelper.requireWrappedData32(map, "\(prefix).hashX")
+      return .hashX(val)
+    case "SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD":
+      let val = try Ed25519SignedPayload.fromTxRep(map, prefix: "\(prefix).ed25519SignedPayload")
+      return .signedPayload(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

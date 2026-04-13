@@ -7,3 +7,36 @@ public enum SorobanCredentialsType: Int32, XDRCodable, Equatable, Sendable {
   case sourceAccount = 0
   case address = 1
 }
+
+extension SorobanCredentialsType {
+  public func enumName() -> String {
+    switch self {
+    case .sourceAccount: return "SOROBAN_CREDENTIALS_SOURCE_ACCOUNT"
+    case .address: return "SOROBAN_CREDENTIALS_ADDRESS"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> SorobanCredentialsType {
+    switch name {
+    case "SOROBAN_CREDENTIALS_SOURCE_ACCOUNT": return .sourceAccount
+    case "SOROBAN_CREDENTIALS_ADDRESS": return .address
+    default:
+      let prefix = "SorobanCredentialsType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = SorobanCredentialsType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanCredentialsType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

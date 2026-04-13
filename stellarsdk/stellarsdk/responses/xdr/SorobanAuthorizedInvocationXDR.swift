@@ -24,3 +24,24 @@ public struct SorobanAuthorizedInvocationXDR: XDRCodable, Sendable {
     try container.encode(subInvocations)
   }
 }
+
+extension SorobanAuthorizedInvocationXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.function.toTxRep(prefix: "\(prefix).function", lines: &lines)
+    lines.append("\(prefix).subInvocations.len: \(self.subInvocations.count)")
+    for (i, item) in self.subInvocations.enumerated() {
+      try item.toTxRep(prefix: "\(prefix).subInvocations[\(i)]", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanAuthorizedInvocationXDR {
+    let function: SorobanAuthorizedFunctionXDR = try SorobanAuthorizedFunctionXDR.fromTxRep(map, prefix: "\(prefix).function")
+    let subInvocationsLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).subInvocations.len") ?? "0")
+    var subInvocations = [SorobanAuthorizedInvocationXDR]()
+    for i in 0..<Int(subInvocationsLen) {
+      let item: SorobanAuthorizedInvocationXDR = try SorobanAuthorizedInvocationXDR.fromTxRep(map, prefix: "\(prefix).subInvocations[\(i)]")
+      subInvocations.append(item)
+    }
+    return SorobanAuthorizedInvocationXDR(function: function, subInvocations: subInvocations)
+  }
+}

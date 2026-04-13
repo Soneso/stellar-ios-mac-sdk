@@ -32,3 +32,26 @@ public struct CreateContractV2ArgsXDR: XDRCodable, Sendable {
     try container.encode(constructorArgs)
   }
 }
+
+extension CreateContractV2ArgsXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.contractIDPreimage.toTxRep(prefix: "\(prefix).contractIDPreimage", lines: &lines)
+    try self.executable.toTxRep(prefix: "\(prefix).executable", lines: &lines)
+    lines.append("\(prefix).constructorArgs.len: \(self.constructorArgs.count)")
+    for (i, item) in self.constructorArgs.enumerated() {
+      try item.toTxRep(prefix: "\(prefix).constructorArgs[\(i)]", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> CreateContractV2ArgsXDR {
+    let contractIDPreimage: ContractIDPreimageXDR = try ContractIDPreimageXDR.fromTxRep(map, prefix: "\(prefix).contractIDPreimage")
+    let executable: ContractExecutableXDR = try ContractExecutableXDR.fromTxRep(map, prefix: "\(prefix).executable")
+    let constructorArgsLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).constructorArgs.len") ?? "0")
+    var constructorArgs = [SCValXDR]()
+    for i in 0..<Int(constructorArgsLen) {
+      let item: SCValXDR = try SCValXDR.fromTxRep(map, prefix: "\(prefix).constructorArgs[\(i)]")
+      constructorArgs.append(item)
+    }
+    return CreateContractV2ArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable, constructorArgs: constructorArgs)
+  }
+}

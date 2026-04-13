@@ -24,3 +24,16 @@ public struct ChangeTrustOperationXDR: XDRCodable, Sendable {
     try container.encode(limit)
   }
 }
+
+extension ChangeTrustOperationXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.asset.toTxRep(prefix: "\(prefix).line", lines: &lines)
+    lines.append("\(prefix).limit: \(self.limit)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ChangeTrustOperationXDR {
+    let asset: ChangeTrustAssetXDR = try ChangeTrustAssetXDR.fromTxRep(map, prefix: "\(prefix).line")
+    let limit: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).limit") ?? "0")
+    return ChangeTrustOperationXDR(asset: asset, limit: limit)
+  }
+}

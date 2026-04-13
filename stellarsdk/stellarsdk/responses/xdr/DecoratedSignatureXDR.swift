@@ -24,3 +24,16 @@ public struct DecoratedSignatureXDR: XDRCodable, Sendable {
     try container.encode(signature)
   }
 }
+
+extension DecoratedSignatureXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).hint: \(TxRepHelper.bytesToHex(self.hint.wrapped))")
+    lines.append("\(prefix).signature: \(TxRepHelper.bytesToHex(self.signature))")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> DecoratedSignatureXDR {
+    let hint: SignatureHintXDR = try TxRepHelper.requireWrappedData4(map, "\(prefix).hint")
+    let signature: SignatureXDR = try TxRepHelper.requireHex(map, "\(prefix).signature")
+    return DecoratedSignatureXDR(hint: hint, signature: signature)
+  }
+}

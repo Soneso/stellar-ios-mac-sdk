@@ -48,3 +48,37 @@ public enum PreconditionsXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension PreconditionsXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .none:
+      lines.append("\(prefix).type: PRECOND_NONE")
+    case .time(let val):
+      lines.append("\(prefix).type: PRECOND_TIME")
+      try val.toTxRep(prefix: "\(prefix).timeBounds", lines: &lines)
+    case .v2(let val):
+      lines.append("\(prefix).type: PRECOND_V2")
+      try val.toTxRep(prefix: "\(prefix).v2", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> PreconditionsXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "PRECOND_NONE":
+      return .none
+    case "PRECOND_TIME":
+      let val = try TimeBoundsXDR.fromTxRep(map, prefix: "\(prefix).timeBounds")
+      return .time(val)
+    case "PRECOND_V2":
+      let val = try PreconditionsV2XDR.fromTxRep(map, prefix: "\(prefix).v2")
+      return .v2(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

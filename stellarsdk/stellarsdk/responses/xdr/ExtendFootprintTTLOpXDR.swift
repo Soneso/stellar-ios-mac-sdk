@@ -24,3 +24,16 @@ public struct ExtendFootprintTTLOpXDR: XDRCodable, Sendable {
     try container.encode(extendTo)
   }
 }
+
+extension ExtendFootprintTTLOpXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.ext.toTxRep(prefix: "\(prefix).ext", lines: &lines)
+    lines.append("\(prefix).extendTo: \(self.extendTo)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ExtendFootprintTTLOpXDR {
+    let ext: ExtensionPoint = try ExtensionPoint.fromTxRep(map, prefix: "\(prefix).ext")
+    let extendTo: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).extendTo") ?? "0"))
+    return ExtendFootprintTTLOpXDR(ext: ext, extendTo: extendTo)
+  }
+}

@@ -7,3 +7,36 @@ public enum RevokeSponsorshipType: Int32, XDRCodable, Equatable, Sendable {
   case revokeSponsorshipLedgerEntry = 0
   case revokeSponsorshipSignerEntry = 1
 }
+
+extension RevokeSponsorshipType {
+  public func enumName() -> String {
+    switch self {
+    case .revokeSponsorshipLedgerEntry: return "REVOKE_SPONSORSHIP_LEDGER_ENTRY"
+    case .revokeSponsorshipSignerEntry: return "REVOKE_SPONSORSHIP_SIGNER"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> RevokeSponsorshipType {
+    switch name {
+    case "REVOKE_SPONSORSHIP_LEDGER_ENTRY": return .revokeSponsorshipLedgerEntry
+    case "REVOKE_SPONSORSHIP_SIGNER": return .revokeSponsorshipSignerEntry
+    default:
+      let prefix = "RevokeSponsorshipType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = RevokeSponsorshipType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> RevokeSponsorshipType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

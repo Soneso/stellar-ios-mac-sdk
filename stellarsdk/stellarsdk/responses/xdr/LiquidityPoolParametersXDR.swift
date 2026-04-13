@@ -35,3 +35,27 @@ public enum LiquidityPoolParametersXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension LiquidityPoolParametersXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .constantProduct(let val):
+      lines.append("\(prefix).type: LIQUIDITY_POOL_CONSTANT_PRODUCT")
+      try val.toTxRep(prefix: "\(prefix).constantProduct", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LiquidityPoolParametersXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "LIQUIDITY_POOL_CONSTANT_PRODUCT":
+      let val = try LiquidityPoolConstantProductParametersXDR.fromTxRep(map, prefix: "\(prefix).constantProduct")
+      return .constantProduct(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

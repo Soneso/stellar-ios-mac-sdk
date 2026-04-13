@@ -20,3 +20,14 @@ public struct LedgerKeyClaimableBalanceXDR: XDRCodable, Sendable {
     try container.encode(balanceID)
   }
 }
+
+extension LedgerKeyClaimableBalanceXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.balanceID.toTxRep(prefix: "\(prefix).balanceID", lines: &lines)
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerKeyClaimableBalanceXDR {
+    let balanceID: ClaimableBalanceIDXDR = try ClaimableBalanceIDXDR.fromTxRep(map, prefix: "\(prefix).balanceID")
+    return LedgerKeyClaimableBalanceXDR(balanceID: balanceID)
+  }
+}

@@ -24,3 +24,16 @@ public struct ContractIDPreimageFromAddressXDR: XDRCodable, Sendable {
     try container.encode(salt)
   }
 }
+
+extension ContractIDPreimageFromAddressXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.address.toTxRep(prefix: "\(prefix).address", lines: &lines)
+    lines.append("\(prefix).salt: \(TxRepHelper.bytesToHex(self.salt.wrapped))")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ContractIDPreimageFromAddressXDR {
+    let address: SCAddressXDR = try SCAddressXDR.fromTxRep(map, prefix: "\(prefix).address")
+    let salt: Uint256XDR = try TxRepHelper.requireWrappedData32(map, "\(prefix).salt")
+    return ContractIDPreimageFromAddressXDR(address: address, salt: salt)
+  }
+}

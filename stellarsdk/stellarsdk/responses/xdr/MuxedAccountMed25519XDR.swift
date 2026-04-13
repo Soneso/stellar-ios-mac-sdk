@@ -85,3 +85,31 @@ public struct MuxedAccountMed25519XDRInverted: XDRCodable, Sendable {
         return MuxedAccountMed25519XDR(id: self.id, sourceAccountEd25519: self.sourceAccountEd25519)
     }
 }
+
+// MARK: - TxRep
+//
+// Hand-written TxRep for MuxedAccountMed25519XDR because this struct is
+// in SKIP_TYPES (not emitted by the generator) but is reachable from
+// SCAddressXDR.muxedAccount, which does get a generated union TxRep.
+//
+// The serialized representation follows the SEP-0011 M... strkey encoding
+// via the pre-existing accountId accessor (which wraps the struct in a
+// MuxedAccountXDR and invokes the M-strkey formatter). Parsing reverses the
+// transformation by decoding the M-strkey through the existing TxRepHelper
+// and extracting the inner med25519 arm.
+extension MuxedAccountMed25519XDR {
+    public func toTxRep(prefix: String, lines: inout [String]) throws {
+        lines.append("\(prefix): \(self.accountId)")
+    }
+
+    public static func fromTxRep(_ map: [String: String], prefix: String) throws -> MuxedAccountMed25519XDR {
+        guard let raw = TxRepHelper.getValue(map, prefix) else {
+            throw TxRepError.missingValue(key: prefix)
+        }
+        let parsed = try TxRepHelper.parseMuxedAccount(raw)
+        if case .med25519(let inner) = parsed {
+            return inner
+        }
+        throw TxRepError.invalidValue(key: prefix)
+    }
+}

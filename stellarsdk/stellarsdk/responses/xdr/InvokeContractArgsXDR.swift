@@ -32,3 +32,26 @@ public struct InvokeContractArgsXDR: XDRCodable, Sendable {
     try container.encode(args)
   }
 }
+
+extension InvokeContractArgsXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.contractAddress.toTxRep(prefix: "\(prefix).contractAddress", lines: &lines)
+    lines.append("\(prefix).functionName: \(TxRepHelper.escapeString(self.functionName))")
+    lines.append("\(prefix).args.len: \(self.args.count)")
+    for (i, item) in self.args.enumerated() {
+      try item.toTxRep(prefix: "\(prefix).args[\(i)]", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> InvokeContractArgsXDR {
+    let contractAddress: SCAddressXDR = try SCAddressXDR.fromTxRep(map, prefix: "\(prefix).contractAddress")
+    let functionName: String = try TxRepHelper.requireString(map, "\(prefix).functionName")
+    let argsLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).args.len") ?? "0")
+    var args = [SCValXDR]()
+    for i in 0..<Int(argsLen) {
+      let item: SCValXDR = try SCValXDR.fromTxRep(map, prefix: "\(prefix).args[\(i)]")
+      args.append(item)
+    }
+    return InvokeContractArgsXDR(contractAddress: contractAddress, functionName: functionName, args: args)
+  }
+}

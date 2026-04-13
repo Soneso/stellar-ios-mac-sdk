@@ -9,3 +9,40 @@ public enum SignerKeyType: Int32, XDRCodable, Equatable, Sendable {
   case hashX = 2
   case signedPayload = 3
 }
+
+extension SignerKeyType {
+  public func enumName() -> String {
+    switch self {
+    case .ed25519: return "SIGNER_KEY_TYPE_ED25519"
+    case .preAuthTx: return "SIGNER_KEY_TYPE_PRE_AUTH_TX"
+    case .hashX: return "SIGNER_KEY_TYPE_HASH_X"
+    case .signedPayload: return "SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> SignerKeyType {
+    switch name {
+    case "SIGNER_KEY_TYPE_ED25519": return .ed25519
+    case "SIGNER_KEY_TYPE_PRE_AUTH_TX": return .preAuthTx
+    case "SIGNER_KEY_TYPE_HASH_X": return .hashX
+    case "SIGNER_KEY_TYPE_ED25519_SIGNED_PAYLOAD": return .signedPayload
+    default:
+      let prefix = "SignerKeyType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = SignerKeyType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SignerKeyType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

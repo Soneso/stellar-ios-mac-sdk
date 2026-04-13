@@ -63,3 +63,51 @@ public enum SCAddressXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SCAddressXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .account(let val):
+      lines.append("\(prefix).type: SC_ADDRESS_TYPE_ACCOUNT")
+      lines.append("\(prefix).accountId: \(try TxRepHelper.formatAccountId(val))")
+    case .contract(let val):
+      lines.append("\(prefix).type: SC_ADDRESS_TYPE_CONTRACT")
+      lines.append("\(prefix).contractId: \(TxRepHelper.bytesToHex(val.wrapped))")
+    case .muxedAccount(let val):
+      lines.append("\(prefix).type: SC_ADDRESS_TYPE_MUXED_ACCOUNT")
+      try val.toTxRep(prefix: "\(prefix).muxedAccount", lines: &lines)
+    case .claimableBalanceId(let val):
+      lines.append("\(prefix).type: SC_ADDRESS_TYPE_CLAIMABLE_BALANCE")
+      try val.toTxRep(prefix: "\(prefix).claimableBalanceId", lines: &lines)
+    case .liquidityPoolId(let val):
+      lines.append("\(prefix).type: SC_ADDRESS_TYPE_LIQUIDITY_POOL")
+      lines.append("\(prefix).liquidityPoolId: \(TxRepHelper.bytesToHex(val.wrapped))")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SCAddressXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "SC_ADDRESS_TYPE_ACCOUNT":
+      let val = try TxRepHelper.requireAccountId(map, "\(prefix).accountId")
+      return .account(val)
+    case "SC_ADDRESS_TYPE_CONTRACT":
+      let val = try TxRepHelper.requireWrappedData32(map, "\(prefix).contractId")
+      return .contract(val)
+    case "SC_ADDRESS_TYPE_MUXED_ACCOUNT":
+      let val = try MuxedAccountMed25519XDR.fromTxRep(map, prefix: "\(prefix).muxedAccount")
+      return .muxedAccount(val)
+    case "SC_ADDRESS_TYPE_CLAIMABLE_BALANCE":
+      let val = try ClaimableBalanceIDXDR.fromTxRep(map, prefix: "\(prefix).claimableBalanceId")
+      return .claimableBalanceId(val)
+    case "SC_ADDRESS_TYPE_LIQUIDITY_POOL":
+      let val: WrappedData32 = try TxRepHelper.requireLiquidityPoolId(map, "\(prefix).liquidityPoolId")
+      return .liquidityPoolId(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

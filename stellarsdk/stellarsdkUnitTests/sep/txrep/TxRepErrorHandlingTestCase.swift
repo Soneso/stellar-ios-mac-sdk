@@ -137,6 +137,9 @@ class TxRepErrorHandlingTestCase: XCTestCase {
     }
 
     func testFromTxRepMissingSignaturesLen() throws {
+        // Absent signatures.len is valid — unsigned transactions (for inspection or
+        // multi-sig preparation) may omit the signature block entirely.
+        // Flutter and PHP both accept this and return an empty signature array.
         let txRep = """
         type: ENVELOPE_TYPE_TX
         tx.sourceAccount: GAVRMS4QIOCC4QMOSKILOOOHCSO4FEKOXZPNLKFFN6W7SD2KUB7NBPLN
@@ -151,13 +154,23 @@ class TxRepErrorHandlingTestCase: XCTestCase {
         tx.ext.v: 0
         """
 
-        XCTAssertThrowsError(try TxRep.fromTxRep(txRep: txRep)) { error in
-            if case TxRepError.missingValue(let key) = error {
-                XCTAssertTrue(key.contains("signatures.len"))
-            } else {
-                XCTFail("Expected missingValue error for signatures.len")
-            }
+        let base64 = try TxRep.fromTxRep(txRep: txRep)
+        XCTAssertFalse(base64.isEmpty, "Expected non-empty base64 for unsigned envelope")
+
+        // Decode and verify signatures array is empty.
+        let envelope = try TransactionEnvelopeXDR(fromBase64: base64)
+        switch envelope {
+        case .v1(let v1env):
+            XCTAssertEqual(v1env.signatures.count, 0, "Unsigned envelope must have 0 signatures")
+        default:
+            XCTFail("Expected V1 envelope type")
         }
+
+        // Roundtrip: toTxRep then fromTxRep must produce identical XDR.
+        let txRep2 = try TxRep.toTxRep(transactionEnvelope: base64)
+        XCTAssertTrue(txRep2.contains("signatures.len: 0"), "toTxRep must emit signatures.len: 0")
+        let base64Again = try TxRep.fromTxRep(txRep: txRep2)
+        XCTAssertEqual(base64, base64Again, "Unsigned envelope must roundtrip to identical XDR")
     }
 
     func testFromTxRepInvalidSignaturesLen() throws {
@@ -886,6 +899,8 @@ class TxRepErrorHandlingTestCase: XCTestCase {
     // MARK: - Empty Transaction Tests
 
     func testTxRepWithNoOperations() throws {
+        // XDR spec allows 0 operations; TxRep must accept them for interop with
+        // Flutter/PHP and for pre-submission inspection of unsigned transactions.
         let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
 
         let txRep = """
@@ -900,15 +915,22 @@ class TxRepErrorHandlingTestCase: XCTestCase {
         signatures.len: 0
         """
 
-        // The SDK enforces that transactions must have at least one operation.
-        // This test verifies that fromTxRep correctly rejects TxRep with 0 operations.
-        XCTAssertThrowsError(try TxRep.fromTxRep(txRep: txRep)) { error in
-            guard case StellarSDKError.invalidArgument(let message) = error else {
-                XCTFail("Expected invalidArgument error")
-                return
-            }
-            XCTAssertTrue(message.contains("At least one operation required"))
+        let base64 = try TxRep.fromTxRep(txRep: txRep)
+        XCTAssertFalse(base64.isEmpty, "Expected non-empty base64 for 0-operation envelope")
+
+        // Decode and verify the envelope has exactly 0 operations.
+        let envelope = try TransactionEnvelopeXDR(fromBase64: base64)
+        switch envelope {
+        case .v1(let v1env):
+            XCTAssertEqual(v1env.tx.operations.count, 0, "Envelope must have 0 operations")
+        default:
+            XCTFail("Expected V1 envelope type")
         }
+
+        // Roundtrip: re-serialise and parse again, confirming idempotence.
+        let txRep2 = try TxRep.toTxRep(transactionEnvelope: base64)
+        let base64Again = try TxRep.fromTxRep(txRep: txRep2)
+        XCTAssertEqual(base64, base64Again, "Zero-operation envelope must roundtrip to identical XDR")
     }
 
     func testTxRepWithNoSignatures() throws {

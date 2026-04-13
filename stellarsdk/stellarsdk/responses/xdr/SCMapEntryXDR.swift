@@ -24,3 +24,16 @@ public struct SCMapEntryXDR: XDRCodable, Sendable {
     try container.encode(val)
   }
 }
+
+extension SCMapEntryXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.key.toTxRep(prefix: "\(prefix).key", lines: &lines)
+    try self.val.toTxRep(prefix: "\(prefix).val", lines: &lines)
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SCMapEntryXDR {
+    let key: SCValXDR = try SCValXDR.fromTxRep(map, prefix: "\(prefix).key")
+    let val: SCValXDR = try SCValXDR.fromTxRep(map, prefix: "\(prefix).val")
+    return SCMapEntryXDR(key: key, val: val)
+  }
+}

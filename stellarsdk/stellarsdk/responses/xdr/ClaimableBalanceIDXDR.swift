@@ -35,3 +35,27 @@ public enum ClaimableBalanceIDXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ClaimableBalanceIDXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .claimableBalanceIDTypeV0(let val):
+      lines.append("\(prefix).type: CLAIMABLE_BALANCE_ID_TYPE_V0")
+      lines.append("\(prefix).v0: \(TxRepHelper.bytesToHex(val.wrapped))")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ClaimableBalanceIDXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "CLAIMABLE_BALANCE_ID_TYPE_V0":
+      let val = try TxRepHelper.requireWrappedData32(map, "\(prefix).v0")
+      return .claimableBalanceIDTypeV0(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

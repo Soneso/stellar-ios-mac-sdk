@@ -24,3 +24,16 @@ public struct Ed25519SignedPayload: XDRCodable, Sendable {
     try container.encode(payload)
   }
 }
+
+extension Ed25519SignedPayload {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).ed25519: \(TxRepHelper.bytesToHex(self.ed25519.wrapped))")
+    lines.append("\(prefix).payload: \(TxRepHelper.bytesToHex(self.payload))")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> Ed25519SignedPayload {
+    let ed25519: Uint256XDR = try TxRepHelper.requireWrappedData32(map, "\(prefix).ed25519")
+    let payload: Data = try TxRepHelper.requireHex(map, "\(prefix).payload")
+    return Ed25519SignedPayload(ed25519: ed25519, payload: payload)
+  }
+}

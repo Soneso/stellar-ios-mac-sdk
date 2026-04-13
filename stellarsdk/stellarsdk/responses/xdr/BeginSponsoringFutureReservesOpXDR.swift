@@ -20,3 +20,14 @@ public struct BeginSponsoringFutureReservesOpXDR: XDRCodable, Sendable {
     try container.encode(sponsoredId)
   }
 }
+
+extension BeginSponsoringFutureReservesOpXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).sponsoredID: \(try TxRepHelper.formatAccountId(self.sponsoredId))")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> BeginSponsoringFutureReservesOpXDR {
+    let sponsoredId: PublicKey = try TxRepHelper.requireAccountId(map, "\(prefix).sponsoredID")
+    return BeginSponsoringFutureReservesOpXDR(sponsoredId: sponsoredId)
+  }
+}

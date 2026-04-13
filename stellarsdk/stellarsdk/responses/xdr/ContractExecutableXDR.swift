@@ -41,3 +41,31 @@ public enum ContractExecutableXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ContractExecutableXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .wasm(let val):
+      lines.append("\(prefix).type: CONTRACT_EXECUTABLE_WASM")
+      lines.append("\(prefix).wasm_hash: \(TxRepHelper.bytesToHex(val.wrapped))")
+    case .token:
+      lines.append("\(prefix).type: CONTRACT_EXECUTABLE_STELLAR_ASSET")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ContractExecutableXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "CONTRACT_EXECUTABLE_WASM":
+      let val = try TxRepHelper.requireWrappedData32(map, "\(prefix).wasm_hash")
+      return .wasm(val)
+    case "CONTRACT_EXECUTABLE_STELLAR_ASSET":
+      return .token
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}
