@@ -20,3 +20,14 @@ public struct LedgerKeyConfigSettingXDR: XDRCodable, Sendable {
     try container.encode(configSettingID)
   }
 }
+
+extension LedgerKeyConfigSettingXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).configSettingID: \(self.configSettingID)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerKeyConfigSettingXDR {
+    let configSettingID: Int32 = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).configSettingID") ?? "0")
+    return LedgerKeyConfigSettingXDR(configSettingID: configSettingID)
+  }
+}

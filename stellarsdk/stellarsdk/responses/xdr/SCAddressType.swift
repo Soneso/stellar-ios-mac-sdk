@@ -10,3 +10,42 @@ public enum SCAddressType: Int32, XDRCodable, Equatable, Sendable {
   case claimableBalance = 3
   case liquidityPool = 4
 }
+
+extension SCAddressType {
+  public func enumName() -> String {
+    switch self {
+    case .account: return "SC_ADDRESS_TYPE_ACCOUNT"
+    case .contract: return "SC_ADDRESS_TYPE_CONTRACT"
+    case .muxedAccount: return "SC_ADDRESS_TYPE_MUXED_ACCOUNT"
+    case .claimableBalance: return "SC_ADDRESS_TYPE_CLAIMABLE_BALANCE"
+    case .liquidityPool: return "SC_ADDRESS_TYPE_LIQUIDITY_POOL"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> SCAddressType {
+    switch name {
+    case "SC_ADDRESS_TYPE_ACCOUNT": return .account
+    case "SC_ADDRESS_TYPE_CONTRACT": return .contract
+    case "SC_ADDRESS_TYPE_MUXED_ACCOUNT": return .muxedAccount
+    case "SC_ADDRESS_TYPE_CLAIMABLE_BALANCE": return .claimableBalance
+    case "SC_ADDRESS_TYPE_LIQUIDITY_POOL": return .liquidityPool
+    default:
+      let prefix = "SCAddressType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = SCAddressType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SCAddressType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

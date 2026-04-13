@@ -6,3 +6,34 @@ import Foundation
 public enum PublicKeyTypeXDR: Int32, XDRCodable, Equatable, Sendable {
   case publicKeyTypeEd25519 = 0
 }
+
+extension PublicKeyTypeXDR {
+  public func enumName() -> String {
+    switch self {
+    case .publicKeyTypeEd25519: return "PUBLIC_KEY_TYPE_ED25519"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> PublicKeyTypeXDR {
+    switch name {
+    case "PUBLIC_KEY_TYPE_ED25519": return .publicKeyTypeEd25519
+    default:
+      let prefix = "PublicKeyTypeXDR#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = PublicKeyTypeXDR(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> PublicKeyTypeXDR {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

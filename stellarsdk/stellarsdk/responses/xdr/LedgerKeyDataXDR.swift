@@ -24,3 +24,16 @@ public struct LedgerKeyDataXDR: XDRCodable, Sendable {
     try container.encode(dataName)
   }
 }
+
+extension LedgerKeyDataXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).accountID: \(try TxRepHelper.formatAccountId(self.accountID))")
+    lines.append("\(prefix).dataName: \(TxRepHelper.escapeString(self.dataName))")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerKeyDataXDR {
+    let accountID: PublicKey = try TxRepHelper.requireAccountId(map, "\(prefix).accountID")
+    let dataName: String = try TxRepHelper.requireString(map, "\(prefix).dataName")
+    return LedgerKeyDataXDR(accountID: accountID, dataName: dataName)
+  }
+}

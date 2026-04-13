@@ -24,3 +24,16 @@ public struct TimeBoundsXDR: XDRCodable, Sendable {
     try container.encode(maxTime)
   }
 }
+
+extension TimeBoundsXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).minTime: \(self.minTime)")
+    lines.append("\(prefix).maxTime: \(self.maxTime)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> TimeBoundsXDR {
+    let minTime: UInt64 = try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).minTime") ?? "0")
+    let maxTime: UInt64 = try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).maxTime") ?? "0")
+    return TimeBoundsXDR(minTime: minTime, maxTime: maxTime)
+  }
+}

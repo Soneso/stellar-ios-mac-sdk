@@ -23,3 +23,32 @@ public struct LedgerFootprintXDR: XDRCodable, Sendable {
     try container.encode(readWrite)
   }
 }
+
+extension LedgerFootprintXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).readOnly.len: \(self.readOnly.count)")
+    for (i, item) in self.readOnly.enumerated() {
+      try item.toTxRep(prefix: "\(prefix).readOnly[\(i)]", lines: &lines)
+    }
+    lines.append("\(prefix).readWrite.len: \(self.readWrite.count)")
+    for (i, item) in self.readWrite.enumerated() {
+      try item.toTxRep(prefix: "\(prefix).readWrite[\(i)]", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerFootprintXDR {
+    let readOnlyLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).readOnly.len") ?? "0")
+    var readOnly = [LedgerKeyXDR]()
+    for i in 0..<Int(readOnlyLen) {
+      let item: LedgerKeyXDR = try LedgerKeyXDR.fromTxRep(map, prefix: "\(prefix).readOnly[\(i)]")
+      readOnly.append(item)
+    }
+    let readWriteLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).readWrite.len") ?? "0")
+    var readWrite = [LedgerKeyXDR]()
+    for i in 0..<Int(readWriteLen) {
+      let item: LedgerKeyXDR = try LedgerKeyXDR.fromTxRep(map, prefix: "\(prefix).readWrite[\(i)]")
+      readWrite.append(item)
+    }
+    return LedgerFootprintXDR(readOnly: readOnly, readWrite: readWrite)
+  }
+}

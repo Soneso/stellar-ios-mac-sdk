@@ -37,3 +37,20 @@ public struct SorobanAddressCredentialsXDR: XDRCodable, Sendable {
     try container.encode(signature)
   }
 }
+
+extension SorobanAddressCredentialsXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.address.toTxRep(prefix: "\(prefix).address", lines: &lines)
+    lines.append("\(prefix).nonce: \(self.nonce)")
+    lines.append("\(prefix).signatureExpirationLedger: \(self.signatureExpirationLedger)")
+    try self.signature.toTxRep(prefix: "\(prefix).signature", lines: &lines)
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanAddressCredentialsXDR {
+    let address: SCAddressXDR = try SCAddressXDR.fromTxRep(map, prefix: "\(prefix).address")
+    let nonce: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).nonce") ?? "0")
+    let signatureExpirationLedger: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).signatureExpirationLedger") ?? "0"))
+    let signature: SCValXDR = try SCValXDR.fromTxRep(map, prefix: "\(prefix).signature")
+    return SorobanAddressCredentialsXDR(address: address, nonce: nonce, signatureExpirationLedger: signatureExpirationLedger, signature: signature)
+  }
+}

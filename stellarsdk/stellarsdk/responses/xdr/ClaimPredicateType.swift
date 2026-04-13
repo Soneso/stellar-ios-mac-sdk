@@ -11,3 +11,44 @@ public enum ClaimPredicateType: Int32, XDRCodable, Equatable, Sendable {
   case claimPredicateBeforeAbsTime = 4
   case claimPredicateBeforeRelTime = 5
 }
+
+extension ClaimPredicateType {
+  public func enumName() -> String {
+    switch self {
+    case .claimPredicateUnconditional: return "CLAIM_PREDICATE_UNCONDITIONAL"
+    case .claimPredicateAnd: return "CLAIM_PREDICATE_AND"
+    case .claimPredicateOr: return "CLAIM_PREDICATE_OR"
+    case .claimPredicateNot: return "CLAIM_PREDICATE_NOT"
+    case .claimPredicateBeforeAbsTime: return "CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME"
+    case .claimPredicateBeforeRelTime: return "CLAIM_PREDICATE_BEFORE_RELATIVE_TIME"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> ClaimPredicateType {
+    switch name {
+    case "CLAIM_PREDICATE_UNCONDITIONAL": return .claimPredicateUnconditional
+    case "CLAIM_PREDICATE_AND": return .claimPredicateAnd
+    case "CLAIM_PREDICATE_OR": return .claimPredicateOr
+    case "CLAIM_PREDICATE_NOT": return .claimPredicateNot
+    case "CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME": return .claimPredicateBeforeAbsTime
+    case "CLAIM_PREDICATE_BEFORE_RELATIVE_TIME": return .claimPredicateBeforeRelTime
+    default:
+      let prefix = "ClaimPredicateType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = ClaimPredicateType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ClaimPredicateType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

@@ -47,3 +47,32 @@ public struct PathPaymentOperationXDR: XDRCodable, Sendable {
     try container.encode(path)
   }
 }
+
+extension PathPaymentOperationXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).sendAsset: \(try TxRepHelper.formatAsset(self.sendAsset))")
+    lines.append("\(prefix).sendMax: \(self.sendMax)")
+    lines.append("\(prefix).destination: \(try TxRepHelper.formatMuxedAccount(self.destination))")
+    lines.append("\(prefix).destAsset: \(try TxRepHelper.formatAsset(self.destinationAsset))")
+    lines.append("\(prefix).destAmount: \(self.destinationAmount)")
+    lines.append("\(prefix).path.len: \(self.path.count)")
+    for (i, item) in self.path.enumerated() {
+      lines.append("\(prefix).path[\(i)]: \(try TxRepHelper.formatAsset(item))")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> PathPaymentOperationXDR {
+    let sendAsset: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).sendAsset")
+    let sendMax: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).sendMax") ?? "0")
+    let destination: MuxedAccountXDR = try TxRepHelper.requireMuxedAccount(map, "\(prefix).destination")
+    let destinationAsset: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).destAsset")
+    let destinationAmount: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).destAmount") ?? "0")
+    let pathLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).path.len") ?? "0")
+    var path = [AssetXDR]()
+    for i in 0..<Int(pathLen) {
+      let item: AssetXDR = try TxRepHelper.parseAsset(TxRepHelper.getValue(map, "\(prefix).path[\(i)]") ?? "")
+      path.append(item)
+    }
+    return PathPaymentOperationXDR(sendAsset: sendAsset, sendMax: sendMax, destination: destination, destinationAsset: destinationAsset, destinationAmount: destinationAmount, path: path)
+  }
+}

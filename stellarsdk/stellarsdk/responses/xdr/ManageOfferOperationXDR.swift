@@ -42,3 +42,22 @@ public struct ManageOfferOperationXDR: XDRCodable, Sendable {
     try container.encode(offerID)
   }
 }
+
+extension ManageOfferOperationXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).selling: \(try TxRepHelper.formatAsset(self.selling))")
+    lines.append("\(prefix).buying: \(try TxRepHelper.formatAsset(self.buying))")
+    lines.append("\(prefix).amount: \(self.amount)")
+    try self.price.toTxRep(prefix: "\(prefix).price", lines: &lines)
+    lines.append("\(prefix).offerID: \(self.offerID)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ManageOfferOperationXDR {
+    let selling: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).selling")
+    let buying: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).buying")
+    let amount: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).amount") ?? "0")
+    let price: PriceXDR = try PriceXDR.fromTxRep(map, prefix: "\(prefix).price")
+    let offerID: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).offerID") ?? "0")
+    return ManageOfferOperationXDR(selling: selling, buying: buying, amount: amount, price: price, offerID: offerID)
+  }
+}

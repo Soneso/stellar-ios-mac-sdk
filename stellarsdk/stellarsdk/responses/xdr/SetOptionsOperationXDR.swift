@@ -152,3 +152,120 @@ public struct SetOptionsOperationXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SetOptionsOperationXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    if let val = self.inflationDestination {
+      lines.append("\(prefix).inflationDest._present: true")
+      lines.append("\(prefix).inflationDest: \(try TxRepHelper.formatAccountId(val))")
+    } else {
+      lines.append("\(prefix).inflationDest._present: false")
+    }
+    if let val = self.clearFlags {
+      lines.append("\(prefix).clearFlags._present: true")
+      lines.append("\(prefix).clearFlags: \(val)")
+    } else {
+      lines.append("\(prefix).clearFlags._present: false")
+    }
+    if let val = self.setFlags {
+      lines.append("\(prefix).setFlags._present: true")
+      lines.append("\(prefix).setFlags: \(val)")
+    } else {
+      lines.append("\(prefix).setFlags._present: false")
+    }
+    if let val = self.masterWeight {
+      lines.append("\(prefix).masterWeight._present: true")
+      lines.append("\(prefix).masterWeight: \(val)")
+    } else {
+      lines.append("\(prefix).masterWeight._present: false")
+    }
+    if let val = self.lowThreshold {
+      lines.append("\(prefix).lowThreshold._present: true")
+      lines.append("\(prefix).lowThreshold: \(val)")
+    } else {
+      lines.append("\(prefix).lowThreshold._present: false")
+    }
+    if let val = self.medThreshold {
+      lines.append("\(prefix).medThreshold._present: true")
+      lines.append("\(prefix).medThreshold: \(val)")
+    } else {
+      lines.append("\(prefix).medThreshold._present: false")
+    }
+    if let val = self.highThreshold {
+      lines.append("\(prefix).highThreshold._present: true")
+      lines.append("\(prefix).highThreshold: \(val)")
+    } else {
+      lines.append("\(prefix).highThreshold._present: false")
+    }
+    if let val = self.homeDomain {
+      lines.append("\(prefix).homeDomain._present: true")
+      lines.append("\(prefix).homeDomain: \(TxRepHelper.escapeString(val))")
+    } else {
+      lines.append("\(prefix).homeDomain._present: false")
+    }
+    if let val = self.signer {
+      lines.append("\(prefix).signer._present: true")
+      try val.toTxRep(prefix: "\(prefix).signer", lines: &lines)
+    } else {
+      lines.append("\(prefix).signer._present: false")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SetOptionsOperationXDR {
+    let inflationDestination: PublicKey?
+    if TxRepHelper.getValue(map, "\(prefix).inflationDest._present") == "true" {
+      inflationDestination = try TxRepHelper.parseAccountId(TxRepHelper.getValue(map, "\(prefix).inflationDest") ?? "")
+    } else {
+      inflationDestination = nil
+    }
+    let clearFlags: UInt32?
+    if TxRepHelper.getValue(map, "\(prefix).clearFlags._present") == "true" {
+      clearFlags = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).clearFlags") ?? "0"))
+    } else {
+      clearFlags = nil
+    }
+    let setFlags: UInt32?
+    if TxRepHelper.getValue(map, "\(prefix).setFlags._present") == "true" {
+      setFlags = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).setFlags") ?? "0"))
+    } else {
+      setFlags = nil
+    }
+    let masterWeight: UInt32?
+    if TxRepHelper.getValue(map, "\(prefix).masterWeight._present") == "true" {
+      masterWeight = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).masterWeight") ?? "0"))
+    } else {
+      masterWeight = nil
+    }
+    let lowThreshold: UInt32?
+    if TxRepHelper.getValue(map, "\(prefix).lowThreshold._present") == "true" {
+      lowThreshold = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).lowThreshold") ?? "0"))
+    } else {
+      lowThreshold = nil
+    }
+    let medThreshold: UInt32?
+    if TxRepHelper.getValue(map, "\(prefix).medThreshold._present") == "true" {
+      medThreshold = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).medThreshold") ?? "0"))
+    } else {
+      medThreshold = nil
+    }
+    let highThreshold: UInt32?
+    if TxRepHelper.getValue(map, "\(prefix).highThreshold._present") == "true" {
+      highThreshold = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).highThreshold") ?? "0"))
+    } else {
+      highThreshold = nil
+    }
+    let homeDomain: String?
+    if TxRepHelper.getValue(map, "\(prefix).homeDomain._present") == "true" {
+      homeDomain = try TxRepHelper.unescapeString(TxRepHelper.getValue(map, "\(prefix).homeDomain") ?? "")
+    } else {
+      homeDomain = nil
+    }
+    let signer: SignerXDR?
+    if TxRepHelper.getValue(map, "\(prefix).signer._present") == "true" {
+      signer = try SignerXDR.fromTxRep(map, prefix: "\(prefix).signer")
+    } else {
+      signer = nil
+    }
+    return SetOptionsOperationXDR(inflationDestination: inflationDestination, clearFlags: clearFlags, setFlags: setFlags, masterWeight: masterWeight, lowThreshold: lowThreshold, medThreshold: medThreshold, highThreshold: highThreshold, homeDomain: homeDomain, signer: signer)
+  }
+}

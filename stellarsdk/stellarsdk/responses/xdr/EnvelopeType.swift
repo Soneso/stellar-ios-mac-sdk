@@ -15,3 +15,52 @@ public enum EnvelopeType: Int32, XDRCodable, Equatable, Sendable {
   case contractId = 8
   case sorobanAuthorization = 9
 }
+
+extension EnvelopeType {
+  public func enumName() -> String {
+    switch self {
+    case .txV0: return "ENVELOPE_TYPE_TX_V0"
+    case .scp: return "ENVELOPE_TYPE_SCP"
+    case .tx: return "ENVELOPE_TYPE_TX"
+    case .auth: return "ENVELOPE_TYPE_AUTH"
+    case .scpvalue: return "ENVELOPE_TYPE_SCPVALUE"
+    case .txFeeBump: return "ENVELOPE_TYPE_TX_FEE_BUMP"
+    case .opId: return "ENVELOPE_TYPE_OP_ID"
+    case .poolRevokeOpId: return "ENVELOPE_TYPE_POOL_REVOKE_OP_ID"
+    case .contractId: return "ENVELOPE_TYPE_CONTRACT_ID"
+    case .sorobanAuthorization: return "ENVELOPE_TYPE_SOROBAN_AUTHORIZATION"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> EnvelopeType {
+    switch name {
+    case "ENVELOPE_TYPE_TX_V0": return .txV0
+    case "ENVELOPE_TYPE_SCP": return .scp
+    case "ENVELOPE_TYPE_TX": return .tx
+    case "ENVELOPE_TYPE_AUTH": return .auth
+    case "ENVELOPE_TYPE_SCPVALUE": return .scpvalue
+    case "ENVELOPE_TYPE_TX_FEE_BUMP": return .txFeeBump
+    case "ENVELOPE_TYPE_OP_ID": return .opId
+    case "ENVELOPE_TYPE_POOL_REVOKE_OP_ID": return .poolRevokeOpId
+    case "ENVELOPE_TYPE_CONTRACT_ID": return .contractId
+    case "ENVELOPE_TYPE_SOROBAN_AUTHORIZATION": return .sorobanAuthorization
+    default:
+      let prefix = "EnvelopeType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = EnvelopeType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> EnvelopeType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

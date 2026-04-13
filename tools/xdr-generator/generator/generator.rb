@@ -14,6 +14,7 @@ require_relative 'name_overrides'
 require_relative 'member_overrides'
 require_relative 'field_overrides'
 require_relative 'type_overrides'
+require_relative 'txrep_types'
 
 AST = Xdrgen::AST
 
@@ -145,6 +146,11 @@ class Generator < Xdrgen::Generators::Base
       render_struct_encode(out, struct, struct_name)
     end
     out.puts "}"
+
+    if TxRepTypes.should_generate_txrep?(self, struct_name)
+      render_struct_txrep_methods(out, struct, struct_name)
+    end
+
     out.close
   end
 
@@ -371,6 +377,12 @@ class Generator < Xdrgen::Generators::Base
     normalized_names = raw_names.map { |n| n.underscore.upcase }
     prefix = detect_common_prefix(normalized_names)
 
+    # Collected (raw_xdr_name, swift_case_name, rawValue) tuples — reused below
+    # by render_enum_txrep_methods so the TxRep switch can emit the original
+    # XDR SCREAMING_SNAKE constants in enumName() while referencing the
+    # post-override Swift case names in the switch patterns.
+    txrep_members = []
+
     out.puts "public enum #{enum_name}: Int32, XDRCodable, Equatable, Sendable {"
     out.indent do
       enum_defn.members.each_with_index do |m, idx|
@@ -389,10 +401,548 @@ class Generator < Xdrgen::Generators::Base
 
         safe_case = swift_safe_name(case_name)
         out.puts "case #{safe_case} = #{m.value}"
+        txrep_members << { raw: raw_member_name, swift_case: safe_case, value: m.value }
       end
     end
     out.puts "}"
+
+    if TxRepTypes.should_generate_txrep?(self, enum_name)
+      render_enum_txrep_methods(out, enum_name, txrep_members)
+    end
+
     out.close
+  end
+
+  # ---------------------------------------------------------------------------
+  # TxRep: Enum toTxRep / fromTxRep / enumName / fromTxRepName
+  # ---------------------------------------------------------------------------
+  #
+  # Emits four methods on an existing Swift enum declaration via an extension.
+  # The generated methods participate in the SEP-0011 TxRep serialization
+  # pipeline:
+  #
+  #   enumName()        -> original XDR SCREAMING_SNAKE constant name string
+  #   fromTxRepName()   -> enum value parsed from that string (throws)
+  #   toTxRep()         -> appends a "prefix: NAME" line to the output buffer
+  #   fromTxRep()       -> looks up the prefix in a decoded TxRep map (throws)
+  #
+  # Unknown rawValues serialize as "EnumType#<rawValue>" (handled via a default
+  # branch in enumName()) and parse back symmetrically in fromTxRepName().
+  # Because all known cases are listed explicitly in the switch below, Swift's
+  # exhaustiveness check is satisfied without a catch-all on self; the
+  # default is therefore only added where the rawValue is unrecognizable,
+  # which for a closed Int32-backed enum cannot happen at the Swift level.
+  # The format is still honored by fromTxRepName() so that TxRep output from
+  # other implementations remains round-trippable.
+  def render_enum_txrep_methods(out, enum_name, members)
+    out.break
+    out.puts "extension #{enum_name} {"
+    out.indent do
+      # -- enumName() --
+      out.puts "public func enumName() -> String {"
+      out.indent do
+        out.puts "switch self {"
+        members.each do |m|
+          out.puts "case .#{m[:swift_case]}: return \"#{m[:raw]}\""
+        end
+        out.puts "}"
+      end
+      out.puts "}"
+      out.break
+
+      # -- fromTxRepName(_:) --
+      out.puts "public static func fromTxRepName(_ name: String) throws -> #{enum_name} {"
+      out.indent do
+        out.puts "switch name {"
+        members.each do |m|
+          out.puts "case \"#{m[:raw]}\": return .#{m[:swift_case]}"
+        end
+        out.puts "default:"
+        out.indent do
+          out.puts "let prefix = \"#{enum_name}#\""
+          out.puts "if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = #{enum_name}(rawValue: v) {"
+          out.indent do
+            out.puts "return parsed"
+          end
+          out.puts "}"
+          out.puts "throw TxRepError.invalidValue(key: name)"
+        end
+        out.puts "}"
+      end
+      out.puts "}"
+      out.break
+
+      # -- toTxRep(prefix:lines:) --
+      #
+      # Marked `throws` (even though an enum can't actually fail) to match
+      # the struct/union toTxRep signature so call sites can delegate via
+      # `try` without special-casing enum arms.
+      out.puts "public func toTxRep(prefix: String, lines: inout [String]) throws {"
+      out.indent do
+        out.puts "lines.append(\"\\(prefix): \\(enumName())\")"
+      end
+      out.puts "}"
+      out.break
+
+      # -- fromTxRep(_:prefix:) --
+      out.puts "public static func fromTxRep(_ map: [String: String], prefix: String) throws -> #{enum_name} {"
+      out.indent do
+        out.puts "guard let raw = TxRepHelper.getValue(map, prefix) else {"
+        out.indent do
+          out.puts "throw TxRepError.missingValue(key: prefix)"
+        end
+        out.puts "}"
+        out.puts "return try fromTxRepName(raw)"
+      end
+      out.puts "}"
+    end
+    out.puts "}"
+  end
+
+  # ---------------------------------------------------------------------------
+  # TxRep: Struct toTxRep / fromTxRep
+  # ---------------------------------------------------------------------------
+  #
+  # Emits toTxRep(prefix:lines:) and fromTxRep(_:prefix:) on a generated struct
+  # via a Swift extension block appended after the struct's primary declaration.
+  # Each non-extension-point field is dispatched to the appropriate helper based
+  # on a classification produced by +txrep_field_kind+:
+  #
+  #   :primitive     - Int32/UInt32/Int64/UInt64/Bool (raw interpolation)
+  #   :string        - String (TxRepHelper.escapeString / .unescapeString)
+  #   :opaque        - Data / WrappedDataN (TxRepHelper.bytesToHex / .hexToBytes)
+  #   :wrapped_data  - WrappedDataN / typealias thereof (.wrapped accessor)
+  #   :compact       - Types in TXREP_COMPACT_TYPES (single-line formatter)
+  #   :named         - Nested XDR type (delegate to its own .toTxRep / .fromTxRep)
+  #   :array         - [T] (emit .len + indexed loop)
+  #
+  # The Swift property accessor (self.fieldName) always uses the SDK field name
+  # while the TxRep key string uses the raw XDR field name obtained via
+  # +txrep_field_name+. Extension-point fields (those simplified to a constant
+  # `reserved: Int32 = 0`) are skipped entirely -- they carry no payload.
+  def render_struct_txrep_methods(out, struct, struct_name)
+    entries = []
+    struct.members.each do |m|
+      field = resolve_field_name(struct_name, m.name)
+      next if is_extension_point_field?(struct_name, field)
+
+      type_str = resolve_field_type(struct_name, field, m)
+      xdr_name = txrep_field_name(struct_name, field)
+      kind = txrep_field_kind(m, type_str)
+      entries << {
+        field: field,
+        xdr_name: xdr_name,
+        type_str: type_str,
+        kind: kind,
+        member: m,
+        struct_name: struct_name,
+      }
+    end
+
+    out.break
+    out.puts "extension #{struct_name} {"
+    out.indent do
+      out.puts "public func toTxRep(prefix: String, lines: inout [String]) throws {"
+      out.indent do
+        if entries.empty?
+          out.puts "// No TxRep-serializable fields."
+          out.puts "_ = prefix"
+          out.puts "_ = lines"
+        end
+        entries.each do |e|
+          txrep_emit_struct_field(out, e)
+        end
+      end
+      out.puts "}"
+      out.break
+
+      out.puts "public static func fromTxRep(_ map: [String: String], prefix: String) throws -> #{struct_name} {"
+      out.indent do
+        if entries.empty?
+          out.puts "_ = map"
+          out.puts "_ = prefix"
+          out.puts "return #{struct_name}()"
+        else
+          entries.each do |e|
+            txrep_parse_struct_field(out, e)
+          end
+          # Build the call using the init parameter labels (which may differ
+          # from the field name because of INIT_PARAM_OVERRIDES) in the same
+          # order render_struct_init uses so we honor INIT_PARAM_ORDER.
+          init_fields = entries.map do |e|
+            {
+              field: e[:field],
+              param: resolve_init_param_name(struct_name, e[:field]),
+            }
+          end
+          if INIT_PARAM_ORDER.key?(struct_name)
+            order = INIT_PARAM_ORDER[struct_name]
+            init_fields.sort_by! { |f| order.index(f[:field]) || 999 }
+          end
+          args = init_fields.map { |f| "#{f[:param]}: #{f[:field]}" }.join(", ")
+          out.puts "return #{struct_name}(#{args})"
+        end
+      end
+      out.puts "}"
+    end
+    out.puts "}"
+  end
+
+  # Classify a struct member for TxRep dispatch. Returns a Hash with at least
+  # :style and additional keys that describe how to emit / parse the field.
+  #
+  # Styles:
+  #   :primitive     :name => "Int32" | "UInt32" | "Int64" | "UInt64" | "Bool"
+  #   :string
+  #   :opaque        :is_data => true  (variable opaque, Data)
+  #                  :wrapped_type => "WrappedData32" | nil
+  #   :compact       :format, :parse  (TxRepHelper call names)
+  #   :named         :name => Swift type name
+  #   :array         :element => <child kind hash>, :fixed => Bool, :size => int|string
+  #
+  # The top-level :is_optional flag covers both field-level optionality
+  # (XDR `T*`) and typedef-wrapped optionals.
+  def txrep_field_kind(member, type_str)
+    decl = member.declaration
+    is_optional = member.type.sub_type == :optional || typedef_is_optional?(decl.type)
+
+    # FIELD_TYPE_OVERRIDES may rewrite a typedef-backed field to a literal
+    # Swift array type (e.g. SCContractInstanceXDR.storage becomes
+    # [SCMapEntryXDR] even though the underlying AST decl is a typedef).
+    # Detect this by inspecting the override-aware type_str first.
+    overridden_inner = type_str.sub(/\?\z/, '')
+    if overridden_inner =~ /\A\[(.+)\]\z/
+      element_str = $1
+      if element_str.end_with?("?")
+        raise "TxRep: arrays of optional elements are not supported (found in field #{member.name})"
+      end
+      return {
+        style: :array,
+        element: classify_scalar(element_str),
+        fixed: false,
+        size: nil,
+        is_optional: is_optional,
+      }
+    end
+
+    # Arrays: element type string is the unwrapped Swift base.
+    if decl.is_a?(AST::Declarations::Array)
+      # [T] for normal arrays, [T?] for arrays of optional elements.
+      # type_str already has the array brackets; strip them to get the element.
+      element_str = type_str.sub(/\A\[(.*)\]\z/, '\1')
+      # Remove trailing ? for optional element case -- TxRep does not use the
+      # present marker for array elements; null elements are not supported
+      # anywhere in the transaction envelope TxRep surface. Fail loudly if
+      # encountered so the generator contract stays honest.
+      if element_str.end_with?("?")
+        raise "TxRep: arrays of optional elements are not supported (found in field #{member.name})"
+      end
+      return {
+        style: :array,
+        element: classify_scalar(element_str),
+        fixed: decl.fixed?,
+        size: decl.fixed? ? resolve_size(decl) : nil,
+        is_optional: is_optional,
+      }
+    end
+
+    # Fixed / variable opaque declared directly on the field (not via typedef).
+    if decl.is_a?(AST::Declarations::Opaque)
+      return {
+        style: :opaque,
+        is_data: !decl.fixed?,
+        wrapped_type: (decl.fixed? && [4, 12, 16, 32].include?(decl.size.to_i)) ? "WrappedData#{decl.size.to_i}" : nil,
+        is_optional: is_optional,
+      }
+    end
+
+    # Typedef that ultimately wraps an opaque declaration (e.g. DataValueXDR
+    # -> Data, AssetCode4XDR -> WrappedData4, HashXDR -> WrappedData32).
+    if decl.type.is_a?(AST::Typespecs::Simple)
+      resolved = decl.type.resolved_type
+      if resolved.is_a?(AST::Definitions::Typedef)
+        td_decl = resolved.declaration
+        if td_decl.is_a?(AST::Declarations::Opaque)
+          fixed = td_decl.fixed?
+          size = fixed ? td_decl.size.to_i : nil
+          wrapped_type = (fixed && [4, 12, 16, 32].include?(size)) ? "WrappedData#{size}" : nil
+          return {
+            style: :opaque,
+            is_data: !fixed,
+            wrapped_type: wrapped_type,
+            is_optional: is_optional,
+          }
+        end
+      end
+    end
+
+    # Scalar dispatch (primitives, compact types, named XDR types, String).
+    kind = classify_scalar(type_str.sub(/\?\z/, ''))
+    kind[:is_optional] = is_optional
+    kind
+  end
+
+  # Classify a bare Swift type name (no `?`, no `[...]`) for TxRep dispatch.
+  # Returns a Hash with :style plus type-specific metadata.
+  def classify_scalar(base)
+    # Strip any trailing ? just in case a caller forgot.
+    base = base.sub(/\?\z/, '')
+
+    if TXREP_COMPACT_TYPES.key?(base)
+      return {
+        style: :compact,
+        name: base,
+        format: TXREP_COMPACT_TYPES[base][:format],
+        parse: TXREP_COMPACT_TYPES[base][:parse],
+      }
+    end
+
+    case base
+    when "Int32", "UInt32", "Int64", "UInt64", "Bool"
+      return { style: :primitive, name: base }
+    when "String"
+      return { style: :string }
+    when "Data"
+      return { style: :opaque, is_data: true, wrapped_type: nil }
+    when /\AWrappedData(\d+)\z/
+      return { style: :opaque, is_data: false, wrapped_type: base }
+    else
+      return { style: :named, name: base }
+    end
+  end
+
+  # Direct access to TXREP_COMPACT_TYPES via the module constant. Needed
+  # because +classify_scalar+ is called from both the struct and (future)
+  # union TxRep renderers.
+  TXREP_COMPACT_TYPES = TxRepTypes::TXREP_COMPACT_TYPES
+  UNION_ARM_FIELD_OVERRIDES = TxRepTypes::UNION_ARM_FIELD_OVERRIDES
+
+  # Emit Swift code that appends one field's TxRep line(s) to `lines`.
+  def txrep_emit_struct_field(out, entry)
+    field = entry[:field]
+    xdr_name = entry[:xdr_name]
+    kind = entry[:kind]
+    accessor = "self.#{field}"
+
+    if kind[:is_optional]
+      out.puts "if let val = #{accessor} {"
+      out.indent do
+        out.puts "lines.append(\"\\(prefix).#{xdr_name}._present: true\")"
+        # Inside the optional block the field prefix is a plain string literal
+        # interpolating the outer prefix plus the xdr name.
+        txrep_emit_value(out, kind, "val", "\\(prefix).#{xdr_name}")
+      end
+      out.puts "} else {"
+      out.indent do
+        out.puts "lines.append(\"\\(prefix).#{xdr_name}._present: false\")"
+      end
+      out.puts "}"
+      return
+    end
+
+    txrep_emit_value(out, kind, accessor, "\\(prefix).#{xdr_name}")
+  end
+
+  # Emit Swift code for a value whose kind is `kind`, accessed via `accessor`,
+  # under the TxRep prefix fragment `prefix_frag` (a Swift string literal
+  # fragment suitable for embedding inside `"..."`, e.g. `\(prefix).foo`).
+  def txrep_emit_value(out, kind, accessor, prefix_frag)
+    case kind[:style]
+    when :primitive
+      out.puts "lines.append(\"#{prefix_frag}: \\(#{accessor})\")"
+    when :string
+      out.puts "lines.append(\"#{prefix_frag}: \\(TxRepHelper.escapeString(#{accessor}))\")"
+    when :opaque
+      if kind[:wrapped_type]
+        out.puts "lines.append(\"#{prefix_frag}: \\(TxRepHelper.bytesToHex(#{accessor}.wrapped))\")"
+      else
+        out.puts "lines.append(\"#{prefix_frag}: \\(TxRepHelper.bytesToHex(#{accessor}))\")"
+      end
+    when :compact
+      # Several format helpers (formatMuxedAccount, formatSignerKey, ...)
+      # throw on malformed input; mark all compact calls `try` uniformly so
+      # the struct toTxRep signature can be declared `throws`.
+      out.puts "lines.append(\"#{prefix_frag}: \\(try #{kind[:format]}(#{accessor}))\")"
+    when :named
+      out.puts "try #{accessor}.toTxRep(prefix: \"#{prefix_frag}\", lines: &lines)"
+    when :array
+      # Emit .len (only for variable-length arrays) then loop.
+      if !kind[:fixed]
+        out.puts "lines.append(\"#{prefix_frag}.len: \\(#{accessor}.count)\")"
+      end
+      out.puts "for (i, item) in #{accessor}.enumerated() {"
+      out.indent do
+        elem_prefix = "#{prefix_frag}[\\(i)]"
+        txrep_emit_value(out, kind[:element], "item", elem_prefix)
+      end
+      out.puts "}"
+    else
+      raise "unhandled txrep style: #{kind[:style].inspect}"
+    end
+  end
+
+  # Emit Swift code that parses one field from the map and declares a local
+  # variable named `field` holding the value. This keeps the parse site
+  # symmetric with txrep_emit_struct_field and lets +render_struct_txrep_methods+
+  # build the final init call by listing the locals in INIT_PARAM_ORDER.
+  def txrep_parse_struct_field(out, entry)
+    field = entry[:field]
+    xdr_name = entry[:xdr_name]
+    kind = entry[:kind]
+    type_str = entry[:type_str]
+
+    prefix_lit = "\"\\(prefix).#{xdr_name}\""
+
+    if kind[:is_optional]
+      inner_type = type_str.sub(/\?\z/, '')
+      out.puts "let #{field}: #{inner_type}?"
+      out.puts "if TxRepHelper.getValue(map, \"\\(prefix).#{xdr_name}._present\") == \"true\" {"
+      out.indent do
+        if kind[:style] == :array
+          # Expand the array parse inline so the result can be assigned to
+          # the optional local. Uses the same loop shape as the non-optional
+          # path but declares a tmp var then assigns.
+          tmp = "#{field}Tmp"
+          element_type = inner_type.sub(/\A\[(.*)\]\z/, '\1')
+          out.puts "let #{tmp}Len = try TxRepHelper.parseInt(TxRepHelper.getValue(map, \"\\(prefix).#{xdr_name}.len\") ?? \"0\")"
+          out.puts "var #{tmp} = [#{element_type}]()"
+          out.puts "for i in 0..<Int(#{tmp}Len) {"
+          out.indent do
+            elem_prefix = "\"\\(prefix).#{xdr_name}[\\(i)]\""
+            out.puts "let item: #{element_type} = #{txrep_parse_expr(kind[:element], elem_prefix)}"
+            out.puts "#{tmp}.append(item)"
+          end
+          out.puts "}"
+          out.puts "#{field} = #{tmp}"
+        else
+          out.puts "#{field} = #{txrep_parse_expr(kind, prefix_lit)}"
+        end
+      end
+      out.puts "} else {"
+      out.indent do
+        out.puts "#{field} = nil"
+      end
+      out.puts "}"
+      return
+    end
+
+    if kind[:style] == :array
+      txrep_parse_array_field(out, field, kind, xdr_name, type_str)
+      return
+    end
+
+    # Required non-optional scalar fields: use require* helpers for opaque,
+    # compact, and string styles so that a missing key throws missingValue and
+    # an invalid value throws invalidValue with the field key (not the raw value).
+    req = %i[opaque compact string].include?(kind[:style])
+
+    # Special case: liquidity pool ID fields accept both 64-char hex AND L-address
+    # StrKey input. Override the generated parse expression for these specific fields.
+    struct_name = entry[:struct_name]
+    if TxRepTypes::TXREP_LIQUIDITY_POOL_ID_FIELDS.include?([struct_name, field])
+      out.puts "let #{field}: #{type_str} = try TxRepHelper.requireLiquidityPoolId(map, \"\\(prefix).#{xdr_name}\")"
+      return
+    end
+
+    out.puts "let #{field}: #{type_str} = #{txrep_parse_expr(kind, prefix_lit, required: req)}"
+  end
+
+  # Emit Swift code that parses a (possibly nested) array field, declaring
+  # `field` as the result. Array element optionality is rejected upstream.
+  def txrep_parse_array_field(out, field, kind, xdr_name, type_str)
+    element = kind[:element]
+    # Element Swift type -- extract from type_str, which is "[T]".
+    element_type = type_str.sub(/\A\[(.*)\]\z/, '\1')
+
+    if kind[:fixed]
+      out.puts "var #{field} = [#{element_type}]()"
+      out.puts "for i in 0..<#{kind[:size]} {"
+    else
+      out.puts "let #{field}Len = try TxRepHelper.parseInt(TxRepHelper.getValue(map, \"\\(prefix).#{xdr_name}.len\") ?? \"0\")"
+      out.puts "var #{field} = [#{element_type}]()"
+      out.puts "for i in 0..<Int(#{field}Len) {"
+    end
+    out.indent do
+      elem_prefix = "\"\\(prefix).#{xdr_name}[\\(i)]\""
+      out.puts "let item: #{element_type} = #{txrep_parse_expr(element, elem_prefix)}"
+      out.puts "#{field}.append(item)"
+    end
+    out.puts "}"
+  end
+
+  # Map from compact-type parse method -> require method on TxRepHelper.
+  # When required: true, the generator emits a require* call that throws
+  # missingValue when the key is absent and invalidValue (with the field key,
+  # not the raw value) when the conversion fails.
+  COMPACT_PARSE_TO_REQUIRE = {
+    'TxRepHelper.parseAccountId'       => 'TxRepHelper.requireAccountId',
+    'TxRepHelper.parseAllowTrustAsset' => 'TxRepHelper.requireAllowTrustAsset',
+    'TxRepHelper.parseAsset'           => 'TxRepHelper.requireAsset',
+    'TxRepHelper.parseMuxedAccount'    => 'TxRepHelper.requireMuxedAccount',
+    'TxRepHelper.parseSignerKey'       => 'TxRepHelper.requireSignerKey',
+  }.freeze
+
+  # Return a Swift expression string that parses a single scalar (non-array)
+  # value of the given kind from the map at the given prefix expression.
+  #
+  # When required is true, opaque and compact types use the TxRepHelper.require*
+  # family of helpers that throw TxRepError.missingValue when the key is absent
+  # and TxRepError.invalidValue (keyed on the field name, not the raw value)
+  # when the conversion fails.  This matches the behaviour expected by the error-
+  # handling regression tests.  Primitive types always use the ?? default form
+  # because there is no way to distinguish "explicitly set to 0" from "absent".
+  def txrep_parse_expr(kind, prefix_expr, required: false)
+    case kind[:style]
+    when :primitive
+      case kind[:name]
+      when "Int32"
+        "try TxRepHelper.parseInt(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"0\")"
+      when "UInt32"
+        "UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"0\"))"
+      when "Int64"
+        "try TxRepHelper.parseInt64(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"0\")"
+      when "UInt64"
+        "try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"0\")"
+      when "Bool"
+        "(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"false\") == \"true\""
+      end
+    when :string
+      if required
+        "try TxRepHelper.requireString(map, #{prefix_expr})"
+      else
+        "try TxRepHelper.unescapeString(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"\")"
+      end
+    when :opaque
+      if required
+        if kind[:wrapped_type]
+          "try TxRepHelper.require#{kind[:wrapped_type]}(map, #{prefix_expr})"
+        else
+          "try TxRepHelper.requireHex(map, #{prefix_expr})"
+        end
+      else
+        if kind[:wrapped_type]
+          "#{kind[:wrapped_type]}(try TxRepHelper.hexToBytes(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"\"))"
+        else
+          "try TxRepHelper.hexToBytes(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"\")"
+        end
+      end
+    when :compact
+      if required
+        req_method = COMPACT_PARSE_TO_REQUIRE[kind[:parse]]
+        if req_method
+          "try #{req_method}(map, #{prefix_expr})"
+        else
+          # Fallback: unknown compact type — use old pattern.
+          "try #{kind[:parse]}(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"\")"
+        end
+      else
+        "try #{kind[:parse]}(TxRepHelper.getValue(map, #{prefix_expr}) ?? \"\")"
+      end
+    when :named
+      "try #{kind[:name]}.fromTxRep(map, prefix: #{prefix_expr})"
+    else
+      raise "unhandled txrep parse style: #{kind[:style].inspect}"
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -441,9 +991,488 @@ class Generator < Xdrgen::Generators::Base
       render_union_encode(out, case_entries)
     end
     out.puts "}"
+
+    # Phase 6: TxRep methods for TXREP_UNION_SKIP types are hand-written in
+    # stellarsdk/stellarsdk/txrep/extensions/. The generator emits nothing for
+    # those types so there is no duplicate-extension conflict.
+    if TxRepTypes.should_generate_txrep?(self, union_name)
+      unless TxRepTypes::TXREP_UNION_SKIP.include?(union_name)
+        render_union_txrep_methods(out, union_name, case_entries, disc_info)
+      end
+    end
+
     out.close
   end
 
+  # ---------------------------------------------------------------------------
+  # TxRep: Union toTxRep / fromTxRep
+  # ---------------------------------------------------------------------------
+  #
+  # Emits toTxRep(prefix:lines:) and fromTxRep(_:prefix:) on a generated
+  # union (Swift enum with associated values) via a trailing extension block.
+  #
+  # The discriminant line is written as "prefix.<field>: <RAW_NAME>" where
+  #   <field>    is the XDR discriminant field name (type, v, code, kind...)
+  #   <RAW_NAME> is the original XDR constant (SCREAMING_SNAKE) the other
+  #              SEP-0011 implementations use.
+  #
+  # Each arm then:
+  #   - void        emits nothing after the discriminant
+  #   - named       delegates to the inner type's toTxRep, using the XDR arm
+  #                 name as the key suffix (NOT the Swift case name, which may
+  #                 have been rewritten via MEMBER_OVERRIDES)
+  #   - scalar      emits a single compact line via txrep_emit_value
+  #   - array       emits .len + indexed loop via the shared helper
+  #   - optional    emits ._present + value
+  #
+  # Per-arm field overrides (UNION_ARM_FIELD_OVERRIDES, keyed by [union_xdr_name,
+  # arm_xdr_name]) suppress the delegating call and inline-emit the nested
+  # struct's fields so that TxRep keys differ from the canonical XDR field
+  # names. This is the only way to honor the historical hand-written TxRep
+  # surface (see ManageBuyOfferOp.amount -> buyAmount, etc.) without polluting
+  # the struct's own TxRep method.
+  def render_union_txrep_methods(out, union_name, case_entries, disc_info)
+    disc_field = disc_info[:field_name]
+    union_xdr_name = raw_xdr_name_for_union(union_name, disc_info)
+
+    out.break
+    out.puts "extension #{union_name} {"
+    out.indent do
+      # -- toTxRep(prefix:lines:) ---------------------------------------
+      out.puts "public func toTxRep(prefix: String, lines: inout [String]) throws {"
+      out.indent do
+        out.puts "switch self {"
+        case_entries.each do |entry|
+          render_union_txrep_to_case(out, entry, disc_field, union_xdr_name)
+        end
+        out.puts "}"
+      end
+      out.puts "}"
+      out.break
+
+      # -- fromTxRep(_:prefix:) -----------------------------------------
+      out.puts "public static func fromTxRep(_ map: [String: String], prefix: String) throws -> #{union_name} {"
+      out.indent do
+        out.puts "let discKey = \"\\(prefix).#{disc_field}\""
+        out.puts "guard let discName = TxRepHelper.getValue(map, discKey) else {"
+        out.indent do
+          out.puts "throw TxRepError.missingValue(key: discKey)"
+        end
+        out.puts "}"
+        out.puts "switch discName {"
+        case_entries.each do |entry|
+          render_union_txrep_from_case(out, entry, union_name, union_xdr_name)
+        end
+        out.puts "default:"
+        out.indent do
+          out.puts "throw TxRepError.invalidValue(key: discKey)"
+        end
+        out.puts "}"
+      end
+      out.puts "}"
+    end
+    out.puts "}"
+  end
+
+  # Best-effort: the XDR-side name of the union, used to look up entries in
+  # UNION_ARM_FIELD_OVERRIDES. For nested unions (OperationBody) this is the
+  # canonical parent-chain name. Since Phase 4 only has overrides on
+  # OperationBody, a simple name-stripping reversal is sufficient.
+  def raw_xdr_name_for_union(union_name, _disc_info)
+    # The Swift name always has "XDR" appended via NAME_OVERRIDES. Strip it.
+    union_name.sub(/XDR\z/, "")
+  end
+
+  # Emit one `case .name...:` block for toTxRep.
+  def render_union_txrep_to_case(out, entry, disc_field, union_xdr_name)
+    swift_case = swift_safe_name(entry[:case_name])
+    raw_disc = entry[:raw_disc_names].first
+
+    if entry[:decode_style] == :void
+      out.puts "case .#{swift_case}:"
+      out.indent do
+        out.puts "lines.append(\"\\(prefix).#{disc_field}: #{raw_disc}\")"
+      end
+      return
+    end
+
+    out.puts "case .#{swift_case}(let val):"
+    out.indent do
+      out.puts "lines.append(\"\\(prefix).#{disc_field}: #{raw_disc}\")"
+
+      xdr_arm = entry[:xdr_arm_name]
+      overrides = UNION_ARM_FIELD_OVERRIDES[[union_xdr_name, xdr_arm]]
+
+      if overrides && entry[:decode_style] == :simple
+        # Inline-emit the nested struct's fields, honoring the per-arm
+        # field-name override. Skip the pristine struct toTxRep call.
+        emit_union_arm_with_overrides(out, entry, xdr_arm, overrides)
+      elsif entry[:decode_style] == :optional
+        kind = union_arm_txrep_kind(entry)
+        out.puts "if let inner = val {"
+        out.indent do
+          out.puts "lines.append(\"\\(prefix).#{xdr_arm}._present: true\")"
+          txrep_emit_value(out, kind, "inner", "\\(prefix).#{xdr_arm}")
+        end
+        out.puts "} else {"
+        out.indent do
+          out.puts "lines.append(\"\\(prefix).#{xdr_arm}._present: false\")"
+        end
+        out.puts "}"
+      else
+        kind = union_arm_txrep_kind(entry)
+        txrep_emit_value(out, kind, "val", "\\(prefix).#{xdr_arm}")
+      end
+    end
+  end
+
+  # Emit one `case "CONST":` block for fromTxRep.
+  def render_union_txrep_from_case(out, entry, union_name, union_xdr_name)
+    swift_case = swift_safe_name(entry[:case_name])
+
+    entry[:raw_disc_names].each do |raw|
+      out.puts "case \"#{raw}\":"
+    end
+    if entry[:decode_style] == :void
+      out.indent do
+        out.puts "return .#{swift_case}"
+      end
+      return
+    end
+
+    out.indent do
+      xdr_arm = entry[:xdr_arm_name]
+      overrides = UNION_ARM_FIELD_OVERRIDES[[union_xdr_name, xdr_arm]]
+
+      if overrides && entry[:decode_style] == :simple
+        parse_union_arm_with_overrides(out, entry, xdr_arm, overrides, swift_case)
+      else
+        kind = union_arm_txrep_kind(entry)
+        prefix_expr = "\"\\(prefix).#{xdr_arm}\""
+
+        if entry[:decode_style] == :array
+          element_type = entry[:decode_type]
+          out.puts "let valLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, \"\\(prefix).#{xdr_arm}.len\") ?? \"0\")"
+          out.puts "var val = [#{element_type}]()"
+          out.puts "for i in 0..<Int(valLen) {"
+          out.indent do
+            elem_prefix = "\"\\(prefix).#{xdr_arm}[\\(i)]\""
+            out.puts "let item: #{element_type} = #{txrep_parse_expr(kind[:element], elem_prefix)}"
+            out.puts "val.append(item)"
+          end
+          out.puts "}"
+          out.puts "return .#{swift_case}(val)"
+        elsif entry[:decode_style] == :optional
+          inner_type = entry[:decode_type]
+          out.puts "if TxRepHelper.getValue(map, \"\\(prefix).#{xdr_arm}._present\") == \"true\" {"
+          out.indent do
+            if kind[:style] == :array
+              element_type = inner_type.sub(/\A\[(.*)\]\z/, '\1')
+              out.puts "let valLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, \"\\(prefix).#{xdr_arm}.len\") ?? \"0\")"
+              out.puts "var val = [#{element_type}]()"
+              out.puts "for i in 0..<Int(valLen) {"
+              out.indent do
+                elem_prefix = "\"\\(prefix).#{xdr_arm}[\\(i)]\""
+                out.puts "let item: #{element_type} = #{txrep_parse_expr(kind[:element], elem_prefix)}"
+                out.puts "val.append(item)"
+              end
+              out.puts "}"
+              out.puts "return .#{swift_case}(val)"
+            else
+              out.puts "let val: #{inner_type} = #{txrep_parse_expr(kind, prefix_expr)}"
+              out.puts "return .#{swift_case}(val)"
+            end
+          end
+          out.puts "} else {"
+          out.indent do
+            out.puts "return .#{swift_case}(nil)"
+          end
+          out.puts "}"
+        else
+          # Special case: liquidity pool ID union arms accept both 64-char hex AND
+          # L-address StrKey input. Override for these specific [union, arm] pairs.
+          if TxRepTypes::TXREP_LIQUIDITY_POOL_ID_FIELDS.include?([union_name, xdr_arm])
+            out.puts "let val: WrappedData32 = try TxRepHelper.requireLiquidityPoolId(map, #{prefix_expr})"
+            out.puts "return .#{swift_case}(val)"
+          else
+            # Union arm required scalar: use require* helpers for opaque/compact/string.
+            arm_req = %i[opaque compact string].include?(kind[:style])
+            out.puts "let val = #{txrep_parse_expr(kind, prefix_expr, required: arm_req)}"
+            out.puts "return .#{swift_case}(val)"
+          end
+        end
+      end
+    end
+  end
+
+  # Classify a union arm's associated type for TxRep emission. Mirrors
+  # txrep_field_kind but works off the arm metadata already gathered in
+  # build_union_case_entries.
+  def union_arm_txrep_kind(entry)
+    arm = entry[:arm_ast]
+    decl = arm.declaration
+    base_kind =
+      case entry[:decode_style]
+      when :simple
+        classify_arm_scalar(decl, entry[:decode_type])
+      when :array
+        {
+          style: :array,
+          element: classify_arm_scalar(decl, entry[:decode_type]),
+          fixed: decl.is_a?(AST::Declarations::Array) && decl.fixed?,
+          size: nil,
+        }
+      when :optional
+        # Optional union arms decode via the explicit _present flag. Return
+        # the inner kind; callers wrap it in the if/else themselves.
+        classify_arm_scalar(decl, entry[:decode_type])
+      else
+        raise "union_arm_txrep_kind: unexpected decode_style #{entry[:decode_style].inspect}"
+      end
+    base_kind
+  end
+
+  # Classify an arm declaration's innermost scalar type, honoring the same
+  # typedef-to-opaque chase that txrep_field_kind performs for struct members.
+  # Falls back to classify_scalar for non-opaque leaf types.
+  def classify_arm_scalar(decl, swift_type)
+    # Direct opaque arm (rare): declared as `opaque foo[N]` inside a union.
+    if decl.is_a?(AST::Declarations::Opaque)
+      return {
+        style: :opaque,
+        is_data: !decl.fixed?,
+        wrapped_type: (decl.fixed? && [4, 12, 16, 32].include?(decl.size.to_i)) ? "WrappedData#{decl.size.to_i}" : nil,
+      }
+    end
+
+    # Typedef resolution: HashXDR -> WrappedData32, DataValueXDR -> Data, etc.
+    tspec =
+      case decl
+      when AST::Declarations::Array, AST::Declarations::Optional
+        decl.type
+      else
+        decl.respond_to?(:type) ? decl.type : nil
+      end
+
+    if tspec.is_a?(AST::Typespecs::Simple) && tspec.respond_to?(:resolved_type)
+      resolved = tspec.resolved_type
+      if resolved.is_a?(AST::Definitions::Typedef)
+        td_decl = resolved.declaration
+        if td_decl.is_a?(AST::Declarations::Opaque)
+          fixed = td_decl.fixed?
+          size = fixed ? td_decl.size.to_i : nil
+          wrapped_type = (fixed && [4, 12, 16, 32].include?(size)) ? "WrappedData#{size}" : nil
+          return {
+            style: :opaque,
+            is_data: !fixed,
+            wrapped_type: wrapped_type,
+          }
+        end
+      end
+    end
+
+    # Typedef-wrapped array arms (e.g. SCVec = SCVal<>): the resolved Swift
+    # type is [T] even though the arm declaration is a single Typespec::Simple.
+    # Detect by inspecting the rendered swift_type directly; the element type
+    # string is whatever sits between the brackets.
+    if swift_type =~ /\A\[(.+)\]\z/
+      element_str = $1
+      return {
+        style: :array,
+        element: classify_scalar(element_str),
+        fixed: false,
+        size: nil,
+      }
+    end
+
+    classify_scalar(swift_type)
+  end
+
+  # Inline-emit the struct's fields for a union arm that has UNION_ARM_FIELD
+  # overrides. The nested struct is reachable via the arm AST's decl type.
+  # Some arms share a Swift type with a sibling (e.g., ManageBuyOfferOp and
+  # ManageSellOfferOp both collapse to ManageOfferOperationXDR via
+  # NAME_OVERRIDES); walk the AST for the struct whose name() resolves to the
+  # same Swift name as the arm's decode type so the inline emission honors
+  # the rendered struct's field names rather than the per-arm struct's.
+  def emit_union_arm_with_overrides(out, entry, xdr_arm, overrides)
+    struct_defn = find_struct_defn_for_swift_name(entry[:decode_type]) ||
+                  resolve_union_arm_struct_defn(entry[:arm_ast])
+    struct_name = name(struct_defn)
+
+    struct_defn.members.each do |m|
+      field = resolve_field_name(struct_name, m.name)
+      next if is_extension_point_field?(struct_name, field)
+
+      type_str = resolve_field_type(struct_name, field, m)
+      kind = txrep_field_kind(m, type_str)
+
+      # Resolve the TxRep key suffix: start from the struct-level XDR field
+      # name, then apply the per-arm override if one is present.
+      key_suffix = txrep_field_name(struct_name, field)
+      if overrides.key?(key_suffix)
+        key_suffix = overrides[key_suffix]
+      elsif overrides.key?(field)
+        key_suffix = overrides[field]
+      end
+
+      # Reuse txrep_emit_struct_field logic but with a synthetic xdr_name.
+      accessor = "val.#{field}"
+      if kind[:is_optional]
+        out.puts "if let inner = #{accessor} {"
+        out.indent do
+          out.puts "lines.append(\"\\(prefix).#{xdr_arm}.#{key_suffix}._present: true\")"
+          txrep_emit_value(out, kind, "inner", "\\(prefix).#{xdr_arm}.#{key_suffix}")
+        end
+        out.puts "} else {"
+        out.indent do
+          out.puts "lines.append(\"\\(prefix).#{xdr_arm}.#{key_suffix}._present: false\")"
+        end
+        out.puts "}"
+      else
+        txrep_emit_value(out, kind, accessor, "\\(prefix).#{xdr_arm}.#{key_suffix}")
+      end
+    end
+  end
+
+  # Symmetric parse for per-arm-override arms. Builds locals for each field
+  # then constructs the nested struct via its generated initializer.
+  def parse_union_arm_with_overrides(out, entry, xdr_arm, overrides, swift_case)
+    struct_defn = find_struct_defn_for_swift_name(entry[:decode_type]) ||
+                  resolve_union_arm_struct_defn(entry[:arm_ast])
+    struct_name = name(struct_defn)
+
+    fields_info = []
+    struct_defn.members.each do |m|
+      field = resolve_field_name(struct_name, m.name)
+      next if is_extension_point_field?(struct_name, field)
+      type_str = resolve_field_type(struct_name, field, m)
+      kind = txrep_field_kind(m, type_str)
+
+      key_suffix = txrep_field_name(struct_name, field)
+      if overrides.key?(key_suffix)
+        key_suffix = overrides[key_suffix]
+      elsif overrides.key?(field)
+        key_suffix = overrides[field]
+      end
+
+      fields_info << { field: field, key_suffix: key_suffix, kind: kind, type_str: type_str }
+    end
+
+    fields_info.each do |f|
+      field = f[:field]
+      kind = f[:kind]
+      type_str = f[:type_str]
+      key_suffix = f[:key_suffix]
+      prefix_lit = "\"\\(prefix).#{xdr_arm}.#{key_suffix}\""
+
+      if kind[:is_optional]
+        inner_type = type_str.sub(/\?\z/, '')
+        out.puts "let #{field}: #{inner_type}?"
+        out.puts "if TxRepHelper.getValue(map, \"\\(prefix).#{xdr_arm}.#{key_suffix}._present\") == \"true\" {"
+        out.indent do
+          out.puts "#{field} = #{txrep_parse_expr(kind, prefix_lit)}"
+        end
+        out.puts "} else {"
+        out.indent do
+          out.puts "#{field} = nil"
+        end
+        out.puts "}"
+      elsif kind[:style] == :array
+        element_type = type_str.sub(/\A\[(.*)\]\z/, '\1')
+        out.puts "let #{field}Len = try TxRepHelper.parseInt(TxRepHelper.getValue(map, \"\\(prefix).#{xdr_arm}.#{key_suffix}.len\") ?? \"0\")"
+        out.puts "var #{field} = [#{element_type}]()"
+        out.puts "for i in 0..<Int(#{field}Len) {"
+        out.indent do
+          elem_prefix = "\"\\(prefix).#{xdr_arm}.#{key_suffix}[\\(i)]\""
+          out.puts "let item: #{element_type} = #{txrep_parse_expr(kind[:element], elem_prefix)}"
+          out.puts "#{field}.append(item)"
+        end
+        out.puts "}"
+      else
+        # Required non-optional scalar: use require* helpers for opaque, compact, and
+        # string styles so that a missing key throws missingValue(key: <fieldKey>) and
+        # an invalid value throws invalidValue(key: <fieldKey>) — not invalidValue(key: "").
+        req = %i[opaque compact string].include?(kind[:style])
+        out.puts "let #{field}: #{type_str} = #{txrep_parse_expr(kind, prefix_lit, required: req)}"
+      end
+    end
+
+    # Build the init call mirroring render_struct_txrep_methods.
+    init_fields = fields_info.map do |f|
+      {
+        field: f[:field],
+        param: resolve_init_param_name(struct_name, f[:field]),
+      }
+    end
+    if INIT_PARAM_ORDER.key?(struct_name)
+      order = INIT_PARAM_ORDER[struct_name]
+      init_fields.sort_by! { |g| order.index(g[:field]) || 999 }
+    end
+    args = init_fields.map { |g| "#{g[:param]}: #{g[:field]}" }.join(", ")
+    out.puts "let val = #{struct_name}(#{args})"
+    out.puts "return .#{swift_case}(val)"
+  end
+
+  # Walk the top-level AST and return the first struct definition whose
+  # resolved Swift name matches +swift_name+. Used by the per-arm override
+  # codegen to locate the rendered struct (which may be a NAME_OVERRIDES
+  # collapse target shared by multiple XDR structs) rather than the arm's
+  # per-arm XDR struct.
+  def find_struct_defn_for_swift_name(swift_name)
+    @struct_defn_by_swift_name_cache ||= begin
+      cache = {}
+      walk_definitions(@top) do |defn|
+        next unless defn.is_a?(AST::Definitions::Struct)
+        begin
+          resolved = name(defn)
+        rescue StandardError
+          next
+        end
+        cache[resolved] ||= defn
+      end
+      cache
+    end
+    @struct_defn_by_swift_name_cache[swift_name]
+  end
+
+  def walk_definitions(node, &block)
+    return if node.nil?
+    if node.respond_to?(:definitions)
+      node.definitions.each do |defn|
+        yield defn
+        walk_nested(defn, &block)
+      end
+    end
+    if node.respond_to?(:namespaces)
+      node.namespaces.each { |ns| walk_definitions(ns, &block) }
+    end
+  end
+
+  def walk_nested(defn, &block)
+    return unless defn.respond_to?(:nested_definitions)
+    defn.nested_definitions.each do |nested|
+      yield nested
+      walk_nested(nested, &block)
+    end
+  end
+
+  # Given a non-void union arm AST, return the Struct (or Union) AST defn
+  # the arm's type references. Handles typedef indirection.
+  def resolve_union_arm_struct_defn(arm)
+    decl = arm.declaration
+    tspec = decl.type
+    resolved = tspec.respond_to?(:resolved_type) ? tspec.resolved_type : nil
+    # Typedef -> chase to the underlying struct.
+    while resolved.is_a?(AST::Definitions::Typedef)
+      inner = resolved.declaration
+      return resolved unless inner.type.respond_to?(:resolved_type)
+      resolved = inner.type.resolved_type
+    end
+    resolved
+  end
+
+  # Temporary extension used for Phase 6-skipped unions (TransactionEnvelopeXDR).
   # Resolve discriminant metadata: whether it's an enum, a SKIP_TYPES
   # struct-with-constants, or a plain integer.
   #
@@ -451,8 +1480,10 @@ class Generator < Xdrgen::Generators::Base
   #   :kind        - :enum, :skip_type_struct, or :int
   #   :swift_name  - The Swift type name for the discriminant type (or nil for :int)
   #   :xdr_name    - The XDR canonical name (for looking up MEMBER_OVERRIDES)
+  #   :field_name  - The XDR discriminant field name (e.g., "type", "v", "code", "kind")
   def resolve_discriminant_info(union)
     dtype = union.discriminant.type
+    disc_field_name = union.discriminant.name.to_s
 
     if dtype.respond_to?(:resolved_type)
       resolved = dtype.resolved_type
@@ -461,15 +1492,27 @@ class Generator < Xdrgen::Generators::Base
         swift_name = name(resolved)
 
         if SKIP_TYPES.include?(swift_name)
-          return { kind: :skip_type_struct, swift_name: swift_name, xdr_name: xdr_name, enum_defn: resolved }
+          return { kind: :skip_type_struct, swift_name: swift_name, xdr_name: xdr_name, enum_defn: resolved, field_name: disc_field_name }
         else
-          return { kind: :enum, swift_name: swift_name, xdr_name: xdr_name, enum_defn: resolved }
+          return { kind: :enum, swift_name: swift_name, xdr_name: xdr_name, enum_defn: resolved, field_name: disc_field_name }
         end
       end
     end
 
     # Integer discriminant (e.g., `int v` for extension unions).
-    { kind: :int, swift_name: nil, xdr_name: nil, enum_defn: nil }
+    { kind: :int, swift_name: nil, xdr_name: nil, enum_defn: nil, field_name: disc_field_name }
+  end
+
+  # Reverse lookup: given an SDK Swift field name, return the original XDR
+  # field name as defined in the .x file. Used by TxRep rendering where
+  # the XDR canonical name is required for key generation.
+  def txrep_field_name(struct_name, swift_field_name)
+    overrides = FIELD_OVERRIDES[struct_name]
+    return swift_field_name unless overrides
+    overrides.each do |xdr_name, sdk_name|
+      return xdr_name if sdk_name == swift_field_name
+    end
+    swift_field_name
   end
 
   # Build an array of case entry hashes for the union.
@@ -486,6 +1529,10 @@ class Generator < Xdrgen::Generators::Base
     seen_case_names = Set.new
 
     union.normal_arms.each do |arm|
+      # The raw XDR arm variable name (pre-override), used by TxRep key
+      # generation. Void arms carry no payload so this is nil for them.
+      xdr_arm_name = arm.void? ? nil : arm.name.to_s
+
       if arm.void?
         # For void arms with multiple cases, each case becomes its own Swift enum case.
         arm.cases.each do |c|
@@ -504,6 +1551,9 @@ class Generator < Xdrgen::Generators::Base
             disc_return: disc_return_expression(c.value, disc_info),
             decode_style: :void,
             decode_type: nil,
+            xdr_arm_name: nil,
+            raw_disc_names: [txrep_raw_disc_name(c.value, disc_info)],
+            arm_ast: arm,
           }
         end
       else
@@ -529,6 +1579,9 @@ class Generator < Xdrgen::Generators::Base
               disc_return: disc_return_expression(c.value, disc_info),
               decode_style: decode_style,
               decode_type: decode_type,
+              xdr_arm_name: xdr_arm_name,
+              raw_disc_names: [txrep_raw_disc_name(c.value, disc_info)],
+              arm_ast: arm,
             }
           end
         else
@@ -548,6 +1601,9 @@ class Generator < Xdrgen::Generators::Base
             disc_return: disc_return_expression(arm.cases.first.value, disc_info),
             decode_style: decode_style,
             decode_type: decode_type,
+            xdr_arm_name: xdr_arm_name,
+            raw_disc_names: arm.cases.map { |c| txrep_raw_disc_name(c.value, disc_info) },
+            arm_ast: arm,
           }
         end
       end
@@ -581,6 +1637,20 @@ class Generator < Xdrgen::Generators::Base
     end
 
     entries
+  end
+
+  # Produce the original XDR constant name (SCREAMING_SNAKE, as written in
+  # the .x file) for a discriminant value. Used by the union TxRep renderer
+  # so the emitted string matches other SEP-0011 implementations regardless
+  # of local Swift case-name rewrites.
+  def txrep_raw_disc_name(value, disc_info)
+    if value.is_a?(AST::Identifier)
+      value.name.to_s
+    else
+      # Integer literal discriminant (only occurs on extension unions whose
+      # field name is typically `v`). Use the integer as a stringified token.
+      value.value.to_s
+    end
   end
 
   # Produce the Swift case name for a discriminant value (used for void arms).

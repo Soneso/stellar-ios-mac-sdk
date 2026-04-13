@@ -24,3 +24,24 @@ public struct InvokeHostFunctionOpXDR: XDRCodable, Sendable {
     try container.encode(auth)
   }
 }
+
+extension InvokeHostFunctionOpXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.hostFunction.toTxRep(prefix: "\(prefix).hostFunction", lines: &lines)
+    lines.append("\(prefix).auth.len: \(self.auth.count)")
+    for (i, item) in self.auth.enumerated() {
+      try item.toTxRep(prefix: "\(prefix).auth[\(i)]", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> InvokeHostFunctionOpXDR {
+    let hostFunction: HostFunctionXDR = try HostFunctionXDR.fromTxRep(map, prefix: "\(prefix).hostFunction")
+    let authLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).auth.len") ?? "0")
+    var auth = [SorobanAuthorizationEntryXDR]()
+    for i in 0..<Int(authLen) {
+      let item: SorobanAuthorizationEntryXDR = try SorobanAuthorizationEntryXDR.fromTxRep(map, prefix: "\(prefix).auth[\(i)]")
+      auth.append(item)
+    }
+    return InvokeHostFunctionOpXDR(hostFunction: hostFunction, auth: auth)
+  }
+}

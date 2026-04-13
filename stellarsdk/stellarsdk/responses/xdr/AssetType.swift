@@ -9,3 +9,40 @@ public enum AssetType: Int32, XDRCodable, Equatable, Sendable {
   case creditAlphanum12 = 2
   case poolShare = 3
 }
+
+extension AssetType {
+  public func enumName() -> String {
+    switch self {
+    case .native: return "ASSET_TYPE_NATIVE"
+    case .creditAlphanum4: return "ASSET_TYPE_CREDIT_ALPHANUM4"
+    case .creditAlphanum12: return "ASSET_TYPE_CREDIT_ALPHANUM12"
+    case .poolShare: return "ASSET_TYPE_POOL_SHARE"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> AssetType {
+    switch name {
+    case "ASSET_TYPE_NATIVE": return .native
+    case "ASSET_TYPE_CREDIT_ALPHANUM4": return .creditAlphanum4
+    case "ASSET_TYPE_CREDIT_ALPHANUM12": return .creditAlphanum12
+    case "ASSET_TYPE_POOL_SHARE": return .poolShare
+    default:
+      let prefix = "AssetType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = AssetType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> AssetType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

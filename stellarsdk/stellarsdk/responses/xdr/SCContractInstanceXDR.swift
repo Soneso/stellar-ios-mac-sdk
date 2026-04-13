@@ -34,3 +34,35 @@ public struct SCContractInstanceXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SCContractInstanceXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.executable.toTxRep(prefix: "\(prefix).executable", lines: &lines)
+    if let val = self.storage {
+      lines.append("\(prefix).storage._present: true")
+      lines.append("\(prefix).storage.len: \(val.count)")
+      for (i, item) in val.enumerated() {
+        try item.toTxRep(prefix: "\(prefix).storage[\(i)]", lines: &lines)
+      }
+    } else {
+      lines.append("\(prefix).storage._present: false")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SCContractInstanceXDR {
+    let executable: ContractExecutableXDR = try ContractExecutableXDR.fromTxRep(map, prefix: "\(prefix).executable")
+    let storage: [SCMapEntryXDR]?
+    if TxRepHelper.getValue(map, "\(prefix).storage._present") == "true" {
+      let storageTmpLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).storage.len") ?? "0")
+      var storageTmp = [SCMapEntryXDR]()
+      for i in 0..<Int(storageTmpLen) {
+        let item: SCMapEntryXDR = try SCMapEntryXDR.fromTxRep(map, prefix: "\(prefix).storage[\(i)]")
+        storageTmp.append(item)
+      }
+      storage = storageTmp
+    } else {
+      storage = nil
+    }
+    return SCContractInstanceXDR(executable: executable, storage: storage)
+  }
+}

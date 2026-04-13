@@ -34,3 +34,26 @@ public struct ManageDataOperationXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ManageDataOperationXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).dataName: \(TxRepHelper.escapeString(self.dataName))")
+    if let val = self.dataValue {
+      lines.append("\(prefix).dataValue._present: true")
+      lines.append("\(prefix).dataValue: \(TxRepHelper.bytesToHex(val))")
+    } else {
+      lines.append("\(prefix).dataValue._present: false")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ManageDataOperationXDR {
+    let dataName: String = try TxRepHelper.requireString(map, "\(prefix).dataName")
+    let dataValue: DataValueXDR?
+    if TxRepHelper.getValue(map, "\(prefix).dataValue._present") == "true" {
+      dataValue = try TxRepHelper.hexToBytes(TxRepHelper.getValue(map, "\(prefix).dataValue") ?? "")
+    } else {
+      dataValue = nil
+    }
+    return ManageDataOperationXDR(dataName: dataName, dataValue: dataValue)
+  }
+}

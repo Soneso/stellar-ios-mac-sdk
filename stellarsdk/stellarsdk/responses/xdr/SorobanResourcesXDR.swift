@@ -37,3 +37,20 @@ public struct SorobanResourcesXDR: XDRCodable, Sendable {
     try container.encode(writeBytes)
   }
 }
+
+extension SorobanResourcesXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.footprint.toTxRep(prefix: "\(prefix).footprint", lines: &lines)
+    lines.append("\(prefix).instructions: \(self.instructions)")
+    lines.append("\(prefix).diskReadBytes: \(self.diskReadBytes)")
+    lines.append("\(prefix).writeBytes: \(self.writeBytes)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanResourcesXDR {
+    let footprint: LedgerFootprintXDR = try LedgerFootprintXDR.fromTxRep(map, prefix: "\(prefix).footprint")
+    let instructions: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).instructions") ?? "0"))
+    let diskReadBytes: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).diskReadBytes") ?? "0"))
+    let writeBytes: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).writeBytes") ?? "0"))
+    return SorobanResourcesXDR(footprint: footprint, instructions: instructions, diskReadBytes: diskReadBytes, writeBytes: writeBytes)
+  }
+}

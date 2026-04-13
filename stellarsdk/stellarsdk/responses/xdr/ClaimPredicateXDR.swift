@@ -78,3 +78,80 @@ public indirect enum ClaimPredicateXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension ClaimPredicateXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .claimPredicateUnconditional:
+      lines.append("\(prefix).type: CLAIM_PREDICATE_UNCONDITIONAL")
+    case .claimPredicateAnd(let val):
+      lines.append("\(prefix).type: CLAIM_PREDICATE_AND")
+      lines.append("\(prefix).andPredicates.len: \(val.count)")
+      for (i, item) in val.enumerated() {
+        try item.toTxRep(prefix: "\(prefix).andPredicates[\(i)]", lines: &lines)
+      }
+    case .claimPredicateOr(let val):
+      lines.append("\(prefix).type: CLAIM_PREDICATE_OR")
+      lines.append("\(prefix).orPredicates.len: \(val.count)")
+      for (i, item) in val.enumerated() {
+        try item.toTxRep(prefix: "\(prefix).orPredicates[\(i)]", lines: &lines)
+      }
+    case .claimPredicateNot(let val):
+      lines.append("\(prefix).type: CLAIM_PREDICATE_NOT")
+      if let inner = val {
+        lines.append("\(prefix).notPredicate._present: true")
+        try inner.toTxRep(prefix: "\(prefix).notPredicate", lines: &lines)
+      } else {
+        lines.append("\(prefix).notPredicate._present: false")
+      }
+    case .claimPredicateBeforeAbsTime(let val):
+      lines.append("\(prefix).type: CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME")
+      lines.append("\(prefix).absBefore: \(val)")
+    case .claimPredicateBeforeRelTime(let val):
+      lines.append("\(prefix).type: CLAIM_PREDICATE_BEFORE_RELATIVE_TIME")
+      lines.append("\(prefix).relBefore: \(val)")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ClaimPredicateXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "CLAIM_PREDICATE_UNCONDITIONAL":
+      return .claimPredicateUnconditional
+    case "CLAIM_PREDICATE_AND":
+      let valLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).andPredicates.len") ?? "0")
+      var val = [ClaimPredicateXDR]()
+      for i in 0..<Int(valLen) {
+        let item: ClaimPredicateXDR = try ClaimPredicateXDR.fromTxRep(map, prefix: "\(prefix).andPredicates[\(i)]")
+        val.append(item)
+      }
+      return .claimPredicateAnd(val)
+    case "CLAIM_PREDICATE_OR":
+      let valLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).orPredicates.len") ?? "0")
+      var val = [ClaimPredicateXDR]()
+      for i in 0..<Int(valLen) {
+        let item: ClaimPredicateXDR = try ClaimPredicateXDR.fromTxRep(map, prefix: "\(prefix).orPredicates[\(i)]")
+        val.append(item)
+      }
+      return .claimPredicateOr(val)
+    case "CLAIM_PREDICATE_NOT":
+      if TxRepHelper.getValue(map, "\(prefix).notPredicate._present") == "true" {
+        let val: ClaimPredicateXDR = try ClaimPredicateXDR.fromTxRep(map, prefix: "\(prefix).notPredicate")
+        return .claimPredicateNot(val)
+      } else {
+        return .claimPredicateNot(nil)
+      }
+    case "CLAIM_PREDICATE_BEFORE_ABSOLUTE_TIME":
+      let val = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).absBefore") ?? "0")
+      return .claimPredicateBeforeAbsTime(val)
+    case "CLAIM_PREDICATE_BEFORE_RELATIVE_TIME":
+      let val = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).relBefore") ?? "0")
+      return .claimPredicateBeforeRelTime(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

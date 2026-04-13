@@ -32,3 +32,18 @@ public struct PaymentOperationXDR: XDRCodable, Sendable {
     try container.encode(amount)
   }
 }
+
+extension PaymentOperationXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).destination: \(try TxRepHelper.formatMuxedAccount(self.destination))")
+    lines.append("\(prefix).asset: \(try TxRepHelper.formatAsset(self.asset))")
+    lines.append("\(prefix).amount: \(self.amount)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> PaymentOperationXDR {
+    let destination: MuxedAccountXDR = try TxRepHelper.requireMuxedAccount(map, "\(prefix).destination")
+    let asset: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).asset")
+    let amount: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).amount") ?? "0")
+    return PaymentOperationXDR(destination: destination, asset: asset, amount: amount)
+  }
+}

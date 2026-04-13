@@ -24,3 +24,16 @@ public struct RevokeSponsorshipSignerXDR: XDRCodable, Sendable {
     try container.encode(signerKey)
   }
 }
+
+extension RevokeSponsorshipSignerXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).accountID: \(try TxRepHelper.formatAccountId(self.accountID))")
+    lines.append("\(prefix).signerKey: \(try TxRepHelper.formatSignerKey(self.signerKey))")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> RevokeSponsorshipSignerXDR {
+    let accountID: PublicKey = try TxRepHelper.requireAccountId(map, "\(prefix).accountID")
+    let signerKey: SignerKeyXDR = try TxRepHelper.requireSignerKey(map, "\(prefix).signerKey")
+    return RevokeSponsorshipSignerXDR(accountID: accountID, signerKey: signerKey)
+  }
+}

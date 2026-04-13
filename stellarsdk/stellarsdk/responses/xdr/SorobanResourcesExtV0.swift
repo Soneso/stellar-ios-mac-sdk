@@ -19,3 +19,22 @@ public struct SorobanResourcesExtV0: XDRCodable, Sendable {
     try container.encode(archivedSorobanEntries)
   }
 }
+
+extension SorobanResourcesExtV0 {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).archivedSorobanEntries.len: \(self.archivedSorobanEntries.count)")
+    for (i, item) in self.archivedSorobanEntries.enumerated() {
+      lines.append("\(prefix).archivedSorobanEntries[\(i)]: \(item)")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanResourcesExtV0 {
+    let archivedSorobanEntriesLen = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).archivedSorobanEntries.len") ?? "0")
+    var archivedSorobanEntries = [UInt32]()
+    for i in 0..<Int(archivedSorobanEntriesLen) {
+      let item: UInt32 = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).archivedSorobanEntries[\(i)]") ?? "0"))
+      archivedSorobanEntries.append(item)
+    }
+    return SorobanResourcesExtV0(archivedSorobanEntries: archivedSorobanEntries)
+  }
+}

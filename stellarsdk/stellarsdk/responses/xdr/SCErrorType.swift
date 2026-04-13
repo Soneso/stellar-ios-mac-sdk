@@ -15,3 +15,52 @@ public enum SCErrorType: Int32, XDRCodable, Equatable, Sendable {
   case value = 8
   case auth = 9
 }
+
+extension SCErrorType {
+  public func enumName() -> String {
+    switch self {
+    case .contract: return "SCE_CONTRACT"
+    case .wasmVm: return "SCE_WASM_VM"
+    case .context: return "SCE_CONTEXT"
+    case .storage: return "SCE_STORAGE"
+    case .object: return "SCE_OBJECT"
+    case .crypto: return "SCE_CRYPTO"
+    case .events: return "SCE_EVENTS"
+    case .budget: return "SCE_BUDGET"
+    case .value: return "SCE_VALUE"
+    case .auth: return "SCE_AUTH"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> SCErrorType {
+    switch name {
+    case "SCE_CONTRACT": return .contract
+    case "SCE_WASM_VM": return .wasmVm
+    case "SCE_CONTEXT": return .context
+    case "SCE_STORAGE": return .storage
+    case "SCE_OBJECT": return .object
+    case "SCE_CRYPTO": return .crypto
+    case "SCE_EVENTS": return .events
+    case "SCE_BUDGET": return .budget
+    case "SCE_VALUE": return .value
+    case "SCE_AUTH": return .auth
+    default:
+      let prefix = "SCErrorType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = SCErrorType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SCErrorType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

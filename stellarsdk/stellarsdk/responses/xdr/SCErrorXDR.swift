@@ -98,3 +98,81 @@ public enum SCErrorXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension SCErrorXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .contract(let val):
+      lines.append("\(prefix).type: SCE_CONTRACT")
+      lines.append("\(prefix).contractCode: \(val)")
+    case .wasmVm(let val):
+      lines.append("\(prefix).type: SCE_WASM_VM")
+      try val.toTxRep(prefix: "\(prefix).code", lines: &lines)
+    case .context(let val):
+      lines.append("\(prefix).type: SCE_CONTEXT")
+      try val.toTxRep(prefix: "\(prefix).code", lines: &lines)
+    case .storage(let val):
+      lines.append("\(prefix).type: SCE_STORAGE")
+      try val.toTxRep(prefix: "\(prefix).code", lines: &lines)
+    case .object(let val):
+      lines.append("\(prefix).type: SCE_OBJECT")
+      try val.toTxRep(prefix: "\(prefix).code", lines: &lines)
+    case .crypto(let val):
+      lines.append("\(prefix).type: SCE_CRYPTO")
+      try val.toTxRep(prefix: "\(prefix).code", lines: &lines)
+    case .events(let val):
+      lines.append("\(prefix).type: SCE_EVENTS")
+      try val.toTxRep(prefix: "\(prefix).code", lines: &lines)
+    case .budget(let val):
+      lines.append("\(prefix).type: SCE_BUDGET")
+      try val.toTxRep(prefix: "\(prefix).code", lines: &lines)
+    case .value(let val):
+      lines.append("\(prefix).type: SCE_VALUE")
+      try val.toTxRep(prefix: "\(prefix).code", lines: &lines)
+    case .auth(let val):
+      lines.append("\(prefix).type: SCE_AUTH")
+      try val.toTxRep(prefix: "\(prefix).code", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SCErrorXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "SCE_CONTRACT":
+      let val = UInt32(try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).contractCode") ?? "0"))
+      return .contract(val)
+    case "SCE_WASM_VM":
+      let val = try SCErrorCode.fromTxRep(map, prefix: "\(prefix).code")
+      return .wasmVm(val)
+    case "SCE_CONTEXT":
+      let val = try SCErrorCode.fromTxRep(map, prefix: "\(prefix).code")
+      return .context(val)
+    case "SCE_STORAGE":
+      let val = try SCErrorCode.fromTxRep(map, prefix: "\(prefix).code")
+      return .storage(val)
+    case "SCE_OBJECT":
+      let val = try SCErrorCode.fromTxRep(map, prefix: "\(prefix).code")
+      return .object(val)
+    case "SCE_CRYPTO":
+      let val = try SCErrorCode.fromTxRep(map, prefix: "\(prefix).code")
+      return .crypto(val)
+    case "SCE_EVENTS":
+      let val = try SCErrorCode.fromTxRep(map, prefix: "\(prefix).code")
+      return .events(val)
+    case "SCE_BUDGET":
+      let val = try SCErrorCode.fromTxRep(map, prefix: "\(prefix).code")
+      return .budget(val)
+    case "SCE_VALUE":
+      let val = try SCErrorCode.fromTxRep(map, prefix: "\(prefix).code")
+      return .value(val)
+    case "SCE_AUTH":
+      let val = try SCErrorCode.fromTxRep(map, prefix: "\(prefix).code")
+      return .auth(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

@@ -6,3 +6,34 @@ import Foundation
 public enum ClaimableBalanceIDType: Int32, XDRCodable, Equatable, Sendable {
   case claimableBalanceIDTypeV0 = 0
 }
+
+extension ClaimableBalanceIDType {
+  public func enumName() -> String {
+    switch self {
+    case .claimableBalanceIDTypeV0: return "CLAIMABLE_BALANCE_ID_TYPE_V0"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> ClaimableBalanceIDType {
+    switch name {
+    case "CLAIMABLE_BALANCE_ID_TYPE_V0": return .claimableBalanceIDTypeV0
+    default:
+      let prefix = "ClaimableBalanceIDType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = ClaimableBalanceIDType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ClaimableBalanceIDType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

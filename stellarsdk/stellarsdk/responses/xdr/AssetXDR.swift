@@ -48,3 +48,37 @@ public enum AssetXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension AssetXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .native:
+      lines.append("\(prefix).type: ASSET_TYPE_NATIVE")
+    case .alphanum4(let val):
+      lines.append("\(prefix).type: ASSET_TYPE_CREDIT_ALPHANUM4")
+      try val.toTxRep(prefix: "\(prefix).alphaNum4", lines: &lines)
+    case .alphanum12(let val):
+      lines.append("\(prefix).type: ASSET_TYPE_CREDIT_ALPHANUM12")
+      try val.toTxRep(prefix: "\(prefix).alphaNum12", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> AssetXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "ASSET_TYPE_NATIVE":
+      return .native
+    case "ASSET_TYPE_CREDIT_ALPHANUM4":
+      let val = try Alpha4XDR.fromTxRep(map, prefix: "\(prefix).alphaNum4")
+      return .alphanum4(val)
+    case "ASSET_TYPE_CREDIT_ALPHANUM12":
+      let val = try Alpha12XDR.fromTxRep(map, prefix: "\(prefix).alphaNum12")
+      return .alphanum12(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

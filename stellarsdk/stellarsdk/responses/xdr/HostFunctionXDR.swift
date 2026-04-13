@@ -56,3 +56,45 @@ public enum HostFunctionXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension HostFunctionXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .invokeContract(let val):
+      lines.append("\(prefix).type: HOST_FUNCTION_TYPE_INVOKE_CONTRACT")
+      try val.toTxRep(prefix: "\(prefix).invokeContract", lines: &lines)
+    case .createContract(let val):
+      lines.append("\(prefix).type: HOST_FUNCTION_TYPE_CREATE_CONTRACT")
+      try val.toTxRep(prefix: "\(prefix).createContract", lines: &lines)
+    case .uploadContractWasm(let val):
+      lines.append("\(prefix).type: HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM")
+      lines.append("\(prefix).wasm: \(TxRepHelper.bytesToHex(val))")
+    case .createContractV2(let val):
+      lines.append("\(prefix).type: HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2")
+      try val.toTxRep(prefix: "\(prefix).createContractV2", lines: &lines)
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> HostFunctionXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "HOST_FUNCTION_TYPE_INVOKE_CONTRACT":
+      let val = try InvokeContractArgsXDR.fromTxRep(map, prefix: "\(prefix).invokeContract")
+      return .invokeContract(val)
+    case "HOST_FUNCTION_TYPE_CREATE_CONTRACT":
+      let val = try CreateContractArgsXDR.fromTxRep(map, prefix: "\(prefix).createContract")
+      return .createContract(val)
+    case "HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM":
+      let val = try TxRepHelper.requireHex(map, "\(prefix).wasm")
+      return .uploadContractWasm(val)
+    case "HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2":
+      let val = try CreateContractV2ArgsXDR.fromTxRep(map, prefix: "\(prefix).createContractV2")
+      return .createContractV2(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

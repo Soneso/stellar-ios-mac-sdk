@@ -26,3 +26,74 @@ public enum ConfigSettingID: Int32, XDRCodable, Equatable, Sendable {
   case freezeBypassTxs = 19
   case freezeBypassTxsDelta = 20
 }
+
+extension ConfigSettingID {
+  public func enumName() -> String {
+    switch self {
+    case .contractMaxSizeBytes: return "CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES"
+    case .contractComputeV0: return "CONFIG_SETTING_CONTRACT_COMPUTE_V0"
+    case .contractLedgerCostV0: return "CONFIG_SETTING_CONTRACT_LEDGER_COST_V0"
+    case .contractHistoricalDataV0: return "CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0"
+    case .contractEventsV0: return "CONFIG_SETTING_CONTRACT_EVENTS_V0"
+    case .contractBandwidthV0: return "CONFIG_SETTING_CONTRACT_BANDWIDTH_V0"
+    case .contractCostParamsCpuInstructions: return "CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS"
+    case .contractCostParamsMemoryBytes: return "CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES"
+    case .contractDataKeySizeBytes: return "CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES"
+    case .contractDataEntrySizeBytes: return "CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES"
+    case .stateArchival: return "CONFIG_SETTING_STATE_ARCHIVAL"
+    case .contractExecutionLanes: return "CONFIG_SETTING_CONTRACT_EXECUTION_LANES"
+    case .liveSorobanStateSizeWindow: return "CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW"
+    case .evictionIterator: return "CONFIG_SETTING_EVICTION_ITERATOR"
+    case .contractParallelComputeV0: return "CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0"
+    case .contractLedgerCostExtV0: return "CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0"
+    case .scpTiming: return "CONFIG_SETTING_SCP_TIMING"
+    case .frozenLedgerKeys: return "CONFIG_SETTING_FROZEN_LEDGER_KEYS"
+    case .frozenLedgerKeysDelta: return "CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA"
+    case .freezeBypassTxs: return "CONFIG_SETTING_FREEZE_BYPASS_TXS"
+    case .freezeBypassTxsDelta: return "CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> ConfigSettingID {
+    switch name {
+    case "CONFIG_SETTING_CONTRACT_MAX_SIZE_BYTES": return .contractMaxSizeBytes
+    case "CONFIG_SETTING_CONTRACT_COMPUTE_V0": return .contractComputeV0
+    case "CONFIG_SETTING_CONTRACT_LEDGER_COST_V0": return .contractLedgerCostV0
+    case "CONFIG_SETTING_CONTRACT_HISTORICAL_DATA_V0": return .contractHistoricalDataV0
+    case "CONFIG_SETTING_CONTRACT_EVENTS_V0": return .contractEventsV0
+    case "CONFIG_SETTING_CONTRACT_BANDWIDTH_V0": return .contractBandwidthV0
+    case "CONFIG_SETTING_CONTRACT_COST_PARAMS_CPU_INSTRUCTIONS": return .contractCostParamsCpuInstructions
+    case "CONFIG_SETTING_CONTRACT_COST_PARAMS_MEMORY_BYTES": return .contractCostParamsMemoryBytes
+    case "CONFIG_SETTING_CONTRACT_DATA_KEY_SIZE_BYTES": return .contractDataKeySizeBytes
+    case "CONFIG_SETTING_CONTRACT_DATA_ENTRY_SIZE_BYTES": return .contractDataEntrySizeBytes
+    case "CONFIG_SETTING_STATE_ARCHIVAL": return .stateArchival
+    case "CONFIG_SETTING_CONTRACT_EXECUTION_LANES": return .contractExecutionLanes
+    case "CONFIG_SETTING_LIVE_SOROBAN_STATE_SIZE_WINDOW": return .liveSorobanStateSizeWindow
+    case "CONFIG_SETTING_EVICTION_ITERATOR": return .evictionIterator
+    case "CONFIG_SETTING_CONTRACT_PARALLEL_COMPUTE_V0": return .contractParallelComputeV0
+    case "CONFIG_SETTING_CONTRACT_LEDGER_COST_EXT_V0": return .contractLedgerCostExtV0
+    case "CONFIG_SETTING_SCP_TIMING": return .scpTiming
+    case "CONFIG_SETTING_FROZEN_LEDGER_KEYS": return .frozenLedgerKeys
+    case "CONFIG_SETTING_FROZEN_LEDGER_KEYS_DELTA": return .frozenLedgerKeysDelta
+    case "CONFIG_SETTING_FREEZE_BYPASS_TXS": return .freezeBypassTxs
+    case "CONFIG_SETTING_FREEZE_BYPASS_TXS_DELTA": return .freezeBypassTxsDelta
+    default:
+      let prefix = "ConfigSettingID#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = ConfigSettingID(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ConfigSettingID {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

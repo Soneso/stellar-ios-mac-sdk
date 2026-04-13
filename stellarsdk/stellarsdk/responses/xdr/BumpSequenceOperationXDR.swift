@@ -20,3 +20,14 @@ public struct BumpSequenceOperationXDR: XDRCodable, Sendable {
     try container.encode(bumpTo)
   }
 }
+
+extension BumpSequenceOperationXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).bumpTo: \(self.bumpTo)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> BumpSequenceOperationXDR {
+    let bumpTo: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).bumpTo") ?? "0")
+    return BumpSequenceOperationXDR(bumpTo: bumpTo)
+  }
+}

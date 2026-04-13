@@ -7,3 +7,36 @@ public enum ContractDataDurability: Int32, XDRCodable, Equatable, Sendable {
   case temporary = 0
   case persistent = 1
 }
+
+extension ContractDataDurability {
+  public func enumName() -> String {
+    switch self {
+    case .temporary: return "TEMPORARY"
+    case .persistent: return "PERSISTENT"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> ContractDataDurability {
+    switch name {
+    case "TEMPORARY": return .temporary
+    case "PERSISTENT": return .persistent
+    default:
+      let prefix = "ContractDataDurability#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = ContractDataDurability(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ContractDataDurability {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

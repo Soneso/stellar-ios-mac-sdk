@@ -20,3 +20,14 @@ public struct RestoreFootprintOpXDR: XDRCodable, Sendable {
     try container.encode(ext)
   }
 }
+
+extension RestoreFootprintOpXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.ext.toTxRep(prefix: "\(prefix).ext", lines: &lines)
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> RestoreFootprintOpXDR {
+    let ext: ExtensionPoint = try ExtensionPoint.fromTxRep(map, prefix: "\(prefix).ext")
+    return RestoreFootprintOpXDR(ext: ext)
+  }
+}

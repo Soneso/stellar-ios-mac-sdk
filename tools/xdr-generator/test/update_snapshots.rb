@@ -32,6 +32,11 @@ Dir.glob(File.join(SNAPSHOT_DIR, "*.swift")).each { |f| File.delete(f) }
   HashXDR.swift
   ContractCostParamsXDR.swift
   XDRConstants.swift
+  OperationBodyXDR.swift
+  OperationType.swift
+  SCValXDR.swift
+  LedgerKeyXDR.swift
+  SorobanTransactionDataXDR.swift
 ].each do |f|
   src = File.join(output, f)
   if File.exist?(src)

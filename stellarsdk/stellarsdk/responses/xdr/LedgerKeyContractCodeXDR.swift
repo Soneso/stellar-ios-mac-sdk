@@ -20,3 +20,14 @@ public struct LedgerKeyContractCodeXDR: XDRCodable, Sendable {
     try container.encode(hash)
   }
 }
+
+extension LedgerKeyContractCodeXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).hash: \(TxRepHelper.bytesToHex(self.hash.wrapped))")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerKeyContractCodeXDR {
+    let hash: HashXDR = try TxRepHelper.requireWrappedData32(map, "\(prefix).hash")
+    return LedgerKeyContractCodeXDR(hash: hash)
+  }
+}

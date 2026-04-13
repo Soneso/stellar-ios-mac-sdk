@@ -6,3 +6,34 @@ import Foundation
 public enum LiquidityPoolType: Int32, XDRCodable, Equatable, Sendable {
   case constantProduct = 0
 }
+
+extension LiquidityPoolType {
+  public func enumName() -> String {
+    switch self {
+    case .constantProduct: return "LIQUIDITY_POOL_CONSTANT_PRODUCT"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> LiquidityPoolType {
+    switch name {
+    case "LIQUIDITY_POOL_CONSTANT_PRODUCT": return .constantProduct
+    default:
+      let prefix = "LiquidityPoolType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = LiquidityPoolType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LiquidityPoolType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

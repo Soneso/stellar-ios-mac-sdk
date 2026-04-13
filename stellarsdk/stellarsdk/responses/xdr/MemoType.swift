@@ -10,3 +10,42 @@ public enum MemoType: Int32, XDRCodable, Equatable, Sendable {
   case MEMO_TYPE_HASH = 3
   case MEMO_TYPE_RETURN = 4
 }
+
+extension MemoType {
+  public func enumName() -> String {
+    switch self {
+    case .MEMO_TYPE_NONE: return "MEMO_NONE"
+    case .MEMO_TYPE_TEXT: return "MEMO_TEXT"
+    case .MEMO_TYPE_ID: return "MEMO_ID"
+    case .MEMO_TYPE_HASH: return "MEMO_HASH"
+    case .MEMO_TYPE_RETURN: return "MEMO_RETURN"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> MemoType {
+    switch name {
+    case "MEMO_NONE": return .MEMO_TYPE_NONE
+    case "MEMO_TEXT": return .MEMO_TYPE_TEXT
+    case "MEMO_ID": return .MEMO_TYPE_ID
+    case "MEMO_HASH": return .MEMO_TYPE_HASH
+    case "MEMO_RETURN": return .MEMO_TYPE_RETURN
+    default:
+      let prefix = "MemoType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = MemoType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> MemoType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

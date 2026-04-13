@@ -34,3 +34,26 @@ public struct OperationXDR: XDRCodable, Sendable {
     try container.encode(body)
   }
 }
+
+extension OperationXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    if let val = self.sourceAccount {
+      lines.append("\(prefix).sourceAccount._present: true")
+      lines.append("\(prefix).sourceAccount: \(try TxRepHelper.formatMuxedAccount(val))")
+    } else {
+      lines.append("\(prefix).sourceAccount._present: false")
+    }
+    try self.body.toTxRep(prefix: "\(prefix).body", lines: &lines)
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> OperationXDR {
+    let sourceAccount: MuxedAccountXDR?
+    if TxRepHelper.getValue(map, "\(prefix).sourceAccount._present") == "true" {
+      sourceAccount = try TxRepHelper.parseMuxedAccount(TxRepHelper.getValue(map, "\(prefix).sourceAccount") ?? "")
+    } else {
+      sourceAccount = nil
+    }
+    let body: OperationBodyXDR = try OperationBodyXDR.fromTxRep(map, prefix: "\(prefix).body")
+    return OperationXDR(sourceAccount: sourceAccount, body: body)
+  }
+}

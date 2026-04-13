@@ -62,3 +62,49 @@ public enum MemoXDR: XDRCodable, Sendable {
     }
   }
 }
+
+extension MemoXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    switch self {
+    case .none:
+      lines.append("\(prefix).type: MEMO_NONE")
+    case .text(let val):
+      lines.append("\(prefix).type: MEMO_TEXT")
+      lines.append("\(prefix).text: \(TxRepHelper.escapeString(val))")
+    case .id(let val):
+      lines.append("\(prefix).type: MEMO_ID")
+      lines.append("\(prefix).id: \(val)")
+    case .hash(let val):
+      lines.append("\(prefix).type: MEMO_HASH")
+      lines.append("\(prefix).hash: \(TxRepHelper.bytesToHex(val.wrapped))")
+    case .returnHash(let val):
+      lines.append("\(prefix).type: MEMO_RETURN")
+      lines.append("\(prefix).retHash: \(TxRepHelper.bytesToHex(val.wrapped))")
+    }
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> MemoXDR {
+    let discKey = "\(prefix).type"
+    guard let discName = TxRepHelper.getValue(map, discKey) else {
+      throw TxRepError.missingValue(key: discKey)
+    }
+    switch discName {
+    case "MEMO_NONE":
+      return .none
+    case "MEMO_TEXT":
+      let val = try TxRepHelper.requireString(map, "\(prefix).text")
+      return .text(val)
+    case "MEMO_ID":
+      let val = try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).id") ?? "0")
+      return .id(val)
+    case "MEMO_HASH":
+      let val = try TxRepHelper.requireWrappedData32(map, "\(prefix).hash")
+      return .hash(val)
+    case "MEMO_RETURN":
+      let val = try TxRepHelper.requireWrappedData32(map, "\(prefix).retHash")
+      return .returnHash(val)
+    default:
+      throw TxRepError.invalidValue(key: discKey)
+    }
+  }
+}

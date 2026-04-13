@@ -32,3 +32,18 @@ public struct LedgerKeyContractDataXDR: XDRCodable, Sendable {
     try container.encode(durability)
   }
 }
+
+extension LedgerKeyContractDataXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.contract.toTxRep(prefix: "\(prefix).contract", lines: &lines)
+    try self.key.toTxRep(prefix: "\(prefix).key", lines: &lines)
+    try self.durability.toTxRep(prefix: "\(prefix).durability", lines: &lines)
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerKeyContractDataXDR {
+    let contract: SCAddressXDR = try SCAddressXDR.fromTxRep(map, prefix: "\(prefix).contract")
+    let key: SCValXDR = try SCValXDR.fromTxRep(map, prefix: "\(prefix).key")
+    let durability: ContractDataDurability = try ContractDataDurability.fromTxRep(map, prefix: "\(prefix).durability")
+    return LedgerKeyContractDataXDR(contract: contract, key: key, durability: durability)
+  }
+}

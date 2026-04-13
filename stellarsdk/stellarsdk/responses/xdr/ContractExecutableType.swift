@@ -7,3 +7,36 @@ public enum ContractExecutableType: Int32, XDRCodable, Equatable, Sendable {
   case wasm = 0
   case stellarAsset = 1
 }
+
+extension ContractExecutableType {
+  public func enumName() -> String {
+    switch self {
+    case .wasm: return "CONTRACT_EXECUTABLE_WASM"
+    case .stellarAsset: return "CONTRACT_EXECUTABLE_STELLAR_ASSET"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> ContractExecutableType {
+    switch name {
+    case "CONTRACT_EXECUTABLE_WASM": return .wasm
+    case "CONTRACT_EXECUTABLE_STELLAR_ASSET": return .stellarAsset
+    default:
+      let prefix = "ContractExecutableType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = ContractExecutableType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> ContractExecutableType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

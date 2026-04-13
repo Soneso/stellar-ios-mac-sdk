@@ -32,3 +32,18 @@ public struct LiquidityPoolConstantProductParametersXDR: XDRCodable, Sendable {
     try container.encode(fee)
   }
 }
+
+extension LiquidityPoolConstantProductParametersXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).assetA: \(try TxRepHelper.formatAsset(self.assetA))")
+    lines.append("\(prefix).assetB: \(try TxRepHelper.formatAsset(self.assetB))")
+    lines.append("\(prefix).fee: \(self.fee)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LiquidityPoolConstantProductParametersXDR {
+    let assetA: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).assetA")
+    let assetB: AssetXDR = try TxRepHelper.requireAsset(map, "\(prefix).assetB")
+    let fee: Int32 = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).fee") ?? "0")
+    return LiquidityPoolConstantProductParametersXDR(assetA: assetA, assetB: assetB, fee: fee)
+  }
+}

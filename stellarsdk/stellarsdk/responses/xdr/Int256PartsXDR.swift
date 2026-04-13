@@ -37,3 +37,20 @@ public struct Int256PartsXDR: XDRCodable, Sendable {
     try container.encode(loLo)
   }
 }
+
+extension Int256PartsXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).hi_hi: \(self.hiHi)")
+    lines.append("\(prefix).hi_lo: \(self.hiLo)")
+    lines.append("\(prefix).lo_hi: \(self.loHi)")
+    lines.append("\(prefix).lo_lo: \(self.loLo)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> Int256PartsXDR {
+    let hiHi: Int64 = try TxRepHelper.parseInt64(TxRepHelper.getValue(map, "\(prefix).hi_hi") ?? "0")
+    let hiLo: UInt64 = try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).hi_lo") ?? "0")
+    let loHi: UInt64 = try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).lo_hi") ?? "0")
+    let loLo: UInt64 = try TxRepHelper.parseUInt64(TxRepHelper.getValue(map, "\(prefix).lo_lo") ?? "0")
+    return Int256PartsXDR(hiHi: hiHi, hiLo: hiLo, loHi: loHi, loLo: loLo)
+  }
+}

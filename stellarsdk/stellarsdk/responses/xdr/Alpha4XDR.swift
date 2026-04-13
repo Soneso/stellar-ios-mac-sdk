@@ -24,3 +24,16 @@ public struct Alpha4XDR: XDRCodable, Sendable {
     try container.encode(issuer)
   }
 }
+
+extension Alpha4XDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).assetCode: \(TxRepHelper.bytesToHex(self.assetCode.wrapped))")
+    lines.append("\(prefix).issuer: \(try TxRepHelper.formatAccountId(self.issuer))")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> Alpha4XDR {
+    let assetCode: AssetCode4XDR = try TxRepHelper.requireWrappedData4(map, "\(prefix).assetCode")
+    let issuer: PublicKey = try TxRepHelper.requireAccountId(map, "\(prefix).issuer")
+    return Alpha4XDR(assetCode: assetCode, issuer: issuer)
+  }
+}

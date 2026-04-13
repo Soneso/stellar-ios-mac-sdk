@@ -9,3 +9,40 @@ public enum HostFunctionType: Int32, XDRCodable, Equatable, Sendable {
   case uploadContractWasm = 2
   case createContractV2 = 3
 }
+
+extension HostFunctionType {
+  public func enumName() -> String {
+    switch self {
+    case .invokeContract: return "HOST_FUNCTION_TYPE_INVOKE_CONTRACT"
+    case .createContract: return "HOST_FUNCTION_TYPE_CREATE_CONTRACT"
+    case .uploadContractWasm: return "HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM"
+    case .createContractV2: return "HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> HostFunctionType {
+    switch name {
+    case "HOST_FUNCTION_TYPE_INVOKE_CONTRACT": return .invokeContract
+    case "HOST_FUNCTION_TYPE_CREATE_CONTRACT": return .createContract
+    case "HOST_FUNCTION_TYPE_UPLOAD_CONTRACT_WASM": return .uploadContractWasm
+    case "HOST_FUNCTION_TYPE_CREATE_CONTRACT_V2": return .createContractV2
+    default:
+      let prefix = "HostFunctionType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = HostFunctionType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> HostFunctionType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

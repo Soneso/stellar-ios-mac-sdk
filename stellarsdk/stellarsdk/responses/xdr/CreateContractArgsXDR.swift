@@ -24,3 +24,16 @@ public struct CreateContractArgsXDR: XDRCodable, Sendable {
     try container.encode(executable)
   }
 }
+
+extension CreateContractArgsXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    try self.contractIDPreimage.toTxRep(prefix: "\(prefix).contractIDPreimage", lines: &lines)
+    try self.executable.toTxRep(prefix: "\(prefix).executable", lines: &lines)
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> CreateContractArgsXDR {
+    let contractIDPreimage: ContractIDPreimageXDR = try ContractIDPreimageXDR.fromTxRep(map, prefix: "\(prefix).contractIDPreimage")
+    let executable: ContractExecutableXDR = try ContractExecutableXDR.fromTxRep(map, prefix: "\(prefix).executable")
+    return CreateContractArgsXDR(contractIDPreimage: contractIDPreimage, executable: executable)
+  }
+}

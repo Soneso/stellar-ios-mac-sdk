@@ -15,3 +15,52 @@ public enum LedgerEntryType: Int32, XDRCodable, Equatable, Sendable {
   case configSetting = 8
   case ttl = 9
 }
+
+extension LedgerEntryType {
+  public func enumName() -> String {
+    switch self {
+    case .account: return "ACCOUNT"
+    case .trustline: return "TRUSTLINE"
+    case .offer: return "OFFER"
+    case .data: return "DATA"
+    case .claimableBalance: return "CLAIMABLE_BALANCE"
+    case .liquidityPool: return "LIQUIDITY_POOL"
+    case .contractData: return "CONTRACT_DATA"
+    case .contractCode: return "CONTRACT_CODE"
+    case .configSetting: return "CONFIG_SETTING"
+    case .ttl: return "TTL"
+    }
+  }
+
+  public static func fromTxRepName(_ name: String) throws -> LedgerEntryType {
+    switch name {
+    case "ACCOUNT": return .account
+    case "TRUSTLINE": return .trustline
+    case "OFFER": return .offer
+    case "DATA": return .data
+    case "CLAIMABLE_BALANCE": return .claimableBalance
+    case "LIQUIDITY_POOL": return .liquidityPool
+    case "CONTRACT_DATA": return .contractData
+    case "CONTRACT_CODE": return .contractCode
+    case "CONFIG_SETTING": return .configSetting
+    case "TTL": return .ttl
+    default:
+      let prefix = "LedgerEntryType#"
+      if name.hasPrefix(prefix), let v = Int32(name.dropFirst(prefix.count)), let parsed = LedgerEntryType(rawValue: v) {
+        return parsed
+      }
+      throw TxRepError.invalidValue(key: name)
+    }
+  }
+
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix): \(enumName())")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> LedgerEntryType {
+    guard let raw = TxRepHelper.getValue(map, prefix) else {
+      throw TxRepError.missingValue(key: prefix)
+    }
+    return try fromTxRepName(raw)
+  }
+}

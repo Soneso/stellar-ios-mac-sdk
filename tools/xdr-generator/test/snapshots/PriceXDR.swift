@@ -24,3 +24,16 @@ public struct PriceXDR: XDRCodable, Sendable {
     try container.encode(d)
   }
 }
+
+extension PriceXDR {
+  public func toTxRep(prefix: String, lines: inout [String]) throws {
+    lines.append("\(prefix).n: \(self.n)")
+    lines.append("\(prefix).d: \(self.d)")
+  }
+
+  public static func fromTxRep(_ map: [String: String], prefix: String) throws -> PriceXDR {
+    let n: Int32 = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).n") ?? "0")
+    let d: Int32 = try TxRepHelper.parseInt(TxRepHelper.getValue(map, "\(prefix).d") ?? "0")
+    return PriceXDR(n: n, d: d)
+  }
+}
