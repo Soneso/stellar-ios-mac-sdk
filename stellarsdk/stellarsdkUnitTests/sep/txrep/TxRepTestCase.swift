@@ -88,6 +88,58 @@ class TxRepTestCase: XCTestCase {
         XCTAssertTrue(txRep.contains("tx.memo.text: \"Test memo\""))
     }
 
+    /// Pins the integration boundary between `TransactionXDR+TxRep.swift`'s memo
+    /// emitter and `TxRepHelper.escapeString` for non-ASCII MEMO_TEXT payloads.
+    ///
+    /// The helper-level tests in `TxRepHelperTestCase` prove `escapeString`
+    /// produces correct SEP-0011 `\xNN` per-UTF-8-byte output. This test proves
+    /// the envelope facade actually routes memo text through that helper rather
+    /// than a JSON encoder, a `String(describing:)` fallback, or any other
+    /// codec. A regression in the envelope wiring would surface here with a
+    /// clear failure.
+    func testToTxRepWithNonAsciiMemoTextRoundtrip() throws {
+        let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
+        let account = Account(keyPair: source, sequenceNumber: 250)
+        let destination = try KeyPair(accountId: "GDW6AUTBXTOC7FIKUO5BOO3OGLK4SF7ZPOBLMQHMZDI45J2Z6VXRB5NR")
+
+        let payment = try PaymentOperation(
+            sourceAccountId: nil,
+            destinationAccountId: destination.accountId,
+            asset: Asset(type: AssetType.ASSET_TYPE_NATIVE)!,
+            amount: Decimal(50)
+        )
+
+        // "café" — U+00E9 encodes to UTF-8 bytes 0xC3 0xA9.
+        let memoText = "caf\u{00E9}"
+        let transaction = try Transaction(
+            sourceAccount: account,
+            operations: [payment],
+            memo: .text(memoText)
+        )
+        let originalBase64 = try transaction.encodedEnvelope()
+
+        let txRep = try TxRep.toTxRep(transactionEnvelope: originalBase64)
+
+        // Must emit SEP-0011 \xNN per-UTF-8-byte format, NOT JSON \uNNNN.
+        XCTAssertTrue(txRep.contains("tx.memo.type: MEMO_TEXT"))
+        XCTAssertTrue(
+            txRep.contains("tx.memo.text: \"caf\\xc3\\xa9\""),
+            "envelope-level memo text must use SEP-0011 \\xNN per-UTF-8-byte escaping"
+        )
+        XCTAssertFalse(
+            txRep.contains("\\u00"),
+            "envelope-level memo text must not emit JSON \\uNNNN Unicode escapes"
+        )
+
+        // Round-trip back to XDR — bytes must be identical to the original.
+        let roundtripBase64 = try TxRep.fromTxRep(txRep: txRep)
+        XCTAssertEqual(
+            roundtripBase64,
+            originalBase64,
+            "non-ASCII memo text must round-trip byte-identically through TxRep"
+        )
+    }
+
     func testToTxRepWithMemoId() throws {
         let source = try KeyPair(secretSeed: "SC4CGETADVYTCR5HEAVZRB3DZQY5Y4J7RFNJTRA6ESMHIPEZUSTE2QDK")
         let account = Account(keyPair: source, sequenceNumber: 300)
