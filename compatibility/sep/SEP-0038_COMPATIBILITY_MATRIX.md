@@ -1,8 +1,8 @@
 # SEP-0038 (Anchor RFQ API) Compatibility Matrix
 
-**Generated:** 2026-03-29
+**Generated:** 2026-04-24
 
-**SDK Version:** 3.4.6
+**SDK Version:** 3.4.7
 
 **SEP Version:** 2.5.0
 

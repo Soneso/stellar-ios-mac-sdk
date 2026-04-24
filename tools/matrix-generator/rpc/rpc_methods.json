@@ -3,7 +3,7 @@
     "source": "stellar-rpc",
     "repository": "https://github.com/stellar/stellar-rpc",
     "version": "v26.0.0",
-    "extracted_date": "2026-04-08",
+    "extracted_date": "2026-04-24",
     "total_methods": 12,
     "protocol": "JSON-RPC 2.0",
     "protocol_definitions": "https://github.com/stellar/go-stellar-sdk/tree/main/protocols/rpc"

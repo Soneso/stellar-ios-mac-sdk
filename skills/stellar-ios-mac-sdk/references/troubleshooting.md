@@ -501,7 +501,7 @@ func retryWithBackoff<T>(
 ## Getting Help
 
 When seeking support, provide:
-1. SDK version (3.4.6)
+1. SDK version (3.4.7)
 2. iOS/macOS version
 3. Complete error message and type
 4. Transaction XDR (from `transaction.encodedEnvelope()`)

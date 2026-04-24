@@ -6927,28 +6927,72 @@ class SEP11Analyzer:
         # Load sections from Flutter SDK definition
         sections = self._load_sep11_definition()
 
-        # Find SDK implementation files
+        # Find SDK implementation files. After the TxRep generator-driven
+        # refactor the implementation is distributed across:
+        #   - stellarsdk/txrep/TxRep.swift (public facade)
+        #   - stellarsdk/txrep/TxRepHelper.swift (shared helpers)
+        #   - stellarsdk/txrep/extensions/*.swift (envelope-family extensions)
+        #   - stellarsdk/responses/xdr/*.swift (generator-emitted toTxRep/fromTxRep)
         implementation_files = []
+        scan_paths: List[Path] = []
 
-        # Find TxRep class
         txrep_file = self.sdk_analyzer.find_class_or_struct('TxRep')
         if txrep_file:
             rel_path = self.sdk_analyzer.get_relative_path(txrep_file)
             implementation_files.append(rel_path)
+            scan_paths.append(txrep_file)
             logger.info(f"Found TxRep class at {rel_path}")
+
+        helper_file = self.sdk_analyzer.find_file_by_name('TxRepHelper.swift')
+        if helper_file:
+            implementation_files.append(self.sdk_analyzer.get_relative_path(helper_file))
+            scan_paths.append(helper_file)
+
+        # txrep/extensions/*.swift
+        txrep_root = self.sdk_analyzer.sdk_root / 'stellarsdk' / 'stellarsdk' / 'txrep'
+        ext_dir = txrep_root / 'extensions'
+        if ext_dir.is_dir():
+            for p in sorted(ext_dir.glob('*.swift')):
+                implementation_files.append(self.sdk_analyzer.get_relative_path(p))
+                scan_paths.append(p)
+
+        # Generator-emitted toTxRep/fromTxRep live on the XDR types themselves.
+        xdr_dir = self.sdk_analyzer.sdk_root / 'stellarsdk' / 'stellarsdk' / 'responses' / 'xdr'
+        xdr_targets = [
+            'MemoXDR.swift',
+            'OperationBodyXDR.swift',
+            'OperationType.swift',
+            'PreconditionsXDR.swift',
+            'PreconditionsV2XDR.swift',
+            'DecoratedSignatureXDR.swift',
+            'SorobanTransactionDataXDR.swift',
+            'AssetXDR.swift',
+        ]
+        for name in xdr_targets:
+            p = xdr_dir / name
+            if p.exists():
+                scan_paths.append(p)
+
+        # Concatenate scanned sources into a single blob for regex-style checks.
+        aggregated = ''
+        for p in scan_paths:
+            try:
+                aggregated += '\n' + p.read_text(encoding='utf-8')
+            except Exception as e:
+                logger.warning(f"Error reading {p}: {e}")
 
         # Analyze implementation for each section
         for section in sections:
             if section.name == 'Encoding Features':
-                self._analyze_encoding_features(section, txrep_file)
+                self._analyze_encoding_features(section, aggregated)
             elif section.name == 'Decoding Features':
-                self._analyze_decoding_features(section, txrep_file)
+                self._analyze_decoding_features(section, aggregated)
             elif section.name == 'Asset Encoding':
-                self._analyze_asset_encoding(section, txrep_file)
+                self._analyze_asset_encoding(section, aggregated)
             elif section.name == 'Operation Types':
-                self._analyze_operation_types(section, txrep_file)
+                self._analyze_operation_types(section, aggregated)
             elif section.name == 'Format Features':
-                self._analyze_format_features(section, txrep_file)
+                self._analyze_format_features(section, aggregated)
 
         # Create compatibility matrix
         matrix = CompatibilityMatrix(
@@ -7286,139 +7330,142 @@ class SEP11Analyzer:
 
         return sections
 
-    def _analyze_encoding_features(self, section: SEPSection, txrep_file: Optional[Path]) -> None:
-        """Analyze encoding features"""
-        if not txrep_file:
+    def _analyze_encoding_features(self, section: SEPSection, content: str) -> None:
+        """Analyze encoding features across the refactored txrep file set."""
+        if not content:
             return
 
         try:
-            content = txrep_file.read_text(encoding='utf-8')
-
-            # All encoding features are implemented via toTxRep() method
             for field in section.fields:
                 if field.name == 'encode_transaction':
-                    if 'func toTxRep(transactionEnvelope:String)' in content:
+                    # Public facade entry point in TxRep.swift
+                    if 'public static func toTxRep(transactionEnvelope: String)' in content:
                         field.implemented = True
-                        field.sdk_property = 'toTxRep(transactionEnvelope:)'
+                        field.sdk_property = 'TxRep.toTxRep(transactionEnvelope:)'
                 elif field.name == 'encode_fee_bump_transaction':
-                    if 'case .feeBump(let feeBumpXdr):' in content and 'feeBumpTransaction' in content:
+                    # Fee bump envelope dispatch in TransactionEnvelopeXDR+TxRep.swift
+                    if 'case .feeBump(let envelope)' in content and 'prefix: "feeBump"' in content:
                         field.implemented = True
-                        field.sdk_property = 'toTxRep() - fee bump support'
+                        field.sdk_property = 'TransactionEnvelopeXDR.toTxRep - feeBump arm'
                 elif field.name == 'encode_source_account':
-                    if 'addLine(key: prefix + "sourceAccount"' in content:
+                    # TransactionXDR+TxRep.swift emits <prefix>.sourceAccount: ...
+                    if '.sourceAccount: \\(try TxRepHelper.formatMuxedAccount' in content:
                         field.implemented = True
-                        field.sdk_property = 'toTxRep() - source account encoding'
+                        field.sdk_property = 'TransactionXDR.toTxRep - sourceAccount'
                 elif field.name == 'encode_memo':
-                    if 'func addMemo(memo:MemoXDR' in content:
+                    # MemoXDR.swift has generator-emitted toTxRep
+                    if 'public func toTxRep(prefix: String, lines: inout [String]) throws' in content and 'MEMO_TEXT' in content:
                         field.implemented = True
-                        field.sdk_property = 'addMemo()'
+                        field.sdk_property = 'MemoXDR.toTxRep'
                 elif field.name == 'encode_operations':
-                    if 'func addOperations(operations:[OperationXDR]' in content:
+                    # OperationBodyXDR.swift has generator-emitted toTxRep with per-op cases
+                    if 'case .createAccountOp(let val)' in content and 'val.toTxRep(prefix:' in content:
                         field.implemented = True
-                        field.sdk_property = 'addOperations()'
+                        field.sdk_property = 'OperationBodyXDR.toTxRep'
                 elif field.name == 'encode_preconditions':
-                    if 'func addPreconditions(cond:PreconditionsXDR' in content:
+                    # PreconditionsXDR.swift has generator-emitted toTxRep
+                    if 'PreconditionsXDR' in content and 'PRECOND_NONE' in content and '.cond.type' in content:
                         field.implemented = True
-                        field.sdk_property = 'addPreconditions()'
+                        field.sdk_property = 'PreconditionsXDR.toTxRep'
                 elif field.name == 'encode_signatures':
-                    if 'func addSignatures(signatures:[DecoratedSignatureXDR]' in content:
+                    # DecoratedSignatureXDR.swift toTxRep plus signatures[i] emission in TransactionEnvelopeXDR+TxRep.swift
+                    if 'DecoratedSignatureXDR' in content and 'signatures[' in content and '.hint' in content and '.signature' in content:
                         field.implemented = True
-                        field.sdk_property = 'addSignatures()'
+                        field.sdk_property = 'DecoratedSignatureXDR.toTxRep'
                 elif field.name == 'encode_soroban_data':
-                    if 'func addSorobanTransactionData(data: SorobanTransactionDataXDR' in content:
+                    # SorobanTransactionDataXDR.swift has generator-emitted toTxRep
+                    if 'SorobanTransactionDataXDR' in content and 'public func toTxRep(prefix: String, lines: inout [String]) throws' in content:
                         field.implemented = True
-                        field.sdk_property = 'addSorobanTransactionData()'
+                        field.sdk_property = 'SorobanTransactionDataXDR.toTxRep'
 
         except Exception as e:
             logger.warning(f"Error analyzing encoding features: {e}")
 
-    def _analyze_decoding_features(self, section: SEPSection, txrep_file: Optional[Path]) -> None:
-        """Analyze decoding features"""
-        if not txrep_file:
+    def _analyze_decoding_features(self, section: SEPSection, content: str) -> None:
+        """Analyze decoding features across the refactored txrep file set."""
+        if not content:
             return
 
         try:
-            content = txrep_file.read_text(encoding='utf-8')
-
-            # All decoding features are implemented via fromTxRep() method
             for field in section.fields:
                 if field.name == 'decode_transaction':
-                    if 'func fromTxRep(txRep:String)' in content:
+                    # Public facade entry point in TxRep.swift
+                    if 'public static func fromTxRep(txRep: String)' in content:
                         field.implemented = True
-                        field.sdk_property = 'fromTxRep(txRep:)'
+                        field.sdk_property = 'TxRep.fromTxRep(txRep:)'
                 elif field.name == 'decode_fee_bump_transaction':
-                    if 'let isFeeBump = dic["type"] == "ENVELOPE_TYPE_TX_FEE_BUMP"' in content:
+                    # TransactionEnvelopeXDR+TxRep.swift detects fee bump via type marker
+                    if 'ENVELOPE_TYPE_TX_FEE_BUMP' in content and 'FeeBumpTransactionEnvelopeXDR.fromTxRep' in content:
                         field.implemented = True
-                        field.sdk_property = 'fromTxRep() - fee bump support'
+                        field.sdk_property = 'TransactionEnvelopeXDR.fromTxRep - feeBump arm'
                 elif field.name == 'decode_source_account':
-                    if 'key = prefix + "sourceAccount"' in content and 'MuxedAccount(accountId:sourceAccountId' in content:
+                    # TransactionXDR+TxRep.swift parses <prefix>.sourceAccount via TxRepHelper.parseMuxedAccount
+                    if 'TxRepHelper.parseMuxedAccount' in content and '.sourceAccount' in content:
                         field.implemented = True
-                        field.sdk_property = 'fromTxRep() - source account parsing'
+                        field.sdk_property = 'TransactionXDR.fromTxRep - sourceAccount'
                 elif field.name == 'decode_memo':
-                    if 'func getMemo(dic:Dictionary<String,String>' in content:
+                    # MemoXDR.swift has generator-emitted fromTxRep
+                    if 'MemoXDR' in content and 'public static func fromTxRep(_ map: [String: String], prefix: String) throws -> MemoXDR' in content:
                         field.implemented = True
-                        field.sdk_property = 'getMemo()'
+                        field.sdk_property = 'MemoXDR.fromTxRep'
                 elif field.name == 'decode_operations':
-                    if 'func getOperations(dic:Dictionary<String,String>' in content:
+                    # OperationBodyXDR.swift has generator-emitted fromTxRep with per-op decoding
+                    if 'public static func fromTxRep(_ map: [String: String], prefix: String) throws -> OperationBodyXDR' in content and 'CREATE_ACCOUNT' in content:
                         field.implemented = True
-                        field.sdk_property = 'getOperations()'
+                        field.sdk_property = 'OperationBodyXDR.fromTxRep'
                 elif field.name == 'decode_preconditions':
-                    # getPreconditions is implemented - check for function definition
-                    if 'func getPreconditions(dic:Dictionary<String,String>' in content or 'func getPreconditions(dic: Dictionary<String,String>' in content:
+                    # PreconditionsXDR.swift has generator-emitted fromTxRep
+                    if 'public static func fromTxRep(_ map: [String: String], prefix: String) throws -> PreconditionsXDR' in content:
                         field.implemented = True
-                        field.sdk_property = 'getPreconditions()'
+                        field.sdk_property = 'PreconditionsXDR.fromTxRep'
                 elif field.name == 'decode_signatures':
-                    if 'func getSignatures(dic:Dictionary<String,String>' in content:
+                    # DecoratedSignatureXDR.swift has generator-emitted fromTxRep
+                    if 'public static func fromTxRep(_ map: [String: String], prefix: String) throws -> DecoratedSignatureXDR' in content:
                         field.implemented = True
-                        field.sdk_property = 'getSignatures()'
+                        field.sdk_property = 'DecoratedSignatureXDR.fromTxRep'
                 elif field.name == 'decode_soroban_data':
-                    if 'func getSorobanTransactionData(dic:Dictionary<String,String>' in content:
+                    # SorobanTransactionDataXDR.swift has generator-emitted fromTxRep
+                    if 'public static func fromTxRep(_ map: [String: String], prefix: String) throws -> SorobanTransactionDataXDR' in content:
                         field.implemented = True
-                        field.sdk_property = 'getSorobanTransactionData()'
+                        field.sdk_property = 'SorobanTransactionDataXDR.fromTxRep'
 
         except Exception as e:
             logger.warning(f"Error analyzing decoding features: {e}")
 
-    def _analyze_asset_encoding(self, section: SEPSection, txrep_file: Optional[Path]) -> None:
-        """Analyze asset encoding support"""
-        if not txrep_file:
+    def _analyze_asset_encoding(self, section: SEPSection, content: str) -> None:
+        """Analyze asset encoding support (TxRepHelper.formatAsset/parseAsset)."""
+        if not content:
             return
 
         try:
-            content = txrep_file.read_text(encoding='utf-8')
-
-            # Check for encodeAsset function
-            has_encode_asset = 'func encodeAsset(asset: AssetXDR)' in content or 'func encodeAsset(asset:AssetXDR)' in content
+            has_format_asset = 'public static func formatAsset(_ asset: AssetXDR)' in content
+            has_parse_asset = 'public static func parseAsset(_ value: String)' in content
 
             for field in section.fields:
-                if has_encode_asset:
-                    if field.name == 'encode_native_asset':
-                        # Assets are encoded in encodeAsset function - native returns "XLM"
-                        if 'return "XLM"' in content:
-                            field.implemented = True
-                            field.sdk_property = 'encodeAsset() - native'
-                    elif field.name == 'encode_alphanumeric4_asset':
-                        # Alphanumeric assets use assetCode + issuer pattern (covers both 4 and 12)
-                        if 'asset.assetCode' in content and 'asset.issuer' in content:
-                            field.implemented = True
-                            field.sdk_property = 'encodeAsset() - alphanum4'
-                    elif field.name == 'encode_alphanumeric12_asset':
-                        # Same encoding for both alphanumeric types
-                        if 'asset.assetCode' in content and 'asset.issuer' in content:
-                            field.implemented = True
-                            field.sdk_property = 'encodeAsset() - alphanum12'
+                if field.name == 'encode_native_asset':
+                    # formatAsset returns "XLM" for the native arm
+                    if has_format_asset and '"XLM"' in content:
+                        field.implemented = True
+                        field.sdk_property = 'TxRepHelper.formatAsset - native'
+                elif field.name == 'encode_alphanumeric4_asset':
+                    # formatAsset handles .alphanum4(Alpha4XDR) -> <code>:<issuer>
+                    if has_format_asset and has_parse_asset and 'case .alphanum4' in content:
+                        field.implemented = True
+                        field.sdk_property = 'TxRepHelper.formatAsset - alphanum4'
+                elif field.name == 'encode_alphanumeric12_asset':
+                    if has_format_asset and has_parse_asset and 'case .alphanum12' in content:
+                        field.implemented = True
+                        field.sdk_property = 'TxRepHelper.formatAsset - alphanum12'
 
         except Exception as e:
             logger.warning(f"Error analyzing asset encoding: {e}")
 
-    def _analyze_operation_types(self, section: SEPSection, txrep_file: Optional[Path]) -> None:
-        """Analyze operation type support"""
-        if not txrep_file:
+    def _analyze_operation_types(self, section: SEPSection, content: str) -> None:
+        """Analyze operation type support (OperationBodyXDR.swift dispatch tables)."""
+        if not content:
             return
 
         try:
-            content = txrep_file.read_text(encoding='utf-8')
-
             # Map operation names to Swift case names
             operation_mapping = {
                 'create_account': ('case .createAccountOp(', 'case "CREATE_ACCOUNT":'),
@@ -7460,40 +7507,38 @@ class SEP11Analyzer:
         except Exception as e:
             logger.warning(f"Error analyzing operation types: {e}")
 
-    def _analyze_format_features(self, section: SEPSection, txrep_file: Optional[Path]) -> None:
-        """Analyze format features"""
-        if not txrep_file:
+    def _analyze_format_features(self, section: SEPSection, content: str) -> None:
+        """Analyze format features across the refactored txrep file set."""
+        if not content:
             return
 
         try:
-            content = txrep_file.read_text(encoding='utf-8')
-
             for field in section.fields:
                 if field.name == 'comment_support':
-                    # Check for comment removal in parsing
-                    if 'func removeComment(val:String)' in content or 'removeComment(val:' in content:
+                    # TxRepHelper.removeComment is the single source of comment stripping
+                    if 'public static func removeComment(_ value: String)' in content:
                         field.implemented = True
-                        field.sdk_property = 'removeComment() function'
+                        field.sdk_property = 'TxRepHelper.removeComment'
                 elif field.name == 'dot_notation':
-                    # Check for dot notation in key construction
-                    if 'prefix + "tx."' in content or 'operationPrefix + "' in content:
+                    # Extensions use "tx.*" / "feeBump.*" dot notation when emitting keys
+                    if 'prefix: "tx"' in content or 'prefix: "feeBump"' in content or 'tx.sourceAccount' in content:
                         field.implemented = True
                         field.sdk_property = 'Dot notation in key paths'
                 elif field.name == 'array_indexing':
-                    # Check for array indexing syntax
-                    if '"operations[" + String(index) + "]"' in content or '"signatures["' in content:
+                    # Bracket-indexed keys like signatures[i] / operations[i]
+                    if 'signatures[' in content and 'operations[' in content:
                         field.implemented = True
                         field.sdk_property = 'Array indexing [n] syntax'
                 elif field.name == 'hex_encoding':
-                    # Check for hex encoding
-                    if 'hexEncodedString()' in content or 'data(using: .hexadecimal)' in content:
+                    # TxRepHelper.bytesToHex is the canonical hex encoder
+                    if 'public static func bytesToHex(_ bytes: Data)' in content:
                         field.implemented = True
-                        field.sdk_property = 'hexEncodedString() method'
+                        field.sdk_property = 'TxRepHelper.bytesToHex'
                 elif field.name == 'string_escaping':
-                    # Check for JSON encoding for string escaping
-                    if 'JSONEncoder()' in content and 'jsonEncoder.encode(' in content:
+                    # TxRepHelper.escapeString / unescapeString replace the old JSONEncoder path
+                    if 'public static func escapeString(_ s: String)' in content and 'public static func unescapeString(_ s: String)' in content:
                         field.implemented = True
-                        field.sdk_property = 'JSONEncoder for string escaping'
+                        field.sdk_property = 'TxRepHelper.escapeString / unescapeString'
 
         except Exception as e:
             logger.warning(f"Error analyzing format features: {e}")
