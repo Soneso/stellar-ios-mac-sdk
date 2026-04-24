@@ -21,7 +21,7 @@
     <header class="header">
       <p class="header-col header-col--primary">
         <a class="header-link" href="../index.html">
-          stellarsdk 3.4.6 Docs
+          stellarsdk 3.4.7 Docs
         </a>
          (97% documented)
       </p>
@@ -720,6 +720,9 @@
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/TxRep.html">TxRep</a>
+              </li>
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="../Classes/TxRepHelper.html">TxRepHelper</a>
               </li>
               <li class="nav-group-task">
                 <a class="nav-group-task-link" href="../Classes/URIScheme.html">URIScheme</a>
@@ -1922,7 +1925,7 @@ the standard base64-encoded XDR format and a human-readable key-value format.</p
 <p>See: <a href="https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0011.md">SEP-0011</a> for the TxRep specification.</p>
 
               <div class="slightly-smaller">
-                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L41-L3596">Show on GitHub</a>
+                <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L41-L75">Show on GitHub</a>
               </div>
           </div>
         </section>
@@ -1977,23 +1980,12 @@ the standard base64-encoded XDR format and a human-readable key-value format.</p
                         <p>Converts a transaction envelope XDR to TxRep format.</p>
 
 <p>Takes a base64-encoded transaction envelope XDR and converts it to a human-readable
-TxRep representation. Supports both regular transactions and fee bump transactions.</p>
+TxRep representation. Supports V0, V1, and fee-bump envelopes per SEP-0011.</p>
 <div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    TxRepError if the XDR cannot be parsed
+    <code><a href="../Enums/TxRepError.html">TxRepError</a></code> if the XDR cannot be parsed.
 
 </div>
-
-<p>Example:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">xdr</span> <span class="o">=</span> <span class="s">"AAAAAC..."</span> <span class="c1">// Base64 XDR</span>
-<span class="k">let</span> <span class="nv">txRep</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">TxRep</span><span class="o">.</span><span class="nf">toTxRep</span><span class="p">(</span><span class="nv">transactionEnvelope</span><span class="p">:</span> <span class="n">xdr</span><span class="p">)</span>
-<span class="nf">print</span><span class="p">(</span><span class="n">txRep</span><span class="p">)</span>
-<span class="c1">// Output:</span>
-<span class="c1">// type: ENVELOPE_TYPE_TX</span>
-<span class="c1">// tx.sourceAccount: GBZX...</span>
-<span class="c1">// tx.fee: 100</span>
-<span class="c1">// ...</span>
-</code></pre>
 
                       </div>
                       <div class="declaration">
@@ -2016,7 +2008,7 @@ TxRep representation. Supports both regular transactions and fee bump transactio
                               </td>
                               <td>
                                 <div>
-                                  <p>Base64-encoded transaction envelope XDR</p>
+                                  <p>Base64-encoded transaction envelope XDR.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2025,10 +2017,10 @@ TxRep representation. Supports both regular transactions and fee bump transactio
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>Human-readable TxRep string with key-value pairs</p>
+                        <p>Human-readable TxRep string with key-value pairs, lines separated by <code>\n</code>.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L65-L115">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L53-L58">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
@@ -2046,7 +2038,16 @@ TxRep representation. Supports both regular transactions and fee bump transactio
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>This function parses txrep and returns the corresponding transaction envelope xdr (base64 encoded)</p>
+                        <p>Converts a TxRep string to a base64-encoded transaction envelope XDR.</p>
+
+<p>Parses the human-readable TxRep representation and encodes the result as
+a base64-encoded XDR transaction envelope. Supports V0, V1, and fee-bump
+envelopes. Handles legacy preconditions format and unsigned transactions.</p>
+<div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code><a href="../Enums/TxRepError.html">TxRepError</a></code> on missing or invalid values.
+
+</div>
 
                       </div>
                       <div class="declaration">
@@ -2069,7 +2070,7 @@ TxRep representation. Supports both regular transactions and fee bump transactio
                               </td>
                               <td>
                                 <div>
-                                  <p>human-readable low-level representation of Stellar transaction to be parsed</p>
+                                  <p>Human-readable TxRep string.</p>
                                 </div>
                               </td>
                             </tr>
@@ -2078,10 +2079,10 @@ TxRep representation. Supports both regular transactions and fee bump transactio
                       </div>
                       <div>
                         <h4>Return Value</h4>
-                        <p>base64 encoded transaction envelope xdr</p>
+                        <p>Base64-encoded transaction envelope XDR.</p>
                       </div>
                       <div class="slightly-smaller">
-                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L121-L226">Show on GitHub</a>
+                        <a href="https://github.com/Soneso/stellar-ios-mac-sdk/tree/master/stellarsdk/stellarsdk/txrep/TxRep.swift#L69-L74">Show on GitHub</a>
                       </div>
                     </section>
                   </div>
