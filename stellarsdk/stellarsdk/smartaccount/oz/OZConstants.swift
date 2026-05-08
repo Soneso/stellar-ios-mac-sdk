@@ -1,0 +1,46 @@
+//
+//  OZConstants.swift
+//  stellarsdk
+//
+//  Copyright (c) 2026 Soneso. All rights reserved.
+//
+
+import Foundation
+
+/// Configuration defaults and contract limits for OpenZeppelin smart account operations.
+public enum OZConstants {
+
+    /// Default session expiry in milliseconds (7 days).
+    public static let defaultSessionExpiryMs: Int64 = 604_800_000
+
+    /// Default HTTP timeout for indexer requests in milliseconds (10 seconds).
+    public static let defaultIndexerTimeoutMs: Int64 = 10_000
+
+    /// Default HTTP timeout for relayer requests in milliseconds (6 minutes).
+    public static let defaultRelayerTimeoutMs: Int64 = 360_000
+
+    /// Timeout for WebAuthn credential operations in milliseconds (60 seconds).
+    public static let webAuthnTimeoutMs: Int64 = 60_000
+
+    /// XLM amount retained in the temporary account as minimum balance reserve when
+    /// transferring Friendbot funds to a smart account wallet.
+    public static let friendbotReserveXlm: Int = 5
+
+    /// Default timeout for transaction submission and polling in seconds.
+    public static let defaultTimeoutSeconds: Int = 30
+
+    /// Maximum signers per context rule (OpenZeppelin contract limit).
+    public static let maxSigners: Int = 15
+
+    /// Maximum policies per context rule (OpenZeppelin contract limit).
+    public static let maxPolicies: Int = 5
+
+    /// HTTP header name identifying the SDK name in indexer and relayer requests.
+    public static let clientNameHeader: String = "X-Client-Name"
+
+    /// HTTP header name identifying the SDK version in indexer and relayer requests.
+    public static let clientVersionHeader: String = "X-Client-Version"
+
+    /// SDK identifier value for the iOS Stellar SDK, sent in client identification headers.
+    public static let clientName: String = "ios-stellar-sdk"
+}
