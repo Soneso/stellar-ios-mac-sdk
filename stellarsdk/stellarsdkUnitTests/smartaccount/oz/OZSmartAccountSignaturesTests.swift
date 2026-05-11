@@ -455,6 +455,29 @@ final class OZSmartAccountSignaturesTests: XCTestCase {
         XCTAssertEqual(entries?.count, 2)
     }
 
+    // MARK: - Cross-SDK byte-identity golden vector (WebAuthnSignature)
+    //
+    // Pins the byte-level XDR encoding of `OZWebAuthnSignature.toScVal()`. The
+    // fixture inputs (37 bytes 0xAA, 16 bytes 0xBB, 64 bytes 0xCC) are chosen
+    // so any drift in field name (`client_data` vs `client_data_json`),
+    // alphabetical key ordering, or value-bytes encoding produces a different
+    // hex output and breaks the cross-SDK test in lockstep.
+
+    func test_phase4_goldenVector6_webAuthnSignatureWireShape_matchesFixture() throws {
+        let signature = try OZWebAuthnSignature(
+            authenticatorData: Data(repeating: 0xAA, count: 37),
+            clientData: Data(repeating: 0xBB, count: 16),
+            signature: Data(repeating: 0xCC, count: 64)
+        )
+        let scVal = signature.toScVal()
+        let encoded = try Data(XDREncoder.encode(scVal))
+        let actualHex = encoded.base16EncodedString().lowercased()
+        let expectedHex =
+            "0000001100000001000000030000000f0000001261757468656e74696361746f725f6461746100000000000d00000025aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa0000000000000f0000000b636c69656e745f64617461000000000d00000010bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb0000000f000000097369676e61747572650000000000000d00000040cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        XCTAssertEqual(actualHex, expectedHex,
+                       "Golden vector 6 mismatch — actual: \(actualHex)")
+    }
+
     // MARK: - Helpers
 
     private func makeWebAuthn(

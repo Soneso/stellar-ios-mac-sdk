@@ -379,6 +379,81 @@ final class OZSmartAccountAuthTests: XCTestCase {
         XCTAssertNotEqual(d1, d2)
     }
 
+    // MARK: - Cross-SDK byte-identity golden vectors (auth-digest)
+    //
+    // These tests pin the byte-level output of the OZ auth-digest formula so a
+    // wire-format regression in this SDK or in a sibling SDK fails immediately
+    // rather than silently shipping divergent encodings. The expected hex
+    // strings are byte-identical across SDKs and must be updated in lockstep.
+
+    func test_phase4_goldenVector1_emptyRulesMinimalPayload_authDigest_matchesFixture() async throws {
+        let signaturePayload = Data("test1".utf8).sha256Hash
+        let digest = try await OZSmartAccountAuth.buildAuthDigest(
+            signaturePayload: signaturePayload,
+            contextRuleIds: []
+        )
+        let actualHex = digest.base16EncodedString().lowercased()
+        let expectedHex = "78946b8d3c459fd2e9d6d786a49c0c37d3d37d2baff912ed4be618dd6a8712bd"
+        XCTAssertEqual(actualHex, expectedHex,
+                       "Golden vector 1 mismatch — actual: \(actualHex)")
+    }
+
+    func test_phase4_goldenVector2_singleContextRule_authDigest_matchesFixture() async throws {
+        let signaturePayload = Data("test2".utf8).sha256Hash
+        let digest = try await OZSmartAccountAuth.buildAuthDigest(
+            signaturePayload: signaturePayload,
+            contextRuleIds: [42]
+        )
+        let actualHex = digest.base16EncodedString().lowercased()
+        let expectedHex = "7f8310bb95276dd3c34ed9f3cd0a1bca75fea31643758738ba91a3894922a627"
+        XCTAssertEqual(actualHex, expectedHex,
+                       "Golden vector 2 mismatch — actual: \(actualHex)")
+    }
+
+    func test_phase4_goldenVector3_unsortedContextRules_authDigest_matchesFixture() async throws {
+        // contextRuleIds must be bound in INSERTION order, not sorted. The
+        // Vec encoding [3, 1, 2] must NOT silently become [1, 2, 3] — a sort
+        // would weaken the digest's binding semantics.
+        let signaturePayload = Data("test3".utf8).sha256Hash
+        let digest = try await OZSmartAccountAuth.buildAuthDigest(
+            signaturePayload: signaturePayload,
+            contextRuleIds: [3, 1, 2]
+        )
+        let actualHex = digest.base16EncodedString().lowercased()
+        let expectedHex = "574421ac5094e4b6de31938a52a3c641f61b8504c92c3ee40fc94810f8f9d752"
+        XCTAssertEqual(actualHex, expectedHex,
+                       "Golden vector 3 mismatch — actual: \(actualHex)")
+
+        // Cross-check: the same payload with [1, 2, 3] must produce a
+        // different digest, proving the codec preserves insertion order.
+        let sortedDigest = try await OZSmartAccountAuth.buildAuthDigest(
+            signaturePayload: signaturePayload,
+            contextRuleIds: [1, 2, 3]
+        )
+        XCTAssertNotEqual(digest, sortedDigest,
+                          "Insertion-ordered and sorted contextRuleIds must produce different digests")
+    }
+
+    func test_phase4_goldenVector4_longSignaturePayload_authDigest_matchesFixture() async throws {
+        // 256-byte deterministic signaturePayload built from 8 sha256 chunks
+        // exercising the multi-block hashing path.
+        var signaturePayload = Data(capacity: 256)
+        for tag in ["test4-a", "test4-b", "test4-c", "test4-d",
+                    "test4-e", "test4-f", "test4-g", "test4-h"] {
+            signaturePayload.append(Data(tag.utf8).sha256Hash)
+        }
+        XCTAssertEqual(signaturePayload.count, 256)
+
+        let digest = try await OZSmartAccountAuth.buildAuthDigest(
+            signaturePayload: signaturePayload,
+            contextRuleIds: [100, 200]
+        )
+        let actualHex = digest.base16EncodedString().lowercased()
+        let expectedHex = "3f1b91ae753b805962516838fab26cc1933e01c8750290a852256ab0cba338d9"
+        XCTAssertEqual(actualHex, expectedHex,
+                       "Golden vector 4 mismatch — actual: \(actualHex)")
+    }
+
     func testSignAuthEntry_contextRuleIdsArePreservedInPayload() async throws {
         let entry = try makeEntry()
         let signer = try OZDelegatedSigner(address: validAccountG)
