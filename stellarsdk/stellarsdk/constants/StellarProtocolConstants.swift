@@ -230,6 +230,29 @@ public struct StellarProtocolConstants: Sendable {
     /// Reference: [Stellar developer docs](https://developers.stellar.org)
     public static let MIN_BASE_FEE: UInt32 = 100
 
+    // MARK: - Amount Conversion
+
+    /// Number of stroops in one XLM (1 XLM = 10,000,000 stroops).
+    ///
+    /// The stroop is the smallest indivisible unit of the native asset on the Stellar network.
+    /// Reference: [Stellar developer docs](https://developers.stellar.org)
+    public static let stroopsPerXlm: Int64 = 10_000_000
+
+    // MARK: - Ledger Timing
+
+    /// Average number of ledgers closed per hour on the Stellar network.
+    ///
+    /// The Stellar network targets a five-second ledger close interval, which yields
+    /// 3600 / 5 = 720 ledgers per hour. Actual close times vary; use this value only
+    /// for approximate time-based period calculations.
+    public static let ledgersPerHour: Int = 720
+
+    /// Average number of ledgers closed per day on the Stellar network.
+    ///
+    /// Derived from `ledgersPerHour * 24` = 17,280. Actual close times vary; use this
+    /// value only for approximate time-based period calculations.
+    public static let ledgersPerDay: Int = 17_280
+
     // MARK: - Signed Payload
 
     /// Maximum length for signed payload data (64 bytes)

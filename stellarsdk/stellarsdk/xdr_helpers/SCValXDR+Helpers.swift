@@ -311,6 +311,22 @@ extension SCValXDR {
         return .i128(Int128PartsXDR(hi: Int64(bitPattern: parts.hi), lo: parts.lo))
     }
 
+    /// Creates an SCValXDR with i128 type from a stroops value.
+    ///
+    /// Widens an `Int64` stroops value to a signed 128-bit integer by sign-extending into
+    /// the high 64 bits: non-negative values produce `hi = 0`; negative values produce
+    /// `hi = -1` (all bits set, i.e. `UInt64.max` when interpreted as a bit pattern). This
+    /// widening is always exact — every `Int64` value fits within the i128 range without
+    /// loss.
+    ///
+    /// - Parameter stroops: Amount in stroops as `Int64`.
+    /// - Returns: An `SCValXDR.i128` value carrying the supplied amount.
+    public static func i128(stroops: Int64) -> SCValXDR {
+        let lo = UInt64(bitPattern: stroops)
+        let hi: Int64 = stroops < 0 ? -1 : 0
+        return .i128(Int128PartsXDR(hi: hi, lo: lo))
+    }
+
     /// Creates an SCValXDR with u256 type from a string representation of an unsigned 256-bit integer
     public static func u256(stringValue: String) throws -> SCValXDR {
         let parts = try bigInt256Parts(from: stringValue, signed: false)

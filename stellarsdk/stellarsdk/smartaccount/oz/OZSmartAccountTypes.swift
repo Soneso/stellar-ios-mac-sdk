@@ -1,5 +1,5 @@
 //
-//  SmartAccountTypes.swift
+//  OZSmartAccountTypes.swift
 //  stellarsdk
 //
 //  Copyright (c) 2026 Soneso. All rights reserved.
@@ -11,26 +11,26 @@ import Foundation
 // Signer Types
 // ============================================================================
 
-/// Represents a signer that can authorize Smart Account transactions.
+/// Represents a signer that can authorize OpenZeppelin Smart Account transactions.
 ///
 /// Smart account signers describe who can authorize transactions on the wallet contract.
 /// Two concrete signer types exist:
-/// - `DelegatedSigner`: A Soroban address (`G…` for accounts or `C…` for contracts) using
+/// - `OZDelegatedSigner`: A Soroban address (`G…` for accounts or `C…` for contracts) using
 ///   the host's built-in `require_auth` verification.
-/// - `ExternalSigner`: A verifier-contract address combined with public-key bytes that
+/// - `OZExternalSigner`: A verifier-contract address combined with public-key bytes that
 ///   describe a custom signature scheme (e.g. WebAuthn / secp256r1, Ed25519).
 ///
 /// Example:
 /// ```swift
-/// let delegated = try DelegatedSigner(address: "GA7Q...")
-/// let webAuthn = try ExternalSigner.webAuthn(
+/// let delegated = try OZDelegatedSigner(address: "GA7Q...")
+/// let webAuthn = try OZExternalSigner.webAuthn(
 ///     verifierAddress: "CBCD...",
 ///     publicKey: publicKeyBytes,
 ///     credentialId: credentialIdBytes
 /// )
 /// let scVal = try delegated.toScVal()
 /// ```
-public protocol SmartAccountSigner: Sendable {
+public protocol OZSmartAccountSigner: Sendable {
 
     /// Converts this signer to its on-chain `SCValXDR` representation for contract calls.
     ///
@@ -48,7 +48,7 @@ public protocol SmartAccountSigner: Sendable {
 }
 
 // ============================================================================
-// Delegated Signer
+// OZDelegatedSigner
 // ============================================================================
 
 /// A signer authorized through a Soroban address using the host's `require_auth` mechanism.
@@ -60,15 +60,15 @@ public protocol SmartAccountSigner: Sendable {
 ///
 /// Example:
 /// ```swift
-/// let accountSigner = try DelegatedSigner(address: "GA7QYNF7SOWQ...")
-/// let contractSigner = try DelegatedSigner(address: "CBCD1234...")
+/// let accountSigner = try OZDelegatedSigner(address: "GA7QYNF7SOWQ...")
+/// let contractSigner = try OZDelegatedSigner(address: "CBCD1234...")
 /// ```
-public struct DelegatedSigner: SmartAccountSigner, Equatable, Hashable {
+public struct OZDelegatedSigner: OZSmartAccountSigner, Equatable, Hashable {
 
     /// The Stellar address of the signer (`G…` for accounts, `C…` for contracts).
     public let address: String
 
-    /// Initializes a new `DelegatedSigner`.
+    /// Initializes a new `OZDelegatedSigner`.
     ///
     /// - Parameter address: The Stellar address of the signer; must be a valid `G…` strkey
     ///   or `C…` strkey.
@@ -105,7 +105,7 @@ public struct DelegatedSigner: SmartAccountSigner, Equatable, Hashable {
             return .vec(elements)
         } catch {
             throw ValidationException.InvalidInput(
-                message: "Failed to convert DelegatedSigner to ScVal: \(error.localizedDescription)",
+                message: "Failed to convert OZDelegatedSigner to ScVal: \(error.localizedDescription)",
                 cause: error
             )
         }
@@ -116,7 +116,7 @@ public struct DelegatedSigner: SmartAccountSigner, Equatable, Hashable {
 }
 
 // ============================================================================
-// External Signer
+// OZExternalSigner
 // ============================================================================
 
 /// A signer that delegates signature verification to a custom verifier contract.
@@ -131,17 +131,17 @@ public struct DelegatedSigner: SmartAccountSigner, Equatable, Hashable {
 ///
 /// Example:
 /// ```swift
-/// let webAuthn = try ExternalSigner.webAuthn(
+/// let webAuthn = try OZExternalSigner.webAuthn(
 ///     verifierAddress: "CBCD1234...",
 ///     publicKey: secp256r1PublicKey,
 ///     credentialId: credentialId
 /// )
-/// let ed25519 = try ExternalSigner.ed25519(
+/// let ed25519 = try OZExternalSigner.ed25519(
 ///     verifierAddress: "CDEF5678...",
 ///     publicKey: ed25519PublicKey
 /// )
 /// ```
-public struct ExternalSigner: SmartAccountSigner, Equatable, Hashable {
+public struct OZExternalSigner: OZSmartAccountSigner, Equatable, Hashable {
 
     /// Contract address (`C…` strkey) of the signature verifier.
     public let verifierAddress: String
@@ -150,7 +150,7 @@ public struct ExternalSigner: SmartAccountSigner, Equatable, Hashable {
     /// credential id appended to the public key).
     public let keyData: Data
 
-    /// Initializes a new `ExternalSigner` with raw verifier address and key data.
+    /// Initializes a new `OZExternalSigner` with raw verifier address and key data.
     ///
     /// Most callers should prefer the `webAuthn` or `ed25519` factories, which validate the
     /// concrete public-key format before constructing the signer.
@@ -191,7 +191,7 @@ public struct ExternalSigner: SmartAccountSigner, Equatable, Hashable {
             return .vec(elements)
         } catch {
             throw ValidationException.InvalidInput(
-                message: "Failed to convert ExternalSigner to ScVal: \(error.localizedDescription)",
+                message: "Failed to convert OZExternalSigner to ScVal: \(error.localizedDescription)",
                 cause: error
             )
         }
@@ -209,9 +209,9 @@ public struct ExternalSigner: SmartAccountSigner, Equatable, Hashable {
     ///   - lhs: The first signer to compare.
     ///   - rhs: The second signer to compare.
     /// - Returns: `true` when both `verifierAddress` and `keyData` match.
-    public static func == (lhs: ExternalSigner, rhs: ExternalSigner) -> Bool {
+    public static func == (lhs: OZExternalSigner, rhs: OZExternalSigner) -> Bool {
         let addressMatch = lhs.verifierAddress == rhs.verifierAddress
-        let keyMatch = ExternalSigner.constantTimeEquals(lhs.keyData, rhs.keyData)
+        let keyMatch = OZExternalSigner.constantTimeEquals(lhs.keyData, rhs.keyData)
         // Use bitwise AND (Bool conversion via Int) to avoid short-circuit evaluation,
         // so both comparisons always run regardless of the address result.
         return (addressMatch ? 1 : 0) & (keyMatch ? 1 : 0) == 1
@@ -236,7 +236,7 @@ public struct ExternalSigner: SmartAccountSigner, Equatable, Hashable {
     ///   - publicKey: Uncompressed secp256r1 public key (`SmartAccountConstants.secp256r1PublicKeySize`
     ///     bytes; first byte must equal `SmartAccountConstants.uncompressedPubkeyPrefix`).
     ///   - credentialId: WebAuthn credential identifier; must not be empty.
-    /// - Returns: An `ExternalSigner` configured for WebAuthn signature verification.
+    /// - Returns: An `OZExternalSigner` configured for WebAuthn signature verification.
     /// - Throws:
     ///   - `ValidationException.InvalidInput` if `publicKey` is the wrong size, has the
     ///     wrong leading byte, or `credentialId` is empty.
@@ -245,7 +245,7 @@ public struct ExternalSigner: SmartAccountSigner, Equatable, Hashable {
         verifierAddress: String,
         publicKey: Data,
         credentialId: Data
-    ) throws -> ExternalSigner {
+    ) throws -> OZExternalSigner {
         if publicKey.count != SmartAccountConstants.secp256r1PublicKeySize {
             throw ValidationException.invalidInput(
                 field: "publicKey",
@@ -265,7 +265,7 @@ public struct ExternalSigner: SmartAccountSigner, Equatable, Hashable {
         var keyData = Data()
         keyData.append(publicKey)
         keyData.append(credentialId)
-        return try ExternalSigner(verifierAddress: verifierAddress, keyData: keyData)
+        return try OZExternalSigner(verifierAddress: verifierAddress, keyData: keyData)
     }
 
     /// Creates an Ed25519 external signer using a 32-byte Ed25519 public key.
@@ -273,21 +273,21 @@ public struct ExternalSigner: SmartAccountSigner, Equatable, Hashable {
     /// - Parameters:
     ///   - verifierAddress: Contract address (`C…` strkey) of the Ed25519 verifier.
     ///   - publicKey: Ed25519 public key (`SmartAccountConstants.ed25519PublicKeySize` bytes).
-    /// - Returns: An `ExternalSigner` configured for Ed25519 signature verification.
+    /// - Returns: An `OZExternalSigner` configured for Ed25519 signature verification.
     /// - Throws:
     ///   - `ValidationException.InvalidInput` if `publicKey` is not 32 bytes long.
     ///   - `ValidationException.InvalidAddress` if `verifierAddress` is not a valid `C…` strkey.
     public static func ed25519(
         verifierAddress: String,
         publicKey: Data
-    ) throws -> ExternalSigner {
+    ) throws -> OZExternalSigner {
         if publicKey.count != SmartAccountConstants.ed25519PublicKeySize {
             throw ValidationException.invalidInput(
                 field: "publicKey",
                 reason: "Ed25519 public key must be \(SmartAccountConstants.ed25519PublicKeySize) bytes, got: \(publicKey.count)"
             )
         }
-        return try ExternalSigner(verifierAddress: verifierAddress, keyData: publicKey)
+        return try OZExternalSigner(verifierAddress: verifierAddress, keyData: publicKey)
     }
 
     /// Constant-time byte comparison.

@@ -458,7 +458,7 @@ final class WebAuthnCborParserTests: XCTestCase {
     }
 
     // =========================================================================
-    // 5. skipCborValue (12 cases — full enumeration mirroring KMP names)
+    // 5. skipCborValue (12 cases — full enumeration)
     // =========================================================================
 
     func test_skip_cbor_value_unsigned_integer_inline() {

@@ -92,7 +92,7 @@ final class WebAuthnProviderTests: XCTestCase {
     }
 
     // =========================================================================
-    // Authenticator data flag parsing tests (mirrors KMP ProviderTest 405-525)
+    // Authenticator data flag parsing tests
     // =========================================================================
 
     func test_authenticator_data_flags_user_present() {
@@ -199,7 +199,7 @@ final class WebAuthnProviderTests: XCTestCase {
     }
 
     // =========================================================================
-    // WebAuthnRegistrationResult DTO tests (mirrors KMP ProviderTest 868-928)
+    // WebAuthnRegistrationResult DTO tests
     // =========================================================================
 
     func test_webauthn_registration_result_equality() {
@@ -260,7 +260,7 @@ final class WebAuthnProviderTests: XCTestCase {
     }
 
     // =========================================================================
-    // WebAuthnAuthenticationResult DTO tests (mirrors KMP ProviderTest 935-979)
+    // WebAuthnAuthenticationResult DTO tests
     // =========================================================================
 
     func test_webauthn_authentication_result_equality() {

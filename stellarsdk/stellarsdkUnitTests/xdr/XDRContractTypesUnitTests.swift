@@ -1214,4 +1214,59 @@ class XDRContractTypesUnitTests: XCTestCase {
         if case .duration(let d) = mapEntries[0].val { XCTAssertEqual(d, 3600) }
         else { XCTFail("Expected duration value") }
     }
+
+    // MARK: - SCValXDR.i128(stroops:) factory
+
+    func testI128FromStroops_smallPositive_isI128() {
+        let scVal = SCValXDR.i128(stroops: 123)
+        XCTAssertTrue(scVal.isI128)
+    }
+
+    func testI128FromStroops_zero_hiIsZeroLoIsZero() {
+        let scVal = SCValXDR.i128(stroops: 0)
+        guard let parts = scVal.i128 else {
+            return XCTFail("Expected i128 parts")
+        }
+        XCTAssertEqual(parts.hi, 0)
+        XCTAssertEqual(parts.lo, 0)
+    }
+
+    func testI128FromStroops_positive_hiIsZero() {
+        let scVal = SCValXDR.i128(stroops: 10_000_000)
+        guard let parts = scVal.i128 else {
+            return XCTFail("Expected i128 parts")
+        }
+        XCTAssertEqual(parts.hi, 0)
+        XCTAssertEqual(parts.lo, UInt64(10_000_000))
+    }
+
+    func testI128FromStroops_int64Max_hiIsZero() {
+        let scVal = SCValXDR.i128(stroops: Int64.max)
+        guard let parts = scVal.i128 else {
+            return XCTFail("Expected i128 parts")
+        }
+        XCTAssertEqual(parts.hi, 0)
+        XCTAssertEqual(parts.lo, UInt64(bitPattern: Int64.max))
+    }
+
+    func testI128FromStroops_negative_hiIsMinusOne() {
+        // Negative Int64 sign-extends to hi = -1.
+        let scVal = SCValXDR.i128(stroops: -1)
+        guard let parts = scVal.i128 else {
+            return XCTFail("Expected i128 parts")
+        }
+        XCTAssertEqual(parts.hi, -1)
+        XCTAssertEqual(parts.lo, UInt64.max)
+    }
+
+    func testI128FromStroops_matchesStringValueFactory() throws {
+        let stroops: Int64 = 9_223_372_036_850_000_000
+        let fromStroops = SCValXDR.i128(stroops: stroops)
+        let fromString = try SCValXDR.i128(stringValue: String(stroops))
+        guard let partsA = fromStroops.i128, let partsB = fromString.i128 else {
+            return XCTFail("Expected i128 parts from both factories")
+        }
+        XCTAssertEqual(partsA.hi, partsB.hi)
+        XCTAssertEqual(partsA.lo, partsB.lo)
+    }
 }

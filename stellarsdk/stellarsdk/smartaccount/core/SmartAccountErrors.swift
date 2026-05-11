@@ -130,10 +130,10 @@ public enum SmartAccountErrorCode: Int, Sendable, CaseIterable {
     /// An HTTP request to the indexer timed out.
     case indexerTimeout = 10002
 
-    /// Stable numeric error code identical across all platform SDKs.
+    /// Stable numeric error code.
     ///
-    /// Equivalent to `rawValue`; provided as a named accessor so cross-platform comparisons
-    /// read uniformly when ported across SDKs.
+    /// Equivalent to `rawValue`; provided as a named accessor so callers can refer to
+    /// the error code by name without depending on the underlying enum representation.
     public var code: Int { rawValue }
 }
 
