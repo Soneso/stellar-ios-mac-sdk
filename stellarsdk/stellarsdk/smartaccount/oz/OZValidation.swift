@@ -7,9 +7,7 @@
 
 import Foundation
 
-// ============================================================================
-// Address validation helpers
-// ============================================================================
+// MARK: - Address validation helpers
 
 /// Validates that the supplied string is a valid Stellar contract address (`C…`).
 ///
@@ -53,20 +51,30 @@ internal func requireStellarAddress(_ address: String, fieldName: String) throws
 
 /// Returns `true` when the supplied URL is a localhost URL safe for development.
 ///
-/// Matches `http://localhost` exactly, or followed by `:` (port) or `/` (path).
-/// URLs such as `http://localhost.evil.com` are deliberately rejected.
+/// Parses the URL via `URLComponents` and requires the resolved host to match
+/// `localhost`, `127.0.0.1`, or `[::1]` exactly. URLs that smuggle a different
+/// host through userinfo (for example `http://localhost:8080@evil.com/`, where
+/// RFC 3986 parses `localhost:8080` as userinfo and `evil.com` as the host) are
+/// rejected, as are any URLs that carry userinfo at all.
 ///
 /// - Parameter url: The URL string to check.
 /// - Returns: `true` when the URL refers to localhost over HTTP, otherwise `false`.
 internal func isLocalhostUrl(_ url: String) -> Bool {
-    let prefix = "http://localhost"
-    if !url.hasPrefix(prefix) { return false }
-    let suffix = url.dropFirst(prefix.count)
-    if suffix.isEmpty { return true }
-    // why: an explicit boundary check on the character following "localhost"
-    // is what rejects host-confusion attacks such as "http://localhost.evil.com".
-    // A naive `hasPrefix` test would accept that string and route traffic to an
-    // attacker-controlled host.
-    let first = suffix[suffix.startIndex]
-    return first == ":" || first == "/"
+    guard let components = URLComponents(string: url),
+          components.scheme?.lowercased() == "http" else {
+        return false
+    }
+    guard let host = components.host?.lowercased() else {
+        return false
+    }
+    if host != "localhost" && host != "127.0.0.1" && host != "[::1]" {
+        return false
+    }
+    // why: even with a localhost host, the presence of userinfo signals an
+    // attempted host-confusion attack — reject it outright rather than risk
+    // a parser disagreement between this check and `URLSession`.
+    if components.user != nil || components.password != nil {
+        return false
+    }
+    return true
 }

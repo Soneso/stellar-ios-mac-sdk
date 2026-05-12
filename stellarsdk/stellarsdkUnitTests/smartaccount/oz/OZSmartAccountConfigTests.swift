@@ -373,9 +373,44 @@ final class OZSmartAccountConfigTests: XCTestCase {
             indexerUrl: nil
         )
 
-        // The exact URL depends on the SDK's default-indexer table; this assertion
-        // only checks that the call resolves without throwing or trapping.
-        _ = config.effectiveIndexerUrl()
+        // Testnet has a built-in default indexer URL sourced from
+        // OZIndexerClient.defaultIndexerUrls; with no explicit override the resolved
+        // URL must be that default.
+        let resolved = config.effectiveIndexerUrl()
+        XCTAssertEqual(
+            OZIndexerClient.getDefaultUrl(networkPassphrase: validPassphrase),
+            resolved
+        )
+        XCTAssertNotNil(resolved)
+        XCTAssertTrue(resolved!.hasPrefix("https://"))
+    }
+
+    func testEffectiveIndexerUrl_mainnetReturnsIndexerUrl() throws {
+        let config = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: Network.public.passphrase,
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier
+        )
+
+        let resolved = config.effectiveIndexerUrl()
+        XCTAssertEqual(
+            OZIndexerClient.getDefaultUrl(networkPassphrase: Network.public.passphrase),
+            resolved
+        )
+        XCTAssertNotNil(resolved)
+        XCTAssertTrue(resolved!.hasPrefix("https://"))
+    }
+
+    func testEffectiveIndexerUrl_unknownNetworkReturnsNil() throws {
+        let config = try OZSmartAccountConfig(
+            rpcUrl: validRpcUrl,
+            networkPassphrase: "Unknown Network ; January 2099",
+            accountWasmHash: validWasmHash,
+            webauthnVerifierAddress: validVerifier
+        )
+
+        XCTAssertNil(config.effectiveIndexerUrl())
     }
 
     // MARK: - effectiveDeployer Tests

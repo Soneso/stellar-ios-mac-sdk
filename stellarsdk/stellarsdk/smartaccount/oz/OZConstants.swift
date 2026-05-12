@@ -43,4 +43,20 @@ public enum OZConstants {
 
     /// SDK identifier value for the iOS Stellar SDK, sent in client identification headers.
     public static let clientName: String = "ios-stellar-sdk"
+
+    /// Maximum size in bytes for indexer HTTP response bodies (1 MiB).
+    ///
+    /// `URLSession.data(for:)` buffers the entire response into memory before
+    /// returning; capping the accepted size protects the SDK process from a
+    /// compromised remote service returning an arbitrarily large body. The
+    /// indexer's largest documented response shape (a contract-details payload
+    /// with hundreds of context rules) fits comfortably under this limit.
+    public static let maxIndexerResponseBytes: Int = 1 * 1024 * 1024
+
+    /// Maximum size in bytes for relayer HTTP response bodies (256 KiB).
+    ///
+    /// Relayer responses carry at most a transaction hash plus a short status
+    /// or error message; any larger payload is treated as a protocol failure
+    /// and surfaces as `OZRelayerResponse(success: false, ...)`.
+    public static let maxRelayerResponseBytes: Int = 256 * 1024
 }

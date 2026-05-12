@@ -316,17 +316,17 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
 
     /// Returns the indexer URL that will be used after applying fallback logic.
     ///
-    /// If an indexer URL is explicitly configured, it is returned. Otherwise falls back
-    /// to the built-in default URL for well-known networks (testnet has a default;
-    /// mainnet does not).
+    /// If an indexer URL is explicitly configured, it is returned. Otherwise the
+    /// built-in default for the configured network passphrase is returned, sourced
+    /// from `OZIndexerClient.getDefaultUrl(networkPassphrase:)`. Returns `nil` when
+    /// no URL is configured and no default exists for the network.
     ///
-    /// - Returns: The resolved indexer URL, or `nil` when no URL is configured and no
-    ///            default exists for the network.
+    /// - Returns: The resolved indexer URL, or `nil`.
     public func effectiveIndexerUrl() -> String? {
         if let explicit = indexerUrl {
             return explicit
         }
-        return OZSmartAccountConfig.defaultIndexerUrl(forNetworkPassphrase: networkPassphrase)
+        return OZIndexerClient.getDefaultUrl(networkPassphrase: networkPassphrase)
     }
 
     // MARK: - Private helpers
@@ -346,14 +346,6 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
             }
         }
         return true
-    }
-
-    /// Returns the built-in default indexer URL for a known network passphrase.
-    ///
-    /// Returns `nil` for unknown passphrases and for mainnet, which has no default
-    /// indexer endpoint.
-    private static func defaultIndexerUrl(forNetworkPassphrase passphrase: String) -> String? {
-        return nil
     }
 
     // MARK: - Builder

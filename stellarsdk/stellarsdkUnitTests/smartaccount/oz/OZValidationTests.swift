@@ -74,4 +74,52 @@ final class OZValidationTests: XCTestCase {
         XCTAssertFalse(isLocalhostUrl("https://localhost"))
         XCTAssertFalse(isLocalhostUrl("http://example.com"))
     }
+
+    func test_isLocalhostUrl_userinfoBypass_rejected() {
+        // RFC 3986 parses "localhost:8080" / "localhost" / "localhost:1" before the
+        // "@" as userinfo and the segment after as the host; any URL whose effective
+        // host is attacker-controlled must be rejected even though it carries the
+        // literal "localhost" token.
+        XCTAssertFalse(isLocalhostUrl("http://localhost:8080@evil.com"))
+        XCTAssertFalse(isLocalhostUrl("http://localhost:8080@evil.com/"))
+        XCTAssertFalse(isLocalhostUrl("http://localhost@evil.com"))
+        XCTAssertFalse(isLocalhostUrl("http://localhost:1@evil.com/"))
+    }
+
+    func test_isLocalhostUrl_loopbackHosts_accepted() {
+        XCTAssertTrue(isLocalhostUrl("http://127.0.0.1"))
+        XCTAssertTrue(isLocalhostUrl("http://127.0.0.1:8080"))
+        XCTAssertTrue(isLocalhostUrl("http://[::1]"))
+        XCTAssertTrue(isLocalhostUrl("http://[::1]:8080"))
+    }
+
+    // MARK: - ozResponseIsJson
+
+    func test_ozResponseIsJson_rejects_lookalikeJsonSuffixes() {
+        // why: a prefix-only check admits unrelated media types such as
+        // `application/jsonx` or `application/json5`. The media-type match
+        // must use strict equality after stripping `;`-delimited
+        // parameters.
+        XCTAssertFalse(ozResponseIsJson("application/jsonx"))
+        XCTAssertFalse(ozResponseIsJson("application/json5"))
+        XCTAssertFalse(ozResponseIsJson("application/json-patch+json"))
+    }
+
+    func test_ozResponseIsJson_acceptsParameterizedJsonContentType() {
+        // why: real servers commonly suffix the JSON media type with a
+        // `;` charset parameter; the equality check must occur on the
+        // canonical media type rather than the raw header string.
+        XCTAssertTrue(ozResponseIsJson("application/json; charset=utf-8"))
+        XCTAssertTrue(ozResponseIsJson("application/json;charset=utf-8"))
+        XCTAssertTrue(ozResponseIsJson("  Application/JSON  ; charset=utf-8"))
+        XCTAssertTrue(ozResponseIsJson("application/problem+json; charset=utf-8"))
+    }
+
+    func test_ozResponseIsJson_nilHeader_treatedAsJson() {
+        // why: well-behaved endpoints sometimes omit `Content-Type` on
+        // short success responses. The helper must remain permissive in
+        // that case so a missing header does not surface as a transport
+        // failure.
+        XCTAssertTrue(ozResponseIsJson(nil))
+    }
 }
