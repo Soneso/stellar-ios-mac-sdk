@@ -55,6 +55,81 @@ final class MockOZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Sendabl
         return created
     }
 
+    // MARK: - Manager surface
+
+    private let managerLock = NSLock()
+    private var _signerManager: OZSignerManager?
+    private var _policyManager: OZPolicyManager?
+    private var _multiSignerManager: OZMultiSignerManager?
+
+    /// Test override for ``signerManager``. When set, the supplied instance is
+    /// returned instead of the lazily-constructed default.
+    var signerManagerOverride: OZSignerManager?
+
+    /// Test override for ``policyManager``.
+    var policyManagerOverride: OZPolicyManager?
+
+    /// Test override for ``multiSignerManager``. Tests that need to assert
+    /// invocation behaviour install a recording subclass here.
+    var multiSignerManagerOverride: OZMultiSignerManager?
+
+    /// Test override for ``externalSignerManager``. Defaults to `nil` so the
+    /// kit reports no external-signer support unless a test installs one.
+    var externalSignerManagerOverride: OZExternalSignerManager?
+
+    /// Lazily-constructed signer manager bound to this kit. Returns the
+    /// override when one is installed.
+    var signerManager: OZSignerManager {
+        if let override = signerManagerOverride { return override }
+        managerLock.lock()
+        defer { managerLock.unlock() }
+        if let existing = _signerManager { return existing }
+        let created = OZSignerManager(kit: self)
+        _signerManager = created
+        return created
+    }
+
+    /// Lazily-constructed policy manager bound to this kit.
+    var policyManager: OZPolicyManager {
+        if let override = policyManagerOverride { return override }
+        managerLock.lock()
+        defer { managerLock.unlock() }
+        if let existing = _policyManager { return existing }
+        let created = OZPolicyManager(kit: self)
+        _policyManager = created
+        return created
+    }
+
+    /// Lazily-constructed multi-signer manager bound to this kit.
+    var multiSignerManager: OZMultiSignerManager {
+        if let override = multiSignerManagerOverride { return override }
+        managerLock.lock()
+        defer { managerLock.unlock() }
+        if let existing = _multiSignerManager { return existing }
+        let created = OZMultiSignerManager(kit: self)
+        _multiSignerManager = created
+        return created
+    }
+
+    /// Optional external-signer manager. Defaults to `nil`; tests install one
+    /// via ``externalSignerManagerOverride`` when wallet-signer paths are
+    /// exercised.
+    var externalSignerManager: OZExternalSignerManager? {
+        return externalSignerManagerOverride
+    }
+
+    /// Optional external-wallet adapter resolved from the kit's configuration.
+    var externalWallet: ExternalWalletAdapter? {
+        return config.externalWallet
+    }
+
+    /// Connected contract identifier or `nil` when no wallet is connected.
+    var contractId: String? {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return connectedContractId
+    }
+
     // MARK: - Test hooks
 
     /// Pre-set deployer keypair used for `getDeployer()`. When nil, a fresh
@@ -312,5 +387,43 @@ final class StubContextRuleManager: OZContextRuleManagerProtocol, @unchecked Sen
     func getAllContextRules() async throws -> [SCValXDR] {
         if let hook = throwOnGetAllContextRules { throw hook }
         return getAllContextRulesResult
+    }
+
+    // MARK: - Context-rule manager extended surface
+
+    /// Pre-set raw rule keyed by id for ``getContextRule(id:)``.
+    var getContextRuleResultsById: [UInt32: SCValXDR] = [:]
+
+    /// Pre-set parsed rule returned by ``parseContextRule(_:)``.
+    var parseContextRuleResult: ParsedContextRule?
+
+    /// Optional thrown error for ``getContextRule(id:)``.
+    var throwOnGetContextRule: SmartAccountException?
+
+    /// Optional thrown error for ``parseContextRule(_:)``.
+    var throwOnParseContextRule: SmartAccountException?
+
+    /// Records every call to ``getContextRule(id:)`` so tests can assert the
+    /// stub was consulted.
+    private(set) var getContextRuleCalls: [UInt32] = []
+
+    /// Counts every invocation of ``parseContextRule(_:)``.
+    private(set) var parseContextRuleCalls: Int = 0
+
+    func getContextRule(id: UInt32) async throws -> SCValXDR {
+        getContextRuleCalls.append(id)
+        if let hook = throwOnGetContextRule { throw hook }
+        if let value = getContextRuleResultsById[id] { return value }
+        return SCValXDR.void
+    }
+
+    func parseContextRule(_ scVal: SCValXDR) throws -> ParsedContextRule {
+        parseContextRuleCalls += 1
+        if let hook = throwOnParseContextRule { throw hook }
+        if let value = parseContextRuleResult { return value }
+        throw ValidationException.invalidInput(
+            field: "scVal",
+            reason: "Stub holds no parsed rule"
+        )
     }
 }

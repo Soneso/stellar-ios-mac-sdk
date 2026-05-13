@@ -136,6 +136,32 @@ internal protocol OZContextRuleManagerProtocol: AnyObject, Sendable {
     /// - Returns: Raw `Map` ScVal representation of each active rule.
     /// - Throws: ``TransactionException`` on simulation failure.
     func getAllContextRules() async throws -> [SCValXDR]
+
+    /// Retrieves the raw `SCValXDR` payload of a single context rule by its
+    /// numeric identifier.
+    ///
+    /// Issues a simulated host-function invocation against the connected
+    /// smart-account contract. Use ``parseContextRule(_:)`` to convert the
+    /// returned payload into the typed ``ParsedContextRule`` shape.
+    ///
+    /// - Parameter id: The context-rule identifier to look up.
+    /// - Returns: The raw `SCValXDR` payload returned by the contract.
+    /// - Throws: ``WalletException/NotConnected`` when no wallet is connected;
+    ///   ``TransactionException`` when the simulation fails.
+    func getContextRule(id: UInt32) async throws -> SCValXDR
+
+    /// Parses a raw context-rule `SCValXDR` payload into the typed
+    /// ``ParsedContextRule`` representation.
+    ///
+    /// Pure-function helper exposed on the protocol so callers (and test
+    /// doubles) can decode context-rule payloads without holding a typed
+    /// reference to the concrete context-rule manager.
+    ///
+    /// - Parameter scVal: The raw `SCValXDR` payload returned by the contract.
+    /// - Returns: A typed view over the rule's signers, signer ids, policies,
+    ///   policy ids, name, and expiration ledger.
+    /// - Throws: ``ValidationException`` when the payload is malformed.
+    func parseContextRule(_ scVal: SCValXDR) throws -> ParsedContextRule
 }
 
 // MARK: - OZSmartAccountKit Protocol
@@ -217,4 +243,33 @@ internal protocol OZSmartAccountKitProtocol: AnyObject, Sendable {
     ///   - credentialId: Base64URL-encoded credential identifier.
     ///   - contractId: Smart account contract address.
     func setConnectedState(credentialId: String, contractId: String)
+
+    /// Signer manager bound to this kit. Exposed through the protocol so
+    /// sibling managers and tests can resolve it without holding a typed
+    /// reference to the kit's concrete class.
+    var signerManager: OZSignerManager { get }
+
+    /// Policy manager bound to this kit.
+    var policyManager: OZPolicyManager { get }
+
+    /// Multi-signer manager bound to this kit. Coordinates signature
+    /// collection across passkey and wallet signers when a manager method is
+    /// invoked with a non-empty `selectedSigners` list.
+    var multiSignerManager: OZMultiSignerManager { get }
+
+    /// External-signer manager bound to this kit. Optional because the
+    /// manager is only constructed when external (Stellar G-address)
+    /// signers participate in the active configuration.
+    var externalSignerManager: OZExternalSignerManager? { get }
+
+    /// Active external-wallet adapter, when configured. Mirrors the
+    /// ``OZSmartAccountConfig/externalWallet`` value at the kit's
+    /// composition root so callers can resolve it from the protocol surface
+    /// without going through the configuration object.
+    var externalWallet: ExternalWalletAdapter? { get }
+
+    /// Connected smart-account contract identifier, when a wallet is
+    /// connected. Returns `nil` when no wallet is connected; callers that
+    /// require connectivity should use ``requireConnected()`` instead.
+    var contractId: String? { get }
 }

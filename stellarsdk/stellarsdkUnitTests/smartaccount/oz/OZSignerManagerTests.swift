@@ -1,0 +1,730 @@
+//
+//  OZSignerManagerTests.swift
+//  stellarsdkUnitTests
+//
+//  Copyright (c) 2026 Soneso. All rights reserved.
+//
+
+import XCTest
+@testable import stellarsdk
+
+/// Unit tests for ``OZSignerManager``.
+///
+/// Covers the host-function shapes the manager emits for `add_signer` and
+/// `remove_signer`, the validation surface across the four signer-addition
+/// paths (passkey, delegated, Ed25519, and the value-based remove overload),
+/// the routing of single- versus multi-signer submissions, and the
+/// signer-value resolution Group J.2 mandates against the on-chain context
+/// rule.
+///
+/// Network-dependent submission (the kit's transaction-operations pipeline) is
+/// exercised by integration tests; the unit-level coverage here focuses on
+/// argument preparation, validation, routing decisions, and the value-based
+/// remove path's id-resolution algorithm.
+final class OZSignerManagerTests: XCTestCase {
+
+    // ========================================================================
+    // MARK: - Fixtures
+    // ========================================================================
+
+    private let validGAddr1 = "GAAZI4TCR3TY5OJHCTJC2A4QSY6CJWJH5IAJTGKIN2ER7LBNVKOCCWN7"
+    private let validGAddr2 = "GBGWONUYEPTSADFMLRQSPRAPTWMGX5PMQXXHGSBVRF2KLUNVZT57SLVW"
+    private let validGAddr3 = "GB33CUURS5XLLECMLSE2EMMDJBMZSVF27BW6PLS53OFTJMP46CZH3CVG"
+    private let validContractC =
+        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
+    private let validContractC2 =
+        "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
+    private let validVerifier =
+        "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
+
+    /// A deterministic 65-byte uncompressed secp256r1 public key fixture.
+    /// First byte is the SEC1 prefix; the remaining 64 bytes cycle through
+    /// `1..64` so two consecutive fixtures compare equal but are clearly
+    /// distinguishable from arbitrary other byte sequences.
+    private func validSecp256r1PublicKey() -> Data {
+        var bytes = [UInt8](
+            repeating: 0,
+            count: SmartAccountConstants.secp256r1PublicKeySize
+        )
+        bytes[0] = SmartAccountConstants.uncompressedPubkeyPrefix
+        for i in 1 ..< SmartAccountConstants.secp256r1PublicKeySize {
+            bytes[i] = UInt8(i % 256)
+        }
+        return Data(bytes)
+    }
+
+    /// A deterministic 32-byte Ed25519 public key fixture.
+    private func validEd25519PublicKey() -> Data {
+        var bytes = [UInt8](
+            repeating: 0,
+            count: SmartAccountConstants.ed25519PublicKeySize
+        )
+        for i in 0 ..< SmartAccountConstants.ed25519PublicKeySize {
+            bytes[i] = UInt8((i + 7) % 256)
+        }
+        return Data(bytes)
+    }
+
+    /// Builds an ``OZSmartAccountConfig`` suitable for unit tests. Uses the
+    /// public Testnet RPC URL placeholder (every test that reaches the
+    /// network is gated by the disconnected-kit fixture and never gets that
+    /// far).
+    private func buildConfig() throws -> OZSmartAccountConfig {
+        return try OZSmartAccountConfig(
+            rpcUrl: "https://soroban-testnet.stellar.org",
+            networkPassphrase: Network.testnet.passphrase,
+            accountWasmHash: "a" + String(repeating: "0", count: 63),
+            webauthnVerifierAddress: validVerifier
+        )
+    }
+
+    /// Builds a disconnected ``MockOZSmartAccountKit`` plus a signer manager.
+    /// Used by the requireConnected gate assertions.
+    private func disconnectedKit(
+        contextRuleParser: OZContextRuleParser? = nil,
+        multiSignerSubmitter: OZMultiSignerSubmitting? = nil
+    ) throws -> (MockOZSmartAccountKit, OZSignerManager) {
+        let kit = MockOZSmartAccountKit(config: try buildConfig())
+        return (
+            kit,
+            OZSignerManager(
+                kit: kit,
+                contextRuleParser: contextRuleParser,
+                multiSignerSubmitter: multiSignerSubmitter
+            )
+        )
+    }
+
+    /// Builds a connected ``MockOZSmartAccountKit`` plus a signer manager
+    /// bound to a deterministic credential id / contract id pair.
+    private func connectedKit(
+        contractId: String? = nil,
+        contextRuleParser: OZContextRuleParser? = nil,
+        multiSignerSubmitter: OZMultiSignerSubmitting? = nil
+    ) throws -> (MockOZSmartAccountKit, OZSignerManager) {
+        let kit = MockOZSmartAccountKit(config: try buildConfig())
+        kit.setConnectedState(
+            credentialId: "test-credential-id",
+            contractId: contractId ?? validContractC2
+        )
+        return (
+            kit,
+            OZSignerManager(
+                kit: kit,
+                contextRuleParser: contextRuleParser,
+                multiSignerSubmitter: multiSignerSubmitter
+            )
+        )
+    }
+
+    // ========================================================================
+    // MARK: - buildAddSignerFunction — host-function shape (3 cases)
+    // ========================================================================
+
+    /// `add_signer` invocation must carry the smart-account contract address,
+    /// the function name `"add_signer"`, and the two positional arguments
+    /// `[u32 contextRuleId, signer_scval]` in that order.
+    func test_buildAddSignerFunction_passkeySignerShape() throws {
+        let signer = try OZExternalSigner.webAuthn(
+            verifierAddress: validVerifier,
+            publicKey: validSecp256r1PublicKey(),
+            credentialId: Data([0x01, 0x02, 0x03, 0x04])
+        )
+
+        let hostFunction = try OZSignerManager.buildAddSignerFunction(
+            contractId: validContractC2,
+            contextRuleId: 7,
+            signer: signer
+        )
+
+        guard case .invokeContract(let invokeArgs) = hostFunction else {
+            return XCTFail("expected invokeContract host function")
+        }
+        XCTAssertEqual(invokeArgs.functionName, "add_signer")
+        XCTAssertEqual(invokeArgs.args.count, 2)
+
+        guard case .u32(let ruleId) = invokeArgs.args[0] else {
+            return XCTFail("first arg must be u32 contextRuleId")
+        }
+        XCTAssertEqual(ruleId, 7)
+
+        let expectedSignerScVal = try signer.toScVal()
+        let expectedBytes = try Data(XDREncoder.encode(expectedSignerScVal))
+        let observedBytes = try Data(XDREncoder.encode(invokeArgs.args[1]))
+        XCTAssertEqual(
+            expectedBytes,
+            observedBytes,
+            "second arg must round-trip byte-equal with the signer ScVal"
+        )
+    }
+
+    /// Delegated signer encoding inside `add_signer` is the
+    /// `Symbol("Delegated") || Address` vec the contract expects.
+    func test_buildAddSignerFunction_delegatedSignerShape() throws {
+        let signer = try OZDelegatedSigner(address: validGAddr1)
+
+        let hostFunction = try OZSignerManager.buildAddSignerFunction(
+            contractId: validContractC2,
+            contextRuleId: 0,
+            signer: signer
+        )
+
+        guard case .invokeContract(let invokeArgs) = hostFunction else {
+            return XCTFail("expected invokeContract host function")
+        }
+        XCTAssertEqual(invokeArgs.functionName, "add_signer")
+        XCTAssertEqual(invokeArgs.args.count, 2)
+
+        guard case .u32(let ruleId) = invokeArgs.args[0] else {
+            return XCTFail("first arg must be u32 contextRuleId")
+        }
+        XCTAssertEqual(ruleId, 0)
+
+        guard case .vec(let elements) = invokeArgs.args[1], let elements = elements else {
+            return XCTFail("delegated signer must encode as vec")
+        }
+        XCTAssertEqual(elements.count, 2)
+        guard case .symbol(let tag) = elements[0] else {
+            return XCTFail("first vec element must be symbol tag")
+        }
+        XCTAssertEqual(tag, "Delegated")
+    }
+
+    /// Ed25519 signer encoding inside `add_signer` is the
+    /// `Symbol("External") || Address || Bytes(publicKey)` vec the contract
+    /// expects.
+    func test_buildAddSignerFunction_ed25519SignerShape() throws {
+        let signer = try OZExternalSigner.ed25519(
+            verifierAddress: validVerifier,
+            publicKey: validEd25519PublicKey()
+        )
+
+        let hostFunction = try OZSignerManager.buildAddSignerFunction(
+            contractId: validContractC2,
+            contextRuleId: 4,
+            signer: signer
+        )
+
+        guard case .invokeContract(let invokeArgs) = hostFunction else {
+            return XCTFail("expected invokeContract host function")
+        }
+        XCTAssertEqual(invokeArgs.functionName, "add_signer")
+
+        guard case .vec(let elements) = invokeArgs.args[1], let elements = elements else {
+            return XCTFail("external signer must encode as vec")
+        }
+        XCTAssertEqual(elements.count, 3)
+        guard case .symbol(let tag) = elements[0] else {
+            return XCTFail("first vec element must be symbol tag")
+        }
+        XCTAssertEqual(tag, "External")
+        guard case .bytes(let keyData) = elements[2] else {
+            return XCTFail("third vec element must be bytes(keyData)")
+        }
+        XCTAssertEqual(
+            keyData.count,
+            SmartAccountConstants.ed25519PublicKeySize,
+            "Ed25519 signer keyData is the 32-byte public key without trailing bytes"
+        )
+    }
+
+    // ========================================================================
+    // MARK: - buildRemoveSignerFunction — host-function shape (1 case)
+    // ========================================================================
+
+    /// `remove_signer` invocation must carry the contract address, the
+    /// function name `"remove_signer"`, and the two positional arguments
+    /// `[u32 contextRuleId, u32 signerId]`.
+    func test_buildRemoveSignerFunction_argShape() throws {
+        let hostFunction = try OZSignerManager.buildRemoveSignerFunction(
+            contractId: validContractC2,
+            contextRuleId: 3,
+            signerId: 11
+        )
+
+        guard case .invokeContract(let invokeArgs) = hostFunction else {
+            return XCTFail("expected invokeContract host function")
+        }
+        XCTAssertEqual(invokeArgs.functionName, "remove_signer")
+        XCTAssertEqual(invokeArgs.args.count, 2)
+
+        guard case .u32(let ruleId) = invokeArgs.args[0],
+              case .u32(let signerId) = invokeArgs.args[1] else {
+            return XCTFail("expected two u32 args")
+        }
+        XCTAssertEqual(ruleId, 3)
+        XCTAssertEqual(signerId, 11)
+    }
+
+    // ========================================================================
+    // MARK: - addPasskey — validation surface (5 cases)
+    // ========================================================================
+
+    /// Disconnected kit + `addPasskey` must throw
+    /// ``WalletException/NotConnected`` before any submission attempt.
+    func test_addPasskey_notConnected_throws() async throws {
+        let (_, manager) = try disconnectedKit()
+        do {
+            _ = try await manager.addPasskey(
+                contextRuleId: 0,
+                publicKey: validSecp256r1PublicKey(),
+                credentialId: Data([0x01, 0x02])
+            )
+            XCTFail("expected WalletException.NotConnected")
+        } catch let error as WalletException.NotConnected {
+            XCTAssertEqual(error.code, .walletNotConnected)
+        }
+    }
+
+    /// Wrong-size public key surfaces a field-tagged validation error
+    /// referencing the `publicKey` field.
+    func test_addPasskey_wrongSizePublicKey_throws() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addPasskey(
+                contextRuleId: 0,
+                publicKey: Data([0x04, 0x00, 0x00, 0x00]),
+                credentialId: Data([0x01, 0x02])
+            )
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("publicKey"),
+                "error message should reference the publicKey field, got: \(error.message)"
+            )
+        }
+    }
+
+    /// Public key with the wrong leading byte (not `0x04`) surfaces the
+    /// uncompressed-prefix validation error.
+    func test_addPasskey_wrongLeadingByte_throws() async throws {
+        let (_, manager) = try connectedKit()
+        var badKey = validSecp256r1PublicKey()
+        badKey[badKey.startIndex] = 0x02
+        do {
+            _ = try await manager.addPasskey(
+                contextRuleId: 0,
+                publicKey: badKey,
+                credentialId: Data([0x01, 0x02])
+            )
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("0x04"),
+                "error message should mention the expected uncompressed prefix, got: \(error.message)"
+            )
+        }
+    }
+
+    /// Empty credential id surfaces the credential-id validation error.
+    func test_addPasskey_emptyCredentialId_throws() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addPasskey(
+                contextRuleId: 0,
+                publicKey: validSecp256r1PublicKey(),
+                credentialId: Data()
+            )
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("credentialId") || error.message.contains("Credential ID"),
+                "error message should reference the credentialId field, got: \(error.message)"
+            )
+        }
+    }
+
+    /// Multi-signer routing without a wired submitter surfaces a
+    /// ``ConfigurationException`` so the caller can correct the kit
+    /// composition rather than seeing a confusing runtime failure deeper in
+    /// the submission pipeline.
+    func test_addPasskey_multiSignerWithoutSubmitter_throwsConfiguration() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addPasskey(
+                contextRuleId: 0,
+                publicKey: validSecp256r1PublicKey(),
+                credentialId: Data([0x01, 0x02]),
+                selectedSigners: [.wallet(accountId: validGAddr1)]
+            )
+            XCTFail("expected ConfigurationException.InvalidConfig")
+        } catch is ConfigurationException.InvalidConfig {
+            // expected
+        }
+    }
+
+    // ========================================================================
+    // MARK: - addDelegated — validation surface (2 cases)
+    // ========================================================================
+
+    /// Disconnected kit + `addDelegated` must throw
+    /// ``WalletException/NotConnected`` before any submission attempt.
+    func test_addDelegated_notConnected_throws() async throws {
+        let (_, manager) = try disconnectedKit()
+        do {
+            _ = try await manager.addDelegated(
+                contextRuleId: 0,
+                address: validGAddr1
+            )
+            XCTFail("expected WalletException.NotConnected")
+        } catch let error as WalletException.NotConnected {
+            XCTAssertEqual(error.code, .walletNotConnected)
+        }
+    }
+
+    /// Malformed address surfaces the ``OZDelegatedSigner`` initialiser's
+    /// address validation error.
+    func test_addDelegated_invalidAddress_throws() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addDelegated(
+                contextRuleId: 0,
+                address: "not-a-stellar-address"
+            )
+            XCTFail("expected ValidationException.InvalidAddress")
+        } catch is ValidationException.InvalidAddress {
+            // expected
+        }
+    }
+
+    // ========================================================================
+    // MARK: - addEd25519 — validation surface (2 cases)
+    // ========================================================================
+
+    /// Disconnected kit + `addEd25519` must throw
+    /// ``WalletException/NotConnected`` before any submission attempt.
+    func test_addEd25519_notConnected_throws() async throws {
+        let (_, manager) = try disconnectedKit()
+        do {
+            _ = try await manager.addEd25519(
+                contextRuleId: 0,
+                verifierAddress: validVerifier,
+                publicKey: validEd25519PublicKey()
+            )
+            XCTFail("expected WalletException.NotConnected")
+        } catch let error as WalletException.NotConnected {
+            XCTAssertEqual(error.code, .walletNotConnected)
+        }
+    }
+
+    /// Wrong-size Ed25519 public key surfaces a field-tagged validation
+    /// error referencing the `publicKey` field.
+    func test_addEd25519_wrongSizePublicKey_throws() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.addEd25519(
+                contextRuleId: 0,
+                verifierAddress: validVerifier,
+                publicKey: Data([0x00, 0x01, 0x02])
+            )
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("publicKey"),
+                "error message should reference the publicKey field, got: \(error.message)"
+            )
+        }
+    }
+
+    // ========================================================================
+    // MARK: - removeSigner(by signerId) — connection gate (1 case)
+    // ========================================================================
+
+    /// Disconnected kit + `removeSigner` by id must throw
+    /// ``WalletException/NotConnected``.
+    func test_removeSigner_byId_notConnected_throws() async throws {
+        let (_, manager) = try disconnectedKit()
+        do {
+            _ = try await manager.removeSigner(
+                contextRuleId: 0,
+                signerId: 1
+            )
+            XCTFail("expected WalletException.NotConnected")
+        } catch let error as WalletException.NotConnected {
+            XCTAssertEqual(error.code, .walletNotConnected)
+        }
+    }
+
+    // ========================================================================
+    // MARK: - removeSignerBySigner — Group J.2 (plan §7 lines 720-724)
+    // ========================================================================
+
+    /// Group J.2 case 4: given a context rule with three signers and known
+    /// signer ids, `removeSignerBySigner(_:contextRuleId:)` must resolve the
+    /// supplied value to the correct numeric id and produce a host function
+    /// byte-equal to the id-based `removeSigner(_:contextRuleId:signerId:)`
+    /// invocation for the same target.
+    func test_removeSigner_bySignerValue_resolvesToCorrectIdViaListContextRules() async throws {
+        let signerA = try OZDelegatedSigner(address: validGAddr1)
+        let signerB = try OZDelegatedSigner(address: validGAddr2)
+        let signerC = try OZDelegatedSigner(address: validGAddr3)
+        let signerIds: [UInt32] = [10, 20, 30]
+        let rule = ParsedContextRule(
+            id: 0,
+            contextType: .defaultRule,
+            name: "Default",
+            signers: [signerA, signerB, signerC],
+            signerIds: signerIds,
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+
+        let parser = _StubContextRuleParser(rule: rule)
+        let recorder = _RecordingMultiSignerSubmitter()
+        let (_, manager) = try connectedKit(
+            contextRuleParser: parser,
+            multiSignerSubmitter: recorder
+        )
+
+        // why: routing through the multi-signer submitter captures the
+        // host function produced by the manager without performing any
+        // RPC traffic. Single-signer routing would call into the kit's
+        // pinned transaction operations, which would attempt to reach the
+        // configured RPC endpoint and fail before the host function shape
+        // can be observed.
+        let selectedSigners: [SelectedSigner] = [.wallet(accountId: validGAddr1)]
+        _ = try await manager.removeSignerBySigner(
+            contextRuleId: 0,
+            signer: signerB,
+            selectedSigners: selectedSigners
+        )
+
+        XCTAssertEqual(parser.getContextRuleCalls, [0])
+        XCTAssertEqual(parser.parseContextRuleCalls, 1)
+        XCTAssertEqual(recorder.invocations.count, 1)
+
+        let observed = recorder.invocations[0].hostFunction
+        let expected = try OZSignerManager.buildRemoveSignerFunction(
+            contractId: validContractC2,
+            contextRuleId: 0,
+            signerId: signerIds[1]
+        )
+
+        let observedBytes = try Data(XDREncoder.encode(observed))
+        let expectedBytes = try Data(XDREncoder.encode(expected))
+        XCTAssertEqual(
+            observedBytes,
+            expectedBytes,
+            "value-based remove must produce a host function byte-equal to the id-based remove for the resolved signer id"
+        )
+    }
+
+    /// Group J.2 case 5: when the supplied signer value is not present on
+    /// the resolved context rule, the manager must throw
+    /// ``ValidationException/InvalidInput`` without producing a host
+    /// function or invoking the submitter.
+    func test_removeSigner_bySignerValue_signerNotInRule_throwsValidation() async throws {
+        let signerA = try OZDelegatedSigner(address: validGAddr1)
+        let signerB = try OZDelegatedSigner(address: validGAddr2)
+        let rule = ParsedContextRule(
+            id: 0,
+            contextType: .defaultRule,
+            name: "Default",
+            signers: [signerA, signerB],
+            signerIds: [10, 20],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+
+        let parser = _StubContextRuleParser(rule: rule)
+        let recorder = _RecordingMultiSignerSubmitter()
+        let (_, manager) = try connectedKit(
+            contextRuleParser: parser,
+            multiSignerSubmitter: recorder
+        )
+
+        let absent = try OZDelegatedSigner(address: validGAddr3)
+        do {
+            _ = try await manager.removeSignerBySigner(
+                contextRuleId: 0,
+                signer: absent,
+                selectedSigners: [.wallet(accountId: validGAddr1)]
+            )
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("Signer not found"),
+                "error message should explain the missing-signer reason, got: \(error.message)"
+            )
+        }
+
+        XCTAssertEqual(parser.getContextRuleCalls, [0])
+        XCTAssertEqual(
+            recorder.invocations.count,
+            0,
+            "submitter must not be invoked when resolution fails"
+        )
+    }
+
+    // ========================================================================
+    // MARK: - removeSignerBySigner — additional resolution coverage (3 cases)
+    // ========================================================================
+
+    /// Disconnected kit + value-based remove must throw
+    /// ``WalletException/NotConnected`` before any parser interaction so a
+    /// disconnected kit cannot accidentally hit the indexer / RPC.
+    func test_removeSignerBySigner_notConnected_throws() async throws {
+        let parser = _StubContextRuleParser(rule: nil)
+        let (_, manager) = try disconnectedKit(contextRuleParser: parser)
+        do {
+            _ = try await manager.removeSignerBySigner(
+                contextRuleId: 0,
+                signer: try OZDelegatedSigner(address: validGAddr1)
+            )
+            XCTFail("expected WalletException.NotConnected")
+        } catch let error as WalletException.NotConnected {
+            XCTAssertEqual(error.code, .walletNotConnected)
+        }
+        XCTAssertEqual(
+            parser.getContextRuleCalls,
+            [],
+            "parser must not be consulted when the kit is disconnected"
+        )
+    }
+
+    /// Connected kit without a wired context-rule parser must surface a
+    /// ``ConfigurationException`` rather than a runtime null-pointer-style
+    /// failure deeper in the resolution path.
+    func test_removeSignerBySigner_noParser_throwsConfiguration() async throws {
+        let (_, manager) = try connectedKit()
+        do {
+            _ = try await manager.removeSignerBySigner(
+                contextRuleId: 0,
+                signer: try OZDelegatedSigner(address: validGAddr1)
+            )
+            XCTFail("expected ConfigurationException.InvalidConfig")
+        } catch is ConfigurationException.InvalidConfig {
+            // expected
+        }
+    }
+
+    /// When the resolved context rule's `signers` and `signerIds` arrays
+    /// are misaligned (signer found at an index past the end of
+    /// `signerIds`), the manager must surface a field-tagged validation
+    /// error naming the constraint rather than letting an out-of-bounds
+    /// runtime trap fire.
+    func test_removeSignerBySigner_misalignedSignerIds_throwsValidation() async throws {
+        let signerA = try OZDelegatedSigner(address: validGAddr1)
+        let signerB = try OZDelegatedSigner(address: validGAddr2)
+        let signerC = try OZDelegatedSigner(address: validGAddr3)
+        let rule = ParsedContextRule(
+            id: 0,
+            contextType: .defaultRule,
+            name: "Default",
+            signers: [signerA, signerB, signerC],
+            signerIds: [10, 20],
+            policies: [],
+            policyIds: [],
+            validUntil: nil
+        )
+
+        let parser = _StubContextRuleParser(rule: rule)
+        let (_, manager) = try connectedKit(contextRuleParser: parser)
+
+        do {
+            _ = try await manager.removeSignerBySigner(
+                contextRuleId: 0,
+                signer: signerC
+            )
+            XCTFail("expected ValidationException.InvalidInput")
+        } catch let error as ValidationException.InvalidInput {
+            XCTAssertTrue(
+                error.message.contains("signerIds"),
+                "error message should name the misalignment, got: \(error.message)"
+            )
+        }
+    }
+}
+
+// ============================================================================
+// MARK: - Test doubles (file-private)
+// ============================================================================
+
+/// In-memory ``OZContextRuleParser`` stub used by the value-based remove
+/// tests.
+///
+/// Returns the supplied ``ParsedContextRule`` (wrapped in a deterministic raw
+/// `SCValXDR`) from ``getContextRule(contextRuleId:)`` and yields the same
+/// rule back from ``parseContextRule(_:)``. Records every call so the
+/// resolution-path tests can assert the parser was consulted exactly once.
+private final class _StubContextRuleParser: OZContextRuleParser, @unchecked Sendable {
+
+    /// Pre-set rule returned by both parser methods. When `nil`, calls throw
+    /// a placeholder error so tests can assert the parser was not consulted.
+    private let rule: ParsedContextRule?
+
+    /// Records every `contextRuleId` passed to ``getContextRule(contextRuleId:)``.
+    private(set) var getContextRuleCalls: [UInt32] = []
+
+    /// Counts every invocation of ``parseContextRule(_:)``.
+    private(set) var parseContextRuleCalls: Int = 0
+
+    init(rule: ParsedContextRule?) {
+        self.rule = rule
+    }
+
+    func getContextRule(contextRuleId: UInt32) async throws -> SCValXDR {
+        getContextRuleCalls.append(contextRuleId)
+        guard rule != nil else {
+            throw ValidationException.invalidInput(
+                field: "contextRuleId",
+                reason: "Stub parser holds no rule for id \(contextRuleId)"
+            )
+        }
+        // why: the test stub does not exercise the on-chain parsing
+        // pipeline. A void payload signal is enough because
+        // `parseContextRule(_:)` immediately returns the pre-set rule
+        // without inspecting the input ScVal.
+        return SCValXDR.void
+    }
+
+    func parseContextRule(_ scVal: SCValXDR) throws -> ParsedContextRule {
+        parseContextRuleCalls += 1
+        guard let rule = rule else {
+            throw ValidationException.invalidInput(
+                field: "scVal",
+                reason: "Stub parser holds no rule to return"
+            )
+        }
+        return rule
+    }
+}
+
+/// Recording ``OZMultiSignerSubmitting`` test double that captures every
+/// submission and returns a deterministic success result. Used by the
+/// value-based remove tests so the host function produced by the manager can
+/// be observed without performing any RPC traffic.
+private final class _RecordingMultiSignerSubmitter: OZMultiSignerSubmitting, @unchecked Sendable {
+
+    /// Snapshot of a single captured submission.
+    struct Invocation {
+        let hostFunction: HostFunctionXDR
+        let selectedSigners: [SelectedSigner]
+        let forceMethod: SubmissionMethod?
+    }
+
+    /// Captured submissions in invocation order.
+    private(set) var invocations: [Invocation] = []
+
+    /// Deterministic success result returned from every call. Tests assert
+    /// over the captured invocations rather than the return value, so the
+    /// canonical "submitted ok" shape suffices.
+    private let result = TransactionResult(success: true, hash: "deadbeef")
+
+    func submitWithMultipleSigners(
+        hostFunction: HostFunctionXDR,
+        selectedSigners: [SelectedSigner],
+        forceMethod: SubmissionMethod?
+    ) async throws -> TransactionResult {
+        invocations.append(
+            Invocation(
+                hostFunction: hostFunction,
+                selectedSigners: selectedSigners,
+                forceMethod: forceMethod
+            )
+        )
+        return result
+    }
+}
