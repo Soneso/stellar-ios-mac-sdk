@@ -225,6 +225,25 @@ public struct OZSmartAccountConfig: @unchecked Sendable {
             )
         }
 
+        // why: cap `signatureExpirationLedgers` at 535_680 (the protocol-level
+        // ~one-month limit at 5 seconds per ledger) and reject zero / negative
+        // values so the signing pass cannot produce an immediately-expired or
+        // beyond-protocol-limit expiration ledger.
+        if signatureExpirationLedgers < 1 || signatureExpirationLedgers > 535_680 {
+            throw ConfigurationException.invalidConfig(
+                details: "signatureExpirationLedgers must be in [1, 535680] (one ledger to ~one month at 5s ledgers), got: \(signatureExpirationLedgers)"
+            )
+        }
+
+        // why: cap `timeoutInSeconds` at 600 seconds so a misconfigured kit
+        // cannot freeze a UI ceremony beyond 10 minutes and reject zero so
+        // every Stellar transaction has a non-degenerate validity window.
+        if timeoutInSeconds < 1 || timeoutInSeconds > 600 {
+            throw ConfigurationException.invalidConfig(
+                details: "timeoutInSeconds must be in [1, 600], got: \(timeoutInSeconds)"
+            )
+        }
+
         self.rpcUrl = rpcUrl
         self.networkPassphrase = networkPassphrase
         self.accountWasmHash = accountWasmHash
