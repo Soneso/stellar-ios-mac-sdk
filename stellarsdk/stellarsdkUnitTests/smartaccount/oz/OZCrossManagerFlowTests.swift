@@ -35,7 +35,7 @@ final class OZCrossManagerFlowTests: XCTestCase {
     /// Testnet placeholder; tests do not reach the network.
     private func buildConfig() throws -> OZSmartAccountConfig {
         return try OZSmartAccountConfig(
-            rpcUrl: "https://soroban-testnet.stellar.org",
+            rpcUrl: "http://127.0.0.1:1",
             networkPassphrase: Network.testnet.passphrase,
             accountWasmHash: "a" + String(repeating: "0", count: 63),
             webauthnVerifierAddress: validVerifierAddress

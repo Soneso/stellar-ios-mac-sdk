@@ -224,7 +224,9 @@ public actor OZExternalSignerManager {
     ///
     /// Exposed for diagnostic / migration tooling that needs to reach into the
     /// persisted JSON directly. Production code should prefer the manager API.
-    public static let walletStorageKey: String = "external_wallets"
+    /// The namespaced prefix (`oz_smart_account.`) avoids collisions with other
+    /// storage consumers sharing the same backing store.
+    public static let walletStorageKey: String = "oz_smart_account.connected_wallets"
 
     // ------------------------------------------------------------------
     // Configuration
@@ -720,17 +722,17 @@ public actor OZExternalSignerManager {
 
         let payload = preimageXdrBytes.sha256Hash
 
-        // why: KeyPair.sign returns 64 zero bytes when the keypair is public-only
-        // (no private key). Surface that as a signing failure rather than letting
-        // an obviously-invalid signature flow through to the caller.
-        let signatureBytes = keypair.sign([UInt8](payload))
-        let isAllZero = signatureBytes.allSatisfy { $0 == 0 }
-        if isAllZero {
+        // why: A keypair constructed from an account ID / public key only has a
+        // nil ``privateKey`` and cannot produce a valid Ed25519 signature.
+        // Reject upfront with a clear error rather than letting ``KeyPair.sign``
+        // return an all-zero buffer that the caller would have to detect.
+        guard keypair.privateKey != nil else {
             throw TransactionException.signingFailed(
-                reason: "Ed25519 signing failed for \(address): keypair has no private key"
+                reason: "Keypair for \(address) is public-only and cannot sign"
             )
         }
 
+        let signatureBytes = keypair.sign([UInt8](payload))
         let signature = Data(signatureBytes)
         let signatureBase64 = signature.base64EncodedString()
 

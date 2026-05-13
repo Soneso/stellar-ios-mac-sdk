@@ -55,7 +55,7 @@ final class OZMultiSignerManagerTests: XCTestCase {
 
     private func buildConfig() throws -> OZSmartAccountConfig {
         return try OZSmartAccountConfig(
-            rpcUrl: "https://soroban-testnet.stellar.org",
+            rpcUrl: "http://127.0.0.1:1",
             networkPassphrase: Network.testnet.passphrase,
             accountWasmHash: "a" + String(repeating: "0", count: 63),
             webauthnVerifierAddress: validContractId
@@ -586,6 +586,121 @@ final class OZMultiSignerManagerTests: XCTestCase {
             // Any thrown error proves the pipeline did not return a
             // success result.
         }
+    }
+
+    // ========================================================================
+    // F-SEC-iOS-5 — cloneAuthEntry round-trip integrity
+    // ========================================================================
+
+    /// ``OZTransactionOperations/cloneAuthEntry(_:)`` returns a structurally
+    /// equal copy of the supplied entry via an ``XdrEncoder`` round trip. The
+    /// fixture exercises an `address`-credentials entry with a non-trivial
+    /// nonce, a non-trivial signature placeholder, and a multi-step invocation
+    /// tree (root invocation + two sub-invocations) so any silent field-level
+    /// truncation, omission, or reordering during the clone surfaces as a
+    /// byte-level mismatch on the encoded round trip.
+    func test_cloneAuthEntry_addressCredentialsNonTrivialEntry_roundTripsByteEqual() throws {
+        let credentialContractAddress = try SCAddressXDR(contractId: validContractId)
+        let targetContractAddress = try SCAddressXDR(contractId: validTargetContract)
+        let secondaryContractAddress = try SCAddressXDR(
+            contractId: "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK"
+        )
+
+        // Non-trivial signature placeholder: a Map ScVal with two Symbol-keyed
+        // entries so the clone has to traverse the nested map shape rather
+        // than simply copying a scalar arm.
+        let signaturePlaceholder = SCValXDR.map([
+            SCMapEntryXDR(
+                key: .symbol("signers"),
+                val: .vec([.bytes(Data(repeating: 0xAB, count: 32))])
+            ),
+            SCMapEntryXDR(
+                key: .symbol("context_rule_ids"),
+                val: .vec([.u32(7), .u32(11)])
+            )
+        ])
+
+        let credentials = SorobanAddressCredentialsXDR(
+            address: credentialContractAddress,
+            nonce: Int64(0x0123_4567_89AB_CDEF),
+            signatureExpirationLedger: 0xDEADBEEF,
+            signature: signaturePlaceholder
+        )
+
+        // Sub-invocation: contract call on a secondary contract.
+        let subInvocationArgs = InvokeContractArgsXDR(
+            contractAddress: secondaryContractAddress,
+            functionName: "leaf_call",
+            args: [.u32(99), .symbol("leaf")]
+        )
+        let subInvocation = SorobanAuthorizedInvocationXDR(
+            function: .contractFn(subInvocationArgs),
+            subInvocations: []
+        )
+
+        // Second sub-invocation with its own nested invocation under it.
+        let nestedSubArgs = InvokeContractArgsXDR(
+            contractAddress: secondaryContractAddress,
+            functionName: "nested_call",
+            args: [.bool(true)]
+        )
+        let nestedSub = SorobanAuthorizedInvocationXDR(
+            function: .contractFn(nestedSubArgs),
+            subInvocations: []
+        )
+        let secondSubArgs = InvokeContractArgsXDR(
+            contractAddress: targetContractAddress,
+            functionName: "branch_call",
+            args: []
+        )
+        let secondSub = SorobanAuthorizedInvocationXDR(
+            function: .contractFn(secondSubArgs),
+            subInvocations: [nestedSub]
+        )
+
+        // Root invocation: target contract call carrying both sub-invocations.
+        let rootArgs = InvokeContractArgsXDR(
+            contractAddress: targetContractAddress,
+            functionName: "root_call",
+            args: [.address(credentialContractAddress), .u64(1234)]
+        )
+        let rootInvocation = SorobanAuthorizedInvocationXDR(
+            function: .contractFn(rootArgs),
+            subInvocations: [subInvocation, secondSub]
+        )
+
+        let entry = SorobanAuthorizationEntryXDR(
+            credentials: .address(credentials),
+            rootInvocation: rootInvocation
+        )
+
+        let cloned = try OZTransactionOperations.cloneAuthEntry(entry)
+
+        let originalBytes = try Data(XDREncoder.encode(entry))
+        let clonedBytes = try Data(XDREncoder.encode(cloned))
+        XCTAssertEqual(
+            originalBytes,
+            clonedBytes,
+            "cloneAuthEntry must produce a byte-identical XDR round trip"
+        )
+
+        // Spot-check that mutating the clone does not affect the original — the
+        // round-trip clone must be a deep copy, not a shared-reference view.
+        guard case .address(let clonedCreds) = cloned.credentials else {
+            return XCTFail("expected address credentials on cloned entry")
+        }
+        XCTAssertEqual(clonedCreds.nonce, credentials.nonce)
+        XCTAssertEqual(clonedCreds.signatureExpirationLedger, credentials.signatureExpirationLedger)
+
+        // Sub-invocation shape preservation: the top-level invocation must
+        // still carry both sub-invocations and the deepest nested call must
+        // retain its function name.
+        XCTAssertEqual(cloned.rootInvocation.subInvocations.count, 2)
+        let observedNested = cloned.rootInvocation.subInvocations[1].subInvocations.first?.function
+        guard case .contractFn(let observedNestedArgs) = observedNested else {
+            return XCTFail("nested sub-invocation must round-trip as contractFn")
+        }
+        XCTAssertEqual(observedNestedArgs.functionName, "nested_call")
     }
 }
 

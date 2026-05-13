@@ -41,7 +41,7 @@ final class OZContextRuleParsingTests: XCTestCase {
 
     private func buildConfig() throws -> OZSmartAccountConfig {
         return try OZSmartAccountConfig(
-            rpcUrl: "https://soroban-testnet.stellar.org",
+            rpcUrl: "http://127.0.0.1:1",
             networkPassphrase: Network.testnet.passphrase,
             accountWasmHash: "a" + String(repeating: "0", count: 63),
             webauthnVerifierAddress: validContractAddress
@@ -1030,6 +1030,45 @@ final class OZContextRuleParsingTests: XCTestCase {
                 return XCTFail("expected ValidationException")
             }
             XCTAssertTrue(validation.message.contains("context_type"))
+        }
+    }
+
+    // ========================================================================
+    // F-SEC-iOS-6 — External signer verifier address must be contract-only
+    // ========================================================================
+
+    /// An ``External`` signer's verifier address must be a contract (`C…`)
+    /// strkey. Permissive parsing that accepts an account (`G…`) address would
+    /// silently construct a signer whose on-chain dispatch must fail because
+    /// account addresses cannot host a verifier method. The strict parser
+    /// surfaces a clear validation error here so malformed on-chain records
+    /// do not propagate into downstream signing flows.
+    func testParseContextRule_externalSignerVerifierIsGAddress_throwsValidationException() throws {
+        let manager = try disconnectedManager()
+
+        // Build an External signer with a G-address in the verifier slot.
+        let invalidExternalSigner: SCValXDR = .vec([
+            .symbol("External"),
+            .address(try SCAddressXDR(accountId: validAccountAddress)),
+            .bytes(secp256r1Key())
+        ])
+        let ruleMap = buildFullRuleMap(
+            signers: [invalidExternalSigner],
+            signerIds: [1]
+        )
+
+        XCTAssertThrowsError(try manager.parseContextRule(scVal: ruleMap)) { error in
+            guard let validation = error as? ValidationException else {
+                return XCTFail("expected ValidationException, got \(error)")
+            }
+            // The error message must clearly identify the problem so callers
+            // can diagnose a malformed on-chain record without inspecting the
+            // raw ScVal bytes.
+            let message = validation.message.lowercased()
+            XCTAssertTrue(
+                message.contains("contract") || message.contains("verifier") || message.contains("external"),
+                "error message should mention the verifier / contract-address constraint, got: \(validation.message)"
+            )
         }
     }
 }

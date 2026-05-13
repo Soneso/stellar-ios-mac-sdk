@@ -386,7 +386,7 @@ final class OZSmartAccountAuthTests: XCTestCase {
     // rather than silently shipping divergent encodings. The expected hex
     // strings are byte-identical across SDKs and must be updated in lockstep.
 
-    func test_phase4_goldenVector1_emptyRulesMinimalPayload_authDigest_matchesFixture() async throws {
+    func test_goldenVector1_emptyRulesMinimalPayload_authDigest_matchesFixture() async throws {
         let signaturePayload = Data("test1".utf8).sha256Hash
         let digest = try await OZSmartAccountAuth.buildAuthDigest(
             signaturePayload: signaturePayload,
@@ -398,7 +398,7 @@ final class OZSmartAccountAuthTests: XCTestCase {
                        "Golden vector 1 mismatch — actual: \(actualHex)")
     }
 
-    func test_phase4_goldenVector2_singleContextRule_authDigest_matchesFixture() async throws {
+    func test_goldenVector2_singleContextRule_authDigest_matchesFixture() async throws {
         let signaturePayload = Data("test2".utf8).sha256Hash
         let digest = try await OZSmartAccountAuth.buildAuthDigest(
             signaturePayload: signaturePayload,
@@ -410,7 +410,7 @@ final class OZSmartAccountAuthTests: XCTestCase {
                        "Golden vector 2 mismatch — actual: \(actualHex)")
     }
 
-    func test_phase4_goldenVector3_unsortedContextRules_authDigest_matchesFixture() async throws {
+    func test_goldenVector3_unsortedContextRules_authDigest_matchesFixture() async throws {
         // contextRuleIds must be bound in INSERTION order, not sorted. The
         // Vec encoding [3, 1, 2] must NOT silently become [1, 2, 3] — a sort
         // would weaken the digest's binding semantics.
@@ -434,7 +434,7 @@ final class OZSmartAccountAuthTests: XCTestCase {
                           "Insertion-ordered and sorted contextRuleIds must produce different digests")
     }
 
-    func test_phase4_goldenVector4_longSignaturePayload_authDigest_matchesFixture() async throws {
+    func test_goldenVector4_longSignaturePayload_authDigest_matchesFixture() async throws {
         // 256-byte deterministic signaturePayload built from 8 sha256 chunks
         // exercising the multi-block hashing path.
         var signaturePayload = Data(capacity: 256)

@@ -463,7 +463,7 @@ final class OZSmartAccountSignaturesTests: XCTestCase {
     // alphabetical key ordering, or value-bytes encoding produces a different
     // hex output and breaks the cross-SDK test in lockstep.
 
-    func test_phase4_goldenVector6_webAuthnSignatureWireShape_matchesFixture() throws {
+    func test_goldenVector6_webAuthnSignatureWireShape_matchesFixture() throws {
         let signature = try OZWebAuthnSignature(
             authenticatorData: Data(repeating: 0xAA, count: 37),
             clientData: Data(repeating: 0xBB, count: 16),

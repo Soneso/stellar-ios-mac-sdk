@@ -614,7 +614,7 @@ final class OZSmartAccountAuthPayloadTests: XCTestCase {
     // reproducible across SDKs. The expected hex is byte-identical to the
     // matching fixture in the sibling SDK and must be updated in lockstep.
 
-    func test_phase4_goldenVector5_authPayloadWithTwoDelegatedSigners_matchesFixture() throws {
+    func test_goldenVector5_authPayloadWithTwoDelegatedSigners_matchesFixture() throws {
         let stableG = "GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX"
         let stableC = "CDCYWK73YTYFJZZSJ5V7EDFNHYBG4QN3VUNG2IGD27KJDDPNCZKBCBXK"
 

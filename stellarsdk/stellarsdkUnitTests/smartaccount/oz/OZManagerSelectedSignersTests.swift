@@ -37,12 +37,13 @@ final class OZManagerSelectedSignersTests: XCTestCase {
     private let validVerifierAddress =
         "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
 
-    /// Builds a kit-config suitable for unit tests. The RPC URL is the public
-    /// Testnet placeholder; every test in this file fails before any RPC
-    /// traffic is attempted.
+    /// Builds a kit-config suitable for unit tests. The RPC URL points at a
+    /// non-routable loopback port so any accidental reach to the network
+    /// fails immediately with connection-refused rather than hitting the
+    /// public Testnet endpoint.
     private func buildConfig() throws -> OZSmartAccountConfig {
         return try OZSmartAccountConfig(
-            rpcUrl: "https://soroban-testnet.stellar.org",
+            rpcUrl: "http://127.0.0.1:1",
             networkPassphrase: Network.testnet.passphrase,
             accountWasmHash: "a" + String(repeating: "0", count: 63),
             webauthnVerifierAddress: validVerifierAddress

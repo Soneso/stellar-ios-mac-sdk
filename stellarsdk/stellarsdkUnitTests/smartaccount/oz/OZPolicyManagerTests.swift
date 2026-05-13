@@ -34,7 +34,7 @@ final class OZPolicyManagerTests: XCTestCase {
 
     private func buildConfig() throws -> OZSmartAccountConfig {
         return try OZSmartAccountConfig(
-            rpcUrl: "https://soroban-testnet.stellar.org",
+            rpcUrl: "http://127.0.0.1:1",
             networkPassphrase: Network.testnet.passphrase,
             accountWasmHash: "a" + String(repeating: "0", count: 63),
             webauthnVerifierAddress: validContractC
@@ -817,5 +817,65 @@ final class OZPolicyManagerTests: XCTestCase {
         }
         XCTAssertEqual(parts.lo, UInt64(Int64.max), "Int64.max stroops must occupy the lo 64 bits exactly")
         XCTAssertEqual(parts.hi, 0, "Int64.max stroops must leave hi = 0 (positive value within Int64 range)")
+    }
+
+    // ========================================================================
+    // F-TC-iOS-1 — amountToStroops additional boundary coverage
+    // ========================================================================
+
+    /// `"0"` is not a valid spending amount: the parser surfaces a strict
+    /// `ValidationException.InvalidAmount` rather than returning zero stroops.
+    /// Zero-amount transactions are not legitimate XLM moves and must be
+    /// rejected upfront so downstream policy checks operate on a non-zero
+    /// post-condition.
+    func test_amountToStroops_zeroAmount_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("0")) { error in
+            XCTAssertTrue(error is ValidationException.InvalidAmount,
+                          "expected ValidationException.InvalidAmount, got \(type(of: error))")
+        }
+    }
+
+    /// Negative amounts must be rejected upfront. The parser's strict regex
+    /// rejects the leading `-` sign and surfaces
+    /// `ValidationException.InvalidAmount` so the caller does not produce a
+    /// signed-int wraparound at the I128 conversion boundary.
+    func test_amountToStroops_negativeAmount_throws() {
+        XCTAssertThrowsError(try OZTransactionOperations.amountToStroops("-1")) { error in
+            XCTAssertTrue(error is ValidationException.InvalidAmount,
+                          "expected ValidationException.InvalidAmount, got \(type(of: error))")
+        }
+    }
+
+    /// The maximum representable XLM amount that fits in `Int64` stroops is
+    /// `922337203685.4775807` (Int64.max stroops = 9_223_372_036_854_775_807).
+    /// The parser must accept this string and return `Int64.max` exactly,
+    /// proving the conversion arithmetic does not silently overflow at the
+    /// upper boundary.
+    func test_amountToStroops_extremelyLargeButValidAmount_roundtripsToInt64Max() throws {
+        let stroops = try OZTransactionOperations.amountToStroops("922337203685.4775807")
+        XCTAssertEqual(stroops, Int64.max,
+                       "Largest representable XLM amount must round-trip to Int64.max stroops")
+    }
+
+    /// Decimal-separator edge cases: leading-zero whole part (`"0.5"`) and a
+    /// trailing-zero fractional part (`"1.5000000"`). Both are well-formed
+    /// numeric strings within the seven-fractional-digit floor and must
+    /// round-trip to the same stroop value as the canonical forms (`"0.5"`
+    /// produces 5_000_000 stroops; `"1.5000000"` matches `"1.5"`'s
+    /// 15_000_000 stroops).
+    func test_amountToStroops_decimalSeparatorEdgeCases() throws {
+        let leadingZero = try OZTransactionOperations.amountToStroops("0.5")
+        XCTAssertEqual(leadingZero, 5_000_000,
+                       "0.5 XLM must be 5,000,000 stroops")
+
+        let trailingZeros = try OZTransactionOperations.amountToStroops("1.5000000")
+        XCTAssertEqual(trailingZeros, 15_000_000,
+                       "1.5000000 XLM must be 15,000,000 stroops (trailing zeros padded as expected)")
+
+        // Cross-check: trailing zeros must produce the same value as the
+        // shorter canonical form.
+        let canonical = try OZTransactionOperations.amountToStroops("1.5")
+        XCTAssertEqual(trailingZeros, canonical,
+                       "1.5000000 and 1.5 must produce identical stroop values")
     }
 }
