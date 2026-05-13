@@ -485,7 +485,7 @@ final class OZContextRuleManagerTests: XCTestCase {
     ) throws -> (MockOZSmartAccountKit, OZContextRuleManager) {
         let kit = MockOZSmartAccountKit(
             config: try buildConfig(),
-            sorobanServer: SorobanServer(endpoint: "https://mock-rpc.invalid/rpc")
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
         )
         kit.setConnectedState(
             credentialId: "test-credential-id",

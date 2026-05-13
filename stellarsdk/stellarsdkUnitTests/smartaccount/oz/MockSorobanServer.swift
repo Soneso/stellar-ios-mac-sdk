@@ -337,6 +337,16 @@ enum MockSorobanServer {
         }
     }
 
+    /// Constructs a `SorobanServer` whose owned `URLSession` has
+    /// `MockURLProtocol` installed so the active script intercepts every
+    /// outbound RPC call.
+    static func makeMockedSorobanServer(endpoint: String = "https://mock-rpc.invalid/rpc") -> SorobanServer {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockURLProtocol.self]
+        let session = URLSession(configuration: configuration)
+        return SorobanServer(endpoint: endpoint, urlSession: session)
+    }
+
     /// Routes one URL request through the supplied script's JSON-RPC handler.
     /// Tests that need to install a custom URL handler (e.g. to intercept
     /// relayer / indexer / friendbot traffic by host) delegate JSON-RPC

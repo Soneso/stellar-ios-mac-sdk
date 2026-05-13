@@ -218,7 +218,13 @@ public struct OZRelayerResponse: Decodable, Equatable, Hashable, Sendable {
 /// all failure modes in the returned `OZRelayerResponse`; they do not throw network or
 /// HTTP errors directly. Only XDR encoding failures surface in the response via the
 /// `error` field — exceptions are not propagated.
-public final class OZRelayerClient: @unchecked Sendable {
+///
+/// Subclassing contract: `OZRelayerClient` is `open`-able for test doubles. Any
+/// subclass that overrides ``close()`` MUST either call `super.close()` or invoke
+/// the internal teardown helper, otherwise the owned `URLSession` will leak. The
+/// SDK recording mocks (`MockOZRelayerClient`) follow this pattern; consumer code
+/// is generally expected to inject a custom `urlSession` rather than subclass.
+public class OZRelayerClient: @unchecked Sendable {
 
     // MARK: - Instance state
 
@@ -422,7 +428,21 @@ public final class OZRelayerClient: @unchecked Sendable {
     /// caller retains ownership and the session is NOT invalidated. After `close()`
     /// completes the client must not be used again; subsequent calls to `close()`
     /// are safe no-ops.
+    ///
+    /// Subclasses overriding this method MUST call `super.close()` (or
+    /// ``performCloseInternal()`` directly) to invalidate the owned
+    /// `URLSession`; otherwise the underlying transport leaks.
     public func close() {
+        performCloseInternal()
+    }
+
+    /// Performs the canonical close sequence: idempotent state flip plus
+    /// `URLSession` invalidation when the session is owned.
+    ///
+    /// Subclasses that override ``close()`` should call this helper from
+    /// their override so the resource teardown remains correct even if the
+    /// override is reordered or augmented with additional bookkeeping.
+    public final func performCloseInternal() {
         stateLock.lock()
         defer { stateLock.unlock() }
         if isClosed {

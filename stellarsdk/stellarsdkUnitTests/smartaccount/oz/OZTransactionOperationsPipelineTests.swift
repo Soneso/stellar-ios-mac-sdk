@@ -121,7 +121,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
             webauthnProvider: provider,
             storage: storage
         )
-        let liveServer = SorobanServer(endpoint: "https://mock-rpc.invalid/rpc")
+        let liveServer = MockSorobanServer.makeMockedSorobanServer()
         let kit = MockOZSmartAccountKit(
             config: config,
             sorobanServer: liveServer,
@@ -507,7 +507,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         let kit = MockOZSmartAccountKit(
             config: config,
-            sorobanServer: SorobanServer(endpoint: "https://mock-rpc.invalid/rpc")
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
         )
         // End-of-cascade verifyContractExists requires a contract instance
         // entry; supply one so the cascade short-circuits at storage and
@@ -538,7 +538,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         let kit = MockOZSmartAccountKit(
             config: config,
-            sorobanServer: SorobanServer(endpoint: "https://mock-rpc.invalid/rpc")
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
         )
 
         // Derive the address ourselves so we know what to script.
@@ -1108,7 +1108,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         let kit = MockOZSmartAccountKit(
             config: config,
-            sorobanServer: SorobanServer(endpoint: "https://mock-rpc.invalid/rpc"),
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer(),
             indexerClient: indexer
         )
         // Derivation miss: empty entries result.
@@ -1142,7 +1142,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         let kit = MockOZSmartAccountKit(
             config: config,
-            sorobanServer: SorobanServer(endpoint: "https://mock-rpc.invalid/rpc")
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
         )
         kit.configuredDeployer = try deterministicDeployer()
         kit.setConnectedState(
@@ -1214,7 +1214,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         let kit = MockOZSmartAccountKit(
             config: config,
-            sorobanServer: SorobanServer(endpoint: "https://mock-rpc.invalid/rpc")
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
         )
         kit.configuredDeployer = deployer
 
@@ -1287,7 +1287,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         let kit = MockOZSmartAccountKit(
             config: config,
-            sorobanServer: SorobanServer(endpoint: "https://mock-rpc.invalid/rpc")
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
         )
         kit.configuredDeployer = deployer
 
@@ -1342,7 +1342,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         let kit = MockOZSmartAccountKit(
             config: config,
-            sorobanServer: SorobanServer(endpoint: "https://mock-rpc.invalid/rpc")
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
         )
         kit.configuredDeployer = deployer
 
@@ -1389,7 +1389,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         let kit = MockOZSmartAccountKit(
             config: config,
-            sorobanServer: SorobanServer(endpoint: "https://mock-rpc.invalid/rpc")
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer()
         )
         kit.configuredDeployer = deployer
 
@@ -1962,7 +1962,7 @@ final class OZTransactionOperationsPipelineTests: XCTestCase {
         )
         let kit = MockOZSmartAccountKit(
             config: config,
-            sorobanServer: SorobanServer(endpoint: "https://mock-rpc.invalid/rpc"),
+            sorobanServer: MockSorobanServer.makeMockedSorobanServer(),
             indexerClient: indexer
         )
 

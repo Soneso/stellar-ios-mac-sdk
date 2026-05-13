@@ -231,10 +231,12 @@ private enum RpcResult {
 /// - [SorobanClient] for high-level contract interaction
 /// - [AssembledTransaction] for transaction construction
 public class SorobanServer: @unchecked Sendable {
-    /// Soroban RPC endpoint URL for all network requests.
     private let endpoint: String
-    /// JSON decoder instance for parsing RPC responses.
     private let jsonDecoder = JSONDecoder()
+    private let urlSession: URLSession
+    private let urlSessionWasInjected: Bool
+    private let closeLock = NSLock()
+    private var isClosed: Bool = false
 
     /// HTTP header name for SDK version identification.
     static let clientVersionHeader = "X-Client-Version"
@@ -274,8 +276,35 @@ public class SorobanServer: @unchecked Sendable {
     /// Creates a new Soroban RPC client instance.
     ///
     /// - Parameter endpoint: URL of the Soroban RPC server to connect to
-    public init(endpoint:String) {
+    public init(endpoint: String, urlSession: URLSession? = nil) {
         self.endpoint = endpoint
+        if let injected = urlSession {
+            self.urlSession = injected
+            self.urlSessionWasInjected = true
+        } else {
+            self.urlSession = URLSession(configuration: .default)
+            self.urlSessionWasInjected = false
+        }
+    }
+    public func close() {
+        closeLock.lock()
+        defer { closeLock.unlock() }
+        if isClosed { return }
+        isClosed = true
+        if !urlSessionWasInjected {
+            urlSession.invalidateAndCancel()
+        }
+    }
+    deinit {
+        if !urlSessionWasInjected {
+            closeLock.lock()
+            let alreadyClosed = isClosed
+            isClosed = true
+            closeLock.unlock()
+            if !alreadyClosed {
+                urlSession.invalidateAndCancel()
+            }
+        }
     }
     
     /// General node health check request.
@@ -1150,7 +1179,7 @@ public class SorobanServer: @unchecked Sendable {
         }
 
         do {
-            let (data, response) = try await URLSession.shared.data(for: urlRequest)
+            let (data, response) = try await urlSession.data(for: urlRequest)
 
             if enableLogging {
                 let log = String(decoding: data, as: UTF8.self)

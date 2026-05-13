@@ -56,7 +56,7 @@ final class OZCredentialManagerTests: XCTestCase {
         )
         let sorobanServer: SorobanServer
         if useScriptedServer {
-            sorobanServer = SorobanServer(endpoint: "https://mock-rpc.invalid/rpc")
+            sorobanServer = MockSorobanServer.makeMockedSorobanServer()
         } else {
             sorobanServer = SorobanServer(endpoint: "http://127.0.0.1:1")
         }
