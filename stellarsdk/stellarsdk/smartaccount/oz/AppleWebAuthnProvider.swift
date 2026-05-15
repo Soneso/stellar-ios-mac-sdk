@@ -1,0 +1,644 @@
+//
+//  AppleWebAuthnProvider.swift
+//  stellarsdk
+//
+//  Copyright (c) 2026 Soneso. All rights reserved.
+//
+
+// ============================================================================
+// CONSUMER ENTITLEMENT REQUIREMENT
+// ============================================================================
+//
+// `AppleWebAuthnProvider` triggers Apple's `ASAuthorizationController` flow.
+// For the platform authenticator to register or assert a passkey, the host
+// application's `.entitlements` file MUST declare the `Associated Domains`
+// capability with a `webcredentials:` entry that matches the `rpId` passed
+// to this provider. Without the entitlement Apple rejects the request with
+// ASAuthorizationError code 1004 ("Failed").
+//
+// Sample iOS / macOS `.entitlements` snippet (replace `your-domain.com`):
+//
+//     <key>com.apple.developer.associated-domains</key>
+//     <array>
+//         <string>webcredentials:your-domain.com</string>
+//     </array>
+//
+// The same domain MUST serve `.well-known/apple-app-site-association` over
+// HTTPS containing the host application's `TEAM_ID.bundle.identifier`. For
+// local development without publishing the AASA file, append
+// `?mode=developer`:
+//
+//     <string>webcredentials:your-domain.com?mode=developer</string>
+//
+// The developer-mode suffix bypasses Apple's CDN cache and MUST be removed
+// for production builds. On macOS, the host app must additionally enable App
+// Sandbox (`com.apple.security.app-sandbox`) or be Developer ID-signed.
+// ============================================================================
+
+import Foundation
+import AuthenticationServices
+
+// ============================================================================
+// AppleWebAuthnProvider
+// ============================================================================
+
+/// Apple-platform `WebAuthnProvider` backed by the AuthenticationServices
+/// framework's `ASAuthorizationPlatformPublicKeyCredentialProvider`.
+///
+/// Provides passkey registration and assertion for iOS 16+ and macOS 13+:
+///
+/// - Registration triggers the system's passkey-creation UI (Touch ID /
+///   Face ID), generates a secp256r1 keypair, and returns the credential ID,
+///   public key, and attestation object.
+/// - Authentication triggers the passkey-assertion UI, signs the supplied
+///   challenge with the selected credential, and returns the authenticator
+///   data, client data JSON, and DER-encoded ECDSA signature.
+///
+/// All authentication flows require the host application to declare the
+/// `Associated Domains` entitlement with a `webcredentials:<rpId>` entry and
+/// to publish a matching `.well-known/apple-app-site-association` file on the
+/// relying-party domain. See the comment block at the top of this file for
+/// a complete entitlement template.
+///
+/// On macOS the system requires a presentation context provider that returns
+/// the host window. iOS handles presentation automatically. Set
+/// `presentationContextProvider` before invoking `register` or `authenticate`
+/// on macOS; failure to do so yields ASAuthorizationError code 1004.
+///
+/// Example:
+/// ```swift
+/// let provider = try AppleWebAuthnProvider(
+///     rpId: "wallet.example.com",
+///     rpName: "Example Smart Wallet"
+/// )
+/// let registration = try await provider.register(
+///     challenge: challenge32Bytes,
+///     userId: userIdBytes,
+///     userName: "user@example.com"
+/// )
+/// ```
+// why: `ASAuthorizationPlatformPublicKeyCredentialProvider` is only available
+// on iOS 16+ and macOS 13+, so the entire provider must be gated on those
+// minimums. The platform availability annotation is required by the Swift
+// compiler to use the framework symbols and is not present in the cross-SDK
+// reference implementation (those platforms have their own gating mechanisms).
+@available(iOS 16.0, macOS 13.0, *)
+public final class AppleWebAuthnProvider: NSObject, WebAuthnProvider, @unchecked Sendable {
+
+    // ========================================================================
+    // Public Properties
+    // ========================================================================
+
+    /// WebAuthn Relying Party identifier. Must match an `Associated Domains`
+    /// entitlement entry in the host application.
+    public let rpId: String
+
+    /// Human-readable Relying Party name displayed during passkey prompts.
+    public let rpName: String
+
+    /// Operation timeout in milliseconds. Applied to both `register` and
+    /// `authenticate`; when exceeded, the call throws
+    /// `WebAuthnException.RegistrationFailed` or
+    /// `WebAuthnException.AuthenticationFailed` respectively.
+    public let timeout: Int64
+
+    /// Optional presentation context provider for the underlying
+    /// `ASAuthorizationController`.
+    ///
+    /// On macOS, `ASAuthorizationController` requires a context provider to
+    /// supply the window in which to display the passkey UI. Without it the
+    /// system fails the request with ASAuthorizationError code 1004. On iOS
+    /// the system handles presentation automatically and this property may
+    /// remain `nil`.
+    ///
+    /// The provider holds a strong reference; assign before invoking
+    /// `register` or `authenticate`. Set this property once before invoking
+    /// any flow. Mutating it concurrently with an in-flight `register` or
+    /// `authenticate` call is undefined behavior — the property is not
+    /// guarded by `delegateLock` because configuring the provider is
+    /// expected to happen during setup, not during an active request.
+    public var presentationContextProvider: ASAuthorizationControllerPresentationContextProviding?
+
+    // ========================================================================
+    // Internal State
+    // ========================================================================
+
+    /// Strong reference to the active authorization delegate.
+    ///
+    /// `ASAuthorizationController` retains its delegate weakly, so the
+    /// provider must hold the delegate alive for the duration of the
+    /// in-flight request. Cleared in both the success and error paths to
+    /// avoid leaks. Mutation is serialized via `delegateLock`.
+    private var activeDelegate: AuthorizationDelegate?
+
+    /// Lock guarding mutation of `activeDelegate`. The provider itself is
+    /// `@unchecked Sendable`; concurrent calls into `register` /
+    /// `authenticate` from different actors would otherwise race on the
+    /// stored property.
+    private let delegateLock = NSLock()
+
+    // ========================================================================
+    // Initialization
+    // ========================================================================
+
+    /// Initializes a new `AppleWebAuthnProvider`.
+    ///
+    /// - Parameters:
+    ///   - rpId: WebAuthn Relying Party identifier. Must be non-blank.
+    ///   - rpName: Human-readable RP name shown during passkey prompts. Must
+    ///     be non-blank.
+    ///   - timeout: Operation timeout in milliseconds. Must be strictly
+    ///     positive. Defaults to `OZConstants.webAuthnTimeoutMs` (60000).
+    /// - Throws: `ConfigurationException.InvalidConfig` when any input fails
+    ///   validation.
+    public init(
+        rpId: String,
+        rpName: String,
+        timeout: Int64 = OZConstants.webAuthnTimeoutMs
+    ) throws {
+        if rpId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            throw ConfigurationException.invalidConfig(details: "rpId must not be blank")
+        }
+        if rpName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            throw ConfigurationException.invalidConfig(details: "rpName must not be blank")
+        }
+        if timeout <= 0 {
+            throw ConfigurationException.invalidConfig(details: "timeout must be positive")
+        }
+        self.rpId = rpId
+        self.rpName = rpName
+        self.timeout = timeout
+        super.init()
+    }
+
+    /// Convenience factory mirroring the explicit initializer.
+    ///
+    /// Provided as an ergonomic alternative for callers who prefer factory
+    /// invocation (`AppleWebAuthnProvider.create(...)`) over the throwing
+    /// initializer syntax. Both entry points perform identical validation
+    /// and produce identical instances; pick whichever reads better at the
+    /// call site.
+    ///
+    /// - Parameters:
+    ///   - rpId: WebAuthn Relying Party identifier.
+    ///   - rpName: Human-readable RP name.
+    ///   - timeout: Operation timeout in milliseconds. Defaults to
+    ///     `OZConstants.webAuthnTimeoutMs`.
+    /// - Returns: A new configured `AppleWebAuthnProvider`.
+    /// - Throws: `ConfigurationException.InvalidConfig` for invalid inputs.
+    public static func create(
+        rpId: String,
+        rpName: String,
+        timeout: Int64 = OZConstants.webAuthnTimeoutMs
+    ) throws -> AppleWebAuthnProvider {
+        return try AppleWebAuthnProvider(rpId: rpId, rpName: rpName, timeout: timeout)
+    }
+
+    // ========================================================================
+    // WebAuthnProvider — Registration
+    // ========================================================================
+
+    public func register(
+        challenge: Data,
+        userId: Data,
+        userName: String
+    ) async throws -> WebAuthnRegistrationResult {
+        let provider = ASAuthorizationPlatformPublicKeyCredentialProvider(
+            relyingPartyIdentifier: rpId
+        )
+        let request = provider.createCredentialRegistrationRequest(
+            challenge: challenge,
+            name: userName,
+            userID: userId
+        )
+
+        // why: the OZ WebAuthn verifier contract checks UV=true (error #3117
+        // VerifiedBitNotSet); the platform default of "preferred" can return
+        // UV=false on macOS even when Touch ID succeeds, so the resulting
+        // attestation would later produce assertions the contract rejects.
+        // Forcing "required" makes the authenticator set the UV bit during
+        // credential creation as well, matching the assertion-time policy and
+        // keeping cross-platform behavior consistent with the Android, web,
+        // and Flutter providers.
+        request.userVerificationPreference = .required
+
+        // why: request `direct` attestation so the relying party receives the
+        // raw attestation statement rather than an anonymized one. OZ's
+        // verifier does not consume the attestation statement directly, but
+        // the cross-platform providers (Android, web, Flutter) all request
+        // `direct`, and matching them keeps server-side attestation policies
+        // identical regardless of the originating client. Gated on the
+        // platform versions that introduced `attestationPreference` on
+        // `ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest`.
+        if #available(iOS 17.4, macOS 14.4, *) {
+            request.attestationPreference = .direct
+        }
+
+        let authorization = try await performAuthorizationRequest(
+            request: request,
+            isRegistration: true
+        )
+
+        guard let registration = authorization.credential
+            as? ASAuthorizationPlatformPublicKeyCredentialRegistration
+        else {
+            throw WebAuthnException.registrationFailed(
+                reason: "Unexpected credential type: \(type(of: authorization.credential))"
+            )
+        }
+
+        let credentialId = registration.credentialID
+        guard let attestationObject = registration.rawAttestationObject else {
+            throw WebAuthnException.registrationFailed(reason: "Attestation object is null")
+        }
+
+        let publicKey: Data
+        do {
+            publicKey = try SmartAccountUtils.extractPublicKeyFromAttestationObject(
+                attestationObject
+            )
+        } catch {
+            throw WebAuthnException.registrationFailed(
+                reason: "Failed to extract public key from attestation: \(error.localizedDescription)",
+                cause: error
+            )
+        }
+
+        let authData = WebAuthnCborParser.extractAuthenticatorDataFromAttestation(attestationObject)
+        let parsedFlags = WebAuthnCborParser.parseAuthenticatorFlags(authData)
+
+        return WebAuthnRegistrationResult(
+            credentialId: credentialId,
+            publicKey: publicKey,
+            attestationObject: attestationObject,
+            transports: ["internal"],
+            deviceType: parsedFlags.deviceType,
+            backedUp: parsedFlags.backedUp
+        )
+    }
+
+    // ========================================================================
+    // WebAuthnProvider — Authentication
+    // ========================================================================
+
+    public func authenticate(
+        challenge: Data,
+        allowCredentials: [AllowCredential]?
+    ) async throws -> WebAuthnAuthenticationResult {
+        let provider = ASAuthorizationPlatformPublicKeyCredentialProvider(
+            relyingPartyIdentifier: rpId
+        )
+        let request = provider.createCredentialAssertionRequest(challenge: challenge)
+
+        // why: the OZ WebAuthn verifier contract checks UV=true (error #3117
+        // VerifiedBitNotSet); a "preferred" preference can return UV=false on
+        // macOS even after Touch ID succeeds, so the assertion would be
+        // rejected on-chain. Forcing "required" makes the authenticator set
+        // the UV bit unconditionally.
+        request.userVerificationPreference = .required
+
+        // Restrict the authenticator picker to the supplied credential IDs
+        // when provided. Transport hints are intentionally not forwarded —
+        // `ASAuthorizationPlatformPublicKeyCredentialDescriptor` has no
+        // transport parameter and Apple selects hybrid / cross-device flows
+        // at the OS level.
+        if let allow = allowCredentials, !allow.isEmpty {
+            request.allowedCredentials = allow.map {
+                ASAuthorizationPlatformPublicKeyCredentialDescriptor(credentialID: $0.id)
+            }
+        }
+
+        let authorization = try await performAuthorizationRequest(
+            request: request,
+            isRegistration: false
+        )
+
+        guard let assertion = authorization.credential
+            as? ASAuthorizationPlatformPublicKeyCredentialAssertion
+        else {
+            throw WebAuthnException.authenticationFailed(
+                reason: "Unexpected credential type: \(type(of: authorization.credential))"
+            )
+        }
+
+        let credentialId = assertion.credentialID
+        guard let authenticatorData = assertion.rawAuthenticatorData else {
+            throw WebAuthnException.authenticationFailed(reason: "Authenticator data is null")
+        }
+        let clientDataJSON = assertion.rawClientDataJSON
+        guard let signature = assertion.signature else {
+            throw WebAuthnException.authenticationFailed(reason: "Signature is null")
+        }
+
+        return WebAuthnAuthenticationResult(
+            credentialId: credentialId,
+            authenticatorData: authenticatorData,
+            clientDataJSON: clientDataJSON,
+            signature: signature
+        )
+    }
+
+    // ========================================================================
+    // Internal — Authorization Request Execution
+    // ========================================================================
+
+    /// Bridges Apple's delegate-based `ASAuthorizationController` API to a
+    /// Swift Concurrency continuation, applying the configured timeout.
+    ///
+    /// The controller is created and `performRequests()` is dispatched on the
+    /// main queue — `ASAuthorizationController` rejects requests issued from
+    /// background threads with ASAuthorizationError code 1004
+    /// ("Told not to present authorization sheet"). The active delegate is
+    /// retained via `activeDelegate` so the controller's weak reference does
+    /// not deallocate it mid-flight.
+    ///
+    /// - Parameters:
+    ///   - request: The authorization request to perform.
+    ///   - isRegistration: `true` when the call originated from `register`,
+    ///     `false` for `authenticate`. Selects the appropriate
+    ///     `WebAuthnException` subclass when mapping errors.
+    /// - Returns: The successful `ASAuthorization` result.
+    /// - Throws: A `WebAuthnException` subclass selected from the underlying
+    ///   `NSError` code, or a timeout-flavoured failure when the configured
+    ///   `timeout` elapses before any callback fires.
+    private func performAuthorizationRequest(
+        request: ASAuthorizationRequest,
+        isRegistration: Bool
+    ) async throws -> ASAuthorization {
+        // Coordinate the delegate callbacks and the timeout through a single
+        // `AuthorizationContinuationHolder` so whichever event arrives first
+        // completes the request and any later event is dropped.
+        let holder = AuthorizationContinuationHolder()
+        let timeoutMs = self.timeout
+
+        let outcome = await withCheckedContinuation { (continuation: CheckedContinuation<AuthorizationOutcome, Never>) in
+            holder.set(continuation: continuation)
+
+            // Arm the timeout watchdog. The holder ignores any second resume
+            // attempt, so the watchdog firing after a real callback is safe.
+            let watchdog = Task.detached { [weak holder] in
+                let nanos = UInt64(timeoutMs) * 1_000_000
+                // why: handle cancellation explicitly. `Task.sleep` throws
+                // `CancellationError` on cancel; bailing out on cancellation
+                // keeps the watchdog from racing the winning callback path
+                // when the holder cancels the task on completion.
+                do {
+                    try await Task.sleep(nanoseconds: nanos)
+                } catch {
+                    return
+                }
+                if Task.isCancelled { return }
+                holder?.complete(with: .timeout)
+            }
+            holder.setWatchdog(watchdog)
+
+            // why: `AuthorizationDelegate` is `@MainActor` because
+            // `ASAuthorizationControllerDelegate` is itself main-actor
+            // isolated on Swift 6. Constructing both the delegate and the
+            // controller on the main thread matches Apple's threading
+            // contract for `ASAuthorizationController` and ensures the system
+            // delivers callbacks on the same actor.
+            let providerRef = self
+            DispatchQueue.main.async {
+                // why: the watchdog may have completed the holder before the
+                // main queue drained this work item. Skip activating the
+                // controller in that case so a late-arriving delegate setup
+                // does not overwrite the cleared `activeDelegate` slot.
+                if holder.isCompleted {
+                    providerRef.clearActiveDelegate()
+                    return
+                }
+
+                let delegate = AuthorizationDelegate(
+                    onSuccess: { authorization in
+                        providerRef.clearActiveDelegate()
+                        holder.complete(with: .success(authorization))
+                    },
+                    onError: { error in
+                        providerRef.clearActiveDelegate()
+                        holder.complete(with: .failure(error))
+                    }
+                )
+                providerRef.setActiveDelegate(delegate)
+
+                let controller = ASAuthorizationController(authorizationRequests: [request])
+                controller.delegate = delegate
+                if let presentation = providerRef.presentationContextProvider {
+                    controller.presentationContextProvider = presentation
+                }
+                controller.performRequests()
+            }
+        }
+
+        switch outcome {
+        case .success(let authorization):
+            return authorization
+        case .failure(let error):
+            throw mapAuthorizationError(error, isRegistration: isRegistration)
+        case .timeout:
+            clearActiveDelegate()
+            let message = "WebAuthn operation timed out after \(timeoutMs)ms"
+            if isRegistration {
+                throw WebAuthnException.registrationFailed(reason: message)
+            } else {
+                throw WebAuthnException.authenticationFailed(reason: message)
+            }
+        }
+    }
+
+    /// Sets `activeDelegate` under `delegateLock`.
+    private func setActiveDelegate(_ delegate: AuthorizationDelegate) {
+        delegateLock.lock()
+        activeDelegate = delegate
+        delegateLock.unlock()
+    }
+
+    /// Clears `activeDelegate` under `delegateLock`. Safe to call repeatedly.
+    private func clearActiveDelegate() {
+        delegateLock.lock()
+        activeDelegate = nil
+        delegateLock.unlock()
+    }
+
+    /// Returns the current `activeDelegate` reference under `delegateLock`.
+    /// Test-only accessor; production code does not need to read this.
+    internal func currentActiveDelegate() -> AuthorizationDelegate? {
+        delegateLock.lock()
+        defer { delegateLock.unlock() }
+        return activeDelegate
+    }
+
+    // ========================================================================
+    // Internal — Error Mapping
+    // ========================================================================
+
+    /// Maps an `NSError` returned by `ASAuthorizationController` to the
+    /// matching `WebAuthnException` subclass.
+    ///
+    /// The mapping covers the four canonical `ASAuthorizationError` codes:
+    /// - 1001 → `WebAuthnException.Cancelled`
+    /// - 1002 → `RegistrationFailed` or `AuthenticationFailed`
+    ///   (invalid response)
+    /// - 1003 → `WebAuthnException.NotSupported`
+    /// - 1004 → `RegistrationFailed` or `AuthenticationFailed`
+    ///   (authenticator failure)
+    ///
+    /// Any other code is treated as a generic registration / authentication
+    /// failure carrying the original code in the message.
+    internal func mapAuthorizationError(
+        _ error: Error,
+        isRegistration: Bool
+    ) -> WebAuthnException {
+        let nsError = error as NSError
+        let localized = nsError.localizedDescription
+        switch nsError.code {
+        case 1001:
+            return WebAuthnException.cancelled()
+        case 1002:
+            let message = "Invalid response from authenticator: \(localized)"
+            return isRegistration
+                ? WebAuthnException.registrationFailed(reason: message, cause: error)
+                : WebAuthnException.authenticationFailed(reason: message, cause: error)
+        case 1003:
+            return WebAuthnException.notSupported(
+                details: "Passkey operation not handled: \(localized)"
+            )
+        case 1004:
+            let message = "Authenticator operation failed: \(localized)"
+            return isRegistration
+                ? WebAuthnException.registrationFailed(reason: message, cause: error)
+                : WebAuthnException.authenticationFailed(reason: message, cause: error)
+        default:
+            let message = "Authorization error (code \(nsError.code)): \(localized)"
+            return isRegistration
+                ? WebAuthnException.registrationFailed(reason: message, cause: error)
+                : WebAuthnException.authenticationFailed(reason: message, cause: error)
+        }
+    }
+}
+
+// ============================================================================
+// AuthorizationOutcome
+// ============================================================================
+
+/// Internal sum type capturing one of the three terminal states of a
+/// performed authorization request: a successful authorization, a delegate
+/// error, or a timeout.
+@available(iOS 16.0, macOS 13.0, *)
+private enum AuthorizationOutcome: @unchecked Sendable {
+    case success(ASAuthorization)
+    case failure(Error)
+    case timeout
+}
+
+// ============================================================================
+// AuthorizationContinuationHolder
+// ============================================================================
+
+/// Coordinates the single-resume contract for the authorization continuation.
+///
+/// Both the `ASAuthorizationController` delegate callbacks and the timeout
+/// watchdog can attempt to resume the continuation; only the first attempt
+/// must take effect. The holder uses an internal lock to enforce that
+/// invariant atomically and to cancel the timeout watchdog when a real
+/// callback wins.
+@available(iOS 16.0, macOS 13.0, *)
+private final class AuthorizationContinuationHolder: @unchecked Sendable {
+
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<AuthorizationOutcome, Never>?
+    private var watchdog: Task<Void, Never>?
+    private var completed: Bool = false
+
+    func set(continuation: CheckedContinuation<AuthorizationOutcome, Never>) {
+        lock.lock()
+        self.continuation = continuation
+        lock.unlock()
+    }
+
+    func setWatchdog(_ task: Task<Void, Never>) {
+        lock.lock()
+        self.watchdog = task
+        lock.unlock()
+    }
+
+    /// Returns whether the holder has already been completed (delegate
+    /// callback or timeout). Used by the main-queue setup closure to skip
+    /// activating the controller when the watchdog has already won — without
+    /// this guard the controller would set `activeDelegate` after the
+    /// timeout path already cleared it.
+    var isCompleted: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return completed
+    }
+
+    func complete(with outcome: AuthorizationOutcome) {
+        lock.lock()
+        if completed {
+            lock.unlock()
+            return
+        }
+        completed = true
+        let pending = continuation
+        continuation = nil
+        let pendingWatchdog = watchdog
+        watchdog = nil
+        lock.unlock()
+
+        // Cancel the watchdog when a delegate callback wins so the timer does
+        // not outlive the request. Cancellation is a no-op when the watchdog
+        // itself is the caller.
+        pendingWatchdog?.cancel()
+        pending?.resume(returning: outcome)
+    }
+}
+
+// ============================================================================
+// AuthorizationDelegate
+// ============================================================================
+
+/// Internal `ASAuthorizationControllerDelegate` adapter that forwards
+/// completion callbacks into Swift closures.
+///
+/// `ASAuthorizationController` retains its delegate weakly so the surrounding
+/// provider must hold the delegate alive for the duration of the request.
+/// The provider stores instances of this class in `activeDelegate` and clears
+/// the reference once either callback fires.
+// why: `ASAuthorizationControllerDelegate` inherits `@MainActor` isolation on
+// Swift 6 toolchains. The delegate object itself does not touch any UI state —
+// the framework dispatches both completion methods on the main thread, but
+// constructing the delegate is harmless from any thread. Annotating the class
+// `@MainActor` keeps the delegate-method conformance compatible with the
+// protocol while the surrounding async code uses `MainActor.run` to perform
+// instantiation once it reaches main-actor isolation.
+@available(iOS 16.0, macOS 13.0, *)
+@MainActor
+internal final class AuthorizationDelegate: NSObject, ASAuthorizationControllerDelegate {
+
+    private let onSuccess: (ASAuthorization) -> Void
+    private let onError: (Error) -> Void
+
+    init(
+        onSuccess: @escaping (ASAuthorization) -> Void,
+        onError: @escaping (Error) -> Void
+    ) {
+        self.onSuccess = onSuccess
+        self.onError = onError
+        super.init()
+    }
+
+    func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithAuthorization authorization: ASAuthorization
+    ) {
+        onSuccess(authorization)
+    }
+
+    func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithError error: Error
+    ) {
+        onError(error)
+    }
+}

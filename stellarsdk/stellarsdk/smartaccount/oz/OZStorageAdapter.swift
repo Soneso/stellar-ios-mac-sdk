@@ -443,7 +443,8 @@ public protocol StorageAdapter: AnyObject, Sendable {
     ///           `StorageException.WriteFailed` if updating fails.
     func update(credentialId: String, updates: StoredCredentialUpdate) async throws
 
-    /// Clears all credentials from storage. Does not affect the stored session.
+    /// Clears all credentials AND the stored session from storage. Equivalent
+    /// to a hard reset of the adapter's contents.
     ///
     /// - Throws: `StorageException.WriteFailed` if clearing fails.
     func clear() async throws
