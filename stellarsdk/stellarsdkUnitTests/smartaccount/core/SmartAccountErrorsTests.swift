@@ -58,7 +58,7 @@ final class SmartAccountErrorsTests: XCTestCase {
         XCTAssertEqual(SmartAccountErrorCode.indexerTimeout.code, 10002)
     }
 
-    func test_smart_account_error_code_all_28_kmp_values_match_table() {
+    func test_smart_account_error_code_all_28_codes_match_authoritative_table() {
         for (errorCode, expected) in expectedCodeValues {
             XCTAssertEqual(errorCode.code, expected, "Code mismatch for \(errorCode)")
         }

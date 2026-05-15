@@ -387,15 +387,45 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
     ///   - ``ValidationException`` when ``getContextRulesCount()`` returns a
     ///     non-`U32` value.
     public func getAllContextRules() async throws -> [SCValXDR] {
+        try await getAllContextRules(maxScanId: nil)
+    }
+
+    /// Retrieves every active context rule on the connected contract as raw
+    /// `SCValXDR` map payloads, with an optional per-call scan upper bound
+    /// override.
+    ///
+    /// When `maxScanId` is non-`nil` the supplied value is used as the scan
+    /// upper bound in place of the kit-level default
+    /// (``OZSmartAccountConfig/maxContextRuleScanId``). Pass `nil` to use the
+    /// kit default.
+    ///
+    /// The contract assigns monotonically increasing identifiers; when a rule
+    /// is removed its slot becomes empty but the identifier is never reused,
+    /// creating gaps. This method iterates identifiers from zero upward,
+    /// skipping gaps reported as ``TransactionException/SimulationFailed`` by
+    /// the underlying simulation, until either the active rule count has been
+    /// collected or the effective scan upper bound is reached.
+    ///
+    /// - Parameter maxScanId: Per-call scan upper bound override. When `nil`,
+    ///   the kit configuration's ``OZSmartAccountConfig/maxContextRuleScanId``
+    ///   is used.
+    /// - Returns: One raw `SCValXDR` per active context rule in ascending id
+    ///   order.
+    /// - Throws:
+    ///   - ``WalletException/NotConnected`` when no wallet is connected.
+    ///   - ``TransactionException`` for non-gap simulation failures.
+    ///   - ``ValidationException`` when ``getContextRulesCount()`` returns a
+    ///     non-`U32` value.
+    public func getAllContextRules(maxScanId: UInt32? = nil) async throws -> [SCValXDR] {
         let activeCount = try await getContextRulesCount()
         if activeCount == 0 { return [] }
 
-        let maxScanId = kit.config.maxContextRuleScanId
+        let effectiveScanId = maxScanId ?? kit.config.maxContextRuleScanId
         var result: [SCValXDR] = []
         result.reserveCapacity(Int(activeCount))
 
         var id: UInt32 = 0
-        while id < maxScanId {
+        while id < effectiveScanId {
             try Task.checkCancellation()
             // why: stop as soon as the active rules have been collected per
             // D-121 — the count fetched at the start of the scan is the
@@ -429,7 +459,32 @@ public final class OZContextRuleManager: OZContextRuleManagerProtocol, @unchecke
     ///   - ``ValidationException`` when a payload cannot be parsed or the
     ///     count is malformed.
     public func listContextRules() async throws -> [ParsedContextRule] {
-        let raw = try await getAllContextRules()
+        try await listContextRules(maxScanId: nil)
+    }
+
+    /// Returns the parsed view of every active context rule on the connected
+    /// smart account contract, with an optional per-call scan upper bound
+    /// override.
+    ///
+    /// When `maxScanId` is non-`nil` the supplied value is used as the scan
+    /// upper bound in place of the kit-level default
+    /// (``OZSmartAccountConfig/maxContextRuleScanId``). Pass `nil` to use the
+    /// kit default.
+    ///
+    /// Fetches the raw payloads through ``getAllContextRules(maxScanId:)`` and
+    /// parses each via ``parseContextRule(scVal:)``.
+    ///
+    /// - Parameter maxScanId: Per-call scan upper bound override. When `nil`,
+    ///   the kit configuration's ``OZSmartAccountConfig/maxContextRuleScanId``
+    ///   is used.
+    /// - Returns: Parsed context rules in ascending rule-id order.
+    /// - Throws:
+    ///   - ``WalletException/NotConnected`` when no wallet is connected.
+    ///   - ``TransactionException`` for simulation failures.
+    ///   - ``ValidationException`` when a payload cannot be parsed or the
+    ///     count is malformed.
+    public func listContextRules(maxScanId: UInt32? = nil) async throws -> [ParsedContextRule] {
+        let raw = try await getAllContextRules(maxScanId: maxScanId)
         var result: [ParsedContextRule] = []
         result.reserveCapacity(raw.count)
         for scVal in raw {

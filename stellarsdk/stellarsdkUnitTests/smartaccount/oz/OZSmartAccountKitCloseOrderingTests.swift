@@ -96,8 +96,7 @@ final class RecordingOZRelayerClient: OZRelayerClient, @unchecked Sendable {
 /// Close-order parity tests for ``OZSmartAccountKit`` lifecycle teardown.
 ///
 /// The kit's documented teardown order is
-/// `[sorobanServer, indexerClient, relayerClient]`, matching the
-/// cross-SDK contract honored by the Flutter and KMP SDKs.
+/// `[sorobanServer, indexerClient, relayerClient]`.
 final class OZSmartAccountKitCloseOrderingTests: XCTestCase {
 
     private let validRpcUrl = "http://127.0.0.1:1"

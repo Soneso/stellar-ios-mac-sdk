@@ -361,6 +361,57 @@ final class OZCredentialManagerTests: XCTestCase {
         }
     }
 
+    // MARK: - sync — credentialSyncFailed event
+
+    /// A.3.14: when sync() cannot reach the RPC endpoint it emits a
+    /// `credentialSyncFailed` event carrying the credential id that was being
+    /// synced and the underlying RPC error.
+    ///
+    /// The test drives the failure path by pointing the kit's SorobanServer at
+    /// a non-routable host (127.0.0.1:1), which yields an immediate
+    /// connection-refused error without needing the mock server infrastructure.
+    func testSync_rpcFailure_emitsCredentialSyncFailedEvent() async throws {
+        let (manager, kit, _) = try makeManager(useScriptedServer: false)
+        _ = try await manager.createPendingCredential(
+            credentialId: "sync-fail-cred",
+            publicKey: testPublicKey(),
+            contractId: contractA
+        )
+
+        let credentialIdBox = EventBox()
+        let errorBox = ErrorBox()
+        let unsubscribe = kit.events.addListener { event in
+            if case let .credentialSyncFailed(credentialId, error) = event {
+                credentialIdBox.set(credentialId)
+                errorBox.set(error)
+            }
+        }
+        defer { unsubscribe() }
+
+        _ = try await manager.sync(credentialId: "sync-fail-cred")
+
+        XCTAssertEqual(credentialIdBox.get(), "sync-fail-cred",
+                       "Event credentialId must match the synced credential")
+        XCTAssertNotNil(errorBox.get(),
+                        "Event must carry the underlying RPC error")
+    }
+
+    /// A.3.15: sync() must still return `false` when the `credentialSyncFailed`
+    /// event is emitted — the event emission must not alter the method's return
+    /// value or cause the method to throw.
+    func testSync_rpcFailure_returnsFalseAfterEmittingEvent() async throws {
+        let (manager, _, _) = try makeManager(useScriptedServer: false)
+        _ = try await manager.createPendingCredential(
+            credentialId: "sync-false-cred",
+            publicKey: testPublicKey(),
+            contractId: contractA
+        )
+
+        let result = try await manager.sync(credentialId: "sync-false-cred")
+        XCTAssertFalse(result,
+                       "sync() must return false when the on-chain check fails")
+    }
+
     // MARK: - deleteCredential
 
     /// A.4.14: deleteCredential removes a pending credential and emits the
@@ -637,6 +688,26 @@ private final class EventBox: @unchecked Sendable {
     }
 
     func get() -> String? {
+        lock.lock()
+        defer { lock.unlock() }
+        return value
+    }
+}
+
+// MARK: - ErrorBox
+
+/// Tiny thread-safe slot used by tests that observe an emitted error value.
+private final class ErrorBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: Error?
+
+    func set(_ value: Error) {
+        lock.lock()
+        self.value = value
+        lock.unlock()
+    }
+
+    func get() -> Error? {
         lock.lock()
         defer { lock.unlock() }
         return value

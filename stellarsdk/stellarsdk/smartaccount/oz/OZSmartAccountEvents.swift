@@ -103,6 +103,20 @@ public enum SmartAccountEvent: Sendable, Equatable, Hashable {
     ///   - success: `true` if submitted successfully, `false` if submission failed.
     case transactionSubmitted(hash: String, success: Bool)
 
+    /// Emitted when ``OZCredentialManager/sync(credentialId:)`` cannot reach
+    /// the RPC endpoint and the credential could not be reconciled with
+    /// on-chain state.
+    ///
+    /// The credential is retained in local storage so a subsequent sync
+    /// attempt can retry the on-chain check. The payload identifies which
+    /// credential was being synced and the underlying error that prevented
+    /// the check.
+    ///
+    /// - Parameters:
+    ///   - credentialId: Base64URL-encoded credential identifier being synced.
+    ///   - error: The underlying RPC error that prevented the on-chain check.
+    case credentialSyncFailed(credentialId: String, error: Error)
+
     // MARK: - Type tag
 
     /// Stable type tag used for type-keyed listener registration and lookup.
@@ -126,6 +140,70 @@ public enum SmartAccountEvent: Sendable, Equatable, Hashable {
             return SmartAccountEventType.transactionSigned.tag
         case .transactionSubmitted:
             return SmartAccountEventType.transactionSubmitted.tag
+        case .credentialSyncFailed:
+            return SmartAccountEventType.credentialSyncFailed.tag
+        }
+    }
+
+    // MARK: - Equatable
+
+    /// Two events are equal when they are the same arm with identical associated
+    /// values. For the ``credentialSyncFailed(credentialId:error:)`` arm the
+    /// `error` comparison is best-effort: the `localizedDescription` strings
+    /// are compared because `Error` does not conform to `Equatable`.
+    public static func == (lhs: SmartAccountEvent, rhs: SmartAccountEvent) -> Bool {
+        switch (lhs, rhs) {
+        case let (.walletConnected(lc, li), .walletConnected(rc, ri)):
+            return lc == rc && li == ri
+        case let (.walletDisconnected(lc), .walletDisconnected(rc)):
+            return lc == rc
+        case let (.credentialCreated(lc), .credentialCreated(rc)):
+            return lc == rc
+        case let (.credentialDeleted(li), .credentialDeleted(ri)):
+            return li == ri
+        case let (.sessionExpired(lc, li), .sessionExpired(rc, ri)):
+            return lc == rc && li == ri
+        case let (.transactionSigned(lc, li), .transactionSigned(rc, ri)):
+            return lc == rc && li == ri
+        case let (.transactionSubmitted(lh, ls), .transactionSubmitted(rh, rs)):
+            return lh == rh && ls == rs
+        case let (.credentialSyncFailed(li, le), .credentialSyncFailed(ri, re)):
+            return li == ri && le.localizedDescription == re.localizedDescription
+        default:
+            return false
+        }
+    }
+
+    // MARK: - Hashable
+
+    /// Hash value computed over each arm's associated values. For the
+    /// ``credentialSyncFailed(credentialId:error:)`` arm the error's
+    /// `localizedDescription` is hashed because `Error` does not conform to
+    /// `Hashable`.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(eventTypeTag)
+        switch self {
+        case let .walletConnected(contractId, credentialId):
+            hasher.combine(contractId)
+            hasher.combine(credentialId)
+        case let .walletDisconnected(contractId):
+            hasher.combine(contractId)
+        case let .credentialCreated(credential):
+            hasher.combine(credential)
+        case let .credentialDeleted(credentialId):
+            hasher.combine(credentialId)
+        case let .sessionExpired(contractId, credentialId):
+            hasher.combine(contractId)
+            hasher.combine(credentialId)
+        case let .transactionSigned(contractId, credentialId):
+            hasher.combine(contractId)
+            hasher.combine(credentialId)
+        case let .transactionSubmitted(hash, success):
+            hasher.combine(hash)
+            hasher.combine(success)
+        case let .credentialSyncFailed(credentialId, error):
+            hasher.combine(credentialId)
+            hasher.combine(error.localizedDescription)
         }
     }
 }
@@ -159,6 +237,7 @@ public enum SmartAccountEventType: String, Sendable, CaseIterable {
     case sessionExpired = "SessionExpired"
     case transactionSigned = "TransactionSigned"
     case transactionSubmitted = "TransactionSubmitted"
+    case credentialSyncFailed = "CredentialSyncFailed"
 
     /// Stable string tag used as the listener-map key.
     public var tag: String { return rawValue }

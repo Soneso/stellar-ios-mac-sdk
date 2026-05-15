@@ -332,11 +332,15 @@ public final class OZCredentialManager: OZCredentialManagerProtocol, @unchecked 
                 return false
             }
             return true
-        case .failure:
+        case .failure(let rpcError):
             // why: the on-chain check is intentionally non-fatal. A missing
             // ledger entry, a transport failure, or a parse error all map to
             // "not yet deployed" so the caller's sweep can continue across
             // every credential without aborting on the first transient error.
+            // Emit the credentialSyncFailed event so listeners can react to
+            // the RPC failure (for example to show a warning in the UI or to
+            // schedule a retry) without needing to catch errors from sync().
+            kit.events.emit(.credentialSyncFailed(credentialId: credentialId, error: rpcError))
             return false
         }
     }

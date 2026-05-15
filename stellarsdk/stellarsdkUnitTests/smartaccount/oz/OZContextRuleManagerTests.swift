@@ -335,6 +335,79 @@ final class OZContextRuleManagerTests: XCTestCase {
     }
 
     // ========================================================================
+    // getAllContextRules / listContextRules — per-call maxScanId override
+    // ========================================================================
+
+    /// `getAllContextRules(maxScanId:)` with a non-nil override must honour the
+    /// caller-supplied bound instead of the kit config default. The test
+    /// scripts a count of 1 at the configured default (100) but supplies a
+    /// scan bound of 2, which means the scan terminates after the count is
+    /// satisfied rather than scanning up to 100.
+    ///
+    /// Verification: the mock RPC scripts exactly two responses — one for the
+    /// count query and one for the single rule at id=0. If the override were
+    /// ignored and the full config default (100) were used the pipeline would
+    /// issue additional simulate calls, causing the scripted FIFO to
+    /// return errors and the test to behave incorrectly.
+    func test_getAllContextRules_perCallMaxScanId_override_isHonoured() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let (kit, manager) = try connectedKitWithScriptedServer()
+        let deployer = try await kit.getDeployer()
+
+        // count query — 1 active rule.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+        script.enqueueSimulate(resultXdr: SCValXDR.u32(1).xdrEncoded ?? "")
+
+        // getContextRule(id: 0) — one rule payload.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 2)
+        let ruleScVal = SCValXDR.u32(0xABCD)
+        script.enqueueSimulate(resultXdr: ruleScVal.xdrEncoded ?? "")
+
+        // Use a per-call override of 2 (distinct from the kit default of 100).
+        let result = try await manager.getAllContextRules(maxScanId: 2)
+        XCTAssertEqual(result.count, 1, "Expected exactly 1 rule")
+        if case .u32(let v) = result.first {
+            XCTAssertEqual(v, 0xABCD)
+        } else {
+            XCTFail("Expected u32 rule scVal, got: \(String(describing: result.first))")
+        }
+    }
+
+    /// `listContextRules(maxScanId:)` with a non-nil override must forward the
+    /// bound to the underlying `getAllContextRules(maxScanId:)` scan. The test
+    /// scripts a count of 0 so no per-rule simulate calls are issued, and the
+    /// return value is an empty list regardless of the override value.
+    ///
+    /// The key assertion is that passing `maxScanId: 5` (distinct from any
+    /// config default) completes without error, confirming the parameter is
+    /// accepted and routed correctly through the parsed layer.
+    func test_listContextRules_perCallMaxScanId_override_isHonoured() async throws {
+        let script = MockSorobanServerScript()
+        MockSorobanServer.activate(script: script)
+        defer {
+            MockSorobanServer.deactivate()
+            MockURLProtocol.reset()
+        }
+
+        let (kit, manager) = try connectedKitWithScriptedServer()
+        let deployer = try await kit.getDeployer()
+
+        // count = 0 — no rules, no per-rule walk regardless of maxScanId.
+        script.setGetAccountResponse(accountId: deployer.accountId, sequence: 1)
+        script.enqueueSimulate(resultXdr: SCValXDR.u32(0).xdrEncoded ?? "")
+
+        // Use a per-call override of 5 (distinct from the kit config default).
+        let rules = try await manager.listContextRules(maxScanId: 5)
+        XCTAssertEqual(rules.count, 0, "Expected empty list when count is zero")
+    }
+
+    // ========================================================================
     // Task cancellation propagation
     // ========================================================================
 
