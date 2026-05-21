@@ -69,11 +69,23 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
     ///
     /// Constructed from ``OZSmartAccountConfig/rpcUrl`` at ``create(config:)``
     /// time. The kit owns the lifetime; consumer code should not close the
-    /// server directly.
+    /// server directly. ``close()`` invalidates the dedicated
+    /// ``URLSession`` the kit injected into the server so any in-flight RPC
+    /// traffic is cancelled at teardown.
     ///
     /// Thread-safe: the underlying ``SorobanServer`` synchronizes its own
     /// state internally.
     public let sorobanServer: SorobanServer
+
+    /// URL session injected into ``sorobanServer`` and owned by this kit.
+    ///
+    /// Non-nil when the kit was constructed through ``create(config:)``,
+    /// which always allocates a dedicated session so ``close()`` can release
+    /// the RPC transport without affecting ``URLSession/shared``. Nil when
+    /// the kit was constructed through the internal init with a
+    /// pre-built ``SorobanServer`` (test-only path); in that case session
+    /// lifecycle is the caller's responsibility.
+    private let ownedUrlSession: URLSession?
 
     /// Optional indexer client used for credential-to-contract discovery.
     ///
@@ -336,13 +348,15 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
         storage: StorageAdapter,
         sorobanServer: SorobanServer,
         relayerClient: OZRelayerClient?,
-        indexerClient: OZIndexerClient?
+        indexerClient: OZIndexerClient?,
+        ownedUrlSession: URLSession? = nil
     ) {
         self.config = config
         self.storage = storage
         self.sorobanServer = sorobanServer
         self.relayerClient = relayerClient
         self.indexerClient = indexerClient
+        self.ownedUrlSession = ownedUrlSession
         self.events = SmartAccountEventEmitter()
 
         // why: every manager and operations module captures the kit through
@@ -492,15 +506,12 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
         // idempotency, but acquiring the kit's own close flag first
         // guarantees the listener-removal step runs exactly once across
         // re-entrant callers and avoids double-firing any teardown
-        // assertions installed by test doubles. The shared
-        // ``SorobanServer`` does not expose a per-instance
-        // transport-invalidation hook in the current SDK release; if a
-        // future revision introduces one the matching teardown call must
-        // be added here as the first step.
-        // Close the shared Soroban RPC transport first so any in-flight
-        // RPC traffic is cancelled before the indexer and relayer clients
-        // release their own transports.
+        // assertions installed by test doubles. Order matters: cancel the
+        // RPC transport first so any in-flight Soroban traffic stops
+        // before the indexer and relayer clients release their own
+        // transports.
         sorobanServer.close()
+        ownedUrlSession?.invalidateAndCancel()
         events.removeAllListeners()
         indexerClient?.close()
         relayerClient?.close()
@@ -628,14 +639,23 @@ public final class OZSmartAccountKit: OZSmartAccountKitProtocol, @unchecked Send
             )
         }
 
-        let sorobanServer = SorobanServer(endpoint: config.rpcUrl)
+        // Dedicated URL session so ``close()`` can release the RPC transport
+        // without affecting ``URLSession/shared``, which is the default
+        // session used by the rest of the SDK and by application code that
+        // constructs ``SorobanServer`` directly.
+        let ownedUrlSession = URLSession(configuration: .default)
+        let sorobanServer = SorobanServer(
+            endpoint: config.rpcUrl,
+            urlSession: ownedUrlSession
+        )
 
         return OZSmartAccountKit(
             config: config,
             storage: config.storage,
             sorobanServer: sorobanServer,
             relayerClient: relayerClient,
-            indexerClient: indexerClient
+            indexerClient: indexerClient,
+            ownedUrlSession: ownedUrlSession
         )
     }
 }

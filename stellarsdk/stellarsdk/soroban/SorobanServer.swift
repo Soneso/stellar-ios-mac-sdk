@@ -231,12 +231,19 @@ private enum RpcResult {
 /// - [SorobanClient] for high-level contract interaction
 /// - [AssembledTransaction] for transaction construction
 public class SorobanServer: @unchecked Sendable {
+    /// Soroban RPC endpoint URL for all network requests.
     private let endpoint: String
+    /// JSON decoder instance for parsing RPC responses.
     private let jsonDecoder = JSONDecoder()
+    /// URL session used for every RPC request.
+    ///
+    /// Defaults to ``URLSession/shared`` so classes registered through
+    /// ``URLProtocol/registerClass(_:)`` (the SDK's unit-test mocking
+    /// convention) intercept traffic. A caller that needs an isolated
+    /// transport can inject a dedicated session and own its lifecycle
+    /// externally — this type does not invalidate any session it did not
+    /// create itself.
     private let urlSession: URLSession
-    private let urlSessionWasInjected: Bool
-    private let closeLock = NSLock()
-    private var isClosed: Bool = false
 
     /// HTTP header name for SDK version identification.
     static let clientVersionHeader = "X-Client-Version"
@@ -275,38 +282,30 @@ public class SorobanServer: @unchecked Sendable {
     
     /// Creates a new Soroban RPC client instance.
     ///
-    /// - Parameter endpoint: URL of the Soroban RPC server to connect to
+    /// - Parameters:
+    ///   - endpoint: URL of the Soroban RPC server to connect to.
+    ///   - urlSession: Optional URL session used for every RPC request.
+    ///     Defaults to ``URLSession/shared`` when nil; the shared session is
+    ///     the only configuration that consults classes registered through
+    ///     ``URLProtocol/registerClass(_:)``, which the SDK's unit tests
+    ///     rely on for HTTP mocking. Inject a dedicated session when a
+    ///     caller wants to own and invalidate the transport explicitly.
     public init(endpoint: String, urlSession: URLSession? = nil) {
         self.endpoint = endpoint
-        if let injected = urlSession {
-            self.urlSession = injected
-            self.urlSessionWasInjected = true
-        } else {
-            self.urlSession = URLSession(configuration: .default)
-            self.urlSessionWasInjected = false
-        }
+        self.urlSession = urlSession ?? URLSession.shared
     }
+
+    /// Teardown hook invoked by composite owners (for example
+    /// ``OZSmartAccountKit``) as part of their close-ordering sequence.
+    ///
+    /// The base implementation is a no-op: ``SorobanServer`` does not own
+    /// the lifetime of its injected ``URLSession``. Composite owners that
+    /// need transport teardown should invalidate the session they injected
+    /// themselves. Subclasses may override to perform additional cleanup.
     public func close() {
-        closeLock.lock()
-        defer { closeLock.unlock() }
-        if isClosed { return }
-        isClosed = true
-        if !urlSessionWasInjected {
-            urlSession.invalidateAndCancel()
-        }
+        // Intentionally a no-op in the base class — see method documentation.
     }
-    deinit {
-        if !urlSessionWasInjected {
-            closeLock.lock()
-            let alreadyClosed = isClosed
-            isClosed = true
-            closeLock.unlock()
-            if !alreadyClosed {
-                urlSession.invalidateAndCancel()
-            }
-        }
-    }
-    
+
     /// General node health check request.
     /// See: https://soroban.stellar.org/api/methods/getHealth
     public func getHealth() async -> GetHealthResponseEnum {
