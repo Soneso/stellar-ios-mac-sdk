@@ -948,12 +948,15 @@ final class OZRelayerClientTests: XCTestCase {
         XCTAssertEqual("UNAUTHORIZED", OZRelayerErrorCodes.UNAUTHORIZED)
     }
 
-    // MARK: - send: error message truncation
+    // MARK: - send: error message surfaced verbatim
 
-    func testSend_errorMessageIsTruncated() async throws {
-        // why: a hostile relayer can return a multi-KiB error string; the
-        // truncation guard caps it to at most 200 characters plus a 3-char
-        // ellipsis so it cannot bloat caller-side logs or UI surfaces.
+    func testSend_errorMessageIsSurfacedVerbatim() async throws {
+        // The relayer formats its `error` field for direct display, often
+        // including a transaction simulation error followed by a multi-line
+        // diagnostic event log. The body-level size cap
+        // (`ozMaxRelayerResponseBytes`) bounds the overall payload; the
+        // parsed `error` field must pass through whole so the event log
+        // reaches the caller.
         let longMessage = String(repeating: "E", count: 5000)
         let body = #"{"success": false, "error": "\#(longMessage)"}"#
         installResponder(body: body, statusCode: 400)
@@ -969,20 +972,7 @@ final class OZRelayerClientTests: XCTestCase {
             authEntries: [createTestAuthEntry()]
         )
         XCTAssertFalse(response.success)
-        XCTAssertNotNil(response.error)
-        XCTAssertEqual(
-            203,
-            response.error!.count,
-            "Truncated error must be exactly 200 characters plus a 3-character ellipsis"
-        )
-        XCTAssertTrue(
-            response.error!.hasSuffix("..."),
-            "Truncated error must end with the literal ellipsis marker"
-        )
-        XCTAssertTrue(
-            response.error!.hasPrefix(String(repeating: "E", count: 200)),
-            "Truncated error must preserve the first 200 characters of the input"
-        )
+        XCTAssertEqual(longMessage, response.error)
     }
 
     // MARK: - Request: missing Content-Type

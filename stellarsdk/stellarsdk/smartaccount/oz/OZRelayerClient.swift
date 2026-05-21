@@ -578,12 +578,13 @@ public class OZRelayerClient: @unchecked Sendable {
             )
         }
 
-        // Failure path — synthesize an error message when neither `error` nor
-        // `message` was present in the body, then cap the surfaced text at
-        // 200 characters + ellipsis so a hostile relayer cannot force
-        // arbitrarily large strings into caller-side logs or rendered UI.
-        let rawErrorMessage = parsed.error ?? "Relayer request failed with status \(statusCode)"
-        let errorMessage = ozTruncateBody(rawErrorMessage)
+        // Failure path. The relayer's `error` field is a server-curated
+        // string intended for direct display, often containing a transaction
+        // simulation error followed by a multi-line diagnostic event log. The
+        // overall body is already bounded by `ozMaxRelayerResponseBytes`; a
+        // second per-string cap would drop the event log without preserving
+        // the most actionable trailing context.
+        let errorMessage = parsed.error ?? "Relayer request failed with status \(statusCode)"
 
         return OZRelayerResponse(
             success: false,
